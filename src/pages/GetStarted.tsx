@@ -6,32 +6,32 @@ import { useNavigate } from "react-router-dom";
 
 const services = [
   {
-    title: "CONTENT IDEATION AND PLANNING",
+    title: "Content Ideation And Planning",
     icon: BrainCircuit,
   },
   {
     title: (
       <div className="flex flex-col">
-        <span>TASK</span>
-        <span>MANAGER</span>
+        <span>Task</span>
+        <span>Manager</span>
       </div>
     ),
     icon: ListTodo,
   },
   {
-    title: "CONTENT CALENDAR",
+    title: "Content Calendar",
     icon: Calendar,
   },
   {
-    title: "STRATEGY AND GROWTH",
+    title: "Strategy And Growth",
     icon: TrendingUp,
   },
   {
-    title: "BRAND DEAL TRACKER",
+    title: "Brand Deal Tracker",
     icon: Handshake,
   },
   {
-    title: "ANALYTICS",
+    title: "Analytics",
     icon: BarChart3,
   }
 ];
