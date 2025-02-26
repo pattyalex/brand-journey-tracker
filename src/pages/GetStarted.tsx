@@ -23,7 +23,7 @@ const services = [
     icon: Calendar,
   },
   {
-    title: "Strategy & Growth",
+    title: "Strategy and Growth",
     icon: TrendingUp,
   },
   {
