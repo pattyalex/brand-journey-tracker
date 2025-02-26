@@ -48,7 +48,7 @@ const features = [
   },
   {
     title: "Document Storage",
-    description: "Securely store and access important documents",
+    description: "Securely store and access contracts, invoices, and other documents",
     icon: FileText,
   },
 ];
