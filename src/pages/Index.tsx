@@ -3,8 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Layout from "@/components/Layout";
 import { FolderOpen, HandshakeIcon, FileText } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
+  const navigate = useNavigate();
+
   return (
     <Layout>
       <div className="max-w-6xl mx-auto space-y-8 fade-in">
@@ -26,7 +29,11 @@ const Index = () => {
         </section>
 
         <section className="text-center py-8">
-          <Button size="lg" className="bg-primary text-white hover:bg-primary/90">
+          <Button 
+            size="lg" 
+            className="bg-primary text-white hover:bg-primary/90"
+            onClick={() => navigate("/get-started")}
+          >
             Get Started
           </Button>
         </section>
