@@ -6,10 +6,6 @@ import { useNavigate } from "react-router-dom";
 
 const services = [
   {
-    title: "Content Ideation And Planning",
-    icon: PenLine,
-  },
-  {
     title: (
       <div className="flex flex-col">
         <span>Task</span>
@@ -17,6 +13,10 @@ const services = [
       </div>
     ),
     icon: ListTodo,
+  },
+  {
+    title: "Content Ideation And Planning",
+    icon: PenLine,
   },
   {
     title: "Content Calendar",
