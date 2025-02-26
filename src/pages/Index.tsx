@@ -37,7 +37,7 @@ const Index = () => {
 
 const features = [
   {
-    title: "Project Management",
+    title: "Content Management",
     description: "Organize and track your content projects in one place",
     icon: FolderOpen,
   },
