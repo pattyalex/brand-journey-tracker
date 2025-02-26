@@ -27,7 +27,7 @@ const services = [
     icon: TrendingUp,
   },
   {
-    title: "Brand Deal Tracker",
+    title: "Income Tracker",
     icon: Handshake,
   },
   {
