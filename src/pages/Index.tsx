@@ -43,7 +43,7 @@ const features = [
   },
   {
     title: "Income Tracker",
-    description: "Manage your brand collaborations and sponsorships",
+    description: "Manage your brand collaborations and other revenue streams",
     icon: HandshakeIcon,
   },
   {
