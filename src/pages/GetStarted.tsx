@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 const services = [
   {
-    title: "Content Ideation and Planning",
+    title: "Content Ideation And Planning",
     icon: BrainCircuit,
   },
   {
@@ -23,7 +23,7 @@ const services = [
     icon: Calendar,
   },
   {
-    title: "Strategy and Growth",
+    title: "Strategy And Growth",
     icon: TrendingUp,
   },
   {
