@@ -17,43 +17,43 @@ const sections = [
     title: "Content Ideation & Planning",
     description: "Brainstorm and plan your content",
     icon: BrainCircuit,
-    gradient: "from-pink-500/20 to-purple-500/20"
+    gradient: "from-[#D2B48C]/20 to-[#8B6B4E]/20"
   },
   { 
     title: "Task Manager",
     description: "Track your content creation tasks",
     icon: ListTodo,
-    gradient: "from-blue-500/20 to-cyan-500/20"
+    gradient: "from-[#E6CCB2]/20 to-[#B38B6D]/20"
   },
   { 
     title: "Content Calendar",
     description: "Schedule and organize your content",
     icon: Calendar,
-    gradient: "from-green-500/20 to-emerald-500/20"
+    gradient: "from-[#DEB887]/20 to-[#A67B5B]/20"
   },
   { 
     title: "Brand Deal Tracker",
     description: "Manage brand partnerships",
     icon: Handshake,
-    gradient: "from-yellow-500/20 to-orange-500/20"
+    gradient: "from-[#C4A484]/20 to-[#8B735F]/20"
   },
   { 
     title: "Strategy & Growth",
     description: "Analyze and improve your strategy",
     icon: TrendingUp,
-    gradient: "from-purple-500/20 to-indigo-500/20"
+    gradient: "from-[#BC8F8F]/20 to-[#8B6969]/20"
   },
   { 
     title: "Analytics",
     description: "Track your performance metrics",
     icon: BarChart3,
-    gradient: "from-red-500/20 to-pink-500/20"
+    gradient: "from-[#D2B48C]/20 to-[#96744E]/20"
   },
   { 
     title: "File & Contract Storage",
     description: "Store important documents",
     icon: FolderArchive,
-    gradient: "from-teal-500/20 to-green-500/20"
+    gradient: "from-[#E6CCB2]/20 to-[#8B7355]/20"
   }
 ];
 
