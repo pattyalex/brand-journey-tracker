@@ -8,8 +8,8 @@ const services = [
   {
     title: (
       <div className="flex flex-col">
-        <span>Task</span>
-        <span>Manager</span>
+        <span>Daily</span>
+        <span>Agenda</span>
       </div>
     ),
     icon: ListTodo,
