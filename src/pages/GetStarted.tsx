@@ -1,13 +1,13 @@
 
 import Layout from "@/components/Layout";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { BrainCircuit, ListTodo, Calendar, TrendingUp, Handshake, BarChart3 } from "lucide-react";
+import { PenLine, ListTodo, Calendar, TrendingUp, Handshake, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const services = [
   {
     title: "Content Ideation And Planning",
-    icon: BrainCircuit,
+    icon: PenLine,
   },
   {
     title: (
