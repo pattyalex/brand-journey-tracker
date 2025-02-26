@@ -10,7 +10,12 @@ const services = [
     icon: BrainCircuit,
   },
   {
-    title: "Task Manager",
+    title: (
+      <div className="flex flex-col">
+        <span>Task</span>
+        <span>Manager</span>
+      </div>
+    ),
     icon: ListTodo,
   },
   {
