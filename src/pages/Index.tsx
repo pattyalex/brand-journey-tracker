@@ -42,7 +42,7 @@ const features = [
     icon: FolderOpen,
   },
   {
-    title: "Brand Partnerships",
+    title: "Income Tracker",
     description: "Manage your brand collaborations and sponsorships",
     icon: HandshakeIcon,
   },
