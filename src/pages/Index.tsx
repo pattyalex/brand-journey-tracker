@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Layout from "@/components/Layout";
-import { motion } from "framer-motion";
+import { FolderOpen, HandshakeIcon, FileText } from "lucide-react";
 
 const Index = () => {
   return (
