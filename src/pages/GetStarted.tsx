@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 const services = [
   {
-    title: "Content Ideation & Planning",
+    title: "Content Ideation and Planning",
     icon: BrainCircuit,
   },
   {
