@@ -271,7 +271,7 @@ const Auth = () => {
                             </div>
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-700">Fashion</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">Text Only</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">Text On Video</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Likes</td>
                           <td className="px-4 py-3 text-sm text-gray-700">3 outfit formulas for spring</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Formula 1: Pastel blouse + wide leg jeans + ballet flats. Formula 2: Floral dress + denim jacket + white sneakers. Formula 3: Linen shirt + cropped pants + espadrilles.</td>
