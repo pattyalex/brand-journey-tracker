@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Brain, Lightbulb, Palette, AlignJustify, FileText, Target, MessageSquare, Text, ArrowRightCircle, Link, Upload, Check, ImageIcon, Globe, Plus, Trash2, GripVertical, FileEdit, X } from "lucide-react";
+import { Brain, Lightbulb, Palette, AlignJustify, FileText, Target, MessageSquare, Text, ArrowRightCircle, Link, Upload, Check, ImageIcon, Globe, Plus, Trash2, GripVertical, FileEdit, X, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +20,14 @@ interface InspirationSource {
 interface CustomColumn {
   id: string;
   name: string;
+}
+
+interface StandardColumn {
+  id: string;
+  name: string;
+  field: string;
+  icon?: React.ReactNode;
+  isEditing: boolean;
 }
 
 interface ContentIdea {
@@ -78,6 +86,19 @@ const Auth = () => {
       customValues: {}
     }
   ]);
+  
+  // Standard columns that can be reordered and renamed
+  const [standardColumns, setStandardColumns] = useState<StandardColumn[]>([
+    { id: "idea", name: "Idea", field: "idea", icon: <Lightbulb className="h-3 w-3" />, isEditing: false },
+    { id: "inspiration", name: "Inspiration", field: "inspiration", icon: <Link className="h-3 w-3" />, isEditing: false },
+    { id: "pillar", name: "Pillar", field: "pillar", icon: <AlignJustify className="h-3 w-3" />, isEditing: false },
+    { id: "format", name: "Format", field: "format", icon: <FileText className="h-3 w-3" />, isEditing: false },
+    { id: "goal", name: "Goal", field: "goal", icon: <Target className="h-3 w-3" />, isEditing: false },
+    { id: "hook", name: "Hook", field: "hook", icon: <MessageSquare className="h-3 w-3" />, isEditing: false },
+    { id: "script", name: "Script", field: "script", icon: <ArrowRightCircle className="h-3 w-3" />, isEditing: false },
+    { id: "caption", name: "Caption", field: "caption", icon: <Text className="h-3 w-3" />, isEditing: false },
+  ]);
+  
   const [isAddingLink, setIsAddingLink] = useState(false);
   const [isAddingText, setIsAddingText] = useState(false);
   const [activeCellId, setActiveCellId] = useState<string | null>(null);
@@ -87,6 +108,13 @@ const Auth = () => {
   const [draggedRowId, setDraggedRowId] = useState<string | null>(null);
   const [dragOverRowId, setDragOverRowId] = useState<string | null>(null);
   
+  // Column drag state
+  const [draggedColumnId, setDraggedColumnId] = useState<string | null>(null);
+  const [dragOverColumnId, setDragOverColumnId] = useState<string | null>(null);
+  
+  // Editing column name state
+  const [editingColumnName, setEditingColumnName] = useState("");
+
   // Custom columns state
   const [customColumns, setCustomColumns] = useState<CustomColumn[]>([]);
   const [isAddingColumn, setIsAddingColumn] = useState(false);
@@ -205,7 +233,7 @@ const Auth = () => {
     }));
   };
 
-  // Drag and drop functions
+  // Drag and drop functions for rows
   const handleDragStart = (e: React.DragEvent<HTMLTableRowElement>, ideaId: string) => {
     setDraggedRowId(ideaId);
     e.dataTransfer.effectAllowed = 'move';
@@ -261,6 +289,172 @@ const Auth = () => {
     setDragOverRowId(null);
   };
 
+  // Column drag and drop functions
+  const handleColumnDragStart = (e: React.DragEvent<HTMLTableCellElement>, columnId: string) => {
+    setDraggedColumnId(columnId);
+    e.dataTransfer.effectAllowed = 'move';
+    // Add visual cue for dragging
+    if (e.currentTarget) {
+      setTimeout(() => {
+        e.currentTarget.style.opacity = '0.7';
+        e.currentTarget.style.border = '2px dashed #555';
+      }, 0);
+    }
+  };
+
+  const handleColumnDragEnd = (e: React.DragEvent<HTMLTableCellElement>) => {
+    setDraggedColumnId(null);
+    setDragOverColumnId(null);
+    // Reset visual styles
+    if (e.currentTarget) {
+      e.currentTarget.style.opacity = '1';
+      e.currentTarget.style.border = '';
+    }
+
+    // Reset all column headers
+    const headers = document.querySelectorAll('th');
+    headers.forEach(header => {
+      header.style.opacity = '1';
+      header.style.border = '';
+      header.style.borderRight = '1px solid rgb(55, 65, 81)'; // border-r border-gray-700
+    });
+  };
+
+  const handleColumnDragOver = (e: React.DragEvent<HTMLTableCellElement>, columnId: string) => {
+    e.preventDefault();
+    if (draggedColumnId === columnId) return;
+    setDragOverColumnId(columnId);
+    
+    // Add visual cue for drop target
+    if (e.currentTarget) {
+      e.currentTarget.style.borderLeft = '3px solid #3b82f6';
+    }
+  };
+
+  const handleColumnDragLeave = (e: React.DragEvent<HTMLTableCellElement>) => {
+    setDragOverColumnId(null);
+    // Remove visual cue
+    if (e.currentTarget) {
+      e.currentTarget.style.borderLeft = '';
+    }
+  };
+
+  const handleColumnDrop = (e: React.DragEvent<HTMLTableCellElement>, targetId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!draggedColumnId || draggedColumnId === targetId) return;
+
+    // Determine if we're dealing with standard columns or custom columns
+    const isStandardDragged = standardColumns.some(col => col.id === draggedColumnId);
+    const isStandardTarget = standardColumns.some(col => col.id === targetId);
+    const isCustomDragged = customColumns.some(col => col.id === draggedColumnId);
+    const isCustomTarget = customColumns.some(col => col.id === targetId);
+
+    // Handle reordering within the same column type (standard or custom)
+    if (isStandardDragged && isStandardTarget) {
+      const draggedIndex = standardColumns.findIndex(col => col.id === draggedColumnId);
+      const targetIndex = standardColumns.findIndex(col => col.id === targetId);
+      
+      if (draggedIndex !== -1 && targetIndex !== -1) {
+        const newColumns = [...standardColumns];
+        const draggedItem = newColumns[draggedIndex];
+        newColumns.splice(draggedIndex, 1);
+        newColumns.splice(targetIndex, 0, draggedItem);
+        
+        setStandardColumns(newColumns);
+        toast({
+          title: "Column reordered",
+          description: "The column has been moved to a new position",
+        });
+      }
+    } else if (isCustomDragged && isCustomTarget) {
+      const draggedIndex = customColumns.findIndex(col => col.id === draggedColumnId);
+      const targetIndex = customColumns.findIndex(col => col.id === targetId);
+      
+      if (draggedIndex !== -1 && targetIndex !== -1) {
+        const newColumns = [...customColumns];
+        const draggedItem = newColumns[draggedIndex];
+        newColumns.splice(draggedIndex, 1);
+        newColumns.splice(targetIndex, 0, draggedItem);
+        
+        setCustomColumns(newColumns);
+        toast({
+          title: "Column reordered",
+          description: "The column has been moved to a new position",
+        });
+      }
+    }
+    // Reset drag state
+    setDraggedColumnId(null);
+    setDragOverColumnId(null);
+    
+    // Reset all column header styles
+    const headers = document.querySelectorAll('th');
+    headers.forEach(header => {
+      header.style.opacity = '1';
+      header.style.border = '';
+      header.style.borderLeft = '';
+      header.style.borderRight = '1px solid rgb(55, 65, 81)'; // border-r border-gray-700
+    });
+  };
+
+  // Column editing functions
+  const startEditingColumn = (columnId: string) => {
+    setStandardColumns(prev => 
+      prev.map(col => ({
+        ...col,
+        isEditing: col.id === columnId
+      }))
+    );
+    
+    const column = standardColumns.find(col => col.id === columnId);
+    if (column) {
+      setEditingColumnName(column.name);
+    }
+  };
+
+  const saveColumnName = (columnId: string) => {
+    if (editingColumnName.trim() === '') {
+      toast({
+        title: "Column name required",
+        description: "Column name cannot be empty",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setStandardColumns(prev => 
+      prev.map(col => {
+        if (col.id === columnId) {
+          return {
+            ...col,
+            name: editingColumnName,
+            isEditing: false
+          };
+        }
+        return { ...col, isEditing: false };
+      })
+    );
+    
+    setEditingColumnName("");
+    
+    toast({
+      title: "Column renamed",
+      description: "The column name has been updated",
+    });
+  };
+
+  const cancelEditingColumn = () => {
+    setStandardColumns(prev => 
+      prev.map(col => ({
+        ...col,
+        isEditing: false
+      }))
+    );
+    setEditingColumnName("");
+  };
+
   // Custom column functions
   const handleAddCustomColumn = () => {
     if (newColumnName.trim() === "") {
@@ -273,7 +467,8 @@ const Auth = () => {
     }
 
     // Check if column name already exists
-    if (customColumns.some(col => col.name.toLowerCase() === newColumnName.toLowerCase())) {
+    if (customColumns.some(col => col.name.toLowerCase() === newColumnName.toLowerCase()) ||
+        standardColumns.some(col => col.name.toLowerCase() === newColumnName.toLowerCase())) {
       toast({
         title: "Column already exists",
         description: "Please use a different name",
@@ -670,6 +865,23 @@ const Auth = () => {
     );
   };
 
+  // Render cell for a specific standard column
+  const renderStandardCell = (idea: ContentIdea, columnField: string) => {
+    if (columnField === "inspiration") {
+      return renderInspirationCell(idea);
+    }
+    
+    // For all other standard fields
+    return (
+      <Input 
+        value={idea[columnField as keyof typeof idea] as string} 
+        onChange={(e) => handleCellChange(idea.id, columnField as keyof Omit<ContentIdea, 'id' | 'inspirationSource' | 'customValues'>, e.target.value)}
+        className="border-0 focus:ring-0 h-6 p-0 text-sm bg-transparent"
+        placeholder={`Add ${columnField}...`}
+      />
+    );
+  };
+
   return (
     <Layout>
       <div className="space-y-6 fade-in">
@@ -756,60 +968,81 @@ const Auth = () => {
                     <table className="w-full border-collapse ml-10 mr-10">
                       <thead className="bg-gray-800 text-white">
                         <tr>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
-                            <div className="flex items-center gap-1">
-                              <Lightbulb className="h-3 w-3" />
-                              <span>Idea</span>
-                            </div>
-                          </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
-                            <div className="flex items-center gap-1">
-                              <Link className="h-3 w-3" />
-                              <span>Inspiration</span>
-                            </div>
-                          </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
-                            <div className="flex items-center gap-1">
-                              <AlignJustify className="h-3 w-3" />
-                              <span>Pillar</span>
-                            </div>
-                          </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
-                            <div className="flex items-center gap-1">
-                              <FileText className="h-3 w-3" />
-                              <span>Format</span>
-                            </div>
-                          </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
-                            <div className="flex items-center gap-1">
-                              <Target className="h-3 w-3" />
-                              <span>Goal</span>
-                            </div>
-                          </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
-                            <div className="flex items-center gap-1">
-                              <MessageSquare className="h-3 w-3" />
-                              <span>Hook</span>
-                            </div>
-                          </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
-                            <div className="flex items-center gap-1">
-                              <ArrowRightCircle className="h-3 w-3" />
-                              <span>Script</span>
-                            </div>
-                          </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
-                            <div className="flex items-center gap-1">
-                              <Text className="h-3 w-3" />
-                              <span>Caption</span>
-                            </div>
-                          </th>
+                          {/* Standard Columns - can be reordered and renamed */}
+                          {standardColumns.map(column => (
+                            <th 
+                              key={column.id}
+                              className={`px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700 cursor-move ${dragOverColumnId === column.id ? 'bg-blue-800' : ''}`}
+                              draggable
+                              onDragStart={(e) => handleColumnDragStart(e, column.id)}
+                              onDragEnd={handleColumnDragEnd}
+                              onDragOver={(e) => handleColumnDragOver(e, column.id)}
+                              onDragLeave={(e) => handleColumnDragLeave(e)}
+                              onDrop={(e) => handleColumnDrop(e, column.id)}
+                              title="Drag to reorder column"
+                            >
+                              {column.isEditing ? (
+                                <div className="flex items-center gap-1">
+                                  <Input
+                                    value={editingColumnName}
+                                    onChange={(e) => setEditingColumnName(e.target.value)}
+                                    className="h-6 text-xs px-2 py-1 bg-gray-600 border-gray-500 text-white"
+                                    autoFocus
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="xs"
+                                    className="h-5 w-5 p-0 text-green-300 hover:text-green-100"
+                                    onClick={() => saveColumnName(column.id)}
+                                    title="Save column name"
+                                  >
+                                    <Check className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="xs"
+                                    className="h-5 w-5 p-0 text-red-300 hover:text-red-100"
+                                    onClick={cancelEditingColumn}
+                                    title="Cancel"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-1">
+                                    {column.icon}
+                                    <span>{column.name}</span>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="xs"
+                                    className="h-5 w-5 p-0 text-gray-300 hover:text-white -mr-1 opacity-0 group-hover:opacity-100"
+                                    onClick={() => startEditingColumn(column.id)}
+                                    title="Edit column name"
+                                  >
+                                    <Edit3 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              )}
+                            </th>
+                          ))}
                           
                           {/* Custom Columns */}
                           {customColumns.map(column => (
                             <th 
                               key={column.id}
-                              className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700 bg-purple-900"
+                              className={`px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700 bg-purple-900 cursor-move ${dragOverColumnId === column.id ? 'bg-purple-800' : ''}`}
+                              draggable
+                              onDragStart={(e) => handleColumnDragStart(e, column.id)}
+                              onDragEnd={handleColumnDragEnd}
+                              onDragOver={(e) => handleColumnDragOver(e, column.id)}
+                              onDragLeave={(e) => handleColumnDragLeave(e)}
+                              onDrop={(e) => handleColumnDrop(e, column.id)}
+                              title="Drag to reorder column"
                             >
                               <div className="flex items-center justify-between">
                                 <span className="truncate max-w-[100px]">{column.name}</span>
@@ -917,65 +1150,15 @@ const Auth = () => {
                               }
                             }}
                           >
-                            <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200">
-                              <Input 
-                                value={idea.idea} 
-                                onChange={(e) => handleCellChange(idea.id, 'idea', e.target.value)}
-                                className="border-0 focus:ring-0 h-6 p-0 text-sm bg-transparent"
-                                placeholder="Add idea..."
-                              />
-                            </td>
-                            <td className="px-4 py-3 text-sm text-gray-700 min-w-[150px] border-r border-gray-200">
-                              {renderInspirationCell(idea)}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200">
-                              <Input 
-                                value={idea.pillar} 
-                                onChange={(e) => handleCellChange(idea.id, 'pillar', e.target.value)}
-                                className="border-0 focus:ring-0 h-6 p-0 text-sm bg-transparent"
-                                placeholder="Add pillar..."
-                              />
-                            </td>
-                            <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200">
-                              <Input 
-                                value={idea.format} 
-                                onChange={(e) => handleCellChange(idea.id, 'format', e.target.value)}
-                                className="border-0 focus:ring-0 h-6 p-0 text-sm bg-transparent"
-                                placeholder="Add format..."
-                              />
-                            </td>
-                            <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200">
-                              <Input 
-                                value={idea.goal} 
-                                onChange={(e) => handleCellChange(idea.id, 'goal', e.target.value)}
-                                className="border-0 focus:ring-0 h-6 p-0 text-sm bg-transparent"
-                                placeholder="Add goal..."
-                              />
-                            </td>
-                            <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200">
-                              <Input 
-                                value={idea.hook} 
-                                onChange={(e) => handleCellChange(idea.id, 'hook', e.target.value)}
-                                className="border-0 focus:ring-0 h-6 p-0 text-sm bg-transparent"
-                                placeholder="Add hook..."
-                              />
-                            </td>
-                            <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200">
-                              <Input 
-                                value={idea.script} 
-                                onChange={(e) => handleCellChange(idea.id, 'script', e.target.value)}
-                                className="border-0 focus:ring-0 h-6 p-0 text-sm bg-transparent"
-                                placeholder="Add script..."
-                              />
-                            </td>
-                            <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200">
-                              <Input 
-                                value={idea.caption} 
-                                onChange={(e) => handleCellChange(idea.id, 'caption', e.target.value)}
-                                className="border-0 focus:ring-0 h-6 p-0 text-sm bg-transparent"
-                                placeholder="Add caption..."
-                              />
-                            </td>
+                            {/* Render cells based on the order of standardColumns */}
+                            {standardColumns.map(column => (
+                              <td 
+                                key={`${idea.id}-${column.id}`}
+                                className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200"
+                              >
+                                {renderStandardCell(idea, column.field)}
+                              </td>
+                            ))}
                             
                             {/* Custom Column Values */}
                             {customColumns.map(column => (
@@ -999,7 +1182,7 @@ const Auth = () => {
                         ))}
                         {/* Add New Idea Row */}
                         <tr className="hover:bg-gray-50 bg-gray-50">
-                          <td colSpan={8 + customColumns.length + 1} className="px-4 py-3 text-center">
+                          <td colSpan={standardColumns.length + customColumns.length + 1} className="px-4 py-3 text-center">
                             <Button
                               variant="ghost"
                               className="text-gray-400 hover:text-primary"
