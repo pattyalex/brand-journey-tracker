@@ -395,8 +395,30 @@ const Auth = () => {
                   Organize your content ideas into categories and refine them for future content creation.
                 </p>
                 <div className="bg-white border border-gray-100 rounded-md overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full border-collapse">
+                  <div className="overflow-x-auto relative">
+                    {/* Trash icons positioned outside the table */}
+                    <div className="absolute left-0 top-0 bottom-0 w-10 flex flex-col pt-[53px] z-10">
+                      {contentIdeas.map((idea, index) => (
+                        <div 
+                          key={`delete-${idea.id}`} 
+                          className="h-[53px] flex items-center justify-center opacity-0 group-hover-[data-row-id='${idea.id}']:opacity-100 transition-opacity"
+                          data-delete-for={idea.id}
+                        >
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="xs"
+                            className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
+                            onClick={() => handleDeleteIdea(idea.id)}
+                            title="Delete idea"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <table className="w-full border-collapse ml-10">
                       <thead className="bg-gray-800 text-white">
                         <tr>
                           <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
@@ -451,26 +473,34 @@ const Auth = () => {
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-100">
                         {contentIdeas.map((idea) => (
-                          <tr key={idea.id} className="hover:bg-gray-50 group relative">
+                          <tr 
+                            key={idea.id} 
+                            className="hover:bg-gray-50" 
+                            data-row-id={idea.id}
+                            onMouseEnter={() => {
+                              // This is to handle showing the corresponding delete button
+                              const deleteButton = document.querySelector(`[data-delete-for="${idea.id}"]`);
+                              if (deleteButton) {
+                                deleteButton.classList.add('opacity-100');
+                                deleteButton.classList.remove('opacity-0');
+                              }
+                            }}
+                            onMouseLeave={() => {
+                              // Hide the delete button when mouse leaves
+                              const deleteButton = document.querySelector(`[data-delete-for="${idea.id}"]`);
+                              if (deleteButton) {
+                                deleteButton.classList.add('opacity-0');
+                                deleteButton.classList.remove('opacity-100');
+                              }
+                            }}
+                          >
                             <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200">
-                              <div className="flex items-center">
-                                <Input 
-                                  value={idea.idea} 
-                                  onChange={(e) => handleCellChange(idea.id, 'idea', e.target.value)}
-                                  className="border-0 focus:ring-0 h-6 p-0 text-sm bg-transparent"
-                                  placeholder="Add idea..."
-                                />
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="xs"
-                                  className="h-6 w-6 p-0 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity absolute left-0 ml-1"
-                                  onClick={() => handleDeleteIdea(idea.id)}
-                                  title="Delete idea"
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
-                              </div>
+                              <Input 
+                                value={idea.idea} 
+                                onChange={(e) => handleCellChange(idea.id, 'idea', e.target.value)}
+                                className="border-0 focus:ring-0 h-6 p-0 text-sm bg-transparent"
+                                placeholder="Add idea..."
+                              />
                             </td>
                             <td className="px-4 py-3 text-sm text-gray-700 min-w-[150px] border-r border-gray-200">
                               {renderInspirationCell(idea)}
