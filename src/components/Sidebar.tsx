@@ -1,5 +1,5 @@
 
-import { Home, FolderOpen, HandshakeIcon, FileText, Settings } from 'lucide-react';
+import { Home, FolderOpen, FileText, Settings } from 'lucide-react';
 import {
   Sidebar as SidebarContainer,
   SidebarContent,
@@ -14,7 +14,6 @@ import {
 const menuItems = [
   { title: 'Dashboard', icon: Home, url: '/' },
   { title: 'Projects', icon: FolderOpen, url: '/projects' },
-  { title: 'Partnerships', icon: HandshakeIcon, url: '/partnerships' },
   { title: 'Documents', icon: FileText, url: '/documents' },
   { title: 'Settings', icon: Settings, url: '/settings' },
 ];
