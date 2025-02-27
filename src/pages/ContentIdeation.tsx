@@ -5,8 +5,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Brain, Lightbulb, Palette } from "lucide-react";
 
+type TabType = "brain-dump" | "content-ideas" | "inspiration";
+
 const ContentIdeation = () => {
-  const [activeTab, useState] = useState("brain-dump");
+  const [activeTab, setActiveTab] = useState<TabType>("brain-dump");
 
   return (
     <Layout>
@@ -18,7 +20,7 @@ const ContentIdeation = () => {
           </p>
         </div>
 
-        <Tabs defaultValue="brain-dump" className="w-full">
+        <Tabs defaultValue="brain-dump" className="w-full" onValueChange={(value) => setActiveTab(value as TabType)}>
           <TabsList className="grid w-full md:w-auto grid-cols-3 mb-6">
             <TabsTrigger value="brain-dump" className="flex items-center gap-2">
               <Brain className="h-4 w-4" />
