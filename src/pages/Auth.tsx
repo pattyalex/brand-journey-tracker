@@ -3,9 +3,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Layout from "@/components/Layout";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Auth = () => {
+  const navigate = useNavigate();
+
+  const goToDashboard = () => {
+    navigate("/dashboard");
+  };
+
+  const goToContentIdeation = () => {
+    navigate("/content-ideation");
+  };
+
   return (
     <Layout>
       <div className="max-w-md mx-auto mt-20 fade-in">
@@ -30,14 +40,13 @@ const Auth = () => {
                 Sign up
               </a>
             </div>
-            <div className="pt-4 text-center">
-              <Link to="/dashboard" className="text-primary hover:underline">
+            <div className="pt-4 text-center space-x-4">
+              <Button variant="outline" onClick={goToDashboard}>
                 Go to Dashboard
-              </Link>
-              {" | "}
-              <Link to="/content-ideation" className="text-primary hover:underline">
+              </Button>
+              <Button variant="outline" onClick={goToContentIdeation}>
                 Content Ideation
-              </Link>
+              </Button>
             </div>
           </CardContent>
         </Card>
