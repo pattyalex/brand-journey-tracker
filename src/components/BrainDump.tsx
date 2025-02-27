@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -7,7 +7,13 @@ import {
   Edit3, 
   Trash2,
   Check,
-  X
+  X,
+  List,
+  Bold,
+  Italic,
+  Heading,
+  ListOrdered,
+  AlignLeft
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -22,6 +28,7 @@ interface BrainDumpPage {
 
 const BrainDump = () => {
   const { toast } = useToast();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [pages, setPages] = useState<BrainDumpPage[]>([
     {
       id: "1",
@@ -145,6 +152,120 @@ const BrainDump = () => {
       title: "Page renamed",
       description: "The page title has been updated",
     });
+  };
+
+  // Formatting functions
+  const insertBulletPoint = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const { selectionStart, selectionEnd, value } = textarea;
+    const before = value.substring(0, selectionStart);
+    const after = value.substring(selectionEnd);
+    
+    const newText = before + "• " + after;
+    handleContentChange(newText);
+    
+    // Set cursor position after the bullet
+    setTimeout(() => {
+      if (textarea) {
+        textarea.focus();
+        textarea.setSelectionRange(selectionStart + 2, selectionStart + 2);
+      }
+    }, 0);
+  };
+
+  const insertNumberedList = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const { selectionStart, selectionEnd, value } = textarea;
+    const before = value.substring(0, selectionStart);
+    const after = value.substring(selectionEnd);
+    
+    const newText = before + "1. " + after;
+    handleContentChange(newText);
+    
+    // Set cursor position after the number
+    setTimeout(() => {
+      if (textarea) {
+        textarea.focus();
+        textarea.setSelectionRange(selectionStart + 3, selectionStart + 3);
+      }
+    }, 0);
+  };
+
+  const insertHeading = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const { selectionStart, selectionEnd, value } = textarea;
+    const before = value.substring(0, selectionStart);
+    const after = value.substring(selectionEnd);
+    
+    const newText = before + "## " + after;
+    handleContentChange(newText);
+    
+    // Set cursor position after the heading marker
+    setTimeout(() => {
+      if (textarea) {
+        textarea.focus();
+        textarea.setSelectionRange(selectionStart + 3, selectionStart + 3);
+      }
+    }, 0);
+  };
+
+  const applyFormatting = (format: 'bold' | 'italic') => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const { selectionStart, selectionEnd, value } = textarea;
+    const selectedText = value.substring(selectionStart, selectionEnd);
+    
+    if (selectedText) {
+      let newText;
+      let newCursorPos;
+      
+      if (format === 'bold') {
+        newText = value.substring(0, selectionStart) + "**" + selectedText + "**" + value.substring(selectionEnd);
+        newCursorPos = selectionEnd + 4; // 4 for the two asterisks at start and end
+      } else { // italic
+        newText = value.substring(0, selectionStart) + "_" + selectedText + "_" + value.substring(selectionEnd);
+        newCursorPos = selectionEnd + 2; // 2 for the underscores at start and end
+      }
+      
+      handleContentChange(newText);
+      
+      // Set cursor position after the formatted text
+      setTimeout(() => {
+        if (textarea) {
+          textarea.focus();
+          textarea.setSelectionRange(newCursorPos, newCursorPos);
+        }
+      }, 0);
+    } else {
+      // If no text is selected, insert placeholders
+      let beforeText, afterText;
+      
+      if (format === 'bold') {
+        beforeText = "**";
+        afterText = "**";
+      } else { // italic
+        beforeText = "_";
+        afterText = "_";
+      }
+      
+      const newText = value.substring(0, selectionStart) + beforeText + afterText + value.substring(selectionEnd);
+      handleContentChange(newText);
+      
+      // Place cursor between the markers
+      setTimeout(() => {
+        if (textarea) {
+          textarea.focus();
+          textarea.setSelectionRange(selectionStart + beforeText.length, selectionStart + beforeText.length);
+        }
+      }, 0);
+    }
   };
 
   return (
@@ -301,9 +422,74 @@ const BrainDump = () => {
         ))}
       </div>
       
+      {/* Formatting Toolbar */}
+      <div className="flex items-center gap-1 p-2 bg-gray-50 rounded-md border mb-2">
+        <Button 
+          variant="ghost" 
+          size="sm"
+          className="text-gray-600 hover:text-gray-900 h-8"
+          onClick={() => applyFormatting('bold')}
+          title="Bold"
+        >
+          <Bold className="h-4 w-4" />
+        </Button>
+        <Button 
+          variant="ghost" 
+          size="sm"
+          className="text-gray-600 hover:text-gray-900 h-8"
+          onClick={() => applyFormatting('italic')}
+          title="Italic"
+        >
+          <Italic className="h-4 w-4" />
+        </Button>
+        <div className="w-px h-6 bg-gray-300 mx-1"></div>
+        <Button 
+          variant="ghost" 
+          size="sm"
+          className="text-gray-600 hover:text-gray-900 h-8"
+          onClick={insertHeading}
+          title="Heading"
+        >
+          <Heading className="h-4 w-4" />
+        </Button>
+        <div className="w-px h-6 bg-gray-300 mx-1"></div>
+        <Button 
+          variant="ghost" 
+          size="sm"
+          className="text-gray-600 hover:text-gray-900 h-8"
+          onClick={insertBulletPoint}
+          title="Bullet List"
+        >
+          <List className="h-4 w-4" />
+        </Button>
+        <Button 
+          variant="ghost" 
+          size="sm"
+          className="text-gray-600 hover:text-gray-900 h-8"
+          onClick={insertNumberedList}
+          title="Numbered List"
+        >
+          <ListOrdered className="h-4 w-4" />
+        </Button>
+        <div className="w-px h-6 bg-gray-300 mx-1"></div>
+        <Button 
+          variant="ghost" 
+          size="sm"
+          className="text-gray-600 hover:text-gray-900 h-8"
+          title="Align Left"
+        >
+          <AlignLeft className="h-4 w-4" />
+        </Button>
+        <div className="flex-1"></div>
+        <div className="text-xs text-gray-500">
+          Simple formatting tools
+        </div>
+      </div>
+      
       <Card>
         <CardContent className="p-6">
           <Textarea
+            ref={textareaRef}
             placeholder="Write your thoughts here..."
             className="min-h-[400px] resize-none border-0 focus-visible:ring-0"
             value={activePage.content}
