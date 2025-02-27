@@ -69,6 +69,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   const handleCardClick = (path: string) => {
+    console.log("Navigating to:", path);
     navigate(path);
   };
 

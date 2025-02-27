@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Layout from "@/components/Layout";
+import { Link } from "react-router-dom";
 
 const Auth = () => {
   return (
@@ -28,6 +29,15 @@ const Auth = () => {
               <a href="/signup" className="text-primary hover:underline">
                 Sign up
               </a>
+            </div>
+            <div className="pt-4 text-center">
+              <Link to="/dashboard" className="text-primary hover:underline">
+                Go to Dashboard
+              </Link>
+              {" | "}
+              <Link to="/content-ideation" className="text-primary hover:underline">
+                Content Ideation
+              </Link>
             </div>
           </CardContent>
         </Card>
