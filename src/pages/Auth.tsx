@@ -3,7 +3,7 @@ import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Brain, Lightbulb, Palette, AlignJustify, FileText, Target, MessageSquare, Text, ArrowRightCircle } from "lucide-react";
+import { Brain, Lightbulb, Palette, AlignJustify, FileText, Target, MessageSquare, Text, ArrowRightCircle, Link } from "lucide-react";
 
 type TabType = "brain-dump" | "content-ideas" | "inspiration";
 
@@ -102,6 +102,12 @@ const Auth = () => {
                           </th>
                           <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
                             <div className="flex items-center gap-1">
+                              <Link className="h-4 w-4" />
+                              <span>Inspiration</span>
+                            </div>
+                          </th>
+                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
+                            <div className="flex items-center gap-1">
                               <Text className="h-4 w-4" />
                               <span>Caption</span>
                             </div>
@@ -116,6 +122,15 @@ const Auth = () => {
                           <td className="px-4 py-3 text-sm text-gray-700">Likes</td>
                           <td className="px-4 py-3 text-sm text-gray-700">3 outfit formulas for spring</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Formula 1: Pastel blouse + wide leg jeans + ballet flats. Formula 2: Floral dress + denim jacket + white sneakers. Formula 3: Linen shirt + cropped pants + espadrilles.</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">
+                            <a href="https://pinterest.com/search/pins/?q=spring%20outfits" 
+                               target="_blank" 
+                               rel="noopener noreferrer" 
+                               className="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1">
+                              <Link className="h-3 w-3" />
+                              <span>Pinterest</span>
+                            </a>
+                          </td>
                           <td className="px-4 py-3 text-sm text-gray-700">If you don't know what to wear this spring, here are some outfit ideas ✨</td>
                         </tr>
                         <tr className="hover:bg-gray-50">
@@ -126,8 +141,10 @@ const Auth = () => {
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
+                          <td className="px-4 py-3 text-sm text-gray-700"></td>
                         </tr>
                         <tr className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
