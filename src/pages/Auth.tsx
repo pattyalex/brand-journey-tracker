@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Brain, Lightbulb, Palette, AlignJustify, FileText, Target, MessageSquare, Text, ArrowRightCircle, Link, Upload, Check, ImageIcon, Globe, Plus, Trash2, GripVertical, FileEdit } from "lucide-react";
+import { Brain, Lightbulb, Palette, AlignJustify, FileText, Target, MessageSquare, Text, ArrowRightCircle, Link, Upload, Check, ImageIcon, Globe, Plus, Trash2, GripVertical, FileEdit, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -17,6 +17,11 @@ interface InspirationSource {
   label?: string;
 }
 
+interface CustomColumn {
+  id: string;
+  name: string;
+}
+
 interface ContentIdea {
   id: string;
   idea: string;
@@ -27,6 +32,7 @@ interface ContentIdea {
   hook: string;
   script: string;
   caption: string;
+  customValues: Record<string, string>;
 }
 
 const Auth = () => {
@@ -46,7 +52,8 @@ const Auth = () => {
       goal: "Likes",
       hook: "3 outfit formulas for spring",
       script: "Formula 1: Pastel blouse + wide leg jeans + ballet flats. Formula 2: Floral dress + denim jacket + white sneakers. Formula 3: Linen shirt + cropped pants + espadrilles.",
-      caption: "If you don't know what to wear this spring, here are some outfit ideas ✨"
+      caption: "If you don't know what to wear this spring, here are some outfit ideas ✨",
+      customValues: {}
     },
     {
       id: "2",
@@ -56,7 +63,8 @@ const Auth = () => {
       goal: "",
       hook: "",
       script: "",
-      caption: ""
+      caption: "",
+      customValues: {}
     },
     {
       id: "3",
@@ -66,7 +74,8 @@ const Auth = () => {
       goal: "",
       hook: "",
       script: "",
-      caption: ""
+      caption: "",
+      customValues: {}
     }
   ]);
   const [isAddingLink, setIsAddingLink] = useState(false);
@@ -77,6 +86,11 @@ const Auth = () => {
   const [inspirationText, setInspirationText] = useState("");
   const [draggedRowId, setDraggedRowId] = useState<string | null>(null);
   const [dragOverRowId, setDragOverRowId] = useState<string | null>(null);
+  
+  // Custom columns state
+  const [customColumns, setCustomColumns] = useState<CustomColumn[]>([]);
+  const [isAddingColumn, setIsAddingColumn] = useState(false);
+  const [newColumnName, setNewColumnName] = useState("");
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>, ideaId: string) => {
     const file = event.target.files?.[0];
@@ -154,7 +168,8 @@ const Auth = () => {
       goal: "",
       hook: "",
       script: "",
-      caption: ""
+      caption: "",
+      customValues: {}
     };
     setContentIdeas(prev => [...prev, newIdea]);
     toast({
@@ -181,7 +196,7 @@ const Auth = () => {
     });
   };
 
-  const handleCellChange = (ideaId: string, field: keyof ContentIdea, value: string) => {
+  const handleCellChange = (ideaId: string, field: keyof Omit<ContentIdea, 'id' | 'inspirationSource' | 'customValues'>, value: string) => {
     setContentIdeas(prev => prev.map(idea => {
       if (idea.id === ideaId) {
         return { ...idea, [field]: value };
@@ -244,6 +259,76 @@ const Auth = () => {
     
     setDraggedRowId(null);
     setDragOverRowId(null);
+  };
+
+  // Custom column functions
+  const handleAddCustomColumn = () => {
+    if (newColumnName.trim() === "") {
+      toast({
+        title: "Column name required",
+        description: "Please enter a name for your new column",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check if column name already exists
+    if (customColumns.some(col => col.name.toLowerCase() === newColumnName.toLowerCase())) {
+      toast({
+        title: "Column already exists",
+        description: "Please use a different name",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const newColumn: CustomColumn = {
+      id: Date.now().toString(),
+      name: newColumnName
+    };
+
+    setCustomColumns([...customColumns, newColumn]);
+    setNewColumnName("");
+    setIsAddingColumn(false);
+    
+    toast({
+      title: "Column added",
+      description: `"${newColumnName}" column has been added to your table`
+    });
+  };
+
+  const handleRemoveCustomColumn = (columnId: string) => {
+    setCustomColumns(customColumns.filter(col => col.id !== columnId));
+    
+    // Remove the column data from all content ideas
+    setContentIdeas(contentIdeas.map(idea => {
+      const updatedCustomValues = { ...idea.customValues };
+      delete updatedCustomValues[columnId];
+      return {
+        ...idea,
+        customValues: updatedCustomValues
+      };
+    }));
+    
+    toast({
+      title: "Column removed",
+      description: "The custom column has been removed"
+    });
+  };
+
+  const handleUpdateCustomValue = (ideaId: string, columnId: string, value: string) => {
+    setContentIdeas(prev => prev.map(idea => {
+      if (idea.id === ideaId) {
+        return {
+          ...idea,
+          customValues: {
+            ...idea.customValues,
+            [columnId]: value
+          }
+        };
+      }
+      return idea;
+    }));
   };
 
   const renderInspirationCell = (idea: ContentIdea) => {
@@ -655,7 +740,7 @@ const Auth = () => {
                       {contentIdeas.map((idea) => (
                         <div 
                           key={`drag-${idea.id}`} 
-                          className="h-[53px] flex items-center justify-center opacity-0 group-hover-[data-row-id='${idea.id}']:opacity-100 transition-opacity"
+                          className="h-[53px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                           data-drag-for={idea.id}
                         >
                           <div
@@ -719,13 +804,85 @@ const Auth = () => {
                               <span>Caption</span>
                             </div>
                           </th>
+                          
+                          {/* Custom Columns */}
+                          {customColumns.map(column => (
+                            <th 
+                              key={column.id}
+                              className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700 bg-purple-900"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="truncate max-w-[100px]">{column.name}</span>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="xs"
+                                  className="h-5 w-5 p-0 text-gray-300 hover:text-red-300 -mr-1"
+                                  onClick={() => handleRemoveCustomColumn(column.id)}
+                                  title={`Remove ${column.name} column`}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </th>
+                          ))}
+                          
+                          {/* Add Custom Column */}
+                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider min-w-[140px] bg-gray-700">
+                            {isAddingColumn ? (
+                              <div className="flex items-center gap-1">
+                                <Input
+                                  value={newColumnName}
+                                  onChange={(e) => setNewColumnName(e.target.value)}
+                                  placeholder="Column name"
+                                  className="h-6 text-xs px-2 py-1 bg-gray-600 border-gray-500 text-white"
+                                  autoFocus
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="xs"
+                                  className="h-5 w-5 p-0 text-green-300 hover:text-green-100"
+                                  onClick={handleAddCustomColumn}
+                                  title="Add column"
+                                >
+                                  <Check className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="xs"
+                                  className="h-5 w-5 p-0 text-red-300 hover:text-red-100"
+                                  onClick={() => {
+                                    setIsAddingColumn(false);
+                                    setNewColumnName("");
+                                  }}
+                                  title="Cancel"
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="xs"
+                                className="text-gray-300 hover:text-white h-6"
+                                onClick={() => setIsAddingColumn(true)}
+                                title="Add custom column"
+                              >
+                                <Plus className="h-3 w-3 mr-1" />
+                                <span>Add Column</span>
+                              </Button>
+                            )}
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-100">
                         {contentIdeas.map((idea) => (
                           <tr 
                             key={idea.id} 
-                            className={`hover:bg-gray-50 ${dragOverRowId === idea.id ? 'bg-blue-50' : ''}`}
+                            className={`hover:bg-gray-50 group ${dragOverRowId === idea.id ? 'bg-blue-50' : ''}`}
                             data-row-id={idea.id}
                             draggable
                             onDragStart={(e) => handleDragStart(e, idea.id)}
@@ -819,11 +976,30 @@ const Auth = () => {
                                 placeholder="Add caption..."
                               />
                             </td>
+                            
+                            {/* Custom Column Values */}
+                            {customColumns.map(column => (
+                              <td 
+                                key={`${idea.id}-${column.id}`} 
+                                className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200 bg-purple-50"
+                              >
+                                <Input 
+                                  value={idea.customValues[column.id] || ""}
+                                  onChange={(e) => handleUpdateCustomValue(idea.id, column.id, e.target.value)}
+                                  className="border-0 focus:ring-0 h-6 p-0 text-sm bg-transparent"
+                                  placeholder={`Add ${column.name.toLowerCase()}...`}
+                                />
+                              </td>
+                            ))}
+                            
+                            {/* Empty cell for the "Add Column" header */}
+                            <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200 bg-gray-50">
+                            </td>
                           </tr>
                         ))}
                         {/* Add New Idea Row */}
                         <tr className="hover:bg-gray-50 bg-gray-50">
-                          <td colSpan={8} className="px-4 py-3 text-center">
+                          <td colSpan={8 + customColumns.length + 1} className="px-4 py-3 text-center">
                             <Button
                               variant="ghost"
                               className="text-gray-400 hover:text-primary"
