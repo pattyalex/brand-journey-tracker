@@ -2,15 +2,25 @@
 import Layout from "@/components/Layout";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Brain, Lightbulb, Palette } from "lucide-react";
+import { Lightbulb, Palette } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import BackButton from "@/components/BackButton";
+import { useToast } from "@/components/ui/use-toast";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const navigateTo = (route: string) => {
     navigate(route);
+  };
+
+  const handleUnavailableFeature = () => {
+    toast({
+      title: "Feature unavailable",
+      description: "This feature is not available yet.",
+      variant: "destructive",
+    });
   };
 
   return (
@@ -22,16 +32,7 @@ const Auth = () => {
         <h2 className="text-2xl font-bold mb-6 text-center">Content Creation Tools</h2>
         <Card>
           <CardContent className="p-6">
-            <div className="space-y-4">
-              <Button 
-                variant="outline" 
-                className="w-full justify-start text-lg py-6"
-                onClick={() => navigateTo("/content-ideation")}
-              >
-                <Brain className="mr-3 h-5 w-5" />
-                Brain Dump
-              </Button>
-              
+            <div className="space-y-4">              
               <Button 
                 variant="outline" 
                 className="w-full justify-start text-lg py-6"
@@ -44,7 +45,7 @@ const Auth = () => {
               <Button 
                 variant="outline" 
                 className="w-full justify-start text-lg py-6"
-                onClick={() => navigateTo("/content-ideation")}
+                onClick={handleUnavailableFeature}
               >
                 <Palette className="mr-3 h-5 w-5" />
                 Inspiration
