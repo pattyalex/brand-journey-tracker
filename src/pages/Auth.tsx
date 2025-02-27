@@ -3,7 +3,7 @@ import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Brain, Lightbulb, Palette, AlignJustify, FileText, Target, MessageSquare, Text, ArrowRightCircle, Link, Upload, Check, ImageIcon, Globe } from "lucide-react";
+import { Brain, Lightbulb, Palette, AlignJustify, FileText, Target, MessageSquare, Text, ArrowRightCircle, Link, Upload, Check, ImageIcon, Globe, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -143,43 +143,43 @@ const Auth = () => {
                     <table className="w-full border-collapse">
                       <thead className="bg-gray-800 text-white">
                         <tr>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
                             <div className="flex items-center gap-1">
                               <Lightbulb className="h-3 w-3" />
                               <span>Idea</span>
                             </div>
                           </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
                             <div className="flex items-center gap-1">
                               <Link className="h-3 w-3" />
                               <span>Inspiration</span>
                             </div>
                           </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
                             <div className="flex items-center gap-1">
                               <AlignJustify className="h-3 w-3" />
                               <span>Pillar</span>
                             </div>
                           </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
                             <div className="flex items-center gap-1">
                               <FileText className="h-3 w-3" />
                               <span>Format</span>
                             </div>
                           </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
                             <div className="flex items-center gap-1">
                               <Target className="h-3 w-3" />
                               <span>Goal</span>
                             </div>
                           </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
                             <div className="flex items-center gap-1">
                               <MessageSquare className="h-3 w-3" />
                               <span>Hook</span>
                             </div>
                           </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
                             <div className="flex items-center gap-1">
                               <ArrowRightCircle className="h-3 w-3" />
                               <span>Script</span>
@@ -195,8 +195,8 @@ const Auth = () => {
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-100">
                         <tr className="hover:bg-gray-50">
-                          <td className="px-4 py-3 text-sm text-gray-700">Spring outfits</td>
-                          <td className="px-4 py-3 text-sm text-gray-700 min-w-[150px]">
+                          <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200">Spring outfits</td>
+                          <td className="px-4 py-3 text-sm text-gray-700 min-w-[150px] border-r border-gray-200">
                             <div className="flex flex-col space-y-2">
                               {renderInspirationCell(inspirationSource)}
                               
@@ -270,16 +270,16 @@ const Auth = () => {
                               )}
                             </div>
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-700">Fashion</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">Text On Video</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">Likes</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">3 outfit formulas for spring</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">Formula 1: Pastel blouse + wide leg jeans + ballet flats. Formula 2: Floral dress + denim jacket + white sneakers. Formula 3: Linen shirt + cropped pants + espadrilles.</td>
+                          <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200">Fashion</td>
+                          <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200">Text On Video</td>
+                          <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200">Likes</td>
+                          <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200">3 outfit formulas for spring</td>
+                          <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200">Formula 1: Pastel blouse + wide leg jeans + ballet flats. Formula 2: Floral dress + denim jacket + white sneakers. Formula 3: Linen shirt + cropped pants + espadrilles.</td>
                           <td className="px-4 py-3 text-sm text-gray-700">If you don't know what to wear this spring, here are some outfit ideas ✨</td>
                         </tr>
                         <tr className="hover:bg-gray-50">
-                          <td className="px-4 py-3 text-sm text-gray-700"></td>
-                          <td className="px-4 py-3 text-sm text-gray-700 min-w-[150px]">
+                          <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200"></td>
+                          <td className="px-4 py-3 text-sm text-gray-700 min-w-[150px] border-r border-gray-200">
                             <div className="flex gap-1">
                               <Button
                                 type="button"
@@ -311,16 +311,16 @@ const Auth = () => {
                               </label>
                             </div>
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-700"></td>
-                          <td className="px-4 py-3 text-sm text-gray-700"></td>
-                          <td className="px-4 py-3 text-sm text-gray-700"></td>
-                          <td className="px-4 py-3 text-sm text-gray-700"></td>
-                          <td className="px-4 py-3 text-sm text-gray-700"></td>
+                          <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200"></td>
+                          <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200"></td>
+                          <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200"></td>
+                          <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200"></td>
+                          <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                         </tr>
                         <tr className="hover:bg-gray-50">
-                          <td className="px-4 py-3 text-sm text-gray-700"></td>
-                          <td className="px-4 py-3 text-sm text-gray-700 min-w-[150px]">
+                          <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200"></td>
+                          <td className="px-4 py-3 text-sm text-gray-700 min-w-[150px] border-r border-gray-200">
                             <div className="flex gap-1">
                               <Button
                                 type="button"
@@ -352,12 +352,25 @@ const Auth = () => {
                               </label>
                             </div>
                           </td>
+                          <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200"></td>
+                          <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200"></td>
+                          <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200"></td>
+                          <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200"></td>
+                          <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
-                          <td className="px-4 py-3 text-sm text-gray-700"></td>
-                          <td className="px-4 py-3 text-sm text-gray-700"></td>
-                          <td className="px-4 py-3 text-sm text-gray-700"></td>
-                          <td className="px-4 py-3 text-sm text-gray-700"></td>
-                          <td className="px-4 py-3 text-sm text-gray-700"></td>
+                        </tr>
+                        {/* Add New Idea Row */}
+                        <tr className="hover:bg-gray-50 bg-gray-50">
+                          <td colSpan={8} className="px-4 py-3 text-center">
+                            <Button
+                              variant="ghost"
+                              className="text-gray-400 hover:text-primary"
+                              title="Add New Idea"
+                            >
+                              <Plus className="h-4 w-4 mr-1" />
+                              <span className="text-sm">Add New Idea</span>
+                            </Button>
+                          </td>
                         </tr>
                       </tbody>
                     </table>
