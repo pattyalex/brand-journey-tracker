@@ -2,10 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  Brain, 
-  PenTool, 
   Calendar, 
   Plus, 
   Edit3, 
@@ -35,7 +32,6 @@ const BrainDump = () => {
   const [activePage, setActivePage] = useState<BrainDumpPage>(pages[0]);
   const [isCreatingPage, setIsCreatingPage] = useState(false);
   const [newPageTitle, setNewPageTitle] = useState('');
-  const [activeTab, setActiveTab] = useState<'writing' | 'drawing'>('writing');
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {
@@ -179,44 +175,13 @@ const BrainDump = () => {
       </div>
       
       <Card>
-        <CardContent className="p-0">
-          <Tabs 
-            defaultValue="writing" 
-            value={activeTab}
-            onValueChange={(value) => setActiveTab(value as 'writing' | 'drawing')}
-            className="w-full"
-          >
-            <TabsList className="grid w-full grid-cols-2 rounded-none border-b">
-              <TabsTrigger value="writing" className="flex items-center gap-2 rounded-none">
-                <Edit3 className="h-4 w-4" />
-                <span>Write</span>
-              </TabsTrigger>
-              <TabsTrigger value="drawing" className="flex items-center gap-2 rounded-none">
-                <PenTool className="h-4 w-4" />
-                <span>Draw</span>
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="writing" className="p-6 m-0">
-              <Textarea
-                placeholder="Write your thoughts here..."
-                className="min-h-[400px] resize-none border-0 focus-visible:ring-0"
-                value={activePage.content}
-                onChange={(e) => handleContentChange(e.target.value)}
-              />
-            </TabsContent>
-            
-            <TabsContent value="drawing" className="p-6 m-0">
-              <div className="min-h-[400px] flex items-center justify-center border border-dashed border-gray-300 rounded-md">
-                <div className="text-center">
-                  <PenTool className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                  <p className="text-muted-foreground">
-                    Drawing feature will be available soon
-                  </p>
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
+        <CardContent className="p-6">
+          <Textarea
+            placeholder="Write your thoughts here..."
+            className="min-h-[400px] resize-none border-0 focus-visible:ring-0"
+            value={activePage.content}
+            onChange={(e) => handleContentChange(e.target.value)}
+          />
         </CardContent>
       </Card>
     </div>
