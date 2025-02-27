@@ -3,7 +3,6 @@ import Layout from "@/components/Layout";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { PenLine, ListTodo, Calendar, TrendingUp, Handshake, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/components/ui/use-toast";
 
 const services = [
   {
@@ -39,19 +38,6 @@ const services = [
 
 const GetStarted = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const handleCardClick = (index: number) => {
-    if (index === 1) { // Content Ideation And Planning
-      toast({
-        title: "Feature unavailable",
-        description: "This feature is not available yet.",
-        variant: "destructive",
-      });
-    } else {
-      navigate("/auth");
-    }
-  };
 
   return (
     <Layout>
@@ -65,7 +51,7 @@ const GetStarted = () => {
           {services.map((service, index) => (
             <Card 
               key={index}
-              onClick={() => handleCardClick(index)}
+              onClick={() => navigate("/auth")}
               className="hover:shadow-lg transition-all duration-300 cursor-pointer hover:scale-105 bg-gray-100"
             >
               <CardHeader className="space-y-4">

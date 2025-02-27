@@ -1,54 +1,35 @@
 
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Lightbulb, Palette } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import BackButton from "@/components/BackButton";
-import { useToast } from "@/components/ui/use-toast";
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
 
-  const navigateTo = (route: string) => {
-    navigate(route);
+  const goToDashboard = () => {
+    navigate("/dashboard");
   };
 
-  const handleUnavailableFeature = () => {
-    toast({
-      title: "Feature unavailable",
-      description: "This feature is not available yet.",
-      variant: "destructive",
-    });
+  const goToContentIdeation = () => {
+    navigate("/content-ideation");
   };
 
   return (
     <Layout>
-      <div className="fade-in max-w-md mx-auto mt-12">
-        <div className="mb-4">
-          <BackButton />
-        </div>
-        <h2 className="text-2xl font-bold mb-6 text-center">Content Creation Tools</h2>
+      <div className="max-w-md mx-auto mt-20 fade-in">
         <Card>
-          <CardContent className="p-6">
-            <div className="space-y-4">              
-              <Button 
-                variant="outline" 
-                className="w-full justify-start text-lg py-6"
-                onClick={handleUnavailableFeature}
-              >
-                <Lightbulb className="mr-3 h-5 w-5" />
-                Content Ideas
+          <CardHeader>
+            <CardTitle>Welcome to HeyMegan</CardTitle>
+            <CardDescription>Choose where you want to go</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex flex-col space-y-4">
+              <Button className="w-full" onClick={goToDashboard}>
+                Go to Dashboard
               </Button>
-              
-              <Button 
-                variant="outline" 
-                className="w-full justify-start text-lg py-6"
-                onClick={handleUnavailableFeature}
-              >
-                <Palette className="mr-3 h-5 w-5" />
-                Inspiration
+              <Button variant="outline" onClick={goToContentIdeation}>
+                Content Ideation
               </Button>
             </div>
           </CardContent>
