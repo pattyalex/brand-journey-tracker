@@ -268,6 +268,14 @@ const BrainDump = () => {
     }
   };
 
+  const handleAlignLeft = () => {
+    // For this simple example, we'll just add a demo notification
+    toast({
+      title: "Align Left",
+      description: "Text alignment applied",
+    });
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -476,6 +484,7 @@ const BrainDump = () => {
           variant="ghost" 
           size="sm"
           className="text-gray-600 hover:text-gray-900 h-8"
+          onClick={handleAlignLeft}
           title="Align Left"
         >
           <AlignLeft className="h-4 w-4" />

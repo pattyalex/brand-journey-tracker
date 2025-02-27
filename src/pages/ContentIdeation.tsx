@@ -4,6 +4,7 @@ import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Brain, Lightbulb, Palette } from "lucide-react";
+import BrainDump from "@/components/BrainDump";
 
 type TabType = "brain-dump" | "content-ideas" | "inspiration";
 
@@ -37,19 +38,7 @@ const ContentIdeation = () => {
           </TabsList>
 
           <TabsContent value="brain-dump" className="space-y-4">
-            <Card>
-              <CardContent className="pt-6">
-                <h2 className="text-2xl font-semibold mb-4">Brain Dump</h2>
-                <p className="text-muted-foreground mb-6">
-                  Quickly jot down all your thoughts and ideas without worrying about organization yet.
-                </p>
-                <div className="bg-gray-50 border border-gray-100 rounded-md p-8 min-h-[300px]">
-                  <p className="text-center text-muted-foreground">
-                    Brain dump content will go here
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <BrainDump />
           </TabsContent>
 
           <TabsContent value="content-ideas" className="space-y-4">
