@@ -7,6 +7,7 @@ import { Brain, Lightbulb, Palette, AlignJustify, FileText, Target, MessageSquar
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import BrainDump from "@/components/BrainDump";
 
 type TabType = "brain-dump" | "content-ideas" | "inspiration";
 
@@ -613,15 +614,7 @@ const Auth = () => {
           <TabsContent value="brain-dump" className="space-y-4">
             <Card>
               <CardContent className="pt-6">
-                <h2 className="text-2xl font-semibold mb-4">Brain Dump</h2>
-                <p className="text-muted-foreground mb-6">
-                  Quickly jot down all your thoughts and ideas without worrying about organization yet.
-                </p>
-                <div className="bg-gray-50 border border-gray-100 rounded-md p-8 min-h-[300px]">
-                  <p className="text-center text-muted-foreground">
-                    Brain dump content will go here
-                  </p>
-                </div>
+                <BrainDump />
               </CardContent>
             </Card>
           </TabsContent>
