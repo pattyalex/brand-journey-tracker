@@ -3,7 +3,7 @@ import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Brain, Lightbulb, Palette, Calendar, Clock, AlignJustify, FileText, Target, MessageSquare, Text, ArrowRightCircle } from "lucide-react";
+import { Brain, Lightbulb, Palette, AlignJustify, FileText, Target, MessageSquare, Text, ArrowRightCircle } from "lucide-react";
 
 type TabType = "brain-dump" | "content-ideas" | "inspiration";
 
@@ -66,18 +66,6 @@ const Auth = () => {
                         <tr>
                           <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
                             <div className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              <span>Post Date</span>
-                            </div>
-                          </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-4 w-4" />
-                              <span>Time</span>
-                            </div>
-                          </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
-                            <div className="flex items-center gap-1">
                               <AlignJustify className="h-4 w-4" />
                               <span>Pillar</span>
                             </div>
@@ -122,8 +110,6 @@ const Auth = () => {
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-100">
                         <tr className="hover:bg-gray-50">
-                          <td className="px-4 py-3 text-sm text-gray-700">Mon, Nov 4, 2024</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">8:00 AM</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Social Proof</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Text Only</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Likes</td>
@@ -140,12 +126,8 @@ const Auth = () => {
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
-                          <td className="px-4 py-3 text-sm text-gray-700"></td>
-                          <td className="px-4 py-3 text-sm text-gray-700"></td>
                         </tr>
                         <tr className="hover:bg-gray-50">
-                          <td className="px-4 py-3 text-sm text-gray-700"></td>
-                          <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
