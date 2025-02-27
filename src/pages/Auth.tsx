@@ -1,9 +1,9 @@
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Brain, Lightbulb, Palette, AlignJustify, FileText, Target, MessageSquare, Text, ArrowRightCircle, Link, Upload, Check, ImageIcon, Globe, Plus, Trash2 } from "lucide-react";
+import { Brain, Lightbulb, Palette, AlignJustify, FileText, Target, MessageSquare, Text, ArrowRightCircle, Link, Upload, Check, ImageIcon, Globe, Plus, Trash2, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -72,6 +72,8 @@ const Auth = () => {
   const [activeCellId, setActiveCellId] = useState<string | null>(null);
   const [linkUrl, setLinkUrl] = useState("");
   const [linkLabel, setLinkLabel] = useState("");
+  const [draggedRowId, setDraggedRowId] = useState<string | null>(null);
+  const [dragOverRowId, setDragOverRowId] = useState<string | null>(null);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>, ideaId: string) => {
     const file = event.target.files?.[0];
@@ -162,6 +164,62 @@ const Auth = () => {
       }
       return idea;
     }));
+  };
+
+  // Drag and drop functions
+  const handleDragStart = (e: React.DragEvent<HTMLTableRowElement>, ideaId: string) => {
+    setDraggedRowId(ideaId);
+    e.dataTransfer.effectAllowed = 'move';
+    // Add some transparency to the dragged element
+    if (e.currentTarget) {
+      setTimeout(() => {
+        e.currentTarget.style.opacity = '0.5';
+      }, 0);
+    }
+  };
+
+  const handleDragEnd = (e: React.DragEvent<HTMLTableRowElement>) => {
+    setDraggedRowId(null);
+    setDragOverRowId(null);
+    // Reset opacity
+    if (e.currentTarget) {
+      e.currentTarget.style.opacity = '1';
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLTableRowElement>, ideaId: string) => {
+    e.preventDefault();
+    if (draggedRowId === ideaId) return;
+    setDragOverRowId(ideaId);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverRowId(null);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLTableRowElement>, targetId: string) => {
+    e.preventDefault();
+    if (!draggedRowId || draggedRowId === targetId) return;
+
+    const draggedIndex = contentIdeas.findIndex(idea => idea.id === draggedRowId);
+    const targetIndex = contentIdeas.findIndex(idea => idea.id === targetId);
+    
+    if (draggedIndex !== -1 && targetIndex !== -1) {
+      // Create a new array with the reordered elements
+      const newIdeas = [...contentIdeas];
+      const draggedItem = newIdeas[draggedIndex];
+      newIdeas.splice(draggedIndex, 1);
+      newIdeas.splice(targetIndex, 0, draggedItem);
+      
+      setContentIdeas(newIdeas);
+      toast({
+        title: "Row reordered",
+        description: "The idea has been moved to a new position",
+      });
+    }
+    
+    setDraggedRowId(null);
+    setDragOverRowId(null);
   };
 
   const renderInspirationCell = (idea: ContentIdea) => {
@@ -398,7 +456,7 @@ const Auth = () => {
                   <div className="overflow-x-auto relative">
                     {/* Trash icons positioned outside the table */}
                     <div className="absolute left-0 top-0 bottom-0 w-10 flex flex-col pt-[53px] z-10">
-                      {contentIdeas.map((idea, index) => (
+                      {contentIdeas.map((idea) => (
                         <div 
                           key={`delete-${idea.id}`} 
                           className="h-[53px] flex items-center justify-center opacity-0 group-hover-[data-row-id='${idea.id}']:opacity-100 transition-opacity"
@@ -418,7 +476,25 @@ const Auth = () => {
                       ))}
                     </div>
                     
-                    <table className="w-full border-collapse ml-10">
+                    {/* Drag handles positioned outside the table on the right */}
+                    <div className="absolute right-0 top-0 bottom-0 w-10 flex flex-col pt-[53px] z-10">
+                      {contentIdeas.map((idea) => (
+                        <div 
+                          key={`drag-${idea.id}`} 
+                          className="h-[53px] flex items-center justify-center opacity-0 group-hover-[data-row-id='${idea.id}']:opacity-100 transition-opacity"
+                          data-drag-for={idea.id}
+                        >
+                          <div
+                            className="h-6 w-6 flex items-center justify-center text-gray-400 cursor-grab active:cursor-grabbing"
+                            title="Drag to reorder"
+                          >
+                            <GripVertical className="h-3.5 w-3.5" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <table className="w-full border-collapse ml-10 mr-10">
                       <thead className="bg-gray-800 text-white">
                         <tr>
                           <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
@@ -475,22 +551,38 @@ const Auth = () => {
                         {contentIdeas.map((idea) => (
                           <tr 
                             key={idea.id} 
-                            className="hover:bg-gray-50" 
+                            className={`hover:bg-gray-50 ${dragOverRowId === idea.id ? 'bg-blue-50' : ''}`}
                             data-row-id={idea.id}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, idea.id)}
+                            onDragEnd={handleDragEnd}
+                            onDragOver={(e) => handleDragOver(e, idea.id)}
+                            onDragLeave={handleDragLeave}
+                            onDrop={(e) => handleDrop(e, idea.id)}
                             onMouseEnter={() => {
-                              // This is to handle showing the corresponding delete button
+                              // Show the corresponding delete and drag buttons
                               const deleteButton = document.querySelector(`[data-delete-for="${idea.id}"]`);
+                              const dragHandle = document.querySelector(`[data-drag-for="${idea.id}"]`);
                               if (deleteButton) {
                                 deleteButton.classList.add('opacity-100');
                                 deleteButton.classList.remove('opacity-0');
                               }
+                              if (dragHandle) {
+                                dragHandle.classList.add('opacity-100');
+                                dragHandle.classList.remove('opacity-0');
+                              }
                             }}
                             onMouseLeave={() => {
-                              // Hide the delete button when mouse leaves
+                              // Hide the delete and drag buttons
                               const deleteButton = document.querySelector(`[data-delete-for="${idea.id}"]`);
+                              const dragHandle = document.querySelector(`[data-drag-for="${idea.id}"]`);
                               if (deleteButton) {
                                 deleteButton.classList.add('opacity-0');
                                 deleteButton.classList.remove('opacity-100');
+                              }
+                              if (dragHandle) {
+                                dragHandle.classList.add('opacity-0');
+                                dragHandle.classList.remove('opacity-100');
                               }
                             }}
                           >
