@@ -3,9 +3,10 @@ import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Brain, Lightbulb, Palette, AlignJustify, FileText, Target, MessageSquare, Text, ArrowRightCircle, Link, Upload, Check, ImageIcon, Globe, Plus } from "lucide-react";
+import { Brain, Lightbulb, Palette, AlignJustify, FileText, Target, MessageSquare, Text, ArrowRightCircle, Link, Upload, Check, ImageIcon, Globe, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 type TabType = "brain-dump" | "content-ideas" | "inspiration";
 
@@ -28,6 +29,7 @@ interface ContentIdea {
 }
 
 const Auth = () => {
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<TabType>("brain-dump");
   const [contentIdeas, setContentIdeas] = useState<ContentIdea[]>([
     {
@@ -129,6 +131,28 @@ const Auth = () => {
       caption: ""
     };
     setContentIdeas(prev => [...prev, newIdea]);
+    toast({
+      title: "New idea added",
+      description: "Start filling in the details",
+    });
+  };
+
+  const handleDeleteIdea = (ideaId: string) => {
+    // Don't allow deleting all rows
+    if (contentIdeas.length <= 1) {
+      toast({
+        title: "Cannot delete",
+        description: "You need to keep at least one idea row",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setContentIdeas(prev => prev.filter(idea => idea.id !== ideaId));
+    toast({
+      title: "Idea deleted",
+      description: "The content idea has been removed",
+    });
   };
 
   const handleCellChange = (ideaId: string, field: keyof ContentIdea, value: string) => {
@@ -417,10 +441,15 @@ const Auth = () => {
                               <span>Script</span>
                             </div>
                           </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
                             <div className="flex items-center gap-1">
                               <Text className="h-3 w-3" />
                               <span>Caption</span>
+                            </div>
+                          </th>
+                          <th className="px-4 py-3 text-center font-medium text-xs uppercase tracking-wider w-[60px]">
+                            <div className="flex items-center justify-center">
+                              <Trash2 className="h-3 w-3" />
                             </div>
                           </th>
                         </tr>
@@ -479,7 +508,7 @@ const Auth = () => {
                                 placeholder="Add script..."
                               />
                             </td>
-                            <td className="px-4 py-3 text-sm text-gray-700">
+                            <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200">
                               <Input 
                                 value={idea.caption} 
                                 onChange={(e) => handleCellChange(idea.id, 'caption', e.target.value)}
@@ -487,11 +516,23 @@ const Auth = () => {
                                 placeholder="Add caption..."
                               />
                             </td>
+                            <td className="px-4 py-3 text-sm text-center">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="xs"
+                                className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
+                                onClick={() => handleDeleteIdea(idea.id)}
+                                title="Delete idea"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </td>
                           </tr>
                         ))}
                         {/* Add New Idea Row */}
                         <tr className="hover:bg-gray-50 bg-gray-50">
-                          <td colSpan={8} className="px-4 py-3 text-center">
+                          <td colSpan={9} className="px-4 py-3 text-center">
                             <Button
                               variant="ghost"
                               className="text-gray-400 hover:text-primary"
