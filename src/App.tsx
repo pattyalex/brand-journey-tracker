@@ -11,6 +11,7 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import GetStarted from "./pages/GetStarted";
 import ContentIdeation from "./pages/ContentIdeation";
+import ContentIdeas from "./pages/ContentIdeas";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/settings" element={<Settings />} />
           <Route path="/get-started" element={<GetStarted />} />
           <Route path="/content-ideation" element={<ContentIdeation />} />
+          <Route path="/content-ideas" element={<ContentIdeas />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
