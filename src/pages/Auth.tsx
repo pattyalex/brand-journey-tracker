@@ -110,7 +110,7 @@ const Auth = () => {
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-100">
                         <tr className="hover:bg-gray-50">
-                          <td className="px-4 py-3 text-sm text-gray-700">Three outfit formulas for spring</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">Spring outfits</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Fashion</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Text Only</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Likes</td>
