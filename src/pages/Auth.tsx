@@ -399,6 +399,11 @@ const Auth = () => {
                     <table className="w-full border-collapse">
                       <thead className="bg-gray-800 text-white">
                         <tr>
+                          <th className="px-4 py-3 text-center font-medium text-xs uppercase tracking-wider border-r border-gray-700 w-[50px]">
+                            <div className="flex items-center justify-center">
+                              <Trash2 className="h-3 w-3" />
+                            </div>
+                          </th>
                           <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
                             <div className="flex items-center gap-1">
                               <Lightbulb className="h-3 w-3" />
@@ -447,16 +452,23 @@ const Auth = () => {
                               <span>Caption</span>
                             </div>
                           </th>
-                          <th className="px-4 py-3 text-center font-medium text-xs uppercase tracking-wider w-[60px]">
-                            <div className="flex items-center justify-center">
-                              <Trash2 className="h-3 w-3" />
-                            </div>
-                          </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-100">
                         {contentIdeas.map((idea) => (
-                          <tr key={idea.id} className="hover:bg-gray-50">
+                          <tr key={idea.id} className="hover:bg-gray-50 group">
+                            <td className="px-4 py-3 text-sm text-center border-r border-gray-200 w-[50px]">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="xs"
+                                className="h-6 w-6 p-0 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => handleDeleteIdea(idea.id)}
+                                title="Delete idea"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </td>
                             <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200">
                               <Input 
                                 value={idea.idea} 
@@ -515,18 +527,6 @@ const Auth = () => {
                                 className="border-0 focus:ring-0 h-6 p-0 text-sm bg-transparent"
                                 placeholder="Add caption..."
                               />
-                            </td>
-                            <td className="px-4 py-3 text-sm text-center">
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="xs"
-                                className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
-                                onClick={() => handleDeleteIdea(idea.id)}
-                                title="Delete idea"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
                             </td>
                           </tr>
                         ))}
