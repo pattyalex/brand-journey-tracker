@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -7,7 +7,8 @@ import {
   Edit3, 
   Trash2,
   Check,
-  X
+  X,
+  List
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -22,6 +23,7 @@ interface BrainDumpPage {
 
 const BrainDump = () => {
   const { toast } = useToast();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [pages, setPages] = useState<BrainDumpPage[]>([
     {
       id: "1",
@@ -145,6 +147,115 @@ const BrainDump = () => {
       title: "Page renamed",
       description: "The page title has been updated",
     });
+  };
+
+  const insertBulletPoint = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const { selectionStart, selectionEnd, value } = textarea;
+    
+    // Find the start of the current line
+    let startOfLine = selectionStart;
+    while (startOfLine > 0 && value[startOfLine - 1] !== '\n') {
+      startOfLine--;
+    }
+    
+    // Check if we're already in a bullet point
+    const currentLineText = value.substring(startOfLine, selectionStart);
+    const isAlreadyBullet = /^\s*•\s/.test(currentLineText);
+    
+    // Get text before and after cursor
+    const before = value.substring(0, selectionStart);
+    const after = value.substring(selectionEnd);
+    
+    let newText;
+    let newCursorPosition;
+    
+    if (isAlreadyBullet) {
+      // If we're pressing Enter on a bullet line, we want to add a new bullet
+      if (selectionStart === selectionEnd && before.endsWith("\n")) {
+        newText = before + "• " + after;
+        newCursorPosition = selectionStart + 2;
+      } else {
+        // Just maintain the current bullet
+        newText = value;
+        newCursorPosition = selectionEnd;
+      }
+    } else {
+      // Insert a bullet point at the cursor position
+      newText = before + "• " + after;
+      newCursorPosition = selectionStart + 2;
+    }
+    
+    // Update content 
+    handleContentChange(newText);
+    
+    // Set cursor position after the operation is complete
+    setTimeout(() => {
+      if (textarea) {
+        textarea.focus();
+        textarea.setSelectionRange(newCursorPosition, newCursorPosition);
+      }
+    }, 0);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Check for Enter key on a line that starts with a bullet point
+    if (e.key === 'Enter') {
+      const textarea = e.currentTarget;
+      const { selectionStart, value } = textarea;
+      
+      // Find the start of the current line
+      let startOfLine = selectionStart;
+      while (startOfLine > 0 && value[startOfLine - 1] !== '\n') {
+        startOfLine--;
+      }
+      
+      // Check if the current line starts with a bullet point
+      const currentLine = value.substring(startOfLine, selectionStart);
+      const bulletPattern = /^\s*•\s/;
+      
+      if (bulletPattern.test(currentLine)) {
+        // If the line only contains a bullet point and nothing else, remove the bullet
+        if (currentLine.trim() === "• ") {
+          e.preventDefault();
+          
+          // Remove the bullet point
+          const before = value.substring(0, startOfLine);
+          const after = value.substring(selectionStart);
+          const newText = before + after;
+          
+          handleContentChange(newText);
+          
+          // Position cursor at the beginning of the next line
+          setTimeout(() => {
+            if (textareaRef.current) {
+              textareaRef.current.focus();
+              textareaRef.current.setSelectionRange(startOfLine, startOfLine);
+            }
+          }, 0);
+        } else {
+          // Add a new bullet point on the next line
+          e.preventDefault();
+          
+          const before = value.substring(0, selectionStart);
+          const after = value.substring(selectionStart);
+          const newText = before + "\n• " + after;
+          
+          handleContentChange(newText);
+          
+          // Position cursor after the new bullet
+          const newPosition = selectionStart + 3;
+          setTimeout(() => {
+            if (textareaRef.current) {
+              textareaRef.current.focus();
+              textareaRef.current.setSelectionRange(newPosition, newPosition);
+            }
+          }, 0);
+        }
+      }
+    }
   };
 
   return (
@@ -301,13 +412,28 @@ const BrainDump = () => {
         ))}
       </div>
       
+      <div className="flex gap-2 mb-2">
+        <Button 
+          variant="ghost" 
+          size="sm"
+          className="text-gray-600 hover:text-gray-900"
+          onClick={insertBulletPoint}
+          title="Add bullet point"
+        >
+          <List className="h-4 w-4 mr-1" />
+          <span>Bullet Point</span>
+        </Button>
+      </div>
+      
       <Card>
         <CardContent className="p-6">
           <Textarea
+            ref={textareaRef}
             placeholder="Write your thoughts here..."
             className="min-h-[400px] resize-none border-0 focus-visible:ring-0"
             value={activePage.content}
             onChange={(e) => handleContentChange(e.target.value)}
+            onKeyDown={handleKeyDown}
           />
         </CardContent>
       </Card>
