@@ -36,7 +36,7 @@ const Auth = () => {
               <Button 
                 variant="outline" 
                 className="w-full justify-start text-lg py-6"
-                onClick={() => navigateTo("/content-ideas")}
+                onClick={handleUnavailableFeature}
               >
                 <Lightbulb className="mr-3 h-5 w-5" />
                 Content Ideas
