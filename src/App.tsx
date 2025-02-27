@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import GetStarted from "./pages/GetStarted";
+import ContentIdeation from "./pages/ContentIdeation";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/get-started" element={<GetStarted />} />
+          <Route path="/content-ideation" element={<ContentIdeation />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
