@@ -8,16 +8,12 @@ import {
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem
+  SidebarMenuItem
 } from "@/components/ui/sidebar";
 
 const menuItems = [
-  { title: 'Dashboard', icon: Home, url: '/', subItems: [
-    { title: 'Daily Agenda', url: '/daily-agenda' }
-  ]},
+  { title: 'Dashboard', icon: Home, url: '/' },
+  { title: 'Daily Agenda', icon: ListTodo, url: '/daily-agenda' },
   { title: 'Projects', icon: FolderOpen, url: '/projects' },
   { title: 'Documents', icon: FileText, url: '/documents' },
   { title: 'Settings', icon: Settings, url: '/settings' },
@@ -42,22 +38,6 @@ const Sidebar = () => {
                       <span>{item.title}</span>
                     </a>
                   </SidebarMenuButton>
-                  
-                  {item.subItems && (
-                    <SidebarMenuSub>
-                      {item.subItems.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton 
-                            href={subItem.url}
-                            className="flex items-center gap-2"
-                          >
-                            <ListTodo size={16} />
-                            <span>{subItem.title}</span>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
-                  )}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
