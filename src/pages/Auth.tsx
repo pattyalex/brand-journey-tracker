@@ -3,12 +3,75 @@ import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Brain, Lightbulb, Palette, AlignJustify, FileText, Target, MessageSquare, Text, ArrowRightCircle, Link } from "lucide-react";
+import { Brain, Lightbulb, Palette, AlignJustify, FileText, Target, MessageSquare, Text, ArrowRightCircle, Link, Upload, Check, ImageIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 type TabType = "brain-dump" | "content-ideas" | "inspiration";
 
+interface InspirationSource {
+  type: "link" | "image";
+  content: string;
+  label?: string;
+}
+
 const Auth = () => {
   const [activeTab, setActiveTab] = useState<TabType>("brain-dump");
+  const [inspirationSource, setInspirationSource] = useState<InspirationSource>({
+    type: "link",
+    content: "https://pinterest.com/search/pins/?q=spring%20outfits",
+    label: "Pinterest"
+  });
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setSelectedImage(result);
+        setInspirationSource({
+          type: "image",
+          content: result,
+          label: file.name
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const renderInspirationCell = (source?: InspirationSource) => {
+    if (!source) return null;
+
+    if (source.type === "image" && source.content) {
+      return (
+        <div className="flex flex-col space-y-2">
+          <div className="flex items-center gap-2">
+            <ImageIcon className="h-3 w-3 text-blue-600" />
+            <span className="text-blue-600 text-xs truncate max-w-[120px]">{source.label}</span>
+          </div>
+          <div className="w-16 h-16 relative">
+            <img 
+              src={source.content} 
+              alt="Inspiration" 
+              className="w-full h-full object-cover rounded-md border border-gray-200" 
+            />
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <a href={source.content} 
+         target="_blank" 
+         rel="noopener noreferrer" 
+         className="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1">
+        <Link className="h-3 w-3" />
+        <span>{source.label || "Link"}</span>
+      </a>
+    );
+  };
 
   return (
     <Layout>
@@ -120,14 +183,31 @@ const Auth = () => {
                           <td className="px-4 py-3 text-sm text-gray-700">Fashion</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Text Only</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Likes</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">
-                            <a href="https://pinterest.com/search/pins/?q=spring%20outfits" 
-                               target="_blank" 
-                               rel="noopener noreferrer" 
-                               className="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1">
-                              <Link className="h-3 w-3" />
-                              <span>Pinterest</span>
-                            </a>
+                          <td className="px-4 py-3 text-sm text-gray-700 min-w-[150px]">
+                            <div className="flex flex-col space-y-2">
+                              {renderInspirationCell(inspirationSource)}
+                              <div className="relative">
+                                <div className="flex space-x-2">
+                                  <label className="cursor-pointer">
+                                    <Input
+                                      type="file"
+                                      accept="image/*"
+                                      className="hidden"
+                                      onChange={handleImageUpload}
+                                    />
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      className="px-2 py-1 h-7 text-xs"
+                                    >
+                                      <Upload className="h-3 w-3 mr-1" />
+                                      Upload
+                                    </Button>
+                                  </label>
+                                </div>
+                              </div>
+                            </div>
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-700">3 outfit formulas for spring</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Formula 1: Pastel blouse + wide leg jeans + ballet flats. Formula 2: Floral dress + denim jacket + white sneakers. Formula 3: Linen shirt + cropped pants + espadrilles.</td>
@@ -138,7 +218,29 @@ const Auth = () => {
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
-                          <td className="px-4 py-3 text-sm text-gray-700"></td>
+                          <td className="px-4 py-3 text-sm text-gray-700 min-w-[150px]">
+                            <div className="relative">
+                              <div className="flex space-x-2">
+                                <label className="cursor-pointer">
+                                  <Input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={handleImageUpload}
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="px-2 py-1 h-7 text-xs"
+                                  >
+                                    <Upload className="h-3 w-3 mr-1" />
+                                    Upload
+                                  </Button>
+                                </label>
+                              </div>
+                            </div>
+                          </td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
@@ -148,7 +250,29 @@ const Auth = () => {
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
-                          <td className="px-4 py-3 text-sm text-gray-700"></td>
+                          <td className="px-4 py-3 text-sm text-gray-700 min-w-[150px]">
+                            <div className="relative">
+                              <div className="flex space-x-2">
+                                <label className="cursor-pointer">
+                                  <Input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={handleImageUpload}
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="px-2 py-1 h-7 text-xs"
+                                  >
+                                    <Upload className="h-3 w-3 mr-1" />
+                                    Upload
+                                  </Button>
+                                </label>
+                              </div>
+                            </div>
+                          </td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
