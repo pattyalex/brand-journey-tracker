@@ -198,11 +198,11 @@ const Auth = () => {
                                     <Button
                                       type="button"
                                       variant="outline"
-                                      size="sm"
-                                      className="px-2 py-1 h-7 text-xs"
+                                      size="xs"
+                                      className="text-xs"
                                     >
                                       <Upload className="h-3 w-3 mr-1" />
-                                      Upload
+                                      <span className="text-xs">Upload</span>
                                     </Button>
                                   </label>
                                 </div>
@@ -231,11 +231,11 @@ const Auth = () => {
                                   <Button
                                     type="button"
                                     variant="outline"
-                                    size="sm"
-                                    className="px-2 py-1 h-7 text-xs"
+                                    size="xs"
+                                    className="text-xs"
                                   >
                                     <Upload className="h-3 w-3 mr-1" />
-                                    Upload
+                                    <span className="text-xs">Upload</span>
                                   </Button>
                                 </label>
                               </div>
@@ -263,11 +263,11 @@ const Auth = () => {
                                   <Button
                                     type="button"
                                     variant="outline"
-                                    size="sm"
-                                    className="px-2 py-1 h-7 text-xs"
+                                    size="xs"
+                                    className="text-xs"
                                   >
                                     <Upload className="h-3 w-3 mr-1" />
-                                    Upload
+                                    <span className="text-xs">Upload</span>
                                   </Button>
                                 </label>
                               </div>
