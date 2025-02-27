@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Brain, Lightbulb, Palette, AlignJustify, FileText, Target, MessageSquare, Text, ArrowRightCircle, Link, Upload, Check, ImageIcon, Globe, Plus, Trash2, GripVertical } from "lucide-react";
+import { Brain, Lightbulb, Palette, AlignJustify, FileText, Target, MessageSquare, Text, ArrowRightCircle, Link, Upload, Check, ImageIcon, Globe, Plus, Trash2, GripVertical, FileEdit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 type TabType = "brain-dump" | "content-ideas" | "inspiration";
 
 interface InspirationSource {
-  type: "link" | "image";
+  type: "link" | "image" | "text";
   content: string;
   label?: string;
 }
@@ -69,9 +69,11 @@ const Auth = () => {
     }
   ]);
   const [isAddingLink, setIsAddingLink] = useState(false);
+  const [isAddingText, setIsAddingText] = useState(false);
   const [activeCellId, setActiveCellId] = useState<string | null>(null);
   const [linkUrl, setLinkUrl] = useState("");
   const [linkLabel, setLinkLabel] = useState("");
+  const [inspirationText, setInspirationText] = useState("");
   const [draggedRowId, setDraggedRowId] = useState<string | null>(null);
   const [dragOverRowId, setDragOverRowId] = useState<string | null>(null);
 
@@ -117,6 +119,27 @@ const Auth = () => {
       setLinkUrl("");
       setLinkLabel("");
       setIsAddingLink(false);
+      setActiveCellId(null);
+    }
+  };
+
+  const handleAddText = (ideaId: string) => {
+    if (inspirationText.trim()) {
+      setContentIdeas(prev => prev.map(idea => {
+        if (idea.id === ideaId) {
+          return {
+            ...idea,
+            inspirationSource: {
+              type: "text",
+              content: inspirationText,
+              label: "Note"
+            }
+          };
+        }
+        return idea;
+      }));
+      setInspirationText("");
+      setIsAddingText(false);
       setActiveCellId(null);
     }
   };
@@ -225,6 +248,7 @@ const Auth = () => {
   const renderInspirationCell = (idea: ContentIdea) => {
     const source = idea.inspirationSource;
     
+    // Adding Link UI
     if (isAddingLink && activeCellId === idea.id) {
       return (
         <div className="flex flex-col space-y-2">
@@ -268,6 +292,44 @@ const Auth = () => {
       );
     }
 
+    // Adding Text UI
+    if (isAddingText && activeCellId === idea.id) {
+      return (
+        <div className="flex flex-col space-y-2">
+          <Input
+            type="text"
+            placeholder="Enter inspiration text..."
+            value={inspirationText}
+            onChange={(e) => setInspirationText(e.target.value)}
+            className="text-xs h-6 px-2"
+          />
+          <div className="flex gap-1">
+            <Button
+              type="button"
+              size="xs"
+              onClick={() => handleAddText(idea.id)}
+              className="text-xs h-5"
+            >
+              <Check className="h-2.5 w-2.5" />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="xs"
+              onClick={() => {
+                setIsAddingText(false);
+                setActiveCellId(null);
+              }}
+              className="text-xs h-5"
+            >
+              <span className="text-[10px]">Cancel</span>
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    // Display Image
     if (source?.type === "image" && source.content) {
       return (
         <div className="flex flex-col space-y-2">
@@ -290,11 +352,27 @@ const Auth = () => {
               className="h-5 w-5 p-0"
               onClick={() => {
                 setIsAddingLink(true);
+                setIsAddingText(false);
                 setActiveCellId(idea.id);
               }}
               title="Add Link"
             >
               <Globe className="h-2.5 w-2.5" />
+            </Button>
+            
+            <Button
+              type="button"
+              variant="outline"
+              size="xs"
+              className="h-5 w-5 p-0"
+              onClick={() => {
+                setIsAddingText(true);
+                setIsAddingLink(false);
+                setActiveCellId(idea.id);
+              }}
+              title="Add Text"
+            >
+              <FileEdit className="h-2.5 w-2.5" />
             </Button>
             
             <label className="cursor-pointer">
@@ -319,6 +397,7 @@ const Auth = () => {
       );
     }
 
+    // Display Link
     if (source?.type === "link" && source.content) {
       return (
         <div className="flex flex-col space-y-2">
@@ -337,11 +416,27 @@ const Auth = () => {
               className="h-5 w-5 p-0"
               onClick={() => {
                 setIsAddingLink(true);
+                setIsAddingText(false);
                 setActiveCellId(idea.id);
               }}
               title="Add Link"
             >
               <Globe className="h-2.5 w-2.5" />
+            </Button>
+            
+            <Button
+              type="button"
+              variant="outline"
+              size="xs"
+              className="h-5 w-5 p-0"
+              onClick={() => {
+                setIsAddingText(true);
+                setIsAddingLink(false);
+                setActiveCellId(idea.id);
+              }}
+              title="Add Text"
+            >
+              <FileEdit className="h-2.5 w-2.5" />
             </Button>
             
             <label className="cursor-pointer">
@@ -366,6 +461,72 @@ const Auth = () => {
       );
     }
 
+    // Display Text
+    if (source?.type === "text" && source.content) {
+      return (
+        <div className="flex flex-col space-y-2">
+          <div className="flex items-center gap-2">
+            <FileEdit className="h-2 w-2 text-gray-600" />
+            <span className="text-gray-600 text-xs">{source.label || "Note"}</span>
+          </div>
+          <div className="text-xs text-gray-700 bg-gray-50 p-2 rounded-md border border-gray-200 max-h-16 overflow-y-auto">
+            {source.content}
+          </div>
+          <div className="flex gap-1 mt-1">
+            <Button
+              type="button"
+              variant="outline"
+              size="xs"
+              className="h-5 w-5 p-0"
+              onClick={() => {
+                setIsAddingLink(true);
+                setIsAddingText(false);
+                setActiveCellId(idea.id);
+              }}
+              title="Add Link"
+            >
+              <Globe className="h-2.5 w-2.5" />
+            </Button>
+            
+            <Button
+              type="button"
+              variant="outline"
+              size="xs"
+              className="h-5 w-5 p-0"
+              onClick={() => {
+                setIsAddingText(true);
+                setIsAddingLink(false);
+                setInspirationText(source.content);
+                setActiveCellId(idea.id);
+              }}
+              title="Edit Text"
+            >
+              <FileEdit className="h-2.5 w-2.5" />
+            </Button>
+            
+            <label className="cursor-pointer">
+              <Input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handleImageUpload(e, idea.id)}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="xs"
+                className="h-5 w-5 p-0"
+                title="Upload Image"
+              >
+                <Upload className="h-2.5 w-2.5" />
+              </Button>
+            </label>
+          </div>
+        </div>
+      );
+    }
+
+    // No source yet - show options
     return (
       <div className="flex gap-1">
         <Button
@@ -375,11 +536,27 @@ const Auth = () => {
           className="h-5 w-5 p-0"
           onClick={() => {
             setIsAddingLink(true);
+            setIsAddingText(false);
             setActiveCellId(idea.id);
           }}
           title="Add Link"
         >
           <Globe className="h-2.5 w-2.5" />
+        </Button>
+        
+        <Button
+          type="button"
+          variant="outline"
+          size="xs"
+          className="h-5 w-5 p-0"
+          onClick={() => {
+            setIsAddingText(true);
+            setIsAddingLink(false);
+            setActiveCellId(idea.id);
+          }}
+          title="Add Text"
+        >
+          <FileEdit className="h-2.5 w-2.5" />
         </Button>
         
         <label className="cursor-pointer">
