@@ -96,14 +96,14 @@ const Auth = () => {
                           </th>
                           <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
                             <div className="flex items-center gap-1">
-                              <Text className="h-4 w-4" />
-                              <span>Caption</span>
+                              <ArrowRightCircle className="h-4 w-4" />
+                              <span>Script</span>
                             </div>
                           </th>
                           <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
                             <div className="flex items-center gap-1">
-                              <ArrowRightCircle className="h-4 w-4" />
-                              <span>CTA</span>
+                              <Text className="h-4 w-4" />
+                              <span>Caption</span>
                             </div>
                           </th>
                         </tr>
@@ -115,8 +115,8 @@ const Auth = () => {
                           <td className="px-4 py-3 text-sm text-gray-700">Text Only</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Likes</td>
                           <td className="px-4 py-3 text-sm text-gray-700">3 outfit formulas for spring</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">If you don't know what to wear this spring, here are some outfit ideas ✨</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Check it out!</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">If you don't know what to wear this spring, here are some outfit ideas ✨</td>
                         </tr>
                         <tr className="hover:bg-gray-50">
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
