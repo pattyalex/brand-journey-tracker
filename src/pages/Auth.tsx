@@ -66,6 +66,12 @@ const Auth = () => {
                         <tr>
                           <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
                             <div className="flex items-center gap-1">
+                              <Lightbulb className="h-4 w-4" />
+                              <span>Idea</span>
+                            </div>
+                          </th>
+                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
+                            <div className="flex items-center gap-1">
                               <AlignJustify className="h-4 w-4" />
                               <span>Pillar</span>
                             </div>
@@ -80,12 +86,6 @@ const Auth = () => {
                             <div className="flex items-center gap-1">
                               <Target className="h-4 w-4" />
                               <span>Goal</span>
-                            </div>
-                          </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
-                            <div className="flex items-center gap-1">
-                              <Lightbulb className="h-4 w-4" />
-                              <span>Idea</span>
                             </div>
                           </th>
                           <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
@@ -110,10 +110,10 @@ const Auth = () => {
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-100">
                         <tr className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-sm text-gray-700">Introduction to...</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Social Proof</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Text Only</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Likes</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">Introduction to...</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Comment [word] below to get...</td>
                           <td className="px-4 py-3 text-sm text-gray-700">⚠️ WARNING - You will be...</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Check it out!</td>
