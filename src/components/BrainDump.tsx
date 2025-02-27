@@ -6,7 +6,9 @@ import {
   Calendar, 
   Plus, 
   Edit3, 
-  Trash2
+  Trash2,
+  Check,
+  X
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -32,6 +34,8 @@ const BrainDump = () => {
   const [activePage, setActivePage] = useState<BrainDumpPage>(pages[0]);
   const [isCreatingPage, setIsCreatingPage] = useState(false);
   const [newPageTitle, setNewPageTitle] = useState('');
+  const [editingPageId, setEditingPageId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState('');
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {
@@ -103,11 +107,90 @@ const BrainDump = () => {
     ));
   };
 
+  const startEditingTitle = (page: BrainDumpPage) => {
+    setEditingPageId(page.id);
+    setEditingTitle(page.title);
+  };
+
+  const cancelEditingTitle = () => {
+    setEditingPageId(null);
+    setEditingTitle('');
+  };
+
+  const saveNewTitle = (id: string) => {
+    if (editingTitle.trim() === '') {
+      toast({
+        title: "Title required",
+        description: "Page title cannot be empty",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Update the page title in the pages array
+    const updatedPages = pages.map(page => 
+      page.id === id ? { ...page, title: editingTitle } : page
+    );
+    
+    setPages(updatedPages);
+    
+    // If the active page was renamed, update it too
+    if (activePage.id === id) {
+      setActivePage({ ...activePage, title: editingTitle });
+    }
+    
+    setEditingPageId(null);
+    setEditingTitle('');
+    
+    toast({
+      title: "Page renamed",
+      description: "The page title has been updated",
+    });
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-semibold">{activePage.title}</h2>
+          {editingPageId === activePage.id ? (
+            <div className="flex items-center gap-2">
+              <Input
+                value={editingTitle}
+                onChange={(e) => setEditingTitle(e.target.value)}
+                className="text-xl font-semibold h-9"
+                autoFocus
+              />
+              <Button 
+                size="icon" 
+                variant="ghost" 
+                className="h-7 w-7" 
+                onClick={() => saveNewTitle(activePage.id)}
+              >
+                <Check className="h-4 w-4 text-green-500" />
+              </Button>
+              <Button 
+                size="icon" 
+                variant="ghost" 
+                className="h-7 w-7" 
+                onClick={cancelEditingTitle}
+              >
+                <X className="h-4 w-4 text-red-500" />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-semibold">{activePage.title}</h2>
+              <Button 
+                size="icon" 
+                variant="ghost" 
+                className="h-7 w-7" 
+                onClick={() => startEditingTitle(activePage)}
+                title="Rename page"
+              >
+                <Edit3 className="h-3.5 w-3.5 text-gray-400" />
+              </Button>
+            </div>
+          )}
           <p className="text-muted-foreground text-sm">
             Created on {formatDate(activePage.createdAt)}
           </p>
@@ -154,10 +237,65 @@ const BrainDump = () => {
             key={page.id}
             className={`flex items-center justify-between px-3 py-2 rounded-md cursor-pointer 
               ${activePage.id === page.id ? 'bg-gray-100 border-l-4 border-primary' : 'bg-gray-50'}`}
-            onClick={() => setActivePage(page)}
+            onClick={() => {
+              if (editingPageId !== page.id) {
+                setActivePage(page);
+                // Cancel any ongoing edit when switching pages
+                setEditingPageId(null);
+              }
+            }}
           >
-            <span className="text-sm font-medium truncate max-w-[150px]">{page.title}</span>
-            {pages.length > 1 && (
+            {editingPageId === page.id ? (
+              <div className="flex items-center gap-1">
+                <Input
+                  value={editingTitle}
+                  onChange={(e) => setEditingTitle(e.target.value)}
+                  className="text-sm h-6 px-2 py-1 w-[120px]"
+                  autoFocus
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-5 w-5"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    saveNewTitle(page.id);
+                  }}
+                >
+                  <Check className="h-3 w-3 text-green-500" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-5 w-5"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    cancelEditingTitle();
+                  }}
+                >
+                  <X className="h-3 w-3 text-red-500" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center">
+                <span className="text-sm font-medium truncate max-w-[120px]">{page.title}</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-5 w-5 ml-1 opacity-0 group-hover:opacity-100"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    startEditingTitle(page);
+                  }}
+                  title="Rename page"
+                >
+                  <Edit3 className="h-2.5 w-2.5 text-gray-400" />
+                </Button>
+              </div>
+            )}
+            
+            {pages.length > 1 && !editingPageId && (
               <Button
                 variant="ghost"
                 size="icon"
