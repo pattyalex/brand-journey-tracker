@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  Calendar, 
   Plus, 
   Edit3, 
   Trash2,
@@ -197,38 +196,28 @@ const BrainDump = () => {
         </div>
         
         <div className="flex gap-2">
-          <div className="relative">
-            <Button variant="outline" className="flex items-center gap-1" onClick={() => setIsCreatingPage(!isCreatingPage)}>
-              <Calendar className="h-4 w-4" />
-              <span>Pages</span>
-              <span className="ml-1 bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full text-xs">
-                {pages.length}
-              </span>
-            </Button>
-            
-            {isCreatingPage && (
-              <div className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg p-4 z-10 border">
-                <h3 className="font-medium mb-2">Create New Page</h3>
-                <Input
-                  placeholder="Page Title"
-                  value={newPageTitle}
-                  onChange={(e) => setNewPageTitle(e.target.value)}
-                  className="mb-2"
-                />
-                <div className="flex gap-2">
-                  <Button size="sm" onClick={handleCreatePage}>Create</Button>
-                  <Button size="sm" variant="outline" onClick={() => setIsCreatingPage(false)}>Cancel</Button>
-                </div>
-              </div>
-            )}
-          </div>
-          
           <Button variant="outline" onClick={() => setIsCreatingPage(true)}>
             <Plus className="h-4 w-4 mr-1" />
             <span>New Page</span>
           </Button>
         </div>
       </div>
+      
+      {isCreatingPage && (
+        <div className="bg-white rounded-md shadow-lg p-4 z-10 border">
+          <h3 className="font-medium mb-2">Create New Page</h3>
+          <Input
+            placeholder="Page Title"
+            value={newPageTitle}
+            onChange={(e) => setNewPageTitle(e.target.value)}
+            className="mb-2"
+          />
+          <div className="flex gap-2">
+            <Button size="sm" onClick={handleCreatePage}>Create</Button>
+            <Button size="sm" variant="outline" onClick={() => setIsCreatingPage(false)}>Cancel</Button>
+          </div>
+        </div>
+      )}
       
       {/* Page list */}
       <div className="flex flex-wrap gap-2 mb-4">
