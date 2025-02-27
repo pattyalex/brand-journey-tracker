@@ -64,7 +64,7 @@ const Auth = () => {
       return (
         <div className="flex flex-col space-y-2">
           <div className="flex items-center gap-2">
-            <ImageIcon className="h-3 w-3 text-blue-600" />
+            <ImageIcon className="h-2 w-2 text-blue-600" />
             <span className="text-blue-600 text-xs truncate max-w-[120px]">{source.label}</span>
           </div>
           <div className="w-16 h-16 relative">
@@ -83,7 +83,7 @@ const Auth = () => {
          target="_blank" 
          rel="noopener noreferrer" 
          className="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1">
-        <Link className="h-3 w-3" />
+        <Link className="h-2 w-2" />
         <span className="text-xs">{source.label || "Link"}</span>
       </a>
     );
@@ -145,49 +145,49 @@ const Auth = () => {
                         <tr>
                           <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
                             <div className="flex items-center gap-1">
-                              <Lightbulb className="h-4 w-4" />
+                              <Lightbulb className="h-3 w-3" />
                               <span>Idea</span>
                             </div>
                           </th>
                           <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
                             <div className="flex items-center gap-1">
-                              <AlignJustify className="h-4 w-4" />
-                              <span>Pillar</span>
-                            </div>
-                          </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
-                            <div className="flex items-center gap-1">
-                              <FileText className="h-4 w-4" />
-                              <span>Format</span>
-                            </div>
-                          </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
-                            <div className="flex items-center gap-1">
-                              <Target className="h-4 w-4" />
-                              <span>Goal</span>
-                            </div>
-                          </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
-                            <div className="flex items-center gap-1">
-                              <Link className="h-4 w-4" />
+                              <Link className="h-3 w-3" />
                               <span>Inspiration</span>
                             </div>
                           </th>
                           <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
                             <div className="flex items-center gap-1">
-                              <MessageSquare className="h-4 w-4" />
+                              <AlignJustify className="h-3 w-3" />
+                              <span>Pillar</span>
+                            </div>
+                          </th>
+                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
+                            <div className="flex items-center gap-1">
+                              <FileText className="h-3 w-3" />
+                              <span>Format</span>
+                            </div>
+                          </th>
+                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
+                            <div className="flex items-center gap-1">
+                              <Target className="h-3 w-3" />
+                              <span>Goal</span>
+                            </div>
+                          </th>
+                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
+                            <div className="flex items-center gap-1">
+                              <MessageSquare className="h-3 w-3" />
                               <span>Hook</span>
                             </div>
                           </th>
                           <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
                             <div className="flex items-center gap-1">
-                              <ArrowRightCircle className="h-4 w-4" />
+                              <ArrowRightCircle className="h-3 w-3" />
                               <span>Script</span>
                             </div>
                           </th>
                           <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
                             <div className="flex items-center gap-1">
-                              <Text className="h-4 w-4" />
+                              <Text className="h-3 w-3" />
                               <span>Caption</span>
                             </div>
                           </th>
@@ -196,9 +196,6 @@ const Auth = () => {
                       <tbody className="bg-white divide-y divide-gray-100">
                         <tr className="hover:bg-gray-50">
                           <td className="px-4 py-3 text-sm text-gray-700">Spring outfits</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">Fashion</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">Text Only</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">Likes</td>
                           <td className="px-4 py-3 text-sm text-gray-700 min-w-[150px]">
                             <div className="flex flex-col space-y-2">
                               {renderInspirationCell(inspirationSource)}
@@ -210,33 +207,33 @@ const Auth = () => {
                                     placeholder="https://example.com"
                                     value={linkUrl}
                                     onChange={(e) => setLinkUrl(e.target.value)}
-                                    className="text-xs h-7 px-2"
+                                    className="text-xs h-6 px-2"
                                   />
                                   <Input
                                     type="text"
                                     placeholder="Label (optional)"
                                     value={linkLabel}
                                     onChange={(e) => setLinkLabel(e.target.value)}
-                                    className="text-xs h-7 px-2"
+                                    className="text-xs h-6 px-2"
                                   />
                                   <div className="flex gap-1">
                                     <Button
                                       type="button"
                                       size="xs"
                                       onClick={handleAddLink}
-                                      className="text-xs"
+                                      className="text-xs h-5"
                                     >
-                                      <Check className="h-3 w-3 mr-1" />
-                                      <span className="text-xs">Save</span>
+                                      <Check className="h-2 w-2 mr-1" />
+                                      <span className="text-[10px]">Save</span>
                                     </Button>
                                     <Button
                                       type="button"
                                       variant="outline"
                                       size="xs"
                                       onClick={() => setIsAddingLink(false)}
-                                      className="text-xs"
+                                      className="text-xs h-5"
                                     >
-                                      Cancel
+                                      <span className="text-[10px]">Cancel</span>
                                     </Button>
                                   </div>
                                 </div>
@@ -246,11 +243,11 @@ const Auth = () => {
                                     type="button"
                                     variant="outline"
                                     size="xs"
-                                    className="text-xs"
+                                    className="h-5"
                                     onClick={() => setIsAddingLink(true)}
                                   >
-                                    <Globe className="h-3 w-3 mr-1" />
-                                    <span className="text-xs">Add Link</span>
+                                    <Globe className="h-2 w-2 mr-1" />
+                                    <span className="text-[10px]">Add Link</span>
                                   </Button>
                                   
                                   <label className="cursor-pointer">
@@ -264,36 +261,36 @@ const Auth = () => {
                                       type="button"
                                       variant="outline"
                                       size="xs"
-                                      className="text-xs"
+                                      className="h-5"
                                     >
-                                      <Upload className="h-3 w-3 mr-1" />
-                                      <span className="text-xs">Upload</span>
+                                      <Upload className="h-2 w-2 mr-1" />
+                                      <span className="text-[10px]">Upload</span>
                                     </Button>
                                   </label>
                                 </div>
                               )}
                             </div>
                           </td>
+                          <td className="px-4 py-3 text-sm text-gray-700">Fashion</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">Text Only</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">Likes</td>
                           <td className="px-4 py-3 text-sm text-gray-700">3 outfit formulas for spring</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Formula 1: Pastel blouse + wide leg jeans + ballet flats. Formula 2: Floral dress + denim jacket + white sneakers. Formula 3: Linen shirt + cropped pants + espadrilles.</td>
                           <td className="px-4 py-3 text-sm text-gray-700">If you don't know what to wear this spring, here are some outfit ideas ✨</td>
                         </tr>
                         <tr className="hover:bg-gray-50">
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
-                          <td className="px-4 py-3 text-sm text-gray-700"></td>
-                          <td className="px-4 py-3 text-sm text-gray-700"></td>
-                          <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700 min-w-[150px]">
                             <div className="flex gap-1">
                               <Button
                                 type="button"
                                 variant="outline"
                                 size="xs"
-                                className="text-xs"
+                                className="h-5"
                                 onClick={() => setIsAddingLink(true)}
                               >
-                                <Globe className="h-3 w-3 mr-1" />
-                                <span className="text-xs">Add Link</span>
+                                <Globe className="h-2 w-2 mr-1" />
+                                <span className="text-[10px]">Add Link</span>
                               </Button>
                               
                               <label className="cursor-pointer">
@@ -307,34 +304,34 @@ const Auth = () => {
                                   type="button"
                                   variant="outline"
                                   size="xs"
-                                  className="text-xs"
+                                  className="h-5"
                                 >
-                                  <Upload className="h-3 w-3 mr-1" />
-                                  <span className="text-xs">Upload</span>
+                                  <Upload className="h-2 w-2 mr-1" />
+                                  <span className="text-[10px]">Upload</span>
                                 </Button>
                               </label>
                             </div>
                           </td>
+                          <td className="px-4 py-3 text-sm text-gray-700"></td>
+                          <td className="px-4 py-3 text-sm text-gray-700"></td>
+                          <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                         </tr>
                         <tr className="hover:bg-gray-50">
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
-                          <td className="px-4 py-3 text-sm text-gray-700"></td>
-                          <td className="px-4 py-3 text-sm text-gray-700"></td>
-                          <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700 min-w-[150px]">
                             <div className="flex gap-1">
                               <Button
                                 type="button"
                                 variant="outline"
                                 size="xs"
-                                className="text-xs"
+                                className="h-5"
                                 onClick={() => setIsAddingLink(true)}
                               >
-                                <Globe className="h-3 w-3 mr-1" />
-                                <span className="text-xs">Add Link</span>
+                                <Globe className="h-2 w-2 mr-1" />
+                                <span className="text-[10px]">Add Link</span>
                               </Button>
                               
                               <label className="cursor-pointer">
@@ -348,14 +345,17 @@ const Auth = () => {
                                   type="button"
                                   variant="outline"
                                   size="xs"
-                                  className="text-xs"
+                                  className="h-5"
                                 >
-                                  <Upload className="h-3 w-3 mr-1" />
-                                  <span className="text-xs">Upload</span>
+                                  <Upload className="h-2 w-2 mr-1" />
+                                  <span className="text-[10px]">Upload</span>
                                 </Button>
                               </label>
                             </div>
                           </td>
+                          <td className="px-4 py-3 text-sm text-gray-700"></td>
+                          <td className="px-4 py-3 text-sm text-gray-700"></td>
+                          <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
