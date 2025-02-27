@@ -345,21 +345,7 @@ const Auth = () => {
             />
           </div>
           <div className="flex gap-1 mt-1">
-            <Button
-              type="button"
-              variant="outline"
-              size="xs"
-              className="h-5 w-5 p-0"
-              onClick={() => {
-                setIsAddingLink(true);
-                setIsAddingText(false);
-                setActiveCellId(idea.id);
-              }}
-              title="Add Link"
-            >
-              <Globe className="h-2.5 w-2.5" />
-            </Button>
-            
+            {/* Reordered icons: Write, Link, Upload */}
             <Button
               type="button"
               variant="outline"
@@ -373,6 +359,21 @@ const Auth = () => {
               title="Add Text"
             >
               <FileEdit className="h-2.5 w-2.5" />
+            </Button>
+            
+            <Button
+              type="button"
+              variant="outline"
+              size="xs"
+              className="h-5 w-5 p-0"
+              onClick={() => {
+                setIsAddingLink(true);
+                setIsAddingText(false);
+                setActiveCellId(idea.id);
+              }}
+              title="Add Link"
+            >
+              <Globe className="h-2.5 w-2.5" />
             </Button>
             
             <label className="cursor-pointer">
@@ -409,21 +410,7 @@ const Auth = () => {
             <span className="text-xs">{source.label || "Link"}</span>
           </a>
           <div className="flex gap-1 mt-1">
-            <Button
-              type="button"
-              variant="outline"
-              size="xs"
-              className="h-5 w-5 p-0"
-              onClick={() => {
-                setIsAddingLink(true);
-                setIsAddingText(false);
-                setActiveCellId(idea.id);
-              }}
-              title="Add Link"
-            >
-              <Globe className="h-2.5 w-2.5" />
-            </Button>
-            
+            {/* Reordered icons: Write, Link, Upload */}
             <Button
               type="button"
               variant="outline"
@@ -437,6 +424,21 @@ const Auth = () => {
               title="Add Text"
             >
               <FileEdit className="h-2.5 w-2.5" />
+            </Button>
+            
+            <Button
+              type="button"
+              variant="outline"
+              size="xs"
+              className="h-5 w-5 p-0"
+              onClick={() => {
+                setIsAddingLink(true);
+                setIsAddingText(false);
+                setActiveCellId(idea.id);
+              }}
+              title="Add Link"
+            >
+              <Globe className="h-2.5 w-2.5" />
             </Button>
             
             <label className="cursor-pointer">
@@ -473,21 +475,7 @@ const Auth = () => {
             {source.content}
           </div>
           <div className="flex gap-1 mt-1">
-            <Button
-              type="button"
-              variant="outline"
-              size="xs"
-              className="h-5 w-5 p-0"
-              onClick={() => {
-                setIsAddingLink(true);
-                setIsAddingText(false);
-                setActiveCellId(idea.id);
-              }}
-              title="Add Link"
-            >
-              <Globe className="h-2.5 w-2.5" />
-            </Button>
-            
+            {/* Reordered icons: Write, Link, Upload */}
             <Button
               type="button"
               variant="outline"
@@ -502,6 +490,21 @@ const Auth = () => {
               title="Edit Text"
             >
               <FileEdit className="h-2.5 w-2.5" />
+            </Button>
+            
+            <Button
+              type="button"
+              variant="outline"
+              size="xs"
+              className="h-5 w-5 p-0"
+              onClick={() => {
+                setIsAddingLink(true);
+                setIsAddingText(false);
+                setActiveCellId(idea.id);
+              }}
+              title="Add Link"
+            >
+              <Globe className="h-2.5 w-2.5" />
             </Button>
             
             <label className="cursor-pointer">
@@ -529,21 +532,7 @@ const Auth = () => {
     // No source yet - show options
     return (
       <div className="flex gap-1">
-        <Button
-          type="button"
-          variant="outline"
-          size="xs"
-          className="h-5 w-5 p-0"
-          onClick={() => {
-            setIsAddingLink(true);
-            setIsAddingText(false);
-            setActiveCellId(idea.id);
-          }}
-          title="Add Link"
-        >
-          <Globe className="h-2.5 w-2.5" />
-        </Button>
-        
+        {/* Reordered icons: Write, Link, Upload */}
         <Button
           type="button"
           variant="outline"
@@ -557,6 +546,21 @@ const Auth = () => {
           title="Add Text"
         >
           <FileEdit className="h-2.5 w-2.5" />
+        </Button>
+        
+        <Button
+          type="button"
+          variant="outline"
+          size="xs"
+          className="h-5 w-5 p-0"
+          onClick={() => {
+            setIsAddingLink(true);
+            setIsAddingText(false);
+            setActiveCellId(idea.id);
+          }}
+          title="Add Link"
+        >
+          <Globe className="h-2.5 w-2.5" />
         </Button>
         
         <label className="cursor-pointer">
