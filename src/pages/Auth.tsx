@@ -90,6 +90,12 @@ const Auth = () => {
                           </th>
                           <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
                             <div className="flex items-center gap-1">
+                              <Link className="h-4 w-4" />
+                              <span>Inspiration</span>
+                            </div>
+                          </th>
+                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
+                            <div className="flex items-center gap-1">
                               <MessageSquare className="h-4 w-4" />
                               <span>Hook</span>
                             </div>
@@ -98,12 +104,6 @@ const Auth = () => {
                             <div className="flex items-center gap-1">
                               <ArrowRightCircle className="h-4 w-4" />
                               <span>Script</span>
-                            </div>
-                          </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
-                            <div className="flex items-center gap-1">
-                              <Link className="h-4 w-4" />
-                              <span>Inspiration</span>
                             </div>
                           </th>
                           <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider">
@@ -120,8 +120,6 @@ const Auth = () => {
                           <td className="px-4 py-3 text-sm text-gray-700">Fashion</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Text Only</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Likes</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">3 outfit formulas for spring</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">Formula 1: Pastel blouse + wide leg jeans + ballet flats. Formula 2: Floral dress + denim jacket + white sneakers. Formula 3: Linen shirt + cropped pants + espadrilles.</td>
                           <td className="px-4 py-3 text-sm text-gray-700">
                             <a href="https://pinterest.com/search/pins/?q=spring%20outfits" 
                                target="_blank" 
@@ -131,6 +129,8 @@ const Auth = () => {
                               <span>Pinterest</span>
                             </a>
                           </td>
+                          <td className="px-4 py-3 text-sm text-gray-700">3 outfit formulas for spring</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">Formula 1: Pastel blouse + wide leg jeans + ballet flats. Formula 2: Floral dress + denim jacket + white sneakers. Formula 3: Linen shirt + cropped pants + espadrilles.</td>
                           <td className="px-4 py-3 text-sm text-gray-700">If you don't know what to wear this spring, here are some outfit ideas ✨</td>
                         </tr>
                         <tr className="hover:bg-gray-50">
