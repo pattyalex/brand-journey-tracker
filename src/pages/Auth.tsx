@@ -223,8 +223,7 @@ const Auth = () => {
                                       onClick={handleAddLink}
                                       className="text-xs h-5"
                                     >
-                                      <Check className="h-2 w-2 mr-1" />
-                                      <span className="text-[10px]">Save</span>
+                                      <Check className="h-2.5 w-2.5" />
                                     </Button>
                                     <Button
                                       type="button"
@@ -243,11 +242,11 @@ const Auth = () => {
                                     type="button"
                                     variant="outline"
                                     size="xs"
-                                    className="h-5"
+                                    className="h-5 w-5 p-0"
                                     onClick={() => setIsAddingLink(true)}
+                                    title="Add Link"
                                   >
-                                    <Globe className="h-2 w-2 mr-1" />
-                                    <span className="text-[10px]">Add Link</span>
+                                    <Globe className="h-2.5 w-2.5" />
                                   </Button>
                                   
                                   <label className="cursor-pointer">
@@ -261,10 +260,10 @@ const Auth = () => {
                                       type="button"
                                       variant="outline"
                                       size="xs"
-                                      className="h-5"
+                                      className="h-5 w-5 p-0"
+                                      title="Upload Image"
                                     >
-                                      <Upload className="h-2 w-2 mr-1" />
-                                      <span className="text-[10px]">Upload</span>
+                                      <Upload className="h-2.5 w-2.5" />
                                     </Button>
                                   </label>
                                 </div>
@@ -286,11 +285,11 @@ const Auth = () => {
                                 type="button"
                                 variant="outline"
                                 size="xs"
-                                className="h-5"
+                                className="h-5 w-5 p-0"
                                 onClick={() => setIsAddingLink(true)}
+                                title="Add Link"
                               >
-                                <Globe className="h-2 w-2 mr-1" />
-                                <span className="text-[10px]">Add Link</span>
+                                <Globe className="h-2.5 w-2.5" />
                               </Button>
                               
                               <label className="cursor-pointer">
@@ -304,10 +303,10 @@ const Auth = () => {
                                   type="button"
                                   variant="outline"
                                   size="xs"
-                                  className="h-5"
+                                  className="h-5 w-5 p-0"
+                                  title="Upload Image"
                                 >
-                                  <Upload className="h-2 w-2 mr-1" />
-                                  <span className="text-[10px]">Upload</span>
+                                  <Upload className="h-2.5 w-2.5" />
                                 </Button>
                               </label>
                             </div>
@@ -327,11 +326,11 @@ const Auth = () => {
                                 type="button"
                                 variant="outline"
                                 size="xs"
-                                className="h-5"
+                                className="h-5 w-5 p-0"
                                 onClick={() => setIsAddingLink(true)}
+                                title="Add Link"
                               >
-                                <Globe className="h-2 w-2 mr-1" />
-                                <span className="text-[10px]">Add Link</span>
+                                <Globe className="h-2.5 w-2.5" />
                               </Button>
                               
                               <label className="cursor-pointer">
@@ -345,10 +344,10 @@ const Auth = () => {
                                   type="button"
                                   variant="outline"
                                   size="xs"
-                                  className="h-5"
+                                  className="h-5 w-5 p-0"
+                                  title="Upload Image"
                                 >
-                                  <Upload className="h-2 w-2 mr-1" />
-                                  <span className="text-[10px]">Upload</span>
+                                  <Upload className="h-2.5 w-2.5" />
                                 </Button>
                               </label>
                             </div>
