@@ -3,7 +3,7 @@ import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Brain, Lightbulb, Palette, AlignJustify, FileText, Target, MessageSquare, Text, ArrowRightCircle, Link, Upload, Check, ImageIcon } from "lucide-react";
+import { Brain, Lightbulb, Palette, AlignJustify, FileText, Target, MessageSquare, Text, ArrowRightCircle, Link, Upload, Check, ImageIcon, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -23,6 +23,9 @@ const Auth = () => {
     label: "Pinterest"
   });
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isAddingLink, setIsAddingLink] = useState(false);
+  const [linkUrl, setLinkUrl] = useState("");
+  const [linkLabel, setLinkLabel] = useState("");
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -38,6 +41,19 @@ const Auth = () => {
         });
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAddLink = () => {
+    if (linkUrl) {
+      setInspirationSource({
+        type: "link",
+        content: linkUrl,
+        label: linkLabel || new URL(linkUrl).hostname
+      });
+      setLinkUrl("");
+      setLinkLabel("");
+      setIsAddingLink(false);
     }
   };
 
@@ -68,7 +84,7 @@ const Auth = () => {
          rel="noopener noreferrer" 
          className="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1">
         <Link className="h-3 w-3" />
-        <span>{source.label || "Link"}</span>
+        <span className="text-xs">{source.label || "Link"}</span>
       </a>
     );
   };
@@ -186,8 +202,57 @@ const Auth = () => {
                           <td className="px-4 py-3 text-sm text-gray-700 min-w-[150px]">
                             <div className="flex flex-col space-y-2">
                               {renderInspirationCell(inspirationSource)}
-                              <div className="relative">
-                                <div className="flex space-x-2">
+                              
+                              {isAddingLink ? (
+                                <div className="flex flex-col space-y-2">
+                                  <Input
+                                    type="url"
+                                    placeholder="https://example.com"
+                                    value={linkUrl}
+                                    onChange={(e) => setLinkUrl(e.target.value)}
+                                    className="text-xs h-7 px-2"
+                                  />
+                                  <Input
+                                    type="text"
+                                    placeholder="Label (optional)"
+                                    value={linkLabel}
+                                    onChange={(e) => setLinkLabel(e.target.value)}
+                                    className="text-xs h-7 px-2"
+                                  />
+                                  <div className="flex gap-1">
+                                    <Button
+                                      type="button"
+                                      size="xs"
+                                      onClick={handleAddLink}
+                                      className="text-xs"
+                                    >
+                                      <Check className="h-3 w-3 mr-1" />
+                                      <span className="text-xs">Save</span>
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="xs"
+                                      onClick={() => setIsAddingLink(false)}
+                                      className="text-xs"
+                                    >
+                                      Cancel
+                                    </Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex gap-1">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="xs"
+                                    className="text-xs"
+                                    onClick={() => setIsAddingLink(true)}
+                                  >
+                                    <Globe className="h-3 w-3 mr-1" />
+                                    <span className="text-xs">Add Link</span>
+                                  </Button>
+                                  
                                   <label className="cursor-pointer">
                                     <Input
                                       type="file"
@@ -206,7 +271,7 @@ const Auth = () => {
                                     </Button>
                                   </label>
                                 </div>
-                              </div>
+                              )}
                             </div>
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-700">3 outfit formulas for spring</td>
@@ -219,26 +284,35 @@ const Auth = () => {
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700 min-w-[150px]">
-                            <div className="relative">
-                              <div className="flex space-x-2">
-                                <label className="cursor-pointer">
-                                  <Input
-                                    type="file"
-                                    accept="image/*"
-                                    className="hidden"
-                                    onChange={handleImageUpload}
-                                  />
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="xs"
-                                    className="text-xs"
-                                  >
-                                    <Upload className="h-3 w-3 mr-1" />
-                                    <span className="text-xs">Upload</span>
-                                  </Button>
-                                </label>
-                              </div>
+                            <div className="flex gap-1">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="xs"
+                                className="text-xs"
+                                onClick={() => setIsAddingLink(true)}
+                              >
+                                <Globe className="h-3 w-3 mr-1" />
+                                <span className="text-xs">Add Link</span>
+                              </Button>
+                              
+                              <label className="cursor-pointer">
+                                <Input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={handleImageUpload}
+                                />
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="xs"
+                                  className="text-xs"
+                                >
+                                  <Upload className="h-3 w-3 mr-1" />
+                                  <span className="text-xs">Upload</span>
+                                </Button>
+                              </label>
                             </div>
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
@@ -251,26 +325,35 @@ const Auth = () => {
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
                           <td className="px-4 py-3 text-sm text-gray-700 min-w-[150px]">
-                            <div className="relative">
-                              <div className="flex space-x-2">
-                                <label className="cursor-pointer">
-                                  <Input
-                                    type="file"
-                                    accept="image/*"
-                                    className="hidden"
-                                    onChange={handleImageUpload}
-                                  />
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="xs"
-                                    className="text-xs"
-                                  >
-                                    <Upload className="h-3 w-3 mr-1" />
-                                    <span className="text-xs">Upload</span>
-                                  </Button>
-                                </label>
-                              </div>
+                            <div className="flex gap-1">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="xs"
+                                className="text-xs"
+                                onClick={() => setIsAddingLink(true)}
+                              >
+                                <Globe className="h-3 w-3 mr-1" />
+                                <span className="text-xs">Add Link</span>
+                              </Button>
+                              
+                              <label className="cursor-pointer">
+                                <Input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={handleImageUpload}
+                                />
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="xs"
+                                  className="text-xs"
+                                >
+                                  <Upload className="h-3 w-3 mr-1" />
+                                  <span className="text-xs">Upload</span>
+                                </Button>
+                              </label>
                             </div>
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-700"></td>
