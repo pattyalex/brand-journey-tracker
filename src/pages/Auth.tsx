@@ -114,7 +114,7 @@ const Auth = () => {
                           <td className="px-4 py-3 text-sm text-gray-700">Fashion</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Text Only</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Likes</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">Comment [word] below to get...</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">3 outfit formulas for spring</td>
                           <td className="px-4 py-3 text-sm text-gray-700">⚠️ WARNING - You will be...</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Check it out!</td>
                         </tr>
