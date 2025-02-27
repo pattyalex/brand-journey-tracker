@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Layout from "@/components/Layout";
-import { FolderOpen, HandshakeIcon, FileText } from "lucide-react";
+import { FolderOpen, HandshakeIcon, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Index = () => {
@@ -10,32 +10,33 @@ const Index = () => {
 
   return (
     <Layout>
-      <div className="max-w-6xl mx-auto space-y-8 fade-in">
-        <section className="text-center py-16">
-          <h1 className="text-5xl font-bold mb-4 font-playfair">Welcome to HeyMegan</h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Your all-in-one platform for managing content creation projects and brand partnerships
+      <div className="max-w-6xl mx-auto px-6 py-16 space-y-16 fade-in">
+        {/* Hero Section */}
+        <section className="text-center space-y-6">
+          <h1 className="text-5xl md:text-6xl font-bold mb-4 font-playfair leading-tight">
+            Simplify Your Content <br />Creation Journey
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            All-in-one platform for content creators to manage projects, track income, and grow their business
           </p>
-        </section>
-
-        <section className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature, index) => (
-            <Card key={index} className="p-6 hover-scale glass-morphism">
-              <feature.icon className="w-8 h-8 mb-4 text-primary" />
-              <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-              <p className="text-muted-foreground">{feature.description}</p>
-            </Card>
-          ))}
-        </section>
-
-        <section className="text-center py-8">
           <Button 
             size="lg" 
-            className="bg-primary text-white hover:bg-primary/90"
+            className="bg-primary text-white hover:bg-primary/90 text-lg px-8 py-6"
             onClick={() => navigate("/get-started")}
           >
             Get Started
           </Button>
+        </section>
+
+        {/* Features Section */}
+        <section className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          {features.map((feature, index) => (
+            <Card key={index} className="p-6 hover:shadow-lg transition-all duration-300 bg-gray-50/50">
+              <feature.icon className="w-10 h-10 mb-4 text-primary" />
+              <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+              <p className="text-muted-foreground">{feature.description}</p>
+            </Card>
+          ))}
         </section>
       </div>
     </Layout>
@@ -45,18 +46,18 @@ const Index = () => {
 const features = [
   {
     title: "Content Management",
-    description: "Organize and track your content projects in one place",
+    description: "Plan, organize, and track your content creation workflow in one place",
     icon: FolderOpen,
   },
   {
-    title: "Income Tracker",
-    description: "Manage your brand collaborations and other revenue streams",
+    title: "Revenue Growth",
+    description: "Track income from brand deals, sponsorships, and other revenue streams",
     icon: HandshakeIcon,
   },
   {
-    title: "Document Storage",
-    description: "Securely store and access contracts, invoices, and other documents",
-    icon: FileText,
+    title: "Performance Analytics",
+    description: "Monitor your growth and make data-driven content decisions",
+    icon: TrendingUp,
   },
 ];
 
