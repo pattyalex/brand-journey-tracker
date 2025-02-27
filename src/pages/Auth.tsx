@@ -111,7 +111,7 @@ const Auth = () => {
                       <tbody className="bg-white divide-y divide-gray-100">
                         <tr className="hover:bg-gray-50">
                           <td className="px-4 py-3 text-sm text-gray-700">Introduction to...</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">Social Proof</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">Fashion</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Text Only</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Likes</td>
                           <td className="px-4 py-3 text-sm text-gray-700">Comment [word] below to get...</td>
