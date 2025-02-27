@@ -28,6 +28,7 @@ interface StandardColumn {
   field: string;
   icon?: React.ReactNode;
   isEditing: boolean;
+  width?: string; // Added width property for column sizing
 }
 
 interface ContentIdea {
@@ -89,12 +90,12 @@ const Auth = () => {
   
   // Standard columns that can be reordered and renamed
   const [standardColumns, setStandardColumns] = useState<StandardColumn[]>([
-    { id: "idea", name: "Idea", field: "idea", icon: <Lightbulb className="h-3 w-3" />, isEditing: false },
+    { id: "idea", name: "Idea", field: "idea", icon: <Lightbulb className="h-3 w-3" />, isEditing: false, width: "300px" }, // Set wider width for Idea column
     { id: "inspiration", name: "Inspiration", field: "inspiration", icon: <Link className="h-3 w-3" />, isEditing: false },
     { id: "pillar", name: "Pillar", field: "pillar", icon: <AlignJustify className="h-3 w-3" />, isEditing: false },
     { id: "format", name: "Format", field: "format", icon: <FileText className="h-3 w-3" />, isEditing: false },
     { id: "goal", name: "Goal", field: "goal", icon: <Target className="h-3 w-3" />, isEditing: false },
-    { id: "hook", name: "Hook", field: "hook", icon: <MessageSquare className="h-3 w-3" />, isEditing: false },
+    { id: "hook", name: "Hook", field: "hook", icon: <MessageSquare className="h-3 w-3" />, isEditing: false, width: "250px" }, // Set wider width for Hook column
     { id: "script", name: "Script", field: "script", icon: <ArrowRightCircle className="h-3 w-3" />, isEditing: false },
     { id: "caption", name: "Caption", field: "caption", icon: <Text className="h-3 w-3" />, isEditing: false },
   ]);
@@ -973,6 +974,7 @@ const Auth = () => {
                             <th 
                               key={column.id}
                               className={`px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700 cursor-move ${dragOverColumnId === column.id ? 'bg-blue-800' : ''}`}
+                              style={{ width: column.width }} /* Apply column width here */
                               draggable
                               onDragStart={(e) => handleColumnDragStart(e, column.id)}
                               onDragEnd={handleColumnDragEnd}
@@ -1155,6 +1157,7 @@ const Auth = () => {
                               <td 
                                 key={`${idea.id}-${column.id}`}
                                 className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200"
+                                style={{ width: column.width }} /* Apply column width to cells too */
                               >
                                 {renderStandardCell(idea, column.field)}
                               </td>
