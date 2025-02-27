@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Brain, Lightbulb, Palette } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import BackButton from "@/components/BackButton";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -15,6 +16,9 @@ const Auth = () => {
   return (
     <Layout>
       <div className="fade-in max-w-md mx-auto mt-12">
+        <div className="mb-4">
+          <BackButton />
+        </div>
         <h2 className="text-2xl font-bold mb-6 text-center">Content Creation Tools</h2>
         <Card>
           <CardContent className="p-6">

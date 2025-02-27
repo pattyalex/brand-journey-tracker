@@ -4,12 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import BackButton from "@/components/BackButton";
 
 const Settings = () => {
   return (
     <Layout>
       <div className="max-w-4xl mx-auto space-y-6 fade-in">
-        <h1 className="text-4xl font-bold mb-6">Settings</h1>
+        <div className="flex items-center mb-4">
+          <BackButton />
+          <h1 className="text-4xl font-bold ml-2">Settings</h1>
+        </div>
 
         <Card>
           <CardHeader>
