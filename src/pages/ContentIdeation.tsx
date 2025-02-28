@@ -3,13 +3,13 @@ import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Brain, Lightbulb, Palette, Plus, X, Check, GripVertical, Trash2 } from "lucide-react";
+import { Brain, Lightbulb, Palette, Plus, X, Check, GripVertical, Trash2, FileEdit, Globe, ImageIcon, Upload, Link } from "lucide-react";
 import BrainDump from "@/components/BrainDump";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 
-type TabType = "brain-dump" | "content-ideas" | "inspiration";
+type TabType = "brain-dump" | "content-ideas" | "vision-board";
 
 interface CustomColumn {
   id: string;
@@ -197,9 +197,9 @@ const ContentIdeation = () => {
               <Lightbulb className="h-4 w-4" />
               <span className="hidden sm:inline">Content Ideas</span>
             </TabsTrigger>
-            <TabsTrigger value="inspiration" className="flex items-center gap-2">
+            <TabsTrigger value="vision-board" className="flex items-center gap-2">
               <Palette className="h-4 w-4" />
-              <span className="hidden sm:inline">Inspiration</span>
+              <span className="hidden sm:inline">Vision Board</span>
             </TabsTrigger>
           </TabsList>
 
@@ -476,17 +476,83 @@ const ContentIdeation = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="inspiration" className="space-y-4">
+          <TabsContent value="vision-board" className="space-y-4">
             <Card>
               <CardContent className="pt-6">
-                <h2 className="text-2xl font-semibold mb-4">Inspiration</h2>
+                <h2 className="text-2xl font-semibold mb-4">Vision Board</h2>
                 <p className="text-muted-foreground mb-6">
-                  Save inspiration from around the web and organize visual references for your content.
+                  Create visual boards to represent your brand identity, goals, and aesthetics.
                 </p>
-                <div className="bg-gray-50 border border-gray-100 rounded-md p-8 min-h-[300px]">
-                  <p className="text-center text-muted-foreground">
-                    Inspiration board will go here
-                  </p>
+                <div className="bg-white border border-gray-100 rounded-md p-8 min-h-[400px]">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* Add Image Card */}
+                    <div className="border border-dashed border-gray-300 rounded-md h-48 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer">
+                      <ImageIcon className="h-8 w-8 text-gray-400 mb-2" />
+                      <p className="text-gray-500 text-sm">Add images to your vision board</p>
+                      <Button variant="ghost" size="sm" className="mt-2">
+                        <Plus className="h-4 w-4 mr-1" />
+                        Add Image
+                      </Button>
+                    </div>
+                    
+                    {/* Example Vision Board Items */}
+                    <div className="rounded-md overflow-hidden h-48 relative group">
+                      <img 
+                        src="public/lovable-uploads/89b44c46-3bcc-4440-a4a6-be3b515f53e0.png" 
+                        alt="Vision board example"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                        <Button variant="secondary" size="sm" className="mr-2">
+                          <FileEdit className="h-4 w-4 mr-1" />
+                          Edit
+                        </Button>
+                        <Button variant="destructive" size="sm">
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Remove
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {/* Text Card */}
+                    <div className="rounded-md h-48 bg-purple-100 flex flex-col p-4 relative group">
+                      <h3 className="text-lg font-medium text-purple-800">Brand Voice</h3>
+                      <p className="text-sm text-purple-700 mt-2">
+                        Authentic, inspiring, and approachable. Our voice should make people feel motivated and understood.
+                      </p>
+                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <FileEdit className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {/* Color Palette Card */}
+                    <div className="rounded-md h-48 bg-white border border-gray-200 p-4 flex flex-col">
+                      <h3 className="text-lg font-medium text-gray-800 mb-2">Brand Colors</h3>
+                      <div className="flex flex-wrap gap-2 mt-auto">
+                        <div className="w-10 h-10 rounded-full bg-purple-500" title="#8B5CF6"></div>
+                        <div className="w-10 h-10 rounded-full bg-blue-400" title="#60A5FA"></div>
+                        <div className="w-10 h-10 rounded-full bg-emerald-400" title="#34D399"></div>
+                        <div className="w-10 h-10 rounded-full bg-amber-300" title="#FCD34D"></div>
+                        <div className="w-10 h-10 rounded-full bg-rose-400" title="#FB7185"></div>
+                      </div>
+                    </div>
+                    
+                    {/* External Link Card */}
+                    <div className="rounded-md h-48 bg-gray-50 border border-gray-200 p-4 flex flex-col">
+                      <div className="flex items-center">
+                        <Globe className="h-4 w-4 text-gray-600 mr-2" />
+                        <h3 className="text-lg font-medium text-gray-800">Inspiration Link</h3>
+                      </div>
+                      <a href="https://example.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-2">
+                        Visual Mood Board Examples
+                      </a>
+                      <p className="text-sm text-gray-600 mt-2">
+                        Collection of visual styles that align with our brand aesthetic.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
