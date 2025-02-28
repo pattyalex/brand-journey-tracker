@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Brain, Lightbulb, Palette, AlignJustify, FileText, Target, MessageSquare, Text, ArrowRightCircle, Link, Upload, Check, ImageIcon, Globe, Plus, Trash2, GripVertical, FileEdit, X, Edit3 } from "lucide-react";
+import { Brain, Lightbulb, Palette, AlignJustify, FileText, Target, MessageSquare, Text, ArrowRightCircle, Link, Upload, Check, ImageIcon, Globe, Plus, Trash2, GripVertical, FileEdit, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -977,30 +977,30 @@ const Auth = () => {
                       ))}
                     </div>
                     
-                    {/* Column Delete icons positioned at the top of the table */}
-                    <div className="absolute left-10 top-0 h-[53px] z-10 flex items-center">
-                      {standardColumns.map((column) => (
-                        <div 
-                          key={`col-delete-${column.id}`} 
-                          className="flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    {/* Column Delete icons positioned above the table */}
+                    <div className="bg-gray-800 py-1 px-2 w-full flex mb-1">
+                      {standardColumns.map((column, index) => (
+                        <div
+                          key={`col-delete-${column.id}`}
+                          className="flex items-center justify-center transition-opacity"
                           style={{ 
-                            position: 'absolute', 
-                            left: `${Array.from(standardColumns).findIndex(c => c.id === column.id) * 10}px`,
-                            width: column.width ? 'calc(' + column.width + ' - 10px)' : '190px'
+                            width: column.width || '200px',
+                            paddingLeft: index === 0 ? '0' : '4px',
+                            paddingRight: '4px'
                           }}
-                          data-delete-col-for={column.id}
                         >
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="xs"
-                            className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
-                            onClick={() => handleDeleteStandardColumn(column.id)}
-                            title={`Delete ${column.name} column`}
-                            disabled={column.id === "idea"}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
+                          {column.id !== "idea" && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="xs"
+                              className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
+                              onClick={() => handleDeleteStandardColumn(column.id)}
+                              title={`Delete ${column.name} column`}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -1039,22 +1039,6 @@ const Auth = () => {
                               onDragLeave={(e) => handleColumnDragLeave(e)}
                               onDrop={(e) => handleColumnDrop(e, column.id)}
                               title="Drag to reorder column"
-                              onMouseEnter={() => {
-                                // Show the delete button for this column
-                                const deleteButton = document.querySelector(`[data-delete-col-for="${column.id}"]`);
-                                if (deleteButton) {
-                                  deleteButton.classList.add('opacity-100');
-                                  deleteButton.classList.remove('opacity-0');
-                                }
-                              }}
-                              onMouseLeave={() => {
-                                // Hide the delete button
-                                const deleteButton = document.querySelector(`[data-delete-col-for="${column.id}"]`);
-                                if (deleteButton) {
-                                  deleteButton.classList.add('opacity-0');
-                                  deleteButton.classList.remove('opacity-100');
-                                }
-                              }}
                             >
                               {column.isEditing ? (
                                 <div className="flex items-center gap-1">
@@ -1086,21 +1070,14 @@ const Auth = () => {
                                   </Button>
                                 </div>
                               ) : (
-                                <div className="flex items-center justify-between">
+                                <div 
+                                  className="flex items-center cursor-pointer hover:text-blue-200"
+                                  onClick={() => startEditingColumn(column.id)}
+                                >
                                   <div className="flex items-center gap-1">
                                     {column.icon}
                                     <span>{column.name}</span>
                                   </div>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="xs"
-                                    className="h-5 w-5 p-0 text-gray-300 hover:text-white -mr-1 opacity-0 group-hover:opacity-100"
-                                    onClick={() => startEditingColumn(column.id)}
-                                    title="Edit column name"
-                                  >
-                                    <Edit3 className="h-3 w-3" />
-                                  </Button>
                                 </div>
                               )}
                             </th>
