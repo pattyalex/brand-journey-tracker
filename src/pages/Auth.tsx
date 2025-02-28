@@ -978,15 +978,30 @@ const Auth = () => {
                     </div>
                     
                     {/* Column Delete icons positioned above the table */}
-                    <div className="bg-gray-800 py-1 px-2 w-full flex mb-1">
+                    <div className="h-8 w-full flex items-center justify-start mt-2 mb-0">
                       {standardColumns.map((column, index) => (
                         <div
                           key={`col-delete-${column.id}`}
-                          className="flex items-center justify-center transition-opacity"
+                          className="flex items-center justify-center h-full"
                           style={{ 
                             width: column.width || '200px',
                             paddingLeft: index === 0 ? '0' : '4px',
-                            paddingRight: '4px'
+                            paddingRight: '4px',
+                            position: 'relative'
+                          }}
+                          onMouseEnter={(e) => {
+                            const deleteBtn = e.currentTarget.querySelector('.delete-col-btn');
+                            if (deleteBtn) {
+                              deleteBtn.classList.remove('opacity-0');
+                              deleteBtn.classList.add('opacity-100');
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            const deleteBtn = e.currentTarget.querySelector('.delete-col-btn');
+                            if (deleteBtn) {
+                              deleteBtn.classList.add('opacity-0');
+                              deleteBtn.classList.remove('opacity-100');
+                            }
                           }}
                         >
                           {column.id !== "idea" && (
@@ -994,7 +1009,7 @@ const Auth = () => {
                               type="button"
                               variant="ghost"
                               size="xs"
-                              className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
+                              className="h-6 w-6 p-0 text-gray-400 hover:text-red-500 opacity-0 transition-opacity delete-col-btn absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
                               onClick={() => handleDeleteStandardColumn(column.id)}
                               title={`Delete ${column.name} column`}
                             >
@@ -1030,7 +1045,7 @@ const Auth = () => {
                           {standardColumns.map((column, index) => (
                             <th 
                               key={column.id}
-                              className={`px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700 cursor-move ${dragOverColumnId === column.id ? 'bg-blue-800' : ''}`}
+                              className={`px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700 cursor-move relative ${dragOverColumnId === column.id ? 'bg-blue-800' : ''}`}
                               style={{ width: column.width }} /* Apply column width here */
                               draggable
                               onDragStart={(e) => handleColumnDragStart(e, column.id)}
