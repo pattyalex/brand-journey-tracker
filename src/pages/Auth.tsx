@@ -225,6 +225,35 @@ const Auth = () => {
     });
   };
 
+  // Handle deleting standard column
+  const handleDeleteStandardColumn = (columnId: string) => {
+    // Don't allow deleting all columns
+    if (standardColumns.length <= 1) {
+      toast({
+        title: "Cannot delete",
+        description: "You need to keep at least one standard column",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Check if it's a required column like "idea"
+    if (columnId === "idea") {
+      toast({
+        title: "Cannot delete",
+        description: "The Idea column is required and cannot be deleted",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setStandardColumns(prev => prev.filter(col => col.id !== columnId));
+    toast({
+      title: "Column deleted",
+      description: "The column has been removed",
+    });
+  };
+
   const handleCellChange = (ideaId: string, field: keyof Omit<ContentIdea, 'id' | 'inspirationSource' | 'customValues'>, value: string) => {
     setContentIdeas(prev => prev.map(idea => {
       if (idea.id === ideaId) {
@@ -926,12 +955,12 @@ const Auth = () => {
                 </p>
                 <div className="bg-white border border-gray-100 rounded-md overflow-hidden">
                   <div className="overflow-x-auto relative">
-                    {/* Trash icons positioned outside the table */}
+                    {/* Row Delete icons positioned outside the table */}
                     <div className="absolute left-0 top-0 bottom-0 w-10 flex flex-col pt-[53px] z-10">
                       {contentIdeas.map((idea) => (
                         <div 
                           key={`delete-${idea.id}`} 
-                          className="h-[53px] flex items-center justify-center opacity-0 group-hover-[data-row-id='${idea.id}']:opacity-100 transition-opacity"
+                          className="h-[53px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                           data-delete-for={idea.id}
                         >
                           <Button
@@ -941,6 +970,34 @@ const Auth = () => {
                             className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
                             onClick={() => handleDeleteIdea(idea.id)}
                             title="Delete idea"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Column Delete icons positioned at the top of the table */}
+                    <div className="absolute left-10 top-0 h-[53px] z-10 flex items-center">
+                      {standardColumns.map((column) => (
+                        <div 
+                          key={`col-delete-${column.id}`} 
+                          className="flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          style={{ 
+                            position: 'absolute', 
+                            left: `${Array.from(standardColumns).findIndex(c => c.id === column.id) * 10}px`,
+                            width: column.width ? 'calc(' + column.width + ' - 10px)' : '190px'
+                          }}
+                          data-delete-col-for={column.id}
+                        >
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="xs"
+                            className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
+                            onClick={() => handleDeleteStandardColumn(column.id)}
+                            title={`Delete ${column.name} column`}
+                            disabled={column.id === "idea"}
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
@@ -966,11 +1023,11 @@ const Auth = () => {
                       ))}
                     </div>
                     
-                    <table className="w-full border-collapse ml-10 mr-10">
+                    <table className="w-full border-collapse ml-10 mr-10 group">
                       <thead className="bg-gray-800 text-white">
                         <tr>
                           {/* Standard Columns - can be reordered and renamed */}
-                          {standardColumns.map(column => (
+                          {standardColumns.map((column, index) => (
                             <th 
                               key={column.id}
                               className={`px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700 cursor-move ${dragOverColumnId === column.id ? 'bg-blue-800' : ''}`}
@@ -982,6 +1039,22 @@ const Auth = () => {
                               onDragLeave={(e) => handleColumnDragLeave(e)}
                               onDrop={(e) => handleColumnDrop(e, column.id)}
                               title="Drag to reorder column"
+                              onMouseEnter={() => {
+                                // Show the delete button for this column
+                                const deleteButton = document.querySelector(`[data-delete-col-for="${column.id}"]`);
+                                if (deleteButton) {
+                                  deleteButton.classList.add('opacity-100');
+                                  deleteButton.classList.remove('opacity-0');
+                                }
+                              }}
+                              onMouseLeave={() => {
+                                // Hide the delete button
+                                const deleteButton = document.querySelector(`[data-delete-col-for="${column.id}"]`);
+                                if (deleteButton) {
+                                  deleteButton.classList.add('opacity-0');
+                                  deleteButton.classList.remove('opacity-100');
+                                }
+                              }}
                             >
                               {column.isEditing ? (
                                 <div className="flex items-center gap-1">
