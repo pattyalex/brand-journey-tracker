@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -977,47 +976,60 @@ const Auth = () => {
                       ))}
                     </div>
                     
-                    {/* Column Delete icons positioned above the table */}
-                    <div className="h-8 w-full flex items-center justify-start mt-2 mb-0">
-                      {standardColumns.map((column, index) => (
-                        <div
-                          key={`col-delete-${column.id}`}
-                          className="flex items-center justify-center h-full"
-                          style={{ 
-                            width: column.width || '200px',
-                            paddingLeft: index === 0 ? '0' : '4px',
-                            paddingRight: '4px',
-                            position: 'relative'
-                          }}
-                          onMouseEnter={(e) => {
-                            const deleteBtn = e.currentTarget.querySelector('.delete-col-btn');
-                            if (deleteBtn) {
-                              deleteBtn.classList.remove('opacity-0');
-                              deleteBtn.classList.add('opacity-100');
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            const deleteBtn = e.currentTarget.querySelector('.delete-col-btn');
-                            if (deleteBtn) {
-                              deleteBtn.classList.add('opacity-0');
-                              deleteBtn.classList.remove('opacity-100');
-                            }
-                          }}
-                        >
-                          {column.id !== "idea" && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="xs"
-                              className="h-6 w-6 p-0 text-gray-400 hover:text-red-500 opacity-0 transition-opacity delete-col-btn absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-                              onClick={() => handleDeleteStandardColumn(column.id)}
-                              title={`Delete ${column.name} column`}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
+                    {/* Column Delete icons positioned above the table header */}
+                    <div className="absolute top-0 left-10 right-10 h-8 z-20">
+                      {standardColumns.map((column, index) => {
+                        // Calculate the accumulated width of all previous columns
+                        let leftPosition = 0;
+                        for (let i = 0; i < index; i++) {
+                          const prevColWidth = standardColumns[i].width || '200px';
+                          leftPosition += parseInt(prevColWidth.replace('px', ''));
+                        }
+                        
+                        // Add half of the current column width to center the button
+                        const currentWidth = parseInt((column.width || '200px').replace('px', ''));
+                        leftPosition += (currentWidth / 2) - 12; // Center the button (button is 24px wide)
+                        
+                        return (
+                          <div
+                            key={`col-delete-${column.id}`}
+                            className="absolute"
+                            style={{ 
+                              left: `${leftPosition}px`,
+                              top: '4px'
+                            }}
+                            onMouseEnter={(e) => {
+                              if (column.id !== "idea") {
+                                const button = e.currentTarget.querySelector('button');
+                                if (button) {
+                                  button.classList.remove('opacity-0');
+                                  button.classList.add('opacity-100');
+                                }
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              const button = e.currentTarget.querySelector('button');
+                              if (button) {
+                                button.classList.add('opacity-0');
+                                button.classList.remove('opacity-100');
+                              }
+                            }}
+                          >
+                            {column.id !== "idea" && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="xs"
+                                className="h-6 w-6 p-0 text-gray-400 hover:text-red-500 opacity-0 transition-opacity"
+                                onClick={() => handleDeleteStandardColumn(column.id)}
+                                title={`Delete ${column.name} column`}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                     
                     {/* Drag handles positioned outside the table on the right */}
