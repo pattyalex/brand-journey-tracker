@@ -88,16 +88,16 @@ const Auth = () => {
     }
   ]);
   
-  // Standard columns that can be reordered and renamed
+  // Standard columns that can be reordered and renamed with explicit widths for all columns
   const [standardColumns, setStandardColumns] = useState<StandardColumn[]>([
-    { id: "idea", name: "Idea", field: "idea", icon: <Lightbulb className="h-3 w-3" />, isEditing: false, width: "300px" }, // Set wider width for Idea column
-    { id: "inspiration", name: "Inspiration", field: "inspiration", icon: <Link className="h-3 w-3" />, isEditing: false },
-    { id: "pillar", name: "Pillar", field: "pillar", icon: <AlignJustify className="h-3 w-3" />, isEditing: false },
-    { id: "format", name: "Format", field: "format", icon: <FileText className="h-3 w-3" />, isEditing: false },
-    { id: "goal", name: "Goal", field: "goal", icon: <Target className="h-3 w-3" />, isEditing: false },
-    { id: "hook", name: "Hook", field: "hook", icon: <MessageSquare className="h-3 w-3" />, isEditing: false, width: "250px" }, // Set wider width for Hook column
-    { id: "script", name: "Script", field: "script", icon: <ArrowRightCircle className="h-3 w-3" />, isEditing: false },
-    { id: "caption", name: "Caption", field: "caption", icon: <Text className="h-3 w-3" />, isEditing: false },
+    { id: "idea", name: "Idea", field: "idea", icon: <Lightbulb className="h-3 w-3" />, isEditing: false, width: "600px" },
+    { id: "inspiration", name: "Inspiration", field: "inspiration", icon: <Link className="h-3 w-3" />, isEditing: false, width: "150px" },
+    { id: "pillar", name: "Pillar", field: "pillar", icon: <AlignJustify className="h-3 w-3" />, isEditing: false, width: "200px" },
+    { id: "format", name: "Format", field: "format", icon: <FileText className="h-3 w-3" />, isEditing: false, width: "200px" },
+    { id: "goal", name: "Goal", field: "goal", icon: <Target className="h-3 w-3" />, isEditing: false, width: "200px" },
+    { id: "hook", name: "Hook", field: "hook", icon: <MessageSquare className="h-3 w-3" />, isEditing: false, width: "500px" },
+    { id: "script", name: "Script", field: "script", icon: <ArrowRightCircle className="h-3 w-3" />, isEditing: false, width: "200px" },
+    { id: "caption", name: "Caption", field: "caption", icon: <Text className="h-3 w-3" />, isEditing: false, width: "200px" },
   ]);
   
   const [isAddingLink, setIsAddingLink] = useState(false);
