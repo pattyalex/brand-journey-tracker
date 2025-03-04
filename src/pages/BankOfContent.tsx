@@ -314,7 +314,7 @@ const BankOfContent = () => {
                             size="sm" 
                             className="absolute bottom-4 right-4 bg-white/80"
                           >
-                            <LayoutList className="h-4 w-4 mr-2" /> Options
+                            <Sparkles className="h-4 w-4 mr-2" /> Develop Your Idea
                           </Button>
                         </SheetTrigger>
                         <SheetContent side="bottom" className="h-auto">
