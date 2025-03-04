@@ -1,4 +1,3 @@
-
 import { Home, FolderOpen, FileText, Settings, ListTodo, Lightbulb, Trash2, Plus } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -20,7 +19,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
-// Define the proper type for menu items including optional subItems
 type MenuItem = {
   title: string;
   icon: React.ComponentType<any>;
@@ -41,11 +39,9 @@ const defaultMenuItems: MenuItem[] = [
   { title: 'Documents', icon: FileText, url: '/documents', isDeletable: true },
 ];
 
-// Settings item is separate now to position it at the bottom
 const settingsItem: MenuItem = { title: 'Settings', icon: Settings, url: '/settings', isDeletable: false };
 
 const Sidebar = () => {
-  // Get saved menu items from localStorage or use default
   const getSavedMenuItems = () => {
     const saved = localStorage.getItem('sidebarMenuItems');
     return saved ? JSON.parse(saved) : defaultMenuItems;
@@ -68,7 +64,6 @@ const Sidebar = () => {
       return;
     }
 
-    // Check if page with same title already exists
     if (menuItems.some(item => item.title.toLowerCase() === newPageTitle.toLowerCase())) {
       toast.error("A page with this title already exists");
       return;
@@ -76,8 +71,8 @@ const Sidebar = () => {
 
     const newPage: MenuItem = {
       title: newPageTitle,
-      icon: FileText, // Default icon
-      url: `/${newPageTitle.toLowerCase().replace(/\s+/g, '-')}`, // Convert to slug format
+      icon: FileText,
+      url: `/${newPageTitle.toLowerCase().replace(/\s+/g, '-')}`,
       isDeletable: true
     };
 
@@ -85,7 +80,6 @@ const Sidebar = () => {
     setMenuItems(updatedItems);
     localStorage.setItem('sidebarMenuItems', JSON.stringify(updatedItems));
     
-    // Reset form
     setNewPageTitle('');
     setShowAddForm(false);
     toast.success(`"${newPageTitle}" added to sidebar`);
@@ -103,7 +97,7 @@ const Sidebar = () => {
             <Button 
               variant="ghost" 
               size="xs"
-              className="text-muted-foreground"
+              className="text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
               onClick={() => setShowAddForm(true)}
             >
               <Plus size={14} />
@@ -121,7 +115,6 @@ const Sidebar = () => {
                     </a>
                   </SidebarMenuButton>
                   
-                  {/* Add trash icon for deletable items */}
                   {item.isDeletable && (
                     <SidebarMenuAction 
                       onClick={() => handleDeleteItem(item.title)}
@@ -152,7 +145,6 @@ const Sidebar = () => {
                 </SidebarMenuItem>
               ))}
               
-              {/* Add Page Form - Now it will appear conditionally when the "Add Page" button is clicked */}
               {showAddForm && (
                 <SidebarMenuItem>
                   <div className="flex flex-col gap-2 px-2 py-3">
@@ -187,10 +179,8 @@ const Sidebar = () => {
                 </SidebarMenuItem>
               )}
               
-              {/* Separator above Settings */}
               <SidebarSeparator className="my-2" />
               
-              {/* Settings item positioned at the bottom */}
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <a href={settingsItem.url} className="flex items-center gap-2">
