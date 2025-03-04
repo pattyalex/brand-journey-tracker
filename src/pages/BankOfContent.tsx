@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -192,8 +191,8 @@ const BankOfContent = () => {
                   </div>
                   <div className="h-[calc(100vh-240px)]">
                     <Sheet>
-                      <div className="rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full relative bg-[#F6F6F7]">
-                        <ScrollArea className="h-full px-4 py-4 overflow-auto">
+                      <div className="rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full relative bg-[#F6F6F7] flex">
+                        <ScrollArea className="h-full w-full px-4 py-4 overflow-auto">
                           <Textarea
                             ref={textareaRef}
                             value={writingText}
