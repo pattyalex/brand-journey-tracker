@@ -1,10 +1,9 @@
-
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ContentPillar from "@/components/content/ContentPillar";
 import { Button } from "@/components/ui/button";
-import { Pencil, Plus, Search, Lightbulb, LayoutList, FileText, Save, ClipboardCopy, Tag, X } from "lucide-react";
+import { Pencil, Plus, Search, Lightbulb, LayoutList, FileText, Save, ClipboardCopy, Tag, X, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ContentUploader from "@/components/content/ContentUploader";
@@ -41,6 +40,7 @@ const BankOfContent = () => {
   const [newIdeaTitle, setNewIdeaTitle] = useState("");
   const [newIdeaTags, setNewIdeaTags] = useState<string[]>([]);
   const [currentTag, setCurrentTag] = useState("");
+  const [developIdeaMode, setDevelopIdeaMode] = useState(false);
 
   useEffect(() => {
     if (activeTab && writingText) {
@@ -61,14 +61,8 @@ const BankOfContent = () => {
     }
   }, [activeTab]);
 
-  const handleTextSelection = () => {
-    const selection = window.getSelection();
-    if (selection && !selection.isCollapsed) {
-      const selectedContent = selection.toString().trim();
-      if (selectedContent) {
-        setSelectedText(selectedContent);
-      }
-    }
+  const handleTextSelection = (selectedContent: string) => {
+    setSelectedText(selectedContent);
   };
 
   const createNewIdeaFromSelection = () => {
@@ -103,6 +97,18 @@ const BankOfContent = () => {
     
     setNewIdeaTitle(`Idea - ${new Date().toLocaleDateString()}`);
     setNewIdeaTags(["selection"]);
+    setShowNewIdeaDialog(true);
+  };
+
+  const developSelectedIdea = () => {
+    if (!selectedText.trim()) {
+      toast.error("Please select some text first");
+      return;
+    }
+    
+    setNewIdeaTitle(`Development - ${new Date().toLocaleDateString()}`);
+    setNewIdeaTags(["development"]);
+    setDevelopIdeaMode(true);
     setShowNewIdeaDialog(true);
   };
 
@@ -173,6 +179,7 @@ const BankOfContent = () => {
     addContentToPillar(activeTab, newIdea);
     toast.success("Your writing has been saved as an idea");
     setShowNewIdeaDialog(false);
+    setDevelopIdeaMode(false);
   };
 
   const addContentToPillar = (pillarId: string, content: ContentItem) => {
@@ -289,12 +296,12 @@ const BankOfContent = () => {
                           <div 
                             className="h-full w-full cursor-text px-4 py-4" 
                             onClick={() => textareaRef.current?.focus()}
-                            onMouseUp={handleTextSelection}
                           >
                             <Textarea
                               ref={textareaRef}
                               value={writingText}
                               onChange={(e) => setWritingText(e.target.value)}
+                              onTextSelect={handleTextSelection}
                               placeholder="Start writing your ideas, thoughts, or notes here..."
                               className="min-h-full w-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-base absolute inset-0 px-4 py-4"
                             />
@@ -318,14 +325,23 @@ const BankOfContent = () => {
                               <div className="p-4 bg-gray-100/80 rounded-md">
                                 <h4 className="font-medium mb-2">Selected Text:</h4>
                                 <p className="text-sm text-gray-700 line-clamp-3">{selectedText}</p>
-                                <Button 
-                                  onClick={saveSelectedTextAsIdea}
-                                  className="w-full mt-3"
-                                  variant="secondary"
-                                >
-                                  <ClipboardCopy className="h-4 w-4 mr-2" />
-                                  Save Selection as Idea
-                                </Button>
+                                <div className="flex flex-col sm:flex-row gap-2 mt-3">
+                                  <Button 
+                                    onClick={saveSelectedTextAsIdea}
+                                    className="w-full"
+                                    variant="secondary"
+                                  >
+                                    <ClipboardCopy className="h-4 w-4 mr-2" />
+                                    Save as Idea
+                                  </Button>
+                                  <Button 
+                                    onClick={developSelectedIdea}
+                                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                                  >
+                                    <Sparkles className="h-4 w-4 mr-2" />
+                                    Develop This Idea
+                                  </Button>
+                                </div>
                               </div>
                             ) : null}
                             
@@ -407,7 +423,9 @@ const BankOfContent = () => {
         <Dialog open={showNewIdeaDialog} onOpenChange={setShowNewIdeaDialog}>
           <DialogContent className="sm:max-w-[525px]">
             <DialogHeader>
-              <DialogTitle>Create New Idea</DialogTitle>
+              <DialogTitle>
+                {developIdeaMode ? "Develop Selected Idea" : "Create New Idea"}
+              </DialogTitle>
             </DialogHeader>
             
             <div className="grid gap-4 py-4">
@@ -466,11 +484,16 @@ const BankOfContent = () => {
             </div>
             
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowNewIdeaDialog(false)}>
+              <Button variant="outline" onClick={() => {
+                setShowNewIdeaDialog(false);
+                setDevelopIdeaMode(false);
+              }}>
                 Cancel
               </Button>
-              <Button onClick={selectedText ? createNewIdeaFromSelection : saveWritingAsIdea}>
-                <Plus className="mr-2 h-4 w-4" /> Create Idea
+              <Button onClick={selectedText ? createNewIdeaFromSelection : saveWritingAsIdea}
+                className={developIdeaMode ? "bg-emerald-600 hover:bg-emerald-700" : ""}>
+                <Plus className="mr-2 h-4 w-4" /> 
+                {developIdeaMode ? "Develop Idea" : "Create Idea"}
               </Button>
             </DialogFooter>
           </DialogContent>

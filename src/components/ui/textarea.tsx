@@ -4,10 +4,24 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 
 export interface TextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
+  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  onTextSelect?: (selectedText: string) => void;
+}
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, ...props }, ref) => {
+  ({ className, onTextSelect, ...props }, ref) => {
+    const handleMouseUp = (e: React.MouseEvent<HTMLTextAreaElement>) => {
+      if (onTextSelect) {
+        const selection = window.getSelection();
+        if (selection && !selection.isCollapsed) {
+          const selectedContent = selection.toString().trim();
+          if (selectedContent) {
+            onTextSelect(selectedContent);
+          }
+        }
+      }
+    };
+
     return (
       <textarea
         className={cn(
@@ -15,6 +29,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           className
         )}
         ref={ref}
+        onMouseUp={handleMouseUp}
         {...props}
       />
     )
