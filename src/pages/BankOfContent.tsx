@@ -1,10 +1,9 @@
-
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ContentPillar from "@/components/content/ContentPillar";
 import { Button } from "@/components/ui/button";
-import { Pencil, Plus, Search, Lightbulb, LayoutList, FileText } from "lucide-react";
+import { Pencil, Plus, Search, Lightbulb, LayoutList, FileText, Save, ClipboardCopy, Tag, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ContentUploader from "@/components/content/ContentUploader";
@@ -13,6 +12,8 @@ import { toast } from "sonner";
 import ContentSearchModal from "@/components/content/ContentSearchModal";
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 export type Pillar = {
   id: string;
@@ -34,6 +35,37 @@ const BankOfContent = () => {
   const [writingText, setWritingText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
+  const [selectedText, setSelectedText] = useState("");
+  const [showNewIdeaDialog, setShowNewIdeaDialog] = useState(false);
+  const [newIdeaTitle, setNewIdeaTitle] = useState("");
+  const [newIdeaTags, setNewIdeaTags] = useState<string[]>([]);
+  const [currentTag, setCurrentTag] = useState("");
+
+  const handleTextSelection = () => {
+    const selection = window.getSelection();
+    if (selection && !selection.isCollapsed) {
+      const selectedContent = selection.toString().trim();
+      if (selectedContent) {
+        setSelectedText(selectedContent);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab && writingText) {
+      localStorage.setItem(`writing-${activeTab}`, writingText);
+    }
+  }, [writingText, activeTab]);
+
+  useEffect(() => {
+    const savedWriting = localStorage.getItem(`writing-${activeTab}`);
+    if (savedWriting) {
+      setWritingText(savedWriting);
+    } else {
+      setWritingText("");
+    }
+  }, [activeTab]);
+
   const addPillar = () => {
     const newId = `${Date.now()}`;
     setPillars([...pillars, { id: newId, name: "New Pillar", content: [], writingSpace: "" }]);
@@ -69,6 +101,52 @@ const BankOfContent = () => {
         : p
     ));
     setWritingText(text);
+  };
+
+  const saveSelectedTextAsIdea = () => {
+    if (!selectedText.trim()) {
+      toast.error("Please select some text first");
+      return;
+    }
+    
+    setNewIdeaTitle(`Idea - ${new Date().toLocaleDateString()}`);
+    setNewIdeaTags(["selection"]);
+    setShowNewIdeaDialog(true);
+  };
+
+  const handleAddTag = () => {
+    if (currentTag.trim() && !newIdeaTags.includes(currentTag.trim())) {
+      setNewIdeaTags([...newIdeaTags, currentTag.trim()]);
+      setCurrentTag("");
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setNewIdeaTags(newIdeaTags.filter(tag => tag !== tagToRemove));
+  };
+
+  const createNewIdeaFromSelection = () => {
+    if (!selectedText.trim() || !newIdeaTitle.trim()) {
+      toast.error("Title and content are required");
+      return;
+    }
+    
+    const newIdea: ContentItem = {
+      id: `${Date.now()}`,
+      title: newIdeaTitle,
+      description: selectedText.slice(0, 100) + (selectedText.length > 100 ? "..." : ""),
+      url: selectedText,
+      format: "text",
+      dateCreated: new Date(),
+      tags: newIdeaTags,
+    };
+    
+    addContentToPillar(activeTab, newIdea);
+    setShowNewIdeaDialog(false);
+    setSelectedText("");
+    setNewIdeaTitle("");
+    setNewIdeaTags([]);
+    toast.success("Selected text saved as a new idea");
   };
 
   const saveWritingAsIdea = () => {
@@ -129,6 +207,16 @@ const BankOfContent = () => {
     
     const targetPillar = pillars.find(p => p.id === toPillarId);
     toast.success(`Content moved to ${targetPillar?.name}`);
+  };
+
+  const saveForLater = () => {
+    if (!writingText.trim()) {
+      toast.error("There's nothing to save");
+      return;
+    }
+    
+    localStorage.setItem(`writing-${activeTab}`, writingText);
+    toast.success("Your writing has been saved for later");
   };
 
   const filteredContent = pillars.map(pillar => ({
@@ -194,7 +282,11 @@ const BankOfContent = () => {
                     <Sheet>
                       <div className="rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full relative bg-[#F6F6F7] flex">
                         <ScrollArea className="h-full w-full">
-                          <div className="h-full w-full cursor-text px-4 py-4" onClick={() => textareaRef.current?.focus()}>
+                          <div 
+                            className="h-full w-full cursor-text px-4 py-4" 
+                            onClick={() => textareaRef.current?.focus()}
+                            onMouseUp={handleTextSelection}
+                          >
                             <Textarea
                               ref={textareaRef}
                               value={writingText}
@@ -217,12 +309,36 @@ const BankOfContent = () => {
                         <SheetContent side="bottom" className="h-auto">
                           <div className="py-4 space-y-4">
                             <h3 className="text-lg font-medium">Writing Options</h3>
+                            
+                            {selectedText ? (
+                              <div className="p-4 bg-gray-100/80 rounded-md">
+                                <h4 className="font-medium mb-2">Selected Text:</h4>
+                                <p className="text-sm text-gray-700 line-clamp-3">{selectedText}</p>
+                                <Button 
+                                  onClick={saveSelectedTextAsIdea}
+                                  className="w-full mt-3"
+                                  variant="secondary"
+                                >
+                                  <ClipboardCopy className="h-4 w-4 mr-2" />
+                                  Save Selection as Idea
+                                </Button>
+                              </div>
+                            ) : null}
+                            
                             <div className="grid gap-4">
                               <Button 
                                 onClick={saveWritingAsIdea}
                                 className="w-full"
                               >
-                                Save as Idea
+                                Save Entire Text as Idea
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                className="w-full"
+                                onClick={saveForLater}
+                              >
+                                <Save className="h-4 w-4 mr-2" />
+                                Save for Later
                               </Button>
                               <Button 
                                 variant="outline" 
@@ -249,6 +365,12 @@ const BankOfContent = () => {
                       variant="default" 
                       size="sm"
                       className="bg-[#8B6B4E] hover:bg-[#7A5C3F]"
+                      onClick={() => {
+                        setNewIdeaTitle(`Idea - ${new Date().toLocaleDateString()}`);
+                        setNewIdeaTags(["idea"]);
+                        setSelectedText("");
+                        setShowNewIdeaDialog(true);
+                      }}
                     >
                       <FileText className="h-4 w-4 mr-2" />
                       Add New Idea
@@ -277,6 +399,78 @@ const BankOfContent = () => {
           content={allContent}
           pillars={pillars}
         />
+        
+        <Dialog open={showNewIdeaDialog} onOpenChange={setShowNewIdeaDialog}>
+          <DialogContent className="sm:max-w-[525px]">
+            <DialogHeader>
+              <DialogTitle>Create New Idea</DialogTitle>
+            </DialogHeader>
+            
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="idea-title">Title</Label>
+                <Input
+                  id="idea-title"
+                  value={newIdeaTitle}
+                  onChange={(e) => setNewIdeaTitle(e.target.value)}
+                  placeholder="Enter a title for your idea"
+                />
+              </div>
+              
+              {selectedText && (
+                <div className="grid gap-2">
+                  <Label>Selected Content</Label>
+                  <div className="bg-gray-50 p-3 rounded-md text-sm max-h-[150px] overflow-y-auto">
+                    {selectedText}
+                  </div>
+                </div>
+              )}
+              
+              <div className="grid gap-2">
+                <Label htmlFor="tags">Tags</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="tags"
+                    value={currentTag}
+                    onChange={(e) => setCurrentTag(e.target.value)}
+                    placeholder="Add tag"
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                  />
+                  <Button type="button" onClick={handleAddTag} variant="secondary">
+                    <Tag className="h-4 w-4 mr-1" /> Add
+                  </Button>
+                </div>
+                
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {newIdeaTags.map((tag, index) => (
+                    <span 
+                      key={index} 
+                      className="bg-secondary/20 text-sm px-2 py-1 rounded-full flex items-center gap-1"
+                    >
+                      {tag}
+                      <button 
+                        type="button" 
+                        onClick={() => handleRemoveTag(tag)}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowNewIdeaDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={selectedText ? createNewIdeaFromSelection : saveWritingAsIdea}>
+                <Plus className="mr-2 h-4 w-4" /> Create Idea
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
