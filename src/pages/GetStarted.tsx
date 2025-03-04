@@ -1,18 +1,18 @@
 
 import Layout from "@/components/Layout";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { PenLine, ListTodo, Calendar, TrendingUp, Handshake, BarChart3 } from "lucide-react";
+import { PenLine, Database, Calendar, TrendingUp, Handshake, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const services = [
   {
     title: (
       <div className="flex flex-col">
-        <span>Daily</span>
-        <span>Agenda</span>
+        <span>Bank of</span>
+        <span>Content</span>
       </div>
     ),
-    icon: ListTodo,
+    icon: Database,
   },
   {
     title: "Content Ideation And Planning",

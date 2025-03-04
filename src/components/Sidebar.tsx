@@ -1,4 +1,5 @@
-import { Home, FolderOpen, FileText, Settings, ListTodo, Lightbulb, Trash2, Plus, CreditCard } from 'lucide-react';
+
+import { Home, FolderOpen, FileText, Settings, ListTodo, Lightbulb, Trash2, Plus, CreditCard, Database } from 'lucide-react';
 import { useState } from 'react';
 import {
   Sidebar as SidebarContainer,
@@ -41,7 +42,7 @@ type MenuItem = {
 const defaultMenuItems: MenuItem[] = [
   { title: 'Dashboard', icon: Home, url: '/', isDeletable: false },
   { title: 'Projects', icon: FolderOpen, url: '/projects', isDeletable: false },
-  { title: 'Daily Agenda', icon: ListTodo, url: '/daily-agenda', isDeletable: true },
+  { title: 'Bank of Content', icon: Database, url: '/bank-of-content', isDeletable: true },
   { title: 'Vision Board & Goals', icon: Lightbulb, url: '/projects/vision-board', isDeletable: true },
   { title: 'Documents', icon: FileText, url: '/documents', isDeletable: true },
 ];
