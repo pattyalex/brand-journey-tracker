@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PenLine, Trash2, ArrowUpRight, MoveRight, Calendar, Tag } from "lucide-react";
+import { PenLine, Trash2, ArrowUpRight, MoveRight, Calendar, Tag, Pencil } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -126,13 +127,22 @@ const ContentPillar = ({
                 </CardContent>
                 
                 <CardFooter className="p-4 pt-0 flex justify-between">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => onDeleteContent(content.id)}
-                  >
-                    <Trash2 className="h-4 w-4 mr-1" /> Delete
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => onDeleteContent(content.id)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" /> Delete
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => console.log("Edit content", content.id)}
+                    >
+                      <Pencil className="h-4 w-4 mr-1" /> Edit
+                    </Button>
+                  </div>
                   
                   <div className="flex items-center">
                     <Select
