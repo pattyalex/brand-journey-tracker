@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { FileText, Pencil, Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import ContentUploader from "@/components/content/ContentUploader";
 import { ContentItem } from "@/types/content";
 import { toast } from "sonner";
 import ContentSearchModal from "@/components/content/ContentSearchModal";
@@ -213,6 +214,10 @@ const BankOfContent = () => {
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl font-semibold">Develop Your Ideas</h2>
                     <div className="flex items-center gap-2">
+                      <ContentUploader 
+                        pillarId={activeTab} 
+                        onContentAdded={addContentToPillar} 
+                      />
                       <Button className="bg-[#b88a6b] hover:bg-[#a57a5e]" onClick={saveWritingAsIdea}>
                         <FileText className="h-4 w-4 mr-2" /> Add New Idea
                       </Button>
