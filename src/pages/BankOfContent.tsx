@@ -11,7 +11,6 @@ import { ContentItem } from "@/types/content";
 import { toast } from "sonner";
 import ContentSearchModal from "@/components/content/ContentSearchModal";
 import { Textarea } from "@/components/ui/textarea";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 
@@ -290,101 +289,44 @@ const BankOfContent = () => {
                     </h2>
                   </div>
                   <div className="h-[calc(100vh-240px)]">
-                    <Sheet>
-                      <div className="rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full relative bg-[#F6F6F7] flex">
-                        <ScrollArea className="h-full w-full">
-                          <div 
-                            className="h-full w-full cursor-text px-4 py-4" 
-                            onClick={() => textareaRef.current?.focus()}
-                          >
-                            <Textarea
-                              ref={textareaRef}
-                              value={writingText}
-                              onChange={(e) => setWritingText(e.target.value)}
-                              onTextSelect={handleTextSelection}
-                              placeholder="Start writing your ideas, thoughts, or notes here..."
-                              className="min-h-full w-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-base absolute inset-0 px-4 py-4"
-                            />
-                          </div>
-                        </ScrollArea>
-                        <div className="absolute right-0 top-0 bottom-0 w-3 bg-gray-200 opacity-60"></div>
-                        <SheetTrigger asChild>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="absolute bottom-4 right-4 bg-white/80"
-                            onClick={() => {
-                              if (selectedText) {
-                                developSelectedIdea();
-                              } else if (writingText) {
-                                setSelectedText(writingText);
-                                setNewIdeaTitle(`Development - ${new Date().toLocaleDateString()}`);
-                                setNewIdeaTags(["development"]);
-                                setDevelopIdeaMode(true);
-                                setShowNewIdeaDialog(true);
-                              } else {
-                                toast.error("Write something first or select text to develop");
-                              }
-                            }}
-                          >
-                            <Sparkles className="h-4 w-4 mr-2" /> Develop Your Idea
-                          </Button>
-                        </SheetTrigger>
-                        <SheetContent side="bottom" className="h-auto">
-                          <div className="py-4 space-y-4">
-                            <h3 className="text-lg font-medium">Writing Options</h3>
-                            
-                            {selectedText ? (
-                              <div className="p-4 bg-gray-100/80 rounded-md">
-                                <h4 className="font-medium mb-2">Selected Text:</h4>
-                                <p className="text-sm text-gray-700 line-clamp-3">{selectedText}</p>
-                                <div className="flex flex-col sm:flex-row gap-2 mt-3">
-                                  <Button 
-                                    onClick={saveSelectedTextAsIdea}
-                                    className="w-full"
-                                    variant="secondary"
-                                  >
-                                    <ClipboardCopy className="h-4 w-4 mr-2" />
-                                    Save as Idea
-                                  </Button>
-                                  <Button 
-                                    onClick={developSelectedIdea}
-                                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-                                  >
-                                    <Sparkles className="h-4 w-4 mr-2" />
-                                    Develop This Idea
-                                  </Button>
-                                </div>
-                              </div>
-                            ) : null}
-                            
-                            <div className="grid gap-4">
-                              <Button 
-                                onClick={saveWritingAsIdea}
-                                className="w-full"
-                              >
-                                Save Entire Text as Idea
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                className="w-full"
-                                onClick={saveForLater}
-                              >
-                                <Save className="h-4 w-4 mr-2" />
-                                Save for Later
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                className="w-full"
-                                onClick={() => setWritingText("")}
-                              >
-                                Clear Text
-                              </Button>
-                            </div>
-                          </div>
-                        </SheetContent>
-                      </div>
-                    </Sheet>
+                    <div className="rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full relative bg-[#F6F6F7] flex">
+                      <ScrollArea className="h-full w-full">
+                        <div 
+                          className="h-full w-full cursor-text px-4 py-4" 
+                          onClick={() => textareaRef.current?.focus()}
+                        >
+                          <Textarea
+                            ref={textareaRef}
+                            value={writingText}
+                            onChange={(e) => setWritingText(e.target.value)}
+                            onTextSelect={handleTextSelection}
+                            placeholder="Start writing your ideas, thoughts, or notes here..."
+                            className="min-h-full w-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-base absolute inset-0 px-4 py-4"
+                          />
+                        </div>
+                      </ScrollArea>
+                      <div className="absolute right-0 top-0 bottom-0 w-3 bg-gray-200 opacity-60"></div>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="absolute bottom-4 right-4 bg-white/80"
+                        onClick={() => {
+                          if (selectedText) {
+                            developSelectedIdea();
+                          } else if (writingText) {
+                            setSelectedText(writingText);
+                            setNewIdeaTitle(`Development - ${new Date().toLocaleDateString()}`);
+                            setNewIdeaTags(["development"]);
+                            setDevelopIdeaMode(true);
+                            setShowNewIdeaDialog(true);
+                          } else {
+                            toast.error("Write something first or select text to develop");
+                          }
+                        }}
+                      >
+                        <Sparkles className="h-4 w-4 mr-2" /> Develop Your Idea
+                      </Button>
+                    </div>
                   </div>
                 </div>
                 
