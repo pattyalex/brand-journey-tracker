@@ -494,7 +494,7 @@ const BankOfContent = () => {
                     id="platforms"
                     value={currentPlatform}
                     onChange={(e) => setCurrentPlatform(e.target.value)}
-                    placeholder="Add platform"
+                    placeholder="Where do you want to post this content?"
                     onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addPlatform())}
                   />
                   <Button type="button" onClick={addPlatform} variant="secondary">
