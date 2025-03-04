@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -183,7 +182,6 @@ const BankOfContent = () => {
           {pillars.map((pillar) => (
             <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Left Column - Writing Space */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl font-semibold flex items-center">
@@ -193,8 +191,8 @@ const BankOfContent = () => {
                   </div>
                   <div className="h-[calc(100vh-240px)]">
                     <Sheet>
-                      <div className="rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full relative bg-white">
-                        <ScrollArea className="h-full px-4 py-4">
+                      <div className="rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full relative bg-gray-100">
+                        <ScrollArea className="h-full px-4 py-4 overflow-auto" style={{ scrollbarWidth: 'thin' }}>
                           <Textarea
                             ref={textareaRef}
                             value={writingText}
@@ -237,7 +235,6 @@ const BankOfContent = () => {
                   </div>
                 </div>
                 
-                {/* Right Column - Content Development */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl font-semibold flex items-center">
