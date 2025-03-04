@@ -36,6 +36,7 @@ const BankOfContent = () => {
   
   const [selectedText, setSelectedText] = useState("");
   const [developScriptText, setDevelopScriptText] = useState("");
+  const [formatText, setFormatText] = useState("");
   const [shootDetails, setShootDetails] = useState("");
   const [showNewIdeaDialog, setShowNewIdeaDialog] = useState(false);
   const [newIdeaTitle, setNewIdeaTitle] = useState("");
@@ -85,6 +86,7 @@ const BankOfContent = () => {
       description: scriptContent.slice(0, 100) + (scriptContent.length > 100 ? "..." : ""),
       url: JSON.stringify({
         script: scriptContent,
+        format: formatText,
         shootDetails: shootDetails
       }),
       format: "text",
@@ -96,6 +98,7 @@ const BankOfContent = () => {
     setShowNewIdeaDialog(false);
     setSelectedText("");
     setDevelopScriptText("");
+    setFormatText("");
     setShootDetails("");
     setNewIdeaTitle("");
     setNewIdeaTags([]);
@@ -412,6 +415,17 @@ const BankOfContent = () => {
                   onChange={(e) => setDevelopScriptText(e.target.value)}
                   placeholder="Write your script here..."
                   className="min-h-[100px] resize-y"
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="format-text">Format</Label>
+                <Textarea
+                  id="format-text"
+                  value={formatText}
+                  onChange={(e) => setFormatText(e.target.value)}
+                  placeholder="Enter details about how you want to bring this idea to life. Consider the filming approach, visual style, and how you want to present your script..."
+                  className="min-h-[80px] resize-y"
                 />
               </div>
               
