@@ -98,7 +98,18 @@ const Sidebar = () => {
       </div>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <div className="flex items-center justify-between pr-2">
+            <SidebarGroupLabel>Menu</SidebarGroupLabel>
+            <Button 
+              variant="ghost" 
+              size="xs"
+              className="text-muted-foreground"
+              onClick={() => setShowAddForm(true)}
+            >
+              <Plus size={14} />
+              <span className="text-xs">Add Page</span>
+            </Button>
+          </div>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
@@ -141,9 +152,9 @@ const Sidebar = () => {
                 </SidebarMenuItem>
               ))}
               
-              {/* Add Page Form */}
-              <SidebarMenuItem>
-                {showAddForm ? (
+              {/* Add Page Form - Now it will appear conditionally when the "Add Page" button is clicked */}
+              {showAddForm && (
+                <SidebarMenuItem>
                   <div className="flex flex-col gap-2 px-2 py-3">
                     <Input 
                       placeholder="Page title" 
@@ -173,17 +184,8 @@ const Sidebar = () => {
                       </Button>
                     </div>
                   </div>
-                ) : (
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-start gap-2 text-muted-foreground h-8"
-                    onClick={() => setShowAddForm(true)}
-                  >
-                    <Plus size={16} />
-                    <span>Add Page</span>
-                  </Button>
-                )}
-              </SidebarMenuItem>
+                </SidebarMenuItem>
+              )}
               
               {/* Separator above Settings */}
               <SidebarSeparator className="my-2" />
