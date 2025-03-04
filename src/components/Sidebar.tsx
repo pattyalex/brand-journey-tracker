@@ -1,3 +1,4 @@
+
 import { Home, FolderOpen, FileText, Settings, ListTodo, Lightbulb, Trash2, Plus } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -100,7 +101,7 @@ const Sidebar = () => {
         <SidebarGroup>
           <div className="flex items-center justify-between pr-2">
             <SidebarGroupLabel>Menu</SidebarGroupLabel>
-            <TooltipProvider>
+            <TooltipProvider delayDuration={0}>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button 
