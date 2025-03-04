@@ -17,14 +17,8 @@ import {
 const menuItems = [
   { title: 'Dashboard', icon: Home, url: '/' },
   { title: 'Daily Agenda', icon: ListTodo, url: '/daily-agenda' },
-  { 
-    title: 'Projects', 
-    icon: FolderOpen, 
-    url: '/projects',
-    subItems: [
-      { title: 'Vision Board & Goals', icon: Lightbulb, url: '/projects/vision-board' }
-    ]
-  },
+  { title: 'Projects', icon: FolderOpen, url: '/projects' },
+  { title: 'Vision Board & Goals', icon: Lightbulb, url: '/projects/vision-board' },
   { title: 'Documents', icon: FileText, url: '/documents' },
   { title: 'Settings', icon: Settings, url: '/settings' },
 ];
