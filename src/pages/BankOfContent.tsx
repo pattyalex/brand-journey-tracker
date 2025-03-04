@@ -1,9 +1,10 @@
-import { useState } from "react";
+
+import { useState, useRef } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ContentPillar from "@/components/content/ContentPillar";
 import { Button } from "@/components/ui/button";
-import { Pencil, Plus, Search } from "lucide-react";
+import { Pencil, Plus, Search, Lightbulb, ChevronDown, ChevronUp, LayoutList } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ContentUploader from "@/components/content/ContentUploader";
@@ -11,6 +12,7 @@ import { ContentItem } from "@/types/content";
 import { toast } from "sonner";
 import ContentSearchModal from "@/components/content/ContentSearchModal";
 import { Textarea } from "@/components/ui/textarea";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export type Pillar = {
   id: string;
@@ -30,6 +32,8 @@ const BankOfContent = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [writingText, setWritingText] = useState("");
+  const [isExpanded, setIsExpanded] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   
   const addPillar = () => {
     const newId = `${Date.now()}`;
@@ -128,6 +132,15 @@ const BankOfContent = () => {
     toast.success(`Content moved to ${targetPillar?.name}`);
   };
 
+  const toggleExpand = () => {
+    setIsExpanded(!isExpanded);
+    if (textareaRef.current) {
+      setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 100);
+    }
+  };
+
   const filteredContent = pillars.map(pillar => ({
     ...pillar,
     content: pillar.content.filter(item => 
@@ -173,7 +186,7 @@ const BankOfContent = () => {
               ))}
             </TabsList>
             <Button variant="outline" size="sm" onClick={addPillar}>
-              <Plus className="h-4 w-4 mr-2" /> Add Pill
+              <Plus className="h-4 w-4 mr-2" /> Add Pillar
             </Button>
           </div>
 
@@ -188,30 +201,75 @@ const BankOfContent = () => {
                       Writing Space
                     </h2>
                     <Button 
-                      variant="ghost" 
+                      variant="outline" 
                       size="sm" 
-                      onClick={saveWritingAsIdea}
-                      className="hidden"
+                      onClick={toggleExpand}
+                      className="flex items-center gap-1"
                     >
-                      Save
+                      {isExpanded ? (
+                        <>
+                          <ChevronUp className="h-4 w-4" /> Collapse
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="h-4 w-4" /> Expand
+                        </>
+                      )}
                     </Button>
                   </div>
-                  <div className="border-2 border-[#b88a6b] rounded-md p-1">
-                    <ScrollArea className="h-[calc(100vh-240px)]">
-                      <Textarea
-                        value={writingText}
-                        onChange={(e) => setWritingText(e.target.value)}
-                        placeholder="Start writing your ideas, thoughts, or notes here..."
-                        className="min-h-[calc(100vh-250px)] resize-none border-0 bg-transparent focus-visible:ring-0 p-4"
-                      />
-                    </ScrollArea>
+                  <div className={`${isExpanded ? 'h-[calc(100vh-200px)]' : 'h-[calc(100vh-240px)]'} transition-all duration-300 ease-in-out`}>
+                    <Sheet>
+                      <div className="rounded-md bg-[#f3f3f3] p-1 h-full relative">
+                        <ScrollArea className="h-full">
+                          <Textarea
+                            ref={textareaRef}
+                            value={writingText}
+                            onChange={(e) => setWritingText(e.target.value)}
+                            placeholder="Start writing your ideas, thoughts, or notes here..."
+                            className="min-h-full resize-none border-0 bg-transparent focus-visible:ring-0 p-4"
+                          />
+                        </ScrollArea>
+                        <SheetTrigger asChild>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="absolute bottom-4 right-4 bg-white/80"
+                          >
+                            <LayoutList className="h-4 w-4 mr-2" /> Options
+                          </Button>
+                        </SheetTrigger>
+                        <SheetContent side="bottom" className="h-auto">
+                          <div className="py-4 space-y-4">
+                            <h3 className="text-lg font-medium">Writing Options</h3>
+                            <div className="grid gap-4">
+                              <Button 
+                                onClick={saveWritingAsIdea}
+                                className="w-full"
+                              >
+                                Save as Idea
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                className="w-full"
+                                onClick={() => setWritingText("")}
+                              >
+                                Clear Text
+                              </Button>
+                            </div>
+                          </div>
+                        </SheetContent>
+                      </div>
+                    </Sheet>
                   </div>
                 </div>
                 
                 {/* Right Column - Content Development */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-semibold">Develop Your Ideas</h2>
+                    <h2 className="text-xl font-semibold flex items-center">
+                      <Lightbulb className="h-5 w-5 mr-2" /> 
+                      Develop Your Ideas
+                    </h2>
                     <div className="flex items-center gap-2">
                       <ContentUploader 
                         pillarId={activeTab} 
