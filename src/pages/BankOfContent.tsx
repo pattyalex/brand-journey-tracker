@@ -3,7 +3,7 @@ import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ContentPillar from "@/components/content/ContentPillar";
 import { Button } from "@/components/ui/button";
-import { Pencil, Plus, Search, Lightbulb, LayoutList, FileText, Save, ClipboardCopy, Tag, X, Sparkles } from "lucide-react";
+import { Pencil, Plus, Search, Lightbulb, FileText, Save, ClipboardCopy, Tag, X, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ContentUploader from "@/components/content/ContentUploader";
@@ -313,6 +313,19 @@ const BankOfContent = () => {
                             variant="outline" 
                             size="sm" 
                             className="absolute bottom-4 right-4 bg-white/80"
+                            onClick={() => {
+                              if (selectedText) {
+                                developSelectedIdea();
+                              } else if (writingText) {
+                                setSelectedText(writingText);
+                                setNewIdeaTitle(`Development - ${new Date().toLocaleDateString()}`);
+                                setNewIdeaTags(["development"]);
+                                setDevelopIdeaMode(true);
+                                setShowNewIdeaDialog(true);
+                              } else {
+                                toast.error("Write something first or select text to develop");
+                              }
+                            }}
                           >
                             <Sparkles className="h-4 w-4 mr-2" /> Develop Your Idea
                           </Button>
