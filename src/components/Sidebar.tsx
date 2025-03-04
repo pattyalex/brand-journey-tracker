@@ -197,6 +197,7 @@ const Sidebar = () => {
               
               <SidebarSeparator className="my-2" />
               
+              {/* Settings and My Account items moved to the bottom */}
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <a href={settingsItem.url} className="flex items-center gap-2">
