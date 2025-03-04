@@ -12,7 +12,6 @@ import { ContentItem } from "@/types/content";
 import { toast } from "sonner";
 import ContentSearchModal from "@/components/content/ContentSearchModal";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export type Pillar = {
   id: string;
@@ -32,7 +31,6 @@ const BankOfContent = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [writingText, setWritingText] = useState("");
-  const [selectedWritingType, setSelectedWritingType] = useState("idea");
   
   const addPillar = () => {
     const newId = `${Date.now()}`;
@@ -80,17 +78,17 @@ const BankOfContent = () => {
     
     const newIdea: ContentItem = {
       id: `${Date.now()}`,
-      title: `${selectedWritingType.charAt(0).toUpperCase() + selectedWritingType.slice(1)} - ${new Date().toLocaleDateString()}`,
+      title: `Idea - ${new Date().toLocaleDateString()}`,
       description: writingText,
       url: "",
       format: "text",
       dateCreated: new Date(),
-      tags: [selectedWritingType]
+      tags: ["idea"]
     };
     
     addContentToPillar(activeTab, newIdea);
     setWritingText("");
-    toast.success(`Saved as ${selectedWritingType}`);
+    toast.success("Saved as idea");
   };
 
   const addContentToPillar = (pillarId: string, content: ContentItem) => {
@@ -159,9 +157,6 @@ const BankOfContent = () => {
                 onFocus={() => setIsSearchModalOpen(true)}
               />
             </div>
-            <Button className="bg-amber-700 hover:bg-amber-800" onClick={saveWritingAsIdea}>
-              <FileText className="h-4 w-4 mr-2" /> Add New Idea
-            </Button>
           </div>
         </div>
 
@@ -179,7 +174,7 @@ const BankOfContent = () => {
               ))}
             </TabsList>
             <Button variant="outline" size="sm" onClick={addPillar}>
-              <Plus className="h-4 w-4 mr-2" /> Add Pillar
+              <Plus className="h-4 w-4 mr-2" /> Add Pill
             </Button>
           </div>
 
@@ -193,44 +188,40 @@ const BankOfContent = () => {
                       <Pencil className="h-5 w-5 mr-2" />
                       Writing Space
                     </h2>
-                    <div className="flex items-center gap-2">
-                      <Select
-                        value={selectedWritingType}
-                        onValueChange={setSelectedWritingType}
-                      >
-                        <SelectTrigger className="w-[140px] h-8">
-                          <SelectValue placeholder="Type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="idea">Idea</SelectItem>
-                          <SelectItem value="note">Note</SelectItem>
-                          <SelectItem value="concept">Concept</SelectItem>
-                          <SelectItem value="thought">Thought</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Button size="sm" onClick={saveWritingAsIdea}>
-                        Save
-                      </Button>
-                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={saveWritingAsIdea}
+                      className="hidden"
+                    >
+                      Save
+                    </Button>
                   </div>
-                  <ScrollArea className="h-[calc(100vh-320px)] border rounded-md p-4 bg-slate-50">
-                    <Textarea
-                      value={writingText}
-                      onChange={(e) => setWritingText(e.target.value)}
-                      placeholder="Start writing your ideas, thoughts, or notes here..."
-                      className="min-h-[calc(100vh-350px)] resize-none border-0 bg-transparent focus-visible:ring-0 p-0"
-                    />
-                  </ScrollArea>
+                  <div className="border-2 border-[#b88a6b] rounded-md p-1">
+                    <ScrollArea className="h-[calc(100vh-240px)]">
+                      <Textarea
+                        value={writingText}
+                        onChange={(e) => setWritingText(e.target.value)}
+                        placeholder="Start writing your ideas, thoughts, or notes here..."
+                        className="min-h-[calc(100vh-250px)] resize-none border-0 bg-transparent focus-visible:ring-0 p-4"
+                      />
+                    </ScrollArea>
+                  </div>
                 </div>
                 
                 {/* Right Column - Content Development */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl font-semibold">Develop Your Ideas</h2>
-                    <ContentUploader 
-                      pillarId={activeTab} 
-                      onContentAdded={addContentToPillar} 
-                    />
+                    <div className="flex items-center gap-2">
+                      <ContentUploader 
+                        pillarId={activeTab} 
+                        onContentAdded={addContentToPillar} 
+                      />
+                      <Button className="bg-[#b88a6b] hover:bg-[#a57a5e]" onClick={saveWritingAsIdea}>
+                        <FileText className="h-4 w-4 mr-2" /> Add New Idea
+                      </Button>
+                    </div>
                   </div>
                   <ContentPillar
                     pillar={{...pillar}}
