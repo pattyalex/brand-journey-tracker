@@ -108,14 +108,11 @@ const Auth = () => {
   const [draggedRowId, setDraggedRowId] = useState<string | null>(null);
   const [dragOverRowId, setDragOverRowId] = useState<string | null>(null);
   
-  // Column drag state
   const [draggedColumnId, setDraggedColumnId] = useState<string | null>(null);
   const [dragOverColumnId, setDragOverColumnId] = useState<string | null>(null);
   
-  // Editing column name state
   const [editingColumnName, setEditingColumnName] = useState("");
 
-  // Custom columns state
   const [customColumns, setCustomColumns] = useState<CustomColumn[]>([]);
   const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [newColumnName, setNewColumnName] = useState("");
@@ -207,7 +204,6 @@ const Auth = () => {
   };
 
   const handleDeleteIdea = (ideaId: string) => {
-    // Don't allow deleting all rows
     if (contentIdeas.length <= 1) {
       toast({
         title: "Cannot delete",
@@ -224,9 +220,7 @@ const Auth = () => {
     });
   };
 
-  // Handle deleting standard column
   const handleDeleteStandardColumn = (columnId: string) => {
-    // Don't allow deleting all columns
     if (standardColumns.length <= 1) {
       toast({
         title: "Cannot delete",
@@ -236,7 +230,6 @@ const Auth = () => {
       return;
     }
     
-    // Check if it's a required column like "idea"
     if (columnId === "idea") {
       toast({
         title: "Cannot delete",
@@ -262,11 +255,9 @@ const Auth = () => {
     }));
   };
 
-  // Drag and drop functions for rows
   const handleDragStart = (e: React.DragEvent<HTMLTableRowElement>, ideaId: string) => {
     setDraggedRowId(ideaId);
     e.dataTransfer.effectAllowed = 'move';
-    // Add some transparency to the dragged element
     if (e.currentTarget) {
       setTimeout(() => {
         e.currentTarget.style.opacity = '0.5';
@@ -277,7 +268,6 @@ const Auth = () => {
   const handleDragEnd = (e: React.DragEvent<HTMLTableRowElement>) => {
     setDraggedRowId(null);
     setDragOverRowId(null);
-    // Reset opacity
     if (e.currentTarget) {
       e.currentTarget.style.opacity = '1';
     }
@@ -301,7 +291,6 @@ const Auth = () => {
     const targetIndex = contentIdeas.findIndex(idea => idea.id === targetId);
     
     if (draggedIndex !== -1 && targetIndex !== -1) {
-      // Create a new array with the reordered elements
       const newIdeas = [...contentIdeas];
       const draggedItem = newIdeas[draggedIndex];
       newIdeas.splice(draggedIndex, 1);
@@ -318,11 +307,9 @@ const Auth = () => {
     setDragOverRowId(null);
   };
 
-  // Column drag and drop functions
   const handleColumnDragStart = (e: React.DragEvent<HTMLTableCellElement>, columnId: string) => {
     setDraggedColumnId(columnId);
     e.dataTransfer.effectAllowed = 'move';
-    // Add visual cue for dragging
     if (e.currentTarget) {
       setTimeout(() => {
         e.currentTarget.style.opacity = '0.7';
@@ -334,18 +321,16 @@ const Auth = () => {
   const handleColumnDragEnd = (e: React.DragEvent<HTMLTableCellElement>) => {
     setDraggedColumnId(null);
     setDragOverColumnId(null);
-    // Reset visual styles
     if (e.currentTarget) {
       e.currentTarget.style.opacity = '1';
       e.currentTarget.style.border = '';
     }
 
-    // Reset all column headers
     const headers = document.querySelectorAll('th');
     headers.forEach(header => {
       header.style.opacity = '1';
       header.style.border = '';
-      header.style.borderRight = '1px solid rgb(55, 65, 81)'; // border-r border-gray-700
+      header.style.borderRight = '1px solid rgb(55, 65, 81)';
     });
   };
 
@@ -354,7 +339,6 @@ const Auth = () => {
     if (draggedColumnId === columnId) return;
     setDragOverColumnId(columnId);
     
-    // Add visual cue for drop target
     if (e.currentTarget) {
       e.currentTarget.style.borderLeft = '3px solid #3b82f6';
     }
@@ -362,7 +346,6 @@ const Auth = () => {
 
   const handleColumnDragLeave = (e: React.DragEvent<HTMLTableCellElement>) => {
     setDragOverColumnId(null);
-    // Remove visual cue
     if (e.currentTarget) {
       e.currentTarget.style.borderLeft = '';
     }
@@ -374,13 +357,11 @@ const Auth = () => {
     
     if (!draggedColumnId || draggedColumnId === targetId) return;
 
-    // Determine if we're dealing with standard columns or custom columns
     const isStandardDragged = standardColumns.some(col => col.id === draggedColumnId);
     const isStandardTarget = standardColumns.some(col => col.id === targetId);
     const isCustomDragged = customColumns.some(col => col.id === draggedColumnId);
     const isCustomTarget = customColumns.some(col => col.id === targetId);
 
-    // Handle reordering within the same column type (standard or custom)
     if (isStandardDragged && isStandardTarget) {
       const draggedIndex = standardColumns.findIndex(col => col.id === draggedColumnId);
       const targetIndex = standardColumns.findIndex(col => col.id === targetId);
@@ -414,21 +395,18 @@ const Auth = () => {
         });
       }
     }
-    // Reset drag state
     setDraggedColumnId(null);
     setDragOverColumnId(null);
     
-    // Reset all column header styles
     const headers = document.querySelectorAll('th');
     headers.forEach(header => {
       header.style.opacity = '1';
       header.style.border = '';
       header.style.borderLeft = '';
-      header.style.borderRight = '1px solid rgb(55, 65, 81)'; // border-r border-gray-700
+      header.style.borderRight = '1px solid rgb(55, 65, 81)';
     });
   };
 
-  // Column editing functions
   const startEditingColumn = (columnId: string) => {
     setStandardColumns(prev => 
       prev.map(col => ({
@@ -484,7 +462,6 @@ const Auth = () => {
     setEditingColumnName("");
   };
 
-  // Custom column functions
   const handleAddCustomColumn = () => {
     if (newColumnName.trim() === "") {
       toast({
@@ -495,7 +472,6 @@ const Auth = () => {
       return;
     }
 
-    // Check if column name already exists
     if (customColumns.some(col => col.name.toLowerCase() === newColumnName.toLowerCase()) ||
         standardColumns.some(col => col.name.toLowerCase() === newColumnName.toLowerCase())) {
       toast({
@@ -524,7 +500,6 @@ const Auth = () => {
   const handleRemoveCustomColumn = (columnId: string) => {
     setCustomColumns(customColumns.filter(col => col.id !== columnId));
     
-    // Remove the column data from all content ideas
     setContentIdeas(contentIdeas.map(idea => {
       const updatedCustomValues = { ...idea.customValues };
       delete updatedCustomValues[columnId];
@@ -558,7 +533,6 @@ const Auth = () => {
   const renderInspirationCell = (idea: ContentIdea) => {
     const source = idea.inspirationSource;
     
-    // Adding Link UI
     if (isAddingLink && activeCellId === idea.id) {
       return (
         <div className="flex flex-col space-y-2">
@@ -602,7 +576,6 @@ const Auth = () => {
       );
     }
 
-    // Adding Text UI
     if (isAddingText && activeCellId === idea.id) {
       return (
         <div className="flex flex-col space-y-2">
@@ -639,7 +612,6 @@ const Auth = () => {
       );
     }
 
-    // Display Image
     if (source?.type === "image" && source.content) {
       return (
         <div className="flex flex-col space-y-2">
@@ -655,7 +627,6 @@ const Auth = () => {
             />
           </div>
           <div className="flex gap-1 mt-1">
-            {/* Reordered icons: Write, Link, Upload */}
             <Button
               type="button"
               variant="outline"
@@ -708,7 +679,6 @@ const Auth = () => {
       );
     }
 
-    // Display Link
     if (source?.type === "link" && source.content) {
       return (
         <div className="flex flex-col space-y-2">
@@ -720,7 +690,6 @@ const Auth = () => {
             <span className="text-xs">{source.label || "Link"}</span>
           </a>
           <div className="flex gap-1 mt-1">
-            {/* Reordered icons: Write, Link, Upload */}
             <Button
               type="button"
               variant="outline"
@@ -773,7 +742,6 @@ const Auth = () => {
       );
     }
 
-    // Display Text
     if (source?.type === "text" && source.content) {
       return (
         <div className="flex flex-col space-y-2">
@@ -785,7 +753,6 @@ const Auth = () => {
             {source.content}
           </div>
           <div className="flex gap-1 mt-1">
-            {/* Reordered icons: Write, Link, Upload */}
             <Button
               type="button"
               variant="outline"
@@ -839,10 +806,8 @@ const Auth = () => {
       );
     }
 
-    // No source yet - show options
     return (
       <div className="flex gap-1">
-        {/* Reordered icons: Write, Link, Upload */}
         <Button
           type="button"
           variant="outline"
@@ -894,13 +859,11 @@ const Auth = () => {
     );
   };
 
-  // Render cell for a specific standard column
   const renderStandardCell = (idea: ContentIdea, columnField: string) => {
     if (columnField === "inspiration") {
       return renderInspirationCell(idea);
     }
     
-    // For all other standard fields
     return (
       <Input 
         value={idea[columnField as keyof typeof idea] as string} 
@@ -954,7 +917,6 @@ const Auth = () => {
                 </p>
                 <div className="bg-white border border-gray-100 rounded-md overflow-hidden">
                   <div className="overflow-x-auto relative">
-                    {/* Row Delete icons positioned outside the table */}
                     <div className="absolute left-0 top-0 bottom-0 w-10 flex flex-col pt-[53px] z-10">
                       {contentIdeas.map((idea) => (
                         <div 
@@ -976,19 +938,16 @@ const Auth = () => {
                       ))}
                     </div>
                     
-                    {/* Column Delete icons positioned above the table header */}
                     <div className="absolute top-0 left-10 right-10 h-8 z-20">
                       {standardColumns.map((column, index) => {
-                        // Calculate the accumulated width of all previous columns
                         let leftPosition = 0;
                         for (let i = 0; i < index; i++) {
                           const prevColWidth = standardColumns[i].width || '200px';
                           leftPosition += parseInt(prevColWidth.replace('px', ''));
                         }
                         
-                        // Add half of the current column width to center the button
                         const currentWidth = parseInt((column.width || '200px').replace('px', ''));
-                        leftPosition += (currentWidth / 2) - 12; // Center the button (button is 24px wide)
+                        leftPosition += (currentWidth / 2) - 12;
                         
                         return (
                           <div
@@ -1032,7 +991,6 @@ const Auth = () => {
                       })}
                     </div>
                     
-                    {/* Drag handles positioned outside the table on the right */}
                     <div className="absolute right-0 top-0 bottom-0 w-10 flex flex-col pt-[53px] z-10">
                       {contentIdeas.map((idea) => (
                         <div 
@@ -1053,12 +1011,11 @@ const Auth = () => {
                     <table className="w-full border-collapse ml-10 mr-10 group">
                       <thead className="bg-gray-800 text-white">
                         <tr>
-                          {/* Standard Columns - can be reordered and renamed */}
                           {standardColumns.map((column, index) => (
                             <th 
                               key={column.id}
                               className={`px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700 cursor-move relative ${dragOverColumnId === column.id ? 'bg-blue-800' : ''}`}
-                              style={{ width: column.width }} /* Apply column width here */
+                              style={{ width: column.width }}
                               draggable
                               onDragStart={(e) => handleColumnDragStart(e, column.id)}
                               onDragEnd={handleColumnDragEnd}
@@ -1110,7 +1067,6 @@ const Auth = () => {
                             </th>
                           ))}
                           
-                          {/* Custom Columns */}
                           {customColumns.map(column => (
                             <th 
                               key={column.id}
@@ -1139,7 +1095,6 @@ const Auth = () => {
                             </th>
                           ))}
                           
-                          {/* Add Custom Column */}
                           <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider min-w-[140px] bg-gray-700">
                             {isAddingColumn ? (
                               <div className="flex items-center gap-1">
@@ -1203,7 +1158,6 @@ const Auth = () => {
                             onDragLeave={handleDragLeave}
                             onDrop={(e) => handleDrop(e, idea.id)}
                             onMouseEnter={() => {
-                              // Show the corresponding delete and drag buttons
                               const deleteButton = document.querySelector(`[data-delete-for="${idea.id}"]`);
                               const dragHandle = document.querySelector(`[data-drag-for="${idea.id}"]`);
                               if (deleteButton) {
@@ -1216,7 +1170,6 @@ const Auth = () => {
                               }
                             }}
                             onMouseLeave={() => {
-                              // Hide the delete and drag buttons
                               const deleteButton = document.querySelector(`[data-delete-for="${idea.id}"]`);
                               const dragHandle = document.querySelector(`[data-drag-for="${idea.id}"]`);
                               if (deleteButton) {
@@ -1229,18 +1182,16 @@ const Auth = () => {
                               }
                             }}
                           >
-                            {/* Render cells based on the order of standardColumns */}
                             {standardColumns.map(column => (
                               <td 
                                 key={`${idea.id}-${column.id}`}
                                 className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200"
-                                style={{ width: column.width }} /* Apply column width to cells too */
+                                style={{ width: column.width }}
                               >
                                 {renderStandardCell(idea, column.field)}
                               </td>
                             ))}
                             
-                            {/* Custom Column Values */}
                             {customColumns.map(column => (
                               <td 
                                 key={`${idea.id}-${column.id}`} 
@@ -1255,12 +1206,10 @@ const Auth = () => {
                               </td>
                             ))}
                             
-                            {/* Empty cell for the "Add Column" header */}
                             <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200 bg-gray-50">
                             </td>
                           </tr>
                         ))}
-                        {/* Add New Idea Row */}
                         <tr className="hover:bg-gray-50 bg-gray-50">
                           <td colSpan={standardColumns.length + customColumns.length + 1} className="px-4 py-3 text-center">
                             <Button
