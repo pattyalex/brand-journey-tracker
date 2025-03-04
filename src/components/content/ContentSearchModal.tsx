@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import {
   Dialog,
@@ -14,6 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
 import { formatDistanceToNow } from "date-fns";
+import { getTagColorClasses } from "@/utils/tagColors";
 
 interface ContentSearchModalProps {
   isOpen: boolean;
@@ -34,17 +34,14 @@ const ContentSearchModal = ({
 }: ContentSearchModalProps) => {
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
   
-  // Sync local state with parent state
   useEffect(() => {
     setLocalSearchQuery(searchQuery);
   }, [searchQuery]);
 
-  // Update parent state when local state changes
   const handleSearch = () => {
     onChangeSearchQuery(localSearchQuery);
   };
 
-  // Get filtered content based on search query
   const filteredContent = localSearchQuery
     ? content.filter(item => 
         item.title.toLowerCase().includes(localSearchQuery.toLowerCase()) ||
@@ -53,7 +50,6 @@ const ContentSearchModal = ({
       )
     : [];
 
-  // Find which pillar a content item belongs to
   const getPillarName = (contentId: string) => {
     const pillar = pillars.find(p => 
       p.content.some(c => c.id === contentId)
@@ -130,7 +126,7 @@ const ContentSearchModal = ({
                       {item.tags.map((tag, index) => (
                         <span 
                           key={index} 
-                          className="bg-secondary/20 text-xs px-2 py-0.5 rounded-full"
+                          className={`text-xs px-2 py-0.5 rounded-full ${getTagColorClasses(tag)}`}
                         >
                           {tag}
                         </span>

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
@@ -17,6 +16,7 @@ import { formatDistanceToNow } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
+import { getTagColorClasses } from "@/utils/tagColors";
 
 interface ContentPillarProps {
   pillar: Pillar;
@@ -52,7 +52,6 @@ const ContentPillar = ({
     setIsRenaming(true);
   };
   
-  // Filter content if search query exists
   const filteredContent = searchQuery
     ? pillar.content.filter(item => 
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -112,7 +111,7 @@ const ContentPillar = ({
                     {content.tags.map((tag, index) => (
                       <span 
                         key={index} 
-                        className="bg-secondary/20 text-xs px-2 py-1 rounded-full"
+                        className={`text-xs px-2 py-1 rounded-full ${getTagColorClasses(tag)}`}
                       >
                         {tag}
                       </span>

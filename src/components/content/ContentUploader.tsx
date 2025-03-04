@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { FileText, X, Plus, Tag } from "lucide-react";
 import { ContentItem } from "@/types/content";
+import { getTagColorClasses } from "@/utils/tagColors";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ContentUploaderProps {
   pillarId: string;
@@ -84,63 +86,65 @@ const ContentUploader = ({ pillarId, onContentAdded }: ContentUploaderProps) => 
           </DialogDescription>
         </DialogHeader>
         
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter a title for your idea"
-            />
-          </div>
-          
-          <div className="grid gap-2">
-            <Label htmlFor="content">Write your idea</Label>
-            <Textarea
-              id="content"
-              value={textContent}
-              onChange={(e) => setTextContent(e.target.value)}
-              placeholder="Start writing your ideas, notes, or content drafts here..."
-              rows={8}
-              className="resize-none"
-            />
-          </div>
-          
-          <div className="grid gap-2">
-            <Label htmlFor="tags">Tags</Label>
-            <div className="flex gap-2">
+        <ScrollArea className="max-h-[70vh]">
+          <div className="grid gap-4 py-4 px-1">
+            <div className="grid gap-2">
+              <Label htmlFor="title">Title</Label>
               <Input
-                id="tags"
-                value={currentTag}
-                onChange={(e) => setCurrentTag(e.target.value)}
-                placeholder="Add tags (e.g., To Film, To Edit, To Post)"
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Enter a title for your idea"
               />
-              <Button type="button" onClick={handleAddTag} variant="secondary">
-                <Tag className="h-4 w-4 mr-1" /> Add
-              </Button>
             </div>
             
-            <div className="flex flex-wrap gap-1 mt-2">
-              {tagsList.map((tag, index) => (
-                <span 
-                  key={index} 
-                  className="bg-secondary/20 text-sm px-2 py-1 rounded-full flex items-center gap-1"
-                >
-                  {tag}
-                  <button 
-                    type="button" 
-                    onClick={() => handleRemoveTag(tag)}
-                    className="text-muted-foreground hover:text-foreground"
+            <div className="grid gap-2">
+              <Label htmlFor="content">Write your idea</Label>
+              <Textarea
+                id="content"
+                value={textContent}
+                onChange={(e) => setTextContent(e.target.value)}
+                placeholder="Start writing your ideas, notes, or content drafts here..."
+                rows={8}
+                className="resize-none"
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="tags">Tags</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="tags"
+                  value={currentTag}
+                  onChange={(e) => setCurrentTag(e.target.value)}
+                  placeholder="Add tags (e.g., To Film, To Edit, To Post)"
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                />
+                <Button type="button" onClick={handleAddTag} variant="secondary">
+                  <Tag className="h-4 w-4 mr-1" /> Add
+                </Button>
+              </div>
+              
+              <div className="flex flex-wrap gap-1 mt-2">
+                {tagsList.map((tag, index) => (
+                  <span 
+                    key={index} 
+                    className={`text-sm px-2 py-1 rounded-full flex items-center gap-1 ${getTagColorClasses(tag)}`}
                   >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              ))}
+                    {tag}
+                    <button 
+                      type="button" 
+                      onClick={() => handleRemoveTag(tag)}
+                      className="hover:text-foreground"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        </ScrollArea>
         
         <DialogFooter>
           <Button variant="outline" onClick={() => setIsOpen(false)}>

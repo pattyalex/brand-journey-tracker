@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { getTagColorClasses } from "@/utils/tagColors";
 
 export type Pillar = {
   id: string;
@@ -432,129 +433,131 @@ const BankOfContent = () => {
               </DialogTitle>
             </DialogHeader>
             
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="idea-title">Title</Label>
-                <Input
-                  id="idea-title"
-                  value={newIdeaTitle}
-                  onChange={(e) => setNewIdeaTitle(e.target.value)}
-                  placeholder="Enter a title for your idea"
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="develop-script">Develop Script</Label>
-                <Textarea
-                  id="develop-script"
-                  value={developScriptText || selectedText}
-                  onChange={(e) => setDevelopScriptText(e.target.value)}
-                  placeholder="Write your script here..."
-                  className="min-h-[100px] resize-y"
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="format-text">Format</Label>
-                <Textarea
-                  id="format-text"
-                  value={formatText}
-                  onChange={(e) => setFormatText(e.target.value)}
-                  placeholder="Describe how you want to present your script (e.g., POV skit, educational, storytelling, aesthetic montage)..."
-                  className="min-h-[80px] resize-y"
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="shoot-details">Shoot Details</Label>
-                <Textarea
-                  id="shoot-details"
-                  value={shootDetails}
-                  onChange={(e) => setShootDetails(e.target.value)}
-                  placeholder="Enter details about the shoot, such as location, outfits, props needed..."
-                  className="min-h-[80px] resize-y"
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="caption-text">Caption</Label>
-                <Textarea
-                  id="caption-text"
-                  value={captionText}
-                  onChange={(e) => setCaptionText(e.target.value)}
-                  placeholder="Draft a caption for your content when posting to social media platforms..."
-                  className="min-h-[80px] resize-y"
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="platforms">Platforms</Label>
-                <div className="flex gap-2">
+            <ScrollArea className="max-h-[70vh]">
+              <div className="grid gap-4 py-4 px-1">
+                <div className="grid gap-2">
+                  <Label htmlFor="idea-title">Title</Label>
                   <Input
-                    id="platforms"
-                    value={currentPlatform}
-                    onChange={(e) => setCurrentPlatform(e.target.value)}
-                    placeholder="Where do you want to post this content?"
-                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addPlatform())}
+                    id="idea-title"
+                    value={newIdeaTitle}
+                    onChange={(e) => setNewIdeaTitle(e.target.value)}
+                    placeholder="Enter a title for your idea"
                   />
-                  <Button type="button" onClick={addPlatform} variant="secondary">
-                    <Plus className="h-4 w-4 mr-1" /> Add
-                  </Button>
                 </div>
                 
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {selectedPlatforms.map((platform, index) => (
-                    <span 
-                      key={index} 
-                      className="bg-primary text-primary-foreground text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5"
-                    >
-                      {platform}
-                      <button 
-                        type="button" 
-                        onClick={() => removePlatform(platform)}
-                        className="text-primary-foreground hover:text-white/80"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="tags">Tags</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="tags"
-                    value={currentTag}
-                    onChange={(e) => setCurrentTag(e.target.value)}
-                    placeholder="Add tags (e.g., To Film, To Edit, To Post)"
-                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                <div className="grid gap-2">
+                  <Label htmlFor="develop-script">Develop Script</Label>
+                  <Textarea
+                    id="develop-script"
+                    value={developScriptText || selectedText}
+                    onChange={(e) => setDevelopScriptText(e.target.value)}
+                    placeholder="Write your script here..."
+                    className="min-h-[100px] resize-y"
                   />
-                  <Button type="button" onClick={handleAddTag} variant="secondary">
-                    <Tag className="h-4 w-4 mr-1" /> Add
-                  </Button>
                 </div>
                 
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {newIdeaTags.map((tag, index) => (
-                    <span 
-                      key={index} 
-                      className="bg-secondary/20 text-sm px-2 py-1 rounded-full flex items-center gap-1"
-                    >
-                      {tag}
-                      <button 
-                        type="button" 
-                        onClick={() => handleRemoveTag(tag)}
-                        className="text-muted-foreground hover:text-foreground"
+                <div className="grid gap-2">
+                  <Label htmlFor="format-text">Format</Label>
+                  <Textarea
+                    id="format-text"
+                    value={formatText}
+                    onChange={(e) => setFormatText(e.target.value)}
+                    placeholder="Describe how you want to present your script (e.g., POV skit, educational, storytelling, aesthetic montage)..."
+                    className="min-h-[80px] resize-y"
+                  />
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="shoot-details">Shoot Details</Label>
+                  <Textarea
+                    id="shoot-details"
+                    value={shootDetails}
+                    onChange={(e) => setShootDetails(e.target.value)}
+                    placeholder="Enter details about the shoot, such as location, outfits, props needed..."
+                    className="min-h-[80px] resize-y"
+                  />
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="caption-text">Caption</Label>
+                  <Textarea
+                    id="caption-text"
+                    value={captionText}
+                    onChange={(e) => setCaptionText(e.target.value)}
+                    placeholder="Draft a caption for your content when posting to social media platforms..."
+                    className="min-h-[80px] resize-y"
+                  />
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="platforms">Platforms</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="platforms"
+                      value={currentPlatform}
+                      onChange={(e) => setCurrentPlatform(e.target.value)}
+                      placeholder="Where do you want to post this content?"
+                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addPlatform())}
+                    />
+                    <Button type="button" onClick={addPlatform} variant="secondary">
+                      <Plus className="h-4 w-4 mr-1" /> Add
+                    </Button>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {selectedPlatforms.map((platform, index) => (
+                      <span 
+                        key={index} 
+                        className="bg-primary text-primary-foreground text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5"
                       >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </span>
-                  ))}
+                        {platform}
+                        <button 
+                          type="button" 
+                          onClick={() => removePlatform(platform)}
+                          className="text-primary-foreground hover:text-white/80"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="tags">Tags</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="tags"
+                      value={currentTag}
+                      onChange={(e) => setCurrentTag(e.target.value)}
+                      placeholder="Add tags (e.g., To Film, To Edit, To Post)"
+                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                    />
+                    <Button type="button" onClick={handleAddTag} variant="secondary">
+                      <Tag className="h-4 w-4 mr-1" /> Add
+                    </Button>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {newIdeaTags.map((tag, index) => (
+                      <span 
+                        key={index} 
+                        className={`text-sm px-2 py-1 rounded-full flex items-center gap-1 ${getTagColorClasses(tag)}`}
+                      >
+                        {tag}
+                        <button 
+                          type="button" 
+                          onClick={() => handleRemoveTag(tag)}
+                          className="hover:text-foreground"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
+            </ScrollArea>
             
             <DialogFooter>
               <Button variant="outline" onClick={() => {
