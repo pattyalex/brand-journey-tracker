@@ -1,10 +1,9 @@
-
 import { useState, useRef } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ContentPillar from "@/components/content/ContentPillar";
 import { Button } from "@/components/ui/button";
-import { Pencil, Plus, Search, Lightbulb, ChevronDown, ChevronUp, LayoutList } from "lucide-react";
+import { Pencil, Plus, Search, Lightbulb, LayoutList } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ContentUploader from "@/components/content/ContentUploader";
@@ -32,7 +31,6 @@ const BankOfContent = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [writingText, setWritingText] = useState("");
-  const [isExpanded, setIsExpanded] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
   const addPillar = () => {
@@ -132,15 +130,6 @@ const BankOfContent = () => {
     toast.success(`Content moved to ${targetPillar?.name}`);
   };
 
-  const toggleExpand = () => {
-    setIsExpanded(!isExpanded);
-    if (textareaRef.current) {
-      setTimeout(() => {
-        textareaRef.current?.focus();
-      }, 100);
-    }
-  };
-
   const filteredContent = pillars.map(pillar => ({
     ...pillar,
     content: pillar.content.filter(item => 
@@ -200,24 +189,8 @@ const BankOfContent = () => {
                       <Pencil className="h-5 w-5 mr-2" />
                       Writing Space
                     </h2>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={toggleExpand}
-                      className="flex items-center gap-1"
-                    >
-                      {isExpanded ? (
-                        <>
-                          <ChevronUp className="h-4 w-4" /> Collapse
-                        </>
-                      ) : (
-                        <>
-                          <ChevronDown className="h-4 w-4" /> Expand
-                        </>
-                      )}
-                    </Button>
                   </div>
-                  <div className={`${isExpanded ? 'h-[calc(100vh-200px)]' : 'h-[calc(100vh-240px)]'} transition-all duration-300 ease-in-out`}>
+                  <div className="h-[calc(100vh-240px)] transition-all duration-300 ease-in-out">
                     <Sheet>
                       <div className="rounded-md bg-[#f3f3f3] p-1 h-full relative">
                         <ScrollArea className="h-full">
