@@ -528,7 +528,7 @@ const BankOfContent = () => {
                     id="tags"
                     value={currentTag}
                     onChange={(e) => setCurrentTag(e.target.value)}
-                    placeholder="Add tags to indicate your progress (e.g., To Film, To Edit, To Post)..."
+                    placeholder="Add tags (e.g., To Film, To Edit, To Post)"
                     onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
                   />
                   <Button type="button" onClick={handleAddTag} variant="secondary">
