@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,13 +16,15 @@ export type Pillar = {
   id: string;
   name: string;
   content: ContentItem[];
+  brainDump?: string;
+  onUpdateBrainDump?: (pillarId: string, text: string) => void;
 };
 
 const BankOfContent = () => {
   const [pillars, setPillars] = useState<Pillar[]>([
-    { id: "1", name: "Education", content: [] },
-    { id: "2", name: "Inspiration", content: [] },
-    { id: "3", name: "Entertainment", content: [] },
+    { id: "1", name: "Education", content: [], brainDump: "" },
+    { id: "2", name: "Inspiration", content: [], brainDump: "" },
+    { id: "3", name: "Entertainment", content: [], brainDump: "" },
   ]);
   const [activeTab, setActiveTab] = useState("1");
   const [searchQuery, setSearchQuery] = useState("");
@@ -29,7 +32,7 @@ const BankOfContent = () => {
   
   const addPillar = () => {
     const newId = `${Date.now()}`;
-    setPillars([...pillars, { id: newId, name: "New Pillar", content: [] }]);
+    setPillars([...pillars, { id: newId, name: "New Pillar", content: [], brainDump: "" }]);
     setActiveTab(newId);
     toast.success("New pillar added");
   };
@@ -53,6 +56,14 @@ const BankOfContent = () => {
     }
     
     toast.success("Pillar deleted");
+  };
+
+  const updateBrainDump = (pillarId: string, text: string) => {
+    setPillars(pillars.map(p => 
+      p.id === pillarId 
+        ? {...p, brainDump: text} 
+        : p
+    ));
   };
 
   const addContentToPillar = (pillarId: string, content: ContentItem) => {
@@ -148,7 +159,7 @@ const BankOfContent = () => {
           {pillars.map((pillar) => (
             <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
               <ContentPillar
-                pillar={pillar}
+                pillar={{...pillar, onUpdateBrainDump: updateBrainDump}}
                 pillars={pillars}
                 onRename={(newName) => renamePillar(pillar.id, newName)}
                 onDelete={() => deletePillar(pillar.id)}
