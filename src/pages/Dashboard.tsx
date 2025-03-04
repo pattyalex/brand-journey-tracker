@@ -9,7 +9,8 @@ import {
   Calendar, 
   Handshake, 
   TrendingUp, 
-  FolderArchive 
+  FolderArchive,
+  BarChart 
 } from "lucide-react";
 
 const sections = [
@@ -47,6 +48,13 @@ const sections = [
     icon: TrendingUp,
     gradient: "from-[#BC8F8F]/20 to-[#8B6969]/20",
     path: "/strategy"
+  },
+  { 
+    title: "Analytics",
+    description: "Track your performance metrics",
+    icon: BarChart,
+    gradient: "from-[#D2B48C]/20 to-[#96744E]/20",
+    path: "/analytics"
   },
   { 
     title: "File & Contract Storage",
