@@ -1,3 +1,4 @@
+
 import { Home, FolderOpen, FileText, Settings, ListTodo, Lightbulb, Trash2, Plus, CreditCard } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -194,32 +195,34 @@ const Sidebar = () => {
                   </div>
                 </SidebarMenuItem>
               )}
+              
+              {/* Settings and My Account moved here, directly after main menu items */}
+              <SidebarSeparator className="my-2" />
+              
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <a href={settingsItem.url} className="flex items-center gap-2">
+                    <settingsItem.icon size={20} />
+                    <span>{settingsItem.title}</span>
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <a href={myAccountItem.url} className="flex items-center gap-2">
+                    <myAccountItem.icon size={20} />
+                    <span>{myAccountItem.title}</span>
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
       
-      <SidebarFooter className="mt-auto">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <a href={settingsItem.url} className="flex items-center gap-2">
-                <settingsItem.icon size={20} />
-                <span>{settingsItem.title}</span>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <a href={myAccountItem.url} className="flex items-center gap-2">
-                <myAccountItem.icon size={20} />
-                <span>{myAccountItem.title}</span>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
+      {/* Footer is kept empty as we moved the items to the main content area */}
+      <SidebarFooter />
     </SidebarContainer>
   );
 };
