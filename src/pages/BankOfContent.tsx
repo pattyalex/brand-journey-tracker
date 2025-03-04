@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -28,7 +27,6 @@ const BankOfContent = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   
-  // Function to add a new content pillar
   const addPillar = () => {
     const newId = `${Date.now()}`;
     setPillars([...pillars, { id: newId, name: "New Pillar", content: [] }]);
@@ -36,12 +34,10 @@ const BankOfContent = () => {
     toast.success("New pillar added");
   };
 
-  // Function to rename a pillar
   const renamePillar = (id: string, newName: string) => {
     setPillars(pillars.map(p => p.id === id ? {...p, name: newName} : p));
   };
 
-  // Function to delete a pillar
   const deletePillar = (id: string) => {
     const newPillars = pillars.filter(p => p.id !== id);
     
@@ -52,7 +48,6 @@ const BankOfContent = () => {
     
     setPillars(newPillars);
     
-    // If the active tab is the one being deleted, switch to another tab
     if (activeTab === id) {
       setActiveTab(newPillars[0].id);
     }
@@ -60,7 +55,6 @@ const BankOfContent = () => {
     toast.success("Pillar deleted");
   };
 
-  // Function to add content to a pillar
   const addContentToPillar = (pillarId: string, content: ContentItem) => {
     setPillars(pillars.map(p => 
       p.id === pillarId 
@@ -70,7 +64,6 @@ const BankOfContent = () => {
     toast.success(`Content added to ${pillars.find(p => p.id === pillarId)?.name}`);
   };
 
-  // Function to delete content from a pillar
   const deleteContent = (pillarId: string, contentId: string) => {
     setPillars(pillars.map(p => 
       p.id === pillarId 
@@ -80,15 +73,12 @@ const BankOfContent = () => {
     toast.success("Content deleted");
   };
 
-  // Function to move content to another pillar
   const moveContent = (fromPillarId: string, toPillarId: string, contentId: string) => {
-    // Find the content item to move
     const sourcePillar = pillars.find(p => p.id === fromPillarId);
     const contentToMove = sourcePillar?.content.find(c => c.id === contentId);
     
     if (!contentToMove) return;
     
-    // Remove from source pillar and add to target pillar
     setPillars(pillars.map(p => {
       if (p.id === fromPillarId) {
         return {...p, content: p.content.filter(c => c.id !== contentId)};
@@ -103,7 +93,6 @@ const BankOfContent = () => {
     toast.success(`Content moved to ${targetPillar?.name}`);
   };
 
-  // Filter content based on search query
   const filteredContent = pillars.map(pillar => ({
     ...pillar,
     content: pillar.content.filter(item => 
@@ -113,19 +102,18 @@ const BankOfContent = () => {
     )
   }));
 
-  // Find all content across all pillars
   const allContent = pillars.flatMap(pillar => pillar.content);
 
   return (
     <Layout>
       <div className="container mx-auto py-6 space-y-6 fade-in">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Bank of Content</h1>
+          <h1 className="text-3xl font-bold">Bank of Ideas</h1>
           <div className="flex items-center gap-4">
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search content..."
+                placeholder="Search ideas..."
                 className="w-[250px] pl-8"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -172,7 +160,6 @@ const BankOfContent = () => {
           ))}
         </Tabs>
 
-        {/* Search modal */}
         <ContentSearchModal
           isOpen={isSearchModalOpen}
           onClose={() => setIsSearchModalOpen(false)}

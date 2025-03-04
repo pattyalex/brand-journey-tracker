@@ -1,11 +1,11 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, X, Plus } from "lucide-react";
-import { ContentItem, ContentFormat } from "@/types/content";
+import { Input } from "@/components/ui/input";
+import { FileText, X, Plus, Tag } from "lucide-react";
+import { ContentItem } from "@/types/content";
 import {
   Dialog,
   DialogContent,
@@ -15,13 +15,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 interface ContentUploaderProps {
   pillarId: string;
@@ -31,13 +24,9 @@ interface ContentUploaderProps {
 const ContentUploader = ({ pillarId, onContentAdded }: ContentUploaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [format, setFormat] = useState<ContentFormat>("text");
-  const [contentUrl, setContentUrl] = useState("");
-  const [tags, setTags] = useState("");
+  const [textContent, setTextContent] = useState("");
   const [currentTag, setCurrentTag] = useState("");
   const [tagsList, setTagsList] = useState<string[]>([]);
-  const [file, setFile] = useState<File | null>(null);
 
   const handleAddTag = () => {
     if (currentTag.trim() && !tagsList.includes(currentTag.trim())) {
@@ -48,26 +37,6 @@ const ContentUploader = ({ pillarId, onContentAdded }: ContentUploaderProps) => 
 
   const handleRemoveTag = (tagToRemove: string) => {
     setTagsList(tagsList.filter(tag => tag !== tagToRemove));
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      
-      // Auto-detect content format from file type
-      if (selectedFile.type.startsWith('image/')) {
-        setFormat('image');
-      } else if (selectedFile.type.startsWith('video/')) {
-        setFormat('video');
-      } else {
-        setFormat('document');
-      }
-      
-      // Create temporary URL for preview
-      const fileUrl = URL.createObjectURL(selectedFile);
-      setContentUrl(fileUrl);
-    }
   };
 
   const handleSubmit = () => {
@@ -81,12 +50,11 @@ const ContentUploader = ({ pillarId, onContentAdded }: ContentUploaderProps) => 
     const newContent: ContentItem = {
       id: `content-${Date.now()}`,
       title,
-      description,
-      format,
-      url: contentUrl || "https://via.placeholder.com/500", // Default placeholder if no URL
+      description: textContent.slice(0, 100) + (textContent.length > 100 ? "..." : ""), // First 100 chars as description
+      format: "text",
+      url: textContent, // Store the text content in the url field
       dateCreated: new Date(),
       tags: tagsList,
-      size: file?.size,
     };
 
     onContentAdded(pillarId, newContent);
@@ -96,26 +64,23 @@ const ContentUploader = ({ pillarId, onContentAdded }: ContentUploaderProps) => 
 
   const resetForm = () => {
     setTitle("");
-    setDescription("");
-    setFormat("text");
-    setContentUrl("");
+    setTextContent("");
     setTagsList([]);
     setCurrentTag("");
-    setFile(null);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button>
-          <Upload className="mr-2 h-4 w-4" /> Upload Content
+          <FileText className="mr-2 h-4 w-4" /> Add New Idea
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
-          <DialogTitle>Add Content</DialogTitle>
+          <DialogTitle>Add New Idea</DialogTitle>
           <DialogDescription>
-            Upload or link content to add to your bank
+            Write down your content ideas and notes
           </DialogDescription>
         </DialogHeader>
         
@@ -126,75 +91,21 @@ const ContentUploader = ({ pillarId, onContentAdded }: ContentUploaderProps) => 
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter content title"
+              placeholder="Enter a title for your idea"
             />
           </div>
           
           <div className="grid gap-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="content">Write your idea</Label>
             <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe your content"
-              rows={3}
+              id="content"
+              value={textContent}
+              onChange={(e) => setTextContent(e.target.value)}
+              placeholder="Start writing your ideas, notes, or content drafts here..."
+              rows={8}
+              className="resize-none"
             />
           </div>
-          
-          <div className="grid gap-2">
-            <Label htmlFor="format">Content Format</Label>
-            <Select value={format} onValueChange={(value) => setFormat(value as ContentFormat)}>
-              <SelectTrigger id="format">
-                <SelectValue placeholder="Select format" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="image">Image</SelectItem>
-                <SelectItem value="video">Video</SelectItem>
-                <SelectItem value="document">Document</SelectItem>
-                <SelectItem value="text">Text</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          {format !== 'text' && (
-            <div className="grid gap-2">
-              <Label htmlFor="file">Upload File</Label>
-              <Input
-                id="file"
-                type="file"
-                onChange={handleFileChange}
-                accept={
-                  format === 'image' ? 'image/*' : 
-                  format === 'video' ? 'video/*' : 
-                  '.pdf,.doc,.docx,.txt'
-                }
-              />
-              <p className="text-xs text-muted-foreground">
-                or
-              </p>
-              <Label htmlFor="url">Content URL</Label>
-              <Input
-                id="url"
-                value={contentUrl}
-                onChange={(e) => setContentUrl(e.target.value)}
-                placeholder="https://example.com/content"
-                disabled={!!file}
-              />
-            </div>
-          )}
-          
-          {format === 'text' && (
-            <div className="grid gap-2">
-              <Label htmlFor="content">Text Content</Label>
-              <Textarea
-                id="content"
-                value={contentUrl}
-                onChange={(e) => setContentUrl(e.target.value)}
-                placeholder="Enter your text content here"
-                rows={5}
-              />
-            </div>
-          )}
           
           <div className="grid gap-2">
             <Label htmlFor="tags">Tags</Label>
@@ -206,7 +117,9 @@ const ContentUploader = ({ pillarId, onContentAdded }: ContentUploaderProps) => 
                 placeholder="Add tag"
                 onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
               />
-              <Button type="button" onClick={handleAddTag}>Add</Button>
+              <Button type="button" onClick={handleAddTag} variant="secondary">
+                <Tag className="h-4 w-4 mr-1" /> Add
+              </Button>
             </div>
             
             <div className="flex flex-wrap gap-1 mt-2">
@@ -234,7 +147,7 @@ const ContentUploader = ({ pillarId, onContentAdded }: ContentUploaderProps) => 
             Cancel
           </Button>
           <Button onClick={handleSubmit}>
-            <Plus className="mr-2 h-4 w-4" /> Add Content
+            <Plus className="mr-2 h-4 w-4" /> Add Idea
           </Button>
         </DialogFooter>
       </DialogContent>
