@@ -5,7 +5,8 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PenLine, Trash2, Calendar, MoveRight } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { PenLine, Trash2, ArrowUpRight, MoveRight, Calendar, Tag, MessageSquare, Save } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -17,6 +18,7 @@ import { formatDistanceToNow } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
+import { toast } from "sonner";
 
 interface ContentPillarProps {
   pillar: Pillar;
@@ -39,6 +41,8 @@ const ContentPillar = ({
 }: ContentPillarProps) => {
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState(pillar.name);
+  const [brainDumpText, setBrainDumpText] = useState(pillar.brainDump || "");
+  const [isBrainDumpVisible, setIsBrainDumpVisible] = useState(false);
   
   const handleRename = () => {
     if (newName.trim()) {
@@ -50,6 +54,13 @@ const ContentPillar = ({
   const startRenaming = () => {
     setNewName(pillar.name);
     setIsRenaming(true);
+  };
+
+  const saveBrainDump = () => {
+    if (pillar.onUpdateBrainDump) {
+      pillar.onUpdateBrainDump(pillar.id, brainDumpText);
+      toast.success("Brain dump saved!");
+    }
   };
   
   // Filter content if search query exists
@@ -103,7 +114,33 @@ const ContentPillar = ({
             </Button>
           </div>
         )}
+        
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => setIsBrainDumpVisible(!isBrainDumpVisible)}
+        >
+          <MessageSquare className="h-4 w-4 mr-2" />
+          {isBrainDumpVisible ? "Hide Brain Dump" : "Show Brain Dump"}
+        </Button>
       </div>
+      
+      {isBrainDumpVisible && (
+        <div className="border p-4 rounded-lg bg-background">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium">Brain Dump - Quick Thoughts & Ideas</h3>
+            <Button size="sm" variant="secondary" onClick={saveBrainDump}>
+              <Save className="h-3.5 w-3.5 mr-1" /> Save
+            </Button>
+          </div>
+          <Textarea
+            value={brainDumpText}
+            onChange={(e) => setBrainDumpText(e.target.value)}
+            placeholder="Write your thoughts and ideas here... This is your space to brainstorm freely."
+            className="min-h-[150px] resize-y"
+          />
+        </div>
+      )}
       
       {filteredContent.length === 0 ? (
         <div className="text-center p-8 border border-dashed rounded-lg bg-muted/30">
@@ -114,7 +151,7 @@ const ContentPillar = ({
           </p>
         </div>
       ) : (
-        <ScrollArea className="h-[calc(100vh-240px)]">
+        <ScrollArea className="h-[calc(100vh-320px)]">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredContent.map((content) => (
               <Card key={content.id} className="overflow-hidden">
