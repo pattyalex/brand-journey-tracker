@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,6 +14,7 @@ import ContentSearchModal from "@/components/content/ContentSearchModal";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export type Pillar = {
   id: string;
@@ -39,6 +41,7 @@ const BankOfContent = () => {
   const [formatText, setFormatText] = useState("");
   const [shootDetails, setShootDetails] = useState("");
   const [captionText, setCaptionText] = useState("");
+  const [selectedPlatform, setSelectedPlatform] = useState("");
   const [showNewIdeaDialog, setShowNewIdeaDialog] = useState(false);
   const [newIdeaTitle, setNewIdeaTitle] = useState("");
   const [newIdeaTags, setNewIdeaTags] = useState<string[]>([]);
@@ -89,7 +92,8 @@ const BankOfContent = () => {
         script: scriptContent,
         format: formatText,
         shootDetails: shootDetails,
-        caption: captionText
+        caption: captionText,
+        platform: selectedPlatform
       }),
       format: "text",
       dateCreated: new Date(),
@@ -103,6 +107,7 @@ const BankOfContent = () => {
     setFormatText("");
     setShootDetails("");
     setCaptionText("");
+    setSelectedPlatform("");
     setNewIdeaTitle("");
     setNewIdeaTags([]);
     toast.success("Idea saved successfully");
@@ -452,6 +457,26 @@ const BankOfContent = () => {
                   placeholder="Draft a caption for your content when posting to social media platforms..."
                   className="min-h-[80px] resize-y"
                 />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="platform-select">Platform</Label>
+                <Select
+                  value={selectedPlatform}
+                  onValueChange={setSelectedPlatform}
+                >
+                  <SelectTrigger id="platform-select">
+                    <SelectValue placeholder="Select where you'll post this content" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="instagram">Instagram</SelectItem>
+                    <SelectItem value="tiktok">TikTok</SelectItem>
+                    <SelectItem value="youtube">YouTube</SelectItem>
+                    <SelectItem value="facebook">Facebook</SelectItem>
+                    <SelectItem value="twitter">Twitter</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               
               <div className="grid gap-2">
