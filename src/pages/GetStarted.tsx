@@ -1,7 +1,7 @@
 
 import Layout from "@/components/Layout";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { PenLine, Database, Calendar, TrendingUp, Handshake, BarChart3 } from "lucide-react";
+import { PenLine, Database, Calendar, TrendingUp, Handshake } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const services = [
@@ -29,10 +29,6 @@ const services = [
   {
     title: "Income Tracker",
     icon: Handshake,
-  },
-  {
-    title: "Analytics",
-    icon: BarChart3,
   }
 ];
 
