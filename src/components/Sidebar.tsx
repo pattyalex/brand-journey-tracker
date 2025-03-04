@@ -13,7 +13,8 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
-  SidebarMenuAction
+  SidebarMenuAction,
+  SidebarSeparator
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -183,6 +184,9 @@ const Sidebar = () => {
                   </Button>
                 )}
               </SidebarMenuItem>
+              
+              {/* Separator above Settings */}
+              <SidebarSeparator className="my-2" />
               
               {/* Settings item positioned at the bottom */}
               <SidebarMenuItem>
