@@ -195,8 +195,8 @@ const Sidebar = () => {
                 </SidebarMenuItem>
               )}
               
-              {/* Increased spacing by 300% by changing my-2 to my-6 (2px to 6px) */}
-              <SidebarSeparator className="my-6" />
+              {/* Increased spacing by 600% by changing my-2 to my-12 (2px to 12px) */}
+              <SidebarSeparator className="my-12" />
               
               {/* Settings and My Account items moved to the bottom */}
               <SidebarMenuItem>
