@@ -35,6 +35,8 @@ const BankOfContent = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
   const [selectedText, setSelectedText] = useState("");
+  const [developScriptText, setDevelopScriptText] = useState("");
+  const [shootDetails, setShootDetails] = useState("");
   const [showNewIdeaDialog, setShowNewIdeaDialog] = useState(false);
   const [newIdeaTitle, setNewIdeaTitle] = useState("");
   const [newIdeaTags, setNewIdeaTags] = useState<string[]>([]);
@@ -65,16 +67,26 @@ const BankOfContent = () => {
   };
 
   const createNewIdeaFromSelection = () => {
-    if (!selectedText.trim() || !newIdeaTitle.trim()) {
-      toast.error("Title and content are required");
+    if (!newIdeaTitle.trim()) {
+      toast.error("Title is required");
+      return;
+    }
+    
+    const scriptContent = developScriptText.trim() || selectedText;
+    
+    if (!scriptContent) {
+      toast.error("Script content is required");
       return;
     }
     
     const newIdea: ContentItem = {
       id: `${Date.now()}`,
       title: newIdeaTitle,
-      description: selectedText.slice(0, 100) + (selectedText.length > 100 ? "..." : ""),
-      url: selectedText,
+      description: scriptContent.slice(0, 100) + (scriptContent.length > 100 ? "..." : ""),
+      url: JSON.stringify({
+        script: scriptContent,
+        shootDetails: shootDetails
+      }),
       format: "text",
       dateCreated: new Date(),
       tags: newIdeaTags,
@@ -83,9 +95,11 @@ const BankOfContent = () => {
     addContentToPillar(activeTab, newIdea);
     setShowNewIdeaDialog(false);
     setSelectedText("");
+    setDevelopScriptText("");
+    setShootDetails("");
     setNewIdeaTitle("");
     setNewIdeaTags([]);
-    toast.success("Selected text saved as a new idea");
+    toast.success("Idea saved successfully");
   };
 
   const saveSelectedTextAsIdea = () => {
@@ -106,6 +120,7 @@ const BankOfContent = () => {
     }
     
     setNewIdeaTitle(`Development - ${new Date().toLocaleDateString()}`);
+    setDevelopScriptText(selectedText);
     setNewIdeaTags(["development"]);
     setDevelopIdeaMode(true);
     setShowNewIdeaDialog(true);
@@ -165,20 +180,12 @@ const BankOfContent = () => {
       return;
     }
     
-    const newIdea: ContentItem = {
-      id: `${Date.now()}`,
-      title: newIdeaTitle || `Idea - ${new Date().toLocaleDateString()}`,
-      description: writingText.slice(0, 100) + (writingText.length > 100 ? "..." : ""),
-      url: writingText,
-      format: "text",
-      dateCreated: new Date(),
-      tags: newIdeaTags.length > 0 ? newIdeaTags : ["idea"],
-    };
-    
-    addContentToPillar(activeTab, newIdea);
-    toast.success("Your writing has been saved as an idea");
-    setShowNewIdeaDialog(false);
-    setDevelopIdeaMode(false);
+    setSelectedText(writingText);
+    setDevelopScriptText(writingText);
+    setNewIdeaTitle(`Idea - ${new Date().toLocaleDateString()}`);
+    setNewIdeaTags(["idea"]);
+    setDevelopIdeaMode(true);
+    setShowNewIdeaDialog(true);
   };
 
   const addContentToPillar = (pillarId: string, content: ContentItem) => {
@@ -315,6 +322,7 @@ const BankOfContent = () => {
                             developSelectedIdea();
                           } else if (writingText) {
                             setSelectedText(writingText);
+                            setDevelopScriptText(writingText);
                             setNewIdeaTitle(`Development - ${new Date().toLocaleDateString()}`);
                             setNewIdeaTags(["development"]);
                             setDevelopIdeaMode(true);
@@ -344,6 +352,8 @@ const BankOfContent = () => {
                         setNewIdeaTitle(`Idea - ${new Date().toLocaleDateString()}`);
                         setNewIdeaTags(["idea"]);
                         setSelectedText("");
+                        setDevelopScriptText("");
+                        setShootDetails("");
                         setShowNewIdeaDialog(true);
                       }}
                     >
@@ -394,14 +404,27 @@ const BankOfContent = () => {
                 />
               </div>
               
-              {selectedText && (
-                <div className="grid gap-2">
-                  <Label>Selected Content</Label>
-                  <div className="bg-gray-50 p-3 rounded-md text-sm max-h-[150px] overflow-y-auto">
-                    {selectedText}
-                  </div>
-                </div>
-              )}
+              <div className="grid gap-2">
+                <Label htmlFor="develop-script">Develop Script</Label>
+                <Textarea
+                  id="develop-script"
+                  value={developScriptText || selectedText}
+                  onChange={(e) => setDevelopScriptText(e.target.value)}
+                  placeholder="Write your script here..."
+                  className="min-h-[100px] resize-y"
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="shoot-details">Shoot Details</Label>
+                <Textarea
+                  id="shoot-details"
+                  value={shootDetails}
+                  onChange={(e) => setShootDetails(e.target.value)}
+                  placeholder="Enter details about the shoot..."
+                  className="min-h-[80px] resize-y"
+                />
+              </div>
               
               <div className="grid gap-2">
                 <Label htmlFor="tags">Tags</Label>
@@ -445,7 +468,7 @@ const BankOfContent = () => {
               }}>
                 Cancel
               </Button>
-              <Button onClick={selectedText ? createNewIdeaFromSelection : saveWritingAsIdea}
+              <Button onClick={developIdeaMode ? createNewIdeaFromSelection : createNewIdeaFromSelection}
                 className={developIdeaMode ? "bg-emerald-600 hover:bg-emerald-700" : ""}>
                 <Plus className="mr-2 h-4 w-4" /> 
                 {developIdeaMode ? "Develop Idea" : "Create Idea"}
