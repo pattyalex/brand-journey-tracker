@@ -424,7 +424,7 @@ const BankOfContent = () => {
                   id="format-text"
                   value={formatText}
                   onChange={(e) => setFormatText(e.target.value)}
-                  placeholder="Enter details about how you want to bring this idea to life. Consider the filming approach, visual style, and how you want to present your script..."
+                  placeholder="Describe how you want to present your script (e.g., POV skit, educational, storytelling, aesthetic montage)..."
                   className="min-h-[80px] resize-y"
                 />
               </div>
