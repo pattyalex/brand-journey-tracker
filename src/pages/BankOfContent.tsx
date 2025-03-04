@@ -1,10 +1,9 @@
-
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ContentPillar from "@/components/content/ContentPillar";
 import { Button } from "@/components/ui/button";
-import { FileText, Pencil, Plus, Search } from "lucide-react";
+import { Pencil, Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ContentUploader from "@/components/content/ContentUploader";
@@ -218,9 +217,6 @@ const BankOfContent = () => {
                         pillarId={activeTab} 
                         onContentAdded={addContentToPillar} 
                       />
-                      <Button className="bg-[#b88a6b] hover:bg-[#a57a5e]" onClick={saveWritingAsIdea}>
-                        <FileText className="h-4 w-4 mr-2" /> Add New Idea
-                      </Button>
                     </div>
                   </div>
                   <ContentPillar
