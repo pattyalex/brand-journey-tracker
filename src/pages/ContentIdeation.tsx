@@ -344,19 +344,33 @@ const ContentIdeation = () => {
                       ))}
                     </div>
                     
-                    <table className="w-full border-collapse ml-10 mr-10">
+                    <table className="w-full border-collapse ml-10 mr-10 group">
                       <thead className="bg-gray-800 text-white">
                         <tr>
                           {/* Only render visible columns */}
                           {standardColumns.filter(col => !hiddenStandardColumns.includes(col.id)).map(column => (
                             <th 
                               key={column.id}
-                              className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700"
+                              className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700 relative group"
                             >
                               <div className="flex items-center gap-1">
                                 {column.id === "idea" && <Lightbulb className="h-3 w-3" />}
                                 <span>{column.name}</span>
                               </div>
+                              
+                              {/* Add hover trash icon inside the column header */}
+                              {column.id !== "idea" && (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="xs"
+                                  className="absolute top-1 right-1 h-5 w-5 p-0 text-gray-300 hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  onClick={() => handleDeleteStandardColumn(column.id)}
+                                  title={`Delete ${column.name} column`}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              )}
                             </th>
                           ))}
                           
