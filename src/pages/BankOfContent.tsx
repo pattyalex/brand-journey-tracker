@@ -1,9 +1,10 @@
+
 import { useState, useRef } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ContentPillar from "@/components/content/ContentPillar";
 import { Button } from "@/components/ui/button";
-import { Pencil, Plus, Search, Lightbulb, LayoutList } from "lucide-react";
+import { Pencil, Plus, Search, Lightbulb, LayoutList, FileText } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ContentUploader from "@/components/content/ContentUploader";
@@ -193,14 +194,17 @@ const BankOfContent = () => {
                     <Sheet>
                       <div className="rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full relative bg-[#F6F6F7] flex">
                         <ScrollArea className="h-full w-full">
-                          <Textarea
-                            ref={textareaRef}
-                            value={writingText}
-                            onChange={(e) => setWritingText(e.target.value)}
-                            placeholder="Start writing your ideas, thoughts, or notes here..."
-                            className="min-h-full w-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-base px-4 py-4"
-                          />
+                          <div className="h-full w-full cursor-text px-4 py-4" onClick={() => textareaRef.current?.focus()}>
+                            <Textarea
+                              ref={textareaRef}
+                              value={writingText}
+                              onChange={(e) => setWritingText(e.target.value)}
+                              placeholder="Start writing your ideas, thoughts, or notes here..."
+                              className="min-h-full w-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-base absolute inset-0 px-4 py-4"
+                            />
+                          </div>
                         </ScrollArea>
+                        <div className="absolute right-0 top-0 bottom-0 w-3 bg-gray-200 opacity-60"></div>
                         <SheetTrigger asChild>
                           <Button 
                             variant="outline" 
@@ -241,12 +245,14 @@ const BankOfContent = () => {
                       <Lightbulb className="h-5 w-5 mr-2" /> 
                       Develop Your Ideas
                     </h2>
-                    <div className="flex items-center gap-2">
-                      <ContentUploader 
-                        pillarId={activeTab} 
-                        onContentAdded={addContentToPillar} 
-                      />
-                    </div>
+                    <Button 
+                      variant="default" 
+                      size="sm"
+                      className="bg-[#8B6B4E] hover:bg-[#7A5C3F]"
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      Add New Idea
+                    </Button>
                   </div>
                   <ContentPillar
                     pillar={{...pillar}}
