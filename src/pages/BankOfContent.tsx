@@ -426,15 +426,15 @@ const BankOfContent = () => {
         />
         
         <Dialog open={showNewIdeaDialog} onOpenChange={setShowNewIdeaDialog}>
-          <DialogContent className="sm:max-w-[525px]">
+          <DialogContent className="sm:max-w-[525px] max-h-[85vh]">
             <DialogHeader>
               <DialogTitle>
                 {developIdeaMode ? "Develop Selected Idea" : "Create New Idea"}
               </DialogTitle>
             </DialogHeader>
             
-            <ScrollArea className="max-h-[70vh]">
-              <div className="grid gap-4 py-4 px-1">
+            <ScrollArea className="max-h-[calc(85vh-140px)] pr-6">
+              <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="idea-title">Title</Label>
                   <Input
@@ -559,7 +559,7 @@ const BankOfContent = () => {
               </div>
             </ScrollArea>
             
-            <DialogFooter>
+            <DialogFooter className="mt-4">
               <Button variant="outline" onClick={() => {
                 setShowNewIdeaDialog(false);
                 setDevelopIdeaMode(false);

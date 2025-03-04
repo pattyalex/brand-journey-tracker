@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -78,7 +77,7 @@ const ContentUploader = ({ pillarId, onContentAdded }: ContentUploaderProps) => 
           <FileText className="mr-2 h-4 w-4" /> Add New Idea
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[525px]">
+      <DialogContent className="sm:max-w-[525px] max-h-[85vh]">
         <DialogHeader>
           <DialogTitle>Add New Idea</DialogTitle>
           <DialogDescription>
@@ -86,8 +85,8 @@ const ContentUploader = ({ pillarId, onContentAdded }: ContentUploaderProps) => 
           </DialogDescription>
         </DialogHeader>
         
-        <ScrollArea className="max-h-[70vh]">
-          <div className="grid gap-4 py-4 px-1">
+        <ScrollArea className="max-h-[calc(85vh-140px)]">
+          <div className="grid gap-4 py-4 pr-6">
             <div className="grid gap-2">
               <Label htmlFor="title">Title</Label>
               <Input
@@ -146,7 +145,7 @@ const ContentUploader = ({ pillarId, onContentAdded }: ContentUploaderProps) => 
           </div>
         </ScrollArea>
         
-        <DialogFooter>
+        <DialogFooter className="mt-4">
           <Button variant="outline" onClick={() => setIsOpen(false)}>
             Cancel
           </Button>
