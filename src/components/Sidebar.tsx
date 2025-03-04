@@ -1,4 +1,3 @@
-
 import { Home, FolderOpen, FileText, Settings, ListTodo, Lightbulb, Trash2, Plus } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -102,7 +101,7 @@ const Sidebar = () => {
               onClick={() => setShowAddForm(true)}
             >
               <Plus size={14} />
-              <span className="text-xs">Add Page</span>
+              <span className="text-xs">Add</span>
             </Button>
           </div>
           <SidebarGroupContent>
