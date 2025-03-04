@@ -1,5 +1,5 @@
 
-import { Home, FolderOpen, FileText, Settings, ListTodo, Lightbulb, Layout } from 'lucide-react';
+import { Home, FolderOpen, FileText, Settings, ListTodo, Lightbulb } from 'lucide-react';
 import {
   Sidebar as SidebarContainer,
   SidebarContent,
@@ -14,7 +14,19 @@ import {
   SidebarMenuSubButton
 } from "@/components/ui/sidebar";
 
-const menuItems = [
+// Define the proper type for menu items including optional subItems
+type MenuItem = {
+  title: string;
+  icon: React.ComponentType<any>;
+  url: string;
+  subItems?: Array<{
+    title: string;
+    icon: React.ComponentType<any>;
+    url: string;
+  }>;
+};
+
+const menuItems: MenuItem[] = [
   { title: 'Dashboard', icon: Home, url: '/' },
   { title: 'Daily Agenda', icon: ListTodo, url: '/daily-agenda' },
   { title: 'Projects', icon: FolderOpen, url: '/projects' },
