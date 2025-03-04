@@ -12,7 +12,6 @@ import NotFound from "./pages/NotFound";
 import GetStarted from "./pages/GetStarted";
 import ContentIdeation from "./pages/ContentIdeation";
 import MyAccount from "./pages/MyAccount";
-import BankOfContent from "./pages/BankOfContent";
 
 const queryClient = new QueryClient();
 
