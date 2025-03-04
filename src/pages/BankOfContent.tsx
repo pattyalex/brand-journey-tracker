@@ -192,13 +192,13 @@ const BankOfContent = () => {
                   <div className="h-[calc(100vh-240px)]">
                     <Sheet>
                       <div className="rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full relative bg-[#F6F6F7] flex">
-                        <ScrollArea className="h-full w-full px-4 py-4 overflow-auto">
+                        <ScrollArea className="h-full w-full">
                           <Textarea
                             ref={textareaRef}
                             value={writingText}
                             onChange={(e) => setWritingText(e.target.value)}
                             placeholder="Start writing your ideas, thoughts, or notes here..."
-                            className="min-h-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-base"
+                            className="min-h-full w-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-base px-4 py-4"
                           />
                         </ScrollArea>
                         <SheetTrigger asChild>
