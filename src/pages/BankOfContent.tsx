@@ -38,6 +38,7 @@ const BankOfContent = () => {
   const [developScriptText, setDevelopScriptText] = useState("");
   const [formatText, setFormatText] = useState("");
   const [shootDetails, setShootDetails] = useState("");
+  const [captionText, setCaptionText] = useState("");
   const [showNewIdeaDialog, setShowNewIdeaDialog] = useState(false);
   const [newIdeaTitle, setNewIdeaTitle] = useState("");
   const [newIdeaTags, setNewIdeaTags] = useState<string[]>([]);
@@ -87,7 +88,8 @@ const BankOfContent = () => {
       url: JSON.stringify({
         script: scriptContent,
         format: formatText,
-        shootDetails: shootDetails
+        shootDetails: shootDetails,
+        caption: captionText
       }),
       format: "text",
       dateCreated: new Date(),
@@ -100,6 +102,7 @@ const BankOfContent = () => {
     setDevelopScriptText("");
     setFormatText("");
     setShootDetails("");
+    setCaptionText("");
     setNewIdeaTitle("");
     setNewIdeaTags([]);
     toast.success("Idea saved successfully");
@@ -436,6 +439,17 @@ const BankOfContent = () => {
                   value={shootDetails}
                   onChange={(e) => setShootDetails(e.target.value)}
                   placeholder="Enter details about the shoot, such as location, outfits, props needed..."
+                  className="min-h-[80px] resize-y"
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="caption-text">Caption</Label>
+                <Textarea
+                  id="caption-text"
+                  value={captionText}
+                  onChange={(e) => setCaptionText(e.target.value)}
+                  placeholder="Draft a caption for your content when posting to social media platforms..."
                   className="min-h-[80px] resize-y"
                 />
               </div>
