@@ -1,5 +1,5 @@
 
-import { Home, FolderOpen, FileText, Settings, ListTodo, Lightbulb } from 'lucide-react';
+import { Home, FolderOpen, FileText, Settings, ListTodo, Lightbulb, Trash2 } from 'lucide-react';
 import {
   Sidebar as SidebarContainer,
   SidebarContent,
@@ -11,7 +11,8 @@ import {
   SidebarMenuItem,
   SidebarMenuSub,
   SidebarMenuSubItem,
-  SidebarMenuSubButton
+  SidebarMenuSubButton,
+  SidebarMenuAction
 } from "@/components/ui/sidebar";
 
 // Define the proper type for menu items including optional subItems
@@ -19,6 +20,7 @@ type MenuItem = {
   title: string;
   icon: React.ComponentType<any>;
   url: string;
+  isDeletable?: boolean;
   subItems?: Array<{
     title: string;
     icon: React.ComponentType<any>;
@@ -27,15 +29,20 @@ type MenuItem = {
 };
 
 const menuItems: MenuItem[] = [
-  { title: 'Dashboard', icon: Home, url: '/' },
-  { title: 'Daily Agenda', icon: ListTodo, url: '/daily-agenda' },
-  { title: 'Projects', icon: FolderOpen, url: '/projects' },
-  { title: 'Vision Board & Goals', icon: Lightbulb, url: '/projects/vision-board' },
-  { title: 'Documents', icon: FileText, url: '/documents' },
-  { title: 'Settings', icon: Settings, url: '/settings' },
+  { title: 'Dashboard', icon: Home, url: '/', isDeletable: false },
+  { title: 'Daily Agenda', icon: ListTodo, url: '/daily-agenda', isDeletable: true },
+  { title: 'Projects', icon: FolderOpen, url: '/projects', isDeletable: true },
+  { title: 'Vision Board & Goals', icon: Lightbulb, url: '/projects/vision-board', isDeletable: true },
+  { title: 'Documents', icon: FileText, url: '/documents', isDeletable: true },
+  { title: 'Settings', icon: Settings, url: '/settings', isDeletable: false },
 ];
 
 const Sidebar = () => {
+  const handleDeleteItem = (itemTitle: string) => {
+    console.log(`Delete item: ${itemTitle}`);
+    // Implement deletion logic here
+  };
+
   return (
     <SidebarContainer>
       <div className="p-4">
@@ -54,6 +61,17 @@ const Sidebar = () => {
                       <span>{item.title}</span>
                     </a>
                   </SidebarMenuButton>
+                  
+                  {/* Add trash icon for deletable items */}
+                  {item.isDeletable && (
+                    <SidebarMenuAction 
+                      onClick={() => handleDeleteItem(item.title)}
+                      showOnHover={true}
+                      title={`Delete ${item.title}`}
+                    >
+                      <Trash2 size={16} />
+                    </SidebarMenuAction>
+                  )}
                   
                   {item.subItems && item.subItems.length > 0 && (
                     <SidebarMenuSub>
