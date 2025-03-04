@@ -569,7 +569,7 @@ const BankOfContent = () => {
               <Button onClick={developIdeaMode ? createNewIdeaFromSelection : createNewIdeaFromSelection}
                 className={developIdeaMode ? "bg-emerald-600 hover:bg-emerald-700" : ""}>
                 <Plus className="mr-2 h-4 w-4" /> 
-                {developIdeaMode ? "Save Idea" : "Create Idea"}
+                {developIdeaMode ? "Save Idea" : "Save Idea"}
               </Button>
             </DialogFooter>
           </DialogContent>
