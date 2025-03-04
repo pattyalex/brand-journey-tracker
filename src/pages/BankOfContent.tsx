@@ -41,19 +41,13 @@ const BankOfContent = () => {
   const [newIdeaTags, setNewIdeaTags] = useState<string[]>([]);
   const [currentTag, setCurrentTag] = useState("");
 
-  const handleTextSelection = () => {
-    const selection = window.getSelection();
-    if (selection && !selection.isCollapsed) {
-      const selectedContent = selection.toString().trim();
-      if (selectedContent) {
-        setSelectedText(selectedContent);
-      }
-    }
-  };
-
   useEffect(() => {
     if (activeTab && writingText) {
-      localStorage.setItem(`writing-${activeTab}`, writingText);
+      const saveTimer = setTimeout(() => {
+        localStorage.setItem(`writing-${activeTab}`, writingText);
+      }, 1000);
+      
+      return () => clearTimeout(saveTimer);
     }
   }, [writingText, activeTab]);
 
@@ -65,6 +59,51 @@ const BankOfContent = () => {
       setWritingText("");
     }
   }, [activeTab]);
+
+  const handleTextSelection = () => {
+    const selection = window.getSelection();
+    if (selection && !selection.isCollapsed) {
+      const selectedContent = selection.toString().trim();
+      if (selectedContent) {
+        setSelectedText(selectedContent);
+      }
+    }
+  };
+
+  const createNewIdeaFromSelection = () => {
+    if (!selectedText.trim() || !newIdeaTitle.trim()) {
+      toast.error("Title and content are required");
+      return;
+    }
+    
+    const newIdea: ContentItem = {
+      id: `${Date.now()}`,
+      title: newIdeaTitle,
+      description: selectedText.slice(0, 100) + (selectedText.length > 100 ? "..." : ""),
+      url: selectedText,
+      format: "text",
+      dateCreated: new Date(),
+      tags: newIdeaTags,
+    };
+    
+    addContentToPillar(activeTab, newIdea);
+    setShowNewIdeaDialog(false);
+    setSelectedText("");
+    setNewIdeaTitle("");
+    setNewIdeaTags([]);
+    toast.success("Selected text saved as a new idea");
+  };
+
+  const saveSelectedTextAsIdea = () => {
+    if (!selectedText.trim()) {
+      toast.error("Please select some text first");
+      return;
+    }
+    
+    setNewIdeaTitle(`Idea - ${new Date().toLocaleDateString()}`);
+    setNewIdeaTags(["selection"]);
+    setShowNewIdeaDialog(true);
+  };
 
   const addPillar = () => {
     const newId = `${Date.now()}`;
@@ -101,74 +140,6 @@ const BankOfContent = () => {
         : p
     ));
     setWritingText(text);
-  };
-
-  const saveSelectedTextAsIdea = () => {
-    if (!selectedText.trim()) {
-      toast.error("Please select some text first");
-      return;
-    }
-    
-    setNewIdeaTitle(`Idea - ${new Date().toLocaleDateString()}`);
-    setNewIdeaTags(["selection"]);
-    setShowNewIdeaDialog(true);
-  };
-
-  const handleAddTag = () => {
-    if (currentTag.trim() && !newIdeaTags.includes(currentTag.trim())) {
-      setNewIdeaTags([...newIdeaTags, currentTag.trim()]);
-      setCurrentTag("");
-    }
-  };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setNewIdeaTags(newIdeaTags.filter(tag => tag !== tagToRemove));
-  };
-
-  const createNewIdeaFromSelection = () => {
-    if (!selectedText.trim() || !newIdeaTitle.trim()) {
-      toast.error("Title and content are required");
-      return;
-    }
-    
-    const newIdea: ContentItem = {
-      id: `${Date.now()}`,
-      title: newIdeaTitle,
-      description: selectedText.slice(0, 100) + (selectedText.length > 100 ? "..." : ""),
-      url: selectedText,
-      format: "text",
-      dateCreated: new Date(),
-      tags: newIdeaTags,
-    };
-    
-    addContentToPillar(activeTab, newIdea);
-    setShowNewIdeaDialog(false);
-    setSelectedText("");
-    setNewIdeaTitle("");
-    setNewIdeaTags([]);
-    toast.success("Selected text saved as a new idea");
-  };
-
-  const saveWritingAsIdea = () => {
-    const activePillar = pillars.find(p => p.id === activeTab);
-    if (!writingText.trim()) {
-      toast.error("Please write something first");
-      return;
-    }
-    
-    const newIdea: ContentItem = {
-      id: `${Date.now()}`,
-      title: `Idea - ${new Date().toLocaleDateString()}`,
-      description: writingText,
-      url: "",
-      format: "text",
-      dateCreated: new Date(),
-      tags: ["idea"]
-    };
-    
-    addContentToPillar(activeTab, newIdea);
-    setWritingText("");
-    toast.success("Saved as idea");
   };
 
   const addContentToPillar = (pillarId: string, content: ContentItem) => {
