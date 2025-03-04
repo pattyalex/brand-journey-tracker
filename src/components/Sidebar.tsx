@@ -1,5 +1,6 @@
 
-import { Home, FolderOpen, FileText, Settings, ListTodo, Lightbulb, Trash2 } from 'lucide-react';
+import { Home, FolderOpen, FileText, Settings, ListTodo, Lightbulb, Trash2, Plus } from 'lucide-react';
+import { useState } from 'react';
 import {
   Sidebar as SidebarContainer,
   SidebarContent,
@@ -14,6 +15,9 @@ import {
   SidebarMenuSubButton,
   SidebarMenuAction
 } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 // Define the proper type for menu items including optional subItems
 type MenuItem = {
@@ -28,7 +32,7 @@ type MenuItem = {
   }>;
 };
 
-const menuItems: MenuItem[] = [
+const defaultMenuItems: MenuItem[] = [
   { title: 'Dashboard', icon: Home, url: '/', isDeletable: false },
   { title: 'Daily Agenda', icon: ListTodo, url: '/daily-agenda', isDeletable: true },
   { title: 'Projects', icon: FolderOpen, url: '/projects', isDeletable: true },
@@ -38,9 +42,50 @@ const menuItems: MenuItem[] = [
 ];
 
 const Sidebar = () => {
+  // Get saved menu items from localStorage or use default
+  const getSavedMenuItems = () => {
+    const saved = localStorage.getItem('sidebarMenuItems');
+    return saved ? JSON.parse(saved) : defaultMenuItems;
+  };
+
+  const [menuItems, setMenuItems] = useState<MenuItem[]>(getSavedMenuItems);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newPageTitle, setNewPageTitle] = useState('');
+
   const handleDeleteItem = (itemTitle: string) => {
-    console.log(`Delete item: ${itemTitle}`);
-    // Implement deletion logic here
+    const updatedItems = menuItems.filter(item => item.title !== itemTitle);
+    setMenuItems(updatedItems);
+    localStorage.setItem('sidebarMenuItems', JSON.stringify(updatedItems));
+    toast.success(`"${itemTitle}" removed from sidebar`);
+  };
+
+  const handleAddPage = () => {
+    if (!newPageTitle.trim()) {
+      toast.error("Please enter a page title");
+      return;
+    }
+
+    // Check if page with same title already exists
+    if (menuItems.some(item => item.title.toLowerCase() === newPageTitle.toLowerCase())) {
+      toast.error("A page with this title already exists");
+      return;
+    }
+
+    const newPage: MenuItem = {
+      title: newPageTitle,
+      icon: FileText, // Default icon
+      url: `/${newPageTitle.toLowerCase().replace(/\s+/g, '-')}`, // Convert to slug format
+      isDeletable: true
+    };
+
+    const updatedItems = [...menuItems, newPage];
+    setMenuItems(updatedItems);
+    localStorage.setItem('sidebarMenuItems', JSON.stringify(updatedItems));
+    
+    // Reset form
+    setNewPageTitle('');
+    setShowAddForm(false);
+    toast.success(`"${newPageTitle}" added to sidebar`);
   };
 
   return (
@@ -92,6 +137,50 @@ const Sidebar = () => {
                   )}
                 </SidebarMenuItem>
               ))}
+              
+              {/* Add Page Form */}
+              <SidebarMenuItem>
+                {showAddForm ? (
+                  <div className="flex flex-col gap-2 px-2 py-3">
+                    <Input 
+                      placeholder="Page title" 
+                      value={newPageTitle}
+                      onChange={(e) => setNewPageTitle(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleAddPage()}
+                      className="h-8"
+                    />
+                    <div className="flex gap-2">
+                      <Button 
+                        size="xs" 
+                        onClick={handleAddPage}
+                        className="flex-1"
+                      >
+                        Add
+                      </Button>
+                      <Button 
+                        size="xs" 
+                        variant="outline" 
+                        onClick={() => {
+                          setShowAddForm(false);
+                          setNewPageTitle('');
+                        }}
+                        className="flex-1"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start gap-2 text-muted-foreground h-8"
+                    onClick={() => setShowAddForm(true)}
+                  >
+                    <Plus size={16} />
+                    <span>Add Page</span>
+                  </Button>
+                )}
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
