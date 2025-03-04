@@ -469,7 +469,7 @@ const BankOfContent = () => {
               
               <div className="grid gap-2">
                 <Label htmlFor="platform-select">Platforms</Label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="flex flex-wrap gap-2">
                   {[
                     { id: "instagram", label: "Instagram" },
                     { id: "tiktok", label: "TikTok" },
@@ -479,18 +479,19 @@ const BankOfContent = () => {
                     { id: "linkedin", label: "LinkedIn" },
                     { id: "other", label: "Other" }
                   ].map((platform) => (
-                    <div key={platform.id} className="flex items-center space-x-2">
-                      <Checkbox 
-                        id={`platform-${platform.id}`} 
-                        checked={selectedPlatforms.includes(platform.id)}
-                        onCheckedChange={() => togglePlatform(platform.id)}
-                      />
-                      <label
-                        htmlFor={`platform-${platform.id}`}
-                        className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                      >
-                        {platform.label}
-                      </label>
+                    <div 
+                      key={platform.id}
+                      onClick={() => togglePlatform(platform.id)}
+                      className={`px-3 py-1.5 rounded-full text-sm cursor-pointer transition-colors flex items-center gap-1.5 ${
+                        selectedPlatforms.includes(platform.id)
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary/20 text-muted-foreground hover:bg-secondary/30"
+                      }`}
+                    >
+                      {selectedPlatforms.includes(platform.id) && (
+                        <Check className="h-3 w-3" />
+                      )}
+                      {platform.label}
                     </div>
                   ))}
                 </div>
