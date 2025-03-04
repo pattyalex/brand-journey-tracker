@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -140,6 +141,38 @@ const BankOfContent = () => {
         : p
     ));
     setWritingText(text);
+  };
+
+  const handleAddTag = () => {
+    if (currentTag.trim() && !newIdeaTags.includes(currentTag.trim())) {
+      setNewIdeaTags([...newIdeaTags, currentTag.trim()]);
+      setCurrentTag("");
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setNewIdeaTags(newIdeaTags.filter(tag => tag !== tagToRemove));
+  };
+
+  const saveWritingAsIdea = () => {
+    if (!writingText.trim()) {
+      toast.error("Please write something first");
+      return;
+    }
+    
+    const newIdea: ContentItem = {
+      id: `${Date.now()}`,
+      title: newIdeaTitle || `Idea - ${new Date().toLocaleDateString()}`,
+      description: writingText.slice(0, 100) + (writingText.length > 100 ? "..." : ""),
+      url: writingText,
+      format: "text",
+      dateCreated: new Date(),
+      tags: newIdeaTags.length > 0 ? newIdeaTags : ["idea"],
+    };
+    
+    addContentToPillar(activeTab, newIdea);
+    toast.success("Your writing has been saved as an idea");
+    setShowNewIdeaDialog(false);
   };
 
   const addContentToPillar = (pillarId: string, content: ContentItem) => {
