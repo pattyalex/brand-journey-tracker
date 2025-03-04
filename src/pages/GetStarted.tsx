@@ -15,7 +15,7 @@ const services = [
     icon: Database,
   },
   {
-    title: "Content Ideation And Planning",
+    title: "Content Development",
     icon: PenLine,
   },
   {
