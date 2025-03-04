@@ -69,6 +69,32 @@ const BankOfContent = () => {
     }
   }, [activeTab]);
 
+  useEffect(() => {
+    pillars.forEach(pillar => {
+      try {
+        const savedContent = localStorage.getItem(`pillar-content-${pillar.id}`);
+        if (savedContent) {
+          const parsedContent = JSON.parse(savedContent);
+          
+          const contentWithDates = parsedContent.map((item: any) => ({
+            ...item,
+            dateCreated: new Date(item.dateCreated)
+          }));
+          
+          setPillars(prev => 
+            prev.map(p => 
+              p.id === pillar.id 
+                ? {...p, content: contentWithDates} 
+                : p
+            )
+          );
+        }
+      } catch (error) {
+        console.error(`Failed to load content for pillar ${pillar.id}:`, error);
+      }
+    });
+  }, []);
+
   const handleTextSelection = (selectedContent: string) => {
     setSelectedText(selectedContent);
   };
@@ -221,11 +247,21 @@ const BankOfContent = () => {
   };
 
   const addContentToPillar = (pillarId: string, content: ContentItem) => {
-    setPillars(pillars.map(p => 
+    const updatedPillars = pillars.map(p => 
       p.id === pillarId 
         ? {...p, content: [...p.content, content]} 
         : p
-    ));
+    );
+    
+    setPillars(updatedPillars);
+    
+    try {
+      const pillarContent = updatedPillars.find(p => p.id === pillarId)?.content || [];
+      localStorage.setItem(`pillar-content-${pillarId}`, JSON.stringify(pillarContent));
+    } catch (error) {
+      console.error("Failed to save content to localStorage:", error);
+    }
+    
     toast.success(`Content added to ${pillars.find(p => p.id === pillarId)?.name}`);
   };
 

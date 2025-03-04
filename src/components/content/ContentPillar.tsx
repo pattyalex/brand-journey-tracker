@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
 } from "@/components/ui/card";
@@ -40,7 +40,15 @@ const ContentPillar = ({
 }: ContentPillarProps) => {
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState(pillar.name);
+  // Add state to track content for debugging
+  const [debugContent, setDebugContent] = useState<ContentItem[]>([]);
   
+  // Debug effect to log content changes
+  useEffect(() => {
+    console.log("ContentPillar content:", pillar.content);
+    setDebugContent(pillar.content);
+  }, [pillar.content]);
+
   const handleRename = () => {
     if (newName.trim()) {
       onRename(newName);
@@ -71,6 +79,16 @@ const ContentPillar = ({
     }
   };
 
+  // Function to parse JSON content
+  const parseContentData = (jsonString: string) => {
+    try {
+      return JSON.parse(jsonString);
+    } catch (error) {
+      console.error("Failed to parse content data:", error);
+      return { script: jsonString };
+    }
+  };
+
   return (
     <div className="space-y-4">
       {filteredContent.length === 0 ? (
@@ -78,7 +96,7 @@ const ContentPillar = ({
           <p className="text-muted-foreground">
             {searchQuery 
               ? "No matching content found" 
-              : "No ideas yet. Write something in the writing space to get started."}
+              : "No ideas yet. Create a new idea to get started."}
           </p>
         </div>
       ) : (
@@ -109,19 +127,21 @@ const ContentPillar = ({
                 
                 <CardContent className="p-4 pt-0">
                   <div className="flex flex-wrap gap-1 mb-2">
-                    {content.tags.map((tag, index) => (
-                      <span 
-                        key={index} 
-                        className={`text-xs px-2 py-1 rounded-full ${getTagColorClasses(tag)}`}
-                      >
-                        {tag}
-                      </span>
-                    ))}
+                    {content.tags && content.tags.length > 0 ? (
+                      content.tags.map((tag, index) => (
+                        <span 
+                          key={index} 
+                          className={`text-xs px-2 py-1 rounded-full ${getTagColorClasses(tag)}`}
+                        >
+                          {tag}
+                        </span>
+                      ))
+                    ) : null}
                   </div>
                   <div className="flex items-center text-xs text-muted-foreground mt-2">
                     <Calendar className="h-3 w-3 mr-1" />
                     <span>
-                      {formatDistanceToNow(content.dateCreated, { addSuffix: true })}
+                      {content.dateCreated ? formatDistanceToNow(new Date(content.dateCreated), { addSuffix: true }) : 'Unknown date'}
                     </span>
                   </div>
                 </CardContent>
@@ -138,7 +158,7 @@ const ContentPillar = ({
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => console.log("Edit content", content.id)}
+                      onClick={() => console.log("Edit content", content.id, parseContentData(content.url))}
                     >
                       <Pencil className="h-4 w-4 mr-1" /> Edit
                     </Button>
