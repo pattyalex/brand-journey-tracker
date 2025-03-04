@@ -4,35 +4,39 @@ import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ContentPillar from "@/components/content/ContentPillar";
 import { Button } from "@/components/ui/button";
-import { Plus, Search } from "lucide-react";
+import { FileText, Pencil, Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ContentUploader from "@/components/content/ContentUploader";
 import { ContentItem } from "@/types/content";
 import { toast } from "sonner";
 import ContentSearchModal from "@/components/content/ContentSearchModal";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export type Pillar = {
   id: string;
   name: string;
   content: ContentItem[];
-  brainDump?: string;
-  onUpdateBrainDump?: (pillarId: string, text: string) => void;
+  writingSpace?: string;
+  onUpdateWritingSpace?: (pillarId: string, text: string) => void;
 };
 
 const BankOfContent = () => {
   const [pillars, setPillars] = useState<Pillar[]>([
-    { id: "1", name: "Education", content: [], brainDump: "" },
-    { id: "2", name: "Inspiration", content: [], brainDump: "" },
-    { id: "3", name: "Entertainment", content: [], brainDump: "" },
+    { id: "1", name: "Education", content: [], writingSpace: "" },
+    { id: "2", name: "Inspiration", content: [], writingSpace: "" },
+    { id: "3", name: "Entertainment", content: [], writingSpace: "" },
   ]);
   const [activeTab, setActiveTab] = useState("1");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [writingText, setWritingText] = useState("");
+  const [selectedWritingType, setSelectedWritingType] = useState("idea");
   
   const addPillar = () => {
     const newId = `${Date.now()}`;
-    setPillars([...pillars, { id: newId, name: "New Pillar", content: [], brainDump: "" }]);
+    setPillars([...pillars, { id: newId, name: "New Pillar", content: [], writingSpace: "" }]);
     setActiveTab(newId);
     toast.success("New pillar added");
   };
@@ -58,12 +62,35 @@ const BankOfContent = () => {
     toast.success("Pillar deleted");
   };
 
-  const updateBrainDump = (pillarId: string, text: string) => {
+  const updateWritingSpace = (pillarId: string, text: string) => {
     setPillars(pillars.map(p => 
       p.id === pillarId 
-        ? {...p, brainDump: text} 
+        ? {...p, writingSpace: text} 
         : p
     ));
+    setWritingText(text);
+  };
+
+  const saveWritingAsIdea = () => {
+    const activePillar = pillars.find(p => p.id === activeTab);
+    if (!writingText.trim()) {
+      toast.error("Please write something first");
+      return;
+    }
+    
+    const newIdea: ContentItem = {
+      id: `${Date.now()}`,
+      title: `${selectedWritingType.charAt(0).toUpperCase() + selectedWritingType.slice(1)} - ${new Date().toLocaleDateString()}`,
+      description: writingText,
+      url: "",
+      format: "text",
+      dateCreated: new Date(),
+      tags: [selectedWritingType]
+    };
+    
+    addContentToPillar(activeTab, newIdea);
+    setWritingText("");
+    toast.success(`Saved as ${selectedWritingType}`);
   };
 
   const addContentToPillar = (pillarId: string, content: ContentItem) => {
@@ -114,6 +141,7 @@ const BankOfContent = () => {
   }));
 
   const allContent = pillars.flatMap(pillar => pillar.content);
+  const activePillar = pillars.find(p => p.id === activeTab);
 
   return (
     <Layout>
@@ -131,10 +159,9 @@ const BankOfContent = () => {
                 onFocus={() => setIsSearchModalOpen(true)}
               />
             </div>
-            <ContentUploader 
-              pillarId={activeTab} 
-              onContentAdded={addContentToPillar} 
-            />
+            <Button className="bg-amber-700 hover:bg-amber-800" onClick={saveWritingAsIdea}>
+              <FileText className="h-4 w-4 mr-2" /> Add New Idea
+            </Button>
           </div>
         </div>
 
@@ -158,15 +185,64 @@ const BankOfContent = () => {
 
           {pillars.map((pillar) => (
             <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
-              <ContentPillar
-                pillar={{...pillar, onUpdateBrainDump: updateBrainDump}}
-                pillars={pillars}
-                onRename={(newName) => renamePillar(pillar.id, newName)}
-                onDelete={() => deletePillar(pillar.id)}
-                onDeleteContent={(contentId) => deleteContent(pillar.id, contentId)}
-                onMoveContent={(toPillarId, contentId) => moveContent(pillar.id, toPillarId, contentId)}
-                searchQuery={searchQuery}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Left Column - Writing Space */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-semibold flex items-center">
+                      <Pencil className="h-5 w-5 mr-2" />
+                      Writing Space
+                    </h2>
+                    <div className="flex items-center gap-2">
+                      <Select
+                        value={selectedWritingType}
+                        onValueChange={setSelectedWritingType}
+                      >
+                        <SelectTrigger className="w-[140px] h-8">
+                          <SelectValue placeholder="Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="idea">Idea</SelectItem>
+                          <SelectItem value="note">Note</SelectItem>
+                          <SelectItem value="concept">Concept</SelectItem>
+                          <SelectItem value="thought">Thought</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button size="sm" onClick={saveWritingAsIdea}>
+                        Save
+                      </Button>
+                    </div>
+                  </div>
+                  <ScrollArea className="h-[calc(100vh-320px)] border rounded-md p-4 bg-slate-50">
+                    <Textarea
+                      value={writingText}
+                      onChange={(e) => setWritingText(e.target.value)}
+                      placeholder="Start writing your ideas, thoughts, or notes here..."
+                      className="min-h-[calc(100vh-350px)] resize-none border-0 bg-transparent focus-visible:ring-0 p-0"
+                    />
+                  </ScrollArea>
+                </div>
+                
+                {/* Right Column - Content Development */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-semibold">Develop Your Ideas</h2>
+                    <ContentUploader 
+                      pillarId={activeTab} 
+                      onContentAdded={addContentToPillar} 
+                    />
+                  </div>
+                  <ContentPillar
+                    pillar={{...pillar}}
+                    pillars={pillars}
+                    onRename={(newName) => renamePillar(pillar.id, newName)}
+                    onDelete={() => deletePillar(pillar.id)}
+                    onDeleteContent={(contentId) => deleteContent(pillar.id, contentId)}
+                    onMoveContent={(toPillarId, contentId) => moveContent(pillar.id, toPillarId, contentId)}
+                    searchQuery={searchQuery}
+                  />
+                </div>
+              </div>
             </TabsContent>
           ))}
         </Tabs>
