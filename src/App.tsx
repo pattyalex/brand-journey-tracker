@@ -31,7 +31,9 @@ const App = () => (
           <Route path="/projects" element={<GetStarted />} />
           <Route path="/content-ideation" element={<ContentIdeation />} />
           <Route path="/my-account" element={<MyAccount />} />
-          <Route path="/bank-of-content" element={<BankOfContent />} />
+          <Route path="/bank-of-content" element={<>
+            {/* Completely empty page - no components, no layout */}
+          </>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
