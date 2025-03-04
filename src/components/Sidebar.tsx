@@ -1,4 +1,3 @@
-
 import { Home, FolderOpen, FileText, Settings, ListTodo, Lightbulb, Trash2, Plus, CreditCard } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -14,7 +13,8 @@ import {
   SidebarMenuSubItem,
   SidebarMenuSubButton,
   SidebarMenuAction,
-  SidebarSeparator
+  SidebarSeparator,
+  SidebarFooter
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -194,32 +194,32 @@ const Sidebar = () => {
                   </div>
                 </SidebarMenuItem>
               )}
-              
-              {/* Increased spacing by 600% by changing my-2 to my-12 (2px to 12px) */}
-              <SidebarSeparator className="my-12" />
-              
-              {/* Settings and My Account items moved to the bottom */}
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <a href={settingsItem.url} className="flex items-center gap-2">
-                    <settingsItem.icon size={20} />
-                    <span>{settingsItem.title}</span>
-                  </a>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <a href={myAccountItem.url} className="flex items-center gap-2">
-                    <myAccountItem.icon size={20} />
-                    <span>{myAccountItem.title}</span>
-                  </a>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      
+      <SidebarFooter className="mt-auto">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <a href={settingsItem.url} className="flex items-center gap-2">
+                <settingsItem.icon size={20} />
+                <span>{settingsItem.title}</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <a href={myAccountItem.url} className="flex items-center gap-2">
+                <myAccountItem.icon size={20} />
+                <span>{myAccountItem.title}</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </SidebarContainer>
   );
 };
