@@ -18,7 +18,7 @@ const menuItems = [
   { title: 'Dashboard', icon: Home, url: '/' },
   { title: 'Daily Agenda', icon: ListTodo, url: '/daily-agenda' },
   { title: 'Projects', icon: FolderOpen, url: '/projects' },
-  { title: 'Vision Board & Goals', icon: Lightbulb, url: '/projects/vision-board' },
+  { title: 'Vision Board & Goals', icon: Lightbulb, url: '/vision-board' },
   { title: 'Documents', icon: FileText, url: '/documents' },
   { title: 'Settings', icon: Settings, url: '/settings' },
 ];
@@ -42,24 +42,6 @@ const Sidebar = () => {
                       <span>{item.title}</span>
                     </a>
                   </SidebarMenuButton>
-                  
-                  {item.subItems && item.subItems.length > 0 && (
-                    <SidebarMenuSub>
-                      {item.subItems.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton 
-                            asChild 
-                            size="md"
-                          >
-                            <a href={subItem.url} className="flex items-center gap-2">
-                              <subItem.icon size={16} />
-                              <span>{subItem.title}</span>
-                            </a>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
-                  )}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
