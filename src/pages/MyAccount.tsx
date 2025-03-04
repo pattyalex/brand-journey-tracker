@@ -12,30 +12,30 @@ const MyAccount = () => {
       <div className="flex flex-col gap-6">
         <h1 className="text-3xl font-bold">My Account</h1>
         
-        <Tabs defaultValue="payment" className="w-full">
+        <Tabs defaultValue="profile" className="w-full">
           <TabsList className="mb-4">
-            <TabsTrigger value="payment">Payment Methods</TabsTrigger>
-            <TabsTrigger value="membership">Membership</TabsTrigger>
             <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="membership">Membership</TabsTrigger>
+            <TabsTrigger value="payment">Payment Methods</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="payment">
+          <TabsContent value="profile">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5" />
-                  Payment Methods
+                  <User className="h-5 w-5" />
+                  Profile Information
                 </CardTitle>
                 <CardDescription>
-                  Manage your payment methods and billing information.
+                  Manage your personal information and account details.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="bg-muted/50 p-4 rounded-lg border">
-                    <p className="text-muted-foreground">No payment methods added yet.</p>
+                    <p className="text-muted-foreground">Profile information will appear here.</p>
                   </div>
-                  <Button>Add Payment Method</Button>
+                  <Button>Edit Profile</Button>
                 </div>
               </CardContent>
             </Card>
@@ -101,23 +101,23 @@ const MyAccount = () => {
             </Card>
           </TabsContent>
           
-          <TabsContent value="profile">
+          <TabsContent value="payment">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  Profile Information
+                  <CreditCard className="h-5 w-5" />
+                  Payment Methods
                 </CardTitle>
                 <CardDescription>
-                  Manage your personal information and account details.
+                  Manage your payment methods and billing information.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="bg-muted/50 p-4 rounded-lg border">
-                    <p className="text-muted-foreground">Profile information will appear here.</p>
+                    <p className="text-muted-foreground">No payment methods added yet.</p>
                   </div>
-                  <Button>Edit Profile</Button>
+                  <Button>Add Payment Method</Button>
                 </div>
               </CardContent>
             </Card>
