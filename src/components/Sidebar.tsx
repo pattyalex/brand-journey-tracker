@@ -38,8 +38,10 @@ const defaultMenuItems: MenuItem[] = [
   { title: 'Projects', icon: FolderOpen, url: '/projects', isDeletable: true },
   { title: 'Vision Board & Goals', icon: Lightbulb, url: '/projects/vision-board', isDeletable: true },
   { title: 'Documents', icon: FileText, url: '/documents', isDeletable: true },
-  { title: 'Settings', icon: Settings, url: '/settings', isDeletable: false },
 ];
+
+// Settings item is separate now to position it at the bottom
+const settingsItem: MenuItem = { title: 'Settings', icon: Settings, url: '/settings', isDeletable: false };
 
 const Sidebar = () => {
   // Get saved menu items from localStorage or use default
@@ -180,6 +182,16 @@ const Sidebar = () => {
                     <span>Add Page</span>
                   </Button>
                 )}
+              </SidebarMenuItem>
+              
+              {/* Settings item positioned at the bottom */}
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <a href={settingsItem.url} className="flex items-center gap-2">
+                    <settingsItem.icon size={20} />
+                    <span>{settingsItem.title}</span>
+                  </a>
+                </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
