@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -190,16 +191,16 @@ const BankOfContent = () => {
                       Writing Space
                     </h2>
                   </div>
-                  <div className="h-[calc(100vh-240px)] transition-all duration-300 ease-in-out">
+                  <div className="h-[calc(100vh-240px)]">
                     <Sheet>
-                      <div className="rounded-md bg-[#f3f3f3] p-1 h-full relative">
-                        <ScrollArea className="h-full">
+                      <div className="rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full relative bg-white">
+                        <ScrollArea className="h-full px-4 py-4">
                           <Textarea
                             ref={textareaRef}
                             value={writingText}
                             onChange={(e) => setWritingText(e.target.value)}
                             placeholder="Start writing your ideas, thoughts, or notes here..."
-                            className="min-h-full resize-none border-0 bg-transparent focus-visible:ring-0 p-4"
+                            className="min-h-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-base"
                           />
                         </ScrollArea>
                         <SheetTrigger asChild>
