@@ -1,3 +1,4 @@
+
 import { Home, FolderOpen, FileText, Settings, ListTodo, Lightbulb, Trash2, Plus, CreditCard } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -199,7 +200,7 @@ const Sidebar = () => {
         </SidebarGroup>
       </SidebarContent>
       
-      <SidebarFooter className="mt-auto">
+      <SidebarFooter className="mt-[50%]">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
