@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound";
 import GetStarted from "./pages/GetStarted";
 import ContentIdeation from "./pages/ContentIdeation";
 import MyAccount from "./pages/MyAccount";
+import BankOfContent from "./pages/BankOfContent";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/projects" element={<GetStarted />} />
           <Route path="/content-ideation" element={<ContentIdeation />} />
           <Route path="/my-account" element={<MyAccount />} />
+          <Route path="/bank-of-content" element={<BankOfContent />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
