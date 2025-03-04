@@ -332,7 +332,7 @@ const BankOfContent = () => {
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl font-semibold flex items-center">
                       <Pencil className="h-5 w-5 mr-2" />
-                      Writing Space
+                      Brain Dump Of Ideas
                     </h2>
                   </div>
                   <div className="h-[calc(100vh-240px)]">
@@ -353,27 +353,6 @@ const BankOfContent = () => {
                         </div>
                       </ScrollArea>
                       <div className="absolute right-0 top-0 bottom-0 w-3 bg-gray-200 opacity-60"></div>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="absolute bottom-4 right-4 bg-white/80"
-                        onClick={() => {
-                          if (selectedText) {
-                            developSelectedIdea();
-                          } else if (writingText) {
-                            setSelectedText(writingText);
-                            setDevelopScriptText(writingText);
-                            setNewIdeaTitle(`Development - ${new Date().toLocaleDateString()}`);
-                            setNewIdeaTags(["development"]);
-                            setDevelopIdeaMode(true);
-                            setShowNewIdeaDialog(true);
-                          } else {
-                            toast.error("Write something first or select text to develop");
-                          }
-                        }}
-                      >
-                        <Sparkles className="h-4 w-4 mr-2" /> Develop Your Idea
-                      </Button>
                     </div>
                   </div>
                 </div>
