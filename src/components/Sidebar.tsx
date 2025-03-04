@@ -18,6 +18,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from "@/components/ui/tooltip";
 
 type MenuItem = {
   title: string;
@@ -94,14 +100,23 @@ const Sidebar = () => {
         <SidebarGroup>
           <div className="flex items-center justify-between pr-2">
             <SidebarGroupLabel>Menu</SidebarGroupLabel>
-            <Button 
-              variant="ghost" 
-              size="xs"
-              className="text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
-              onClick={() => setShowAddForm(true)}
-            >
-              <Plus size={14} />
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="xs"
+                    className="text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
+                    onClick={() => setShowAddForm(true)}
+                  >
+                    <Plus size={14} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Add Page</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           <SidebarGroupContent>
             <SidebarMenu>
