@@ -101,7 +101,6 @@ const Sidebar = () => {
               onClick={() => setShowAddForm(true)}
             >
               <Plus size={14} />
-              <span className="text-xs">Add</span>
             </Button>
           </div>
           <SidebarGroupContent>
