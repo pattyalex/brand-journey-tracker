@@ -421,7 +421,7 @@ const BankOfContent = () => {
                   id="shoot-details"
                   value={shootDetails}
                   onChange={(e) => setShootDetails(e.target.value)}
-                  placeholder="Enter details about the shoot..."
+                  placeholder="Enter details about the shoot, such as location, outfits, props needed..."
                   className="min-h-[80px] resize-y"
                 />
               </div>
