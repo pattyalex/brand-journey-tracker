@@ -1,3 +1,4 @@
+
 import { Home, FolderOpen, FileText, Settings, ListTodo, Lightbulb, Trash2, Plus } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -33,8 +34,8 @@ type MenuItem = {
 
 const defaultMenuItems: MenuItem[] = [
   { title: 'Dashboard', icon: Home, url: '/', isDeletable: false },
+  { title: 'Projects', icon: FolderOpen, url: '/projects', isDeletable: false },
   { title: 'Daily Agenda', icon: ListTodo, url: '/daily-agenda', isDeletable: true },
-  { title: 'Projects', icon: FolderOpen, url: '/projects', isDeletable: true },
   { title: 'Vision Board & Goals', icon: Lightbulb, url: '/projects/vision-board', isDeletable: true },
   { title: 'Documents', icon: FileText, url: '/documents', isDeletable: true },
 ];
