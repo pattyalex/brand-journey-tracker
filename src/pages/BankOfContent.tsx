@@ -42,6 +42,7 @@ const BankOfContent = () => {
   const [shootDetails, setShootDetails] = useState("");
   const [captionText, setCaptionText] = useState("");
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
+  const [currentPlatform, setCurrentPlatform] = useState("");
   const [showNewIdeaDialog, setShowNewIdeaDialog] = useState(false);
   const [newIdeaTitle, setNewIdeaTitle] = useState("");
   const [newIdeaTags, setNewIdeaTags] = useState<string[]>([]);
@@ -108,6 +109,7 @@ const BankOfContent = () => {
     setShootDetails("");
     setCaptionText("");
     setSelectedPlatforms([]);
+    setCurrentPlatform("");
     setNewIdeaTitle("");
     setNewIdeaTags([]);
     toast.success("Idea saved successfully");
@@ -172,6 +174,24 @@ const BankOfContent = () => {
         : p
     ));
     setWritingText(text);
+  };
+
+  const addPlatform = () => {
+    if (currentPlatform.trim() && !selectedPlatforms.includes(currentPlatform.trim())) {
+      setSelectedPlatforms([...selectedPlatforms, currentPlatform.trim()]);
+      setCurrentPlatform("");
+    }
+  };
+
+  const removePlatform = (platformToRemove: string) => {
+    setSelectedPlatforms(selectedPlatforms.filter(platform => platform !== platformToRemove));
+  };
+
+  const addTag = () => {
+    if (currentTag.trim() && !newIdeaTags.includes(currentTag.trim())) {
+      setNewIdeaTags([...newIdeaTags, currentTag.trim()]);
+      setCurrentTag("");
+    }
   };
 
   const handleAddTag = () => {
@@ -468,31 +488,35 @@ const BankOfContent = () => {
               </div>
               
               <div className="grid gap-2">
-                <Label htmlFor="platform-select">Platforms</Label>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { id: "instagram", label: "Instagram" },
-                    { id: "tiktok", label: "TikTok" },
-                    { id: "youtube", label: "YouTube" },
-                    { id: "facebook", label: "Facebook" },
-                    { id: "twitter", label: "Twitter" },
-                    { id: "linkedin", label: "LinkedIn" },
-                    { id: "other", label: "Other" }
-                  ].map((platform) => (
-                    <div 
-                      key={platform.id}
-                      onClick={() => togglePlatform(platform.id)}
-                      className={`px-3 py-1.5 rounded-full text-sm cursor-pointer transition-colors flex items-center gap-1.5 ${
-                        selectedPlatforms.includes(platform.id)
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-secondary/20 text-muted-foreground hover:bg-secondary/30"
-                      }`}
+                <Label htmlFor="platforms">Platforms</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="platforms"
+                    value={currentPlatform}
+                    onChange={(e) => setCurrentPlatform(e.target.value)}
+                    placeholder="Add platform"
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addPlatform())}
+                  />
+                  <Button type="button" onClick={addPlatform} variant="secondary">
+                    <Plus className="h-4 w-4 mr-1" /> Add
+                  </Button>
+                </div>
+                
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {selectedPlatforms.map((platform, index) => (
+                    <span 
+                      key={index} 
+                      className="bg-primary text-primary-foreground text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5"
                     >
-                      {selectedPlatforms.includes(platform.id) && (
-                        <Check className="h-3 w-3" />
-                      )}
-                      {platform.label}
-                    </div>
+                      {platform}
+                      <button 
+                        type="button" 
+                        onClick={() => removePlatform(platform)}
+                        className="text-primary-foreground hover:text-white/80"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
                   ))}
                 </div>
               </div>
