@@ -59,6 +59,20 @@ const ContentIdeation = () => {
     }
   ]);
 
+  // Define standard columns to be able to delete them
+  const [standardColumns] = useState([
+    { id: "idea", name: "Idea", field: "idea" },
+    { id: "pillar", name: "Pillar", field: "pillar" },
+    { id: "format", name: "Format", field: "format" },
+    { id: "goal", name: "Goal", field: "goal" },
+    { id: "hook", name: "Hook", field: "hook" },
+    { id: "script", name: "Script", field: "script" },
+    { id: "caption", name: "Caption", field: "caption" },
+  ]);
+
+  // Track visible/hidden columns
+  const [hiddenStandardColumns, setHiddenStandardColumns] = useState<string[]>([]);
+
   const handleAddCustomColumn = () => {
     if (newColumnName.trim() === "") {
       toast({
@@ -177,6 +191,38 @@ const ContentIdeation = () => {
     }));
   };
 
+  // New function to handle deletion of standard columns
+  const handleDeleteStandardColumn = (columnId: string) => {
+    // Prevent deletion of the last visible column
+    const visibleStandardColumns = standardColumns.filter(col => !hiddenStandardColumns.includes(col.id));
+    if (visibleStandardColumns.length <= 1) {
+      toast({
+        title: "Cannot delete",
+        description: "You need to keep at least one column",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Prevent deletion of the "Idea" column as it's required
+    if (columnId === "idea") {
+      toast({
+        title: "Cannot delete",
+        description: "The Idea column is required and cannot be removed",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Hide the column instead of deleting it
+    setHiddenStandardColumns([...hiddenStandardColumns, columnId]);
+    
+    toast({
+      title: "Column removed",
+      description: `The ${standardColumns.find(col => col.id === columnId)?.name} column has been hidden`,
+    });
+  };
+
   return (
     <Layout>
       <div className="space-y-6 fade-in">
@@ -217,7 +263,7 @@ const ContentIdeation = () => {
                 
                 <div className="bg-white border border-gray-100 rounded-md overflow-hidden">
                   <div className="overflow-x-auto relative">
-                    {/* Trash icons positioned outside the table */}
+                    {/* Trash icons positioned outside the table on the left for rows */}
                     <div className="absolute left-0 top-0 bottom-0 w-10 flex flex-col pt-[53px] z-10">
                       {contentIdeas.map((idea) => (
                         <div 
@@ -237,6 +283,47 @@ const ContentIdeation = () => {
                           </Button>
                         </div>
                       ))}
+                    </div>
+                    
+                    {/* Column delete buttons positioned above the table header */}
+                    <div className="absolute top-0 left-10 right-10 h-8 z-20">
+                      {standardColumns.filter(col => !hiddenStandardColumns.includes(col.id)).map((column, index) => {
+                        // Calculate position based on a rough estimate of column widths
+                        let leftPosition = 0;
+                        for (let i = 0; i < index; i++) {
+                          const col = standardColumns[i];
+                          if (!hiddenStandardColumns.includes(col.id)) {
+                            // Approximate width - could be refined based on actual column widths
+                            leftPosition += col.id === "hook" || col.id === "script" || col.id === "caption" ? 200 : 120;
+                          }
+                        }
+                        // Center in the column
+                        leftPosition += column.id === "hook" || column.id === "script" || column.id === "caption" ? 100 : 60;
+                        
+                        return (
+                          <div
+                            key={`col-delete-${column.id}`}
+                            className="absolute"
+                            style={{ 
+                              left: `${leftPosition}px`,
+                              top: '4px'
+                            }}
+                          >
+                            {column.id !== "idea" && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="xs"
+                                className="h-6 w-6 p-0 text-gray-400 hover:text-red-500 opacity-0 hover:opacity-100 transition-opacity"
+                                onClick={() => handleDeleteStandardColumn(column.id)}
+                                title={`Delete ${column.name} column`}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                     
                     {/* Drag handles positioned outside the table on the right */}
@@ -260,42 +347,18 @@ const ContentIdeation = () => {
                     <table className="w-full border-collapse ml-10 mr-10">
                       <thead className="bg-gray-800 text-white">
                         <tr>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
-                            <div className="flex items-center gap-1">
-                              <Lightbulb className="h-3 w-3" />
-                              <span>Idea</span>
-                            </div>
-                          </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
-                            <div className="flex items-center gap-1">
-                              <span>Pillar</span>
-                            </div>
-                          </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
-                            <div className="flex items-center gap-1">
-                              <span>Format</span>
-                            </div>
-                          </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
-                            <div className="flex items-center gap-1">
-                              <span>Goal</span>
-                            </div>
-                          </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
-                            <div className="flex items-center gap-1">
-                              <span>Hook</span>
-                            </div>
-                          </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
-                            <div className="flex items-center gap-1">
-                              <span>Script</span>
-                            </div>
-                          </th>
-                          <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700">
-                            <div className="flex items-center gap-1">
-                              <span>Caption</span>
-                            </div>
-                          </th>
+                          {/* Only render visible columns */}
+                          {standardColumns.filter(col => !hiddenStandardColumns.includes(col.id)).map(column => (
+                            <th 
+                              key={column.id}
+                              className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider border-r border-gray-700"
+                            >
+                              <div className="flex items-center gap-1">
+                                {column.id === "idea" && <Lightbulb className="h-3 w-3" />}
+                                <span>{column.name}</span>
+                              </div>
+                            </th>
+                          ))}
                           
                           {/* Custom Columns */}
                           {customColumns.map(column => (
@@ -377,62 +440,17 @@ const ContentIdeation = () => {
                             className="hover:bg-gray-50 group"
                             data-row-id={idea.id}
                           >
-                            <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200">
-                              <Input 
-                                value={idea.idea} 
-                                onChange={(e) => handleCellChange(idea.id, 'idea', e.target.value)}
-                                className="border-0 focus:ring-0 h-6 p-0 text-sm bg-transparent"
-                                placeholder="Add idea..."
-                              />
-                            </td>
-                            <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200">
-                              <Input 
-                                value={idea.pillar} 
-                                onChange={(e) => handleCellChange(idea.id, 'pillar', e.target.value)}
-                                className="border-0 focus:ring-0 h-6 p-0 text-sm bg-transparent"
-                                placeholder="Add pillar..."
-                              />
-                            </td>
-                            <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200">
-                              <Input 
-                                value={idea.format} 
-                                onChange={(e) => handleCellChange(idea.id, 'format', e.target.value)}
-                                className="border-0 focus:ring-0 h-6 p-0 text-sm bg-transparent"
-                                placeholder="Add format..."
-                              />
-                            </td>
-                            <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200">
-                              <Input 
-                                value={idea.goal} 
-                                onChange={(e) => handleCellChange(idea.id, 'goal', e.target.value)}
-                                className="border-0 focus:ring-0 h-6 p-0 text-sm bg-transparent"
-                                placeholder="Add goal..."
-                              />
-                            </td>
-                            <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200">
-                              <Input 
-                                value={idea.hook} 
-                                onChange={(e) => handleCellChange(idea.id, 'hook', e.target.value)}
-                                className="border-0 focus:ring-0 h-6 p-0 text-sm bg-transparent"
-                                placeholder="Add hook..."
-                              />
-                            </td>
-                            <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200">
-                              <Input 
-                                value={idea.script} 
-                                onChange={(e) => handleCellChange(idea.id, 'script', e.target.value)}
-                                className="border-0 focus:ring-0 h-6 p-0 text-sm bg-transparent"
-                                placeholder="Add script..."
-                              />
-                            </td>
-                            <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200">
-                              <Input 
-                                value={idea.caption} 
-                                onChange={(e) => handleCellChange(idea.id, 'caption', e.target.value)}
-                                className="border-0 focus:ring-0 h-6 p-0 text-sm bg-transparent"
-                                placeholder="Add caption..."
-                              />
-                            </td>
+                            {/* Only render cells for visible columns */}
+                            {standardColumns.filter(col => !hiddenStandardColumns.includes(col.id)).map(column => (
+                              <td key={`${idea.id}-${column.id}`} className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200">
+                                <Input 
+                                  value={idea[column.field as keyof typeof idea] as string} 
+                                  onChange={(e) => handleCellChange(idea.id, column.field as keyof Omit<ContentIdea, 'id' | 'customValues'>, e.target.value)}
+                                  className="border-0 focus:ring-0 h-6 p-0 text-sm bg-transparent"
+                                  placeholder={`Add ${column.field}...`}
+                                />
+                              </td>
+                            ))}
                             
                             {/* Custom Column Values */}
                             {customColumns.map(column => (
@@ -456,7 +474,14 @@ const ContentIdeation = () => {
                         ))}
                         {/* Add New Idea Row */}
                         <tr className="hover:bg-gray-50 bg-gray-50">
-                          <td colSpan={8 + customColumns.length + 1} className="px-4 py-3 text-center">
+                          <td 
+                            colSpan={
+                              standardColumns.filter(col => !hiddenStandardColumns.includes(col.id)).length + 
+                              customColumns.length + 
+                              1
+                            } 
+                            className="px-4 py-3 text-center"
+                          >
                             <Button
                               variant="ghost"
                               className="text-gray-400 hover:text-primary"
