@@ -1,5 +1,5 @@
 
-import { Home, FolderOpen, FileText, Settings, ListTodo, Lightbulb, Trash2, Plus } from 'lucide-react';
+import { Home, FolderOpen, FileText, Settings, ListTodo, Lightbulb, Trash2, Plus, CreditCard } from 'lucide-react';
 import { useState } from 'react';
 import {
   Sidebar as SidebarContainer,
@@ -47,6 +47,7 @@ const defaultMenuItems: MenuItem[] = [
 ];
 
 const settingsItem: MenuItem = { title: 'Settings', icon: Settings, url: '/settings', isDeletable: false };
+const myAccountItem: MenuItem = { title: 'My Account', icon: CreditCard, url: '/my-account', isDeletable: false };
 
 const Sidebar = () => {
   const getSavedMenuItems = () => {
@@ -201,6 +202,15 @@ const Sidebar = () => {
                   <a href={settingsItem.url} className="flex items-center gap-2">
                     <settingsItem.icon size={20} />
                     <span>{settingsItem.title}</span>
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <a href={myAccountItem.url} className="flex items-center gap-2">
+                    <myAccountItem.icon size={20} />
+                    <span>{myAccountItem.title}</span>
                   </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>
