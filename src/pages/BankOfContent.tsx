@@ -123,7 +123,7 @@ const BankOfContent = () => {
     }
     
     setNewIdeaTitle(`Idea - ${new Date().toLocaleDateString()}`);
-    setNewIdeaTags(["selection"]);
+    setNewIdeaTags([]);
     setShowNewIdeaDialog(true);
   };
 
@@ -135,7 +135,7 @@ const BankOfContent = () => {
     
     setNewIdeaTitle(`Development - ${new Date().toLocaleDateString()}`);
     setDevelopScriptText(selectedText);
-    setNewIdeaTags(["development"]);
+    setNewIdeaTags([]);
     setDevelopIdeaMode(true);
     setShowNewIdeaDialog(true);
   };
@@ -215,7 +215,7 @@ const BankOfContent = () => {
     setSelectedText(writingText);
     setDevelopScriptText(writingText);
     setNewIdeaTitle(`Idea - ${new Date().toLocaleDateString()}`);
-    setNewIdeaTags(["idea"]);
+    setNewIdeaTags([]);
     setDevelopIdeaMode(true);
     setShowNewIdeaDialog(true);
   };
@@ -364,7 +364,7 @@ const BankOfContent = () => {
                             setSelectedText(writingText);
                             setDevelopScriptText(writingText);
                             setNewIdeaTitle(`Development - ${new Date().toLocaleDateString()}`);
-                            setNewIdeaTags(["development"]);
+                            setNewIdeaTags([]);
                             setDevelopIdeaMode(true);
                             setShowNewIdeaDialog(true);
                           } else {
@@ -390,7 +390,7 @@ const BankOfContent = () => {
                       className="bg-[#8B6B4E] hover:bg-[#7A5C3F]"
                       onClick={() => {
                         setNewIdeaTitle(`Idea - ${new Date().toLocaleDateString()}`);
-                        setNewIdeaTags(["idea"]);
+                        setNewIdeaTags([]);
                         setSelectedText("");
                         setDevelopScriptText("");
                         setShootDetails("");
