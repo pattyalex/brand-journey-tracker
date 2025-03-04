@@ -1,10 +1,9 @@
-
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ContentPillar from "@/components/content/ContentPillar";
 import { Button } from "@/components/ui/button";
-import { Pencil, Plus, Search, Lightbulb, FileText, Save, ClipboardCopy, Tag, X, Sparkles } from "lucide-react";
+import { Pencil, Plus, Search, Lightbulb, FileText, Save, ClipboardCopy, Tag, X, Sparkles, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ContentUploader from "@/components/content/ContentUploader";
@@ -15,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export type Pillar = {
   id: string;
@@ -41,7 +41,7 @@ const BankOfContent = () => {
   const [formatText, setFormatText] = useState("");
   const [shootDetails, setShootDetails] = useState("");
   const [captionText, setCaptionText] = useState("");
-  const [selectedPlatform, setSelectedPlatform] = useState("");
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [showNewIdeaDialog, setShowNewIdeaDialog] = useState(false);
   const [newIdeaTitle, setNewIdeaTitle] = useState("");
   const [newIdeaTags, setNewIdeaTags] = useState<string[]>([]);
@@ -93,7 +93,7 @@ const BankOfContent = () => {
         format: formatText,
         shootDetails: shootDetails,
         caption: captionText,
-        platform: selectedPlatform
+        platforms: selectedPlatforms
       }),
       format: "text",
       dateCreated: new Date(),
@@ -107,7 +107,7 @@ const BankOfContent = () => {
     setFormatText("");
     setShootDetails("");
     setCaptionText("");
-    setSelectedPlatform("");
+    setSelectedPlatforms([]);
     setNewIdeaTitle("");
     setNewIdeaTags([]);
     toast.success("Idea saved successfully");
@@ -258,6 +258,14 @@ const BankOfContent = () => {
 
   const allContent = pillars.flatMap(pillar => pillar.content);
   const activePillar = pillars.find(p => p.id === activeTab);
+
+  const togglePlatform = (platform: string) => {
+    setSelectedPlatforms(current => 
+      current.includes(platform)
+        ? current.filter(p => p !== platform)
+        : [...current, platform]
+    );
+  };
 
   return (
     <Layout>
@@ -460,23 +468,32 @@ const BankOfContent = () => {
               </div>
               
               <div className="grid gap-2">
-                <Label htmlFor="platform-select">Platform</Label>
-                <Select
-                  value={selectedPlatform}
-                  onValueChange={setSelectedPlatform}
-                >
-                  <SelectTrigger id="platform-select">
-                    <SelectValue placeholder="Select where you'll post this content" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="instagram">Instagram</SelectItem>
-                    <SelectItem value="tiktok">TikTok</SelectItem>
-                    <SelectItem value="youtube">YouTube</SelectItem>
-                    <SelectItem value="facebook">Facebook</SelectItem>
-                    <SelectItem value="twitter">Twitter</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="platform-select">Platforms</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { id: "instagram", label: "Instagram" },
+                    { id: "tiktok", label: "TikTok" },
+                    { id: "youtube", label: "YouTube" },
+                    { id: "facebook", label: "Facebook" },
+                    { id: "twitter", label: "Twitter" },
+                    { id: "linkedin", label: "LinkedIn" },
+                    { id: "other", label: "Other" }
+                  ].map((platform) => (
+                    <div key={platform.id} className="flex items-center space-x-2">
+                      <Checkbox 
+                        id={`platform-${platform.id}`} 
+                        checked={selectedPlatforms.includes(platform.id)}
+                        onCheckedChange={() => togglePlatform(platform.id)}
+                      />
+                      <label
+                        htmlFor={`platform-${platform.id}`}
+                        className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        {platform.label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
               </div>
               
               <div className="grid gap-2">
