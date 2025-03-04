@@ -477,7 +477,7 @@ const BankOfContent = () => {
                     id="idea-title"
                     value={newIdeaTitle}
                     onChange={(e) => setNewIdeaTitle(e.target.value)}
-                    placeholder="Enter a title for your idea"
+                    placeholder="Enter a catchy hook for your idea"
                   />
                 </div>
                 

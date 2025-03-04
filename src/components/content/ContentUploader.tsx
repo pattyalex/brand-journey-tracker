@@ -93,7 +93,7 @@ const ContentUploader = ({ pillarId, onContentAdded }: ContentUploaderProps) => 
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter a title for your idea"
+                placeholder="Enter a catchy hook for your idea"
               />
             </div>
             
