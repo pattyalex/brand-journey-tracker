@@ -332,7 +332,7 @@ const BankOfContent = () => {
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl font-semibold flex items-center">
                       <Pencil className="h-5 w-5 mr-2" />
-                      Writing Space
+                      Brain Dump Of Ideas
                     </h2>
                   </div>
                   <div className="h-[calc(100vh-240px)]">
