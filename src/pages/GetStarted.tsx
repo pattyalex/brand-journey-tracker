@@ -13,26 +13,53 @@ const services = [
       </div>
     ),
     icon: Database,
+    path: "/bank-of-content"
   },
   {
-    title: "Content Development",
+    title: (
+      <div className="flex flex-col">
+        <span>Content</span>
+        <span>Ideation And</span>
+        <span>Planning</span>
+      </div>
+    ),
     icon: PenLine,
+    path: "/content-ideation"
   },
   {
-    title: "Content Calendar",
+    title: (
+      <div className="flex flex-col">
+        <span>Content</span>
+        <span>Calendar</span>
+      </div>
+    ),
     icon: Calendar,
+    path: "/content-calendar"
   },
   {
-    title: "Strategy And Growth",
+    title: (
+      <div className="flex flex-col">
+        <span>Strategy And</span>
+        <span>Growth</span>
+      </div>
+    ),
     icon: TrendingUp,
+    path: "/strategy-growth"
   },
   {
-    title: "Income Tracker",
+    title: (
+      <div className="flex flex-col">
+        <span>Income</span>
+        <span>Tracker</span>
+      </div>
+    ),
     icon: Handshake,
+    path: "/income-tracker"
   },
   {
     title: "Analytics",
     icon: BarChart,
+    path: "/analytics"
   }
 ];
 
@@ -51,7 +78,7 @@ const GetStarted = () => {
           {services.map((service, index) => (
             <Card 
               key={index}
-              onClick={() => navigate("/auth")}
+              onClick={() => navigate(service.path)}
               className="hover:shadow-lg transition-all duration-300 cursor-pointer hover:scale-105 bg-gray-100"
             >
               <CardHeader className="space-y-4">

@@ -13,6 +13,10 @@ import GetStarted from "./pages/GetStarted";
 import ContentIdeation from "./pages/ContentIdeation";
 import MyAccount from "./pages/MyAccount";
 import Analytics from "./pages/Analytics";
+import BankOfContent from "./pages/BankOfContent";
+import ContentCalendar from "./pages/ContentCalendar";
+import StrategyGrowth from "./pages/StrategyGrowth";
+import IncomeTracker from "./pages/IncomeTracker";
 
 const queryClient = new QueryClient();
 
@@ -32,9 +36,10 @@ const App = () => (
           <Route path="/content-ideation" element={<ContentIdeation />} />
           <Route path="/my-account" element={<MyAccount />} />
           <Route path="/analytics" element={<Analytics />} />
-          <Route path="/bank-of-content" element={<>
-            {/* Completely empty page - no components, no layout */}
-          </>} />
+          <Route path="/bank-of-content" element={<BankOfContent />} />
+          <Route path="/content-calendar" element={<ContentCalendar />} />
+          <Route path="/strategy-growth" element={<StrategyGrowth />} />
+          <Route path="/income-tracker" element={<IncomeTracker />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
