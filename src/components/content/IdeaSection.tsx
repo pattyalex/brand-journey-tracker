@@ -38,6 +38,8 @@ const IdeaSection = ({
   onCancelEdit,
   onContentAdded
 }: IdeaSectionProps) => {
+  console.log("IdeaSection rendering with pillar:", pillar.id, pillar.name);
+  
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
