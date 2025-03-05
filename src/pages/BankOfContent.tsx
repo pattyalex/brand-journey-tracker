@@ -64,6 +64,8 @@ const BankOfContent = () => {
   const [developIdeaMode, setDevelopIdeaMode] = useState(false);
   const [editingContent, setEditingContent] = useState<ContentItem | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [editingPillarId, setEditingPillarId] = useState<string | null>(null);
+  const [editingPillarName, setEditingPillarName] = useState("");
 
   useEffect(() => {
     const loadedPillars = pillars.map(pillar => {
@@ -231,6 +233,8 @@ const BankOfContent = () => {
     }
     
     toast.success("New pillar added");
+    
+    startEditingPillar(newId, "New Pillar");
   };
 
   const renamePillar = (id: string, newName: string) => {
@@ -550,6 +554,34 @@ const BankOfContent = () => {
     }, 0);
   };
 
+  const startEditingPillar = (pillarId: string, currentName: string) => {
+    setEditingPillarId(pillarId);
+    setEditingPillarName(currentName);
+  };
+
+  const saveEditingPillar = () => {
+    if (editingPillarId && editingPillarName.trim()) {
+      renamePillar(editingPillarId, editingPillarName.trim());
+      setEditingPillarId(null);
+      setEditingPillarName("");
+    }
+  };
+
+  const cancelEditingPillar = () => {
+    setEditingPillarId(null);
+    setEditingPillarName("");
+  };
+
+  const handlePillarNameKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      saveEditingPillar();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      cancelEditingPillar();
+    }
+  };
+
   return (
     <Layout>
       <div className="container mx-auto py-6 space-y-6 fade-in">
@@ -574,50 +606,82 @@ const BankOfContent = () => {
             <TabsList className="bg-background border flex-1 overflow-x-auto">
               {pillars.map((pillar) => (
                 <div key={pillar.id} className="relative group flex items-center">
-                  <TabsTrigger 
-                    value={pillar.id}
-                    className="data-[state=active]:bg-primary data-[state=active]:text-white"
-                  >
-                    {pillar.name}
-                  </TabsTrigger>
-                  <div className="hidden group-hover:flex absolute top-full left-0 z-50 bg-background border shadow-md rounded-md p-1 mt-1">
-                    <Button variant="ghost" size="sm" onClick={() => {
-                      const newName = window.prompt("Rename pillar", pillar.name);
-                      if (newName && newName.trim()) {
-                        renamePillar(pillar.id, newName.trim());
-                      }
-                    }}>
-                      <Edit className="h-4 w-4 mr-1" />
-                      Rename
-                    </Button>
-                    
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="sm" className="text-destructive">
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Delete
+                  {editingPillarId === pillar.id ? (
+                    <div className="px-3 py-1.5 flex items-center bg-primary text-primary-foreground rounded-sm">
+                      <Input
+                        value={editingPillarName}
+                        onChange={(e) => setEditingPillarName(e.target.value)}
+                        onKeyDown={handlePillarNameKeyDown}
+                        onBlur={saveEditingPillar}
+                        autoFocus
+                        className="h-6 px-1 py-0 text-sm w-32 bg-transparent border-0 focus-visible:ring-0 text-primary-foreground"
+                        data-testid="edit-pillar-name-input"
+                      />
+                      <Button
+                        size="xs"
+                        variant="ghost"
+                        onClick={saveEditingPillar}
+                        className="ml-1 text-primary-foreground hover:text-primary-foreground/90 hover:bg-transparent p-0 h-5 w-5"
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        size="xs"
+                        variant="ghost"
+                        onClick={cancelEditingPillar}
+                        className="text-primary-foreground hover:text-primary-foreground/90 hover:bg-transparent p-0 h-5 w-5"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <TabsTrigger 
+                        value={pillar.id}
+                        className="data-[state=active]:bg-primary data-[state=active]:text-white"
+                        onDoubleClick={() => startEditingPillar(pillar.id, pillar.name)}
+                      >
+                        {pillar.name}
+                      </TabsTrigger>
+                      <div className="hidden group-hover:flex absolute top-full left-0 z-50 bg-background border shadow-md rounded-md p-1 mt-1">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => startEditingPillar(pillar.id, pillar.name)}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Rename
                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete {pillar.name} Pillar</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This will permanently delete the "{pillar.name}" pillar and all its content. 
-                            This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction 
-                            onClick={() => deletePillar(pillar.id)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
+                        
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="sm" className="text-destructive">
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Delete
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete {pillar.name} Pillar</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This will permanently delete the "{pillar.name}" pillar and all its content. 
+                                This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={() => deletePillar(pillar.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             </TabsList>
