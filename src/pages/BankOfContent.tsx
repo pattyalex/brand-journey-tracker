@@ -17,6 +17,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { getTagColorClasses } from "@/utils/tagColors";
 import SimpleTextFormattingToolbar from "@/components/SimpleTextFormattingToolbar";
+import { Edit, Trash2 } from "lucide-react";
+import AlertDialog from "@/components/ui/alert-dialog";
 
 export type Pillar = {
   id: string;
@@ -559,18 +561,57 @@ const BankOfContent = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex items-center justify-between mb-4">
-            <TabsList className="bg-background border">
+            <TabsList className="bg-background border flex-1 overflow-x-auto">
               {pillars.map((pillar) => (
-                <TabsTrigger 
-                  key={pillar.id} 
-                  value={pillar.id}
-                  className="data-[state=active]:bg-primary data-[state=active]:text-white"
-                >
-                  {pillar.name}
-                </TabsTrigger>
+                <div key={pillar.id} className="relative group flex items-center">
+                  <TabsTrigger 
+                    value={pillar.id}
+                    className="data-[state=active]:bg-primary data-[state=active]:text-white"
+                  >
+                    {pillar.name}
+                  </TabsTrigger>
+                  <div className="hidden group-hover:flex absolute top-full left-0 z-50 bg-background border shadow-md rounded-md p-1 mt-1">
+                    <Button variant="ghost" size="sm" onClick={() => {
+                      const newName = window.prompt("Rename pillar", pillar.name);
+                      if (newName && newName.trim()) {
+                        renamePillar(pillar.id, newName.trim());
+                      }
+                    }}>
+                      <Edit className="h-4 w-4 mr-1" />
+                      Rename
+                    </Button>
+                    
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="sm" className="text-destructive">
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete {pillar.name} Pillar</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently delete the "{pillar.name}" pillar and all its content. 
+                            This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={() => deletePillar(pillar.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
               ))}
             </TabsList>
-            <Button variant="outline" size="sm" onClick={addPillar}>
+            <Button variant="outline" size="sm" onClick={addPillar} className="ml-2">
               <Plus className="h-4 w-4 mr-2" /> Add Pillar
             </Button>
           </div>
@@ -643,8 +684,6 @@ const BankOfContent = () => {
                   <ContentPillar
                     pillar={{...pillar}}
                     pillars={pillars}
-                    onRename={(newName) => renamePillar(pillar.id, newName)}
-                    onDelete={() => deletePillar(pillar.id)}
                     onDeleteContent={(contentId) => deleteContent(pillar.id, contentId)}
                     onMoveContent={(toPillarId, contentId) => moveContent(pillar.id, toPillarId, contentId)}
                     onEditContent={(contentId) => editContent(pillar.id, contentId)}

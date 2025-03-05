@@ -24,8 +24,6 @@ import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader,
 interface ContentPillarProps {
   pillar: Pillar;
   pillars: Pillar[];
-  onRename: (newName: string) => void;
-  onDelete: () => void;
   onDeleteContent: (contentId: string) => void;
   onMoveContent: (toPillarId: string, contentId: string) => void;
   onEditContent: (contentId: string) => void;
@@ -36,36 +34,18 @@ interface ContentPillarProps {
 const ContentPillar = ({
   pillar,
   pillars,
-  onRename,
-  onDelete,
   onDeleteContent,
   onMoveContent,
   onEditContent,
   searchQuery,
   onReorderContent
 }: ContentPillarProps) => {
-  const [isRenaming, setIsRenaming] = useState(false);
-  const [newName, setNewName] = useState(pillar.name);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  
   // Debug logging to track what's happening with the content
   useEffect(() => {
     console.log("ContentPillar received pillar:", pillar.id, pillar.name);
     console.log("ContentPillar content count:", pillar.content.length);
     console.log("ContentPillar content items:", pillar.content);
   }, [pillar]);
-
-  const handleRename = () => {
-    if (newName.trim()) {
-      onRename(newName);
-      setIsRenaming(false);
-    }
-  };
-
-  const startRenaming = () => {
-    setNewName(pillar.name);
-    setIsRenaming(true);
-  };
   
   const filteredContent = searchQuery
     ? pillar.content.filter(item => 
@@ -110,61 +90,6 @@ const ContentPillar = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between mb-2">
-        {isRenaming ? (
-          <div className="flex items-center gap-2">
-            <Input
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              className="h-8 w-40"
-              autoFocus
-              onKeyDown={(e) => e.key === 'Enter' && handleRename()}
-            />
-            <Button size="sm" variant="ghost" onClick={handleRename}>
-              <Edit className="h-4 w-4 mr-1" />
-              Save
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => setIsRenaming(false)}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant="ghost" onClick={startRenaming}>
-              <Edit className="h-4 w-4 mr-1" />
-              Rename
-            </Button>
-            
-            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-              <AlertDialogTrigger asChild>
-                <Button size="sm" variant="ghost" className="text-destructive">
-                  <Trash2 className="h-4 w-4 mr-1" />
-                  Delete
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete {pillar.name} Pillar</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will permanently delete the "{pillar.name}" pillar and all its content. 
-                    This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction 
-                    onClick={onDelete}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        )}
-      </div>
-      
       {filteredContent.length === 0 ? (
         <div className="text-center p-8 border border-dashed rounded-lg bg-muted/30">
           <p className="text-muted-foreground">
