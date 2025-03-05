@@ -1,16 +1,15 @@
+
 import { useState } from "react";
 import { Draggable } from "react-beautiful-dnd";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, Pencil, BarChart, Calendar } from "lucide-react";
+import { Trash2, Pencil, Calendar } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
 import { getTagColorClasses } from "@/utils/tagColors";
-import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
 
 interface ContentCardProps {
   content: ContentItem;
@@ -30,26 +29,6 @@ const ContentCard = ({
   onDeleteContent,
   onEditContent
 }: ContentCardProps) => {
-  const navigate = useNavigate();
-
-  const handleMoveToAnalytics = () => {
-    // Store the content in localStorage to access it in Analytics page
-    const postedContent = localStorage.getItem('postedContent');
-    const postedItems = postedContent ? JSON.parse(postedContent) : [];
-    
-    // Add the content to the posted items if it's not already there
-    if (!postedItems.some((item: ContentItem) => item.id === content.id)) {
-      postedItems.push({...content, datePosted: new Date().toISOString()});
-      localStorage.setItem('postedContent', JSON.stringify(postedItems));
-      toast.success("Content moved to Analytics");
-      
-      // Navigate to analytics page with a query param to show the posted tab
-      navigate('/analytics?tab=posted');
-    } else {
-      toast.info("This content is already in Analytics");
-    }
-  };
-
   return (
     <Draggable key={content.id} draggableId={content.id} index={index}>
       {(provided, snapshot) => (
@@ -94,16 +73,6 @@ const ContentCard = ({
             
             <CardFooter className="p-4 pt-0 flex justify-end">
               <div className="flex gap-2">
-                <Button 
-                  variant="ghost" 
-                  size="xs"
-                  onClick={handleMoveToAnalytics}
-                  aria-label="Move to Analytics"
-                  className="h-7 w-7 p-0"
-                  title="Mark as posted and move to Analytics"
-                >
-                  <BarChart className="h-3.5 w-3.5" />
-                </Button>
                 <Button 
                   variant="ghost" 
                   size="xs"
