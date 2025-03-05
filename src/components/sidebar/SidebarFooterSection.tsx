@@ -10,9 +10,10 @@ import { MenuItem } from '@/types/sidebar';
 interface SidebarFooterSectionProps {
   settingsItem: MenuItem;
   myAccountItem: MenuItem;
+  helpItem?: MenuItem;
 }
 
-const SidebarFooterSection = ({ settingsItem, myAccountItem }: SidebarFooterSectionProps) => {
+const SidebarFooterSection = ({ settingsItem, myAccountItem, helpItem }: SidebarFooterSectionProps) => {
   return (
     <SidebarFooter className="mt-auto">
       <SidebarMenu>
@@ -33,6 +34,17 @@ const SidebarFooterSection = ({ settingsItem, myAccountItem }: SidebarFooterSect
             </a>
           </SidebarMenuButton>
         </SidebarMenuItem>
+
+        {helpItem && (
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <a href={helpItem.url} className="flex items-center gap-2">
+                <helpItem.icon size={20} />
+                <span>{helpItem.title}</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        )}
       </SidebarMenu>
     </SidebarFooter>
   );
