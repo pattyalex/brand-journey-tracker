@@ -1,6 +1,6 @@
 
-import { Trash2 } from 'lucide-react';
-import { toast } from "sonner";
+import { Trash2, ChevronDown, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
 import { MenuItem } from '@/types/sidebar';
 import {
   SidebarMenuItem,
@@ -17,12 +17,34 @@ interface SidebarMenuItemProps {
 }
 
 const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  const handleMenuClick = (e: React.MouseEvent) => {
+    if (item.subItems && item.subItems.length > 0) {
+      e.preventDefault();
+      setIsExpanded(!isExpanded);
+    }
+  };
+
   return (
     <SidebarMenuItem key={item.title}>
       <SidebarMenuButton asChild>
-        <a href={item.url} className="flex items-center gap-2">
+        <a 
+          href={item.url} 
+          className="flex items-center gap-2"
+          onClick={handleMenuClick}
+        >
           <item.icon size={20} />
           <span>{item.title}</span>
+          {item.subItems && item.subItems.length > 0 && (
+            <span className="ml-auto">
+              {isExpanded ? (
+                <ChevronDown size={16} />
+              ) : (
+                <ChevronRight size={16} />
+              )}
+            </span>
+          )}
         </a>
       </SidebarMenuButton>
       
@@ -36,7 +58,7 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
         </SidebarMenuAction>
       )}
       
-      {item.subItems && item.subItems.length > 0 && (
+      {item.subItems && item.subItems.length > 0 && isExpanded && (
         <SidebarMenuSub>
           {item.subItems.map((subItem) => (
             <SidebarMenuSubItem key={subItem.title}>
