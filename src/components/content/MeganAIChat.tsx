@@ -20,10 +20,9 @@ interface MeganAIChatProps {
     format?: string;
     shootDetails?: string;
   };
-  isFloating?: boolean;
 }
 
-const MeganAIChat = ({ onClose, contextData, isFloating = false }: MeganAIChatProps) => {
+const MeganAIChat = ({ onClose, contextData }: MeganAIChatProps) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
@@ -106,24 +105,17 @@ const MeganAIChat = ({ onClose, contextData, isFloating = false }: MeganAIChatPr
     }
   };
 
-  const containerClasses = isFloating
-    ? "flex flex-col h-[450px] w-[350px] bg-white rounded-lg shadow-lg border border-gray-200 fixed bottom-4 right-4 z-50"
-    : "flex flex-col h-full bg-white";
-
   return (
-    <div className={containerClasses}>
+    <div className="flex flex-col h-full bg-white">
       <div className="flex items-center justify-between p-3 border-b border-gray-200">
-        <div>
-          <h2 className="text-lg font-semibold text-primary">Ask Megan</h2>
-          <p className="text-xs text-gray-500">your AI content creation assistant</p>
-        </div>
+        <h2 className="text-lg font-semibold text-primary">Ask Megan</h2>
         <Button variant="ghost" size="sm" onClick={onClose}>
           <XIcon className="h-4 w-4" />
         </Button>
       </div>
       
       <div className="flex-1 overflow-hidden">
-        <ScrollArea className={isFloating ? "h-[300px]" : "h-[calc(90vh-220px)]"}>
+        <ScrollArea className="h-[calc(90vh-220px)]">
           <div className="p-3 space-y-4">
             {messages.map((message) => (
               <div
@@ -162,7 +154,7 @@ const MeganAIChat = ({ onClose, contextData, isFloating = false }: MeganAIChatPr
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ask Megan about your content idea..."
-            className="min-h-[60px] resize-none text-sm"
+            className="min-h-[70px] resize-none text-sm"
           />
           <Button 
             type="submit" 
