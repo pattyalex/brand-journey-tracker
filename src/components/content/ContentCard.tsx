@@ -10,6 +10,16 @@ import { formatDistanceToNow } from "date-fns";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
 import { getTagColorClasses } from "@/utils/tagColors";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { toast } from "sonner";
 
 interface ContentCardProps {
   content: ContentItem;
@@ -19,6 +29,7 @@ interface ContentCardProps {
   onDeleteContent: (contentId: string) => void;
   onMoveContent: (toPillarId: string, contentId: string) => void;
   onEditContent: (contentId: string) => void;
+  onScheduleContent?: (contentId: string, scheduledDate: Date) => void;
 }
 
 const ContentCard = ({
@@ -27,8 +38,39 @@ const ContentCard = ({
   pillar,
   pillars,
   onDeleteContent,
-  onEditContent
+  onEditContent,
+  onScheduleContent
 }: ContentCardProps) => {
+  const [date, setDate] = useState<Date | undefined>(content.scheduledDate);
+
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    if (!selectedDate) return;
+    
+    setDate(selectedDate);
+    
+    if (onScheduleContent) {
+      onScheduleContent(content.id, selectedDate);
+      toast.success(`Scheduled "${content.title}" for ${format(selectedDate, "PPP")}`);
+    } else {
+      // Fallback if the onScheduleContent prop isn't provided
+      // Store the scheduled content in localStorage
+      const scheduledContents = JSON.parse(localStorage.getItem('scheduledContents') || '[]');
+      const updatedContent = { ...content, scheduledDate: selectedDate };
+      
+      // Check if this content is already scheduled
+      const existingIndex = scheduledContents.findIndex((item: ContentItem) => item.id === content.id);
+      
+      if (existingIndex >= 0) {
+        scheduledContents[existingIndex] = updatedContent;
+      } else {
+        scheduledContents.push(updatedContent);
+      }
+      
+      localStorage.setItem('scheduledContents', JSON.stringify(scheduledContents));
+      toast.success(`Scheduled "${content.title}" for ${format(selectedDate, "PPP")}`);
+    }
+  };
+
   return (
     <Draggable key={content.id} draggableId={content.id} index={index}>
       {(provided, snapshot) => (
@@ -68,6 +110,32 @@ const ContentCard = ({
                 <span>
                   {content.dateCreated ? formatDistanceToNow(new Date(content.dateCreated), { addSuffix: true }) : 'Unknown date'}
                 </span>
+              </div>
+              
+              <div className="flex items-center mt-2">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={cn(
+                        "justify-start text-left font-normal w-full",
+                        !date && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-3.5 w-3.5" />
+                      {date ? format(date, "PPP") : <span>Schedule post</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={date}
+                      onSelect={handleDateSelect}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </CardContent>
             

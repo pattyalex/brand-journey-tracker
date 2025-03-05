@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,11 +9,35 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { ContentItem } from "@/types/content";
+import { Badge } from "@/components/ui/badge";
+import { isSameDay, format } from "date-fns";
 
 const ContentCalendar = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [eventTitle, setEventTitle] = useState("");
   const [eventDescription, setEventDescription] = useState("");
+  const [scheduledContents, setScheduledContents] = useState<ContentItem[]>([]);
+  
+  useEffect(() => {
+    // Load scheduled content from localStorage
+    const storedContent = localStorage.getItem('scheduledContents');
+    if (storedContent) {
+      try {
+        const parsed = JSON.parse(storedContent);
+        // Convert string dates to Date objects
+        const withDates = parsed.map((item: any) => ({
+          ...item,
+          dateCreated: new Date(item.dateCreated),
+          scheduledDate: item.scheduledDate ? new Date(item.scheduledDate) : undefined
+        }));
+        setScheduledContents(withDates);
+      } catch (error) {
+        console.error("Error parsing scheduled content:", error);
+        setScheduledContents([]);
+      }
+    }
+  }, []);
   
   const handleAddEvent = (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +49,25 @@ const ContentCalendar = () => {
     toast.success(`Event "${eventTitle}" added to ${date.toLocaleDateString()}`);
     setEventTitle("");
     setEventDescription("");
+  };
+
+  // Find content scheduled for the selected date
+  const scheduledForDate = date 
+    ? scheduledContents.filter(content => 
+        content.scheduledDate && isSameDay(new Date(content.scheduledDate), date)
+      ) 
+    : [];
+
+  // Dates that have scheduled content
+  const scheduledDates = scheduledContents
+    .filter(content => content.scheduledDate)
+    .map(content => new Date(content.scheduledDate as Date));
+
+  const handleRemoveScheduledContent = (contentId: string) => {
+    const newScheduledContents = scheduledContents.filter(content => content.id !== contentId);
+    setScheduledContents(newScheduledContents);
+    localStorage.setItem('scheduledContents', JSON.stringify(newScheduledContents));
+    toast.success("Content removed from schedule");
   };
 
   return (
@@ -48,6 +91,16 @@ const ContentCalendar = () => {
                 selected={date}
                 onSelect={setDate}
                 className="rounded-md border"
+                modifiers={{
+                  booked: scheduledDates,
+                }}
+                modifiersStyles={{
+                  booked: {
+                    backgroundColor: "hsl(var(--primary) / 0.1)",
+                    fontWeight: "bold",
+                    borderRadius: "0",
+                  },
+                }}
               />
             </CardContent>
           </Card>
@@ -57,11 +110,60 @@ const ContentCalendar = () => {
               <CardTitle>Content Schedule</CardTitle>
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue="add" className="w-full">
+              <Tabs defaultValue="scheduled" className="w-full">
                 <TabsList className="mb-4">
+                  <TabsTrigger value="scheduled">Scheduled Content</TabsTrigger>
                   <TabsTrigger value="add">Add Event</TabsTrigger>
                   <TabsTrigger value="view">View Events</TabsTrigger>
                 </TabsList>
+                
+                <TabsContent value="scheduled" className="space-y-4">
+                  {scheduledForDate.length > 0 ? (
+                    <div className="space-y-4">
+                      <h3 className="font-medium text-sm">
+                        Content scheduled for {date ? format(date, "MMMM d, yyyy") : "today"}
+                      </h3>
+                      
+                      {scheduledForDate.map((content) => (
+                        <Card key={content.id} className="overflow-hidden">
+                          <CardHeader className="p-4 pb-2">
+                            <CardTitle className="text-lg">{content.title}</CardTitle>
+                          </CardHeader>
+                          <CardContent className="p-4 pt-0">
+                            <p className="text-sm text-muted-foreground mb-2">{content.description}</p>
+                            
+                            <div className="flex flex-wrap gap-1 mb-3">
+                              {content.tags.map((tag, idx) => (
+                                <Badge key={idx} variant="outline" className="text-xs">
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
+                            
+                            <div className="flex justify-end">
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => handleRemoveScheduledContent(content.id)}
+                              >
+                                Remove from schedule
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-6 text-center border border-dashed rounded-lg">
+                      <p className="text-muted-foreground">
+                        No content scheduled for {date ? format(date, "MMMM d, yyyy") : "today"}.
+                      </p>
+                      <p className="text-muted-foreground text-sm mt-1">
+                        Schedule content by using the calendar button on your content cards.
+                      </p>
+                    </div>
+                  )}
+                </TabsContent>
                 
                 <TabsContent value="add" className="space-y-4">
                   <form onSubmit={handleAddEvent} className="space-y-4">
