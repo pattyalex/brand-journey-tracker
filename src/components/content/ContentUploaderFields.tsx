@@ -124,17 +124,6 @@ const ContentUploaderFields = ({
         />
       </div>
       
-      {setScheduledDate && (
-        <div className="grid gap-2">
-          <Label htmlFor="scheduledDate">Schedule to Calendar</Label>
-          <DateSchedulePicker 
-            date={scheduledDate} 
-            onDateChange={setScheduledDate}
-            label=""
-          />
-        </div>
-      )}
-      
       <div className="grid gap-2">
         <Label htmlFor="tags">Tags</Label>
         <TagsInput
@@ -146,6 +135,17 @@ const ContentUploaderFields = ({
           placeholder="Add tags (e.g., To Film, To Edit, To Post)"
         />
       </div>
+      
+      {setScheduledDate && (
+        <div className="grid gap-2">
+          <Label htmlFor="scheduledDate">Schedule to Calendar</Label>
+          <DateSchedulePicker 
+            date={scheduledDate} 
+            onDateChange={setScheduledDate}
+            label=""
+          />
+        </div>
+      )}
     </div>
   );
 };
