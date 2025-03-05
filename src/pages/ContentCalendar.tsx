@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,12 +11,27 @@ import { toast } from "sonner";
 import { ContentItem } from "@/types/content";
 import { Badge } from "@/components/ui/badge";
 import { isSameDay, format } from "date-fns";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { CalendarIcon } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const ContentCalendar = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [eventTitle, setEventTitle] = useState("");
   const [eventDescription, setEventDescription] = useState("");
   const [scheduledContents, setScheduledContents] = useState<ContentItem[]>([]);
+  const [calendarOpen, setCalendarOpen] = useState(false);
   
   useEffect(() => {
     // Load scheduled content from localStorage
@@ -86,6 +100,36 @@ const ContentCalendar = () => {
               <CardTitle>Select Date</CardTitle>
             </CardHeader>
             <CardContent>
+              <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal mb-4"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? format(date, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-white" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    className="rounded-md border"
+                    modifiers={{
+                      booked: scheduledDates,
+                    }}
+                    modifiersStyles={{
+                      booked: {
+                        backgroundColor: "hsl(var(--primary) / 0.1)",
+                        fontWeight: "bold",
+                        borderRadius: "0",
+                      },
+                    }}
+                  />
+                </PopoverContent>
+              </Popover>
+              
               <Calendar
                 mode="single"
                 selected={date}
