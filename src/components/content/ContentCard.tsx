@@ -39,7 +39,7 @@ const ContentCard = ({
           className={`${snapshot.isDragging ? 'opacity-70' : 'opacity-100'}`}
         >
           <Card 
-            className={`overflow-hidden ${snapshot.isDragging ? 'shadow-lg' : ''}`}
+            className={`overflow-hidden ${snapshot.isDragging ? 'shadow-lg' : ''} relative`}
           >
             <CardHeader className="p-4">
               <CardTitle className="text-lg">
@@ -71,23 +71,25 @@ const ContentCard = ({
               </div>
             </CardContent>
             
-            <CardFooter className="p-4 pt-0 flex justify-between">
+            <CardFooter className="p-4 pt-0 flex justify-end">
               <div className="flex gap-2">
                 <Button 
                   variant="ghost" 
-                  size="icon" 
+                  size="xs"
                   onClick={() => onDeleteContent(content.id)}
                   aria-label="Delete"
+                  className="h-7 w-7 p-0"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-3.5 w-3.5" />
                 </Button>
                 <Button 
                   variant="outline" 
-                  size="icon"
+                  size="xs"
                   onClick={() => onEditContent(content.id)}
                   aria-label="Edit"
+                  className="h-7 w-7 p-0"
                 >
-                  <Pencil className="h-4 w-4" />
+                  <Pencil className="h-3.5 w-3.5" />
                 </Button>
               </div>
             </CardFooter>
