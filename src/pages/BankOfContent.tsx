@@ -1,34 +1,16 @@
+
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ContentPillar from "@/components/content/ContentPillar";
-import { Button } from "@/components/ui/button";
-import { Pencil, Plus, Search, Lightbulb, FileText, X, Tag, Check } from "lucide-react";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import ContentUploader from "@/components/content/ContentUploader";
 import { ContentItem } from "@/types/content";
 import { toast } from "sonner";
 import ContentSearchModal from "@/components/content/ContentSearchModal";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { getTagColorClasses } from "@/utils/tagColors";
-import SimpleTextFormattingToolbar from "@/components/SimpleTextFormattingToolbar";
-import { Edit, Trash2 } from "lucide-react";
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger
-} from "@/components/ui/alert-dialog";
+import PillarTabs from "@/components/content/PillarTabs";
+import WritingSpace from "@/components/content/WritingSpace";
+import IdeaSection from "@/components/content/IdeaSection";
+import IdeaCreationDialog from "@/components/content/IdeaCreationDialog";
 
 export type Pillar = {
   id: string;
@@ -64,9 +46,8 @@ const BankOfContent = () => {
   const [developIdeaMode, setDevelopIdeaMode] = useState(false);
   const [editingContent, setEditingContent] = useState<ContentItem | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editingPillarId, setEditingPillarId] = useState<string | null>(null);
-  const [editingPillarName, setEditingPillarName] = useState("");
 
+  // Initial loading effect
   useEffect(() => {
     try {
       const savedPillarsData = localStorage.getItem('pillars');
@@ -116,6 +97,7 @@ const BankOfContent = () => {
     setPillars(loadedPillars);
   }, []);
 
+  // Writing space autosave effect
   useEffect(() => {
     if (activeTab && writingText) {
       const saveTimer = setTimeout(() => {
@@ -126,6 +108,7 @@ const BankOfContent = () => {
     }
   }, [writingText, activeTab]);
 
+  // Load writing space content when tab changes
   useEffect(() => {
     const savedWriting = localStorage.getItem(`writing-${activeTab}`);
     if (savedWriting) {
@@ -135,104 +118,7 @@ const BankOfContent = () => {
     }
   }, [activeTab]);
 
-  useEffect(() => {
-    pillars.forEach(pillar => {
-      try {
-        const savedContent = localStorage.getItem(`pillar-content-${pillar.id}`);
-        if (savedContent) {
-          const parsedContent = JSON.parse(savedContent);
-          
-          const contentWithDates = parsedContent.map((item: any) => ({
-            ...item,
-            dateCreated: new Date(item.dateCreated)
-          }));
-          
-          setPillars(prev => 
-            prev.map(p => 
-              p.id === pillar.id 
-                ? {...p, content: contentWithDates} 
-                : p
-            )
-          );
-        }
-      } catch (error) {
-        console.error(`Failed to load content for pillar ${pillar.id}:`, error);
-      }
-    });
-  }, []);
-
-  const handleTextSelection = (selectedContent: string) => {
-    setSelectedText(selectedContent);
-  };
-
-  const createNewIdeaFromSelection = () => {
-    if (!newIdeaTitle.trim()) {
-      toast.error("Title is required");
-      return;
-    }
-    
-    const scriptContent = developScriptText.trim() || selectedText;
-    
-    if (!scriptContent) {
-      toast.error("Script content is required");
-      return;
-    }
-    
-    const newIdea: ContentItem = {
-      id: `${Date.now()}`,
-      title: newIdeaTitle,
-      description: scriptContent.slice(0, 100) + (scriptContent.length > 100 ? "..." : ""),
-      url: JSON.stringify({
-        script: scriptContent,
-        format: formatText,
-        shootDetails: shootDetails,
-        caption: captionText,
-        platforms: selectedPlatforms
-      }),
-      format: "text",
-      dateCreated: new Date(),
-      tags: newIdeaTags,
-      platforms: selectedPlatforms,
-    };
-    
-    addContentToPillar(activeTab, newIdea);
-    setShowNewIdeaDialog(false);
-    setSelectedText("");
-    setDevelopScriptText("");
-    setFormatText("");
-    setShootDetails("");
-    setCaptionText("");
-    setSelectedPlatforms([]);
-    setCurrentPlatform("");
-    setNewIdeaTitle("");
-    setNewIdeaTags([]);
-    toast.success("Idea saved successfully");
-  };
-
-  const saveSelectedTextAsIdea = () => {
-    if (!selectedText.trim()) {
-      toast.error("Please select some text first");
-      return;
-    }
-    
-    setNewIdeaTitle(`Idea - ${new Date().toLocaleDateString()}`);
-    setNewIdeaTags([]);
-    setShowNewIdeaDialog(true);
-  };
-
-  const developSelectedIdea = () => {
-    if (!selectedText.trim()) {
-      toast.error("Please select some text first");
-      return;
-    }
-    
-    setNewIdeaTitle(`Development - ${new Date().toLocaleDateString()}`);
-    setDevelopScriptText(selectedText);
-    setNewIdeaTags([]);
-    setDevelopIdeaMode(true);
-    setShowNewIdeaDialog(true);
-  };
-
+  // Pillar management functions
   const addPillar = () => {
     const newId = `${Date.now()}`;
     const newPillars = [...pillars, { id: newId, name: "New Pillar", content: [], writingSpace: "" }];
@@ -249,8 +135,6 @@ const BankOfContent = () => {
     }
     
     toast.success("New pillar added");
-    
-    startEditingPillar(newId, "New Pillar");
   };
 
   const renamePillar = (id: string, newName: string) => {
@@ -298,12 +182,8 @@ const BankOfContent = () => {
     toast.success("Pillar deleted");
   };
 
-  const updateWritingSpace = (pillarId: string, text: string) => {
-    setPillars(pillars.map(p => 
-      p.id === pillarId 
-        ? {...p, writingSpace: text} 
-        : p
-    ));
+  // Content management functions
+  const updateWritingSpace = (text: string) => {
     setWritingText(text);
   };
 
@@ -325,15 +205,12 @@ const BankOfContent = () => {
     }
   };
 
-  const handleAddTag = () => {
-    if (currentTag.trim() && !newIdeaTags.includes(currentTag.trim())) {
-      setNewIdeaTags([...newIdeaTags, currentTag.trim()]);
-      setCurrentTag("");
-    }
+  const removeTag = (tagToRemove: string) => {
+    setNewIdeaTags(newIdeaTags.filter(tag => tag !== tagToRemove));
   };
 
-  const handleRemoveTag = (tagToRemove: string) => {
-    setNewIdeaTags(newIdeaTags.filter(tag => tag !== tagToRemove));
+  const handleTextSelection = (selectedContent: string) => {
+    setSelectedText(selectedContent);
   };
 
   const saveWritingAsIdea = () => {
@@ -348,6 +225,130 @@ const BankOfContent = () => {
     setNewIdeaTags([]);
     setDevelopIdeaMode(true);
     setShowNewIdeaDialog(true);
+  };
+
+  const saveSelectedTextAsIdea = () => {
+    if (!selectedText.trim()) {
+      toast.error("Please select some text first");
+      return;
+    }
+    
+    setNewIdeaTitle(`Idea - ${new Date().toLocaleDateString()}`);
+    setNewIdeaTags([]);
+    setShowNewIdeaDialog(true);
+  };
+
+  const developSelectedIdea = () => {
+    if (!selectedText.trim()) {
+      toast.error("Please select some text first");
+      return;
+    }
+    
+    setNewIdeaTitle(`Development - ${new Date().toLocaleDateString()}`);
+    setDevelopScriptText(selectedText);
+    setNewIdeaTags([]);
+    setDevelopIdeaMode(true);
+    setShowNewIdeaDialog(true);
+  };
+
+  const handleFormatText = (formatType: string, formatValue?: string) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const { selectionStart, selectionEnd, value } = textarea;
+    const selectedText = value.substring(selectionStart, selectionEnd);
+    
+    let newText;
+    let newCursorPos;
+    
+    switch (formatType) {
+      case 'bold':
+        newText = value.substring(0, selectionStart) + "**" + selectedText + "**" + value.substring(selectionEnd);
+        newCursorPos = selectionEnd + 4;
+        break;
+      case 'italic':
+        newText = value.substring(0, selectionStart) + "_" + selectedText + "_" + value.substring(selectionEnd);
+        newCursorPos = selectionEnd + 2;
+        break;
+      case 'underline':
+        newText = value.substring(0, selectionStart) + "<u>" + selectedText + "</u>" + value.substring(selectionEnd);
+        newCursorPos = selectionEnd + 7;
+        break;
+      case 'bullet':
+        newText = value.substring(0, selectionStart) + "• " + selectedText + value.substring(selectionEnd);
+        newCursorPos = selectionEnd + 2;
+        break;
+      case 'numbered':
+        newText = value.substring(0, selectionStart) + "1. " + selectedText + value.substring(selectionEnd);
+        newCursorPos = selectionEnd + 3;
+        break;
+      case 'align':
+        if (formatValue) {
+          newText = value.substring(0, selectionStart) + 
+                    `<div style="text-align: ${formatValue};">${selectedText}</div>` + 
+                    value.substring(selectionEnd);
+          newCursorPos = selectionEnd + 30 + formatValue.length;
+        } else {
+          return;
+        }
+        break;
+      default:
+        return;
+    }
+    
+    setWritingText(newText);
+    
+    setTimeout(() => {
+      if (textarea) {
+        textarea.focus();
+        textarea.setSelectionRange(newCursorPos, newCursorPos);
+      }
+    }, 0);
+  };
+
+  // Database operations
+  const createNewIdeaFromSelection = () => {
+    if (!newIdeaTitle.trim()) {
+      toast.error("Title is required");
+      return;
+    }
+    
+    const scriptContent = developScriptText.trim() || selectedText;
+    
+    if (!scriptContent) {
+      toast.error("Script content is required");
+      return;
+    }
+    
+    const newIdea: ContentItem = {
+      id: `${Date.now()}`,
+      title: newIdeaTitle,
+      description: scriptContent.slice(0, 100) + (scriptContent.length > 100 ? "..." : ""),
+      url: JSON.stringify({
+        script: scriptContent,
+        format: formatText,
+        shootDetails: shootDetails,
+        caption: captionText,
+        platforms: selectedPlatforms
+      }),
+      format: "text",
+      dateCreated: new Date(),
+      tags: newIdeaTags,
+      platforms: selectedPlatforms,
+    };
+    
+    addContentToPillar(activeTab, newIdea);
+    setShowNewIdeaDialog(false);
+    setSelectedText("");
+    setDevelopScriptText("");
+    setFormatText("");
+    setShootDetails("");
+    setCaptionText("");
+    setSelectedPlatforms([]);
+    setCurrentPlatform("");
+    setNewIdeaTitle("");
+    setNewIdeaTags([]);
+    toast.success("Idea saved successfully");
   };
 
   const addContentToPillar = (pillarId: string, content: ContentItem) => {
@@ -470,26 +471,6 @@ const BankOfContent = () => {
     setIsEditing(false);
   };
 
-  const filteredContent = pillars.map(pillar => ({
-    ...pillar,
-    content: pillar.content.filter(item => 
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-    )
-  }));
-
-  const allContent = pillars.flatMap(pillar => pillar.content);
-  const activePillar = pillars.find(p => p.id === activeTab);
-
-  const togglePlatform = (platform: string) => {
-    setSelectedPlatforms(current => 
-      current.includes(platform)
-        ? current.filter(p => p !== platform)
-        : [...current, platform]
-    );
-  };
-
   const handleReorderContent = (pillarId: string, newItems: ContentItem[]) => {
     console.log(`Reordering content for pillar ${pillarId}:`, newItems);
     
@@ -515,88 +496,17 @@ const BankOfContent = () => {
     }
   };
 
-  const handleFormatText = (formatType: string, formatValue?: string) => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    const { selectionStart, selectionEnd, value } = textarea;
-    const selectedText = value.substring(selectionStart, selectionEnd);
-    
-    let newText;
-    let newCursorPos;
-    
-    switch (formatType) {
-      case 'bold':
-        newText = value.substring(0, selectionStart) + "**" + selectedText + "**" + value.substring(selectionEnd);
-        newCursorPos = selectionEnd + 4;
-        break;
-      case 'italic':
-        newText = value.substring(0, selectionStart) + "_" + selectedText + "_" + value.substring(selectionEnd);
-        newCursorPos = selectionEnd + 2;
-        break;
-      case 'underline':
-        newText = value.substring(0, selectionStart) + "<u>" + selectedText + "</u>" + value.substring(selectionEnd);
-        newCursorPos = selectionEnd + 7;
-        break;
-      case 'bullet':
-        newText = value.substring(0, selectionStart) + "• " + selectedText + value.substring(selectionEnd);
-        newCursorPos = selectionEnd + 2;
-        break;
-      case 'numbered':
-        newText = value.substring(0, selectionStart) + "1. " + selectedText + value.substring(selectionEnd);
-        newCursorPos = selectionEnd + 3;
-        break;
-      case 'align':
-        if (formatValue) {
-          newText = value.substring(0, selectionStart) + 
-                    `<div style="text-align: ${formatValue};">${selectedText}</div>` + 
-                    value.substring(selectionEnd);
-          newCursorPos = selectionEnd + 30 + formatValue.length;
-        } else {
-          return;
-        }
-        break;
-      default:
-        return;
-    }
-    
-    setWritingText(newText);
-    
-    setTimeout(() => {
-      if (textarea) {
-        textarea.focus();
-        textarea.setSelectionRange(newCursorPos, newCursorPos);
-      }
-    }, 0);
+  const openNewIdeaDialog = () => {
+    setNewIdeaTitle(`Idea - ${new Date().toLocaleDateString()}`);
+    setNewIdeaTags([]);
+    setSelectedText("");
+    setDevelopScriptText("");
+    setShootDetails("");
+    setShowNewIdeaDialog(true);
   };
 
-  const startEditingPillar = (pillarId: string, currentName: string) => {
-    setEditingPillarId(pillarId);
-    setEditingPillarName(currentName);
-  };
-
-  const saveEditingPillar = () => {
-    if (editingPillarId && editingPillarName.trim()) {
-      renamePillar(editingPillarId, editingPillarName.trim());
-      setEditingPillarId(null);
-      setEditingPillarName("");
-    }
-  };
-
-  const cancelEditingPillar = () => {
-    setEditingPillarId(null);
-    setEditingPillarName("");
-  };
-
-  const handlePillarNameKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      saveEditingPillar();
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      cancelEditingPillar();
-    }
-  };
+  const activePillar = pillars.find(p => p.id === activeTab);
+  const allContent = pillars.flatMap(pillar => pillar.content);
 
   return (
     <Layout>
@@ -618,177 +528,40 @@ const BankOfContent = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="flex items-center justify-between mb-4">
-            <TabsList className="bg-background border overflow-x-auto">
-              {pillars.map((pillar) => (
-                <div key={pillar.id} className="relative group flex items-center">
-                  {editingPillarId === pillar.id ? (
-                    <div className="px-3 py-1.5 flex items-center bg-primary text-primary-foreground rounded-sm">
-                      <Input
-                        value={editingPillarName}
-                        onChange={(e) => setEditingPillarName(e.target.value)}
-                        onKeyDown={handlePillarNameKeyDown}
-                        onBlur={saveEditingPillar}
-                        autoFocus
-                        className="h-6 px-1 py-0 text-sm w-32 bg-transparent border-0 focus-visible:ring-0 text-primary-foreground"
-                        data-testid="edit-pillar-name-input"
-                      />
-                      <Button
-                        size="xs"
-                        variant="ghost"
-                        onClick={saveEditingPillar}
-                        className="ml-1 text-primary-foreground hover:text-primary-foreground/90 hover:bg-transparent p-0 h-5 w-5"
-                      >
-                        <Check className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        size="xs"
-                        variant="ghost"
-                        onClick={cancelEditingPillar}
-                        className="text-primary-foreground hover:text-primary-foreground/90 hover:bg-transparent p-0 h-5 w-5"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <>
-                      <TabsTrigger 
-                        value={pillar.id}
-                        className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white ${
-                          pillar.id === "1" && activeTab === "1" ? "bg-[#8B6B4E] text-white" : ""
-                        }`}
-                        onDoubleClick={() => startEditingPillar(pillar.id, pillar.name)}
-                      >
-                        {pillar.name}
-                      </TabsTrigger>
-                      
-                      <div className="absolute hidden group-hover:flex top-full left-0 z-50 bg-white border shadow-md rounded-md p-1 mt-1 flex-col w-32">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => startEditingPillar(pillar.id, pillar.name)}
-                          className="justify-start"
-                        >
-                          <Edit className="h-4 w-4 mr-2" />
-                          Rename
-                        </Button>
-                        
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="text-destructive justify-start"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete {pillar.name} Pillar</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This will permanently delete the "{pillar.name}" pillar and all its content. 
-                                This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction 
-                                onClick={() => deletePillar(pillar.id)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ))}
-            </TabsList>
-            <Button variant="outline" size="sm" onClick={addPillar} className="ml-2 flex items-center">
-              <Plus className="h-4 w-4 mr-2" /> Add Pillar
-            </Button>
-          </div>
+          <PillarTabs 
+            pillars={pillars}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            onAddPillar={addPillar}
+            onRenamePillar={renamePillar}
+            onDeletePillar={deletePillar}
+          />
 
           {pillars.map((pillar) => (
             <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-semibold flex items-center">
-                      <Pencil className="h-5 w-5 mr-2" />
-                      Brain Dump Of Ideas
-                    </h2>
-                  </div>
-                  <div className="h-[calc(100vh-240px)]">
-                    <div className="rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full relative bg-[#F6F6F7] flex flex-col">
-                      <SimpleTextFormattingToolbar onFormat={handleFormatText} />
-                      
-                      <ScrollArea className="h-full w-full flex-1">
-                        <Textarea
-                          ref={textareaRef}
-                          value={writingText}
-                          onChange={(e) => setWritingText(e.target.value)}
-                          onTextSelect={handleTextSelection}
-                          placeholder="Write your ideas here..."
-                          className="min-h-full w-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-sm absolute inset-0 px-4 py-4"
-                        />
-                      </ScrollArea>
-                      <div className="absolute right-0 top-0 bottom-0 w-3 bg-gray-200 opacity-60"></div>
-                    </div>
-                  </div>
-                </div>
+                <WritingSpace 
+                  writingText={writingText}
+                  onTextChange={updateWritingSpace}
+                  onTextSelection={handleTextSelection}
+                  onFormatText={handleFormatText}
+                />
                 
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-semibold flex items-center">
-                      <Lightbulb className="h-5 w-5 mr-2" /> 
-                      Develop Your Ideas
-                    </h2>
-                    <div className="flex items-center gap-2">
-                      {isEditing ? (
-                        <ContentUploader
-                          pillarId={pillar.id}
-                          onContentAdded={addContentToPillar}
-                          onContentUpdated={updateContent}
-                          contentToEdit={editingContent}
-                          isEditMode={true}
-                          onCancelEdit={cancelEditing}
-                        />
-                      ) : (
-                        <Button 
-                          variant="default" 
-                          size="sm"
-                          className="bg-[#8B6B4E] hover:bg-[#7A5C3F]"
-                          onClick={() => {
-                            setNewIdeaTitle(`Idea - ${new Date().toLocaleDateString()}`);
-                            setNewIdeaTags([]);
-                            setSelectedText("");
-                            setDevelopScriptText("");
-                            setShootDetails("");
-                            setShowNewIdeaDialog(true);
-                          }}
-                        >
-                          <FileText className="h-4 w-4 mr-2" />
-                          Add New Idea
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                  <ContentPillar
-                    pillar={{...pillar}}
-                    pillars={pillars}
-                    onDeleteContent={(contentId) => deleteContent(pillar.id, contentId)}
-                    onMoveContent={(toPillarId, contentId) => moveContent(pillar.id, toPillarId, contentId)}
-                    onEditContent={(contentId) => editContent(pillar.id, contentId)}
-                    searchQuery={searchQuery}
-                    onReorderContent={(newItems) => handleReorderContent(pillar.id, newItems)}
-                  />
-                </div>
+                <IdeaSection 
+                  pillar={pillar}
+                  pillars={pillars}
+                  searchQuery={searchQuery}
+                  onNewIdeaClick={openNewIdeaDialog}
+                  onDeleteContent={(contentId) => deleteContent(pillar.id, contentId)}
+                  onMoveContent={(toPillarId, contentId) => moveContent(pillar.id, toPillarId, contentId)}
+                  onEditContent={(contentId) => editContent(pillar.id, contentId)}
+                  onReorderContent={(newItems) => handleReorderContent(pillar.id, newItems)}
+                  editingContent={editingContent}
+                  isEditing={isEditing}
+                  onContentUpdated={updateContent}
+                  onCancelEdit={cancelEditing}
+                  onContentAdded={addContentToPillar}
+                />
               </div>
             </TabsContent>
           ))}
@@ -803,156 +576,37 @@ const BankOfContent = () => {
           pillars={pillars}
         />
         
-        <Dialog open={showNewIdeaDialog} onOpenChange={setShowNewIdeaDialog}>
-          <DialogContent className="sm:max-w-[525px] max-h-[85vh]">
-            <DialogHeader>
-              <DialogTitle>
-                {developIdeaMode ? "Develop Selected Idea" : "Create New Idea"}
-              </DialogTitle>
-            </DialogHeader>
-            
-            <ScrollArea className="max-h-[calc(85vh-140px)] pr-6">
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="idea-title">Title</Label>
-                  <Input
-                    id="idea-title"
-                    value={newIdeaTitle}
-                    onChange={(e) => setNewIdeaTitle(e.target.value)}
-                    placeholder="Enter a catchy hook for your idea..."
-                  />
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="develop-script">Script</Label>
-                  <Textarea
-                    id="develop-script"
-                    value={developScriptText || selectedText}
-                    onChange={(e) => setDevelopScriptText(e.target.value)}
-                    placeholder="Write your script here..."
-                    className="min-h-[100px] resize-y"
-                  />
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="format-text">Format</Label>
-                  <Textarea
-                    id="format-text"
-                    value={formatText}
-                    onChange={(e) => setFormatText(e.target.value)}
-                    placeholder="Describe how you want to present your script (e.g., POV skit, educational, storytelling, aesthetic montage)..."
-                    className="min-h-[80px] resize-y"
-                  />
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="shoot-details">Shoot Details</Label>
-                  <Textarea
-                    id="shoot-details"
-                    value={shootDetails}
-                    onChange={(e) => setShootDetails(e.target.value)}
-                    placeholder="Enter details about the shoot, such as location, outfits, props needed..."
-                    className="min-h-[80px] resize-y"
-                  />
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="caption-text">Caption</Label>
-                  <Textarea
-                    id="caption-text"
-                    value={captionText}
-                    onChange={(e) => setCaptionText(e.target.value)}
-                    placeholder="Draft a caption for your content when posting to social media platforms..."
-                    className="min-h-[80px] resize-y"
-                  />
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="platforms">Platforms</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="platforms"
-                      value={currentPlatform}
-                      onChange={(e) => setCurrentPlatform(e.target.value)}
-                      placeholder="Where do you want to post this content?"
-                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addPlatform())}
-                      className="flex-1"
-                    />
-                    <Button type="button" onClick={addPlatform} variant="outline" size="icon" className="shrink-0">
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {selectedPlatforms.map((platform, index) => (
-                      <span 
-                        key={index} 
-                        className="bg-primary/10 text-primary text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5"
-                      >
-                        {platform}
-                        <button 
-                          type="button" 
-                          onClick={() => removePlatform(platform)}
-                          className="text-primary hover:text-primary/80"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="tags">Tags</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="tags"
-                      value={currentTag}
-                      onChange={(e) => setCurrentTag(e.target.value)}
-                      placeholder="Add tags (e.g., To Film, To Edit, To Post)"
-                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-                      className="flex-1"
-                    />
-                    <Button type="button" onClick={handleAddTag} variant="outline" size="icon" className="shrink-0">
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {newIdeaTags.map((tag, index) => (
-                      <span 
-                        key={index} 
-                        className={`text-sm px-2 py-1 rounded-full flex items-center gap-1 ${getTagColorClasses(tag)}`}
-                      >
-                        {tag}
-                        <button 
-                          type="button" 
-                          onClick={() => handleRemoveTag(tag)}
-                          className="hover:text-foreground"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </ScrollArea>
-            
-            <DialogFooter className="mt-4">
-              <Button variant="outline" onClick={() => {
-                setShowNewIdeaDialog(false);
-                setDevelopIdeaMode(false);
-              }}>
-                Cancel
-              </Button>
-              <Button onClick={developIdeaMode ? createNewIdeaFromSelection : createNewIdeaFromSelection}
-                className={developIdeaMode ? "bg-emerald-600 hover:bg-emerald-700" : ""}>
-                Save Idea
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <IdeaCreationDialog
+          open={showNewIdeaDialog}
+          onOpenChange={setShowNewIdeaDialog}
+          title={newIdeaTitle}
+          onTitleChange={setNewIdeaTitle}
+          scriptText={developScriptText || selectedText}
+          onScriptTextChange={setDevelopScriptText}
+          formatText={formatText}
+          onFormatTextChange={setFormatText}
+          shootDetails={shootDetails}
+          onShootDetailsChange={setShootDetails}
+          captionText={captionText}
+          onCaptionTextChange={setCaptionText}
+          platforms={selectedPlatforms}
+          currentPlatform={currentPlatform}
+          onCurrentPlatformChange={setCurrentPlatform}
+          onAddPlatform={addPlatform}
+          onRemovePlatform={removePlatform}
+          tags={newIdeaTags}
+          currentTag={currentTag}
+          onCurrentTagChange={setCurrentTag}
+          onAddTag={addTag}
+          onRemoveTag={removeTag}
+          onSave={createNewIdeaFromSelection}
+          onCancel={() => {
+            setShowNewIdeaDialog(false);
+            setDevelopIdeaMode(false);
+          }}
+          isEditMode={developIdeaMode}
+          dialogTitle={developIdeaMode ? "Develop Selected Idea" : "Create New Idea"}
+        />
       </div>
     </Layout>
   );
