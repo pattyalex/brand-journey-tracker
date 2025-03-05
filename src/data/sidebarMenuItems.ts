@@ -11,9 +11,9 @@ export const defaultMenuItems: MenuItem[] = [
     isDeletable: false,
     subItems: [
       { title: 'Bank of Ideas', icon: Database, url: '/ideas-bank' },
-      { title: 'Vision Board & Goals', icon: Lightbulb, url: '/projects/vision-board' },
     ]
   },
+  { title: 'Vision Board & Goals', icon: Lightbulb, url: '/projects/vision-board', isDeletable: true },
   { title: 'Documents', icon: FileText, url: '/documents', isDeletable: true },
 ];
 
