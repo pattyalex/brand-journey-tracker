@@ -196,10 +196,11 @@ const ContentCard = ({
                 </Button>
                 <Button 
                   variant="outline" 
-                  size="sm"
+                  size="icon"
                   onClick={() => onEditContent(content.id)}
+                  aria-label="Edit"
                 >
-                  <Pencil className="h-4 w-4 mr-1" /> Edit
+                  <Pencil className="h-4 w-4" />
                 </Button>
                 
                 {/* Property dropdown menu */}
