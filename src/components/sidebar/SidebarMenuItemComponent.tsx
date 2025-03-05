@@ -1,6 +1,6 @@
 
 import { Trash2, ChevronDown, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MenuItem } from '@/types/sidebar';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -18,8 +18,18 @@ interface SidebarMenuItemProps {
 }
 
 const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  // Initialize expanded state from localStorage or default to false
+  const [isExpanded, setIsExpanded] = useState(() => {
+    const savedState = localStorage.getItem(`sidebar-expanded-${item.title}`);
+    return savedState ? JSON.parse(savedState) : false;
+  });
+  
   const navigate = useNavigate();
+  
+  // Save expanded state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(`sidebar-expanded-${item.title}`, JSON.stringify(isExpanded));
+  }, [isExpanded, item.title]);
   
   const handleMenuClick = (e: React.MouseEvent) => {
     if (item.subItems && item.subItems.length > 0) {
