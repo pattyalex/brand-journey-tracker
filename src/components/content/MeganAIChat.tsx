@@ -108,7 +108,7 @@ const MeganAIChat = ({ onClose, contextData }: MeganAIChatProps) => {
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        <h2 className="text-xl font-semibold text-green-500">Ask Megan</h2>
+        <h2 className="text-xl font-semibold text-primary">Ask Megan</h2>
         <Button variant="ghost" size="icon" onClick={onClose}>
           <XIcon className="h-5 w-5" />
         </Button>
@@ -128,7 +128,7 @@ const MeganAIChat = ({ onClose, contextData }: MeganAIChatProps) => {
                   className={`max-w-[80%] rounded-lg p-3 ${
                     message.role === "user"
                       ? "bg-primary text-primary-foreground"
-                      : "bg-green-100 text-gray-800"
+                      : "bg-muted text-foreground"
                   }`}
                 >
                   <p className="whitespace-pre-wrap break-words">{message.content}</p>
@@ -160,7 +160,7 @@ const MeganAIChat = ({ onClose, contextData }: MeganAIChatProps) => {
             type="submit" 
             size="icon" 
             disabled={isSubmitting || !inputValue.trim()}
-            className="h-10 w-10 shrink-0 rounded-full bg-green-500 hover:bg-green-600"
+            className="h-10 w-10 shrink-0 rounded-full"
           >
             <SendIcon className="h-5 w-5" />
           </Button>

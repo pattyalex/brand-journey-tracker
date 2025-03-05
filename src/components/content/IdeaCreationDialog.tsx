@@ -95,13 +95,13 @@ const IdeaCreationDialog = ({
             <Button
               variant="ghost"
               size="sm"
-              className="absolute right-0 top-0 text-green-500 hover:text-green-600 hover:bg-green-50 font-medium"
+              className="absolute right-0 top-0 text-primary hover:text-primary/80 hover:bg-muted font-medium"
               onClick={() => setIsMeganOpen(!isMeganOpen)}
             >
               {isMeganOpen ? "Hide Megan" : (
                 <div className="flex items-center gap-2">
                   <span>Ask Megan</span>
-                  <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white">
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
                     M
                   </div>
                 </div>
