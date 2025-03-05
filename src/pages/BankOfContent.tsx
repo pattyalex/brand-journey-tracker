@@ -561,7 +561,7 @@ const BankOfContent = () => {
 
           {pillars.map((pillar) => (
             <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                 <WritingSpace 
                   writingText={writingText}
                   onTextChange={updateWritingSpace}

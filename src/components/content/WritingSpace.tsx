@@ -21,7 +21,7 @@ const WritingSpace = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pr-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold flex items-center">
           <Pencil className="h-5 w-5 mr-2" />
