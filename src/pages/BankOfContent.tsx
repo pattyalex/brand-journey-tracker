@@ -555,19 +555,14 @@ const BankOfContent = () => {
                       <SimpleTextFormattingToolbar onFormat={handleFormatText} />
                       
                       <ScrollArea className="h-full w-full flex-1">
-                        <div 
-                          className="h-full w-full cursor-text px-4 py-4 relative" 
-                          onClick={() => textareaRef.current?.focus()}
-                        >
-                          <Textarea
-                            ref={textareaRef}
-                            value={writingText}
-                            onChange={(e) => setWritingText(e.target.value)}
-                            onTextSelect={handleTextSelection}
-                            placeholder="Start writing your ideas, thoughts, or notes here..."
-                            className="min-h-full w-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-base absolute inset-0 px-4 py-4"
-                          />
-                        </div>
+                        <Textarea
+                          ref={textareaRef}
+                          value={writingText}
+                          onChange={(e) => setWritingText(e.target.value)}
+                          onTextSelect={handleTextSelection}
+                          placeholder="Start writing your ideas, thoughts, or notes here..."
+                          className="min-h-full w-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-sm absolute inset-0 px-4 py-4"
+                        />
                       </ScrollArea>
                       <div className="absolute right-0 top-0 bottom-0 w-3 bg-gray-200 opacity-60"></div>
                     </div>
