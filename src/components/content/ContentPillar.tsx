@@ -81,6 +81,13 @@ const ContentPillar = ({
     }
   };
 
+  // Function to check if content contains "Spring Outfit" or "Spring"
+  const isSpringContent = (content: ContentItem) => {
+    const titleLower = content.title.toLowerCase();
+    const descLower = content.description.toLowerCase();
+    return titleLower.includes('spring') || descLower.includes('spring');
+  };
+
   // Function to parse JSON content
   const parseContentData = (jsonString: string) => {
     try {
@@ -105,7 +112,10 @@ const ContentPillar = ({
         <ScrollArea className="h-[calc(100vh-320px)]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredContent.map((content) => (
-              <Card key={content.id} className="overflow-hidden">
+              <Card 
+                key={content.id} 
+                className={`overflow-hidden ${isSpringContent(content) ? 'ring-2 ring-[#8B5CF6] ring-offset-2 bg-purple-50' : ''}`}
+              >
                 <div className="relative aspect-video bg-muted">
                   {content.format === 'image' ? (
                     <img
@@ -121,7 +131,19 @@ const ContentPillar = ({
                 </div>
                 
                 <CardHeader className="p-4">
-                  <CardTitle className="text-lg">{content.title}</CardTitle>
+                  <CardTitle className="text-lg">
+                    {isSpringContent(content) ? (
+                      <span className="relative">
+                        {content.title}
+                        <span className="absolute -top-1 -right-2 flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
+                        </span>
+                      </span>
+                    ) : (
+                      content.title
+                    )}
+                  </CardTitle>
                   <CardDescription className="line-clamp-2">
                     {content.description}
                   </CardDescription>
