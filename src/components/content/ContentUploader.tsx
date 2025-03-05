@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -206,8 +205,8 @@ const ContentUploader = ({
                 value={textContent}
                 onChange={(e) => setTextContent(e.target.value)}
                 placeholder={isEditMode 
-                  ? "Develop and refine your script here..."
-                  : "Start writing your ideas, notes, or content drafts here..."
+                  ? "Write your script here..."
+                  : "Develop your script here..."
                 }
                 rows={8}
                 className="resize-none"
