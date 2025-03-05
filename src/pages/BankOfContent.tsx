@@ -471,19 +471,6 @@ const BankOfContent = () => {
         newText = value.substring(0, selectionStart) + "<u>" + selectedText + "</u>" + value.substring(selectionEnd);
         newCursorPos = selectionEnd + 7;
         break;
-      case 'color':
-        if (formatValue === 'default') {
-          // Remove any existing color tags
-          const uncoloredText = selectedText.replace(/<span style="color:.*?>(.*?)<\/span>/g, '$1');
-          newText = value.substring(0, selectionStart) + uncoloredText + value.substring(selectionEnd);
-          newCursorPos = selectionStart + uncoloredText.length;
-        } else {
-          newText = value.substring(0, selectionStart) + 
-                    `<span style="color:${formatValue}">` + selectedText + "</span>" + 
-                    value.substring(selectionEnd);
-          newCursorPos = selectionEnd + 27 + formatValue.length;
-        }
-        break;
       case 'bullet':
         newText = value.substring(0, selectionStart) + "• " + selectedText + value.substring(selectionEnd);
         newCursorPos = selectionEnd + 2;
