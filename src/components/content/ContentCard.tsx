@@ -1,16 +1,31 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Draggable } from "react-beautiful-dnd";
+import { 
+  Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Trash2, Pencil, Calendar, PlusCircle, X } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { formatDistanceToNow } from "date-fns";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
-import { MoreHorizontal, Trash2, Edit, ArrowLeftRight, ExternalLink, Image, File, FileText, Video } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { formatDistanceToNow } from "date-fns";
 import { getTagColorClasses } from "@/utils/tagColors";
-import CustomPropertiesMenu from "./CustomPropertiesMenu";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 
 interface ContentCardProps {
   content: ContentItem;
@@ -22,6 +37,20 @@ interface ContentCardProps {
   onEditContent: (contentId: string) => void;
 }
 
+// Predefined property colors
+const propertyColorOptions = {
+  "priority-high": "bg-red-100 text-red-800 border-red-300",
+  "priority-medium": "bg-amber-100 text-amber-800 border-amber-300",
+  "priority-low": "bg-green-100 text-green-800 border-green-300",
+  "status-pending": "bg-purple-100 text-purple-800 border-purple-300",
+  "status-in-progress": "bg-indigo-100 text-indigo-800 border-indigo-300",
+  "status-completed": "bg-blue-100 text-blue-800 border-blue-300",
+  "type-video": "bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300",
+  "type-article": "bg-cyan-100 text-cyan-800 border-cyan-300",
+  "type-image": "bg-teal-100 text-teal-800 border-teal-300",
+  "default": "bg-gray-100 text-gray-800 border-gray-300"
+};
+
 const ContentCard = ({
   content,
   index,
@@ -31,179 +60,288 @@ const ContentCard = ({
   onMoveContent,
   onEditContent
 }: ContentCardProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  
-  // Update content when custom properties change
-  const handleUpdateContent = (updatedContent: ContentItem) => {
-    // Find the content in the current pillar and update it
-    const pillarIndex = pillars.findIndex(p => p.id === pillar.id);
+  const [newProperty, setNewProperty] = useState("");
+  const [selectedColor, setSelectedColor] = useState("default");
+  const [customProperties, setCustomProperties] = useState<{name: string, color: string}[]>(
+    content.customProperties || []
+  );
+  const [isAddingProperty, setIsAddingProperty] = useState(false);
+
+  // Save custom properties to localStorage when they change
+  const saveCustomProperties = (updatedProperties: {name: string, color: string}[]) => {
+    // First update our local state
+    setCustomProperties(updatedProperties);
     
-    if (pillarIndex !== -1) {
-      const contentIndex = pillars[pillarIndex].content.findIndex(c => c.id === content.id);
-      
-      if (contentIndex !== -1) {
-        // Create a deep copy of the pillars array
-        const updatedPillars = JSON.parse(JSON.stringify(pillars));
-        // Update the specific content item
-        updatedPillars[pillarIndex].content[contentIndex] = updatedContent;
+    try {
+      // Get the existing content from localStorage
+      const storedContent = localStorage.getItem(`pillar-content-${pillar.id}`);
+      if (storedContent) {
+        const contentItems = JSON.parse(storedContent);
         
-        // Update localStorage
-        localStorage.setItem('contentPillars', JSON.stringify(updatedPillars));
+        // Find and update the specific content item
+        const updatedContentItems = contentItems.map((item: any) => {
+          if (item.id === content.id) {
+            return { ...item, customProperties: updatedProperties };
+          }
+          return item;
+        });
         
-        // Force a re-render by updating the window location
-        window.dispatchEvent(new Event('storage'));
+        // Save back to localStorage
+        localStorage.setItem(`pillar-content-${pillar.id}`, JSON.stringify(updatedContentItems));
       }
+    } catch (error) {
+      console.error("Failed to save custom properties:", error);
     }
   };
 
-  const getContentIcon = (format: string) => {
-    switch (format.toLowerCase()) {
-      case 'image':
-        return <Image className="h-4 w-4 mr-1" />;
-      case 'video':
-        return <Video className="h-4 w-4 mr-1" />;
-      case 'document':
-        return <File className="h-4 w-4 mr-1" />;
-      case 'text':
-      default:
-        return <FileText className="h-4 w-4 mr-1" />;
+  const addCustomProperty = () => {
+    if (!newProperty.trim()) {
+      toast.error("Property name cannot be empty");
+      return;
     }
+    
+    const updatedProperties = [
+      ...customProperties, 
+      { name: newProperty.trim(), color: selectedColor }
+    ];
+    
+    saveCustomProperties(updatedProperties);
+    setNewProperty("");
+    setSelectedColor("default");
+    setIsAddingProperty(false);
+    toast.success(`Added property: ${newProperty.trim()}`);
   };
 
-  const otherPillars = pillars.filter(p => p.id !== pillar.id);
+  const removeCustomProperty = (propertyToRemove: string) => {
+    const updatedProperties = customProperties.filter(
+      prop => prop.name !== propertyToRemove
+    );
+    saveCustomProperties(updatedProperties);
+    toast.success(`Removed property: ${propertyToRemove}`);
+  };
 
   return (
-    <Draggable draggableId={content.id} index={index}>
-      {(provided) => (
+    <Draggable key={content.id} draggableId={content.id} index={index}>
+      {(provided, snapshot) => (
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
+          className={`${snapshot.isDragging ? 'opacity-70' : 'opacity-100'}`}
         >
-          <Card className="bg-white overflow-hidden transition-all duration-200">
-            <CardHeader className="p-3 pb-0 flex justify-between items-start space-y-0">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
-                  {getContentIcon(content.format)}
-                  <span>{content.format.charAt(0).toUpperCase() + content.format.slice(1)}</span>
-                  <span className="mx-1">•</span>
-                  <span>{formatDistanceToNow(content.dateCreated, { addSuffix: true })}</span>
+          <Card 
+            className={`overflow-hidden ${snapshot.isDragging ? 'shadow-lg' : ''}`}
+          >
+            <CardHeader className="p-4">
+              <CardTitle className="text-lg">
+                {content.title}
+              </CardTitle>
+              <CardDescription className="line-clamp-2">
+                {content.description}
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="p-4 pt-0">
+              {customProperties.length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {customProperties.map((prop) => (
+                    <div
+                      key={prop.name}
+                      className={`text-xs px-2 py-1 rounded-full border flex items-center gap-1 ${propertyColorOptions[prop.color] || propertyColorOptions.default}`}
+                    >
+                      {prop.name}
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeCustomProperty(prop.name);
+                        }}
+                        className="hover:bg-white/30 rounded-full"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
-                <h3 
-                  className="font-medium text-base leading-tight cursor-pointer hover:text-blue-600 transition-colors truncate"
-                  onClick={() => setIsExpanded(!isExpanded)}
-                >
-                  {content.title}
-                </h3>
-              </div>
+              )}
               
-              <div className="flex">
-                <CustomPropertiesMenu content={content} onUpdate={handleUpdateContent} />
+              <div className="flex flex-wrap gap-1 mb-2">
+                {content.tags && content.tags.length > 0 ? (
+                  content.tags.map((tag, index) => (
+                    <span 
+                      key={index} 
+                      className={`text-xs px-2 py-1 rounded-full ${getTagColorClasses(tag)}`}
+                    >
+                      {tag}
+                    </span>
+                  ))
+                ) : null}
+              </div>
+              <div className="flex items-center text-xs text-muted-foreground mt-2">
+                <Calendar className="h-3 w-3 mr-1" />
+                <span>
+                  {content.dateCreated ? formatDistanceToNow(new Date(content.dateCreated), { addSuffix: true }) : 'Unknown date'}
+                </span>
+              </div>
+            </CardContent>
+            
+            <CardFooter className="p-4 pt-0 flex justify-between">
+              <div className="flex gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => onDeleteContent(content.id)}
+                  aria-label="Delete"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => onEditContent(content.id)}
+                >
+                  <Pencil className="h-4 w-4 mr-1" /> Edit
+                </Button>
                 
+                {/* Property dropdown menu */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <MoreHorizontal className="h-4 w-4" />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                    >
+                      <PlusCircle className="h-4 w-4 mr-1" /> Property
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => onEditContent(content.id)}>
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </DropdownMenuItem>
-                    
-                    {otherPillars.length > 0 && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger className="w-full p-2 flex items-center text-sm rounded-sm hover:bg-accent hover:text-accent-foreground cursor-default">
-                          <ArrowLeftRight className="h-4 w-4 mr-2" />
-                          Move to
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-48">
-                          {otherPillars.map(p => (
-                            <DropdownMenuItem key={p.id} onClick={() => onMoveContent(p.id, content.id)}>
-                              {p.name}
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                  <DropdownMenuContent className="w-56 p-3 bg-white" align="start">
+                    {!isAddingProperty ? (
+                      <>
+                        <p className="text-sm font-medium mb-2">Add custom property</p>
+                        <DropdownMenuItem 
+                          onClick={() => setIsAddingProperty(true)}
+                          className="flex items-center"
+                        >
+                          <PlusCircle className="h-4 w-4 mr-2" />
+                          <span>New property</span>
+                        </DropdownMenuItem>
+                      </>
+                    ) : (
+                      <>
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium">Property name:</p>
+                          <Input
+                            placeholder="Enter property name"
+                            value={newProperty}
+                            onChange={(e) => setNewProperty(e.target.value)}
+                            className="h-8"
+                          />
+                          
+                          <p className="text-sm font-medium mt-3">Choose color:</p>
+                          <div className="grid grid-cols-2 gap-1">
+                            <div 
+                              className={`cursor-pointer p-2 rounded-md ${selectedColor === "priority-high" ? "ring-2 ring-offset-1 ring-primary" : ""} ${propertyColorOptions["priority-high"]}`}
+                              onClick={() => setSelectedColor("priority-high")}
+                            >
+                              High Priority
+                            </div>
+                            <div 
+                              className={`cursor-pointer p-2 rounded-md ${selectedColor === "priority-medium" ? "ring-2 ring-offset-1 ring-primary" : ""} ${propertyColorOptions["priority-medium"]}`}
+                              onClick={() => setSelectedColor("priority-medium")}
+                            >
+                              Medium Priority
+                            </div>
+                            <div 
+                              className={`cursor-pointer p-2 rounded-md ${selectedColor === "priority-low" ? "ring-2 ring-offset-1 ring-primary" : ""} ${propertyColorOptions["priority-low"]}`}
+                              onClick={() => setSelectedColor("priority-low")}
+                            >
+                              Low Priority
+                            </div>
+                            <div 
+                              className={`cursor-pointer p-2 rounded-md ${selectedColor === "status-pending" ? "ring-2 ring-offset-1 ring-primary" : ""} ${propertyColorOptions["status-pending"]}`}
+                              onClick={() => setSelectedColor("status-pending")}
+                            >
+                              Pending
+                            </div>
+                            <div 
+                              className={`cursor-pointer p-2 rounded-md ${selectedColor === "status-in-progress" ? "ring-2 ring-offset-1 ring-primary" : ""} ${propertyColorOptions["status-in-progress"]}`}
+                              onClick={() => setSelectedColor("status-in-progress")}
+                            >
+                              In Progress
+                            </div>
+                            <div 
+                              className={`cursor-pointer p-2 rounded-md ${selectedColor === "status-completed" ? "ring-2 ring-offset-1 ring-primary" : ""} ${propertyColorOptions["status-completed"]}`}
+                              onClick={() => setSelectedColor("status-completed")}
+                            >
+                              Completed
+                            </div>
+                            <div 
+                              className={`cursor-pointer p-2 rounded-md ${selectedColor === "type-video" ? "ring-2 ring-offset-1 ring-primary" : ""} ${propertyColorOptions["type-video"]}`}
+                              onClick={() => setSelectedColor("type-video")}
+                            >
+                              Video
+                            </div>
+                            <div 
+                              className={`cursor-pointer p-2 rounded-md ${selectedColor === "type-article" ? "ring-2 ring-offset-1 ring-primary" : ""} ${propertyColorOptions["type-article"]}`}
+                              onClick={() => setSelectedColor("type-article")}
+                            >
+                              Article
+                            </div>
+                            <div 
+                              className={`cursor-pointer p-2 rounded-md ${selectedColor === "type-image" ? "ring-2 ring-offset-1 ring-primary" : ""} ${propertyColorOptions["type-image"]}`}
+                              onClick={() => setSelectedColor("type-image")}
+                            >
+                              Image
+                            </div>
+                            <div 
+                              className={`cursor-pointer p-2 rounded-md ${selectedColor === "default" ? "ring-2 ring-offset-1 ring-primary" : ""} ${propertyColorOptions["default"]}`}
+                              onClick={() => setSelectedColor("default")}
+                            >
+                              Default
+                            </div>
+                          </div>
+                          
+                          <div className="flex justify-between gap-2 mt-3">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => setIsAddingProperty(false)}
+                              className="w-1/2"
+                            >
+                              Cancel
+                            </Button>
+                            <Button 
+                              variant="default" 
+                              size="sm" 
+                              onClick={addCustomProperty}
+                              className="w-1/2"
+                            >
+                              Add
+                            </Button>
+                          </div>
+                        </div>
+                      </>
                     )}
-                    
-                    <DropdownMenuSeparator />
-                    
-                    <DropdownMenuItem 
-                      onClick={() => onDeleteContent(content.id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-            </CardHeader>
-            
-            <CardContent className={`p-3 ${isExpanded ? '' : 'hidden'}`}>
-              <p className="text-sm text-muted-foreground mb-3">{content.description}</p>
               
-              {/* Display custom properties */}
-              {content.customProperties && content.customProperties.length > 0 && (
-                <div className="mb-3">
-                  <p className="text-xs font-medium mb-1">Properties:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {content.customProperties.map((prop, index) => (
-                      <span 
-                        key={index} 
-                        className={`text-xs px-2 py-0.5 rounded-full ${prop.color}`}
-                      >
-                        {prop.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {content.platforms && content.platforms.length > 0 && (
-                <div className="mb-3">
-                  <p className="text-xs font-medium mb-1">Platforms:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {content.platforms.map((platform, index) => (
-                      <span 
-                        key={index} 
-                        className="text-xs px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full"
-                      >
-                        {platform}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {content.tags && content.tags.length > 0 && (
-                <div>
-                  <p className="text-xs font-medium mb-1">Tags:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {content.tags.map((tag, index) => (
-                      <span 
-                        key={index} 
-                        className={`text-xs px-2 py-0.5 rounded-full ${getTagColorClasses(tag)}`}
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-            
-            <CardFooter className="p-3 pt-0 flex justify-end">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                className="text-xs"
-                onClick={() => setIsExpanded(!isExpanded)}
-              >
-                {isExpanded ? 'Show Less' : 'Show More'}
-              </Button>
+              <div className="flex items-center">
+                <Select
+                  onValueChange={(value) => onMoveContent(value, content.id)}
+                >
+                  <SelectTrigger className="w-[130px] h-8">
+                    <SelectValue placeholder="Move to..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {pillars
+                      .filter(p => p.id !== pillar.id)
+                      .map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.name}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </CardFooter>
           </Card>
         </div>
