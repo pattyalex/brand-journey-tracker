@@ -7,7 +7,7 @@ export const defaultMenuItems: MenuItem[] = [
   { 
     title: 'Workflow', 
     icon: FolderOpen, 
-    url: '/projects', 
+    url: '/get-started', 
     isDeletable: false,
     subItems: [
       { title: 'Bank of Ideas', icon: Database, url: '/ideas-bank' },

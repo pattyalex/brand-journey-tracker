@@ -2,6 +2,7 @@
 import { Trash2, ChevronDown, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { MenuItem } from '@/types/sidebar';
+import { useNavigate } from 'react-router-dom';
 import {
   SidebarMenuItem,
   SidebarMenuButton,
@@ -18,11 +19,17 @@ interface SidebarMenuItemProps {
 
 const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const navigate = useNavigate();
   
   const handleMenuClick = (e: React.MouseEvent) => {
     if (item.subItems && item.subItems.length > 0) {
       e.preventDefault();
       setIsExpanded(!isExpanded);
+      
+      // Navigate to the item's URL when expanding
+      if (!isExpanded) {
+        navigate(item.url);
+      }
     }
   };
 
