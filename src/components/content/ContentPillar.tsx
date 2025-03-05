@@ -13,7 +13,6 @@ interface ContentPillarProps {
   onDeleteContent: (contentId: string) => void;
   onMoveContent: (toPillarId: string, contentId: string) => void;
   onEditContent: (contentId: string) => void;
-  onArchiveContent?: (contentId: string) => void;
   searchQuery: string;
   onReorderContent?: (items: ContentItem[]) => void;
 }
@@ -24,7 +23,6 @@ const ContentPillar = ({
   onDeleteContent,
   onMoveContent,
   onEditContent,
-  onArchiveContent,
   searchQuery,
   onReorderContent
 }: ContentPillarProps) => {
@@ -93,7 +91,6 @@ const ContentPillar = ({
                       onDeleteContent={onDeleteContent}
                       onMoveContent={onMoveContent}
                       onEditContent={onEditContent}
-                      onArchiveContent={onArchiveContent}
                     />
                   ))}
                   {provided.placeholder}

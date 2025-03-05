@@ -6,7 +6,6 @@ import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
 import ContentPillar from "./ContentPillar";
 import ContentUploader from "./ContentUploader";
-import { toast } from "sonner";
 
 interface IdeaSectionProps {
   pillar: Pillar;
@@ -39,27 +38,6 @@ const IdeaSection = ({
   onCancelEdit,
   onContentAdded
 }: IdeaSectionProps) => {
-  const handleArchiveContent = (contentId: string) => {
-    // Find the content to archive
-    const contentToArchive = pillar.content.find(item => item.id === contentId);
-    if (!contentToArchive) return;
-
-    // Store archived content in localStorage
-    const archivedContent = JSON.parse(localStorage.getItem('archivedContent') || '[]');
-    archivedContent.push({
-      ...contentToArchive,
-      archivedDate: new Date().toISOString(),
-      originalPillar: pillar.name
-    });
-    localStorage.setItem('archivedContent', JSON.stringify(archivedContent));
-
-    // Remove from current list
-    onDeleteContent(contentId);
-
-    // Show success message
-    toast.success("Content archived successfully");
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -98,7 +76,6 @@ const IdeaSection = ({
         onEditContent={onEditContent}
         searchQuery={searchQuery}
         onReorderContent={onReorderContent}
-        onArchiveContent={handleArchiveContent}
       />
     </div>
   );
