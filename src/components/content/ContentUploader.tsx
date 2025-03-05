@@ -206,7 +206,7 @@ const ContentUploader = ({
                 onChange={(e) => setTextContent(e.target.value)}
                 placeholder={isEditMode 
                   ? "Write your script here..."
-                  : "Develop and write your script here..."
+                  : "Develop your script here..."
                 }
                 rows={8}
                 className="resize-none"

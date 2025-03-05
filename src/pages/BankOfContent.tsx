@@ -536,7 +536,7 @@ const BankOfContent = () => {
                     id="develop-script"
                     value={developScriptText || selectedText}
                     onChange={(e) => setDevelopScriptText(e.target.value)}
-                    placeholder="Develop and write your script here..."
+                    placeholder="Write your script here..."
                     className="min-h-[100px] resize-y"
                   />
                 </div>
