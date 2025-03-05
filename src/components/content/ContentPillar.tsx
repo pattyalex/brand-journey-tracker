@@ -71,23 +71,6 @@ const ContentPillar = ({
       )
     : pillar.content;
 
-  const getFormatIcon = (format: string) => {
-    switch (format) {
-      case 'image': return '🖼️';
-      case 'video': return '🎬';
-      case 'document': return '📄';
-      case 'text': return '📝';
-      default: return '📁';
-    }
-  };
-
-  // Function to check if content contains "Spring Outfit" or "Spring"
-  const isSpringContent = (content: ContentItem) => {
-    const titleLower = content.title.toLowerCase();
-    const descLower = content.description.toLowerCase();
-    return titleLower.includes('spring') || descLower.includes('spring');
-  };
-
   // Function to parse JSON content
   const parseContentData = (jsonString: string) => {
     try {
@@ -114,35 +97,11 @@ const ContentPillar = ({
             {filteredContent.map((content) => (
               <Card 
                 key={content.id} 
-                className={`overflow-hidden ${isSpringContent(content) ? 'ring-2 ring-[#8B5CF6] ring-offset-2 bg-purple-50' : ''}`}
+                className="overflow-hidden"
               >
-                <div className="relative aspect-video bg-muted">
-                  {content.format === 'image' ? (
-                    <img
-                      src={content.url}
-                      alt={content.title}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full bg-gray-100">
-                      <span className="text-4xl">{getFormatIcon(content.format)}</span>
-                    </div>
-                  )}
-                </div>
-                
                 <CardHeader className="p-4">
                   <CardTitle className="text-lg">
-                    {isSpringContent(content) ? (
-                      <span className="relative">
-                        {content.title}
-                        <span className="absolute -top-1 -right-2 flex h-2 w-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
-                        </span>
-                      </span>
-                    ) : (
-                      content.title
-                    )}
+                    {content.title}
                   </CardTitle>
                   <CardDescription className="line-clamp-2">
                     {content.description}
