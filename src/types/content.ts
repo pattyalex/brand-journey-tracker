@@ -6,8 +6,7 @@ export interface ContentItem {
   url: string;
   format: string;
   dateCreated: Date;
-  scheduledDate?: Date;
-  tags: string[];
+  tags?: string[];
   platforms?: string[];
-  customProperties?: { name: string; color: string }[];
+  scheduledDate?: Date;
 }

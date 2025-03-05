@@ -337,7 +337,7 @@ const BankOfContent = () => {
     if (scheduledDate) {
       try {
         const existingScheduledContents = localStorage.getItem('scheduledContents');
-        let scheduledContents: ContentItem[] = [];
+        let scheduledContents: any[] = [];
         
         if (existingScheduledContents) {
           scheduledContents = JSON.parse(existingScheduledContents);
@@ -346,7 +346,9 @@ const BankOfContent = () => {
         scheduledContents.push({
           ...newIdea,
           dateCreated: newIdea.dateCreated.toISOString(),
-          scheduledDate: scheduledDate.toISOString()
+          scheduledDate: scheduledDate.toISOString(),
+          pillarId: activeTab,
+          pillarName: pillars.find(p => p.id === activeTab)?.name || "Unknown"
         });
         
         localStorage.setItem('scheduledContents', JSON.stringify(scheduledContents));

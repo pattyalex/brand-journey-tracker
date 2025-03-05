@@ -40,20 +40,14 @@ const DateSchedulePicker = ({
             {date ? format(date, "PPP") : <span>Pick a date for scheduling</span>}
           </Button>
         </PopoverTrigger>
-        <PopoverContent 
-          className="w-auto p-0" 
-          align="start"
-          style={{ backgroundColor: "white", opacity: 1 }}
-        >
-          <div className="bg-white rounded-md" style={{ backgroundColor: "white", opacity: 1 }}>
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={onDateChange}
-              initialFocus
-              className={cn("p-3 pointer-events-auto bg-white")}
-            />
-          </div>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={date}
+            onSelect={onDateChange}
+            initialFocus
+            className="p-3 pointer-events-auto"
+          />
         </PopoverContent>
       </Popover>
     </div>

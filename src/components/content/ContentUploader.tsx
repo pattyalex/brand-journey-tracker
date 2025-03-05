@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { FileText, Pencil, Plus } from "lucide-react";
@@ -130,6 +129,29 @@ const ContentUploader = ({
       onContentUpdated(pillarId, contentItem);
     } else {
       onContentAdded(pillarId, contentItem);
+
+      if (scheduledDate) {
+        try {
+          const existingScheduledContents = localStorage.getItem('scheduledContents');
+          let scheduledContents: any[] = [];
+          
+          if (existingScheduledContents) {
+            scheduledContents = JSON.parse(existingScheduledContents);
+          }
+          
+          scheduledContents.push({
+            ...contentItem,
+            dateCreated: contentItem.dateCreated.toISOString(),
+            scheduledDate: scheduledDate.toISOString(),
+            pillarId: pillarId,
+            pillarName: document.querySelector(`button[value="${pillarId}"]`)?.textContent || "Unknown"
+          });
+          
+          localStorage.setItem('scheduledContents', JSON.stringify(scheduledContents));
+        } catch (error) {
+          console.error("Error saving scheduled content:", error);
+        }
+      }
     }
     
     resetForm();
