@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Layout from "@/components/Layout";
-import { FolderOpen, HandshakeIcon, TrendingUp } from "lucide-react";
+import { FolderOpen, Handshake, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Index = () => {
@@ -52,7 +52,7 @@ const features = [
   {
     title: "Revenue Growth",
     description: "Track income from brand deals, sponsorships, and other revenue streams",
-    icon: HandshakeIcon,
+    icon: Handshake,
   },
   {
     title: "Performance Analytics",
