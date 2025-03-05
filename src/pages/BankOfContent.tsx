@@ -661,20 +661,26 @@ const BankOfContent = () => {
                       >
                         {pillar.name}
                       </TabsTrigger>
-                      <div className="hidden group-hover:flex absolute top-full left-0 z-50 bg-background border shadow-md rounded-md p-1 mt-1">
+                      
+                      <div className="absolute hidden group-hover:flex top-full left-0 z-50 bg-white border shadow-md rounded-md p-1 mt-1 flex-col w-32">
                         <Button 
                           variant="ghost" 
                           size="sm" 
                           onClick={() => startEditingPillar(pillar.id, pillar.name)}
+                          className="justify-start"
                         >
-                          <Edit className="h-4 w-4 mr-1" />
+                          <Edit className="h-4 w-4 mr-2" />
                           Rename
                         </Button>
                         
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="sm" className="text-destructive">
-                              <Trash2 className="h-4 w-4 mr-1" />
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="text-destructive justify-start"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
                               Delete
                             </Button>
                           </AlertDialogTrigger>
