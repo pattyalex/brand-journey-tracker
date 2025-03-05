@@ -179,11 +179,7 @@ const IdeaCreationDialog = ({
             Cancel
           </Button>
           <Button onClick={onSave}>
-            {isEditMode ? (
-              "Update"
-            ) : (
-              "Update"
-            )}
+            {isEditMode ? "Update" : "Create"}
           </Button>
         </DialogFooter>
       </DialogContent>

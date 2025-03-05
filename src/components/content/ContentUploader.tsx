@@ -243,11 +243,7 @@ const ContentUploader = ({
             Cancel
           </Button>
           <Button onClick={handleSubmit}>
-            {isEditMode ? (
-              "Update"
-            ) : (
-              "Update"
-            )}
+            {isEditMode ? "Update" : "Create"}
           </Button>
         </DialogFooter>
       </DialogContent>
