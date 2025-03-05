@@ -38,6 +38,9 @@ const ContentUploader = ({
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [textContent, setTextContent] = useState("");
+  const [formatText, setFormatText] = useState("");
+  const [shootDetails, setShootDetails] = useState("");
+  const [captionText, setCaptionText] = useState("");
   const [currentTag, setCurrentTag] = useState("");
   const [tagsList, setTagsList] = useState<string[]>([]);
   const [currentPlatform, setCurrentPlatform] = useState("");
@@ -56,6 +59,14 @@ const ContentUploader = ({
           try {
             const parsedContent = JSON.parse(contentToEdit.url);
             setTextContent(parsedContent.script || '');
+            setFormatText(parsedContent.format || '');
+            setShootDetails(parsedContent.shootDetails || '');
+            setCaptionText(parsedContent.caption || '');
+            
+            // Set platforms from parsed content if available
+            if (parsedContent.platforms && Array.isArray(parsedContent.platforms)) {
+              setPlatformsList(parsedContent.platforms);
+            }
           } catch {
             // If not JSON, use as-is
             setTextContent(contentToEdit.url);
@@ -64,7 +75,9 @@ const ContentUploader = ({
         
         // Set tags and platforms
         setTagsList(contentToEdit.tags || []);
-        setPlatformsList(contentToEdit.platforms || []);
+        if (contentToEdit.platforms && Array.isArray(contentToEdit.platforms)) {
+          setPlatformsList(contentToEdit.platforms);
+        }
         
       } catch (error) {
         console.error("Error loading content data for editing:", error);
@@ -107,7 +120,13 @@ const ContentUploader = ({
       title,
       description: textContent.slice(0, 100) + (textContent.length > 100 ? "..." : ""), // First 100 chars as description
       format: "text",
-      url: textContent, // Store the text content in the url field
+      url: JSON.stringify({
+        script: textContent,
+        format: formatText,
+        shootDetails: shootDetails,
+        caption: captionText,
+        platforms: platformsList
+      }), // Store all data in the url field as JSON
       dateCreated: contentToEdit ? contentToEdit.dateCreated : new Date(),
       tags: tagsList,
       platforms: platformsList.length > 0 ? platformsList : undefined,
@@ -131,6 +150,9 @@ const ContentUploader = ({
   const resetForm = () => {
     setTitle("");
     setTextContent("");
+    setFormatText("");
+    setShootDetails("");
+    setCaptionText("");
     setTagsList([]);
     setCurrentTag("");
     setPlatformsList([]);
@@ -194,6 +216,39 @@ const ContentUploader = ({
                 placeholder="Start writing your ideas, notes, or content drafts here..."
                 rows={8}
                 className="resize-none"
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="format">Format</Label>
+              <Textarea
+                id="format"
+                value={formatText}
+                onChange={(e) => setFormatText(e.target.value)}
+                placeholder="Describe how you want to present your script (e.g., POV skit, educational, storytelling, aesthetic montage)..."
+                className="resize-y h-20"
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="shootDetails">Shoot Details</Label>
+              <Textarea
+                id="shootDetails"
+                value={shootDetails}
+                onChange={(e) => setShootDetails(e.target.value)}
+                placeholder="Enter details about the shoot, such as location, outfits, props needed..."
+                className="resize-y h-20"
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="caption">Caption</Label>
+              <Textarea
+                id="caption"
+                value={captionText}
+                onChange={(e) => setCaptionText(e.target.value)}
+                placeholder="Draft a caption for your content when posting to social media platforms..."
+                className="resize-y h-20"
               />
             </div>
             
