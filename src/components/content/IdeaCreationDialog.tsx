@@ -1,9 +1,7 @@
-
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
@@ -184,9 +182,7 @@ const IdeaCreationDialog = ({
             {isEditMode ? (
               "Update"
             ) : (
-              <>
-                <Plus className="mr-2 h-4 w-4" /> Update
-              </>
+              "Update"
             )}
           </Button>
         </DialogFooter>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { FileText, Pencil, Plus } from "lucide-react";
+import { FileText, Pencil } from "lucide-react";
 import { ContentItem } from "@/types/content";
 import {
   Dialog,
@@ -246,9 +246,7 @@ const ContentUploader = ({
             {isEditMode ? (
               "Update"
             ) : (
-              <>
-                <Plus className="mr-2 h-4 w-4" /> Update
-              </>
+              "Update"
             )}
           </Button>
         </DialogFooter>
