@@ -1,3 +1,4 @@
+
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -77,12 +78,12 @@ const IdeaCreationDialog = ({
 }: IdeaCreationDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[525px] max-h-[85vh]">
+      <DialogContent className="sm:max-w-[650px] md:max-w-[750px] max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>
         </DialogHeader>
         
-        <ScrollArea className="max-h-[calc(85vh-140px)] pr-6">
+        <ScrollArea className="max-h-[calc(90vh-140px)] pr-6">
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="idea-title">Title</Label>
@@ -101,7 +102,7 @@ const IdeaCreationDialog = ({
                 value={scriptText}
                 onChange={(e) => onScriptTextChange(e.target.value)}
                 placeholder="Write your script here..."
-                className="min-h-[100px] resize-y"
+                className="min-h-[120px] resize-y"
               />
             </div>
             
@@ -112,7 +113,7 @@ const IdeaCreationDialog = ({
                 value={formatText}
                 onChange={(e) => onFormatTextChange(e.target.value)}
                 placeholder="Describe how you want to present your script (e.g., POV skit, educational, storytelling, aesthetic montage)..."
-                className="min-h-[80px] resize-y"
+                className="min-h-[100px] resize-y"
               />
             </div>
             
@@ -123,7 +124,7 @@ const IdeaCreationDialog = ({
                 value={shootDetails}
                 onChange={(e) => onShootDetailsChange(e.target.value)}
                 placeholder="Enter details about the shoot, such as location, outfits, props needed..."
-                className="min-h-[80px] resize-y"
+                className="min-h-[100px] resize-y"
               />
             </div>
             
@@ -134,7 +135,7 @@ const IdeaCreationDialog = ({
                 value={captionText}
                 onChange={(e) => onCaptionTextChange(e.target.value)}
                 placeholder="Draft a caption for your content when posting to social media platforms..."
-                className="min-h-[80px] resize-y"
+                className="min-h-[100px] resize-y"
               />
             </div>
             
