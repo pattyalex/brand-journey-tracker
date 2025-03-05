@@ -43,7 +43,7 @@ const ScrollBar = React.forwardRef<
       className={cn(
         "relative flex-1 rounded-full",
         orientation === "vertical" ? "w-1.5" : "h-1.5",
-        "bg-gray-400 hover:bg-gray-500"
+        "bg-gray-500 hover:bg-gray-600"
       )} 
     />
   </ScrollAreaPrimitive.ScrollAreaScrollbar>
