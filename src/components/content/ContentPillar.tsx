@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ContentItem } from "@/types/content";
@@ -26,7 +25,6 @@ const ContentPillar = ({
   searchQuery,
   onReorderContent
 }: ContentPillarProps) => {
-  // Debug logging to track what's happening with the content
   useEffect(() => {
     console.log("ContentPillar received pillar:", pillar.id, pillar.name);
     console.log("ContentPillar content count:", pillar.content.length);
@@ -79,7 +77,7 @@ const ContentPillar = ({
                 <div 
                   {...provided.droppableProps}
                   ref={provided.innerRef}
-                  className="grid grid-cols-2 md:grid-cols-4 gap-4"
+                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5"
                 >
                   {filteredContent.map((content, index) => (
                     <ContentCard

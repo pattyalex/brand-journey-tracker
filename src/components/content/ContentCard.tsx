@@ -87,52 +87,52 @@ const ContentCard = ({
           <Card 
             className={`overflow-hidden ${snapshot.isDragging ? 'shadow-lg' : ''} relative h-full`}
           >
-            <CardHeader className="p-3">
-              <CardTitle className="text-sm">
+            <CardHeader className="p-4">
+              <CardTitle className="text-base">
                 {content.title}
                 {date && (
-                  <Badge variant="outline" className="ml-1 text-xs">
-                    <CalendarIcon className="h-2 w-2 mr-1" />
+                  <Badge variant="outline" className="ml-2 text-xs">
+                    <CalendarIcon className="h-3 w-3 mr-1" />
                     {format(date, "MMM d")}
                   </Badge>
                 )}
               </CardTitle>
-              <CardDescription className="line-clamp-2 text-xs">
+              <CardDescription className="line-clamp-2 text-sm">
                 {content.description}
               </CardDescription>
             </CardHeader>
             
-            <CardContent className="p-3 pt-0">
-              <div className="flex flex-wrap gap-1 mb-1">
+            <CardContent className="p-4 pt-0">
+              <div className="flex flex-wrap gap-1.5 mb-2">
                 {content.tags && content.tags.length > 0 ? (
-                  content.tags.slice(0, 2).map((tag, index) => (
+                  content.tags.slice(0, 3).map((tag, index) => (
                     <span 
                       key={index} 
-                      className={`text-xs px-1.5 py-0.5 rounded-full ${getTagColorClasses(tag)}`}
+                      className={`text-xs px-2 py-0.5 rounded-full ${getTagColorClasses(tag)}`}
                     >
                       {tag}
                     </span>
                   ))
                 ) : null}
               </div>
-              <div className="flex items-center text-xs text-muted-foreground mt-1">
-                <Calendar className="h-2.5 w-2.5 mr-1" />
-                <span className="text-xs">
+              <div className="flex items-center text-sm text-muted-foreground mt-2">
+                <Calendar className="h-3 w-3 mr-1" />
+                <span>
                   {content.dateCreated ? formatDistanceToNow(new Date(content.dateCreated), { addSuffix: true }) : 'Unknown date'}
                 </span>
               </div>
             </CardContent>
             
-            <CardFooter className="p-3 pt-0 flex justify-between">
+            <CardFooter className="p-4 pt-0 flex justify-between">
               <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline" 
                     size="xs"
                     aria-label="Schedule"
-                    className="h-6 w-6 p-0"
+                    className="h-7 w-7 p-0"
                   >
-                    <CalendarIcon className="h-3 w-3" />
+                    <CalendarIcon className="h-3.5 w-3.5" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0 bg-white" align="start">
@@ -148,24 +148,24 @@ const ContentCard = ({
                 </PopoverContent>
               </Popover>
               
-              <div className="flex gap-1">
+              <div className="flex gap-2">
                 <Button 
                   variant="ghost" 
                   size="xs"
                   onClick={() => onDeleteContent(content.id)}
                   aria-label="Delete"
-                  className="h-6 w-6 p-0"
+                  className="h-7 w-7 p-0"
                 >
-                  <Trash2 className="h-3 w-3" />
+                  <Trash2 className="h-3.5 w-3.5" />
                 </Button>
                 <Button 
                   variant="outline" 
                   size="xs"
                   onClick={() => onEditContent(content.id)}
                   aria-label="Edit"
-                  className="h-6 w-6 p-0"
+                  className="h-7 w-7 p-0"
                 >
-                  <Pencil className="h-3 w-3" />
+                  <Pencil className="h-3.5 w-3.5" />
                 </Button>
               </div>
             </CardFooter>
