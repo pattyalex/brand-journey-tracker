@@ -380,6 +380,22 @@ const BankOfContent = () => {
     );
   };
 
+  const handleReorderContent = (pillarId: string, newItems: ContentItem[]) => {
+    setPillars(prev => 
+      prev.map(p => 
+        p.id === pillarId 
+          ? {...p, content: newItems} 
+          : p
+      )
+    );
+    
+    try {
+      localStorage.setItem(`pillar-content-${pillarId}`, JSON.stringify(newItems));
+    } catch (error) {
+      console.error("Failed to save reordered content to localStorage:", error);
+    }
+  };
+
   return (
     <Layout>
       <div className="container mx-auto py-6 space-y-6 fade-in">
@@ -494,6 +510,7 @@ const BankOfContent = () => {
                     onMoveContent={(toPillarId, contentId) => moveContent(pillar.id, toPillarId, contentId)}
                     onEditContent={(contentId) => editContent(pillar.id, contentId)}
                     searchQuery={searchQuery}
+                    onReorderContent={(newItems) => handleReorderContent(pillar.id, newItems)}
                   />
                 </div>
               </div>
