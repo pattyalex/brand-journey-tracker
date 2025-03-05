@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,13 @@ import {
   Italic,
   Heading,
   ListOrdered,
-  AlignLeft
+  AlignLeft,
+  Underline,
+  Link,
+  Image,
+  AlignCenter,
+  AlignRight,
+  Type
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -92,7 +97,6 @@ const BrainDump = () => {
     const updatedPages = pages.filter(page => page.id !== id);
     setPages(updatedPages);
     
-    // If active page is deleted, set the first page as active
     if (activePage.id === id) {
       setActivePage(updatedPages[0]);
     }
@@ -107,7 +111,6 @@ const BrainDump = () => {
     const updatedPage = { ...activePage, content };
     setActivePage(updatedPage);
     
-    // Update the page in the pages array
     setPages(pages.map(page => 
       page.id === activePage.id ? updatedPage : page
     ));
@@ -133,14 +136,12 @@ const BrainDump = () => {
       return;
     }
 
-    // Update the page title in the pages array
     const updatedPages = pages.map(page => 
       page.id === id ? { ...page, title: editingTitle } : page
     );
     
     setPages(updatedPages);
     
-    // If the active page was renamed, update it too
     if (activePage.id === id) {
       setActivePage({ ...activePage, title: editingTitle });
     }
@@ -154,7 +155,6 @@ const BrainDump = () => {
     });
   };
 
-  // Formatting functions
   const insertBulletPoint = () => {
     const textarea = textareaRef.current;
     if (!textarea) return;
@@ -166,7 +166,6 @@ const BrainDump = () => {
     const newText = before + "• " + after;
     handleContentChange(newText);
     
-    // Set cursor position after the bullet
     setTimeout(() => {
       if (textarea) {
         textarea.focus();
@@ -186,7 +185,6 @@ const BrainDump = () => {
     const newText = before + "1. " + after;
     handleContentChange(newText);
     
-    // Set cursor position after the number
     setTimeout(() => {
       if (textarea) {
         textarea.focus();
@@ -206,7 +204,6 @@ const BrainDump = () => {
     const newText = before + "## " + after;
     handleContentChange(newText);
     
-    // Set cursor position after the heading marker
     setTimeout(() => {
       if (textarea) {
         textarea.focus();
@@ -215,7 +212,7 @@ const BrainDump = () => {
     }, 0);
   };
 
-  const applyFormatting = (format: 'bold' | 'italic') => {
+  const applyFormatting = (format: 'bold' | 'italic' | 'underline') => {
     const textarea = textareaRef.current;
     if (!textarea) return;
 
@@ -229,14 +226,16 @@ const BrainDump = () => {
       if (format === 'bold') {
         newText = value.substring(0, selectionStart) + "**" + selectedText + "**" + value.substring(selectionEnd);
         newCursorPos = selectionEnd + 4; // 4 for the two asterisks at start and end
-      } else { // italic
+      } else if (format === 'italic') { // italic
         newText = value.substring(0, selectionStart) + "_" + selectedText + "_" + value.substring(selectionEnd);
         newCursorPos = selectionEnd + 2; // 2 for the underscores at start and end
+      } else { // underline
+        newText = value.substring(0, selectionStart) + "<u>" + selectedText + "</u>" + value.substring(selectionEnd);
+        newCursorPos = selectionEnd + 7; // 7 for the <u> and </u> tags
       }
       
       handleContentChange(newText);
       
-      // Set cursor position after the formatted text
       setTimeout(() => {
         if (textarea) {
           textarea.focus();
@@ -244,21 +243,22 @@ const BrainDump = () => {
         }
       }, 0);
     } else {
-      // If no text is selected, insert placeholders
       let beforeText, afterText;
       
       if (format === 'bold') {
         beforeText = "**";
         afterText = "**";
-      } else { // italic
+      } else if (format === 'italic') { // italic
         beforeText = "_";
         afterText = "_";
+      } else { // underline
+        beforeText = "<u>";
+        afterText = "</u>";
       }
       
       const newText = value.substring(0, selectionStart) + beforeText + afterText + value.substring(selectionEnd);
       handleContentChange(newText);
       
-      // Place cursor between the markers
       setTimeout(() => {
         if (textarea) {
           textarea.focus();
@@ -268,10 +268,9 @@ const BrainDump = () => {
     }
   };
 
-  const handleAlignLeft = () => {
-    // For this simple example, we'll just add a demo notification
+  const handleAlignText = (alignment: 'left' | 'center' | 'right') => {
     toast({
-      title: "Align Left",
+      title: `Align ${alignment}`,
       description: "Text alignment applied",
     });
   };
@@ -348,7 +347,6 @@ const BrainDump = () => {
         </div>
       )}
       
-      {/* Page list */}
       <div className="flex flex-wrap gap-2 mb-4">
         {pages.map(page => (
           <div 
@@ -358,7 +356,6 @@ const BrainDump = () => {
             onClick={() => {
               if (editingPageId !== page.id) {
                 setActivePage(page);
-                // Cancel any ongoing edit when switching pages
                 setEditingPageId(null);
               }
             }}
@@ -430,82 +427,112 @@ const BrainDump = () => {
         ))}
       </div>
       
-      {/* Formatting Toolbar */}
-      <div className="flex items-center gap-1 p-2 bg-gray-50 rounded-md border mb-2">
-        <Button 
-          variant="ghost" 
-          size="sm"
-          className="text-gray-600 hover:text-gray-900 h-8"
-          onClick={() => applyFormatting('bold')}
-          title="Bold"
-        >
-          <Bold className="h-4 w-4" />
-        </Button>
-        <Button 
-          variant="ghost" 
-          size="sm"
-          className="text-gray-600 hover:text-gray-900 h-8"
-          onClick={() => applyFormatting('italic')}
-          title="Italic"
-        >
-          <Italic className="h-4 w-4" />
-        </Button>
-        <div className="w-px h-6 bg-gray-300 mx-1"></div>
-        <Button 
-          variant="ghost" 
-          size="sm"
-          className="text-gray-600 hover:text-gray-900 h-8"
-          onClick={insertHeading}
-          title="Heading"
-        >
-          <Heading className="h-4 w-4" />
-        </Button>
-        <div className="w-px h-6 bg-gray-300 mx-1"></div>
-        <Button 
-          variant="ghost" 
-          size="sm"
-          className="text-gray-600 hover:text-gray-900 h-8"
-          onClick={insertBulletPoint}
-          title="Bullet List"
-        >
-          <List className="h-4 w-4" />
-        </Button>
-        <Button 
-          variant="ghost" 
-          size="sm"
-          className="text-gray-600 hover:text-gray-900 h-8"
-          onClick={insertNumberedList}
-          title="Numbered List"
-        >
-          <ListOrdered className="h-4 w-4" />
-        </Button>
-        <div className="w-px h-6 bg-gray-300 mx-1"></div>
-        <Button 
-          variant="ghost" 
-          size="sm"
-          className="text-gray-600 hover:text-gray-900 h-8"
-          onClick={handleAlignLeft}
-          title="Align Left"
-        >
-          <AlignLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex-1"></div>
-        <div className="text-xs text-gray-500">
-          Simple formatting tools
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-medium">Brain Dump Of Ideas</h2>
         </div>
+        
+        <div className="flex items-center gap-1 p-2 bg-gray-50 rounded-t-md border border-b-0 mb-0">
+          <div className="flex items-center gap-1 flex-wrap">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="text-gray-600 hover:text-gray-900 h-8"
+              onClick={() => applyFormatting('bold')}
+              title="Bold"
+            >
+              <Bold className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="text-gray-600 hover:text-gray-900 h-8"
+              onClick={() => applyFormatting('italic')}
+              title="Italic"
+            >
+              <Italic className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="text-gray-600 hover:text-gray-900 h-8"
+              onClick={() => applyFormatting('underline')}
+              title="Underline"
+            >
+              <Underline className="h-4 w-4" />
+            </Button>
+            <div className="w-px h-6 bg-gray-300 mx-1"></div>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="text-gray-600 hover:text-gray-900 h-8"
+              onClick={insertHeading}
+              title="Heading"
+            >
+              <Heading className="h-4 w-4" />
+            </Button>
+            <div className="w-px h-6 bg-gray-300 mx-1"></div>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="text-gray-600 hover:text-gray-900 h-8"
+              onClick={insertBulletPoint}
+              title="Bullet List"
+            >
+              <List className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="text-gray-600 hover:text-gray-900 h-8"
+              onClick={insertNumberedList}
+              title="Numbered List"
+            >
+              <ListOrdered className="h-4 w-4" />
+            </Button>
+            <div className="w-px h-6 bg-gray-300 mx-1"></div>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="text-gray-600 hover:text-gray-900 h-8"
+              onClick={() => handleAlignText('left')}
+              title="Align Left"
+            >
+              <AlignLeft className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="text-gray-600 hover:text-gray-900 h-8"
+              onClick={() => handleAlignText('center')}
+              title="Align Center"
+            >
+              <AlignCenter className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="text-gray-600 hover:text-gray-900 h-8"
+              onClick={() => handleAlignText('right')}
+              title="Align Right"
+            >
+              <AlignRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+        
+        <Card className="mt-0 rounded-t-none">
+          <CardContent className="p-6">
+            <Textarea
+              ref={textareaRef}
+              placeholder="Write your thoughts here..."
+              className="min-h-[400px] resize-none border-0 focus-visible:ring-0"
+              value={activePage.content}
+              onChange={(e) => handleContentChange(e.target.value)}
+            />
+          </CardContent>
+        </Card>
       </div>
-      
-      <Card>
-        <CardContent className="p-6">
-          <Textarea
-            ref={textareaRef}
-            placeholder="Write your thoughts here..."
-            className="min-h-[400px] resize-none border-0 focus-visible:ring-0"
-            value={activePage.content}
-            onChange={(e) => handleContentChange(e.target.value)}
-          />
-        </CardContent>
-      </Card>
     </div>
   );
 };
