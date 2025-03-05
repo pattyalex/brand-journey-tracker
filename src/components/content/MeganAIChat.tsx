@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SendIcon, XIcon } from "lucide-react";
+import { toast } from "sonner";
 
 interface Message {
   id: string;
@@ -34,6 +35,7 @@ const MeganAIChat = ({ onClose, contextData }: MeganAIChatProps) => {
   
   const [inputValue, setInputValue] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiKey, setApiKey] = useState<string | null>(localStorage.getItem("openai_api_key"));
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -53,6 +55,84 @@ const MeganAIChat = ({ onClose, contextData }: MeganAIChatProps) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const generateSystemPrompt = () => {
+    let systemPrompt = "You are Megan, an AI content creation assistant. You help creators with content ideas, scripts, format suggestions, and filming/production advice.";
+    
+    if (contextData) {
+      systemPrompt += " The user is currently working on content with the following details:";
+      if (contextData.title) systemPrompt += `\nTitle: ${contextData.title}`;
+      if (contextData.script) systemPrompt += `\nScript: ${contextData.script}`;
+      if (contextData.format) systemPrompt += `\nFormat: ${contextData.format}`;
+      if (contextData.shootDetails) systemPrompt += `\nShoot Details: ${contextData.shootDetails}`;
+    }
+    
+    systemPrompt += "\nProvide concise, specific, and actionable advice. Focus on content creation best practices, engagement tips, and practical suggestions.";
+    
+    return systemPrompt;
+  };
+
+  const saveApiKey = (key: string) => {
+    localStorage.setItem("openai_api_key", key);
+    setApiKey(key);
+    toast.success("API key saved successfully!");
+  };
+
+  const handleApiKeySubmit = () => {
+    const key = prompt("Please enter your OpenAI API key:");
+    if (key && key.trim()) {
+      saveApiKey(key.trim());
+    }
+  };
+
+  const callOpenAiApi = async (userMessage: string) => {
+    if (!apiKey) {
+      return "To enable real AI responses, please add your OpenAI API key. Click the 'Add API Key' button below.";
+    }
+
+    try {
+      const systemPrompt = generateSystemPrompt();
+      const conversationHistory = messages.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+      
+      // Add user's new message
+      conversationHistory.push({
+        role: "user" as const,
+        content: userMessage
+      });
+
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini", // Using a relatively fast and cheaper model
+          messages: [
+            { role: "system", content: systemPrompt },
+            ...conversationHistory
+          ],
+          temperature: 0.7,
+          max_tokens: 1000
+        })
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        console.error("OpenAI API error:", data);
+        throw new Error(data.error?.message || "Error calling OpenAI API");
+      }
+      
+      return data.choices[0].message.content;
+    } catch (error) {
+      console.error("Error calling OpenAI API:", error);
+      return "Sorry, I encountered an error. Please try again later or check your API key.";
+    }
+  };
+
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     
@@ -69,33 +149,24 @@ const MeganAIChat = ({ onClose, contextData }: MeganAIChatProps) => {
     setInputValue("");
     setIsSubmitting(true);
     
-    // Simulate AI response
-    setTimeout(() => {
-      let response: string;
-      
-      // Generate contextual response based on user input
-      if (inputValue.toLowerCase().includes("idea") || inputValue.toLowerCase().includes("suggest")) {
-        response = "I see you're working on a content idea! I can help you develop it further. What type of content are you thinking about?";
-      } else if (inputValue.toLowerCase().includes("script")) {
-        response = "Need help with your script? I can suggest hooks, dialog, or help structure your content for better engagement.";
-      } else if (inputValue.toLowerCase().includes("format")) {
-        response = "For your format, consider what works best on your target platform. For example, short-form educational content works well on TikTok and Instagram Reels.";
-      } else if (inputValue.toLowerCase().includes("shoot") || inputValue.toLowerCase().includes("filming")) {
-        response = "For your shoot, make sure you have good lighting and clear audio. These are the two most important factors for professional-looking content.";
-      } else {
-        response = "I'm here to help with your content creation! I can suggest ideas, help with scripts, recommend formats, or offer shooting tips. What would you like assistance with?";
-      }
+    try {
+      // Get AI response from OpenAI
+      const aiResponse = await callOpenAiApi(userMessage.content);
       
       const assistantMessage: Message = {
         id: Date.now().toString(),
-        content: response,
+        content: aiResponse,
         role: "assistant",
         timestamp: new Date(),
       };
       
       setMessages((prev) => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error("Error getting AI response:", error);
+      toast.error("Failed to get a response from Megan AI");
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -147,24 +218,35 @@ const MeganAIChat = ({ onClose, contextData }: MeganAIChatProps) => {
       </div>
       
       <div className="p-3 border-t border-gray-200">
-        <form onSubmit={handleSubmit} className="flex items-end gap-2">
-          <Textarea
-            ref={inputRef}
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Ask Megan about your content idea..."
-            className="min-h-[70px] resize-none text-sm"
-          />
-          <Button 
-            type="submit" 
-            size="sm" 
-            disabled={isSubmitting || !inputValue.trim()}
-            className="h-8 w-8 shrink-0 rounded-full"
-          >
-            <SendIcon className="h-4 w-4" />
-          </Button>
-        </form>
+        {!apiKey ? (
+          <div className="flex flex-col gap-3 items-center justify-center py-2">
+            <p className="text-sm text-muted-foreground text-center">
+              To enable real AI responses with Megan, you need to add your OpenAI API key.
+            </p>
+            <Button onClick={handleApiKeySubmit} variant="outline" size="sm">
+              Add API Key
+            </Button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex items-end gap-2">
+            <Textarea
+              ref={inputRef}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Ask Megan about your content idea..."
+              className="min-h-[70px] resize-none text-sm"
+            />
+            <Button 
+              type="submit" 
+              size="sm" 
+              disabled={isSubmitting || !inputValue.trim()}
+              className="h-8 w-8 shrink-0 rounded-full"
+            >
+              <SendIcon className="h-4 w-4" />
+            </Button>
+          </form>
+        )}
       </div>
     </div>
   );
