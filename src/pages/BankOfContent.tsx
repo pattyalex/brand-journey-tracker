@@ -18,7 +18,17 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { getTagColorClasses } from "@/utils/tagColors";
 import SimpleTextFormattingToolbar from "@/components/SimpleTextFormattingToolbar";
 import { Edit, Trash2 } from "lucide-react";
-import AlertDialog from "@/components/ui/alert-dialog";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from "@/components/ui/alert-dialog";
 
 export type Pillar = {
   id: string;
