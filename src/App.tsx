@@ -17,6 +17,8 @@ import BankOfContent from "./pages/BankOfContent";
 import ContentCalendar from "./pages/ContentCalendar";
 import StrategyGrowth from "./pages/StrategyGrowth";
 import IncomeTracker from "./pages/IncomeTracker";
+import TaskBoard from "./pages/TaskBoard";
+import Help from "./pages/Help";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +44,8 @@ const App = () => (
           <Route path="/content-calendar" element={<ContentCalendar />} />
           <Route path="/strategy-growth" element={<StrategyGrowth />} />
           <Route path="/income-tracker" element={<IncomeTracker />} />
+          <Route path="/task-board" element={<TaskBoard />} />
+          <Route path="/help" element={<Help />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
