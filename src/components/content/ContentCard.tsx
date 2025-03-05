@@ -5,7 +5,7 @@ import {
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, Pencil, Calendar } from "lucide-react";
+import { Trash2, Pencil, Calendar, Archive } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
@@ -19,6 +19,7 @@ interface ContentCardProps {
   onDeleteContent: (contentId: string) => void;
   onMoveContent: (toPillarId: string, contentId: string) => void;
   onEditContent: (contentId: string) => void;
+  onArchiveContent?: (contentId: string) => void;
 }
 
 const ContentCard = ({
@@ -27,8 +28,15 @@ const ContentCard = ({
   pillar,
   pillars,
   onDeleteContent,
-  onEditContent
+  onEditContent,
+  onArchiveContent
 }: ContentCardProps) => {
+  const handleArchive = () => {
+    if (onArchiveContent) {
+      onArchiveContent(content.id);
+    }
+  };
+
   return (
     <Draggable key={content.id} draggableId={content.id} index={index}>
       {(provided, snapshot) => (
@@ -73,6 +81,17 @@ const ContentCard = ({
             
             <CardFooter className="p-4 pt-0 flex justify-end">
               <div className="flex gap-2">
+                {onArchiveContent && (
+                  <Button 
+                    variant="ghost" 
+                    size="xs"
+                    onClick={handleArchive}
+                    aria-label="Archive"
+                    className="h-7 w-7 p-0"
+                  >
+                    <Archive className="h-3.5 w-3.5" />
+                  </Button>
+                )}
                 <Button 
                   variant="ghost" 
                   size="xs"
