@@ -31,20 +31,13 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
     localStorage.setItem(`sidebar-expanded-${item.title}`, JSON.stringify(isExpanded));
   }, [isExpanded, item.title]);
   
-  const handleMenuClick = (e: React.MouseEvent) => {
-    if (item.subItems && item.subItems.length > 0) {
-      e.preventDefault();
-      setIsExpanded(!isExpanded);
-      
-      // Only navigate to the item's URL when clicking on the menu item text, not the arrow
-      if (!isExpanded && e.currentTarget === e.target) {
-        navigate(item.url);
-      }
-    }
+  const handleMenuClick = () => {
+    // When clicking on the menu item text, navigate to its URL
+    navigate(item.url);
   };
   
   const handleArrowClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent the parent handleMenuClick from firing
+    e.stopPropagation(); // Prevent the parent click from firing
     setIsExpanded(!isExpanded);
   };
 
@@ -54,7 +47,10 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
         <a 
           href={item.url} 
           className="flex items-center gap-2"
-          onClick={handleMenuClick}
+          onClick={(e) => {
+            e.preventDefault();
+            handleMenuClick();
+          }}
         >
           <item.icon size={20} />
           <span>{item.title}</span>
