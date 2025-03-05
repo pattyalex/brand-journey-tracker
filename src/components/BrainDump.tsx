@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -432,12 +433,13 @@ const BrainDump = () => {
           <h2 className="text-lg font-medium">Brain Dump Of Ideas</h2>
         </div>
         
-        <div className="flex items-center gap-1 p-3 bg-purple-100 rounded-t-md border border-purple-300 border-b-0 mb-0 shadow-md">
-          <div className="flex items-center gap-2 flex-wrap">
+        {/* Make the formatting toolbar more prominent with a stronger border and background */}
+        <div className="flex items-center gap-1 p-2 bg-gray-100 rounded-t-md border border-gray-300 border-b-0 mb-0">
+          <div className="flex items-center gap-1 flex-wrap">
             <Button 
               variant="ghost" 
               size="sm"
-              className="text-purple-800 hover:text-purple-900 h-8 bg-white border border-purple-200 shadow-sm"
+              className="text-gray-600 hover:text-gray-900 h-8 bg-white border border-gray-200 shadow-sm"
               onClick={() => applyFormatting('bold')}
               title="Bold"
             >
@@ -446,7 +448,7 @@ const BrainDump = () => {
             <Button 
               variant="ghost" 
               size="sm"
-              className="text-purple-800 hover:text-purple-900 h-8 bg-white border border-purple-200 shadow-sm"
+              className="text-gray-600 hover:text-gray-900 h-8 bg-white border border-gray-200 shadow-sm"
               onClick={() => applyFormatting('italic')}
               title="Italic"
             >
@@ -455,27 +457,27 @@ const BrainDump = () => {
             <Button 
               variant="ghost" 
               size="sm"
-              className="text-purple-800 hover:text-purple-900 h-8 bg-white border border-purple-200 shadow-sm"
+              className="text-gray-600 hover:text-gray-900 h-8 bg-white border border-gray-200 shadow-sm"
               onClick={() => applyFormatting('underline')}
               title="Underline"
             >
               <Underline className="h-4 w-4" />
             </Button>
-            <div className="w-px h-6 bg-purple-300 mx-1"></div>
+            <div className="w-px h-6 bg-gray-300 mx-1"></div>
             <Button 
               variant="ghost" 
               size="sm"
-              className="text-purple-800 hover:text-purple-900 h-8 bg-white border border-purple-200 shadow-sm"
+              className="text-gray-600 hover:text-gray-900 h-8 bg-white border border-gray-200 shadow-sm"
               onClick={insertHeading}
               title="Heading"
             >
               <Heading className="h-4 w-4" />
             </Button>
-            <div className="w-px h-6 bg-purple-300 mx-1"></div>
+            <div className="w-px h-6 bg-gray-300 mx-1"></div>
             <Button 
               variant="ghost" 
               size="sm"
-              className="text-purple-800 hover:text-purple-900 h-8 bg-white border border-purple-200 shadow-sm"
+              className="text-gray-600 hover:text-gray-900 h-8 bg-white border border-gray-200 shadow-sm"
               onClick={insertBulletPoint}
               title="Bullet List"
             >
@@ -484,17 +486,17 @@ const BrainDump = () => {
             <Button 
               variant="ghost" 
               size="sm"
-              className="text-purple-800 hover:text-purple-900 h-8 bg-white border border-purple-200 shadow-sm"
+              className="text-gray-600 hover:text-gray-900 h-8 bg-white border border-gray-200 shadow-sm"
               onClick={insertNumberedList}
               title="Numbered List"
             >
               <ListOrdered className="h-4 w-4" />
             </Button>
-            <div className="w-px h-6 bg-purple-300 mx-1"></div>
+            <div className="w-px h-6 bg-gray-300 mx-1"></div>
             <Button 
               variant="ghost" 
               size="sm"
-              className="text-purple-800 hover:text-purple-900 h-8 bg-white border border-purple-200 shadow-sm"
+              className="text-gray-600 hover:text-gray-900 h-8 bg-white border border-gray-200 shadow-sm"
               onClick={() => handleAlignText('left')}
               title="Align Left"
             >
@@ -503,7 +505,7 @@ const BrainDump = () => {
             <Button 
               variant="ghost" 
               size="sm"
-              className="text-purple-800 hover:text-purple-900 h-8 bg-white border border-purple-200 shadow-sm"
+              className="text-gray-600 hover:text-gray-900 h-8 bg-white border border-gray-200 shadow-sm"
               onClick={() => handleAlignText('center')}
               title="Align Center"
             >
@@ -512,7 +514,7 @@ const BrainDump = () => {
             <Button 
               variant="ghost" 
               size="sm"
-              className="text-purple-800 hover:text-purple-900 h-8 bg-white border border-purple-200 shadow-sm"
+              className="text-gray-600 hover:text-gray-900 h-8 bg-white border border-gray-200 shadow-sm"
               onClick={() => handleAlignText('right')}
               title="Align Right"
             >
