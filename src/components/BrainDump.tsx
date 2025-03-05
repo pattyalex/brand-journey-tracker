@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -115,7 +114,6 @@ const BrainDump = () => {
   };
 
   const handleContentChange = (content: string) => {
-    // Store the raw content without escaping
     const updatedPage = { ...activePage, content };
     setActivePage(updatedPage);
     
@@ -388,6 +386,18 @@ const BrainDump = () => {
       title: `Align ${alignment}`,
       description: "Text alignment applied",
     });
+  };
+
+  const handleTextSelection = (e: React.SyntheticEvent<HTMLTextAreaElement>) => {
+    const textarea = e.target as HTMLTextAreaElement;
+    const { selectionStart, selectionEnd } = textarea;
+    const selectedText = textarea.value.substring(selectionStart, selectionEnd);
+    
+    if (selectedText) {
+      setSelectedFormat('paragraph');
+    } else {
+      setSelectedFormat(null);
+    }
   };
 
   return (
@@ -745,10 +755,11 @@ const BrainDump = () => {
             <CardContent className="p-6">
               <Textarea
                 ref={textareaRef}
-                placeholder="Write your thoughts here..."
+                placeholder="Start writing your ideas here... This is a space for you to freely brainstorm, jot down random thoughts, or draft content ideas without any structure. Just let your creativity flow!"
                 className="min-h-[400px] resize-none border-0 focus-visible:ring-0"
                 value={activePage.content}
                 onChange={(e) => handleContentChange(e.target.value)}
+                onTextSelect={handleTextSelection}
               />
             </CardContent>
           </Card>
