@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import {
 import TagsInput from "./TagsInput";
 import PlatformsInput from "./PlatformsInput";
 import DateSchedulePicker from "./DateSchedulePicker";
+import MeganAIChat from "./MeganAIChat";
 
 interface IdeaCreationDialogProps {
   open: boolean;
@@ -76,113 +78,150 @@ const IdeaCreationDialog = ({
   isEditMode,
   dialogTitle = "Create New Idea"
 }: IdeaCreationDialogProps) => {
+  const [isMeganOpen, setIsMeganOpen] = useState(false);
+  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[650px] md:max-w-[750px] max-h-[90vh]">
-        <DialogHeader>
-          <DialogTitle>{dialogTitle}</DialogTitle>
-        </DialogHeader>
-        
-        <ScrollArea className="max-h-[calc(90vh-140px)] pr-6">
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="idea-title">Title</Label>
-              <Input
-                id="idea-title"
-                value={title}
-                onChange={(e) => onTitleChange(e.target.value)}
-                placeholder="Enter a catchy hook for your idea..."
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="develop-script">Script</Label>
-              <Textarea
-                id="develop-script"
-                value={scriptText}
-                onChange={(e) => onScriptTextChange(e.target.value)}
-                placeholder="Write your script here..."
-                className="min-h-[120px] resize-y"
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="format-text">Format</Label>
-              <Textarea
-                id="format-text"
-                value={formatText}
-                onChange={(e) => onFormatTextChange(e.target.value)}
-                placeholder="Describe how you want to present your script (e.g., POV skit, educational, storytelling, aesthetic montage)..."
-                className="min-h-[100px] resize-y"
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="shoot-details">Shoot Details</Label>
-              <Textarea
-                id="shoot-details"
-                value={shootDetails}
-                onChange={(e) => onShootDetailsChange(e.target.value)}
-                placeholder="Enter details about the shoot, such as location, outfits, props needed..."
-                className="min-h-[100px] resize-y"
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="caption-text">Caption</Label>
-              <Textarea
-                id="caption-text"
-                value={captionText}
-                onChange={(e) => onCaptionTextChange(e.target.value)}
-                placeholder="Draft a caption for your content when posting to social media platforms..."
-                className="min-h-[100px] resize-y"
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="platforms">Platforms</Label>
-              <PlatformsInput
-                platforms={platforms}
-                currentPlatform={currentPlatform}
-                onPlatformChange={onCurrentPlatformChange}
-                onAddPlatform={onAddPlatform}
-                onRemovePlatform={onRemovePlatform}
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="tags">Tags</Label>
-              <TagsInput
-                tags={tags}
-                currentTag={currentTag}
-                onTagChange={onCurrentTagChange}
-                onAddTag={onAddTag}
-                onRemoveTag={onRemoveTag}
-                placeholder="Add tags (e.g., To Film, To Edit, To Post)"
-              />
-            </div>
-            
-            {onScheduledDateChange && (
+      <DialogContent 
+        className={`max-h-[90vh] transition-all duration-300 ${
+          isMeganOpen 
+            ? "sm:max-w-[900px] md:max-w-[1100px] grid grid-cols-[3fr,2fr] relative" 
+            : "sm:max-w-[650px] md:max-w-[750px]"
+        }`}
+      >
+        <div className={`${isMeganOpen ? "pr-4" : ""}`}>
+          <DialogHeader className="relative">
+            <DialogTitle>{dialogTitle}</DialogTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute right-0 top-0 text-green-500 hover:text-green-600 hover:bg-green-50 font-medium"
+              onClick={() => setIsMeganOpen(!isMeganOpen)}
+            >
+              {isMeganOpen ? "Hide Megan" : (
+                <div className="flex items-center gap-2">
+                  <span>Ask Megan</span>
+                  <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white">
+                    M
+                  </div>
+                </div>
+              )}
+            </Button>
+          </DialogHeader>
+          
+          <ScrollArea className="max-h-[calc(90vh-140px)] pr-6">
+            <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="scheduled-date">Schedule to Calendar</Label>
-                <DateSchedulePicker 
-                  date={scheduledDate} 
-                  onDateChange={onScheduledDateChange}
-                  label=""
+                <Label htmlFor="idea-title">Title</Label>
+                <Input
+                  id="idea-title"
+                  value={title}
+                  onChange={(e) => onTitleChange(e.target.value)}
+                  placeholder="Enter a catchy hook for your idea..."
                 />
               </div>
-            )}
-          </div>
-        </ScrollArea>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="develop-script">Script</Label>
+                <Textarea
+                  id="develop-script"
+                  value={scriptText}
+                  onChange={(e) => onScriptTextChange(e.target.value)}
+                  placeholder="Write your script here..."
+                  className="min-h-[120px] resize-y"
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="format-text">Format</Label>
+                <Textarea
+                  id="format-text"
+                  value={formatText}
+                  onChange={(e) => onFormatTextChange(e.target.value)}
+                  placeholder="Describe how you want to present your script (e.g., POV skit, educational, storytelling, aesthetic montage)..."
+                  className="min-h-[100px] resize-y"
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="shoot-details">Shoot Details</Label>
+                <Textarea
+                  id="shoot-details"
+                  value={shootDetails}
+                  onChange={(e) => onShootDetailsChange(e.target.value)}
+                  placeholder="Enter details about the shoot, such as location, outfits, props needed..."
+                  className="min-h-[100px] resize-y"
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="caption-text">Caption</Label>
+                <Textarea
+                  id="caption-text"
+                  value={captionText}
+                  onChange={(e) => onCaptionTextChange(e.target.value)}
+                  placeholder="Draft a caption for your content when posting to social media platforms..."
+                  className="min-h-[100px] resize-y"
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="platforms">Platforms</Label>
+                <PlatformsInput
+                  platforms={platforms}
+                  currentPlatform={currentPlatform}
+                  onPlatformChange={onCurrentPlatformChange}
+                  onAddPlatform={onAddPlatform}
+                  onRemovePlatform={onRemovePlatform}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="tags">Tags</Label>
+                <TagsInput
+                  tags={tags}
+                  currentTag={currentTag}
+                  onTagChange={onCurrentTagChange}
+                  onAddTag={onAddTag}
+                  onRemoveTag={onRemoveTag}
+                  placeholder="Add tags (e.g., To Film, To Edit, To Post)"
+                />
+              </div>
+              
+              {onScheduledDateChange && (
+                <div className="grid gap-2">
+                  <Label htmlFor="scheduled-date">Schedule to Calendar</Label>
+                  <DateSchedulePicker 
+                    date={scheduledDate} 
+                    onDateChange={onScheduledDateChange}
+                    label=""
+                  />
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+          
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={onCancel}>
+              Cancel
+            </Button>
+            <Button onClick={onSave}>
+              {isEditMode ? "Update" : "Create"}
+            </Button>
+          </DialogFooter>
+        </div>
         
-        <DialogFooter className="mt-4">
-          <Button variant="outline" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button onClick={onSave}>
-            {isEditMode ? "Update" : "Create"}
-          </Button>
-        </DialogFooter>
+        {isMeganOpen && (
+          <MeganAIChat 
+            onClose={() => setIsMeganOpen(false)} 
+            contextData={{
+              title,
+              script: scriptText,
+              format: formatText,
+              shootDetails
+            }}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );
