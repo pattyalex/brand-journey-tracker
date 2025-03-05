@@ -21,9 +21,9 @@ export type Pillar = {
 
 const BankOfContent = () => {
   const [pillars, setPillars] = useState<Pillar[]>([
-    { id: "1", name: "Education", content: [], writingSpace: "" },
-    { id: "2", name: "Inspiration", content: [], writingSpace: "" },
-    { id: "3", name: "Entertainment", content: [], writingSpace: "" },
+    { id: "1", name: "Pillar 1", content: [], writingSpace: "" },
+    { id: "2", name: "Pillar 2", content: [], writingSpace: "" },
+    { id: "3", name: "Pillar 3", content: [], writingSpace: "" },
   ]);
   const [activeTab, setActiveTab] = useState("1");
   const [searchQuery, setSearchQuery] = useState("");
