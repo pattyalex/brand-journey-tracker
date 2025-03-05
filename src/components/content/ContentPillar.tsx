@@ -26,6 +26,7 @@ interface ContentPillarProps {
   onDelete: () => void;
   onDeleteContent: (contentId: string) => void;
   onMoveContent: (toPillarId: string, contentId: string) => void;
+  onEditContent: (contentId: string) => void;
   searchQuery: string;
 }
 
@@ -36,6 +37,7 @@ const ContentPillar = ({
   onDelete,
   onDeleteContent,
   onMoveContent,
+  onEditContent,
   searchQuery
 }: ContentPillarProps) => {
   const [isRenaming, setIsRenaming] = useState(false);
@@ -158,7 +160,7 @@ const ContentPillar = ({
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => console.log("Edit content", content.id, parseContentData(content.url))}
+                      onClick={() => onEditContent(content.id)}
                     >
                       <Pencil className="h-4 w-4 mr-1" /> Edit
                     </Button>

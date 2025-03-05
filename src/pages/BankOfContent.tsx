@@ -49,6 +49,8 @@ const BankOfContent = () => {
   const [newIdeaTags, setNewIdeaTags] = useState<string[]>([]);
   const [currentTag, setCurrentTag] = useState("");
   const [developIdeaMode, setDevelopIdeaMode] = useState(false);
+  const [editingContent, setEditingContent] = useState<ContentItem | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (activeTab && writingText) {
@@ -272,6 +274,17 @@ const BankOfContent = () => {
         ? {...p, content: p.content.filter(c => c.id !== contentId)} 
         : p
     ));
+    
+    try {
+      const updatedPillar = pillars.find(p => p.id === pillarId);
+      if (updatedPillar) {
+        const updatedContent = updatedPillar.content.filter(c => c.id !== contentId);
+        localStorage.setItem(`pillar-content-${pillarId}`, JSON.stringify(updatedContent));
+      }
+    } catch (error) {
+      console.error("Failed to update localStorage after deletion:", error);
+    }
+    
     toast.success("Content deleted");
   };
 
@@ -303,6 +316,48 @@ const BankOfContent = () => {
     
     localStorage.setItem(`writing-${activeTab}`, writingText);
     toast.success("Your writing has been saved for later");
+  };
+
+  const editContent = (pillarId: string, contentId: string) => {
+    const pillar = pillars.find(p => p.id === pillarId);
+    if (!pillar) return;
+    
+    const content = pillar.content.find(c => c.id === contentId);
+    if (!content) return;
+    
+    setEditingContent(content);
+    setIsEditing(true);
+  };
+  
+  const updateContent = (pillarId: string, updatedContent: ContentItem) => {
+    const updatedPillars = pillars.map(p => 
+      p.id === pillarId 
+        ? {
+            ...p, 
+            content: p.content.map(c => 
+              c.id === updatedContent.id ? updatedContent : c
+            )
+          } 
+        : p
+    );
+    
+    setPillars(updatedPillars);
+    
+    try {
+      const pillarContent = updatedPillars.find(p => p.id === pillarId)?.content || [];
+      localStorage.setItem(`pillar-content-${pillarId}`, JSON.stringify(pillarContent));
+    } catch (error) {
+      console.error("Failed to save updated content to localStorage:", error);
+    }
+    
+    setEditingContent(null);
+    setIsEditing(false);
+    toast.success("Content updated successfully");
+  };
+
+  const cancelEditing = () => {
+    setEditingContent(null);
+    setIsEditing(false);
   };
 
   const filteredContent = pillars.map(pillar => ({
@@ -400,22 +455,35 @@ const BankOfContent = () => {
                       <Lightbulb className="h-5 w-5 mr-2" /> 
                       Develop Your Ideas
                     </h2>
-                    <Button 
-                      variant="default" 
-                      size="sm"
-                      className="bg-[#8B6B4E] hover:bg-[#7A5C3F]"
-                      onClick={() => {
-                        setNewIdeaTitle(`Idea - ${new Date().toLocaleDateString()}`);
-                        setNewIdeaTags([]);
-                        setSelectedText("");
-                        setDevelopScriptText("");
-                        setShootDetails("");
-                        setShowNewIdeaDialog(true);
-                      }}
-                    >
-                      <FileText className="h-4 w-4 mr-2" />
-                      Add New Idea
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      {isEditing ? (
+                        <ContentUploader
+                          pillarId={pillar.id}
+                          onContentAdded={addContentToPillar}
+                          onContentUpdated={updateContent}
+                          contentToEdit={editingContent}
+                          isEditMode={true}
+                          onCancelEdit={cancelEditing}
+                        />
+                      ) : (
+                        <Button 
+                          variant="default" 
+                          size="sm"
+                          className="bg-[#8B6B4E] hover:bg-[#7A5C3F]"
+                          onClick={() => {
+                            setNewIdeaTitle(`Idea - ${new Date().toLocaleDateString()}`);
+                            setNewIdeaTags([]);
+                            setSelectedText("");
+                            setDevelopScriptText("");
+                            setShootDetails("");
+                            setShowNewIdeaDialog(true);
+                          }}
+                        >
+                          <FileText className="h-4 w-4 mr-2" />
+                          Add New Idea
+                        </Button>
+                      )}
+                    </div>
                   </div>
                   <ContentPillar
                     pillar={{...pillar}}
@@ -424,6 +492,7 @@ const BankOfContent = () => {
                     onDelete={() => deletePillar(pillar.id)}
                     onDeleteContent={(contentId) => deleteContent(pillar.id, contentId)}
                     onMoveContent={(toPillarId, contentId) => moveContent(pillar.id, toPillarId, contentId)}
+                    onEditContent={(contentId) => editContent(pillar.id, contentId)}
                     searchQuery={searchQuery}
                   />
                 </div>

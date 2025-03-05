@@ -1,10 +1,10 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { FileText, X, Plus, Tag } from "lucide-react";
+import { FileText, X, Plus, Tag, Pencil } from "lucide-react";
 import { ContentItem } from "@/types/content";
 import { getTagColorClasses } from "@/utils/tagColors";
 import {
@@ -21,9 +21,20 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 interface ContentUploaderProps {
   pillarId: string;
   onContentAdded: (pillarId: string, content: ContentItem) => void;
+  onContentUpdated?: (pillarId: string, content: ContentItem) => void;
+  contentToEdit?: ContentItem | null;
+  isEditMode?: boolean;
+  onCancelEdit?: () => void;
 }
 
-const ContentUploader = ({ pillarId, onContentAdded }: ContentUploaderProps) => {
+const ContentUploader = ({ 
+  pillarId, 
+  onContentAdded, 
+  onContentUpdated,
+  contentToEdit = null,
+  isEditMode = false,
+  onCancelEdit
+}: ContentUploaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [textContent, setTextContent] = useState("");
@@ -31,6 +42,35 @@ const ContentUploader = ({ pillarId, onContentAdded }: ContentUploaderProps) => 
   const [tagsList, setTagsList] = useState<string[]>([]);
   const [currentPlatform, setCurrentPlatform] = useState("");
   const [platformsList, setPlatformsList] = useState<string[]>([]);
+  
+  // Load content data if in edit mode
+  useEffect(() => {
+    if (contentToEdit && isEditMode) {
+      setIsOpen(true);
+      setTitle(contentToEdit.title);
+      
+      // Handle different content formats
+      try {
+        if (contentToEdit.format === 'text') {
+          // Try to parse the content if it's in JSON format
+          try {
+            const parsedContent = JSON.parse(contentToEdit.url);
+            setTextContent(parsedContent.script || '');
+          } catch {
+            // If not JSON, use as-is
+            setTextContent(contentToEdit.url);
+          }
+        }
+        
+        // Set tags and platforms
+        setTagsList(contentToEdit.tags || []);
+        setPlatformsList(contentToEdit.platforms || []);
+        
+      } catch (error) {
+        console.error("Error loading content data for editing:", error);
+      }
+    }
+  }, [contentToEdit, isEditMode]);
 
   const handleAddTag = () => {
     if (currentTag.trim() && !tagsList.includes(currentTag.trim())) {
@@ -61,21 +101,31 @@ const ContentUploader = ({ pillarId, onContentAdded }: ContentUploaderProps) => 
       return;
     }
 
-    // Create content item
-    const newContent: ContentItem = {
-      id: `content-${Date.now()}`,
+    // Create or update content item
+    const contentItem: ContentItem = {
+      id: contentToEdit ? contentToEdit.id : `content-${Date.now()}`,
       title,
       description: textContent.slice(0, 100) + (textContent.length > 100 ? "..." : ""), // First 100 chars as description
       format: "text",
       url: textContent, // Store the text content in the url field
-      dateCreated: new Date(),
+      dateCreated: contentToEdit ? contentToEdit.dateCreated : new Date(),
       tags: tagsList,
       platforms: platformsList.length > 0 ? platformsList : undefined,
     };
 
-    onContentAdded(pillarId, newContent);
+    if (isEditMode && onContentUpdated && contentToEdit) {
+      onContentUpdated(pillarId, contentItem);
+    } else {
+      onContentAdded(pillarId, contentItem);
+    }
+    
     resetForm();
     setIsOpen(false);
+    
+    // Call onCancelEdit if in edit mode to reset parent component state
+    if (isEditMode && onCancelEdit) {
+      onCancelEdit();
+    }
   };
 
   const resetForm = () => {
@@ -87,18 +137,39 @@ const ContentUploader = ({ pillarId, onContentAdded }: ContentUploaderProps) => 
     setCurrentPlatform("");
   };
 
+  const handleClose = () => {
+    setIsOpen(false);
+    resetForm();
+    if (isEditMode && onCancelEdit) {
+      onCancelEdit();
+    }
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      setIsOpen(open);
+      if (!open && isEditMode && onCancelEdit) {
+        onCancelEdit();
+      }
+    }}>
       <DialogTrigger asChild>
         <Button>
-          <FileText className="mr-2 h-4 w-4" /> Add New Idea
+          {isEditMode ? (
+            <>
+              <Pencil className="mr-2 h-4 w-4" /> Edit Idea
+            </>
+          ) : (
+            <>
+              <FileText className="mr-2 h-4 w-4" /> Add New Idea
+            </>
+          )}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[525px] max-h-[85vh]">
         <DialogHeader>
-          <DialogTitle>Add New Idea</DialogTitle>
+          <DialogTitle>{isEditMode ? "Edit Idea" : "Add New Idea"}</DialogTitle>
           <DialogDescription>
-            Write down your content ideas and notes
+            {isEditMode ? "Update your content idea" : "Write down your content ideas and notes"}
           </DialogDescription>
         </DialogHeader>
         
@@ -199,11 +270,17 @@ const ContentUploader = ({ pillarId, onContentAdded }: ContentUploaderProps) => 
         </ScrollArea>
         
         <DialogFooter className="mt-4">
-          <Button variant="outline" onClick={() => setIsOpen(false)}>
+          <Button variant="outline" onClick={handleClose}>
             Cancel
           </Button>
           <Button onClick={handleSubmit}>
-            <Plus className="mr-2 h-4 w-4" /> Add Idea
+            {isEditMode ? (
+              "Update Idea"
+            ) : (
+              <>
+                <Plus className="mr-2 h-4 w-4" /> Add Idea
+              </>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
