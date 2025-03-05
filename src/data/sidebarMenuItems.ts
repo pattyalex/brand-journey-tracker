@@ -5,7 +5,7 @@ import { MenuItem } from '@/types/sidebar';
 export const defaultMenuItems: MenuItem[] = [
   { title: 'Dashboard', icon: Home, url: '/', isDeletable: false },
   { 
-    title: 'Projects', 
+    title: 'Workflow', 
     icon: FolderOpen, 
     url: '/projects', 
     isDeletable: false,
