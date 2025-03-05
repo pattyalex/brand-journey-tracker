@@ -198,7 +198,7 @@ const ContentUploader = ({
             
             <div className="grid gap-2">
               <Label htmlFor="content">
-                {isEditMode ? "Script" : "Write your idea"}
+                {isEditMode ? "Script" : "Script"}
               </Label>
               <Textarea
                 id="content"

@@ -526,12 +526,12 @@ const BankOfContent = () => {
                     id="idea-title"
                     value={newIdeaTitle}
                     onChange={(e) => setNewIdeaTitle(e.target.value)}
-                    placeholder="Enter a catchy hook for your idea"
+                    placeholder="Enter a catchy hook for your idea..."
                   />
                 </div>
                 
                 <div className="grid gap-2">
-                  <Label htmlFor="develop-script">Develop Script</Label>
+                  <Label htmlFor="develop-script">Script</Label>
                   <Textarea
                     id="develop-script"
                     value={developScriptText || selectedText}
