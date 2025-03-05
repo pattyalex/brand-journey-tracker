@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -28,6 +29,8 @@ const ContentUploader = ({ pillarId, onContentAdded }: ContentUploaderProps) => 
   const [textContent, setTextContent] = useState("");
   const [currentTag, setCurrentTag] = useState("");
   const [tagsList, setTagsList] = useState<string[]>([]);
+  const [currentPlatform, setCurrentPlatform] = useState("");
+  const [platformsList, setPlatformsList] = useState<string[]>([]);
 
   const handleAddTag = () => {
     if (currentTag.trim() && !tagsList.includes(currentTag.trim())) {
@@ -38,6 +41,17 @@ const ContentUploader = ({ pillarId, onContentAdded }: ContentUploaderProps) => 
 
   const handleRemoveTag = (tagToRemove: string) => {
     setTagsList(tagsList.filter(tag => tag !== tagToRemove));
+  };
+
+  const handleAddPlatform = () => {
+    if (currentPlatform.trim() && !platformsList.includes(currentPlatform.trim())) {
+      setPlatformsList([...platformsList, currentPlatform.trim()]);
+      setCurrentPlatform("");
+    }
+  };
+
+  const handleRemovePlatform = (platformToRemove: string) => {
+    setPlatformsList(platformsList.filter(platform => platform !== platformToRemove));
   };
 
   const handleSubmit = () => {
@@ -56,6 +70,7 @@ const ContentUploader = ({ pillarId, onContentAdded }: ContentUploaderProps) => 
       url: textContent, // Store the text content in the url field
       dateCreated: new Date(),
       tags: tagsList,
+      platforms: platformsList.length > 0 ? platformsList : undefined,
     };
 
     onContentAdded(pillarId, newContent);
@@ -68,6 +83,8 @@ const ContentUploader = ({ pillarId, onContentAdded }: ContentUploaderProps) => 
     setTextContent("");
     setTagsList([]);
     setCurrentTag("");
+    setPlatformsList([]);
+    setCurrentPlatform("");
   };
 
   return (
@@ -110,6 +127,41 @@ const ContentUploader = ({ pillarId, onContentAdded }: ContentUploaderProps) => 
             </div>
             
             <div className="grid gap-2">
+              <Label htmlFor="platforms">Platforms</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="platforms"
+                  value={currentPlatform}
+                  onChange={(e) => setCurrentPlatform(e.target.value)}
+                  placeholder="Where do you want to post this content?"
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddPlatform())}
+                  className="flex-1"
+                />
+                <Button type="button" onClick={handleAddPlatform} variant="outline" size="icon" className="shrink-0">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {platformsList.map((platform, index) => (
+                  <span 
+                    key={index} 
+                    className="bg-primary/10 text-primary text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5"
+                  >
+                    {platform}
+                    <button 
+                      type="button" 
+                      onClick={() => handleRemovePlatform(platform)}
+                      className="text-primary hover:text-primary/80"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+            
+            <div className="grid gap-2">
               <Label htmlFor="tags">Tags</Label>
               <div className="flex gap-2">
                 <Input
@@ -118,13 +170,14 @@ const ContentUploader = ({ pillarId, onContentAdded }: ContentUploaderProps) => 
                   onChange={(e) => setCurrentTag(e.target.value)}
                   placeholder="Add tags (e.g., To Film, To Edit, To Post)"
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                  className="flex-1"
                 />
-                <Button type="button" onClick={handleAddTag} variant="secondary">
-                  <Tag className="h-4 w-4 mr-1" /> Add
+                <Button type="button" onClick={handleAddTag} variant="outline" size="icon" className="shrink-0">
+                  <Plus className="h-4 w-4" />
                 </Button>
               </div>
               
-              <div className="flex flex-wrap gap-1 mt-2">
+              <div className="flex flex-wrap gap-1.5 mt-2">
                 {tagsList.map((tag, index) => (
                   <span 
                     key={index} 

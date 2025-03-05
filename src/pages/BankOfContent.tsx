@@ -126,6 +126,7 @@ const BankOfContent = () => {
       format: "text",
       dateCreated: new Date(),
       tags: newIdeaTags,
+      platforms: selectedPlatforms,
     };
     
     addContentToPillar(activeTab, newIdea);
@@ -513,23 +514,24 @@ const BankOfContent = () => {
                       onChange={(e) => setCurrentPlatform(e.target.value)}
                       placeholder="Where do you want to post this content?"
                       onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addPlatform())}
+                      className="flex-1"
                     />
-                    <Button type="button" onClick={addPlatform} variant="secondary">
-                      <Plus className="h-4 w-4 mr-1" /> Add
+                    <Button type="button" onClick={addPlatform} variant="outline" size="icon" className="shrink-0">
+                      <Plus className="h-4 w-4" />
                     </Button>
                   </div>
                   
-                  <div className="flex flex-wrap gap-1 mt-2">
+                  <div className="flex flex-wrap gap-1.5 mt-2">
                     {selectedPlatforms.map((platform, index) => (
                       <span 
                         key={index} 
-                        className="bg-primary text-primary-foreground text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5"
+                        className="bg-primary/10 text-primary text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5"
                       >
                         {platform}
                         <button 
                           type="button" 
                           onClick={() => removePlatform(platform)}
-                          className="text-primary-foreground hover:text-white/80"
+                          className="text-primary hover:text-primary/80"
                         >
                           <X className="h-3 w-3" />
                         </button>
@@ -547,13 +549,14 @@ const BankOfContent = () => {
                       onChange={(e) => setCurrentTag(e.target.value)}
                       placeholder="Add tags (e.g., To Film, To Edit, To Post)"
                       onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                      className="flex-1"
                     />
-                    <Button type="button" onClick={handleAddTag} variant="secondary">
-                      <Tag className="h-4 w-4 mr-1" /> Add
+                    <Button type="button" onClick={handleAddTag} variant="outline" size="icon" className="shrink-0">
+                      <Plus className="h-4 w-4" />
                     </Button>
                   </div>
                   
-                  <div className="flex flex-wrap gap-1 mt-2">
+                  <div className="flex flex-wrap gap-1.5 mt-2">
                     {newIdeaTags.map((tag, index) => (
                       <span 
                         key={index} 
