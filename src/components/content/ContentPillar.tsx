@@ -1,11 +1,13 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
 import { DragDropContext, Droppable, DropResult } from "react-beautiful-dnd";
 import ContentCard from "./ContentCard";
 import { toast } from "sonner";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ContentPillarProps {
   pillar: Pillar;
@@ -26,6 +28,10 @@ const ContentPillar = ({
   searchQuery,
   onReorderContent
 }: ContentPillarProps) => {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(true);
+
   useEffect(() => {
     console.log("ContentPillar received pillar:", pillar.id, pillar.name);
     console.log("ContentPillar content count:", pillar.content.length);
@@ -60,8 +66,45 @@ const ContentPillar = ({
     }
   };
 
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+    }
+  };
+
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setShowLeftArrow(scrollLeft > 0);
+      setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll);
+      // Check initial state
+      handleScroll();
+      // Set right arrow visibility based on content
+      setShowRightArrow(scrollContainer.scrollWidth > scrollContainer.clientWidth);
+    }
+    
+    return () => {
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, [filteredContent]);
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 relative">
       {filteredContent.length === 0 ? (
         <div className="text-center p-8 border border-dashed rounded-lg bg-muted/30">
           <p className="text-muted-foreground">
@@ -71,33 +114,64 @@ const ContentPillar = ({
           </p>
         </div>
       ) : (
-        <ScrollArea className="h-[calc(100vh-320px)]">
-          <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId={`content-cards-${pillar.id}`}>
-              {(provided) => (
-                <div 
-                  {...provided.droppableProps}
-                  ref={provided.innerRef}
-                  className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-4"
-                >
-                  {filteredContent.map((content, index) => (
-                    <ContentCard
-                      key={content.id}
-                      content={content}
-                      index={index}
-                      pillar={pillar}
-                      pillars={pillars}
-                      onDeleteContent={onDeleteContent}
-                      onMoveContent={onMoveContent}
-                      onEditContent={onEditContent}
-                    />
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </DragDropContext>
-        </ScrollArea>
+        <div className="relative">
+          {showLeftArrow && (
+            <Button 
+              onClick={scrollLeft} 
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
+              variant="outline"
+              size="icon"
+              aria-label="Scroll left"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </Button>
+          )}
+          
+          <div 
+            ref={scrollContainerRef} 
+            className="overflow-x-auto pb-4 hide-scrollbar"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            <DragDropContext onDragEnd={onDragEnd}>
+              <Droppable droppableId={`content-cards-${pillar.id}`} direction="horizontal">
+                {(provided) => (
+                  <div 
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                    className="flex space-x-6 min-w-min pb-4 pl-2 pr-2"
+                  >
+                    {filteredContent.map((content, index) => (
+                      <div key={content.id} className="min-w-[450px] max-w-[450px]">
+                        <ContentCard
+                          content={content}
+                          index={index}
+                          pillar={pillar}
+                          pillars={pillars}
+                          onDeleteContent={onDeleteContent}
+                          onMoveContent={onMoveContent}
+                          onEditContent={onEditContent}
+                        />
+                      </div>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
+          </div>
+          
+          {showRightArrow && (
+            <Button 
+              onClick={scrollRight} 
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
+              variant="outline"
+              size="icon"
+              aria-label="Scroll right"
+            >
+              <ChevronRight className="h-6 w-6" />
+            </Button>
+          )}
+        </div>
       )}
     </div>
   );

@@ -82,7 +82,7 @@ const ContentCard = ({
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          className={`${snapshot.isDragging ? 'opacity-70' : 'opacity-100'}`}
+          className={`${snapshot.isDragging ? 'opacity-70' : 'opacity-100'} h-full`}
         >
           <Card 
             className={`overflow-hidden ${snapshot.isDragging ? 'shadow-lg' : ''} relative h-full border-2`}
