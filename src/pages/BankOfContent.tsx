@@ -3,7 +3,32 @@ import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ContentPillar from "@/components/content/ContentPillar";
 import { Button } from "@/components/ui/button";
-import { Pencil, Plus, Search, Lightbulb, FileText, Save, ClipboardCopy, Tag, X, Sparkles, Check } from "lucide-react";
+import { 
+  Pencil, 
+  Plus, 
+  Search, 
+  Lightbulb, 
+  FileText, 
+  Save, 
+  ClipboardCopy, 
+  Tag, 
+  X, 
+  Sparkles, 
+  Check,
+  Bold,
+  Italic,
+  Underline,
+  List,
+  ListOrdered,
+  Heading,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Code,
+  SquareCode,
+  Quote,
+  Strikethrough
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ContentUploader from "@/components/content/ContentUploader";
@@ -38,6 +63,7 @@ const BankOfContent = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
   const [selectedText, setSelectedText] = useState("");
+  const [selectedFormat, setSelectedFormat] = useState<string | null>(null);
   const [developScriptText, setDevelopScriptText] = useState("");
   const [formatText, setFormatText] = useState("");
   const [shootDetails, setShootDetails] = useState("");
@@ -132,6 +158,240 @@ const BankOfContent = () => {
 
   const handleTextSelection = (selectedContent: string) => {
     setSelectedText(selectedContent);
+  };
+
+  const applyFormatting = (format: 'bold' | 'italic' | 'underline' | 'strikethrough' | 'code') => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const { selectionStart, selectionEnd, value } = textarea;
+    const selectedText = value.substring(selectionStart, selectionEnd);
+    
+    if (selectedText) {
+      let newText;
+      let newCursorPos;
+      
+      if (format === 'bold') {
+        newText = value.substring(0, selectionStart) + "**" + selectedText + "**" + value.substring(selectionEnd);
+        newCursorPos = selectionEnd + 4; // 4 for the two asterisks at start and end
+      } else if (format === 'italic') {
+        newText = value.substring(0, selectionStart) + "_" + selectedText + "_" + value.substring(selectionEnd);
+        newCursorPos = selectionEnd + 2; // 2 for the underscores at start and end
+      } else if (format === 'underline') {
+        newText = value.substring(0, selectionStart) + "<u>" + selectedText + "</u>" + value.substring(selectionEnd);
+        newCursorPos = selectionEnd + 7; // 7 for the <u> and </u> tags
+      } else if (format === 'strikethrough') {
+        newText = value.substring(0, selectionStart) + "~~" + selectedText + "~~" + value.substring(selectionEnd);
+        newCursorPos = selectionEnd + 4; // 4 for the ~~ at start and end
+      } else { // code
+        newText = value.substring(0, selectionStart) + "`" + selectedText + "`" + value.substring(selectionEnd);
+        newCursorPos = selectionEnd + 2; // 2 for the backticks at start and end
+      }
+      
+      setWritingText(newText);
+      updateWritingSpace(activeTab, newText);
+      
+      setTimeout(() => {
+        if (textarea) {
+          textarea.focus();
+          textarea.setSelectionRange(newCursorPos, newCursorPos);
+        }
+      }, 0);
+    } else {
+      let beforeText, afterText;
+      
+      if (format === 'bold') {
+        beforeText = "**";
+        afterText = "**";
+      } else if (format === 'italic') {
+        beforeText = "_";
+        afterText = "_";
+      } else if (format === 'underline') {
+        beforeText = "<u>";
+        afterText = "</u>";
+      } else if (format === 'strikethrough') {
+        beforeText = "~~";
+        afterText = "~~";
+      } else { // code
+        beforeText = "`";
+        afterText = "`";
+      }
+      
+      const newText = value.substring(0, selectionStart) + beforeText + afterText + value.substring(selectionEnd);
+      setWritingText(newText);
+      updateWritingSpace(activeTab, newText);
+      
+      setTimeout(() => {
+        if (textarea) {
+          textarea.focus();
+          textarea.setSelectionRange(selectionStart + beforeText.length, selectionStart + beforeText.length);
+        }
+      }, 0);
+    }
+  };
+
+  const insertBulletPoint = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const { selectionStart, selectionEnd, value } = textarea;
+    const before = value.substring(0, selectionStart);
+    const after = value.substring(selectionEnd);
+    
+    const newText = before + "• " + after;
+    setWritingText(newText);
+    updateWritingSpace(activeTab, newText);
+    
+    setTimeout(() => {
+      if (textarea) {
+        textarea.focus();
+        textarea.setSelectionRange(selectionStart + 2, selectionStart + 2);
+      }
+    }, 0);
+  };
+
+  const insertNumberedList = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const { selectionStart, selectionEnd, value } = textarea;
+    const before = value.substring(0, selectionStart);
+    const after = value.substring(selectionEnd);
+    
+    const newText = before + "1. " + after;
+    setWritingText(newText);
+    updateWritingSpace(activeTab, newText);
+    
+    setTimeout(() => {
+      if (textarea) {
+        textarea.focus();
+        textarea.setSelectionRange(selectionStart + 3, selectionStart + 3);
+      }
+    }, 0);
+  };
+
+  const insertHeading = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const { selectionStart, selectionEnd, value } = textarea;
+    const before = value.substring(0, selectionStart);
+    const after = value.substring(selectionEnd);
+    
+    const newText = before + "## " + after;
+    setWritingText(newText);
+    updateWritingSpace(activeTab, newText);
+    
+    setTimeout(() => {
+      if (textarea) {
+        textarea.focus();
+        textarea.setSelectionRange(selectionStart + 3, selectionStart + 3);
+      }
+    }, 0);
+  };
+
+  const insertCodeBlock = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const { selectionStart, selectionEnd, value } = textarea;
+    const selectedText = value.substring(selectionStart, selectionEnd);
+    
+    const codeBlockStart = "\n```\n";
+    const codeBlockEnd = "\n```\n";
+    
+    const newText = value.substring(0, selectionStart) + 
+                    codeBlockStart + 
+                    selectedText + 
+                    codeBlockEnd + 
+                    value.substring(selectionEnd);
+    
+    setWritingText(newText);
+    updateWritingSpace(activeTab, newText);
+    
+    setTimeout(() => {
+      if (textarea) {
+        textarea.focus();
+        const newPosition = selectionStart + codeBlockStart.length;
+        textarea.setSelectionRange(newPosition, newPosition + selectedText.length);
+      }
+    }, 0);
+  };
+
+  const insertQuote = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const { selectionStart, selectionEnd, value } = textarea;
+    const selectedText = value.substring(selectionStart, selectionEnd);
+    
+    const newText = value.substring(0, selectionStart) + 
+                    "> " + selectedText + 
+                    value.substring(selectionEnd);
+    
+    setWritingText(newText);
+    updateWritingSpace(activeTab, newText);
+    
+    setTimeout(() => {
+      if (textarea) {
+        textarea.focus();
+        const newPosition = selectionEnd + 2; // Adding 2 for "> "
+        textarea.setSelectionRange(newPosition, newPosition);
+      }
+    }, 0);
+  };
+
+  const handleAlignText = (alignment: 'left' | 'center' | 'right') => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    
+    const { selectionStart, selectionEnd, value } = textarea;
+    const selectedText = value.substring(selectionStart, selectionEnd);
+    
+    if (selectedText) {
+      let alignedText;
+      
+      if (alignment === 'center') {
+        alignedText = `<div style="text-align: center;">${selectedText}</div>`;
+      } else if (alignment === 'right') {
+        alignedText = `<div style="text-align: right;">${selectedText}</div>`;
+      } else {
+        alignedText = `<div style="text-align: left;">${selectedText}</div>`;
+      }
+      
+      const newText = value.substring(0, selectionStart) + alignedText + value.substring(selectionEnd);
+      setWritingText(newText);
+      updateWritingSpace(activeTab, newText);
+    } else {
+      let tag;
+      
+      if (alignment === 'center') {
+        tag = `<div style="text-align: center;"></div>`;
+      } else if (alignment === 'right') {
+        tag = `<div style="text-align: right;"></div>`;
+      } else {
+        tag = `<div style="text-align: left;"></div>`;
+      }
+      
+      const newText = value.substring(0, selectionStart) + tag + value.substring(selectionEnd);
+      setWritingText(newText);
+      updateWritingSpace(activeTab, newText);
+      
+      // Place cursor between the opening and closing tags
+      const cursorPosition = selectionStart + tag.indexOf('</div>');
+      
+      setTimeout(() => {
+        if (textarea) {
+          textarea.focus();
+          textarea.setSelectionRange(cursorPosition, cursorPosition);
+        }
+      }, 0);
+    }
+    
+    toast({
+      title: `Align ${alignment}`,
+      description: "Text alignment applied",
+    });
   };
 
   const createNewIdeaFromSelection = () => {
@@ -503,9 +763,207 @@ const BankOfContent = () => {
                       <Pencil className="h-5 w-5 mr-2" />
                       Brain Dump Of Ideas
                     </h2>
+                    <div className="flex items-center gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={saveForLater}
+                        className="text-purple-700 border-purple-200 hover:bg-purple-50"
+                      >
+                        <Save className="h-4 w-4 mr-1" /> Save
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={saveWritingAsIdea}
+                        className="text-purple-700 border-purple-200 hover:bg-purple-50"
+                      >
+                        <ClipboardCopy className="h-4 w-4 mr-1" /> Save as Idea
+                      </Button>
+                    </div>
                   </div>
-                  <div className="h-[calc(100vh-240px)]">
-                    <div className="rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full relative bg-[#F6F6F7] flex">
+                  
+                  <div className="bg-white border border-slate-200 rounded-t-md shadow-sm flex flex-wrap items-center gap-1 p-3">
+                    <div className="flex items-center justify-between w-full mb-2">
+                      <span className="text-sm font-medium text-purple-800">Format Text</span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-1.5 w-full">
+                      <div className="flex items-center gap-1 mr-2 bg-purple-50 px-2 py-0.5 rounded-md">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className={`h-8 w-8 p-0 text-slate-700 hover:text-purple-700 hover:bg-purple-100 ${selectedFormat === 'bold' ? 'bg-purple-200 text-purple-700' : ''}`}
+                          onClick={() => {
+                            applyFormatting('bold');
+                            setSelectedFormat('bold');
+                          }}
+                          title="Bold"
+                        >
+                          <Bold className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className={`h-8 w-8 p-0 text-slate-700 hover:text-purple-700 hover:bg-purple-100 ${selectedFormat === 'italic' ? 'bg-purple-200 text-purple-700' : ''}`}
+                          onClick={() => {
+                            applyFormatting('italic');
+                            setSelectedFormat('italic');
+                          }}
+                          title="Italic"
+                        >
+                          <Italic className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className={`h-8 w-8 p-0 text-slate-700 hover:text-purple-700 hover:bg-purple-100 ${selectedFormat === 'underline' ? 'bg-purple-200 text-purple-700' : ''}`}
+                          onClick={() => {
+                            applyFormatting('underline');
+                            setSelectedFormat('underline');
+                          }}
+                          title="Underline"
+                        >
+                          <Underline className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className={`h-8 w-8 p-0 text-slate-700 hover:text-purple-700 hover:bg-purple-100 ${selectedFormat === 'strikethrough' ? 'bg-purple-200 text-purple-700' : ''}`}
+                          onClick={() => {
+                            applyFormatting('strikethrough');
+                            setSelectedFormat('strikethrough');
+                          }}
+                          title="Strikethrough"
+                        >
+                          <Strikethrough className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      <div className="flex items-center gap-1 mr-2 bg-purple-50 px-2 py-0.5 rounded-md">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className={`h-8 w-8 p-0 text-slate-700 hover:text-purple-700 hover:bg-purple-100 ${selectedFormat === 'heading' ? 'bg-purple-200 text-purple-700' : ''}`}
+                          onClick={() => {
+                            insertHeading();
+                            setSelectedFormat('heading');
+                          }}
+                          title="Heading"
+                        >
+                          <Heading className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className={`h-8 w-8 p-0 text-slate-700 hover:text-purple-700 hover:bg-purple-100 ${selectedFormat === 'quote' ? 'bg-purple-200 text-purple-700' : ''}`}
+                          onClick={() => {
+                            insertQuote();
+                            setSelectedFormat('quote');
+                          }}
+                          title="Quote"
+                        >
+                          <Quote className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      <div className="flex items-center gap-1 mr-2 bg-purple-50 px-2 py-0.5 rounded-md">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className={`h-8 w-8 p-0 text-slate-700 hover:text-purple-700 hover:bg-purple-100 ${selectedFormat === 'bullet-list' ? 'bg-purple-200 text-purple-700' : ''}`}
+                          onClick={() => {
+                            insertBulletPoint();
+                            setSelectedFormat('bullet-list');
+                          }}
+                          title="Bullet List"
+                        >
+                          <List className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className={`h-8 w-8 p-0 text-slate-700 hover:text-purple-700 hover:bg-purple-100 ${selectedFormat === 'numbered-list' ? 'bg-purple-200 text-purple-700' : ''}`}
+                          onClick={() => {
+                            insertNumberedList();
+                            setSelectedFormat('numbered-list');
+                          }}
+                          title="Numbered List"
+                        >
+                          <ListOrdered className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      <div className="flex items-center gap-1 mr-2 bg-purple-50 px-2 py-0.5 rounded-md">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className={`h-8 w-8 p-0 text-slate-700 hover:text-purple-700 hover:bg-purple-100 ${selectedFormat === 'code' ? 'bg-purple-200 text-purple-700' : ''}`}
+                          onClick={() => {
+                            applyFormatting('code');
+                            setSelectedFormat('code');
+                          }}
+                          title="Inline Code"
+                        >
+                          <Code className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className={`h-8 w-8 p-0 text-slate-700 hover:text-purple-700 hover:bg-purple-100 ${selectedFormat === 'code-block' ? 'bg-purple-200 text-purple-700' : ''}`}
+                          onClick={() => {
+                            insertCodeBlock();
+                            setSelectedFormat('code-block');
+                          }}
+                          title="Code Block"
+                        >
+                          <SquareCode className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      <div className="flex items-center gap-1 bg-purple-50 px-2 py-0.5 rounded-md">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className={`h-8 w-8 p-0 text-slate-700 hover:text-purple-700 hover:bg-purple-100 ${selectedFormat === 'align-left' ? 'bg-purple-200 text-purple-700' : ''}`}
+                          onClick={() => {
+                            handleAlignText('left');
+                            setSelectedFormat('align-left');
+                          }}
+                          title="Align Left"
+                        >
+                          <AlignLeft className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className={`h-8 w-8 p-0 text-slate-700 hover:text-purple-700 hover:bg-purple-100 ${selectedFormat === 'align-center' ? 'bg-purple-200 text-purple-700' : ''}`}
+                          onClick={() => {
+                            handleAlignText('center');
+                            setSelectedFormat('align-center');
+                          }}
+                          title="Align Center"
+                        >
+                          <AlignCenter className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className={`h-8 w-8 p-0 text-slate-700 hover:text-purple-700 hover:bg-purple-100 ${selectedFormat === 'align-right' ? 'bg-purple-200 text-purple-700' : ''}`}
+                          onClick={() => {
+                            handleAlignText('right');
+                            setSelectedFormat('align-right');
+                          }}
+                          title="Align Right"
+                        >
+                          <AlignRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="h-[calc(100vh-320px)]">
+                    <div className="rounded-b-lg border border-gray-200 border-t-0 shadow-sm overflow-hidden h-full relative bg-[#F6F6F7] flex">
                       <ScrollArea className="h-full w-full">
                         <div 
                           className="h-full w-full cursor-text px-4 py-4" 
@@ -514,7 +972,10 @@ const BankOfContent = () => {
                           <Textarea
                             ref={textareaRef}
                             value={writingText}
-                            onChange={(e) => setWritingText(e.target.value)}
+                            onChange={(e) => {
+                              setWritingText(e.target.value);
+                              updateWritingSpace(activeTab, e.target.value);
+                            }}
                             onTextSelect={handleTextSelection}
                             placeholder="Start writing your ideas, thoughts, or notes here..."
                             className="min-h-full w-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-base absolute inset-0 px-4 py-4"
