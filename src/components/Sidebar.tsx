@@ -40,11 +40,11 @@ type MenuItem = {
   }>;
 };
 
-// Ensure these are properly defined before usage
+// Define default menu items
 const defaultMenuItems: MenuItem[] = [
   { title: 'Dashboard', icon: Home, url: '/', isDeletable: false },
   { title: 'Projects', icon: FolderOpen, url: '/projects', isDeletable: false },
-  { title: 'Bank of Content', icon: Database, url: '/bank-of-content', isDeletable: true },
+  { title: 'Bank of Content', icon: Database, url: '/bank-of-content', isDeletable: false },
   { title: 'Content Ideation', icon: Lightbulb, url: '/content-ideation', isDeletable: true },
   { title: 'Documents', icon: FileText, url: '/documents', isDeletable: true },
 ];
@@ -56,9 +56,10 @@ const Sidebar = () => {
   const getSavedMenuItems = () => {
     try {
       const saved = localStorage.getItem('sidebarMenuItems');
-      // Make sure we always include the defaultMenuItems if nothing is saved or if parsing fails
       if (!saved) return defaultMenuItems;
+      
       const parsedItems = JSON.parse(saved);
+      
       // Ensure Bank of Content is always included
       const hasBankOfContent = parsedItems.some((item: MenuItem) => item.title === 'Bank of Content');
       if (!hasBankOfContent) {
@@ -118,11 +119,6 @@ const Sidebar = () => {
     toast.success(`"${newPageTitle}" added to sidebar`);
   };
 
-  // Let's make sure we're rendering the correct item for each menu item
-  const renderMenuIcon = (Icon: React.ComponentType<any>) => {
-    return <Icon size={20} />;
-  };
-
   return (
     <SidebarContainer>
       <div className="p-4">
@@ -160,7 +156,7 @@ const Sidebar = () => {
                       "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : ""}
                   >
                     <Link to={item.url} className="flex items-center gap-2">
-                      {renderMenuIcon(item.icon)}
+                      {item.icon && <item.icon size={20} />}
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -184,7 +180,7 @@ const Sidebar = () => {
                             size="md"
                           >
                             <Link to={subItem.url} className="flex items-center gap-2">
-                              {renderMenuIcon(subItem.icon)}
+                              {subItem.icon && <subItem.icon size={16} />}
                               <span>{subItem.title}</span>
                             </Link>
                           </SidebarMenuSubButton>
@@ -238,7 +234,7 @@ const Sidebar = () => {
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <Link to={settingsItem.url} className="flex items-center gap-2">
-                {renderMenuIcon(settingsItem.icon)}
+                {settingsItem.icon && <settingsItem.icon size={20} />}
                 <span>{settingsItem.title}</span>
               </Link>
             </SidebarMenuButton>
@@ -247,7 +243,7 @@ const Sidebar = () => {
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <Link to={myAccountItem.url} className="flex items-center gap-2">
-                {renderMenuIcon(myAccountItem.icon)}
+                {myAccountItem.icon && <myAccountItem.icon size={20} />}
                 <span>{myAccountItem.title}</span>
               </Link>
             </SidebarMenuButton>
