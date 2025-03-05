@@ -17,6 +17,7 @@ import BankOfContent from "./pages/BankOfContent";
 import ContentCalendar from "./pages/ContentCalendar";
 import StrategyGrowth from "./pages/StrategyGrowth";
 import IncomeTracker from "./pages/IncomeTracker";
+import Documents from "./pages/NotFound"; // Temporary placeholder for Documents page
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/content-calendar" element={<ContentCalendar />} />
           <Route path="/strategy-growth" element={<StrategyGrowth />} />
           <Route path="/income-tracker" element={<IncomeTracker />} />
+          <Route path="/documents" element={<Documents />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
