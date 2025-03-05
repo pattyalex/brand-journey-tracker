@@ -30,7 +30,6 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         )}
         ref={ref}
         onMouseUp={handleMouseUp}
-        placeholder="Write your ideas here..."
         {...props}
       />
     )
