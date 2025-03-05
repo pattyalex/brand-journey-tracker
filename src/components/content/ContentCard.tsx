@@ -85,54 +85,54 @@ const ContentCard = ({
           className={`${snapshot.isDragging ? 'opacity-70' : 'opacity-100'}`}
         >
           <Card 
-            className={`overflow-hidden ${snapshot.isDragging ? 'shadow-lg' : ''} relative h-full`}
+            className={`overflow-hidden ${snapshot.isDragging ? 'shadow-lg' : ''} relative h-full border-2`}
           >
-            <CardHeader className="p-4">
-              <CardTitle className="text-base">
+            <CardHeader className="p-6">
+              <CardTitle className="text-xl font-bold mb-2">
                 {content.title}
                 {date && (
-                  <Badge variant="outline" className="ml-2 text-xs">
-                    <CalendarIcon className="h-3 w-3 mr-1" />
+                  <Badge variant="outline" className="ml-2 text-sm">
+                    <CalendarIcon className="h-4 w-4 mr-1" />
                     {format(date, "MMM d")}
                   </Badge>
                 )}
               </CardTitle>
-              <CardDescription className="line-clamp-2 text-sm">
+              <CardDescription className="line-clamp-3 text-base">
                 {content.description}
               </CardDescription>
             </CardHeader>
             
-            <CardContent className="p-4 pt-0">
-              <div className="flex flex-wrap gap-1.5 mb-2">
+            <CardContent className="p-6 pt-0">
+              <div className="flex flex-wrap gap-2 mb-4">
                 {content.tags && content.tags.length > 0 ? (
                   content.tags.slice(0, 3).map((tag, index) => (
                     <span 
                       key={index} 
-                      className={`text-xs px-2 py-0.5 rounded-full ${getTagColorClasses(tag)}`}
+                      className={`text-sm px-3 py-1 rounded-full ${getTagColorClasses(tag)}`}
                     >
                       {tag}
                     </span>
                   ))
                 ) : null}
               </div>
-              <div className="flex items-center text-sm text-muted-foreground mt-2">
-                <Calendar className="h-3 w-3 mr-1" />
+              <div className="flex items-center text-base text-muted-foreground mt-4">
+                <Calendar className="h-4 w-4 mr-2" />
                 <span>
                   {content.dateCreated ? formatDistanceToNow(new Date(content.dateCreated), { addSuffix: true }) : 'Unknown date'}
                 </span>
               </div>
             </CardContent>
             
-            <CardFooter className="p-4 pt-0 flex justify-between">
+            <CardFooter className="p-6 pt-0 flex justify-between">
               <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline" 
-                    size="xs"
+                    size="sm"
                     aria-label="Schedule"
-                    className="h-7 w-7 p-0"
+                    className="h-9 w-9 p-0"
                   >
-                    <CalendarIcon className="h-3.5 w-3.5" />
+                    <CalendarIcon className="h-4 w-4" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0 bg-white" align="start">
@@ -148,24 +148,24 @@ const ContentCard = ({
                 </PopoverContent>
               </Popover>
               
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <Button 
                   variant="ghost" 
-                  size="xs"
+                  size="sm"
                   onClick={() => onDeleteContent(content.id)}
                   aria-label="Delete"
-                  className="h-7 w-7 p-0"
+                  className="h-9 w-9 p-0"
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <Trash2 className="h-4 w-4" />
                 </Button>
                 <Button 
                   variant="outline" 
-                  size="xs"
+                  size="sm"
                   onClick={() => onEditContent(content.id)}
                   aria-label="Edit"
-                  className="h-7 w-7 p-0"
+                  className="h-9 w-9 p-0"
                 >
-                  <Pencil className="h-3.5 w-3.5" />
+                  <Pencil className="h-4 w-4" />
                 </Button>
               </div>
             </CardFooter>

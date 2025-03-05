@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ContentItem } from "@/types/content";
@@ -77,7 +78,7 @@ const ContentPillar = ({
                 <div 
                   {...provided.droppableProps}
                   ref={provided.innerRef}
-                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5"
+                  className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-4"
                 >
                   {filteredContent.map((content, index) => (
                     <ContentCard
