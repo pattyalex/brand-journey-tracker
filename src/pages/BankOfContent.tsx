@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -603,7 +604,7 @@ const BankOfContent = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex items-center justify-between mb-4">
-            <TabsList className="bg-background border flex-1 overflow-x-auto">
+            <TabsList className="bg-background border overflow-x-auto">
               {pillars.map((pillar) => (
                 <div key={pillar.id} className="relative group flex items-center">
                   {editingPillarId === pillar.id ? (
@@ -638,7 +639,9 @@ const BankOfContent = () => {
                     <>
                       <TabsTrigger 
                         value={pillar.id}
-                        className="data-[state=active]:bg-primary data-[state=active]:text-white"
+                        className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white ${
+                          pillar.id === "1" && activeTab === "1" ? "bg-[#8B6B4E] text-white" : ""
+                        }`}
                         onDoubleClick={() => startEditingPillar(pillar.id, pillar.name)}
                       >
                         {pillar.name}
@@ -685,7 +688,7 @@ const BankOfContent = () => {
                 </div>
               ))}
             </TabsList>
-            <Button variant="outline" size="sm" onClick={addPillar} className="ml-2">
+            <Button variant="outline" size="sm" onClick={addPillar} className="ml-2 flex items-center">
               <Plus className="h-4 w-4 mr-2" /> Add Pillar
             </Button>
           </div>
