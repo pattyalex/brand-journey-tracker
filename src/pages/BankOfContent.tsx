@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -69,6 +68,22 @@ const BankOfContent = () => {
   const [editingPillarName, setEditingPillarName] = useState("");
 
   useEffect(() => {
+    try {
+      const savedPillarsData = localStorage.getItem('pillars');
+      
+      if (savedPillarsData) {
+        const savedPillars = JSON.parse(savedPillarsData);
+        setPillars(current => 
+          current.map(pillar => {
+            const savedPillar = savedPillars.find((p: {id: string}) => p.id === pillar.id);
+            return savedPillar ? {...pillar, name: savedPillar.name} : pillar;
+          })
+        );
+      }
+    } catch (error) {
+      console.error("Failed to load pillar names:", error);
+    }
+    
     const loadedPillars = pillars.map(pillar => {
       try {
         const savedContent = localStorage.getItem(`pillar-content-${pillar.id}`);
