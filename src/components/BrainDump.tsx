@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -433,13 +432,12 @@ const BrainDump = () => {
           <h2 className="text-lg font-medium">Brain Dump Of Ideas</h2>
         </div>
         
-        {/* Make the formatting toolbar more prominent with a stronger border and background */}
-        <div className="flex items-center gap-1 p-2 bg-gray-100 rounded-t-md border border-gray-300 border-b-0 mb-0">
+        <div className="flex items-center gap-1 p-2 bg-gray-50 rounded-t-md border border-b-0 mb-0">
           <div className="flex items-center gap-1 flex-wrap">
             <Button 
               variant="ghost" 
               size="sm"
-              className="text-gray-600 hover:text-gray-900 h-8 bg-white border border-gray-200 shadow-sm"
+              className="text-gray-600 hover:text-gray-900 h-8"
               onClick={() => applyFormatting('bold')}
               title="Bold"
             >
@@ -448,7 +446,7 @@ const BrainDump = () => {
             <Button 
               variant="ghost" 
               size="sm"
-              className="text-gray-600 hover:text-gray-900 h-8 bg-white border border-gray-200 shadow-sm"
+              className="text-gray-600 hover:text-gray-900 h-8"
               onClick={() => applyFormatting('italic')}
               title="Italic"
             >
@@ -457,7 +455,7 @@ const BrainDump = () => {
             <Button 
               variant="ghost" 
               size="sm"
-              className="text-gray-600 hover:text-gray-900 h-8 bg-white border border-gray-200 shadow-sm"
+              className="text-gray-600 hover:text-gray-900 h-8"
               onClick={() => applyFormatting('underline')}
               title="Underline"
             >
@@ -467,7 +465,7 @@ const BrainDump = () => {
             <Button 
               variant="ghost" 
               size="sm"
-              className="text-gray-600 hover:text-gray-900 h-8 bg-white border border-gray-200 shadow-sm"
+              className="text-gray-600 hover:text-gray-900 h-8"
               onClick={insertHeading}
               title="Heading"
             >
@@ -477,7 +475,7 @@ const BrainDump = () => {
             <Button 
               variant="ghost" 
               size="sm"
-              className="text-gray-600 hover:text-gray-900 h-8 bg-white border border-gray-200 shadow-sm"
+              className="text-gray-600 hover:text-gray-900 h-8"
               onClick={insertBulletPoint}
               title="Bullet List"
             >
@@ -486,7 +484,7 @@ const BrainDump = () => {
             <Button 
               variant="ghost" 
               size="sm"
-              className="text-gray-600 hover:text-gray-900 h-8 bg-white border border-gray-200 shadow-sm"
+              className="text-gray-600 hover:text-gray-900 h-8"
               onClick={insertNumberedList}
               title="Numbered List"
             >
@@ -496,7 +494,7 @@ const BrainDump = () => {
             <Button 
               variant="ghost" 
               size="sm"
-              className="text-gray-600 hover:text-gray-900 h-8 bg-white border border-gray-200 shadow-sm"
+              className="text-gray-600 hover:text-gray-900 h-8"
               onClick={() => handleAlignText('left')}
               title="Align Left"
             >
@@ -505,7 +503,7 @@ const BrainDump = () => {
             <Button 
               variant="ghost" 
               size="sm"
-              className="text-gray-600 hover:text-gray-900 h-8 bg-white border border-gray-200 shadow-sm"
+              className="text-gray-600 hover:text-gray-900 h-8"
               onClick={() => handleAlignText('center')}
               title="Align Center"
             >
@@ -514,7 +512,7 @@ const BrainDump = () => {
             <Button 
               variant="ghost" 
               size="sm"
-              className="text-gray-600 hover:text-gray-900 h-8 bg-white border border-gray-200 shadow-sm"
+              className="text-gray-600 hover:text-gray-900 h-8"
               onClick={() => handleAlignText('right')}
               title="Align Right"
             >
@@ -523,7 +521,7 @@ const BrainDump = () => {
           </div>
         </div>
         
-        <Card className="mt-0 rounded-t-none border-t-0">
+        <Card className="mt-0 rounded-t-none">
           <CardContent className="p-6">
             <Textarea
               ref={textareaRef}
