@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -198,7 +199,7 @@ const ContentUploader = ({
             
             <div className="grid gap-2">
               <Label htmlFor="content">
-                {isEditMode ? "Develop your script" : "Write your idea"}
+                {isEditMode ? "Develop Your Script" : "Write your idea"}
               </Label>
               <Textarea
                 id="content"
