@@ -31,6 +31,7 @@ const ContentPillar = ({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
+  const [isSingleRowLayout, setIsSingleRowLayout] = useState(true);
 
   useEffect(() => {
     console.log("ContentPillar received pillar:", pillar.id, pillar.name);
@@ -86,6 +87,10 @@ const ContentPillar = ({
     }
   };
 
+  const toggleLayout = () => {
+    setIsSingleRowLayout(!isSingleRowLayout);
+  };
+
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
     if (scrollContainer) {
@@ -105,6 +110,17 @@ const ContentPillar = ({
 
   return (
     <div className="space-y-4 relative">
+      <div className="flex justify-end mb-2">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={toggleLayout}
+          className="text-xs"
+        >
+          {isSingleRowLayout ? "Switch to Grid Layout" : "Switch to Row Layout"}
+        </Button>
+      </div>
+      
       {filteredContent.length === 0 ? (
         <div className="text-center p-8 border border-dashed rounded-lg bg-muted/30">
           <p className="text-muted-foreground">
@@ -115,7 +131,7 @@ const ContentPillar = ({
         </div>
       ) : (
         <div className="relative">
-          {showLeftArrow && (
+          {isSingleRowLayout && showLeftArrow && (
             <Button 
               onClick={scrollLeft} 
               className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
@@ -127,21 +143,29 @@ const ContentPillar = ({
             </Button>
           )}
           
-          <div 
-            ref={scrollContainerRef} 
-            className="overflow-x-auto pb-4 hide-scrollbar"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            <DragDropContext onDragEnd={onDragEnd}>
-              <Droppable droppableId={`content-cards-${pillar.id}`} direction="horizontal">
+          <DragDropContext onDragEnd={onDragEnd}>
+            <div 
+              ref={scrollContainerRef} 
+              className={`${isSingleRowLayout ? "overflow-x-auto pb-4 hide-scrollbar" : "overflow-visible"}`}
+              style={isSingleRowLayout ? { scrollbarWidth: 'none', msOverflowStyle: 'none' } : {}}
+            >
+              <Droppable 
+                droppableId={`content-cards-${pillar.id}`} 
+                direction={isSingleRowLayout ? "horizontal" : "vertical"}
+                type="CONTENT"
+              >
                 {(provided) => (
                   <div 
                     {...provided.droppableProps}
                     ref={provided.innerRef}
-                    className="flex space-x-6 min-w-min pb-4 pl-2 pr-2"
+                    className={`
+                      ${isSingleRowLayout 
+                        ? "flex space-x-6 min-w-min pb-4 pl-2 pr-2" 
+                        : "grid grid-cols-2 gap-6 pb-4 pl-2 pr-2"}
+                    `}
                   >
                     {filteredContent.map((content, index) => (
-                      <div key={content.id} className="min-w-[320px] max-w-[320px]">
+                      <div key={content.id} className={`${isSingleRowLayout ? "min-w-[320px] max-w-[320px]" : ""}`}>
                         <ContentCard
                           content={content}
                           index={index}
@@ -157,10 +181,10 @@ const ContentPillar = ({
                   </div>
                 )}
               </Droppable>
-            </DragDropContext>
-          </div>
+            </div>
+          </DragDropContext>
           
-          {showRightArrow && (
+          {isSingleRowLayout && showRightArrow && (
             <Button 
               onClick={scrollRight} 
               className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
