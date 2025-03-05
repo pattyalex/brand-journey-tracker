@@ -18,7 +18,7 @@ export const defaultMenuItems: MenuItem[] = [
       { title: 'Analytics', icon: BarChart, url: '/analytics' },
     ]
   },
-  { title: 'Vision Board & Goals', icon: Lightbulb, url: '/projects/vision-board', isDeletable: true },
+  { title: 'Goals and Objectives', icon: Lightbulb, url: '/projects/vision-board', isDeletable: true },
   { title: 'Documents', icon: FileText, url: '/documents', isDeletable: true },
 ];
 
