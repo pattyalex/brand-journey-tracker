@@ -6,13 +6,6 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trash2, Pencil, Calendar } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { formatDistanceToNow } from "date-fns";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
@@ -34,7 +27,6 @@ const ContentCard = ({
   pillar,
   pillars,
   onDeleteContent,
-  onMoveContent,
   onEditContent
 }: ContentCardProps) => {
   return (
@@ -97,25 +89,6 @@ const ContentCard = ({
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>
-              </div>
-              
-              <div className="flex items-center">
-                <Select
-                  onValueChange={(value) => onMoveContent(value, content.id)}
-                >
-                  <SelectTrigger className="w-[130px] h-8">
-                    <SelectValue placeholder="Move to..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {pillars
-                      .filter(p => p.id !== pillar.id)
-                      .map((p) => (
-                        <SelectItem key={p.id} value={p.id}>
-                          {p.name}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
               </div>
             </CardFooter>
           </Card>
