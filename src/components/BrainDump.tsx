@@ -43,7 +43,7 @@ const BrainDump = () => {
     {
       id: "1",
       title: "My First Brain Dump",
-      content: "Start writing your ideas here...",
+      content: "",
       createdAt: new Date(),
     }
   ]);
@@ -388,11 +388,7 @@ const BrainDump = () => {
     });
   };
 
-  const handleTextSelection = (e: React.SyntheticEvent<HTMLTextAreaElement>) => {
-    const textarea = e.target as HTMLTextAreaElement;
-    const { selectionStart, selectionEnd } = textarea;
-    const selectedText = textarea.value.substring(selectionStart, selectionEnd);
-    
+  const handleTextSelection = (selectedText: string) => {
     if (selectedText) {
       setSelectedFormat('paragraph');
     } else {
