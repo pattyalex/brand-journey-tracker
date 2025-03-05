@@ -53,6 +53,39 @@ const BankOfContent = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
+    const loadedPillars = pillars.map(pillar => {
+      try {
+        const savedContent = localStorage.getItem(`pillar-content-${pillar.id}`);
+        if (savedContent) {
+          console.log(`Loading content for pillar ${pillar.id} (${pillar.name}):`, savedContent);
+          const parsedContent = JSON.parse(savedContent);
+          
+          const contentWithDates = parsedContent.map((item: any) => ({
+            ...item,
+            dateCreated: item.dateCreated ? new Date(item.dateCreated) : new Date(),
+            tags: Array.isArray(item.tags) ? item.tags : [],
+            platforms: item.platforms ? 
+              (Array.isArray(item.platforms) ? item.platforms : []) : 
+              []
+          }));
+          
+          return {
+            ...pillar,
+            content: contentWithDates
+          };
+        }
+        return pillar;
+      } catch (error) {
+        console.error(`Failed to load content for pillar ${pillar.id}:`, error);
+        return pillar;
+      }
+    });
+    
+    console.log("Loaded pillars with content:", loadedPillars);
+    setPillars(loadedPillars);
+  }, []);
+
+  useEffect(() => {
     if (activeTab && writingText) {
       const saveTimer = setTimeout(() => {
         localStorage.setItem(`writing-${activeTab}`, writingText);
@@ -250,6 +283,8 @@ const BankOfContent = () => {
   };
 
   const addContentToPillar = (pillarId: string, content: ContentItem) => {
+    console.log(`Adding content to pillar ${pillarId}:`, content);
+    
     const updatedPillars = pillars.map(p => 
       p.id === pillarId 
         ? {...p, content: [...p.content, content]} 
@@ -260,7 +295,12 @@ const BankOfContent = () => {
     
     try {
       const pillarContent = updatedPillars.find(p => p.id === pillarId)?.content || [];
-      localStorage.setItem(`pillar-content-${pillarId}`, JSON.stringify(pillarContent));
+      const serializableContent = pillarContent.map(item => ({
+        ...item,
+        dateCreated: item.dateCreated.toISOString()
+      }));
+      localStorage.setItem(`pillar-content-${pillarId}`, JSON.stringify(serializableContent));
+      console.log(`Saved content for pillar ${pillarId}:`, serializableContent);
     } catch (error) {
       console.error("Failed to save content to localStorage:", error);
     }
@@ -269,17 +309,25 @@ const BankOfContent = () => {
   };
 
   const deleteContent = (pillarId: string, contentId: string) => {
-    setPillars(pillars.map(p => 
+    console.log(`Deleting content ${contentId} from pillar ${pillarId}`);
+    
+    const updatedPillars = pillars.map(p => 
       p.id === pillarId 
         ? {...p, content: p.content.filter(c => c.id !== contentId)} 
         : p
-    ));
+    );
+    
+    setPillars(updatedPillars);
     
     try {
-      const updatedPillar = pillars.find(p => p.id === pillarId);
+      const updatedPillar = updatedPillars.find(p => p.id === pillarId);
       if (updatedPillar) {
-        const updatedContent = updatedPillar.content.filter(c => c.id !== contentId);
-        localStorage.setItem(`pillar-content-${pillarId}`, JSON.stringify(updatedContent));
+        const serializableContent = updatedPillar.content.map(item => ({
+          ...item,
+          dateCreated: item.dateCreated.toISOString()
+        }));
+        localStorage.setItem(`pillar-content-${pillarId}`, JSON.stringify(serializableContent));
+        console.log(`Updated localStorage after deletion for pillar ${pillarId}:`, serializableContent);
       }
     } catch (error) {
       console.error("Failed to update localStorage after deletion:", error);
@@ -345,7 +393,11 @@ const BankOfContent = () => {
     
     try {
       const pillarContent = updatedPillars.find(p => p.id === pillarId)?.content || [];
-      localStorage.setItem(`pillar-content-${pillarId}`, JSON.stringify(pillarContent));
+      const serializableContent = pillarContent.map(item => ({
+        ...item,
+        dateCreated: item.dateCreated.toISOString()
+      }));
+      localStorage.setItem(`pillar-content-${pillarId}`, JSON.stringify(serializableContent));
     } catch (error) {
       console.error("Failed to save updated content to localStorage:", error);
     }
@@ -381,6 +433,8 @@ const BankOfContent = () => {
   };
 
   const handleReorderContent = (pillarId: string, newItems: ContentItem[]) => {
+    console.log(`Reordering content for pillar ${pillarId}:`, newItems);
+    
     setPillars(prev => 
       prev.map(p => 
         p.id === pillarId 
@@ -390,7 +444,14 @@ const BankOfContent = () => {
     );
     
     try {
-      localStorage.setItem(`pillar-content-${pillarId}`, JSON.stringify(newItems));
+      const serializableContent = newItems.map(item => ({
+        ...item,
+        dateCreated: item.dateCreated instanceof Date 
+          ? item.dateCreated.toISOString() 
+          : item.dateCreated
+      }));
+      localStorage.setItem(`pillar-content-${pillarId}`, JSON.stringify(serializableContent));
+      console.log(`Saved reordered content for pillar ${pillarId}:`, serializableContent);
     } catch (error) {
       console.error("Failed to save reordered content to localStorage:", error);
     }

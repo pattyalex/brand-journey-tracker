@@ -45,16 +45,13 @@ const ContentPillar = ({
 }: ContentPillarProps) => {
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState(pillar.name);
-  // Add state to track content for debugging
-  const [debugContent, setDebugContent] = useState<ContentItem[]>([]);
-  const [items, setItems] = useState<ContentItem[]>([]);
   
-  // Debug effect to log content changes
+  // Debug logging to track what's happening with the content
   useEffect(() => {
-    console.log("ContentPillar content:", pillar.content);
-    setDebugContent(pillar.content);
-    setItems(pillar.content);
-  }, [pillar.content]);
+    console.log("ContentPillar received pillar:", pillar.id, pillar.name);
+    console.log("ContentPillar content count:", pillar.content.length);
+    console.log("ContentPillar content items:", pillar.content);
+  }, [pillar]);
 
   const handleRename = () => {
     if (newName.trim()) {
@@ -99,12 +96,9 @@ const ContentPillar = ({
     ) return;
     
     // Reorder the content
-    const newItems = Array.from(filteredContent);
+    const newItems = Array.from(pillar.content);
     const [removed] = newItems.splice(source.index, 1);
     newItems.splice(destination.index, 0, removed);
-    
-    // Update state
-    setItems(newItems);
     
     // Notify parent component of reordering
     if (onReorderContent) {
@@ -125,7 +119,7 @@ const ContentPillar = ({
       ) : (
         <ScrollArea className="h-[calc(100vh-320px)]">
           <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId="content-cards">
+            <Droppable droppableId={`content-cards-${pillar.id}`}>
               {(provided) => (
                 <div 
                   {...provided.droppableProps}
