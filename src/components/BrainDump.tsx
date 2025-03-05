@@ -115,6 +115,7 @@ const BrainDump = () => {
   };
 
   const handleContentChange = (content: string) => {
+    // Store the raw content without escaping
     const updatedPage = { ...activePage, content };
     setActivePage(updatedPage);
     
@@ -242,9 +243,10 @@ const BrainDump = () => {
       } else if (format === 'strikethrough') { // strikethrough
         newText = value.substring(0, selectionStart) + "~~" + selectedText + "~~" + value.substring(selectionEnd);
         newCursorPos = selectionEnd + 4; // 4 for the ~~ at start and end
-      } else { // code
-        newText = value.substring(0, selectionStart) + "`" + selectedText + "`" + value.substring(selectionEnd);
-        newCursorPos = selectionEnd + 2; // 2 for the backticks at start and end
+      } else { // code - change this to ensure it works in plain text
+        // Use a special format that will be visually distinct but won't render as code
+        newText = value.substring(0, selectionStart) + "[code]" + selectedText + "[/code]" + value.substring(selectionEnd);
+        newCursorPos = selectionEnd + 13; // 13 for the [code] and [/code] tags
       }
       
       handleContentChange(newText);
@@ -270,9 +272,9 @@ const BrainDump = () => {
       } else if (format === 'strikethrough') { // strikethrough
         beforeText = "~~";
         afterText = "~~";
-      } else { // code
-        beforeText = "`";
-        afterText = "`";
+      } else { // code - change this to ensure it works in plain text
+        beforeText = "[code]";
+        afterText = "[/code]";
       }
       
       const newText = value.substring(0, selectionStart) + beforeText + afterText + value.substring(selectionEnd);
@@ -294,8 +296,9 @@ const BrainDump = () => {
     const { selectionStart, selectionEnd, value } = textarea;
     const selectedText = value.substring(selectionStart, selectionEnd);
     
-    const codeBlockStart = "\n```\n";
-    const codeBlockEnd = "\n```\n";
+    // Use custom format that won't render as actual code
+    const codeBlockStart = "\n[codeblock]\n";
+    const codeBlockEnd = "\n[/codeblock]\n";
     
     const newText = value.substring(0, selectionStart) + 
                     codeBlockStart + 
