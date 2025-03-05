@@ -85,7 +85,7 @@ const IdeaCreationDialog = ({
       <DialogContent 
         className={`max-h-[90vh] transition-all duration-300 ${
           isMeganOpen 
-            ? "sm:max-w-[900px] md:max-w-[1100px] grid grid-cols-[1fr,350px]" 
+            ? "sm:max-w-[900px] md:max-w-[1100px] grid grid-cols-[1fr,320px]" 
             : "sm:max-w-[650px] md:max-w-[750px]"
         }`}
       >
@@ -99,9 +99,9 @@ const IdeaCreationDialog = ({
               onClick={() => setIsMeganOpen(!isMeganOpen)}
             >
               {isMeganOpen ? "Hide Megan" : (
-                <div className="flex items-center gap-2">
-                  <span>Ask Megan</span>
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm">Ask Megan</span>
+                  <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs">
                     M
                   </div>
                 </div>

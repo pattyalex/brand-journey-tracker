@@ -107,16 +107,16 @@ const MeganAIChat = ({ onClose, contextData }: MeganAIChatProps) => {
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        <h2 className="text-xl font-semibold text-primary">Ask Megan</h2>
-        <Button variant="ghost" size="icon" onClick={onClose}>
-          <XIcon className="h-5 w-5" />
+      <div className="flex items-center justify-between p-3 border-b border-gray-200">
+        <h2 className="text-lg font-semibold text-primary">Ask Megan</h2>
+        <Button variant="ghost" size="sm" onClick={onClose}>
+          <XIcon className="h-4 w-4" />
         </Button>
       </div>
       
       <div className="flex-1 overflow-hidden">
         <ScrollArea className="h-[calc(90vh-220px)]">
-          <div className="p-4 space-y-4">
+          <div className="p-3 space-y-4">
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -125,13 +125,13 @@ const MeganAIChat = ({ onClose, contextData }: MeganAIChatProps) => {
                 }`}
               >
                 <div
-                  className={`max-w-[80%] rounded-lg p-3 ${
+                  className={`max-w-[80%] rounded-lg p-2.5 ${
                     message.role === "user"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-foreground"
                   }`}
                 >
-                  <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                  <p className="whitespace-pre-wrap break-words text-sm">{message.content}</p>
                   <p className="text-xs opacity-70 mt-1">
                     {message.timestamp.toLocaleTimeString([], {
                       hour: "2-digit",
@@ -146,7 +146,7 @@ const MeganAIChat = ({ onClose, contextData }: MeganAIChatProps) => {
         </ScrollArea>
       </div>
       
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-3 border-t border-gray-200">
         <form onSubmit={handleSubmit} className="flex items-end gap-2">
           <Textarea
             ref={inputRef}
@@ -154,15 +154,15 @@ const MeganAIChat = ({ onClose, contextData }: MeganAIChatProps) => {
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ask Megan about your content idea..."
-            className="min-h-[80px] resize-none"
+            className="min-h-[70px] resize-none text-sm"
           />
           <Button 
             type="submit" 
-            size="icon" 
+            size="sm" 
             disabled={isSubmitting || !inputValue.trim()}
-            className="h-10 w-10 shrink-0 rounded-full"
+            className="h-8 w-8 shrink-0 rounded-full"
           >
-            <SendIcon className="h-5 w-5" />
+            <SendIcon className="h-4 w-4" />
           </Button>
         </form>
       </div>
