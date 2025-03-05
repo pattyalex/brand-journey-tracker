@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -46,6 +47,7 @@ const BankOfContent = () => {
   const [editingContent, setEditingContent] = useState<ContentItem | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
+  // Initial loading effect
   useEffect(() => {
     try {
       const savedPillarsData = localStorage.getItem('pillars');
@@ -95,6 +97,7 @@ const BankOfContent = () => {
     setPillars(loadedPillars);
   }, []);
 
+  // Writing space autosave effect
   useEffect(() => {
     if (activeTab && writingText) {
       const saveTimer = setTimeout(() => {
@@ -105,6 +108,7 @@ const BankOfContent = () => {
     }
   }, [writingText, activeTab]);
 
+  // Load writing space content when tab changes
   useEffect(() => {
     const savedWriting = localStorage.getItem(`writing-${activeTab}`);
     if (savedWriting) {
@@ -114,6 +118,7 @@ const BankOfContent = () => {
     }
   }, [activeTab]);
 
+  // Pillar management functions
   const addPillar = () => {
     const newId = `${Date.now()}`;
     const newPillars = [...pillars, { id: newId, name: "New Pillar", content: [], writingSpace: "" }];
@@ -177,6 +182,7 @@ const BankOfContent = () => {
     toast.success("Pillar deleted");
   };
 
+  // Content management functions
   const updateWritingSpace = (text: string) => {
     setWritingText(text);
   };
@@ -300,6 +306,7 @@ const BankOfContent = () => {
     }, 0);
   };
 
+  // Database operations
   const createNewIdeaFromSelection = () => {
     if (!newIdeaTitle.trim()) {
       toast.error("Title is required");
