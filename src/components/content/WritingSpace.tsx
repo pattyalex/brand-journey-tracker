@@ -38,7 +38,7 @@ const WritingSpace = ({
               value={writingText}
               onChange={(e) => onTextChange(e.target.value)}
               onTextSelect={onTextSelection}
-              placeholder="Start writing your content ideas here... Use the formatting toolbar above to style your text."
+              placeholder="Start writing your content ideas here..."
               className="min-h-full w-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-sm absolute inset-0 px-4 py-4"
             />
           </ScrollArea>
