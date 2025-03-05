@@ -20,6 +20,7 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 
 interface ContentCardProps {
   content: ContentItem;
@@ -42,6 +43,7 @@ const ContentCard = ({
   onScheduleContent
 }: ContentCardProps) => {
   const [date, setDate] = useState<Date | undefined>(content.scheduledDate);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (!selectedDate) return;
@@ -69,6 +71,8 @@ const ContentCard = ({
       localStorage.setItem('scheduledContents', JSON.stringify(scheduledContents));
       toast.success(`Scheduled "${content.title}" for ${format(selectedDate, "PPP")}`);
     }
+    
+    setCalendarOpen(false);
   };
 
   return (
@@ -86,6 +90,12 @@ const ContentCard = ({
             <CardHeader className="p-4">
               <CardTitle className="text-lg">
                 {content.title}
+                {date && (
+                  <Badge variant="outline" className="ml-2 text-xs">
+                    <CalendarIcon className="h-3 w-3 mr-1" />
+                    {format(date, "MMM d")}
+                  </Badge>
+                )}
               </CardTitle>
               <CardDescription className="line-clamp-2">
                 {content.description}
@@ -111,35 +121,33 @@ const ContentCard = ({
                   {content.dateCreated ? formatDistanceToNow(new Date(content.dateCreated), { addSuffix: true }) : 'Unknown date'}
                 </span>
               </div>
-              
-              <div className="flex items-center mt-2">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className={cn(
-                        "justify-start text-left font-normal w-full",
-                        !date && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-3.5 w-3.5" />
-                      {date ? format(date, "PPP") : <span>Schedule post</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+            </CardContent>
+            
+            <CardFooter className="p-4 pt-0 flex justify-between">
+              <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline" 
+                    size="xs"
+                    aria-label="Schedule"
+                    className="h-7 w-7 p-0"
+                  >
+                    <CalendarIcon className="h-3.5 w-3.5" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <div className="p-2">
+                    <h3 className="text-sm font-medium mb-2">Schedule Post</h3>
                     <CalendarComponent
                       mode="single"
                       selected={date}
                       onSelect={handleDateSelect}
                       initialFocus
                     />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </CardContent>
-            
-            <CardFooter className="p-4 pt-0 flex justify-end">
+                  </div>
+                </PopoverContent>
+              </Popover>
+              
               <div className="flex gap-2">
                 <Button 
                   variant="ghost" 
