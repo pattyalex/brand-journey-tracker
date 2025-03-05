@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import {
   Dialog,
@@ -46,7 +47,8 @@ const ContentSearchModal = ({
     ? content.filter(item => 
         item.title.toLowerCase().includes(localSearchQuery.toLowerCase()) ||
         item.description.toLowerCase().includes(localSearchQuery.toLowerCase()) ||
-        item.tags.some(tag => tag.toLowerCase().includes(localSearchQuery.toLowerCase()))
+        item.tags.some(tag => tag.toLowerCase().includes(localSearchQuery.toLowerCase())) ||
+        item.customProperties?.some(prop => prop.name.toLowerCase().includes(localSearchQuery.toLowerCase()))
       )
     : [];
 
@@ -122,6 +124,21 @@ const ContentSearchModal = ({
                     <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
                       {item.description}
                     </p>
+                    
+                    {/* Custom Properties */}
+                    {item.customProperties && item.customProperties.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {item.customProperties.map((prop, index) => (
+                          <span 
+                            key={`prop-${index}`}
+                            className={`text-xs px-2 py-0.5 rounded-full ${prop.color}`}
+                          >
+                            {prop.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    
                     <div className="flex flex-wrap gap-1 mt-2">
                       {item.tags.map((tag, index) => (
                         <span 
