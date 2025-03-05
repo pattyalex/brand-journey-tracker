@@ -9,7 +9,7 @@ const services = [
     title: (
       <div className="flex flex-col">
         <span>Bank of</span>
-        <span>Content</span>
+        <span>Ideas</span>
       </div>
     ),
     icon: Database,

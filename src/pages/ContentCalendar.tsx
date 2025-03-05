@@ -107,11 +107,11 @@ const ContentCalendar = () => {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent 
-                  className="w-auto p-0 bg-white shadow-md" 
+                  className="w-auto p-0" 
                   align="start"
                   style={{ backgroundColor: "white", opacity: 1 }}
                 >
-                  <div className="bg-white rounded-md">
+                  <div className="bg-white rounded-md" style={{ backgroundColor: "white", opacity: 1 }}>
                     <Calendar
                       mode="single"
                       selected={date}
@@ -139,7 +139,7 @@ const ContentCalendar = () => {
                 mode="single"
                 selected={date}
                 onSelect={setDate}
-                className="rounded-md border"
+                className="rounded-md border bg-white"
                 modifiers={{
                   booked: scheduledDates,
                 }}

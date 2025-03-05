@@ -1,7 +1,6 @@
 
-import { Home, FolderOpen, FileText, Settings, Lightbulb, Trash2, Plus, CreditCard, Database } from 'lucide-react';
+import { Home, FolderOpen, FileText, Settings, ListTodo, Lightbulb, Trash2, Plus, CreditCard, Database } from 'lucide-react';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import {
   Sidebar as SidebarContainer,
   SidebarContent,
@@ -9,8 +8,8 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuItem,
   SidebarMenuButton,
+  SidebarMenuItem,
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
@@ -40,12 +39,11 @@ type MenuItem = {
   }>;
 };
 
-// Define default menu items
 const defaultMenuItems: MenuItem[] = [
   { title: 'Dashboard', icon: Home, url: '/', isDeletable: false },
   { title: 'Projects', icon: FolderOpen, url: '/projects', isDeletable: false },
-  { title: 'Bank of Content', icon: Database, url: '/bank-of-content', isDeletable: false },
-  { title: 'Content Ideation', icon: Lightbulb, url: '/content-ideation', isDeletable: true },
+  { title: 'Bank of Ideas', icon: Database, url: '/bank-of-content', isDeletable: true },
+  { title: 'Vision Board & Goals', icon: Lightbulb, url: '/projects/vision-board', isDeletable: true },
   { title: 'Documents', icon: FileText, url: '/documents', isDeletable: true },
 ];
 
@@ -54,38 +52,15 @@ const myAccountItem: MenuItem = { title: 'My Account', icon: CreditCard, url: '/
 
 const Sidebar = () => {
   const getSavedMenuItems = () => {
-    try {
-      const saved = localStorage.getItem('sidebarMenuItems');
-      if (!saved) return defaultMenuItems;
-      
-      const parsedItems = JSON.parse(saved);
-      
-      // Ensure Bank of Content is always included
-      const hasBankOfContent = parsedItems.some((item: MenuItem) => item.title === 'Bank of Content');
-      if (!hasBankOfContent) {
-        const bankOfContentItem = defaultMenuItems.find(item => item.title === 'Bank of Content');
-        if (bankOfContentItem) {
-          parsedItems.push(bankOfContentItem);
-        }
-      }
-      return parsedItems;
-    } catch (error) {
-      console.error("Error loading sidebar items:", error);
-      return defaultMenuItems;
-    }
+    const saved = localStorage.getItem('sidebarMenuItems');
+    return saved ? JSON.parse(saved) : defaultMenuItems;
   };
 
-  const [menuItems, setMenuItems] = useState<MenuItem[]>(getSavedMenuItems());
+  const [menuItems, setMenuItems] = useState<MenuItem[]>(getSavedMenuItems);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newPageTitle, setNewPageTitle] = useState('');
 
   const handleDeleteItem = (itemTitle: string) => {
-    // Never allow deletion of Bank of Content
-    if (itemTitle === 'Bank of Content') {
-      toast.error("Bank of Content cannot be removed");
-      return;
-    }
-    
     const updatedItems = menuItems.filter(item => item.title !== itemTitle);
     setMenuItems(updatedItems);
     localStorage.setItem('sidebarMenuItems', JSON.stringify(updatedItems));
@@ -150,18 +125,14 @@ const Sidebar = () => {
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
-                    asChild
-                    className={item.title === 'Bank of Content' ? 
-                      "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : ""}
-                  >
-                    <Link to={item.url} className="flex items-center gap-2">
-                      {item.icon && <item.icon size={20} />}
+                  <SidebarMenuButton asChild>
+                    <a href={item.url} className="flex items-center gap-2">
+                      <item.icon size={20} />
                       <span>{item.title}</span>
-                    </Link>
+                    </a>
                   </SidebarMenuButton>
                   
-                  {item.isDeletable && item.title !== 'Bank of Content' && (
+                  {item.isDeletable && (
                     <SidebarMenuAction 
                       onClick={() => handleDeleteItem(item.title)}
                       showOnHover={true}
@@ -179,10 +150,10 @@ const Sidebar = () => {
                             asChild 
                             size="md"
                           >
-                            <Link to={subItem.url} className="flex items-center gap-2">
-                              {subItem.icon && <subItem.icon size={16} />}
+                            <a href={subItem.url} className="flex items-center gap-2">
+                              <subItem.icon size={16} />
                               <span>{subItem.title}</span>
-                            </Link>
+                            </a>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
                       ))}
@@ -233,19 +204,19 @@ const Sidebar = () => {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <Link to={settingsItem.url} className="flex items-center gap-2">
-                {settingsItem.icon && <settingsItem.icon size={20} />}
+              <a href={settingsItem.url} className="flex items-center gap-2">
+                <settingsItem.icon size={20} />
                 <span>{settingsItem.title}</span>
-              </Link>
+              </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
           
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <Link to={myAccountItem.url} className="flex items-center gap-2">
-                {myAccountItem.icon && <myAccountItem.icon size={20} />}
+              <a href={myAccountItem.url} className="flex items-center gap-2">
+                <myAccountItem.icon size={20} />
                 <span>{myAccountItem.title}</span>
-              </Link>
+              </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
