@@ -151,17 +151,6 @@ const IdeaCreationDialog = ({
               />
             </div>
             
-            {onScheduledDateChange && (
-              <div className="grid gap-2">
-                <Label htmlFor="scheduled-date">Schedule to Calendar</Label>
-                <DateSchedulePicker 
-                  date={scheduledDate} 
-                  onDateChange={onScheduledDateChange}
-                  label=""
-                />
-              </div>
-            )}
-            
             <div className="grid gap-2">
               <Label htmlFor="tags">Tags</Label>
               <TagsInput
@@ -173,6 +162,17 @@ const IdeaCreationDialog = ({
                 placeholder="Add tags (e.g., To Film, To Edit, To Post)"
               />
             </div>
+            
+            {onScheduledDateChange && (
+              <div className="grid gap-2">
+                <Label htmlFor="scheduled-date">Schedule to Calendar</Label>
+                <DateSchedulePicker 
+                  date={scheduledDate} 
+                  onDateChange={onScheduledDateChange}
+                  label=""
+                />
+              </div>
+            )}
           </div>
         </ScrollArea>
         
