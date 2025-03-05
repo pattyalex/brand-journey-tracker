@@ -1,11 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { FileText, X, Plus, Tag, Pencil } from "lucide-react";
+import { FileText, Pencil, Plus } from "lucide-react";
 import { ContentItem } from "@/types/content";
-import { getTagColorClasses } from "@/utils/tagColors";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import ContentUploaderFields from "./ContentUploaderFields";
 
 interface ContentUploaderProps {
   pillarId: string;
@@ -185,137 +182,28 @@ const ContentUploader = ({
         </DialogHeader>
         
         <ScrollArea className="max-h-[calc(85vh-140px)]">
-          <div className="grid gap-4 py-4 pr-6">
-            <div className="grid gap-2">
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter a catchy hook for your idea..."
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="content">
-                {isEditMode ? "Script" : "Script"}
-              </Label>
-              <Textarea
-                id="content"
-                value={textContent}
-                onChange={(e) => setTextContent(e.target.value)}
-                placeholder={isEditMode 
-                  ? "Write your script here..."
-                  : "Develop your script here..."
-                }
-                rows={8}
-                className="resize-none"
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="format">Format</Label>
-              <Textarea
-                id="format"
-                value={formatText}
-                onChange={(e) => setFormatText(e.target.value)}
-                placeholder="Describe how you want to present your script (e.g., POV skit, educational, storytelling, aesthetic montage)..."
-                className="resize-y h-20"
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="shootDetails">Shoot Details</Label>
-              <Textarea
-                id="shootDetails"
-                value={shootDetails}
-                onChange={(e) => setShootDetails(e.target.value)}
-                placeholder="Enter details about the shoot, such as location, outfits, props needed..."
-                className="resize-y h-20"
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="caption">Caption</Label>
-              <Textarea
-                id="caption"
-                value={captionText}
-                onChange={(e) => setCaptionText(e.target.value)}
-                placeholder="Draft a caption for your content when posting to social media platforms..."
-                className="resize-y h-20"
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="platforms">Platforms</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="platforms"
-                  value={currentPlatform}
-                  onChange={(e) => setCurrentPlatform(e.target.value)}
-                  placeholder="Where do you want to post this content?"
-                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddPlatform())}
-                  className="flex-1"
-                />
-                <Button type="button" onClick={handleAddPlatform} variant="outline" size="icon" className="shrink-0">
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-              
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {platformsList.map((platform, index) => (
-                  <span 
-                    key={index} 
-                    className="bg-primary/10 text-primary text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5"
-                  >
-                    {platform}
-                    <button 
-                      type="button" 
-                      onClick={() => handleRemovePlatform(platform)}
-                      className="text-primary hover:text-primary/80"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="tags">Tags</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="tags"
-                  value={currentTag}
-                  onChange={(e) => setCurrentTag(e.target.value)}
-                  placeholder="Add tags (e.g., To Film, To Edit, To Post)"
-                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-                  className="flex-1"
-                />
-                <Button type="button" onClick={handleAddTag} variant="outline" size="icon" className="shrink-0">
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-              
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {tagsList.map((tag, index) => (
-                  <span 
-                    key={index} 
-                    className={`text-sm px-2 py-1 rounded-full flex items-center gap-1 ${getTagColorClasses(tag)}`}
-                  >
-                    {tag}
-                    <button 
-                      type="button" 
-                      onClick={() => handleRemoveTag(tag)}
-                      className="hover:text-foreground"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
+          <ContentUploaderFields
+            title={title}
+            setTitle={setTitle}
+            textContent={textContent}
+            setTextContent={setTextContent}
+            formatText={formatText}
+            setFormatText={setFormatText}
+            shootDetails={shootDetails}
+            setShootDetails={setShootDetails}
+            captionText={captionText}
+            setCaptionText={setCaptionText}
+            tagsList={tagsList}
+            currentTag={currentTag}
+            setCurrentTag={setCurrentTag}
+            handleAddTag={handleAddTag}
+            handleRemoveTag={handleRemoveTag}
+            platformsList={platformsList}
+            currentPlatform={currentPlatform}
+            setCurrentPlatform={setCurrentPlatform}
+            handleAddPlatform={handleAddPlatform}
+            handleRemovePlatform={handleRemovePlatform}
+          />
         </ScrollArea>
         
         <DialogFooter className="mt-4">

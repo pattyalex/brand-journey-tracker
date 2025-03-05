@@ -1,25 +1,10 @@
 
 import { useState, useEffect } from "react";
-import { 
-  Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { PenLine, Trash2, ArrowUpRight, MoveRight, Calendar, Tag, Pencil, Edit, X } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { formatDistanceToNow } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
-import { getTagColorClasses } from "@/utils/tagColors";
-import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
-import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
+import { DragDropContext, Droppable, DropResult } from "react-beautiful-dnd";
+import ContentCard from "./ContentCard";
 
 interface ContentPillarProps {
   pillar: Pillar;
@@ -54,16 +39,6 @@ const ContentPillar = ({
         item.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
       )
     : pillar.content;
-
-  // Function to parse JSON content
-  const parseContentData = (jsonString: string) => {
-    try {
-      return JSON.parse(jsonString);
-    } catch (error) {
-      console.error("Failed to parse content data:", error);
-      return { script: jsonString };
-    }
-  };
 
   const onDragEnd = (result: DropResult) => {
     const { destination, source } = result;
@@ -109,89 +84,16 @@ const ContentPillar = ({
                   className="grid grid-cols-1 md:grid-cols-2 gap-4"
                 >
                   {filteredContent.map((content, index) => (
-                    <Draggable key={content.id} draggableId={content.id} index={index}>
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          className={`${snapshot.isDragging ? 'opacity-70' : 'opacity-100'}`}
-                        >
-                          <Card 
-                            className={`overflow-hidden ${snapshot.isDragging ? 'shadow-lg' : ''}`}
-                          >
-                            <CardHeader className="p-4">
-                              <CardTitle className="text-lg">
-                                {content.title}
-                              </CardTitle>
-                              <CardDescription className="line-clamp-2">
-                                {content.description}
-                              </CardDescription>
-                            </CardHeader>
-                            
-                            <CardContent className="p-4 pt-0">
-                              <div className="flex flex-wrap gap-1 mb-2">
-                                {content.tags && content.tags.length > 0 ? (
-                                  content.tags.map((tag, index) => (
-                                    <span 
-                                      key={index} 
-                                      className={`text-xs px-2 py-1 rounded-full ${getTagColorClasses(tag)}`}
-                                    >
-                                      {tag}
-                                    </span>
-                                  ))
-                                ) : null}
-                              </div>
-                              <div className="flex items-center text-xs text-muted-foreground mt-2">
-                                <Calendar className="h-3 w-3 mr-1" />
-                                <span>
-                                  {content.dateCreated ? formatDistanceToNow(new Date(content.dateCreated), { addSuffix: true }) : 'Unknown date'}
-                                </span>
-                              </div>
-                            </CardContent>
-                            
-                            <CardFooter className="p-4 pt-0 flex justify-between">
-                              <div className="flex gap-2">
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  onClick={() => onDeleteContent(content.id)}
-                                  aria-label="Delete"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => onEditContent(content.id)}
-                                >
-                                  <Pencil className="h-4 w-4 mr-1" /> Edit
-                                </Button>
-                              </div>
-                              
-                              <div className="flex items-center">
-                                <Select
-                                  onValueChange={(value) => onMoveContent(value, content.id)}
-                                >
-                                  <SelectTrigger className="w-[130px] h-8">
-                                    <SelectValue placeholder="Move to..." />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {pillars
-                                      .filter(p => p.id !== pillar.id)
-                                      .map((p) => (
-                                        <SelectItem key={p.id} value={p.id}>
-                                          {p.name}
-                                        </SelectItem>
-                                      ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            </CardFooter>
-                          </Card>
-                        </div>
-                      )}
-                    </Draggable>
+                    <ContentCard
+                      key={content.id}
+                      content={content}
+                      index={index}
+                      pillar={pillar}
+                      pillars={pillars}
+                      onDeleteContent={onDeleteContent}
+                      onMoveContent={onMoveContent}
+                      onEditContent={onEditContent}
+                    />
                   ))}
                   {provided.placeholder}
                 </div>
