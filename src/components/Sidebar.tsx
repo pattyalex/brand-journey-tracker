@@ -40,7 +40,7 @@ type MenuItem = {
 };
 
 const defaultMenuItems: MenuItem[] = [
-  { title: 'Dashboard', icon: Home, url: '/dashboard', isDeletable: false },
+  { title: 'Dashboard', icon: Home, url: '/', isDeletable: false },
   { title: 'Projects', icon: FolderOpen, url: '/projects', isDeletable: false },
   { title: 'Bank of Content', icon: Database, url: '/bank-of-content', isDeletable: true },
   { title: 'Content Ideation', icon: Lightbulb, url: '/content-ideation', isDeletable: true },
@@ -125,7 +125,11 @@ const Sidebar = () => {
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton 
+                    asChild
+                    className={item.title === 'Bank of Content' ? 
+                      "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : ""}
+                  >
                     <a href={item.url} className="flex items-center gap-2">
                       <item.icon size={20} />
                       <span>{item.title}</span>
