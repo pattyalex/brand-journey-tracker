@@ -42,7 +42,7 @@ type MenuItem = {
 const defaultMenuItems: MenuItem[] = [
   { title: 'Dashboard', icon: Home, url: '/', isDeletable: false },
   { title: 'Projects', icon: FolderOpen, url: '/projects', isDeletable: false },
-  { title: 'Bank of Ideas', icon: Database, url: '/bank-of-content', isDeletable: true },
+  { title: 'Bank of Ideas', icon: Database, url: '/ideas-bank', isDeletable: true },
   { title: 'Vision Board & Goals', icon: Lightbulb, url: '/projects/vision-board', isDeletable: true },
   { title: 'Documents', icon: FileText, url: '/documents', isDeletable: true },
 ];

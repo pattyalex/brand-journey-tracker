@@ -37,6 +37,7 @@ const App = () => (
           <Route path="/my-account" element={<MyAccount />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/bank-of-content" element={<BankOfContent />} />
+          <Route path="/ideas-bank" element={<BankOfContent />} />
           <Route path="/content-calendar" element={<ContentCalendar />} />
           <Route path="/strategy-growth" element={<StrategyGrowth />} />
           <Route path="/income-tracker" element={<IncomeTracker />} />
