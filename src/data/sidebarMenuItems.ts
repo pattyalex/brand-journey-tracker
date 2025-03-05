@@ -1,5 +1,5 @@
 
-import { Home, FolderOpen, FileText, Settings, Lightbulb, Database, CreditCard, PenLine, Calendar, TrendingUp, BarChart, HelpCircle, Kanban } from 'lucide-react';
+import { Home, FolderOpen, FileText, Settings, Lightbulb, Database, CreditCard, PenLine, Calendar, TrendingUp, BarChart, HelpCircle, CheckSquare } from 'lucide-react';
 import { MenuItem } from '@/types/sidebar';
 
 export const defaultMenuItems: MenuItem[] = [
@@ -18,7 +18,7 @@ export const defaultMenuItems: MenuItem[] = [
       { title: 'Analytics', icon: BarChart, url: '/analytics' },
     ]
   },
-  { title: 'Task Board', icon: Kanban, url: '/task-board', isDeletable: true },
+  { title: 'Task Board', icon: CheckSquare, url: '/task-board', isDeletable: true },
   { title: 'Goals and Objectives', icon: Lightbulb, url: '/projects/vision-board', isDeletable: true },
   { title: 'Documents', icon: FileText, url: '/documents', isDeletable: true },
 ];

@@ -1,7 +1,7 @@
 
 import Layout from "@/components/Layout";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { PenLine, Database, Calendar, TrendingUp, Handshake, BarChart, Kanban } from "lucide-react";
+import { PenLine, Database, Calendar, TrendingUp, Handshake, BarChart, CheckSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const services = [
@@ -43,7 +43,7 @@ const services = [
         <span>Board</span>
       </div>
     ),
-    icon: Kanban,
+    icon: CheckSquare,
     path: "/task-board"
   },
   {
