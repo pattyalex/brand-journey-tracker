@@ -79,7 +79,7 @@ const ContentPillar = ({
                 <div 
                   {...provided.droppableProps}
                   ref={provided.innerRef}
-                  className="grid grid-cols-1 gap-6"
+                  className="grid grid-cols-2 md:grid-cols-4 gap-4"
                 >
                   {filteredContent.map((content, index) => (
                     <ContentCard
