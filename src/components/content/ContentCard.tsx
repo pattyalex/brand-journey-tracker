@@ -135,7 +135,7 @@ const ContentCard = ({
                     <CalendarIcon className="h-3.5 w-3.5" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 bg-white" align="start">
                   <div className="p-2">
                     <h3 className="text-sm font-medium mb-2">Schedule Post</h3>
                     <CalendarComponent
