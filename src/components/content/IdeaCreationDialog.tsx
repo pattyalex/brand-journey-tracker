@@ -83,13 +83,13 @@ const IdeaCreationDialog = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className={`max-h-[90vh] transition-all duration-300 ${
+        className={`max-h-[90vh] overflow-hidden transition-all duration-300 ${
           isMeganOpen 
-            ? "sm:max-w-[900px] md:max-w-[1100px] grid grid-cols-[3fr,2fr] relative" 
+            ? "sm:max-w-[900px] md:max-w-[1100px] grid grid-cols-[1fr,350px]" 
             : "sm:max-w-[650px] md:max-w-[750px]"
         }`}
       >
-        <div className={`${isMeganOpen ? "pr-4" : ""}`}>
+        <div className={`${isMeganOpen ? "pr-4 overflow-hidden" : ""}`}>
           <DialogHeader className="relative">
             <DialogTitle>{dialogTitle}</DialogTitle>
             <Button
@@ -212,15 +212,17 @@ const IdeaCreationDialog = ({
         </div>
         
         {isMeganOpen && (
-          <MeganAIChat 
-            onClose={() => setIsMeganOpen(false)} 
-            contextData={{
-              title,
-              script: scriptText,
-              format: formatText,
-              shootDetails
-            }}
-          />
+          <div className="h-full overflow-hidden">
+            <MeganAIChat 
+              onClose={() => setIsMeganOpen(false)} 
+              contextData={{
+                title,
+                script: scriptText,
+                format: formatText,
+                shootDetails
+              }}
+            />
+          </div>
         )}
       </DialogContent>
     </Dialog>
