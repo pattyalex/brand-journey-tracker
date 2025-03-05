@@ -141,7 +141,7 @@ const ContentPillar = ({
                     className="flex space-x-6 min-w-min pb-4 pl-2 pr-2"
                   >
                     {filteredContent.map((content, index) => (
-                      <div key={content.id} className="min-w-[450px] max-w-[450px]">
+                      <div key={content.id} className="min-w-[320px] max-w-[320px]">
                         <ContentCard
                           content={content}
                           index={index}
