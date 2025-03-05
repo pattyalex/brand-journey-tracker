@@ -751,7 +751,7 @@ const BrainDump = () => {
             <CardContent className="p-6">
               <Textarea
                 ref={textareaRef}
-                placeholder="Start writing your ideas here... This is a space for you to freely brainstorm, jot down random thoughts, or draft content ideas without any structure. Just let your creativity flow!"
+                placeholder="Write your ideas here..."
                 className="min-h-[400px] resize-none border-0 focus-visible:ring-0"
                 value={activePage.content}
                 onChange={(e) => handleContentChange(e.target.value)}
