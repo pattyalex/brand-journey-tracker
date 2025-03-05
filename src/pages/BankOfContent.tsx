@@ -205,13 +205,36 @@ const BankOfContent = () => {
 
   const addPillar = () => {
     const newId = `${Date.now()}`;
-    setPillars([...pillars, { id: newId, name: "New Pillar", content: [], writingSpace: "" }]);
+    const newPillars = [...pillars, { id: newId, name: "New Pillar", content: [], writingSpace: "" }];
+    setPillars(newPillars);
     setActiveTab(newId);
+    
+    try {
+      localStorage.setItem('pillars', JSON.stringify(newPillars.map(p => ({
+        id: p.id,
+        name: p.name
+      }))));
+    } catch (error) {
+      console.error("Failed to save pillars to localStorage:", error);
+    }
+    
     toast.success("New pillar added");
   };
 
   const renamePillar = (id: string, newName: string) => {
-    setPillars(pillars.map(p => p.id === id ? {...p, name: newName} : p));
+    const updatedPillars = pillars.map(p => p.id === id ? {...p, name: newName} : p);
+    setPillars(updatedPillars);
+    
+    try {
+      localStorage.setItem('pillars', JSON.stringify(updatedPillars.map(p => ({
+        id: p.id,
+        name: p.name
+      }))));
+    } catch (error) {
+      console.error("Failed to save renamed pillar to localStorage:", error);
+    }
+    
+    toast.success(`Pillar renamed to "${newName}"`);
   };
 
   const deletePillar = (id: string) => {
@@ -226,6 +249,18 @@ const BankOfContent = () => {
     
     if (activeTab === id) {
       setActiveTab(newPillars[0].id);
+    }
+    
+    try {
+      localStorage.setItem('pillars', JSON.stringify(newPillars.map(p => ({
+        id: p.id,
+        name: p.name
+      }))));
+      
+      localStorage.removeItem(`pillar-content-${id}`);
+      localStorage.removeItem(`writing-${id}`);
+    } catch (error) {
+      console.error("Failed to update localStorage after pillar deletion:", error);
     }
     
     toast.success("Pillar deleted");
@@ -560,7 +595,7 @@ const BankOfContent = () => {
                           value={writingText}
                           onChange={(e) => setWritingText(e.target.value)}
                           onTextSelect={handleTextSelection}
-                          placeholder="Start writing your ideas, thoughts, or notes here..."
+                          placeholder="Write your ideas here..."
                           className="min-h-full w-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-sm absolute inset-0 px-4 py-4"
                         />
                       </ScrollArea>

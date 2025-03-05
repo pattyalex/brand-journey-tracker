@@ -5,7 +5,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PenLine, Trash2, ArrowUpRight, MoveRight, Calendar, Tag, Pencil } from "lucide-react";
+import { PenLine, Trash2, ArrowUpRight, MoveRight, Calendar, Tag, Pencil, Edit, X } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -19,6 +19,7 @@ import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
 import { getTagColorClasses } from "@/utils/tagColors";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
+import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 
 interface ContentPillarProps {
   pillar: Pillar;
@@ -45,6 +46,7 @@ const ContentPillar = ({
 }: ContentPillarProps) => {
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState(pillar.name);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
   // Debug logging to track what's happening with the content
   useEffect(() => {
@@ -108,6 +110,61 @@ const ContentPillar = ({
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center justify-between mb-2">
+        {isRenaming ? (
+          <div className="flex items-center gap-2">
+            <Input
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              className="h-8 w-40"
+              autoFocus
+              onKeyDown={(e) => e.key === 'Enter' && handleRename()}
+            />
+            <Button size="sm" variant="ghost" onClick={handleRename}>
+              <Edit className="h-4 w-4 mr-1" />
+              Save
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setIsRenaming(false)}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="ghost" onClick={startRenaming}>
+              <Edit className="h-4 w-4 mr-1" />
+              Rename
+            </Button>
+            
+            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+              <AlertDialogTrigger asChild>
+                <Button size="sm" variant="ghost" className="text-destructive">
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Delete
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete {pillar.name} Pillar</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete the "{pillar.name}" pillar and all its content. 
+                    This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={onDelete}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        )}
+      </div>
+      
       {filteredContent.length === 0 ? (
         <div className="text-center p-8 border border-dashed rounded-lg bg-muted/30">
           <p className="text-muted-foreground">
