@@ -244,10 +244,10 @@ const ContentUploader = ({
           </Button>
           <Button onClick={handleSubmit}>
             {isEditMode ? (
-              "Update Idea"
+              "Update"
             ) : (
               <>
-                <Plus className="mr-2 h-4 w-4" /> Add Idea
+                <Plus className="mr-2 h-4 w-4" /> Update
               </>
             )}
           </Button>
