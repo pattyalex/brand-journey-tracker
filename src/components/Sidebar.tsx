@@ -40,6 +40,7 @@ type MenuItem = {
   }>;
 };
 
+// Ensure these are properly defined before usage
 const defaultMenuItems: MenuItem[] = [
   { title: 'Dashboard', icon: Home, url: '/', isDeletable: false },
   { title: 'Projects', icon: FolderOpen, url: '/projects', isDeletable: false },
@@ -117,6 +118,11 @@ const Sidebar = () => {
     toast.success(`"${newPageTitle}" added to sidebar`);
   };
 
+  // Let's make sure we're rendering the correct item for each menu item
+  const renderMenuIcon = (Icon: React.ComponentType<any>) => {
+    return <Icon size={20} />;
+  };
+
   return (
     <SidebarContainer>
       <div className="p-4">
@@ -154,7 +160,7 @@ const Sidebar = () => {
                       "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : ""}
                   >
                     <Link to={item.url} className="flex items-center gap-2">
-                      <item.icon size={20} />
+                      {renderMenuIcon(item.icon)}
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -178,7 +184,7 @@ const Sidebar = () => {
                             size="md"
                           >
                             <Link to={subItem.url} className="flex items-center gap-2">
-                              <subItem.icon size={16} />
+                              {renderMenuIcon(subItem.icon)}
                               <span>{subItem.title}</span>
                             </Link>
                           </SidebarMenuSubButton>
@@ -232,7 +238,7 @@ const Sidebar = () => {
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <Link to={settingsItem.url} className="flex items-center gap-2">
-                <settingsItem.icon size={20} />
+                {renderMenuIcon(settingsItem.icon)}
                 <span>{settingsItem.title}</span>
               </Link>
             </SidebarMenuButton>
@@ -241,7 +247,7 @@ const Sidebar = () => {
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <Link to={myAccountItem.url} className="flex items-center gap-2">
-                <myAccountItem.icon size={20} />
+                {renderMenuIcon(myAccountItem.icon)}
                 <span>{myAccountItem.title}</span>
               </Link>
             </SidebarMenuButton>
