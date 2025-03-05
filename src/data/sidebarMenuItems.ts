@@ -13,12 +13,12 @@ export const defaultMenuItems: MenuItem[] = [
       { title: 'Bank of Ideas', icon: Database, url: '/ideas-bank' },
       { title: 'Content Ideation and Planning', icon: PenLine, url: '/content-ideation' },
       { title: 'Content Calendar', icon: Calendar, url: '/content-calendar' },
-      { title: 'Task Board', icon: Kanban, url: '/task-board' },
       { title: 'Strategy and Growth', icon: TrendingUp, url: '/strategy-growth' },
       { title: 'Income Tracker', icon: CreditCard, url: '/income-tracker' },
       { title: 'Analytics', icon: BarChart, url: '/analytics' },
     ]
   },
+  { title: 'Task Board', icon: Kanban, url: '/task-board', isDeletable: true },
   { title: 'Goals and Objectives', icon: Lightbulb, url: '/projects/vision-board', isDeletable: true },
   { title: 'Documents', icon: FileText, url: '/documents', isDeletable: true },
 ];
