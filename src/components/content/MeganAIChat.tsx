@@ -108,7 +108,10 @@ const MeganAIChat = ({ onClose, contextData }: MeganAIChatProps) => {
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="flex items-center justify-between p-3 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-primary">Ask Megan</h2>
+        <div>
+          <h2 className="text-lg font-semibold text-primary">Ask Megan</h2>
+          <p className="text-xs text-gray-500">your AI content creation assistant</p>
+        </div>
         <Button variant="ghost" size="sm" onClick={onClose}>
           <XIcon className="h-4 w-4" />
         </Button>

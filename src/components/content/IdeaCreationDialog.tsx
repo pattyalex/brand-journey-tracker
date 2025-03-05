@@ -99,11 +99,14 @@ const IdeaCreationDialog = ({
               onClick={() => setIsMeganOpen(!isMeganOpen)}
             >
               {isMeganOpen ? "Hide Megan" : (
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm">Ask Megan</span>
-                  <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs">
-                    M
+                <div className="flex flex-col items-end">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm">Ask Megan</span>
+                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs">
+                      M
+                    </div>
                   </div>
+                  <span className="text-xs text-gray-500">your AI content creation assistant</span>
                 </div>
               )}
             </Button>
