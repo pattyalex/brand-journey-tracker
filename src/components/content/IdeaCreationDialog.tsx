@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import TagsInput from "./TagsInput";
 import PlatformsInput from "./PlatformsInput";
+import DateSchedulePicker from "./DateSchedulePicker";
 
 interface IdeaCreationDialogProps {
   open: boolean;
@@ -38,6 +39,8 @@ interface IdeaCreationDialogProps {
   onCurrentTagChange: (value: string) => void;
   onAddTag: () => void;
   onRemoveTag: (tag: string) => void;
+  scheduledDate?: Date;
+  onScheduledDateChange?: (date: Date | undefined) => void;
   onSave: () => void;
   onCancel: () => void;
   isEditMode: boolean;
@@ -67,6 +70,8 @@ const IdeaCreationDialog = ({
   onCurrentTagChange,
   onAddTag,
   onRemoveTag,
+  scheduledDate,
+  onScheduledDateChange,
   onSave,
   onCancel,
   isEditMode,
@@ -145,6 +150,17 @@ const IdeaCreationDialog = ({
                 onRemovePlatform={onRemovePlatform}
               />
             </div>
+            
+            {onScheduledDateChange && (
+              <div className="grid gap-2">
+                <Label htmlFor="scheduled-date">Schedule to Calendar</Label>
+                <DateSchedulePicker 
+                  date={scheduledDate} 
+                  onDateChange={onScheduledDateChange}
+                  label=""
+                />
+              </div>
+            )}
             
             <div className="grid gap-2">
               <Label htmlFor="tags">Tags</Label>

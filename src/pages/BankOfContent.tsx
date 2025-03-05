@@ -45,6 +45,7 @@ const BankOfContent = () => {
   const [developIdeaMode, setDevelopIdeaMode] = useState(false);
   const [editingContent, setEditingContent] = useState<ContentItem | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
 
   useEffect(() => {
     try {
@@ -328,9 +329,33 @@ const BankOfContent = () => {
       dateCreated: new Date(),
       tags: newIdeaTags,
       platforms: selectedPlatforms,
+      scheduledDate: scheduledDate,
     };
     
     addContentToPillar(activeTab, newIdea);
+    
+    if (scheduledDate) {
+      try {
+        const existingScheduledContents = localStorage.getItem('scheduledContents');
+        let scheduledContents: ContentItem[] = [];
+        
+        if (existingScheduledContents) {
+          scheduledContents = JSON.parse(existingScheduledContents);
+        }
+        
+        scheduledContents.push({
+          ...newIdea,
+          dateCreated: newIdea.dateCreated.toISOString(),
+          scheduledDate: scheduledDate.toISOString()
+        });
+        
+        localStorage.setItem('scheduledContents', JSON.stringify(scheduledContents));
+        toast.success(`Scheduled for ${scheduledDate.toLocaleDateString()}`);
+      } catch (error) {
+        console.error("Error saving scheduled content:", error);
+      }
+    }
+    
     setShowNewIdeaDialog(false);
     setSelectedText("");
     setDevelopScriptText("");
@@ -341,6 +366,7 @@ const BankOfContent = () => {
     setCurrentPlatform("");
     setNewIdeaTitle("");
     setNewIdeaTags([]);
+    setScheduledDate(undefined);
     toast.success("Idea saved successfully");
   };
 
@@ -496,6 +522,7 @@ const BankOfContent = () => {
     setDevelopScriptText("");
     setShootDetails("");
     setShowNewIdeaDialog(true);
+    setScheduledDate(undefined);
   };
 
   const activePillar = pillars.find(p => p.id === activeTab);
@@ -592,10 +619,13 @@ const BankOfContent = () => {
           onCurrentTagChange={setCurrentTag}
           onAddTag={addTag}
           onRemoveTag={removeTag}
+          scheduledDate={scheduledDate}
+          onScheduledDateChange={setScheduledDate}
           onSave={createNewIdeaFromSelection}
           onCancel={() => {
             setShowNewIdeaDialog(false);
             setDevelopIdeaMode(false);
+            setScheduledDate(undefined);
           }}
           isEditMode={developIdeaMode}
           dialogTitle={developIdeaMode ? "Develop Selected Idea" : "Create New Idea"}

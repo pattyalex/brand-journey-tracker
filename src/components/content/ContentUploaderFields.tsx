@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import TagsInput from "./TagsInput";
 import PlatformsInput from "./PlatformsInput";
+import DateSchedulePicker from "./DateSchedulePicker";
 
 interface ContentUploaderFieldsProps {
   title: string;
@@ -26,6 +27,8 @@ interface ContentUploaderFieldsProps {
   setCurrentPlatform: (value: string) => void;
   handleAddPlatform: () => void;
   handleRemovePlatform: (platform: string) => void;
+  scheduledDate?: Date;
+  setScheduledDate?: (date: Date | undefined) => void;
 }
 
 const ContentUploaderFields = ({
@@ -48,7 +51,9 @@ const ContentUploaderFields = ({
   currentPlatform,
   setCurrentPlatform,
   handleAddPlatform,
-  handleRemovePlatform
+  handleRemovePlatform,
+  scheduledDate,
+  setScheduledDate
 }: ContentUploaderFieldsProps) => {
   return (
     <div className="grid gap-4 py-4 pr-6">
@@ -118,6 +123,17 @@ const ContentUploaderFields = ({
           placeholder="Where do you want to post this content?"
         />
       </div>
+      
+      {setScheduledDate && (
+        <div className="grid gap-2">
+          <Label htmlFor="scheduledDate">Schedule to Calendar</Label>
+          <DateSchedulePicker 
+            date={scheduledDate} 
+            onDateChange={setScheduledDate}
+            label=""
+          />
+        </div>
+      )}
       
       <div className="grid gap-2">
         <Label htmlFor="tags">Tags</Label>

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { FileText, Pencil, Plus } from "lucide-react";
@@ -41,6 +42,7 @@ const ContentUploader = ({
   const [tagsList, setTagsList] = useState<string[]>([]);
   const [currentPlatform, setCurrentPlatform] = useState("");
   const [platformsList, setPlatformsList] = useState<string[]>([]);
+  const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
   
   useEffect(() => {
     if (contentToEdit && isEditMode) {
@@ -67,6 +69,10 @@ const ContentUploader = ({
         setTagsList(contentToEdit.tags || []);
         if (contentToEdit.platforms && Array.isArray(contentToEdit.platforms)) {
           setPlatformsList(contentToEdit.platforms);
+        }
+        
+        if (contentToEdit.scheduledDate) {
+          setScheduledDate(new Date(contentToEdit.scheduledDate));
         }
       } catch (error) {
         console.error("Error loading content data for editing:", error);
@@ -117,6 +123,7 @@ const ContentUploader = ({
       dateCreated: contentToEdit ? contentToEdit.dateCreated : new Date(),
       tags: tagsList,
       platforms: platformsList.length > 0 ? platformsList : undefined,
+      scheduledDate: scheduledDate,
     };
 
     if (isEditMode && onContentUpdated && contentToEdit) {
@@ -143,6 +150,7 @@ const ContentUploader = ({
     setCurrentTag("");
     setPlatformsList([]);
     setCurrentPlatform("");
+    setScheduledDate(undefined);
   };
 
   const handleClose = () => {
@@ -203,6 +211,8 @@ const ContentUploader = ({
             setCurrentPlatform={setCurrentPlatform}
             handleAddPlatform={handleAddPlatform}
             handleRemovePlatform={handleRemovePlatform}
+            scheduledDate={scheduledDate}
+            setScheduledDate={setScheduledDate}
           />
         </ScrollArea>
         
