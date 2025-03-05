@@ -53,8 +53,24 @@ const myAccountItem: MenuItem = { title: 'My Account', icon: CreditCard, url: '/
 
 const Sidebar = () => {
   const getSavedMenuItems = () => {
-    const saved = localStorage.getItem('sidebarMenuItems');
-    return saved ? JSON.parse(saved) : defaultMenuItems;
+    try {
+      const saved = localStorage.getItem('sidebarMenuItems');
+      // Make sure we always include the defaultMenuItems if nothing is saved or if parsing fails
+      if (!saved) return defaultMenuItems;
+      const parsedItems = JSON.parse(saved);
+      // Ensure Bank of Content is always included
+      const hasBankOfContent = parsedItems.some((item: MenuItem) => item.title === 'Bank of Content');
+      if (!hasBankOfContent) {
+        const bankOfContentItem = defaultMenuItems.find(item => item.title === 'Bank of Content');
+        if (bankOfContentItem) {
+          parsedItems.push(bankOfContentItem);
+        }
+      }
+      return parsedItems;
+    } catch (error) {
+      console.error("Error loading sidebar items:", error);
+      return defaultMenuItems;
+    }
   };
 
   const [menuItems, setMenuItems] = useState<MenuItem[]>(getSavedMenuItems());
@@ -62,6 +78,12 @@ const Sidebar = () => {
   const [newPageTitle, setNewPageTitle] = useState('');
 
   const handleDeleteItem = (itemTitle: string) => {
+    // Never allow deletion of Bank of Content
+    if (itemTitle === 'Bank of Content') {
+      toast.error("Bank of Content cannot be removed");
+      return;
+    }
+    
     const updatedItems = menuItems.filter(item => item.title !== itemTitle);
     setMenuItems(updatedItems);
     localStorage.setItem('sidebarMenuItems', JSON.stringify(updatedItems));
@@ -137,7 +159,7 @@ const Sidebar = () => {
                     </Link>
                   </SidebarMenuButton>
                   
-                  {item.isDeletable && (
+                  {item.isDeletable && item.title !== 'Bank of Content' && (
                     <SidebarMenuAction 
                       onClick={() => handleDeleteItem(item.title)}
                       showOnHover={true}
