@@ -3,7 +3,7 @@ import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ContentPillar from "@/components/content/ContentPillar";
 import { Button } from "@/components/ui/button";
-import { Pencil, Plus, Search, Lightbulb, FileText, Save, ClipboardCopy, Tag, X, Sparkles, Check } from "lucide-react";
+import { Pencil, Plus, Search, Lightbulb, FileText, X, Tag, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ContentUploader from "@/components/content/ContentUploader";
@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getTagColorClasses } from "@/utils/tagColors";
+import SimpleTextFormattingToolbar from "@/components/SimpleTextFormattingToolbar";
 
 export type Pillar = {
   id: string;
@@ -356,16 +357,6 @@ const BankOfContent = () => {
     toast.success(`Content moved to ${targetPillar?.name}`);
   };
 
-  const saveForLater = () => {
-    if (!writingText.trim()) {
-      toast.error("There's nothing to save");
-      return;
-    }
-    
-    localStorage.setItem(`writing-${activeTab}`, writingText);
-    toast.success("Your writing has been saved for later");
-  };
-
   const editContent = (pillarId: string, contentId: string) => {
     const pillar = pillars.find(p => p.id === pillarId);
     if (!pillar) return;
@@ -457,6 +448,61 @@ const BankOfContent = () => {
     }
   };
 
+  const handleFormatText = (formatType: string, formatValue?: string) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const { selectionStart, selectionEnd, value } = textarea;
+    const selectedText = value.substring(selectionStart, selectionEnd);
+    
+    let newText;
+    let newCursorPos;
+    
+    switch (formatType) {
+      case 'bold':
+        newText = value.substring(0, selectionStart) + "**" + selectedText + "**" + value.substring(selectionEnd);
+        newCursorPos = selectionEnd + 4;
+        break;
+      case 'italic':
+        newText = value.substring(0, selectionStart) + "_" + selectedText + "_" + value.substring(selectionEnd);
+        newCursorPos = selectionEnd + 2;
+        break;
+      case 'bullet':
+        newText = value.substring(0, selectionStart) + "• " + selectedText + value.substring(selectionEnd);
+        newCursorPos = selectionEnd + 2;
+        break;
+      case 'numbered':
+        newText = value.substring(0, selectionStart) + "1. " + selectedText + value.substring(selectionEnd);
+        newCursorPos = selectionEnd + 3;
+        break;
+      case 'heading':
+        newText = value.substring(0, selectionStart) + "## " + selectedText + value.substring(selectionEnd);
+        newCursorPos = selectionEnd + 3;
+        break;
+      case 'align':
+        if (formatValue) {
+          newText = value.substring(0, selectionStart) + 
+                    `<div style="text-align: ${formatValue};">${selectedText}</div>` + 
+                    value.substring(selectionEnd);
+          newCursorPos = selectionEnd + 30 + formatValue.length;
+        } else {
+          return;
+        }
+        break;
+      default:
+        return;
+    }
+    
+    setWritingText(newText);
+    
+    setTimeout(() => {
+      if (textarea) {
+        textarea.focus();
+        textarea.setSelectionRange(newCursorPos, newCursorPos);
+      }
+    }, 0);
+  };
+
   return (
     <Layout>
       <div className="container mx-auto py-6 space-y-6 fade-in">
@@ -505,10 +551,12 @@ const BankOfContent = () => {
                     </h2>
                   </div>
                   <div className="h-[calc(100vh-240px)]">
-                    <div className="rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full relative bg-[#F6F6F7] flex">
-                      <ScrollArea className="h-full w-full">
+                    <div className="rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full relative bg-[#F6F6F7] flex flex-col">
+                      <SimpleTextFormattingToolbar onFormat={handleFormatText} />
+                      
+                      <ScrollArea className="h-full w-full flex-1">
                         <div 
-                          className="h-full w-full cursor-text px-4 py-4" 
+                          className="h-full w-full cursor-text px-4 py-4 relative" 
                           onClick={() => textareaRef.current?.focus()}
                         >
                           <Textarea
