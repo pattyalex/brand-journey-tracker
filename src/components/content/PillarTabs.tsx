@@ -4,7 +4,7 @@ import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pillar } from "@/pages/BankOfContent";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Check, X, Edit, Trash2, Plus } from "lucide-react";
+import { Check, X, Edit, Trash2, Plus, MoreVertical } from "lucide-react";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -16,6 +16,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 
 interface PillarTabsProps {
   pillars: Pillar[];
@@ -69,7 +75,7 @@ const PillarTabs = ({
     <div className="flex items-center justify-between mb-4">
       <TabsList className="bg-background border overflow-x-auto">
         {pillars.map((pillar) => (
-          <div key={pillar.id} className="relative group flex items-center">
+          <div key={pillar.id} className="relative flex items-center">
             {editingPillarId === pillar.id ? (
               <div className="px-3 py-1.5 flex items-center bg-primary text-primary-foreground rounded-sm">
                 <Input
@@ -99,61 +105,65 @@ const PillarTabs = ({
                 </Button>
               </div>
             ) : (
-              <>
+              <div className="flex items-center">
                 <TabsTrigger 
                   value={pillar.id}
                   className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white ${
                     pillar.id === "1" && activeTab === "1" ? "bg-[#8B6B4E] text-white" : ""
                   }`}
-                  onDoubleClick={() => startEditingPillar(pillar.id, pillar.name)}
                   onClick={() => onTabChange(pillar.id)}
                 >
                   {pillar.name}
                 </TabsTrigger>
                 
-                <div className="absolute hidden group-hover:flex top-full left-0 z-50 bg-white border shadow-md rounded-md p-1 mt-1 flex-col w-32">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => startEditingPillar(pillar.id, pillar.name)}
-                    className="justify-start"
-                  >
-                    <Edit className="h-4 w-4 mr-2" />
-                    Rename
-                  </Button>
-                  
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="text-destructive justify-start"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete {pillar.name} Pillar</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This will permanently delete the "{pillar.name}" pillar and all its content. 
-                          This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction 
-                          onClick={() => onDeletePillar(pillar.id)}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      className="ml-1 px-1 h-6 text-muted-foreground hover:text-foreground"
+                    >
+                      <MoreVertical className="h-3.5 w-3.5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-40">
+                    <DropdownMenuItem onClick={() => startEditingPillar(pillar.id, pillar.name)}>
+                      <Edit className="h-4 w-4 mr-2" />
+                      Rename
+                    </DropdownMenuItem>
+                    
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onSelect={(e) => e.preventDefault()}
                         >
+                          <Trash2 className="h-4 w-4 mr-2" />
                           Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </>
+                        </DropdownMenuItem>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete {pillar.name} Pillar</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently delete the "{pillar.name}" pillar and all its content. 
+                            This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={() => onDeletePillar(pillar.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             )}
           </div>
         ))}

@@ -5,6 +5,7 @@ import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
 import { DragDropContext, Droppable, DropResult } from "react-beautiful-dnd";
 import ContentCard from "./ContentCard";
+import { toast } from "sonner";
 
 interface ContentPillarProps {
   pillar: Pillar;
@@ -43,23 +44,20 @@ const ContentPillar = ({
   const onDragEnd = (result: DropResult) => {
     const { destination, source } = result;
     
-    // If dropped outside of a droppable area
     if (!destination) return;
     
-    // If dropped in the same position
     if (
       destination.droppableId === source.droppableId &&
       destination.index === source.index
     ) return;
     
-    // Reorder the content
     const newItems = Array.from(pillar.content);
     const [removed] = newItems.splice(source.index, 1);
     newItems.splice(destination.index, 0, removed);
     
-    // Notify parent component of reordering
     if (onReorderContent) {
       onReorderContent(newItems);
+      toast.success("Content order updated");
     }
   };
 
