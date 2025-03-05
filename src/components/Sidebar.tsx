@@ -1,5 +1,5 @@
 
-import { Home, FolderOpen, FileText, Settings, ListTodo, Lightbulb, Trash2, Plus, CreditCard, Database } from 'lucide-react';
+import { Home, FolderOpen, FileText, Settings, Lightbulb, Trash2, Plus, CreditCard, Database } from 'lucide-react';
 import { useState } from 'react';
 import {
   Sidebar as SidebarContainer,
@@ -40,10 +40,10 @@ type MenuItem = {
 };
 
 const defaultMenuItems: MenuItem[] = [
-  { title: 'Dashboard', icon: Home, url: '/', isDeletable: false },
+  { title: 'Dashboard', icon: Home, url: '/dashboard', isDeletable: false },
   { title: 'Projects', icon: FolderOpen, url: '/projects', isDeletable: false },
   { title: 'Bank of Content', icon: Database, url: '/bank-of-content', isDeletable: true },
-  { title: 'Vision Board & Goals', icon: Lightbulb, url: '/projects/vision-board', isDeletable: true },
+  { title: 'Content Ideation', icon: Lightbulb, url: '/content-ideation', isDeletable: true },
   { title: 'Documents', icon: FileText, url: '/documents', isDeletable: true },
 ];
 
@@ -56,7 +56,7 @@ const Sidebar = () => {
     return saved ? JSON.parse(saved) : defaultMenuItems;
   };
 
-  const [menuItems, setMenuItems] = useState<MenuItem[]>(getSavedMenuItems);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>(getSavedMenuItems());
   const [showAddForm, setShowAddForm] = useState(false);
   const [newPageTitle, setNewPageTitle] = useState('');
 
