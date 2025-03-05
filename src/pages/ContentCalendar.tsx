@@ -34,10 +34,12 @@ const ContentCalendar = () => {
   const [calendarOpen, setCalendarOpen] = useState(false);
   
   useEffect(() => {
+    // Load scheduled content from localStorage
     const storedContent = localStorage.getItem('scheduledContents');
     if (storedContent) {
       try {
         const parsed = JSON.parse(storedContent);
+        // Convert string dates to Date objects
         const withDates = parsed.map((item: any) => ({
           ...item,
           dateCreated: new Date(item.dateCreated),
@@ -63,12 +65,14 @@ const ContentCalendar = () => {
     setEventDescription("");
   };
 
+  // Find content scheduled for the selected date
   const scheduledForDate = date 
     ? scheduledContents.filter(content => 
         content.scheduledDate && isSameDay(new Date(content.scheduledDate), date)
       ) 
     : [];
 
+  // Dates that have scheduled content
   const scheduledDates = scheduledContents
     .filter(content => content.scheduledDate)
     .map(content => new Date(content.scheduledDate as Date));
@@ -106,32 +110,23 @@ const ContentCalendar = () => {
                     {date ? format(date, "PPP") : <span>Pick a date</span>}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent 
-                  className="w-auto p-0 bg-white shadow-md" 
-                  align="start"
-                  style={{ backgroundColor: "white", opacity: 1 }}
-                >
-                  <div className="bg-white rounded-md">
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={(newDate) => {
-                        setDate(newDate);
-                        setCalendarOpen(false);
-                      }}
-                      className="rounded-md border bg-white"
-                      modifiers={{
-                        booked: scheduledDates,
-                      }}
-                      modifiersStyles={{
-                        booked: {
-                          backgroundColor: "hsl(var(--primary) / 0.1)",
-                          fontWeight: "bold",
-                          borderRadius: "0",
-                        },
-                      }}
-                    />
-                  </div>
+                <PopoverContent className="w-auto p-0 bg-white" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    className="rounded-md border"
+                    modifiers={{
+                      booked: scheduledDates,
+                    }}
+                    modifiersStyles={{
+                      booked: {
+                        backgroundColor: "hsl(var(--primary) / 0.1)",
+                        fontWeight: "bold",
+                        borderRadius: "0",
+                      },
+                    }}
+                  />
                 </PopoverContent>
               </Popover>
               
