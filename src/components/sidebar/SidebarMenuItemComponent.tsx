@@ -36,11 +36,16 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
       e.preventDefault();
       setIsExpanded(!isExpanded);
       
-      // Navigate to the item's URL when expanding
-      if (!isExpanded) {
+      // Only navigate to the item's URL when clicking on the menu item text, not the arrow
+      if (!isExpanded && e.currentTarget === e.target) {
         navigate(item.url);
       }
     }
+  };
+  
+  const handleArrowClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent the parent handleMenuClick from firing
+    setIsExpanded(!isExpanded);
   };
 
   return (
@@ -54,7 +59,10 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
           <item.icon size={20} />
           <span>{item.title}</span>
           {item.subItems && item.subItems.length > 0 && (
-            <span className="ml-auto">
+            <span 
+              className="ml-auto cursor-pointer" 
+              onClick={handleArrowClick}
+            >
               {isExpanded ? (
                 <ChevronDown size={16} />
               ) : (
