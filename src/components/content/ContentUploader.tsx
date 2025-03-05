@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -46,16 +45,13 @@ const ContentUploader = ({
   const [currentPlatform, setCurrentPlatform] = useState("");
   const [platformsList, setPlatformsList] = useState<string[]>([]);
   
-  // Load content data if in edit mode
   useEffect(() => {
     if (contentToEdit && isEditMode) {
       setIsOpen(true);
       setTitle(contentToEdit.title);
       
-      // Handle different content formats
       try {
         if (contentToEdit.format === 'text') {
-          // Try to parse the content if it's in JSON format
           try {
             const parsedContent = JSON.parse(contentToEdit.url);
             setTextContent(parsedContent.script || '');
@@ -63,22 +59,18 @@ const ContentUploader = ({
             setShootDetails(parsedContent.shootDetails || '');
             setCaptionText(parsedContent.caption || '');
             
-            // Set platforms from parsed content if available
             if (parsedContent.platforms && Array.isArray(parsedContent.platforms)) {
               setPlatformsList(parsedContent.platforms);
             }
           } catch {
-            // If not JSON, use as-is
             setTextContent(contentToEdit.url);
           }
         }
         
-        // Set tags and platforms
         setTagsList(contentToEdit.tags || []);
         if (contentToEdit.platforms && Array.isArray(contentToEdit.platforms)) {
           setPlatformsList(contentToEdit.platforms);
         }
-        
       } catch (error) {
         console.error("Error loading content data for editing:", error);
       }
@@ -108,17 +100,15 @@ const ContentUploader = ({
   };
 
   const handleSubmit = () => {
-    // Basic validation
     if (!title.trim()) {
       alert("Please enter a title");
       return;
     }
 
-    // Create or update content item
     const contentItem: ContentItem = {
       id: contentToEdit ? contentToEdit.id : `content-${Date.now()}`,
       title,
-      description: textContent.slice(0, 100) + (textContent.length > 100 ? "..." : ""), // First 100 chars as description
+      description: textContent.slice(0, 100) + (textContent.length > 100 ? "..." : ""),
       format: "text",
       url: JSON.stringify({
         script: textContent,
@@ -126,7 +116,7 @@ const ContentUploader = ({
         shootDetails: shootDetails,
         caption: captionText,
         platforms: platformsList
-      }), // Store all data in the url field as JSON
+      }),
       dateCreated: contentToEdit ? contentToEdit.dateCreated : new Date(),
       tags: tagsList,
       platforms: platformsList.length > 0 ? platformsList : undefined,
@@ -141,7 +131,6 @@ const ContentUploader = ({
     resetForm();
     setIsOpen(false);
     
-    // Call onCancelEdit if in edit mode to reset parent component state
     if (isEditMode && onCancelEdit) {
       onCancelEdit();
     }
@@ -208,12 +197,17 @@ const ContentUploader = ({
             </div>
             
             <div className="grid gap-2">
-              <Label htmlFor="content">Write your idea</Label>
+              <Label htmlFor="content">
+                {isEditMode ? "Develop your script" : "Write your idea"}
+              </Label>
               <Textarea
                 id="content"
                 value={textContent}
                 onChange={(e) => setTextContent(e.target.value)}
-                placeholder="Start writing your ideas, notes, or content drafts here..."
+                placeholder={isEditMode 
+                  ? "Develop and refine your script here..."
+                  : "Start writing your ideas, notes, or content drafts here..."
+                }
                 rows={8}
                 className="resize-none"
               />
