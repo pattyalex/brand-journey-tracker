@@ -26,7 +26,7 @@ const MeganAIChat = ({ onClose, contextData }: MeganAIChatProps) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
-      content: "Hi there! I'm Megan, your content creation assistant. How can I help you today?",
+      content: "Hi there! I'm Megan, your AI content creation assistant. How can I help you today?",
       role: "assistant",
       timestamp: new Date(),
     },
