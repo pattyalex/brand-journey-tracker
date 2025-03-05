@@ -71,6 +71,11 @@ const ContentPillar = ({
       )
     : pillar.content;
 
+  // Function to check if content is "Spring Outfit Proba"
+  const isSpringOutfitProba = (content: ContentItem) => {
+    return content.title.includes("Spring Outfit Proba");
+  };
+
   // Function to parse JSON content
   const parseContentData = (jsonString: string) => {
     try {
@@ -97,11 +102,21 @@ const ContentPillar = ({
             {filteredContent.map((content) => (
               <Card 
                 key={content.id} 
-                className="overflow-hidden"
+                className={`overflow-hidden ${isSpringOutfitProba(content) ? 'ring-2 ring-[#9b87f5] bg-purple-50 shadow-md' : ''}`}
               >
                 <CardHeader className="p-4">
                   <CardTitle className="text-lg">
-                    {content.title}
+                    {isSpringOutfitProba(content) ? (
+                      <span className="relative font-semibold text-[#7E69AB]">
+                        {content.title}
+                        <span className="absolute -top-1 -right-2 flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D6BCFA] opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-[#8B5CF6]"></span>
+                        </span>
+                      </span>
+                    ) : (
+                      content.title
+                    )}
                   </CardTitle>
                   <CardDescription className="line-clamp-2">
                     {content.description}
@@ -142,6 +157,7 @@ const ContentPillar = ({
                       variant="outline" 
                       size="sm"
                       onClick={() => onEditContent(content.id)}
+                      className={isSpringOutfitProba(content) ? 'bg-[#D6BCFA] text-[#6E59A5] hover:bg-[#C4A0FA] border-[#9b87f5]' : ''}
                     >
                       <Pencil className="h-4 w-4 mr-1" /> Edit
                     </Button>
