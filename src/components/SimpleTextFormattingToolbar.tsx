@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Bold, Italic, List, ListOrdered, Heading, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
+import { Bold, Italic, List, ListOrdered, Underline, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
 
 interface SimpleTextFormattingToolbarProps {
   onFormat: (formatType: string, formatValue?: string) => void;
@@ -24,6 +24,13 @@ const SimpleTextFormattingToolbar: React.FC<SimpleTextFormattingToolbarProps> = 
         >
           <Italic className="h-3 w-3" />
         </button>
+        <button 
+          className="p-1 hover:bg-gray-100 rounded text-gray-600" 
+          onClick={() => onFormat('underline')}
+          title="Underline"
+        >
+          <Underline className="h-3 w-3" />
+        </button>
         <span className="text-gray-300 mx-0.5">|</span>
         <button 
           className="p-1 hover:bg-gray-100 rounded text-gray-600" 
@@ -38,13 +45,6 @@ const SimpleTextFormattingToolbar: React.FC<SimpleTextFormattingToolbarProps> = 
           title="Numbered List"
         >
           <ListOrdered className="h-3 w-3" />
-        </button>
-        <button 
-          className="p-1 hover:bg-gray-100 rounded text-gray-600" 
-          onClick={() => onFormat('heading')}
-          title="Heading"
-        >
-          <Heading className="h-3 w-3" />
         </button>
         <span className="text-gray-300 mx-0.5">|</span>
         <button 

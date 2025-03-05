@@ -467,16 +467,16 @@ const BankOfContent = () => {
         newText = value.substring(0, selectionStart) + "_" + selectedText + "_" + value.substring(selectionEnd);
         newCursorPos = selectionEnd + 2;
         break;
+      case 'underline':
+        newText = value.substring(0, selectionStart) + "<u>" + selectedText + "</u>" + value.substring(selectionEnd);
+        newCursorPos = selectionEnd + 7;
+        break;
       case 'bullet':
         newText = value.substring(0, selectionStart) + "• " + selectedText + value.substring(selectionEnd);
         newCursorPos = selectionEnd + 2;
         break;
       case 'numbered':
         newText = value.substring(0, selectionStart) + "1. " + selectedText + value.substring(selectionEnd);
-        newCursorPos = selectionEnd + 3;
-        break;
-      case 'heading':
-        newText = value.substring(0, selectionStart) + "## " + selectedText + value.substring(selectionEnd);
         newCursorPos = selectionEnd + 3;
         break;
       case 'align':
