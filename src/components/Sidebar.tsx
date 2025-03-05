@@ -1,6 +1,7 @@
 
 import { Home, FolderOpen, FileText, Settings, Lightbulb, Trash2, Plus, CreditCard, Database } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Sidebar as SidebarContainer,
   SidebarContent,
@@ -8,8 +9,8 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuButton,
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
@@ -130,10 +131,10 @@ const Sidebar = () => {
                     className={item.title === 'Bank of Content' ? 
                       "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : ""}
                   >
-                    <a href={item.url} className="flex items-center gap-2">
+                    <Link to={item.url} className="flex items-center gap-2">
                       <item.icon size={20} />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                   
                   {item.isDeletable && (
@@ -154,10 +155,10 @@ const Sidebar = () => {
                             asChild 
                             size="md"
                           >
-                            <a href={subItem.url} className="flex items-center gap-2">
+                            <Link to={subItem.url} className="flex items-center gap-2">
                               <subItem.icon size={16} />
                               <span>{subItem.title}</span>
-                            </a>
+                            </Link>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
                       ))}
@@ -208,19 +209,19 @@ const Sidebar = () => {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <a href={settingsItem.url} className="flex items-center gap-2">
+              <Link to={settingsItem.url} className="flex items-center gap-2">
                 <settingsItem.icon size={20} />
                 <span>{settingsItem.title}</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
           
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <a href={myAccountItem.url} className="flex items-center gap-2">
+              <Link to={myAccountItem.url} className="flex items-center gap-2">
                 <myAccountItem.icon size={20} />
                 <span>{myAccountItem.title}</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

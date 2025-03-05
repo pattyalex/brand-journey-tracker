@@ -17,7 +17,7 @@ import BankOfContent from "./pages/BankOfContent";
 import ContentCalendar from "./pages/ContentCalendar";
 import StrategyGrowth from "./pages/StrategyGrowth";
 import IncomeTracker from "./pages/IncomeTracker";
-import Documents from "./pages/NotFound"; // Temporary placeholder for Documents page
+import Documents from "./pages/Documents";
 
 const queryClient = new QueryClient();
 
