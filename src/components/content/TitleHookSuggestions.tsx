@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -249,13 +248,30 @@ const HOOK_DATA = {
   "Industry Specific Hooks": {
     subcategories: [
       {
-        name: "Beauty & Fashion",
+        name: "Fashion-Specific Hooks",
         hooks: [
-          "The makeup hack every [skin type] needs to know",
-          "This styling trick makes any outfit look expensive",
-          "How to build a capsule wardrobe that actually works",
-          "The skincare ingredient that changed my [skin concern]",
-          "Affordable dupes for [luxury product]"
+          "The must-have item of the season is [X].",
+          "This season's hottest trend is easier to style than you think!",
+          "I've been living in [X]—here's why you need it in your wardrobe.",
+          "Get my signature look in just 3 pieces!"
+        ]
+      },
+      {
+        name: "Beauty-Specific Hooks",
+        hooks: [
+          "The one product I can't live without—find out why!",
+          "Transform your skin with this [X] step routine.",
+          "This beauty tool will change your skincare game.",
+          "I've been using this product for a week—and the results are insane!"
+        ]
+      },
+      {
+        name: "Lifestyle-Specific Hooks",
+        hooks: [
+          "My morning routine that sets me up for success.",
+          "How I balance work, life, and everything in between.",
+          "My favorite ways to relax after a busy day.",
+          "This [lifestyle habit] has made a huge impact on my life."
         ]
       },
       {
