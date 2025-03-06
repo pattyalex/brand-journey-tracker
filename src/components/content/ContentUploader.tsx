@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { FileText, Pencil } from "lucide-react";
@@ -26,6 +27,7 @@ const ContentUploader = ({
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [textContent, setTextContent] = useState("");
+  const [contentFormat, setContentFormat] = useState("text");
   const [shootDetails, setShootDetails] = useState("");
   const [captionText, setCaptionText] = useState("");
   const [currentTag, setCurrentTag] = useState("");
@@ -55,6 +57,7 @@ const ContentUploader = ({
           }
         }
         
+        setContentFormat(contentToEdit.format || 'text');
         setTagsList(contentToEdit.tags || []);
         if (contentToEdit.platforms && Array.isArray(contentToEdit.platforms)) {
           setPlatformsList(contentToEdit.platforms);
@@ -101,7 +104,7 @@ const ContentUploader = ({
       id: contentToEdit ? contentToEdit.id : `content-${Date.now()}`,
       title,
       description: textContent.slice(0, 100) + (textContent.length > 100 ? "..." : ""),
-      format: "text",
+      format: contentFormat,
       url: JSON.stringify({
         script: textContent,
         shootDetails: shootDetails,
@@ -154,6 +157,7 @@ const ContentUploader = ({
   const resetForm = () => {
     setTitle("");
     setTextContent("");
+    setContentFormat("text");
     setShootDetails("");
     setCaptionText("");
     setTagsList([]);
@@ -185,6 +189,8 @@ const ContentUploader = ({
         onTitleChange={setTitle}
         scriptText={textContent}
         onScriptTextChange={setTextContent}
+        format={contentFormat}
+        onFormatChange={setContentFormat}
         shootDetails={shootDetails}
         onShootDetailsChange={setShootDetails}
         captionText={captionText}

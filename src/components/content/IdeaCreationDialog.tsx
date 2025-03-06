@@ -12,7 +12,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Sparkles } from "lucide-react";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue 
+} from "@/components/ui/select";
+import { Text, Video, Image, FileAudio, Code } from "lucide-react";
 import TagsInput from "./TagsInput";
 import PlatformsInput from "./PlatformsInput";
 import DateSchedulePicker from "./DateSchedulePicker";
@@ -26,6 +33,8 @@ interface IdeaCreationDialogProps {
   onTitleChange: (value: string) => void;
   scriptText: string;
   onScriptTextChange: (value: string) => void;
+  format?: string;
+  onFormatChange?: (value: string) => void;
   shootDetails: string;
   onShootDetailsChange: (value: string) => void;
   captionText: string;
@@ -55,6 +64,8 @@ const IdeaCreationDialog = ({
   onTitleChange,
   scriptText,
   onScriptTextChange,
+  format = "text",
+  onFormatChange,
   shootDetails,
   onShootDetailsChange,
   captionText,
@@ -77,6 +88,14 @@ const IdeaCreationDialog = ({
   dialogTitle = "Create New Idea"
 }: IdeaCreationDialogProps) => {
   const [isMeganOpen, setIsMeganOpen] = useState(false);
+  
+  const formatOptions = [
+    { value: "text", label: "Text", icon: <Text className="h-4 w-4" /> },
+    { value: "video", label: "Video", icon: <Video className="h-4 w-4" /> },
+    { value: "image", label: "Image", icon: <Image className="h-4 w-4" /> },
+    { value: "audio", label: "Audio", icon: <FileAudio className="h-4 w-4" /> },
+    { value: "code", label: "Code", icon: <Code className="h-4 w-4" /> },
+  ];
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -140,6 +159,29 @@ const IdeaCreationDialog = ({
                     placeholder="Write your script here..."
                     className="min-h-[120px] resize-y"
                   />
+                </div>
+                
+                <div className="grid gap-2 mt-2">
+                  <Label htmlFor="content-format">Format</Label>
+                  <Select 
+                    value={format} 
+                    onValueChange={onFormatChange ? onFormatChange : () => {}}
+                    disabled={!onFormatChange}
+                  >
+                    <SelectTrigger id="content-format" className="w-full">
+                      <SelectValue placeholder="Select a format" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {formatOptions.map(option => (
+                        <SelectItem key={option.value} value={option.value} className="flex items-center gap-2">
+                          <div className="flex items-center gap-2">
+                            {option.icon}
+                            <span>{option.label}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 
                 <div className="h-4"></div>
