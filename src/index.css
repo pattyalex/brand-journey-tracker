@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
 
 @tailwind base;
@@ -122,4 +123,15 @@
 
 .sidebar-toggle-icon {
   transition: transform 0.3s ease-in-out;
+}
+
+/* Make the entire writing box writeable */
+.full-writeable-area textarea {
+  width: 100%;
+  height: 100%;
+}
+
+/* Custom scrollbar styling */
+[data-radix-scroll-area-viewport] > div {
+  height: 100%;
 }

@@ -65,7 +65,7 @@ const WritingSpace = ({
               style={{ position: 'relative', height: '100%' }}
             />
           </ScrollArea>
-          <div className="absolute right-0 top-0 bottom-0 w-3 bg-gray-200 opacity-60"></div>
+          <div className="absolute right-0 top-0 bottom-0 w-6 bg-red-500 opacity-60"></div> {/* Created a wider, red scrollbar as shown in the image */}
         </div>
       </div>
     </div>
