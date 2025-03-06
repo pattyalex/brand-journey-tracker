@@ -123,7 +123,7 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
             <SelectValue placeholder="Select a content format" />
           </SelectTrigger>
           <SelectContent className="max-h-[300px]">
-            <ScrollArea className="h-[280px]">
+            <ScrollArea className="h-[280px] touch-auto overflow-y-auto">
               {formats.map((format) => (
                 <SelectItem 
                   key={format} 
