@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +14,7 @@ import {
   SheetHeader,
   SheetTitle
 } from "@/components/ui/sheet";
-import { Sparkles, ArrowRight, Plus } from "lucide-react";
+import { Sparkles, ArrowRight, Plus, Trash2 } from "lucide-react";
 
 interface TitleHookSuggestionsProps {
   onSelectHook: (hook: string) => void;
@@ -215,6 +216,11 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
     setSheetOpen(true);
   };
 
+  // New function to handle deleting a custom hook
+  const handleDeleteCustomHook = (hookToDelete: string) => {
+    setCustomHooks(prev => prev.filter(hook => hook !== hookToDelete));
+  };
+
   return (
     <>
       {/* Button trigger for hook suggestions */}
@@ -332,13 +338,27 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
                 {customHooks.length > 0 ? (
                   <ul className="space-y-2">
                     {customHooks.map((hook, index) => (
-                      <li key={index} className="list-disc ml-4">
-                        <button 
-                          onClick={() => handleSelectHook(hook)}
-                          className="text-left hover:text-primary hover:underline"
+                      <li key={index} className="flex items-center gap-2">
+                        <span className="list-disc ml-4">
+                          <button 
+                            onClick={() => handleSelectHook(hook)}
+                            className="text-left hover:text-primary hover:underline"
+                          >
+                            "{hook}"
+                          </button>
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteCustomHook(hook);
+                          }}
+                          className="ml-auto p-1 h-6 w-6"
+                          aria-label={`Delete hook "${hook}"`}
                         >
-                          "{hook}"
-                        </button>
+                          <Trash2 className="h-4 w-4 text-destructive hover:text-destructive/80" />
+                        </Button>
                       </li>
                     ))}
                   </ul>
