@@ -130,15 +130,17 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
                   value={format} 
                   className="hover:bg-gray-100 dark:hover:bg-gray-700 group flex items-center justify-between pr-2"
                 >
-                  <div className="flex-1">{format}</div>
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={(e) => handleDeleteFormat(format, e)}
-                    className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
+                  <div className="flex items-center w-full">
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      onClick={(e) => handleDeleteFormat(format, e)}
+                      className="mr-2 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-gray-600"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                    <span className="flex-1">{format}</span>
+                  </div>
                 </SelectItem>
               ))}
               <SelectItem value="custom" className="hover:bg-gray-100 dark:hover:bg-gray-700">
