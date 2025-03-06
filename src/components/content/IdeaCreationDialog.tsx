@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -18,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue 
 } from "@/components/ui/select";
-import { Text, Video, Image, FileAudio, Code, FileVideo, Camera, Mic, Presentation, FileSpreadsheet, Youtube, Instagram, TikTok, Linkedin, FileType } from "lucide-react";
+import { Text, Video, Image, FileAudio, Code } from "lucide-react";
 import TagsInput from "./TagsInput";
 import PlatformsInput from "./PlatformsInput";
 import DateSchedulePicker from "./DateSchedulePicker";
@@ -89,21 +90,11 @@ const IdeaCreationDialog = ({
   const [isMeganOpen, setIsMeganOpen] = useState(false);
   
   const formatOptions = [
-    { value: "text", label: "Text Post", icon: <Text className="h-4 w-4" /> },
+    { value: "text", label: "Text", icon: <Text className="h-4 w-4" /> },
     { value: "video", label: "Video", icon: <Video className="h-4 w-4" /> },
     { value: "image", label: "Image", icon: <Image className="h-4 w-4" /> },
     { value: "audio", label: "Audio", icon: <FileAudio className="h-4 w-4" /> },
-    { value: "short_video", label: "Short-form Video", icon: <FileVideo className="h-4 w-4" /> },
-    { value: "reel", label: "Reel/Story", icon: <Instagram className="h-4 w-4" /> },
-    { value: "tiktok", label: "TikTok", icon: <TikTok className="h-4 w-4" /> },
-    { value: "youtube", label: "YouTube", icon: <Youtube className="h-4 w-4" /> },
-    { value: "carousel", label: "Carousel Post", icon: <FileSpreadsheet className="h-4 w-4" /> },
-    { value: "live", label: "Live Stream", icon: <Camera className="h-4 w-4" /> },
-    { value: "podcast", label: "Podcast", icon: <Mic className="h-4 w-4" /> },
-    { value: "article", label: "Article/Blog", icon: <FileType className="h-4 w-4" /> },
-    { value: "infographic", label: "Infographic", icon: <Presentation className="h-4 w-4" /> },
-    { value: "code", label: "Code Snippet", icon: <Code className="h-4 w-4" /> },
-    { value: "linkedin", label: "LinkedIn Post", icon: <Linkedin className="h-4 w-4" /> },
+    { value: "code", label: "Code", icon: <Code className="h-4 w-4" /> },
   ];
   
   return (
@@ -180,7 +171,7 @@ const IdeaCreationDialog = ({
                     <SelectTrigger id="content-format" className="w-full">
                       <SelectValue placeholder="Select a format" />
                     </SelectTrigger>
-                    <SelectContent className="max-h-[300px]">
+                    <SelectContent>
                       {formatOptions.map(option => (
                         <SelectItem key={option.value} value={option.value} className="flex items-center gap-2">
                           <div className="flex items-center gap-2">
