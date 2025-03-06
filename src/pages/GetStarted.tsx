@@ -8,8 +8,8 @@ const services = [
   {
     title: (
       <div className="flex flex-col">
-        <span>Bank of</span>
-        <span>Ideas</span>
+        <span>Idea</span>
+        <span>Development</span>
       </div>
     ),
     icon: Database,

@@ -10,7 +10,7 @@ export const defaultMenuItems: MenuItem[] = [
     url: '/get-started', 
     isDeletable: false,
     subItems: [
-      { title: 'Idea Development', icon: Database, url: '/ideas-bank' },
+      { title: 'Idea Development', icon: Database, url: '/bank-of-content' },
       { title: 'Content Ideation and Planning', icon: PenLine, url: '/content-ideation' },
       { title: 'Content Calendar', icon: Calendar, url: '/content-calendar' },
       { title: 'Strategy and Growth', icon: TrendingUp, url: '/strategy-growth' },
