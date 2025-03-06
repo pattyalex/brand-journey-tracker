@@ -249,7 +249,7 @@ const HOOK_DATA = {
   "Industry Specific Hooks": {
     subcategories: [
       {
-        name: "Fashion-Specific Hooks",
+        name: "Fashion Hooks",
         hooks: [
           "The must-have item of the season is [X].",
           "This season's hottest trend is easier to style than you think!",
@@ -258,7 +258,7 @@ const HOOK_DATA = {
         ]
       },
       {
-        name: "Beauty-Specific Hooks",
+        name: "Beauty Hooks",
         hooks: [
           "The one product I can't live without—find out why!",
           "Transform your skin with this [X] step routine.",
@@ -267,7 +267,7 @@ const HOOK_DATA = {
         ]
       },
       {
-        name: "Lifestyle-Specific Hooks",
+        name: "Lifestyle Hooks",
         hooks: [
           "My morning routine that sets me up for success.",
           "How I balance work, life, and everything in between.",
