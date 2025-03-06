@@ -139,7 +139,7 @@ const ContentPillar = ({
                   <div 
                     {...provided.droppableProps}
                     ref={provided.innerRef}
-                    className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 min-w-min px-2"
+                    className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4 min-w-min px-2"
                   >
                     {filteredContent.map((content, index) => (
                       <Draggable
@@ -152,7 +152,7 @@ const ContentPillar = ({
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            className={`${snapshot.isDragging ? 'opacity-70' : 'opacity-100'} max-w-[320px]`}
+                            className={`${snapshot.isDragging ? 'opacity-70' : 'opacity-100'} max-w-[360px]`}
                             style={{
                               ...provided.draggableProps.style,
                             }}
