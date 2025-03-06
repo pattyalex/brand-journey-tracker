@@ -88,7 +88,7 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select a content format" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="max-h-[300px] overflow-y-auto">
             {PREDEFINED_FORMATS.map((format) => (
               <SelectItem key={format} value={format}>
                 {format}

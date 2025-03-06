@@ -134,7 +134,7 @@ const IdeaCreationDialog = ({
                   />
                 </div>
                 
-                <div className="grid gap-2">
+                <div className="grid gap-2 relative">
                   <Label htmlFor="format-select">Format</Label>
                   <FormatSelector
                     selectedFormat={formatText}
