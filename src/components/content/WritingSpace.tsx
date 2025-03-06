@@ -25,7 +25,7 @@ const WritingSpace = ({
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold flex items-center">
           <Pencil className="h-5 w-5 mr-2" />
-          Brain Dump Of Ideas
+          Brain Dump Your Ideas
         </h2>
       </div>
       <div className="h-[calc(100vh-240px)]">
