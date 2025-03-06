@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -95,12 +96,13 @@ const IdeaCreationDialog = ({
             <Button
               variant="ghost"
               size="sm"
-              className="absolute right-0 top-0 text-primary hover:text-primary/80 hover:bg-muted font-medium"
+              className="absolute right-0 top-0 text-primary hover:text-primary/80 hover:bg-accent cursor-pointer transition-colors duration-150 p-1.5 rounded-md active:scale-95"
               onClick={() => setIsMeganOpen(!isMeganOpen)}
+              aria-label={isMeganOpen ? "Hide Megan" : "Ask Megan"}
             >
               {isMeganOpen ? "Hide Megan" : (
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm">Ask Megan</span>
+                <div className="flex items-center gap-1.5 px-1 py-0.5">
+                  <span className="text-sm font-medium">Ask Megan</span>
                   <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs">
                     M
                   </div>
