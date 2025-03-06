@@ -81,7 +81,7 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
                   value={customHook}
                   onChange={(e) => setCustomHook(e.target.value)}
                   className="flex-1 px-3 py-1 text-sm border rounded-md"
-                  placeholder="Type your own hook..."
+                  placeholder="Type a name for your own category of hooks..."
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') handleCustomHookSubmit();
                   }}
