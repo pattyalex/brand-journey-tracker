@@ -11,6 +11,7 @@ interface ContentUploaderProps {
   contentToEdit?: ContentItem | null;
   isEditMode?: boolean;
   onCancelEdit?: () => void;
+  alwaysShowAddNewIdea?: boolean;
 }
 
 const ContentUploader = ({ 
@@ -19,7 +20,8 @@ const ContentUploader = ({
   onContentUpdated,
   contentToEdit = null,
   isEditMode = false,
-  onCancelEdit
+  onCancelEdit,
+  alwaysShowAddNewIdea = false
 }: ContentUploaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState("");
@@ -176,15 +178,8 @@ const ContentUploader = ({
   return (
     <>
       <Button onClick={() => setIsOpen(true)}>
-        {isEditMode ? (
-          <>
-            <Pencil className="mr-2 h-4 w-4" /> Edit Idea
-          </>
-        ) : (
-          <>
-            <FileText className="mr-2 h-4 w-4" /> Add New Idea
-          </>
-        )}
+        <FileText className="mr-2 h-4 w-4" /> 
+        Add New Idea
       </Button>
       
       <IdeaCreationDialog

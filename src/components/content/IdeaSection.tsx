@@ -54,6 +54,7 @@ const IdeaSection = ({
               contentToEdit={editingContent}
               isEditMode={true}
               onCancelEdit={onCancelEdit}
+              alwaysShowAddNewIdea={true}
             />
           ) : (
             <Button 
