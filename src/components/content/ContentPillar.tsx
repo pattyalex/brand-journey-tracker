@@ -1,9 +1,8 @@
 
 import { useState, useEffect, useRef } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
-import { DragDropContext, Droppable, DropResult } from "react-beautiful-dnd";
+import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 import ContentCard from "./ContentCard";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -56,17 +55,12 @@ const ContentPillar = ({
       destination.index === source.index
     ) return;
     
-    // Get the flat index from row-based indexes
-    const sourceRow = parseInt(source.droppableId.split('-').pop() || '0');
-    const destRow = parseInt(destination.droppableId.split('-').pop() || '0');
-    
-    const itemsPerRow = 3;
-    const sourceIndex = (sourceRow * itemsPerRow) + source.index;
-    const destIndex = (destRow * itemsPerRow) + destination.index;
-    
-    const newItems = Array.from(pillar.content);
-    const [removed] = newItems.splice(sourceIndex, 1);
-    newItems.splice(destIndex, 0, removed);
+    // Create a new array with all content items
+    const newItems = Array.from(filteredContent);
+    // Remove the dragged item
+    const [removed] = newItems.splice(source.index, 1);
+    // Insert it at the destination
+    newItems.splice(destination.index, 0, removed);
     
     if (onReorderContent) {
       onReorderContent(newItems);
@@ -111,18 +105,6 @@ const ContentPillar = ({
     };
   }, [filteredContent]);
 
-  // Function to group content into rows of 3
-  const getContentRows = () => {
-    // Group content into groups of 3 items
-    const rows = [];
-    for (let i = 0; i < filteredContent.length; i += 3) {
-      rows.push(filteredContent.slice(i, i + 3));
-    }
-    return rows;
-  };
-
-  const contentRows = getContentRows();
-
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <div className="space-y-4 relative">
@@ -135,40 +117,51 @@ const ContentPillar = ({
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {contentRows.map((row, rowIndex) => (
-              <div key={rowIndex} className="relative">
-                {row.length > 3 && showLeftArrow && (
-                  <Button 
-                    onClick={scrollLeft} 
-                    className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
-                    variant="outline"
-                    size="icon"
-                    aria-label="Scroll left"
+          <div className="relative">
+            {filteredContent.length > 3 && showLeftArrow && (
+              <Button 
+                onClick={scrollLeft} 
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
+                variant="outline"
+                size="icon"
+                aria-label="Scroll left"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </Button>
+            )}
+            
+            <div 
+              ref={scrollContainerRef} 
+              className="overflow-x-auto pb-4 hide-scrollbar"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <Droppable droppableId="content-cards" direction="horizontal">
+                {(provided) => (
+                  <div 
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                    className="flex flex-wrap gap-4 min-w-min pl-2 pr-2"
+                    style={{ display: 'flex', flexDirection: 'row' }}
                   >
-                    <ChevronLeft className="h-6 w-6" />
-                  </Button>
-                )}
-                
-                <div 
-                  ref={scrollContainerRef} 
-                  className="flex items-start space-x-4 overflow-x-auto pb-4 hide-scrollbar"
-                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                >
-                  <Droppable 
-                    droppableId={`content-cards-row-${rowIndex}`} 
-                    direction="horizontal"
-                  >
-                    {(provided) => (
-                      <div 
-                        {...provided.droppableProps}
-                        ref={provided.innerRef}
-                        className="flex space-x-4 min-w-min pb-2 pl-2 pr-2"
+                    {filteredContent.map((content, index) => (
+                      <Draggable
+                        key={content.id}
+                        draggableId={content.id}
+                        index={index}
                       >
-                        {row.map((content, index) => (
-                          <div 
-                            key={content.id} 
-                            className="min-w-[280px] max-w-[280px]"
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            className={`${snapshot.isDragging ? 'opacity-70' : 'opacity-100'} h-full`}
+                            style={{
+                              ...provided.draggableProps.style,
+                              width: '280px',
+                              minWidth: '280px',
+                              maxWidth: '280px',
+                              margin: '0 4px 16px 4px'
+                            }}
                           >
                             <ContentCard
                               content={content}
@@ -180,26 +173,26 @@ const ContentPillar = ({
                               onEditContent={onEditContent}
                             />
                           </div>
-                        ))}
-                        {provided.placeholder}
-                      </div>
-                    )}
-                  </Droppable>
-                </div>
-                
-                {row.length > 3 && showRightArrow && (
-                  <Button 
-                    onClick={scrollRight} 
-                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
-                    variant="outline"
-                    size="icon"
-                    aria-label="Scroll right"
-                  >
-                    <ChevronRight className="h-6 w-6" />
-                  </Button>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
                 )}
-              </div>
-            ))}
+              </Droppable>
+            </div>
+            
+            {filteredContent.length > 3 && showRightArrow && (
+              <Button 
+                onClick={scrollRight} 
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
+                variant="outline"
+                size="icon"
+                aria-label="Scroll right"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </Button>
+            )}
           </div>
         )}
       </div>

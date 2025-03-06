@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Lightbulb, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -69,13 +68,13 @@ const IdeaSection = ({
         </div>
       </div>
       <ContentPillar
-        pillar={{...pillar}}
+        pillar={pillar}
         pillars={pillars}
         onDeleteContent={onDeleteContent}
         onMoveContent={onMoveContent}
         onEditContent={onEditContent}
         searchQuery={searchQuery}
-        onReorderContent={onReorderContent}
+        onReorderContent={(newItems) => onReorderContent(pillar.id, newItems)}
       />
     </div>
   );
