@@ -217,35 +217,34 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
             <div className="max-h-[350px] overflow-y-auto">
               <div className="p-1">
                 {Object.keys(HOOK_DATA).map((category, index) => (
-                  <Button
+                  <button
                     key={index}
-                    variant="ghost"
-                    className="w-full justify-between px-3 py-2 h-auto text-sm rounded-none hover:bg-accent"
+                    className="w-full flex justify-between items-center px-4 py-3 text-left hover:bg-accent text-base"
                     onClick={() => handleSelectCategory(category)}
                   >
                     {category}
                     <ArrowRight className="h-4 w-4 ml-2 text-muted-foreground" />
-                  </Button>
+                  </button>
                 ))}
               </div>
               
-              <div className="p-1">
-                <h4 className="font-semibold text-sm px-3 py-2 text-primary">+ Create your own</h4>
-                <div className="px-3 py-2 flex gap-2">
+              <div className="p-4 border-t mt-2">
+                <h4 className="font-semibold text-primary mb-2">+ Create your own</h4>
+                <div className="flex gap-2">
                   <input
                     type="text"
                     value={customHook}
                     onChange={(e) => setCustomHook(e.target.value)}
-                    className="flex-1 px-3 py-1 text-sm border rounded-md"
+                    className="flex-1 px-3 py-2 text-sm border rounded-md"
                     placeholder="Type your own hook..."
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleCustomHookSubmit();
                     }}
                   />
                   <Button 
-                    size="sm" 
                     onClick={handleCustomHookSubmit}
                     disabled={!customHook.trim()}
+                    className="whitespace-nowrap"
                   >
                     Add
                   </Button>
@@ -267,12 +266,12 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
             {selectedCategory && HOOK_DATA[selectedCategory as keyof typeof HOOK_DATA]?.subcategories.map((subcat, scIndex) => (
               <div key={scIndex} className="mb-6">
                 <h3 className="font-medium text-base mb-2">• {subcat.name}</h3>
-                <ul className="pl-6 space-y-2">
+                <ul className="space-y-2 ml-4">
                   {subcat.hooks.map((hook, hIndex) => (
-                    <li key={hIndex} className="text-sm list-[circle]">
+                    <li key={hIndex} className="list-disc ml-4">
                       <button 
                         onClick={() => handleSelectHook(hook)}
-                        className="text-left hover:text-primary hover:underline w-full"
+                        className="text-left hover:text-primary hover:underline"
                       >
                         "{hook}"
                       </button>
