@@ -219,7 +219,7 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
                 {Object.keys(HOOK_DATA).map((category, index) => (
                   <button
                     key={index}
-                    className="w-full flex justify-between items-center px-4 py-3 text-left hover:bg-accent text-base"
+                    className="w-full flex justify-between items-center px-4 py-3 text-left hover:bg-accent text-sm font-medium rounded-sm"
                     onClick={() => handleSelectCategory(category)}
                   >
                     {category}
@@ -229,7 +229,7 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
               </div>
               
               <div className="p-4 border-t mt-2">
-                <h4 className="font-semibold text-primary mb-2">+ Create your own</h4>
+                <h4 className="font-semibold text-primary mb-2 text-sm">Create your own</h4>
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -238,13 +238,16 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
                     className="flex-1 px-3 py-2 text-sm border rounded-md"
                     placeholder="Type your own hook..."
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleCustomHookSubmit();
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleCustomHookSubmit();
+                      }
                     }}
                   />
                   <Button 
                     onClick={handleCustomHookSubmit}
                     disabled={!customHook.trim()}
-                    className="whitespace-nowrap"
+                    size="sm"
                   >
                     Add
                   </Button>
