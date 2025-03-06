@@ -23,16 +23,13 @@ const PlatformsInput = ({
   return (
     <div className="grid gap-2">
       <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Input
-            value={currentPlatform}
-            onChange={(e) => onPlatformChange(e.target.value)}
-            placeholder={placeholder}
-            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), onAddPlatform())}
-            className="pl-8"
-          />
-          <Share2 className="h-4 w-4 absolute left-2.5 top-[10px] text-muted-foreground" />
-        </div>
+        <Input
+          value={currentPlatform}
+          onChange={(e) => onPlatformChange(e.target.value)}
+          placeholder={placeholder}
+          onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), onAddPlatform())}
+          className="flex-1"
+        />
         <Button type="button" onClick={onAddPlatform} variant="outline" size="icon" className="shrink-0">
           <Plus className="h-4 w-4" />
         </Button>
