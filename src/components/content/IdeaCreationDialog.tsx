@@ -11,7 +11,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { 
   Select,
@@ -23,12 +22,7 @@ import {
 import { 
   Text, Video, Image, FileAudio, Code, 
   MessageSquare, Newspaper, SquareStack, 
-  Youtube, Instagram, Radio, Server,
-  Camera, ShoppingBag, Coffee, Briefcase,
-  Utensils, Book, Gamepad2, Shirt, Music,
-  PaintBucket, Stars, Heart, Lightbulb, 
-  Laugh, Film, Package, Clock, Zap, Map,
-  Activity, Smartphone, GraduationCap
+  Youtube, Instagram, Radio, Server
 } from "lucide-react";
 import TagsInput from "./TagsInput";
 import PlatformsInput from "./PlatformsInput";
@@ -113,30 +107,6 @@ const IdeaCreationDialog = ({
     { value: "infographic", label: "Infographic", icon: <Image className="h-4 w-4" /> },
     { value: "code", label: "Code Snippet", icon: <Code className="h-4 w-4" /> },
     { value: "linkedin", label: "LinkedIn Post", icon: <MessageSquare className="h-4 w-4" /> },
-    { value: "grwm", label: "Get Ready With Me", icon: <Camera className="h-4 w-4" /> },
-    { value: "tutorial", label: "Tutorial", icon: <GraduationCap className="h-4 w-4" /> },
-    { value: "pov", label: "POV Skit", icon: <Film className="h-4 w-4" /> },
-    { value: "review", label: "Product Review", icon: <ShoppingBag className="h-4 w-4" /> },
-    { value: "vlog", label: "Vlog", icon: <Camera className="h-4 w-4" /> },
-    { value: "challenge", label: "Challenge", icon: <Zap className="h-4 w-4" /> },
-    { value: "meme", label: "Meme", icon: <Laugh className="h-4 w-4" /> },
-    { value: "day-in-life", label: "Day in the Life", icon: <Clock className="h-4 w-4" /> },
-    { value: "unboxing", label: "Unboxing", icon: <Package className="h-4 w-4" /> },
-    { value: "haul", label: "Haul", icon: <ShoppingBag className="h-4 w-4" /> },
-    { value: "skit", label: "Comedy Skit", icon: <Laugh className="h-4 w-4" /> },
-    { value: "reaction", label: "Reaction", icon: <Activity className="h-4 w-4" /> },
-    { value: "asmr", label: "ASMR", icon: <FileAudio className="h-4 w-4" /> },
-    { value: "educational", label: "Educational", icon: <Book className="h-4 w-4" /> },
-    { value: "gaming", label: "Gaming", icon: <Gamepad2 className="h-4 w-4" /> },
-    { value: "fashion", label: "Fashion", icon: <Shirt className="h-4 w-4" /> },
-    { value: "cooking", label: "Cooking/Recipe", icon: <Utensils className="h-4 w-4" /> },
-    { value: "travel", label: "Travel", icon: <Map className="h-4 w-4" /> },
-    { value: "fitness", label: "Fitness", icon: <Activity className="h-4 w-4" /> },
-    { value: "music", label: "Music", icon: <Music className="h-4 w-4" /> },
-    { value: "art", label: "Art/DIY", icon: <PaintBucket className="h-4 w-4" /> },
-    { value: "motivation", label: "Motivational", icon: <Stars className="h-4 w-4" /> },
-    { value: "self-care", label: "Self-Care", icon: <Heart className="h-4 w-4" /> },
-    { value: "tips", label: "Tips & Tricks", icon: <Lightbulb className="h-4 w-4" /> },
     { value: "other", label: "Other", icon: <Server className="h-4 w-4" /> },
   ];
   
@@ -152,9 +122,6 @@ const IdeaCreationDialog = ({
         <div className="h-full flex flex-col">
           <DialogHeader className="relative">
             <DialogTitle>{dialogTitle}</DialogTitle>
-            <DialogDescription>
-              Fill out the details for your content idea below.
-            </DialogDescription>
             <Button
               variant="ghost"
               size="sm"
@@ -179,7 +146,7 @@ const IdeaCreationDialog = ({
             <ScrollArea className="h-[calc(90vh-140px)]">
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="idea-title" className="text-sm font-medium">Title</Label>
+                  <Label htmlFor="idea-title">Title</Label>
                   <div className="relative flex items-center">
                     <Input
                       id="idea-title"
@@ -194,26 +161,32 @@ const IdeaCreationDialog = ({
                   </div>
                 </div>
                 
+                <div className="h-4"></div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="develop-script">Script</Label>
+                  <Textarea
+                    id="develop-script"
+                    value={scriptText}
+                    onChange={(e) => onScriptTextChange(e.target.value)}
+                    placeholder="Write your script here..."
+                    className="min-h-[120px] resize-y"
+                  />
+                </div>
+                
                 <div className="grid gap-2 mt-2">
-                  <Label htmlFor="content-format" className="text-sm font-medium">Content Format</Label>
+                  <Label htmlFor="content-format">Format</Label>
                   <Select 
                     value={format} 
                     onValueChange={onFormatChange ? onFormatChange : () => {}}
                     disabled={!onFormatChange}
                   >
-                    <SelectTrigger 
-                      id="content-format" 
-                      className="w-full bg-white border border-input"
-                    >
+                    <SelectTrigger id="content-format" className="w-full">
                       <SelectValue placeholder="Select a format" />
                     </SelectTrigger>
-                    <SelectContent className="max-h-80 overflow-y-auto">
+                    <SelectContent>
                       {formatOptions.map(option => (
-                        <SelectItem 
-                          key={option.value} 
-                          value={option.value} 
-                          className="flex items-center gap-2 py-2 px-2 cursor-pointer"
-                        >
+                        <SelectItem key={option.value} value={option.value} className="flex items-center gap-2">
                           <div className="flex items-center gap-2">
                             {option.icon}
                             <span>{option.label}</span>
@@ -227,18 +200,7 @@ const IdeaCreationDialog = ({
                 <div className="h-4"></div>
                 
                 <div className="grid gap-2">
-                  <Label htmlFor="develop-script" className="text-sm font-medium">Script</Label>
-                  <Textarea
-                    id="develop-script"
-                    value={scriptText}
-                    onChange={(e) => onScriptTextChange(e.target.value)}
-                    placeholder="Write your script here..."
-                    className="min-h-[120px] resize-y"
-                  />
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="shoot-details" className="text-sm font-medium">Shoot Details</Label>
+                  <Label htmlFor="shoot-details">Shoot Details</Label>
                   <Textarea
                     id="shoot-details"
                     value={shootDetails}
@@ -249,7 +211,7 @@ const IdeaCreationDialog = ({
                 </div>
                 
                 <div className="grid gap-2">
-                  <Label htmlFor="caption-text" className="text-sm font-medium">Caption</Label>
+                  <Label htmlFor="caption-text">Caption</Label>
                   <Textarea
                     id="caption-text"
                     value={captionText}
@@ -260,7 +222,7 @@ const IdeaCreationDialog = ({
                 </div>
                 
                 <div className="grid gap-2">
-                  <Label htmlFor="platforms" className="text-sm font-medium">Platforms</Label>
+                  <Label htmlFor="platforms">Platforms</Label>
                   <PlatformsInput
                     platforms={platforms}
                     currentPlatform={currentPlatform}
@@ -271,7 +233,7 @@ const IdeaCreationDialog = ({
                 </div>
                 
                 <div className="grid gap-2">
-                  <Label htmlFor="tags" className="text-sm font-medium">Tags</Label>
+                  <Label htmlFor="tags">Tags</Label>
                   <TagsInput
                     tags={tags}
                     currentTag={currentTag}
@@ -284,7 +246,7 @@ const IdeaCreationDialog = ({
                 
                 {onScheduledDateChange && (
                   <div className="grid gap-2">
-                    <Label htmlFor="scheduled-date" className="text-sm font-medium">Schedule to Calendar</Label>
+                    <Label htmlFor="scheduled-date">Schedule to Calendar</Label>
                     <DateSchedulePicker 
                       date={scheduledDate} 
                       onDateChange={onScheduledDateChange}
