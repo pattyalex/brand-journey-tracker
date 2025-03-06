@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Check, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -159,13 +160,13 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
 
       {selectedFormat && (
         <div className="flex items-center mt-2">
-          <span className="bg-primary/10 text-primary text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5">
+          <span className="bg-pink-100 text-pink-800 text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5">
             {selectedFormat}
             <Button 
               variant="ghost" 
               size="xs" 
               onClick={handleClearSelectedFormat}
-              className="ml-1 p-0 h-5 w-5 rounded-full hover:bg-primary/20"
+              className="ml-1 p-0 h-5 w-5 rounded-full hover:bg-pink-200"
             >
               <X className="h-3.5 w-3.5" />
             </Button>
