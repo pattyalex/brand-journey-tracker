@@ -55,11 +55,9 @@ const ContentCard = ({
       toast.success(`Scheduled "${content.title}" for ${format(selectedDate, "PPP")}`);
     } else {
       // Fallback if the onScheduleContent prop isn't provided
-      // Store the scheduled content in localStorage
       const scheduledContents = JSON.parse(localStorage.getItem('scheduledContents') || '[]');
       const updatedContent = { ...content, scheduledDate: selectedDate };
       
-      // Check if this content is already scheduled
       const existingIndex = scheduledContents.findIndex((item: ContentItem) => item.id === content.id);
       
       if (existingIndex >= 0) {
@@ -76,9 +74,7 @@ const ContentCard = ({
   };
 
   return (
-    <Card 
-      className={`overflow-hidden relative h-full border-2 w-full`}
-    >
+    <Card className="overflow-hidden relative h-full border-2 w-full">
       <CardHeader className="p-3">
         <CardTitle className="text-sm font-bold mb-1 line-clamp-2">
           {content.title}

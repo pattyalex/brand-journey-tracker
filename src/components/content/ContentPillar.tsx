@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
