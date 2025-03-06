@@ -17,7 +17,6 @@ import TagsInput from "./TagsInput";
 import PlatformsInput from "./PlatformsInput";
 import DateSchedulePicker from "./DateSchedulePicker";
 import MeganAIChat from "./MeganAIChat";
-import FormatSelector from "./FormatSelector";
 import TitleHookSuggestions from "./TitleHookSuggestions";
 
 interface IdeaCreationDialogProps {
@@ -27,8 +26,6 @@ interface IdeaCreationDialogProps {
   onTitleChange: (value: string) => void;
   scriptText: string;
   onScriptTextChange: (value: string) => void;
-  formatText: string;
-  onFormatTextChange: (value: string) => void;
   shootDetails: string;
   onShootDetailsChange: (value: string) => void;
   captionText: string;
@@ -58,8 +55,6 @@ const IdeaCreationDialog = ({
   onTitleChange,
   scriptText,
   onScriptTextChange,
-  formatText,
-  onFormatTextChange,
   shootDetails,
   onShootDetailsChange,
   captionText,
@@ -130,18 +125,6 @@ const IdeaCreationDialog = ({
                     />
                     <TitleHookSuggestions 
                       onSelectHook={(hook) => onTitleChange(hook)}
-                    />
-                  </div>
-                </div>
-                
-                <div className="h-2"></div>
-                
-                <div className="grid gap-2 relative">
-                  <Label htmlFor="format-select">Format</Label>
-                  <div className="format-selector-container">
-                    <FormatSelector
-                      selectedFormat={formatText}
-                      onFormatChange={onFormatTextChange}
                     />
                   </div>
                 </div>
@@ -237,7 +220,6 @@ const IdeaCreationDialog = ({
               contextData={{
                 title,
                 script: scriptText,
-                format: formatText,
                 shootDetails
               }}
             />

@@ -31,7 +31,6 @@ const BankOfContent = () => {
   
   const [selectedText, setSelectedText] = useState("");
   const [developScriptText, setDevelopScriptText] = useState("");
-  const [formatText, setFormatText] = useState("");
   const [shootDetails, setShootDetails] = useState("");
   const [captionText, setCaptionText] = useState("");
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
@@ -380,7 +379,6 @@ const BankOfContent = () => {
       description: scriptContent.slice(0, 100) + (scriptContent.length > 100 ? "..." : ""),
       url: JSON.stringify({
         script: scriptContent,
-        format: formatText,
         shootDetails: shootDetails,
         caption: captionText,
         platforms: selectedPlatforms
@@ -421,7 +419,6 @@ const BankOfContent = () => {
     setShowNewIdeaDialog(false);
     setSelectedText("");
     setDevelopScriptText("");
-    setFormatText("");
     setShootDetails("");
     setCaptionText("");
     setSelectedPlatforms([]);
@@ -653,8 +650,6 @@ const BankOfContent = () => {
           onTitleChange={setNewIdeaTitle}
           scriptText={developScriptText || selectedText}
           onScriptTextChange={setDevelopScriptText}
-          formatText={formatText}
-          onFormatTextChange={setFormatText}
           shootDetails={shootDetails}
           onShootDetailsChange={setShootDetails}
           captionText={captionText}
