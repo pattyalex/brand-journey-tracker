@@ -56,9 +56,17 @@ const ContentPillar = ({
       destination.index === source.index
     ) return;
     
+    // Get the flat index from row-based indexes
+    const sourceRow = parseInt(source.droppableId.split('-').pop() || '0');
+    const destRow = parseInt(destination.droppableId.split('-').pop() || '0');
+    
+    const itemsPerRow = 3;
+    const sourceIndex = (sourceRow * itemsPerRow) + source.index;
+    const destIndex = (destRow * itemsPerRow) + destination.index;
+    
     const newItems = Array.from(pillar.content);
-    const [removed] = newItems.splice(source.index, 1);
-    newItems.splice(destination.index, 0, removed);
+    const [removed] = newItems.splice(sourceIndex, 1);
+    newItems.splice(destIndex, 0, removed);
     
     if (onReorderContent) {
       onReorderContent(newItems);
@@ -116,39 +124,39 @@ const ContentPillar = ({
   const contentRows = getContentRows();
 
   return (
-    <div className="space-y-4 relative">
-      {filteredContent.length === 0 ? (
-        <div className="text-center p-8 border border-dashed rounded-lg bg-muted/30">
-          <p className="text-muted-foreground">
-            {searchQuery 
-              ? "No matching content found" 
-              : "No ideas yet. Create a new idea to get started."}
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {contentRows.map((row, rowIndex) => (
-            <div key={rowIndex} className="relative">
-              {row.length > 3 && showLeftArrow && (
-                <Button 
-                  onClick={scrollLeft} 
-                  className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
-                  variant="outline"
-                  size="icon"
-                  aria-label="Scroll left"
+    <DragDropContext onDragEnd={onDragEnd}>
+      <div className="space-y-4 relative">
+        {filteredContent.length === 0 ? (
+          <div className="text-center p-8 border border-dashed rounded-lg bg-muted/30">
+            <p className="text-muted-foreground">
+              {searchQuery 
+                ? "No matching content found" 
+                : "No ideas yet. Create a new idea to get started."}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {contentRows.map((row, rowIndex) => (
+              <div key={rowIndex} className="relative">
+                {row.length > 3 && showLeftArrow && (
+                  <Button 
+                    onClick={scrollLeft} 
+                    className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
+                    variant="outline"
+                    size="icon"
+                    aria-label="Scroll left"
+                  >
+                    <ChevronLeft className="h-6 w-6" />
+                  </Button>
+                )}
+                
+                <div 
+                  ref={scrollContainerRef} 
+                  className="flex items-start space-x-4 overflow-x-auto pb-4 hide-scrollbar"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                 >
-                  <ChevronLeft className="h-6 w-6" />
-                </Button>
-              )}
-              
-              <div 
-                ref={scrollContainerRef} 
-                className="flex items-start space-x-4 overflow-x-auto pb-4 hide-scrollbar"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-              >
-                <DragDropContext onDragEnd={onDragEnd}>
                   <Droppable 
-                    droppableId={`content-cards-row-${rowIndex}-${pillar.id}`} 
+                    droppableId={`content-cards-row-${rowIndex}`} 
                     direction="horizontal"
                   >
                     {(provided) => (
@@ -164,7 +172,7 @@ const ContentPillar = ({
                           >
                             <ContentCard
                               content={content}
-                              index={index + (rowIndex * 3)}
+                              index={index}
                               pillar={pillar}
                               pillars={pillars}
                               onDeleteContent={onDeleteContent}
@@ -177,25 +185,25 @@ const ContentPillar = ({
                       </div>
                     )}
                   </Droppable>
-                </DragDropContext>
+                </div>
+                
+                {row.length > 3 && showRightArrow && (
+                  <Button 
+                    onClick={scrollRight} 
+                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
+                    variant="outline"
+                    size="icon"
+                    aria-label="Scroll right"
+                  >
+                    <ChevronRight className="h-6 w-6" />
+                  </Button>
+                )}
               </div>
-              
-              {row.length > 3 && showRightArrow && (
-                <Button 
-                  onClick={scrollRight} 
-                  className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
-                  variant="outline"
-                  size="icon"
-                  aria-label="Scroll right"
-                >
-                  <ChevronRight className="h-6 w-6" />
-                </Button>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </DragDropContext>
   );
 };
 
