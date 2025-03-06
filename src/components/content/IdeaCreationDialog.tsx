@@ -12,11 +12,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Sparkles } from "lucide-react";
 import TagsInput from "./TagsInput";
 import PlatformsInput from "./PlatformsInput";
 import DateSchedulePicker from "./DateSchedulePicker";
 import MeganAIChat from "./MeganAIChat";
 import FormatSelector from "./FormatSelector";
+import TitleHookSuggestions from "./TitleHookSuggestions";
 
 interface IdeaCreationDialogProps {
   open: boolean;
@@ -118,12 +120,18 @@ const IdeaCreationDialog = ({
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="idea-title">Title</Label>
-                  <Input
-                    id="idea-title"
-                    value={title}
-                    onChange={(e) => onTitleChange(e.target.value)}
-                    placeholder="Enter a catchy hook for your idea..."
-                  />
+                  <div className="relative flex items-center">
+                    <Input
+                      id="idea-title"
+                      value={title}
+                      onChange={(e) => onTitleChange(e.target.value)}
+                      placeholder="Enter a catchy hook for your idea..."
+                      className="pr-10"
+                    />
+                    <TitleHookSuggestions 
+                      onSelectHook={(hook) => onTitleChange(hook)}
+                    />
+                  </div>
                 </div>
                 
                 <div className="h-2"></div>
