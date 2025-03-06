@@ -140,7 +140,7 @@ const ContentPillar = ({
                   <div 
                     {...provided.droppableProps}
                     ref={provided.innerRef}
-                    className="flex flex-wrap gap-4 min-w-min pl-2 pr-2"
+                    className="flex flex-wrap gap-3 min-w-min pl-2 pr-2"
                     style={{ display: 'flex', flexDirection: 'row' }}
                   >
                     {filteredContent.map((content, index) => (
@@ -157,9 +157,9 @@ const ContentPillar = ({
                             className={`${snapshot.isDragging ? 'opacity-70' : 'opacity-100'} h-full`}
                             style={{
                               ...provided.draggableProps.style,
-                              width: '280px',
-                              minWidth: '280px',
-                              maxWidth: '280px',
+                              width: '240px',
+                              minWidth: '240px',
+                              maxWidth: '240px',
                               margin: '0 4px 16px 4px'
                             }}
                           >
