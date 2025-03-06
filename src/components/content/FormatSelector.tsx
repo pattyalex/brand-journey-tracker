@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Check, ChevronDown, ChevronUp, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -147,7 +146,7 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
         </div>
       ) : (
         <Select value={selectedFormat || ""} onValueChange={handleSelectFormat}>
-          <SelectTrigger className="w-full relative" iconClassName="absolute right-6 mr-0">
+          <SelectTrigger className="w-full relative" iconClassName="absolute right-[23px] mr-0">
             <SelectValue placeholder="Select a content format" />
           </SelectTrigger>
           <SelectContent className="select-none max-h-[300px]">

@@ -44,7 +44,7 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
         <Button 
           variant="ghost" 
           size="xs"
-          className="absolute right-6 hover:bg-transparent active:scale-95 transition-all duration-150 p-1.5 h-auto"
+          className="absolute right-[23px] hover:bg-transparent active:scale-95 transition-all duration-150 p-1.5 h-auto"
           aria-label="Show title hook suggestions"
         >
           <Sparkles className="h-5 w-5 text-primary" />
