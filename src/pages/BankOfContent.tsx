@@ -575,7 +575,7 @@ const BankOfContent = () => {
   };
 
   const openNewIdeaDialog = () => {
-    setNewIdeaTitle(`Idea - ${new Date().toLocaleDateString()}`);
+    setNewIdeaTitle("");
     setNewIdeaTags([]);
     setSelectedText("");
     setDevelopScriptText("");
