@@ -1,11 +1,11 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { 
-  Popover, 
-  PopoverContent, 
-  PopoverTrigger 
-} from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Sheet,
   SheetContent,
@@ -158,19 +158,17 @@ const HOOK_DATA = {
 };
 
 const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
-  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [customHook, setCustomHook] = useState("");
 
-  // This function is called when the user selects a category from the popover
+  // This function is called when the user selects a category from the dialog
   const handleSelectCategory = (category: string) => {
     // Set the selected category
     setSelectedCategory(category);
     // Open the sheet with subcategories
     setSheetOpen(true);
-    // Close the popover when sheet opens
-    setPopoverOpen(false);
   };
 
   // This function is called when the user selects a specific hook
@@ -179,8 +177,8 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
     onSelectHook(hook);
     // Close the sheet with subcategories
     setSheetOpen(false);
-    // Ensure popover is also closed
-    setPopoverOpen(false);
+    // Ensure dialog is also closed
+    setDialogOpen(false);
   };
 
   // Handle custom hook submission
@@ -188,75 +186,72 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
     if (customHook.trim()) {
       onSelectHook(customHook);
       setCustomHook("");
-      setPopoverOpen(false);
+      setDialogOpen(false);
     }
   };
 
   return (
     <>
-      {/* Popover for title hook suggestions */}
-      <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-        <PopoverTrigger asChild>
-          <Button 
-            variant="ghost" 
-            size="xs"
-            className="absolute right-[23px] hover:bg-transparent active:scale-95 transition-all duration-150 p-1.5 h-auto"
-            aria-label="Show title hook suggestions"
-          >
-            <Sparkles className="h-5 w-5 text-primary" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-96 p-0" align="end">
-          <div className="flex flex-col">
-            <div className="p-3 bg-muted/50 border-b">
-              <h3 className="font-medium text-sm">Catchy Hook Ideas</h3>
-              <p className="text-xs text-muted-foreground mt-1">
-                Click on any category for hook ideas
-              </p>
+      {/* Button trigger for hook suggestions */}
+      <Button 
+        variant="ghost" 
+        size="xs"
+        className="absolute right-[23px] hover:bg-transparent active:scale-95 transition-all duration-150 p-1.5 h-auto"
+        onClick={() => setDialogOpen(true)}
+        aria-label="Show title hook suggestions"
+      >
+        <Sparkles className="h-5 w-5 text-primary" />
+      </Button>
+
+      {/* Dialog for title hook suggestions */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Catchy Hook Ideas</DialogTitle>
+          </DialogHeader>
+          
+          <div className="max-h-[350px] overflow-y-auto">
+            <div className="p-1">
+              {Object.keys(HOOK_DATA).map((category, index) => (
+                <button
+                  key={index}
+                  className="w-full flex justify-between items-center px-4 py-3 text-left hover:bg-accent text-sm font-medium rounded-sm"
+                  onClick={() => handleSelectCategory(category)}
+                >
+                  {category}
+                  <ArrowRight className="h-4 w-4 ml-2 text-muted-foreground" />
+                </button>
+              ))}
             </div>
-            <div className="max-h-[350px] overflow-y-auto">
-              <div className="p-1">
-                {Object.keys(HOOK_DATA).map((category, index) => (
-                  <button
-                    key={index}
-                    className="w-full flex justify-between items-center px-4 py-3 text-left hover:bg-accent text-sm font-medium rounded-sm"
-                    onClick={() => handleSelectCategory(category)}
-                  >
-                    {category}
-                    <ArrowRight className="h-4 w-4 ml-2 text-muted-foreground" />
-                  </button>
-                ))}
-              </div>
-              
-              <div className="p-4 border-t mt-2">
-                <h4 className="font-semibold text-primary mb-2 text-sm">Create your own</h4>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={customHook}
-                    onChange={(e) => setCustomHook(e.target.value)}
-                    className="flex-1 px-3 py-2 text-sm border rounded-md"
-                    placeholder="Type your own hook..."
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleCustomHookSubmit();
-                      }
-                    }}
-                  />
-                  <Button 
-                    onClick={handleCustomHookSubmit}
-                    disabled={!customHook.trim()}
-                    size="sm"
-                  >
-                    Add
-                  </Button>
-                </div>
+            
+            <div className="p-4 border-t mt-2">
+              <h4 className="font-semibold text-primary mb-2 text-sm">Create your own</h4>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={customHook}
+                  onChange={(e) => setCustomHook(e.target.value)}
+                  className="flex-1 px-3 py-2 text-sm border rounded-md"
+                  placeholder="Type your own hook..."
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleCustomHookSubmit();
+                    }
+                  }}
+                />
+                <Button 
+                  onClick={handleCustomHookSubmit}
+                  disabled={!customHook.trim()}
+                  size="sm"
+                >
+                  Add
+                </Button>
               </div>
             </div>
           </div>
-        </PopoverContent>
-      </Popover>
+        </DialogContent>
+      </Dialog>
 
       {/* Sheet for displaying subcategories and hooks */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
