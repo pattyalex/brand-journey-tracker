@@ -1,12 +1,11 @@
 
 import { useState, useEffect, useRef } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
 import { DragDropContext, Droppable, DropResult } from "react-beautiful-dnd";
 import ContentCard from "./ContentCard";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Layout, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ContentPillarProps {
@@ -43,7 +42,7 @@ const ContentPillar = ({
     ? pillar.content.filter(item => 
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+        (item.tags && item.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())))
       )
     : pillar.content;
 
@@ -115,9 +114,19 @@ const ContentPillar = ({
           variant="outline" 
           size="sm" 
           onClick={toggleLayout}
-          className="text-xs"
+          className="text-xs flex items-center gap-1"
         >
-          {isSingleRowLayout ? "Switch to Grid Layout" : "Switch to Row Layout"}
+          {isSingleRowLayout ? (
+            <>
+              <LayoutGrid className="h-4 w-4" />
+              <span>Grid Layout</span>
+            </>
+          ) : (
+            <>
+              <Layout className="h-4 w-4" />
+              <span>Row Layout</span>
+            </>
+          )}
         </Button>
       </div>
       
@@ -130,20 +139,20 @@ const ContentPillar = ({
           </p>
         </div>
       ) : (
-        <div className="relative">
-          {isSingleRowLayout && showLeftArrow && (
-            <Button 
-              onClick={scrollLeft} 
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
-              variant="outline"
-              size="icon"
-              aria-label="Scroll left"
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </Button>
-          )}
-          
-          <DragDropContext onDragEnd={onDragEnd}>
+        <DragDropContext onDragEnd={onDragEnd}>
+          <div className="relative">
+            {isSingleRowLayout && showLeftArrow && (
+              <Button 
+                onClick={scrollLeft} 
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
+                variant="outline"
+                size="icon"
+                aria-label="Scroll left"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </Button>
+            )}
+            
             <div 
               ref={scrollContainerRef} 
               className={`${isSingleRowLayout ? "overflow-x-auto pb-4 hide-scrollbar" : "overflow-visible"}`}
@@ -161,7 +170,7 @@ const ContentPillar = ({
                     className={`
                       ${isSingleRowLayout 
                         ? "flex space-x-6 min-w-min pb-4 pl-2 pr-2" 
-                        : "grid grid-cols-2 gap-6 pb-4 pl-2 pr-2"}
+                        : "grid grid-cols-1 md:grid-cols-2 gap-6 pb-4 pl-2 pr-2"}
                     `}
                   >
                     {filteredContent.map((content, index) => (
@@ -182,20 +191,20 @@ const ContentPillar = ({
                 )}
               </Droppable>
             </div>
-          </DragDropContext>
-          
-          {isSingleRowLayout && showRightArrow && (
-            <Button 
-              onClick={scrollRight} 
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
-              variant="outline"
-              size="icon"
-              aria-label="Scroll right"
-            >
-              <ChevronRight className="h-6 w-6" />
-            </Button>
-          )}
-        </div>
+            
+            {isSingleRowLayout && showRightArrow && (
+              <Button 
+                onClick={scrollRight} 
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
+                variant="outline"
+                size="icon"
+                aria-label="Scroll right"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </Button>
+            )}
+          </div>
+        </DragDropContext>
       )}
     </div>
   );
