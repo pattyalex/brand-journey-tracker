@@ -19,7 +19,11 @@ import {
   SelectTrigger,
   SelectValue 
 } from "@/components/ui/select";
-import { Text, Video, Image, FileAudio, Code } from "lucide-react";
+import { 
+  Text, Video, Image, FileAudio, Code, 
+  MessageSquare, Newspaper, SquareStack, 
+  Youtube, Instagram, Radio, Server
+} from "lucide-react";
 import TagsInput from "./TagsInput";
 import PlatformsInput from "./PlatformsInput";
 import DateSchedulePicker from "./DateSchedulePicker";
@@ -90,11 +94,20 @@ const IdeaCreationDialog = ({
   const [isMeganOpen, setIsMeganOpen] = useState(false);
   
   const formatOptions = [
-    { value: "text", label: "Text", icon: <Text className="h-4 w-4" /> },
+    { value: "text-post", label: "Text Post", icon: <Text className="h-4 w-4" /> },
     { value: "video", label: "Video", icon: <Video className="h-4 w-4" /> },
-    { value: "image", label: "Image", icon: <Image className="h-4 w-4" /> },
-    { value: "audio", label: "Audio", icon: <FileAudio className="h-4 w-4" /> },
-    { value: "code", label: "Code", icon: <Code className="h-4 w-4" /> },
+    { value: "short-video", label: "Short-form Video", icon: <Video className="h-4 w-4" /> },
+    { value: "reels", label: "Reels/Stories", icon: <Instagram className="h-4 w-4" /> },
+    { value: "tiktok", label: "TikTok", icon: <Video className="h-4 w-4" /> },
+    { value: "youtube", label: "YouTube", icon: <Youtube className="h-4 w-4" /> },
+    { value: "carousel", label: "Carousel Post", icon: <SquareStack className="h-4 w-4" /> },
+    { value: "livestream", label: "Live Stream", icon: <Video className="h-4 w-4" /> },
+    { value: "podcast", label: "Podcast", icon: <Radio className="h-4 w-4" /> },
+    { value: "article", label: "Article/Blog", icon: <Newspaper className="h-4 w-4" /> },
+    { value: "infographic", label: "Infographic", icon: <Image className="h-4 w-4" /> },
+    { value: "code", label: "Code Snippet", icon: <Code className="h-4 w-4" /> },
+    { value: "linkedin", label: "LinkedIn Post", icon: <MessageSquare className="h-4 w-4" /> },
+    { value: "other", label: "Other", icon: <Server className="h-4 w-4" /> },
   ];
   
   return (
