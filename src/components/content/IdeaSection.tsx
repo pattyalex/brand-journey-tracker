@@ -62,7 +62,7 @@ const IdeaSection = ({
               className="bg-[#8B6B4E] hover:bg-[#7A5C3F]"
               onClick={onNewIdeaClick}
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <FilePlus className="h-4 w-4 mr-2" />
               Add New Idea
             </Button>
           )}
