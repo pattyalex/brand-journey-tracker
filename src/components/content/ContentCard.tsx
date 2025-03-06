@@ -1,11 +1,10 @@
-
 import { useState } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  Trash2, Pencil, Calendar, FileText, Share2
+  Trash2, Pencil, Calendar, FileText
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ContentItem } from "@/types/content";
@@ -28,7 +27,6 @@ interface ContentCardProps {
   pillar: Pillar;
   pillars: Pillar[];
   onDeleteContent: (contentId: string) => void;
-  onMoveContent: (toPillarId: string, contentId: string) => void;
   onEditContent: (contentId: string) => void;
   onScheduleContent?: (contentId: string, scheduledDate: Date) => void;
 }
@@ -45,7 +43,6 @@ const ContentCard = ({
   const [date, setDate] = useState<Date | undefined>(content.scheduledDate);
   const [calendarOpen, setCalendarOpen] = useState(false);
   
-  // Parse the content format from the URL (JSON) if available
   const getContentFormat = () => {
     if (content.format === 'text' && content.url) {
       try {
@@ -60,7 +57,6 @@ const ContentCard = ({
 
   const contentFormat = getContentFormat();
 
-  // Extract platforms from content
   const getPlatforms = () => {
     if (content.platforms && content.platforms.length > 0) {
       return content.platforms;
@@ -90,7 +86,6 @@ const ContentCard = ({
       onScheduleContent(content.id, selectedDate);
       toast.success(`Scheduled "${content.title}" for ${format(selectedDate, "PPP")}`);
     } else {
-      // Fallback if the onScheduleContent prop isn't provided
       const scheduledContents = JSON.parse(localStorage.getItem('scheduledContents') || '[]');
       const updatedContent = { ...content, scheduledDate: selectedDate };
       
@@ -138,9 +133,8 @@ const ContentCard = ({
           {platforms.length > 0 && platforms.slice(0, 2).map((platform, index) => (
             <span 
               key={`platform-${index}`} 
-              className="bg-purple-100 text-purple-800 text-xs px-2 py-0.5 rounded-full flex items-center gap-1"
+              className="bg-purple-100 text-purple-800 text-xs px-2 py-0.5 rounded-full"
             >
-              <Share2 className="h-3 w-3 mr-0.5" />
               {platform}
             </span>
           ))}
