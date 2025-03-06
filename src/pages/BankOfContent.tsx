@@ -596,7 +596,7 @@ const BankOfContent = () => {
     <Layout>
       <div className="container mx-auto py-6 space-y-6 fade-in">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Bank of Ideas</h1>
+          <h1 className="text-3xl font-bold">Idea Development</h1>
           <div className="flex items-center gap-4">
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
