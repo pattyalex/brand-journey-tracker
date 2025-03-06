@@ -26,7 +26,6 @@ const ContentUploader = ({
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [textContent, setTextContent] = useState("");
-  const [formatText, setFormatText] = useState("");
   const [shootDetails, setShootDetails] = useState("");
   const [captionText, setCaptionText] = useState("");
   const [currentTag, setCurrentTag] = useState("");
@@ -45,7 +44,6 @@ const ContentUploader = ({
           try {
             const parsedContent = JSON.parse(contentToEdit.url);
             setTextContent(parsedContent.script || '');
-            setFormatText(parsedContent.format || '');
             setShootDetails(parsedContent.shootDetails || '');
             setCaptionText(parsedContent.caption || '');
             
@@ -106,7 +104,6 @@ const ContentUploader = ({
       format: "text",
       url: JSON.stringify({
         script: textContent,
-        format: formatText,
         shootDetails: shootDetails,
         caption: captionText,
         platforms: platformsList
@@ -157,7 +154,6 @@ const ContentUploader = ({
   const resetForm = () => {
     setTitle("");
     setTextContent("");
-    setFormatText("");
     setShootDetails("");
     setCaptionText("");
     setTagsList([]);
@@ -189,8 +185,6 @@ const ContentUploader = ({
         onTitleChange={setTitle}
         scriptText={textContent}
         onScriptTextChange={setTextContent}
-        formatText={formatText}
-        onFormatTextChange={setFormatText}
         shootDetails={shootDetails}
         onShootDetailsChange={setShootDetails}
         captionText={captionText}
