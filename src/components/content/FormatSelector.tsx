@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Plus, Trash2 } from "lucide-react";
+import { Check, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -87,6 +87,10 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
     }
   };
 
+  const handleClearSelectedFormat = () => {
+    onFormatChange("");
+  };
+
   return (
     <div className="space-y-2">
       {isAddingCustom ? (
@@ -157,6 +161,14 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
         <div className="flex items-center mt-2">
           <span className="bg-primary/10 text-primary text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5">
             {selectedFormat}
+            <Button 
+              variant="ghost" 
+              size="xs" 
+              onClick={handleClearSelectedFormat}
+              className="ml-1 p-0 h-5 w-5 rounded-full hover:bg-primary/20"
+            >
+              <X className="h-3.5 w-3.5" />
+            </Button>
           </span>
         </div>
       )}
