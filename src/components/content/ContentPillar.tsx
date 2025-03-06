@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
@@ -159,7 +158,6 @@ const ContentPillar = ({
                               pillar={pillar}
                               pillars={pillars}
                               onDeleteContent={onDeleteContent}
-                              onMoveContent={onMoveContent}
                               onEditContent={onEditContent}
                             />
                           </div>

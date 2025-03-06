@@ -1,5 +1,5 @@
 
-import { X, Plus, Share2 } from "lucide-react";
+import { X, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -41,7 +41,6 @@ const PlatformsInput = ({
             key={index} 
             className="bg-purple-100 text-purple-800 text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5"
           >
-            <Share2 className="h-3 w-3" />
             {platform}
             <button 
               type="button" 
