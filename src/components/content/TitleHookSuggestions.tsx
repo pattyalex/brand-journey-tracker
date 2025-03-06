@@ -1,5 +1,7 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +14,7 @@ import {
   SheetHeader,
   SheetTitle
 } from "@/components/ui/sheet";
-import { Sparkles, ArrowRight } from "lucide-react";
+import { Sparkles, ArrowRight, Plus } from "lucide-react";
 
 interface TitleHookSuggestionsProps {
   onSelectHook: (hook: string) => void;
@@ -162,6 +164,20 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [customHook, setCustomHook] = useState("");
+  const [customHooks, setCustomHooks] = useState<string[]>([]);
+
+  // Load custom hooks from localStorage on component mount
+  useEffect(() => {
+    const savedHooks = localStorage.getItem("customHooks");
+    if (savedHooks) {
+      setCustomHooks(JSON.parse(savedHooks));
+    }
+  }, []);
+
+  // Save custom hooks to localStorage when they change
+  useEffect(() => {
+    localStorage.setItem("customHooks", JSON.stringify(customHooks));
+  }, [customHooks]);
 
   // This function is called when the user selects a category from the dialog
   const handleSelectCategory = (category: string) => {
@@ -185,9 +201,19 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
   const handleCustomHookSubmit = () => {
     if (customHook.trim()) {
       onSelectHook(customHook);
+      // Add to custom hooks list if it doesn't already exist
+      if (!customHooks.includes(customHook)) {
+        setCustomHooks(prev => [...prev, customHook]);
+      }
       setCustomHook("");
       setDialogOpen(false);
     }
+  };
+
+  // Handle viewing custom hooks
+  const handleViewCustomHooks = () => {
+    setSelectedCategory("Create your own");
+    setSheetOpen(true);
   };
 
   return (
@@ -222,16 +248,25 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
                   <ArrowRight className="h-4 w-4 ml-2 text-muted-foreground" />
                 </button>
               ))}
+              
+              {/* Create your own category button */}
+              <button
+                className="w-full flex justify-between items-center px-4 py-3 text-left hover:bg-accent text-sm font-medium rounded-sm"
+                onClick={handleViewCustomHooks}
+              >
+                Create your own
+                <ArrowRight className="h-4 w-4 ml-2 text-muted-foreground" />
+              </button>
             </div>
             
             <div className="p-4 border-t mt-2">
               <h4 className="font-semibold text-primary mb-2 text-sm">Create your own</h4>
               <div className="flex gap-2">
-                <input
+                <Input
                   type="text"
                   value={customHook}
                   onChange={(e) => setCustomHook(e.target.value)}
-                  className="flex-1 px-3 py-2 text-sm border rounded-md"
+                  className="flex-1"
                   placeholder="Type your own hook..."
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
@@ -244,6 +279,7 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
                   onClick={handleCustomHookSubmit}
                   disabled={!customHook.trim()}
                   size="sm"
+                  className="bg-[#c4b7a6] hover:bg-[#b0a48f] text-white"
                 >
                   Add
                 </Button>
@@ -261,23 +297,84 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
           </SheetHeader>
           
           <div className="p-4">
-            {selectedCategory && HOOK_DATA[selectedCategory as keyof typeof HOOK_DATA]?.subcategories.map((subcat, scIndex) => (
-              <div key={scIndex} className="mb-6">
-                <h3 className="font-medium text-base mb-2">• {subcat.name}</h3>
-                <ul className="space-y-2 ml-4">
-                  {subcat.hooks.map((hook, hIndex) => (
-                    <li key={hIndex} className="list-disc ml-4">
-                      <button 
-                        onClick={() => handleSelectHook(hook)}
-                        className="text-left hover:text-primary hover:underline"
-                      >
-                        "{hook}"
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+            {selectedCategory && selectedCategory !== "Create your own" && 
+              HOOK_DATA[selectedCategory as keyof typeof HOOK_DATA]?.subcategories.map((subcat, scIndex) => (
+                <div key={scIndex} className="mb-6">
+                  <h3 className="font-medium text-base mb-2">• {subcat.name}</h3>
+                  <ul className="space-y-2 ml-4">
+                    {subcat.hooks.map((hook, hIndex) => (
+                      <li key={hIndex} className="list-disc ml-4">
+                        <button 
+                          onClick={() => handleSelectHook(hook)}
+                          className="text-left hover:text-primary hover:underline"
+                        >
+                          "{hook}"
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))
+            }
+            
+            {/* Custom hooks section */}
+            {selectedCategory === "Create your own" && (
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-medium text-base">Your Custom Hooks</h3>
+                  
+                  {/* Add new hook inline */}
+                  <div className="flex items-center gap-2 mt-2 mb-4 w-full">
+                    <Input
+                      type="text"
+                      value={customHook}
+                      onChange={(e) => setCustomHook(e.target.value)}
+                      className="flex-1"
+                      placeholder="Type your own hook..."
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          if (customHook.trim()) {
+                            setCustomHooks(prev => [...prev, customHook]);
+                            setCustomHook("");
+                          }
+                        }
+                      }}
+                    />
+                    <Button 
+                      onClick={() => {
+                        if (customHook.trim()) {
+                          setCustomHooks(prev => [...prev, customHook]);
+                          setCustomHook("");
+                        }
+                      }}
+                      disabled={!customHook.trim()}
+                      size="sm"
+                      className="bg-[#c4b7a6] hover:bg-[#b0a48f] text-white"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                
+                {customHooks.length > 0 ? (
+                  <ul className="space-y-2">
+                    {customHooks.map((hook, index) => (
+                      <li key={index} className="list-disc ml-4">
+                        <button 
+                          onClick={() => handleSelectHook(hook)}
+                          className="text-left hover:text-primary hover:underline"
+                        >
+                          "{hook}"
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-muted-foreground italic">No custom hooks added yet.</p>
+                )}
               </div>
-            ))}
+            )}
           </div>
         </SheetContent>
       </Sheet>
