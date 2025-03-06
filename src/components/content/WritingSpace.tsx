@@ -50,7 +50,7 @@ const WritingSpace = ({
           Brain Dump Your Ideas
         </h2>
       </div>
-      <div className="h-[calc(100vh-140px)]"> {/* Increased height by 50% from the original h-[calc(100vh-240px)] */}
+      <div className="h-[calc(100vh-140px)]">
         <div className="rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full relative bg-[#F6F6F7] flex flex-col">
           <SimpleTextFormattingToolbar onFormat={onFormatText} />
           
@@ -65,7 +65,7 @@ const WritingSpace = ({
               style={{ position: 'relative', height: '100%' }}
             />
           </ScrollArea>
-          <div className="absolute right-0 top-0 bottom-0 w-6 bg-red-500 opacity-60"></div> {/* Created a wider, red scrollbar as shown in the image */}
+          {/* Removed the thick red scrollbar indicator */}
         </div>
       </div>
     </div>
