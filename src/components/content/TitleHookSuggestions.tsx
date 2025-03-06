@@ -336,7 +336,7 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
                           className="ml-auto p-1 h-6 w-6"
                           aria-label={`Delete hook "${hook}"`}
                         >
-                          <Trash2 className="h-4 w-4 text-destructive hover:text-destructive/80" />
+                          <Trash2 className="h-4 w-4 text-gray-400 hover:text-gray-600" />
                         </Button>
                       </li>
                     ))}
