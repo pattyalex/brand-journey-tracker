@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Check, ChevronDown, ChevronUp, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -115,8 +116,11 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
     }
   };
 
+  // Use a unique className for the format selector to prevent conflicts
+  const formatSelectorClassName = "format-selector-component";
+
   return (
-    <div className="space-y-2">
+    <div className={`space-y-2 ${formatSelectorClassName}`}>
       {isAddingCustom ? (
         <div className="flex items-center gap-2">
           <Input
@@ -146,7 +150,11 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
         </div>
       ) : (
         <Select value={selectedFormat || ""} onValueChange={handleSelectFormat}>
-          <SelectTrigger className="w-full relative" iconClassName="absolute right-[23px] mr-0">
+          <SelectTrigger 
+            className="w-full" 
+            data-component="format-selector" 
+            aria-label="Select a content format"
+          >
             <SelectValue placeholder="Select a content format" />
           </SelectTrigger>
           <SelectContent className="select-none max-h-[300px]">

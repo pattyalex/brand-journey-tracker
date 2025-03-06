@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -137,10 +138,12 @@ const IdeaCreationDialog = ({
                 
                 <div className="grid gap-2 relative">
                   <Label htmlFor="format-select">Format</Label>
-                  <FormatSelector
-                    selectedFormat={formatText}
-                    onFormatChange={onFormatTextChange}
-                  />
+                  <div className="format-selector-container">
+                    <FormatSelector
+                      selectedFormat={formatText}
+                      onFormatChange={onFormatTextChange}
+                    />
+                  </div>
                 </div>
                 
                 <div className="h-4"></div>

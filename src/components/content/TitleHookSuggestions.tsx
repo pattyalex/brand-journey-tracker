@@ -163,17 +163,27 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [customHook, setCustomHook] = useState("");
 
+  // This function is called when the user selects a category from the popover
   const handleSelectCategory = (category: string) => {
+    // Set the selected category
     setSelectedCategory(category);
+    // Open the sheet with subcategories
     setSheetOpen(true);
-    setPopoverOpen(false); // Close the popover when sheet opens
+    // Close the popover when sheet opens
+    setPopoverOpen(false);
   };
 
+  // This function is called when the user selects a specific hook
   const handleSelectHook = (hook: string) => {
+    // Pass the selected hook to the parent component
     onSelectHook(hook);
+    // Close the sheet with subcategories
     setSheetOpen(false);
+    // Ensure popover is also closed
+    setPopoverOpen(false);
   };
 
+  // Handle custom hook submission
   const handleCustomHookSubmit = () => {
     if (customHook.trim()) {
       onSelectHook(customHook);
@@ -184,6 +194,7 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
 
   return (
     <>
+      {/* Separate popover for title hook suggestions */}
       <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
         <PopoverTrigger asChild>
           <Button 
@@ -245,6 +256,7 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
         </PopoverContent>
       </Popover>
 
+      {/* Separate sheet for displaying subcategories and hooks */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent side="right" className="w-[400px] p-0 overflow-y-auto">
           <SheetHeader className="p-4 border-b">
