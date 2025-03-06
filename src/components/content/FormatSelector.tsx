@@ -90,11 +90,11 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
           </SelectTrigger>
           <SelectContent className="max-h-[300px] overflow-y-auto">
             {PREDEFINED_FORMATS.map((format) => (
-              <SelectItem key={format} value={format}>
+              <SelectItem key={format} value={format} className="hover:bg-gray-100 dark:hover:bg-gray-700">
                 {format}
               </SelectItem>
             ))}
-            <SelectItem value="custom">
+            <SelectItem value="custom" className="hover:bg-gray-100 dark:hover:bg-gray-700">
               <span className="flex items-center">
                 <Plus className="h-3.5 w-3.5 mr-2" />
                 Add custom format
