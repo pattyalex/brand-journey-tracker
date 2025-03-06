@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -76,7 +77,7 @@ const ContentCard = ({
   };
 
   return (
-    <Draggable draggableId={content.id} index={index}>
+    <Draggable key={content.id} draggableId={content.id} index={index}>
       {(provided, snapshot) => {
         // Update dragging state based on snapshot
         if (isDragging !== snapshot.isDragging) {
@@ -87,10 +88,10 @@ const ContentCard = ({
           <div
             ref={provided.innerRef}
             {...provided.draggableProps}
-            className={`${snapshot.isDragging ? 'opacity-70 z-50' : 'opacity-100'} transition-all duration-200 h-full`}
+            className={`${snapshot.isDragging ? 'opacity-70 z-50' : 'opacity-100'} h-full transition-all duration-200`}
           >
             <Card 
-              className={`h-full overflow-hidden relative border-2 ${
+              className={`overflow-hidden relative h-full border-2 ${
                 snapshot.isDragging 
                   ? 'shadow-xl ring-2 ring-primary/20' 
                   : 'hover:shadow-md transition-shadow duration-200'
