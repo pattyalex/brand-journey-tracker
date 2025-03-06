@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -126,7 +125,7 @@ const IdeaCreationDialog = ({
                       value={title}
                       onChange={(e) => onTitleChange(e.target.value)}
                       placeholder="Enter a catchy hook for your idea..."
-                      className="pr-10"
+                      className="pr-16"
                     />
                     <TitleHookSuggestions 
                       onSelectHook={(hook) => onTitleChange(hook)}

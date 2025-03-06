@@ -44,10 +44,10 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
         <Button 
           variant="ghost" 
           size="xs"
-          className="absolute right-1 hover:bg-transparent active:scale-95 transition-all duration-150 p-1 h-auto"
+          className="absolute right-6 hover:bg-transparent active:scale-95 transition-all duration-150 p-1.5 h-auto"
           aria-label="Show title hook suggestions"
         >
-          <Sparkles className="h-4 w-4 text-primary" />
+          <Sparkles className="h-5 w-5 text-primary" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="end">
