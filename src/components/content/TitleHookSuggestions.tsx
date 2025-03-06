@@ -56,7 +56,7 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
           <div className="p-3 bg-muted/50 border-b">
             <h3 className="font-medium text-sm">Catchy Hook Ideas</h3>
             <p className="text-xs text-muted-foreground mt-1">
-              Click on any category to use it as your title
+              Click on any category for hook ideas
             </p>
           </div>
           <div className="max-h-[350px] overflow-y-auto">
