@@ -22,7 +22,12 @@ import {
 import { 
   Text, Video, Image, FileAudio, Code, 
   MessageSquare, Newspaper, SquareStack, 
-  Youtube, Instagram, Radio, Server
+  Youtube, Instagram, Radio, Server,
+  Camera, ShoppingBag, Coffee, Briefcase,
+  Utensils, Book, Gamepad2, Shirt, Music,
+  PaintBucket, Stars, Heart, Lightbulb, 
+  Laugh, Film, Package, Clock, Zap, Map,
+  Activity, Smartphone, GraduationCap
 } from "lucide-react";
 import TagsInput from "./TagsInput";
 import PlatformsInput from "./PlatformsInput";
