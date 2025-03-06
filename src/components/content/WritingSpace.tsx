@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useState } from "react";
 import { Pencil } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -42,6 +41,24 @@ const WritingSpace = ({
     }
   };
 
+  const handleFormatClick = (formatType: string, formatValue?: string) => {
+    if (textareaRef.current) {
+      // Get current selection range
+      const start = textareaRef.current.selectionStart;
+      const end = textareaRef.current.selectionEnd;
+      
+      // Pass both format info and selection range to parent component
+      onFormatText(formatType, formatValue);
+      
+      // Keep focus on textarea after formatting
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+        }
+      }, 10);
+    }
+  };
+
   return (
     <div className={`space-y-4 pr-4 transition-all duration-300 ${expandedClass}`}>
       <div className="flex items-center justify-between">
@@ -52,7 +69,7 @@ const WritingSpace = ({
       </div>
       <div className="h-[calc(100vh-140px)]">
         <div className="rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full relative bg-[#F6F6F7] flex flex-col">
-          <SimpleTextFormattingToolbar onFormat={onFormatText} />
+          <SimpleTextFormattingToolbar onFormat={handleFormatClick} />
           
           <ScrollArea className="h-full w-full flex-1">
             <Textarea
@@ -65,7 +82,6 @@ const WritingSpace = ({
               style={{ position: 'relative', height: '100%' }}
             />
           </ScrollArea>
-          {/* Removed the thick red scrollbar indicator */}
         </div>
       </div>
     </div>

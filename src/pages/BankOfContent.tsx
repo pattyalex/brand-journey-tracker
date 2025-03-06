@@ -247,11 +247,53 @@ const BankOfContent = () => {
   };
 
   const handleFormatText = (formatType: string, formatValue?: string) => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
+    if (!textareaRef.current) {
+      let newText = writingText;
+      const selectionStart = 0;
+      const selectionEnd = writingText.length;
+      const selectedText = writingText;
+      
+      switch (formatType) {
+        case 'bold':
+          newText = `**${selectedText}**`;
+          break;
+        case 'italic':
+          newText = `_${selectedText}_`;
+          break;
+        case 'underline':
+          newText = `<u>${selectedText}</u>`;
+          break;
+        case 'bullet':
+          newText = `• ${selectedText}`;
+          break;
+        case 'numbered':
+          newText = `1. ${selectedText}`;
+          break;
+        case 'align':
+          if (formatValue) {
+            newText = `<div style="text-align: ${formatValue};">${selectedText}</div>`;
+          }
+          break;
+        case 'size':
+          if (formatValue) {
+            newText = `<span style="font-size: ${formatValue};">${selectedText}</span>`;
+          }
+          break;
+        default:
+          return;
+      }
+      
+      setWritingText(newText);
+      return;
+    }
 
-    const { selectionStart, selectionEnd, value } = textarea;
+    const { selectionStart, selectionEnd, value } = textareaRef.current;
     const selectedText = value.substring(selectionStart, selectionEnd);
+    
+    if (selectionStart === selectionEnd && formatType !== 'bullet' && formatType !== 'numbered') {
+      toast.info("Select some text first to apply formatting");
+      return;
+    }
     
     let newText;
     let newCursorPos;
@@ -270,17 +312,37 @@ const BankOfContent = () => {
         newCursorPos = selectionEnd + 7;
         break;
       case 'bullet':
-        newText = value.substring(0, selectionStart) + "• " + selectedText + value.substring(selectionEnd);
-        newCursorPos = selectionEnd + 2;
+        if (selectionStart === selectionEnd) {
+          newText = value.substring(0, selectionStart) + "• " + value.substring(selectionEnd);
+          newCursorPos = selectionStart + 2;
+        } else {
+          newText = value.substring(0, selectionStart) + "• " + selectedText + value.substring(selectionEnd);
+          newCursorPos = selectionEnd + 2;
+        }
         break;
       case 'numbered':
-        newText = value.substring(0, selectionStart) + "1. " + selectedText + value.substring(selectionEnd);
-        newCursorPos = selectionEnd + 3;
+        if (selectionStart === selectionEnd) {
+          newText = value.substring(0, selectionStart) + "1. " + value.substring(selectionEnd);
+          newCursorPos = selectionStart + 3;
+        } else {
+          newText = value.substring(0, selectionStart) + "1. " + selectedText + value.substring(selectionEnd);
+          newCursorPos = selectionEnd + 3;
+        }
         break;
       case 'align':
         if (formatValue) {
           newText = value.substring(0, selectionStart) + 
                     `<div style="text-align: ${formatValue};">${selectedText}</div>` + 
+                    value.substring(selectionEnd);
+          newCursorPos = selectionEnd + 30 + formatValue.length;
+        } else {
+          return;
+        }
+        break;
+      case 'size':
+        if (formatValue) {
+          newText = value.substring(0, selectionStart) + 
+                    `<span style="font-size: ${formatValue};">${selectedText}</span>` + 
                     value.substring(selectionEnd);
           newCursorPos = selectionEnd + 30 + formatValue.length;
         } else {
@@ -294,11 +356,11 @@ const BankOfContent = () => {
     setWritingText(newText);
     
     setTimeout(() => {
-      if (textarea) {
-        textarea.focus();
-        textarea.setSelectionRange(newCursorPos, newCursorPos);
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
       }
-    }, 0);
+    }, 10);
   };
 
   const createNewIdeaFromSelection = () => {
