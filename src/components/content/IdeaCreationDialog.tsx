@@ -123,6 +123,16 @@ const IdeaCreationDialog = ({
                   />
                 </div>
                 
+                <div className="grid gap-2 relative">
+                  <Label htmlFor="format-select">Format</Label>
+                  <FormatSelector
+                    selectedFormat={formatText}
+                    onFormatChange={onFormatTextChange}
+                  />
+                </div>
+                
+                <div className="h-8"></div>
+                
                 <div className="grid gap-2">
                   <Label htmlFor="develop-script">Script</Label>
                   <Textarea
@@ -134,15 +144,6 @@ const IdeaCreationDialog = ({
                   />
                 </div>
                 
-                <div className="grid gap-2 relative">
-                  <Label htmlFor="format-select">Format</Label>
-                  <FormatSelector
-                    selectedFormat={formatText}
-                    onFormatChange={onFormatTextChange}
-                  />
-                </div>
-                
-                {/* Added more space here, increasing from h-4 to h-8 */}
                 <div className="h-8"></div>
                 
                 <div className="grid gap-2">
