@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +19,6 @@ interface TitleHookSuggestionsProps {
   onSelectHook: (hook: string) => void;
 }
 
-// Categories with detailed hook ideas
 const HOOK_DATA = {
   "Inspirational Hooks": {
     subcategories: [
@@ -166,7 +164,6 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
   const [customHook, setCustomHook] = useState("");
   const [customHooks, setCustomHooks] = useState<string[]>([]);
 
-  // Load custom hooks from localStorage on component mount
   useEffect(() => {
     const savedHooks = localStorage.getItem("customHooks");
     if (savedHooks) {
@@ -174,34 +171,24 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
     }
   }, []);
 
-  // Save custom hooks to localStorage when they change
   useEffect(() => {
     localStorage.setItem("customHooks", JSON.stringify(customHooks));
   }, [customHooks]);
 
-  // This function is called when the user selects a category from the dialog
   const handleSelectCategory = (category: string) => {
-    // Set the selected category
     setSelectedCategory(category);
-    // Open the sheet with subcategories
     setSheetOpen(true);
   };
 
-  // This function is called when the user selects a specific hook
   const handleSelectHook = (hook: string) => {
-    // Pass the selected hook to the parent component
     onSelectHook(hook);
-    // Close the sheet with subcategories
     setSheetOpen(false);
-    // Ensure dialog is also closed
     setDialogOpen(false);
   };
 
-  // Handle custom hook submission
   const handleCustomHookSubmit = () => {
     if (customHook.trim()) {
       onSelectHook(customHook);
-      // Add to custom hooks list if it doesn't already exist
       if (!customHooks.includes(customHook)) {
         setCustomHooks(prev => [...prev, customHook]);
       }
@@ -210,20 +197,17 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
     }
   };
 
-  // Handle viewing custom hooks
   const handleViewCustomHooks = () => {
     setSelectedCategory("Create your own");
     setSheetOpen(true);
   };
 
-  // New function to handle deleting a custom hook
   const handleDeleteCustomHook = (hookToDelete: string) => {
     setCustomHooks(prev => prev.filter(hook => hook !== hookToDelete));
   };
 
   return (
     <>
-      {/* Button trigger for hook suggestions */}
       <Button 
         variant="ghost" 
         size="xs"
@@ -234,7 +218,6 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
         <Sparkles className="h-5 w-5 text-primary" />
       </Button>
 
-      {/* Dialog for title hook suggestions */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -254,7 +237,6 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
                 </button>
               ))}
               
-              {/* Create your own category button */}
               <button
                 className="w-full flex justify-between items-center px-4 py-3 text-left hover:bg-accent text-sm font-medium rounded-sm"
                 onClick={handleViewCustomHooks}
@@ -267,7 +249,6 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
         </DialogContent>
       </Dialog>
 
-      {/* Sheet for displaying subcategories and hooks */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent side="right" className="w-[400px] p-0 overflow-y-auto">
           <SheetHeader className="p-4 border-b">
@@ -277,9 +258,9 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
           <div className="p-4">
             {selectedCategory && selectedCategory !== "Create your own" && 
               HOOK_DATA[selectedCategory as keyof typeof HOOK_DATA]?.subcategories.map((subcat, scIndex) => (
-                <div key={scIndex} className="mb-6">
-                  <h3 className="font-medium text-base mb-2">• {subcat.name}</h3>
-                  <ul className="space-y-2 ml-4">
+                <div key={scIndex} className="mb-8">
+                  <h3 className="font-bold text-lg mb-3 text-primary">{subcat.name}</h3>
+                  <ul className="space-y-2.5 ml-4">
                     {subcat.hooks.map((hook, hIndex) => (
                       <li key={hIndex} className="list-disc ml-4">
                         <button 
@@ -295,13 +276,11 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
               ))
             }
             
-            {/* Custom hooks section */}
             {selectedCategory === "Create your own" && (
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-medium text-base">Your Custom Hooks</h3>
+                  <h3 className="font-bold text-lg mb-3 text-primary">Your Custom Hooks</h3>
                   
-                  {/* Add new hook inline */}
                   <div className="flex items-center gap-2 mt-2 mb-4 w-full">
                     <Input
                       type="text"
@@ -336,7 +315,7 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
                 </div>
                 
                 {customHooks.length > 0 ? (
-                  <ul className="space-y-2">
+                  <ul className="space-y-2.5">
                     {customHooks.map((hook, index) => (
                       <li key={index} className="flex items-center gap-2">
                         <span className="list-disc ml-4">
