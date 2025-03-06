@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -165,6 +166,7 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
   const handleSelectCategory = (category: string) => {
     setSelectedCategory(category);
     setSheetOpen(true);
+    setPopoverOpen(false); // Close the popover when sheet opens
   };
 
   const handleSelectHook = (hook: string) => {
@@ -225,7 +227,7 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
                     value={customHook}
                     onChange={(e) => setCustomHook(e.target.value)}
                     className="flex-1 px-3 py-1 text-sm border rounded-md"
-                    placeholder="Type a name for your own category of hooks..."
+                    placeholder="Type your own hook..."
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleCustomHookSubmit();
                     }}
