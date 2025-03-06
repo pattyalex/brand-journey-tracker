@@ -1,10 +1,8 @@
-
 import { useState, useEffect, useRef } from "react";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 import ContentCard from "./ContentCard";
-import { toast } from "sonner";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -65,7 +63,6 @@ const ContentPillar = ({
     
     if (onReorderContent) {
       onReorderContent(newItems);
-      toast.success("Content order updated");
     }
   };
 
