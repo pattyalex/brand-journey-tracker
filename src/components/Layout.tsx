@@ -16,7 +16,8 @@ const ToggleSidebarButton = () => {
           <Button 
             variant="ghost" 
             size="icon" 
-            className="fixed left-4 top-4 z-50 rounded-full bg-white/90 shadow-md hover:bg-white"
+            className="fixed top-4 z-50 rounded-full bg-white/90 shadow-md hover:bg-white"
+            style={{ left: state === "collapsed" ? "1rem" : "calc(240px + 1rem)" }}
             onClick={toggleSidebar}
           >
             {state === "collapsed" ? (
