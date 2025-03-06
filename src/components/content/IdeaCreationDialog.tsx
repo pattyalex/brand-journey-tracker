@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -18,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue 
 } from "@/components/ui/select";
-import { Text, Video, Image, FileAudio, Code, FileVideo, Camera, Mic, Presentation, FileSpreadsheet, Youtube, Instagram, TikTok, Linkedin, FileType } from "lucide-react";
+import { Text, Video, Image, FileAudio, Code, FileVideo, Camera, Mic, Presentation, FileSpreadsheet, Youtube, Instagram, FileType, Linkedin, BrandTiktok } from "lucide-react";
 import TagsInput from "./TagsInput";
 import PlatformsInput from "./PlatformsInput";
 import DateSchedulePicker from "./DateSchedulePicker";
@@ -95,7 +96,7 @@ const IdeaCreationDialog = ({
     { value: "audio", label: "Audio", icon: <FileAudio className="h-4 w-4" /> },
     { value: "short_video", label: "Short-form Video", icon: <FileVideo className="h-4 w-4" /> },
     { value: "reel", label: "Reel/Story", icon: <Instagram className="h-4 w-4" /> },
-    { value: "tiktok", label: "TikTok", icon: <TikTok className="h-4 w-4" /> },
+    { value: "tiktok", label: "TikTok", icon: <BrandTiktok className="h-4 w-4" /> },
     { value: "youtube", label: "YouTube", icon: <Youtube className="h-4 w-4" /> },
     { value: "carousel", label: "Carousel Post", icon: <FileSpreadsheet className="h-4 w-4" /> },
     { value: "live", label: "Live Stream", icon: <Camera className="h-4 w-4" /> },
