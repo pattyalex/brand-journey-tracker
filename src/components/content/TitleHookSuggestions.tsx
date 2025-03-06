@@ -224,7 +224,14 @@ const HOOK_DATA = {
           "24 hours only: Get [product] before it's gone",
           "Flash sale alert: [discount] off everything",
           "Special announcement: [new product/service] is here",
-          "Exclusive preview for my followers"
+          "Exclusive preview for my followers",
+          "Treat yourself to [X]—you deserve it!",
+          "Shop now and get [X]% off your first purchase!",
+          "Limited-time offer: Get [X] free when you buy [Y]!",
+          "This deal ends in [X] hours—don't miss out!",
+          "Only [X] items left in stock!",
+          "Pre-order now and be the first to [X]!",
+          "Get [Y] when you sign up today!"
         ]
       },
       {
