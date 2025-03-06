@@ -6,7 +6,7 @@ import { Pillar } from "@/pages/BankOfContent";
 import { DragDropContext, Droppable, DropResult } from "react-beautiful-dnd";
 import ContentCard from "./ContentCard";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, LayoutGrid, LayoutList } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ContentPillarProps {
@@ -89,14 +89,6 @@ const ContentPillar = ({
 
   const toggleLayout = () => {
     setIsSingleRowLayout(!isSingleRowLayout);
-    // If switching to grid layout, clear the scroll position
-    if (isSingleRowLayout && scrollContainerRef.current) {
-      setTimeout(() => {
-        if (scrollContainerRef.current) {
-          scrollContainerRef.current.scrollLeft = 0;
-        }
-      }, 10);
-    }
   };
 
   useEffect(() => {
@@ -121,21 +113,11 @@ const ContentPillar = ({
       <div className="flex justify-end mb-2">
         <Button 
           variant="outline" 
-          size="sm"
+          size="sm" 
           onClick={toggleLayout}
-          className="text-xs flex items-center gap-1"
+          className="text-xs"
         >
-          {isSingleRowLayout ? (
-            <>
-              <LayoutGrid className="h-3.5 w-3.5" />
-              <span>Grid Layout</span>
-            </>
-          ) : (
-            <>
-              <LayoutList className="h-3.5 w-3.5" />
-              <span>Row Layout</span>
-            </>
-          )}
+          {isSingleRowLayout ? "Switch to Grid Layout" : "Switch to Row Layout"}
         </Button>
       </div>
       
@@ -179,7 +161,7 @@ const ContentPillar = ({
                     className={`
                       ${isSingleRowLayout 
                         ? "flex space-x-6 min-w-min pb-4 pl-2 pr-2" 
-                        : "grid grid-cols-1 md:grid-cols-2 gap-6 pb-4 pl-2 pr-2"}
+                        : "grid grid-cols-2 gap-6 pb-4 pl-2 pr-2"}
                     `}
                   >
                     {filteredContent.map((content, index) => (
