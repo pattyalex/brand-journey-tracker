@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Check, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -123,30 +122,32 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
             <SelectValue placeholder="Select a content format" />
           </SelectTrigger>
           <SelectContent className="max-h-[300px]">
-            <ScrollArea className="h-[280px] touch-auto overflow-y-auto">
-              {formats.map((format) => (
-                <SelectItem 
-                  key={format} 
-                  value={format} 
-                  className="hover:bg-gray-100 dark:hover:bg-gray-700 group pr-10 relative"
-                >
-                  <span>{format}</span>
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={(e) => handleDeleteFormat(format, e)}
-                    className="absolute right-1 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-gray-600"
+            <ScrollArea className="h-[280px]">
+              <div className="p-1">
+                {formats.map((format) => (
+                  <SelectItem 
+                    key={format} 
+                    value={format} 
+                    className="hover:bg-gray-100 dark:hover:bg-gray-700 group pr-10 relative"
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
+                    <span>{format}</span>
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      onClick={(e) => handleDeleteFormat(format, e)}
+                      className="absolute right-1 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-gray-600"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </SelectItem>
+                ))}
+                <SelectItem value="custom" className="hover:bg-gray-100 dark:hover:bg-gray-700">
+                  <span className="flex items-center">
+                    <Plus className="h-3.5 w-3.5 mr-2" />
+                    Add custom format
+                  </span>
                 </SelectItem>
-              ))}
-              <SelectItem value="custom" className="hover:bg-gray-100 dark:hover:bg-gray-700">
-                <span className="flex items-center">
-                  <Plus className="h-3.5 w-3.5 mr-2" />
-                  Add custom format
-                </span>
-              </SelectItem>
+              </div>
             </ScrollArea>
           </SelectContent>
         </Select>

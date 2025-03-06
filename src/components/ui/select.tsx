@@ -85,10 +85,11 @@ const SelectContent = React.forwardRef<
       <SelectScrollUpButton />
       <SelectPrimitive.Viewport
         className={cn(
-          "p-1",
+          "p-0", // Changed from p-1 to p-0 to allow inner component padding control
           position === "popper" &&
             "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
         )}
+        style={{ touchAction: "manipulation" }} // Add touchAction directly in style
       >
         {children}
       </SelectPrimitive.Viewport>
