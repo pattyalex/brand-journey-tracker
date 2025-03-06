@@ -16,6 +16,7 @@ import TagsInput from "./TagsInput";
 import PlatformsInput from "./PlatformsInput";
 import DateSchedulePicker from "./DateSchedulePicker";
 import MeganAIChat from "./MeganAIChat";
+import FormatSelector from "./FormatSelector";
 
 interface IdeaCreationDialogProps {
   open: boolean;
@@ -134,13 +135,10 @@ const IdeaCreationDialog = ({
                 </div>
                 
                 <div className="grid gap-2">
-                  <Label htmlFor="format-text">Format</Label>
-                  <Textarea
-                    id="format-text"
-                    value={formatText}
-                    onChange={(e) => onFormatTextChange(e.target.value)}
-                    placeholder="Describe how you want to present your script (e.g., POV skit, educational, storytelling, aesthetic montage)..."
-                    className="min-h-[100px] resize-y"
+                  <Label htmlFor="format-select">Format</Label>
+                  <FormatSelector
+                    selectedFormat={formatText}
+                    onFormatChange={onFormatTextChange}
                   />
                 </div>
                 

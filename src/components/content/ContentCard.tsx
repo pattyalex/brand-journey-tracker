@@ -5,7 +5,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  Trash2, Pencil, Calendar 
+  Trash2, Pencil, Calendar, FileText 
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ContentItem } from "@/types/content";
@@ -44,6 +44,21 @@ const ContentCard = ({
 }: ContentCardProps) => {
   const [date, setDate] = useState<Date | undefined>(content.scheduledDate);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  
+  // Parse the content format from the URL (JSON) if available
+  const getContentFormat = () => {
+    if (content.format === 'text' && content.url) {
+      try {
+        const parsedContent = JSON.parse(content.url);
+        return parsedContent.format;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  };
+
+  const contentFormat = getContentFormat();
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (!selectedDate) return;
@@ -92,6 +107,12 @@ const ContentCard = ({
       
       <CardContent className="p-3 pt-0">
         <div className="flex flex-wrap gap-1 mb-2">
+          {contentFormat && (
+            <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
+              <FileText className="h-3 w-3 mr-0.5" />
+              {contentFormat}
+            </span>
+          )}
           {content.tags && content.tags.length > 0 ? (
             content.tags.slice(0, 2).map((tag, index) => (
               <span 
