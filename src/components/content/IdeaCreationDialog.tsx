@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -141,6 +140,8 @@ const IdeaCreationDialog = ({
                     onFormatChange={onFormatTextChange}
                   />
                 </div>
+                
+                <div className="h-4"></div>
                 
                 <div className="grid gap-2">
                   <Label htmlFor="shoot-details">Shoot Details</Label>
