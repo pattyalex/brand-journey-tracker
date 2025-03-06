@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -141,7 +142,8 @@ const IdeaCreationDialog = ({
                   />
                 </div>
                 
-                <div className="h-4"></div>
+                {/* Added more space here, increasing from h-4 to h-8 */}
+                <div className="h-8"></div>
                 
                 <div className="grid gap-2">
                   <Label htmlFor="shoot-details">Shoot Details</Label>
