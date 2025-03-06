@@ -147,7 +147,7 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
         </div>
       ) : (
         <Select value={selectedFormat || ""} onValueChange={handleSelectFormat}>
-          <SelectTrigger className="w-full">
+          <SelectTrigger className="w-full relative" iconClassName="absolute right-3 mr-0">
             <SelectValue placeholder="Select a content format" />
           </SelectTrigger>
           <SelectContent className="select-none max-h-[300px]">
