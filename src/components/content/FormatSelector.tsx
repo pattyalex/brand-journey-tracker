@@ -126,14 +126,14 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select a content format" />
           </SelectTrigger>
-          <SelectContent className="max-h-[300px]">
-            <ScrollArea className="h-[280px]">
-              <div className="p-1">
+          <SelectContent className="select-none max-h-[300px]">
+            <ScrollArea className="h-[240px]">
+              <div className="p-2">
                 {formats.map((format) => (
                   <SelectItem 
                     key={format} 
                     value={format} 
-                    className="hover:bg-gray-100 dark:hover:bg-gray-700 group pr-10 relative"
+                    className="hover:bg-gray-100 dark:hover:bg-gray-700 group pr-10 relative mb-1 rounded-md cursor-pointer"
                   >
                     <span>{format}</span>
                     <Button
@@ -146,7 +146,7 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
                     </Button>
                   </SelectItem>
                 ))}
-                <SelectItem value="custom" className="hover:bg-gray-100 dark:hover:bg-gray-700">
+                <SelectItem value="custom" className="hover:bg-gray-100 dark:hover:bg-gray-700 mt-2 rounded-md cursor-pointer">
                   <span className="flex items-center">
                     <Plus className="h-3.5 w-3.5 mr-2" />
                     Add custom format
