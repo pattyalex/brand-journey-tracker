@@ -131,7 +131,7 @@ const IdeaCreationDialog = ({
                   />
                 </div>
                 
-                <div className="h-8"></div>
+                <div className="h-4"></div>
                 
                 <div className="grid gap-2">
                   <Label htmlFor="develop-script">Script</Label>
