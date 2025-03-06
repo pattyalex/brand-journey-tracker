@@ -1,8 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { ContentItem } from "@/types/content";
 import { toast } from "sonner";
 import ContentSearchModal from "@/components/content/ContentSearchModal";
@@ -597,18 +595,6 @@ const BankOfContent = () => {
       <div className="container mx-auto py-6 space-y-6 fade-in">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Idea Development</h1>
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search..."
-                className="w-[250px] pl-8"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => setIsSearchModalOpen(true)}
-              />
-            </div>
-          </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
