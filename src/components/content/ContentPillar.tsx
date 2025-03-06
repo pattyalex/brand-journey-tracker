@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
@@ -55,11 +54,8 @@ const ContentPillar = ({
       destination.index === source.index
     ) return;
     
-    // Create a new array with all content items
     const newItems = Array.from(filteredContent);
-    // Remove the dragged item
     const [removed] = newItems.splice(source.index, 1);
-    // Insert it at the destination
     newItems.splice(destination.index, 0, removed);
     
     if (onReorderContent) {
@@ -92,9 +88,7 @@ const ContentPillar = ({
     const scrollContainer = scrollContainerRef.current;
     if (scrollContainer) {
       scrollContainer.addEventListener('scroll', handleScroll);
-      // Check initial state
       handleScroll();
-      // Set right arrow visibility based on content
       setShowRightArrow(scrollContainer.scrollWidth > scrollContainer.clientWidth);
     }
     
@@ -140,8 +134,7 @@ const ContentPillar = ({
                   <div 
                     {...provided.droppableProps}
                     ref={provided.innerRef}
-                    className="flex flex-wrap gap-3 min-w-min pl-2 pr-2"
-                    style={{ display: 'flex', flexDirection: 'row' }}
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 min-w-min px-2"
                   >
                     {filteredContent.map((content, index) => (
                       <Draggable
@@ -154,13 +147,9 @@ const ContentPillar = ({
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            className={`${snapshot.isDragging ? 'opacity-70' : 'opacity-100'} h-full`}
+                            className={`${snapshot.isDragging ? 'opacity-70' : 'opacity-100'}`}
                             style={{
                               ...provided.draggableProps.style,
-                              width: '240px',
-                              minWidth: '240px',
-                              maxWidth: '240px',
-                              margin: '0 4px 16px 4px'
                             }}
                           >
                             <ContentCard

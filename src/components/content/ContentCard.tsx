@@ -77,7 +77,7 @@ const ContentCard = ({
 
   return (
     <Card 
-      className={`overflow-hidden relative h-full border-2 w-[220px]`}
+      className={`overflow-hidden relative h-full border-2 w-full`}
     >
       <CardHeader className="p-3">
         <CardTitle className="text-sm font-bold mb-1 line-clamp-2">

@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Lightbulb, FileText, FilePlus } from "lucide-react";
+import { Lightbulb, FileText, FilePlus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
@@ -39,7 +39,7 @@ const IdeaSection = ({
   onContentAdded
 }: IdeaSectionProps) => {
   return (
-    <div className="space-y-4 pl-4">
+    <div className="space-y-4 pl-4 pr-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold flex items-center">
           <Lightbulb className="h-5 w-5 mr-2" /> 
@@ -62,7 +62,7 @@ const IdeaSection = ({
               className="bg-[#8B6B4E] hover:bg-[#7A5C3F]"
               onClick={onNewIdeaClick}
             >
-              <FileText className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4 mr-2" />
               Add New Idea
             </Button>
           )}
