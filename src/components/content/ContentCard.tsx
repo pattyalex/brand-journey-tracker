@@ -5,7 +5,7 @@ import {
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, Pencil, Calendar, GripVertical } from "lucide-react";
+import { Trash2, Pencil, Calendar } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -75,23 +76,17 @@ const ContentCard = ({
   };
 
   return (
-    <Draggable draggableId={content.id} index={index}>
+    <Draggable key={content.id} draggableId={content.id} index={index}>
       {(provided, snapshot) => (
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
+          {...provided.dragHandleProps}
           className={`${snapshot.isDragging ? 'opacity-70' : 'opacity-100'} h-full`}
         >
           <Card 
             className={`overflow-hidden ${snapshot.isDragging ? 'shadow-lg' : ''} relative h-full border-2`}
           >
-            <div 
-              {...provided.dragHandleProps} 
-              className="absolute top-2 right-2 cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-700 rounded"
-            >
-              <GripVertical size={16} />
-            </div>
-            
             <CardHeader className="p-6">
               <CardTitle className="text-xl font-bold mb-2">
                 {content.title}
