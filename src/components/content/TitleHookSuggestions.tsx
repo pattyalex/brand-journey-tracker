@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -257,33 +256,6 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
                 Create your own
                 <ArrowRight className="h-4 w-4 ml-2 text-muted-foreground" />
               </button>
-            </div>
-            
-            <div className="p-4 border-t mt-2">
-              <h4 className="font-semibold text-primary mb-2 text-sm">Create your own</h4>
-              <div className="flex gap-2">
-                <Input
-                  type="text"
-                  value={customHook}
-                  onChange={(e) => setCustomHook(e.target.value)}
-                  className="flex-1"
-                  placeholder="Type your own hook..."
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleCustomHookSubmit();
-                    }
-                  }}
-                />
-                <Button 
-                  onClick={handleCustomHookSubmit}
-                  disabled={!customHook.trim()}
-                  size="sm"
-                  className="bg-[#c4b7a6] hover:bg-[#b0a48f] text-white"
-                >
-                  Add
-                </Button>
-              </div>
             </div>
           </div>
         </DialogContent>
