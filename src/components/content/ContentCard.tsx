@@ -1,11 +1,12 @@
 
 import { useState } from "react";
-import { Draggable } from "react-beautiful-dnd";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, Pencil, Calendar } from "lucide-react";
+import { 
+  Trash2, Pencil, Calendar 
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
@@ -76,7 +77,7 @@ const ContentCard = ({
 
   return (
     <Card 
-      className={`overflow-hidden relative h-full border-2`}
+      className={`overflow-hidden relative h-full border-2 w-[220px]`}
     >
       <CardHeader className="p-3">
         <CardTitle className="text-sm font-bold mb-1 line-clamp-2">

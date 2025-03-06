@@ -20,6 +20,20 @@ const WritingSpace = ({
 }: WritingSpaceProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onTextChange(e.target.value);
+  };
+
+  const handleTextSelection = () => {
+    if (textareaRef.current) {
+      const selectedText = textareaRef.current.value.substring(
+        textareaRef.current.selectionStart,
+        textareaRef.current.selectionEnd
+      );
+      onTextSelection(selectedText);
+    }
+  };
+
   return (
     <div className="space-y-4 pr-4">
       <div className="flex items-center justify-between">
@@ -36,10 +50,11 @@ const WritingSpace = ({
             <Textarea
               ref={textareaRef}
               value={writingText}
-              onChange={(e) => onTextChange(e.target.value)}
-              onTextSelect={onTextSelection}
+              onChange={handleTextChange}
+              onSelect={handleTextSelection}
               placeholder="Start writing your content ideas here..."
-              className="min-h-full w-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-sm absolute inset-0 px-4 py-4"
+              className="min-h-full w-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-sm p-4"
+              style={{ position: 'relative', height: '100%' }}
             />
           </ScrollArea>
           <div className="absolute right-0 top-0 bottom-0 w-3 bg-gray-200 opacity-60"></div>
