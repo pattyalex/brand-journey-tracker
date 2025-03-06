@@ -124,7 +124,7 @@ const ContentCard = ({
       <CardContent className="p-3 pt-0">
         <div className="flex flex-wrap gap-1 mb-2">
           {contentFormat && (
-            <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
+            <span className="bg-orange-100 text-orange-800 text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
               <FileText className="h-3 w-3 mr-0.5" />
               {contentFormat}
             </span>
