@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
@@ -88,7 +87,6 @@ const ContentPillar = ({
 
   const toggleLayout = () => {
     setIsSingleRowLayout(!isSingleRowLayout);
-    // If switching to grid layout, clear the scroll position
     if (isSingleRowLayout && scrollContainerRef.current) {
       setTimeout(() => {
         if (scrollContainerRef.current) {
@@ -102,9 +100,7 @@ const ContentPillar = ({
     const scrollContainer = scrollContainerRef.current;
     if (scrollContainer) {
       scrollContainer.addEventListener('scroll', handleScroll);
-      // Check initial state
       handleScroll();
-      // Set right arrow visibility based on content
       setShowRightArrow(scrollContainer.scrollWidth > scrollContainer.clientWidth);
     }
     
@@ -165,6 +161,7 @@ const ContentPillar = ({
               ref={scrollContainerRef} 
               className={`${isSingleRowLayout ? "overflow-x-auto pb-4 hide-scrollbar" : "overflow-visible"}`}
               style={isSingleRowLayout ? { scrollbarWidth: 'none', msOverflowStyle: 'none' } : {}}
+              onScroll={handleScroll}
             >
               <Droppable 
                 droppableId={`content-cards-${pillar.id}`} 
