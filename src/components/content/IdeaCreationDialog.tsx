@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -123,6 +122,8 @@ const IdeaCreationDialog = ({
                   />
                 </div>
                 
+                <div className="h-2"></div>
+                
                 <div className="grid gap-2 relative">
                   <Label htmlFor="format-select">Format</Label>
                   <FormatSelector
@@ -144,7 +145,7 @@ const IdeaCreationDialog = ({
                   />
                 </div>
                 
-                <div className="h-8"></div>
+                <div className="h-4"></div>
                 
                 <div className="grid gap-2">
                   <Label htmlFor="shoot-details">Shoot Details</Label>
