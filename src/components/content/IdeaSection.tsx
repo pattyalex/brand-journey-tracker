@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Lightbulb, FileText, FilePlus, Plus } from "lucide-react";
+import { Lightbulb, FileText, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
@@ -62,7 +62,7 @@ const IdeaSection = ({
               className="bg-[#8B6B4E] hover:bg-[#7A5C3F]"
               onClick={onNewIdeaClick}
             >
-              <FilePlus className="h-4 w-4 mr-2" />
+              <FileText className="h-4 w-4 mr-2" />
               Add New Idea
             </Button>
           )}
