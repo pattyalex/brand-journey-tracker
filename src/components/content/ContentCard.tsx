@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
@@ -117,7 +116,7 @@ const ContentCard = ({
             </Badge>
           )}
         </CardTitle>
-        <CardDescription className="line-clamp-2 text-sm">
+        <CardDescription className="line-clamp-2 text-xs">
           {content.description}
         </CardDescription>
       </CardHeader>
