@@ -33,9 +33,9 @@ const ContentPillar = ({
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
   const [isGridView, setIsGridView] = useState(() => {
-    // Load saved preference from localStorage or default to false (row view)
+    // Load saved preference from localStorage or default to true (grid view)
     const saved = localStorage.getItem(`layout-${pillar.id}`);
-    return saved ? saved === 'grid' : false;
+    return saved ? saved === 'grid' : true;
   });
 
   useEffect(() => {
@@ -171,7 +171,7 @@ const ContentPillar = ({
                       ref={provided.innerRef}
                       className={
                         isGridView 
-                          ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-2" 
+                          ? "grid grid-cols-3 gap-4 p-2" 
                           : "flex space-x-4 min-w-min pb-4 pl-2 pr-2"
                       }
                     >
