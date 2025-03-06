@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -79,6 +80,59 @@ const HOOK_DATA = {
           "Why everything you know about [topic] is wrong",
           "The hidden science behind [everyday thing]",
           "What they don't tell you about [industry topic]"
+        ]
+      },
+      {
+        name: "Problem-Solution Hooks",
+        hooks: [
+          "Struggling with [X]? Here's the fix!",
+          "I stopped doing this ONE thing, and my life changed!",
+          "This is why [X] isn't working for you (and how to fix it).",
+          "You don't need [X] to [Y]."
+        ]
+      },
+      {
+        name: "Quick Tips & Life Hacks Hooks",
+        hooks: [
+          "Do this one thing and thank me later.",
+          "The easiest way to [X]—takes less than 5 minutes!",
+          "This tiny hack will change your life.",
+          "3 easy ways to level up your wardrobe without spending a dime.",
+          "The quickest way to get glowing skin every day.",
+          "These 5 beauty products will save you time and money."
+        ]
+      },
+      {
+        name: "List & Actionable Tips Hooks",
+        hooks: [
+          "3 tips that completely changed my life.",
+          "2 ways to instantly boost your confidence.",
+          "5 things I wish I knew sooner about [X].",
+          "The 4-step formula to [achieve goal].",
+          "3 things you need to know before [X].",
+          "5 mistakes you're making with [X].",
+          "The top 10 [X] of all time!",
+          "Do these 3 things if you want to [desired outcome].",
+          "I tried 7 different methods to [X]—here's what actually worked."
+        ]
+      },
+      {
+        name: "Behind-the-Scenes & Insider Info Hooks",
+        hooks: [
+          "Let me take you behind the scenes of [X].",
+          "This is how I REALLY [do X].",
+          "What [industry insiders] don't want you to know!"
+        ]
+      },
+      {
+        name: "Common Mistakes & Myths Hooks",
+        hooks: [
+          "You think [X] works? Think again.",
+          "Most people get this wrong…",
+          "Think you're doing your skincare right? You're probably wrong.",
+          "I used to believe this myth until I learned the truth.",
+          "This 'fashion tip' is actually a huge mistake!",
+          "Don't fall for this [beauty/fashion] myth!"
         ]
       }
     ]
