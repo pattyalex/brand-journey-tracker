@@ -1,6 +1,6 @@
 
 import { Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Sidebar as SidebarContainer,
   SidebarContent,
@@ -8,6 +8,7 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
+  useSidebar
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,6 +32,12 @@ const Sidebar = () => {
 
   const [menuItems, setMenuItems] = useState<MenuItem[]>(getSavedMenuItems);
   const [showAddForm, setShowAddForm] = useState(false);
+  const { state } = useSidebar();
+
+  // Save sidebar state to localStorage
+  useEffect(() => {
+    localStorage.setItem('sidebarState', state);
+  }, [state]);
 
   const handleDeleteItem = (itemTitle: string) => {
     const updatedItems = menuItems.filter(item => item.title !== itemTitle);

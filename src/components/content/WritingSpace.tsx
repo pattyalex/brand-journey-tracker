@@ -1,9 +1,10 @@
 
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Pencil } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import SimpleTextFormattingToolbar from "@/components/SimpleTextFormattingToolbar";
+import { useSidebar } from "@/components/ui/sidebar";
 
 interface WritingSpaceProps {
   writingText: string;
@@ -19,6 +20,13 @@ const WritingSpace = ({
   onFormatText
 }: WritingSpaceProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { state } = useSidebar();
+  const [expandedClass, setExpandedClass] = useState("");
+  
+  // Adjust layout when sidebar state changes
+  useEffect(() => {
+    setExpandedClass(state === "collapsed" ? "writing-expanded" : "");
+  }, [state]);
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onTextChange(e.target.value);
@@ -35,7 +43,7 @@ const WritingSpace = ({
   };
 
   return (
-    <div className="space-y-4 pr-4">
+    <div className={`space-y-4 pr-4 transition-all duration-300 ${expandedClass}`}>
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold flex items-center">
           <Pencil className="h-5 w-5 mr-2" />
