@@ -128,7 +128,7 @@ const ContentSearchModal = ({
                       {item.description}
                     </p>
                     <div className="flex flex-wrap gap-1 mt-2">
-                      {item.tags.map((tag, index) => (
+                      {item.tags && item.tags.map((tag, index) => (
                         <span 
                           key={index} 
                           className={`text-xs px-2 py-0.5 rounded-full ${getTagColorClasses(tag)}`}
