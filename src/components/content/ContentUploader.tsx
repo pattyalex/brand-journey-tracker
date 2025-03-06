@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { FileText, Pencil } from "lucide-react";
 import { ContentItem } from "@/types/content";
 import IdeaCreationDialog from "./IdeaCreationDialog";
 
@@ -178,11 +178,11 @@ const ContentUploader = ({
       <Button onClick={() => setIsOpen(true)}>
         {isEditMode ? (
           <>
-            <Plus className="mr-2 h-4 w-4" /> Add New Idea
+            <FileText className="mr-2 h-4 w-4" /> Add New Idea
           </>
         ) : (
           <>
-            <Plus className="mr-2 h-4 w-4" /> Add New Idea
+            <FileText className="mr-2 h-4 w-4" /> Add New Idea
           </>
         )}
       </Button>
