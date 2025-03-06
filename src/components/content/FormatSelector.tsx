@@ -10,7 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Common content formats that creators might use
 const PREDEFINED_FORMATS = [
@@ -89,22 +88,18 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select a content format" />
           </SelectTrigger>
-          <SelectContent>
-            <ScrollArea className="h-[200px] w-full">
-              <div className="p-2">
-                {PREDEFINED_FORMATS.map((format) => (
-                  <SelectItem key={format} value={format} className="rounded-sm mb-1 hover:bg-gray-100 dark:hover:bg-gray-700">
-                    {format}
-                  </SelectItem>
-                ))}
-                <SelectItem value="custom" className="rounded-sm hover:bg-gray-100 dark:hover:bg-gray-700">
-                  <span className="flex items-center">
-                    <Plus className="h-3.5 w-3.5 mr-2" />
-                    Add custom format
-                  </span>
-                </SelectItem>
-              </div>
-            </ScrollArea>
+          <SelectContent className="max-h-[300px] overflow-y-auto">
+            {PREDEFINED_FORMATS.map((format) => (
+              <SelectItem key={format} value={format} className="hover:bg-gray-100 dark:hover:bg-gray-700">
+                {format}
+              </SelectItem>
+            ))}
+            <SelectItem value="custom" className="hover:bg-gray-100 dark:hover:bg-gray-700">
+              <span className="flex items-center">
+                <Plus className="h-3.5 w-3.5 mr-2" />
+                Add custom format
+              </span>
+            </SelectItem>
           </SelectContent>
         </Select>
       )}
