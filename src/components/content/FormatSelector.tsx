@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Check, Plus, Trash2, X } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -43,6 +43,8 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
     const savedFormats = localStorage.getItem("contentFormats");
     return savedFormats ? JSON.parse(savedFormats) : DEFAULT_PREDEFINED_FORMATS;
   });
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const SCROLL_STEP = 120; // Amount to scroll with each button click
 
   // Save formats to localStorage whenever they change
   const saveFormats = (newFormats: string[]) => {
@@ -92,6 +94,28 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
     onFormatChange("");
   };
 
+  const handleScrollUp = () => {
+    const newPosition = Math.max(0, scrollPosition - SCROLL_STEP);
+    setScrollPosition(newPosition);
+    
+    // Find the ScrollArea viewport and scroll it
+    const viewport = document.querySelector('.formats-scroll-area [data-radix-scroll-area-viewport]');
+    if (viewport) {
+      viewport.scrollTop = newPosition;
+    }
+  };
+
+  const handleScrollDown = () => {
+    const newPosition = scrollPosition + SCROLL_STEP;
+    setScrollPosition(newPosition);
+    
+    // Find the ScrollArea viewport and scroll it
+    const viewport = document.querySelector('.formats-scroll-area [data-radix-scroll-area-viewport]');
+    if (viewport) {
+      viewport.scrollTop = newPosition;
+    }
+  };
+
   return (
     <div className="space-y-2">
       {isAddingCustom ? (
@@ -127,7 +151,18 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
             <SelectValue placeholder="Select a content format" />
           </SelectTrigger>
           <SelectContent className="select-none max-h-[300px]">
-            <ScrollArea className="h-[240px]">
+            <div className="flex items-center justify-center border-b border-gray-100 py-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleScrollUp}
+                className="w-full flex justify-center hover:bg-gray-100"
+              >
+                <ChevronUp className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <ScrollArea className="h-[200px] formats-scroll-area">
               <div className="p-2">
                 {formats.map((format) => (
                   <SelectItem 
@@ -154,6 +189,17 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
                 </SelectItem>
               </div>
             </ScrollArea>
+            
+            <div className="flex items-center justify-center border-t border-gray-100 py-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleScrollDown}
+                className="w-full flex justify-center hover:bg-gray-100"
+              >
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </div>
           </SelectContent>
         </Select>
       )}
