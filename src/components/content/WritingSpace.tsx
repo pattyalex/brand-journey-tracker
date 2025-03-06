@@ -61,7 +61,7 @@ const WritingSpace = ({
   };
 
   return (
-    <div className={`space-y-4 pr-4 transition-all duration-300 ${expandedClass}`}>
+    <div className={`space-y-4 pr-2 transition-all duration-300 ${expandedClass}`}>
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold flex items-center">
           <Pencil className="h-5 w-5 mr-2" />
