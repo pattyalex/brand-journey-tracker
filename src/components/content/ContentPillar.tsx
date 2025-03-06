@@ -1,6 +1,5 @@
 
 import { useState, useEffect, useRef } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
 import { DragDropContext, Droppable, DropResult } from "react-beautiful-dnd";
@@ -43,7 +42,7 @@ const ContentPillar = ({
     ? pillar.content.filter(item => 
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+        item.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
       )
     : pillar.content;
 
@@ -148,20 +147,20 @@ const ContentPillar = ({
           </p>
         </div>
       ) : (
-        <div className="relative">
-          {isSingleRowLayout && showLeftArrow && (
-            <Button 
-              onClick={scrollLeft} 
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
-              variant="outline"
-              size="icon"
-              aria-label="Scroll left"
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </Button>
-          )}
-          
-          <DragDropContext onDragEnd={onDragEnd}>
+        <DragDropContext onDragEnd={onDragEnd}>
+          <div className="relative">
+            {isSingleRowLayout && showLeftArrow && (
+              <Button 
+                onClick={scrollLeft} 
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
+                variant="outline"
+                size="icon"
+                aria-label="Scroll left"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </Button>
+            )}
+            
             <div 
               ref={scrollContainerRef} 
               className={`${isSingleRowLayout ? "overflow-x-auto pb-4 hide-scrollbar" : "overflow-visible"}`}
@@ -200,20 +199,20 @@ const ContentPillar = ({
                 )}
               </Droppable>
             </div>
-          </DragDropContext>
-          
-          {isSingleRowLayout && showRightArrow && (
-            <Button 
-              onClick={scrollRight} 
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
-              variant="outline"
-              size="icon"
-              aria-label="Scroll right"
-            >
-              <ChevronRight className="h-6 w-6" />
-            </Button>
-          )}
-        </div>
+            
+            {isSingleRowLayout && showRightArrow && (
+              <Button 
+                onClick={scrollRight} 
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
+                variant="outline"
+                size="icon"
+                aria-label="Scroll right"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </Button>
+            )}
+          </div>
+        </DragDropContext>
       )}
     </div>
   );

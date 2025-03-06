@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Draggable } from "react-beautiful-dnd";
 import { 
@@ -77,7 +76,7 @@ const ContentCard = ({
   };
 
   return (
-    <Draggable key={content.id} draggableId={content.id} index={index}>
+    <Draggable draggableId={content.id} index={index}>
       {(provided, snapshot) => {
         // Update dragging state based on snapshot
         if (isDragging !== snapshot.isDragging) {
@@ -88,10 +87,10 @@ const ContentCard = ({
           <div
             ref={provided.innerRef}
             {...provided.draggableProps}
-            className={`${snapshot.isDragging ? 'opacity-70 z-50' : 'opacity-100'} h-full transition-all duration-200`}
+            className={`${snapshot.isDragging ? 'opacity-70 z-50' : 'opacity-100'} transition-all duration-200 h-full`}
           >
             <Card 
-              className={`overflow-hidden relative h-full border-2 ${
+              className={`h-full overflow-hidden relative border-2 ${
                 snapshot.isDragging 
                   ? 'shadow-xl ring-2 ring-primary/20' 
                   : 'hover:shadow-md transition-shadow duration-200'
