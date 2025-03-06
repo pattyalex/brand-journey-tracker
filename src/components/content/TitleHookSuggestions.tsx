@@ -172,7 +172,6 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
   const handleSelectHook = (hook: string) => {
     onSelectHook(hook);
     setSheetOpen(false);
-    setPopoverOpen(false);
   };
 
   const handleCustomHookSubmit = () => {
