@@ -213,7 +213,7 @@ const BankOfContent = () => {
     
     setSelectedText(writingText);
     setDevelopScriptText(writingText);
-    setNewIdeaTitle(`Idea - ${new Date().toLocaleDateString()}`);
+    setNewIdeaTitle("");
     setNewIdeaTags([]);
     setDevelopIdeaMode(true);
     setShowNewIdeaDialog(true);
@@ -225,7 +225,7 @@ const BankOfContent = () => {
       return;
     }
     
-    setNewIdeaTitle(`Idea - ${new Date().toLocaleDateString()}`);
+    setNewIdeaTitle("");
     setNewIdeaTags([]);
     setShowNewIdeaDialog(true);
   };
@@ -236,7 +236,7 @@ const BankOfContent = () => {
       return;
     }
     
-    setNewIdeaTitle(`Development - ${new Date().toLocaleDateString()}`);
+    setNewIdeaTitle("");
     setDevelopScriptText(selectedText);
     setNewIdeaTags([]);
     setDevelopIdeaMode(true);
