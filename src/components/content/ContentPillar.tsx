@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
@@ -139,7 +138,7 @@ const ContentPillar = ({
                   <div 
                     {...provided.droppableProps}
                     ref={provided.innerRef}
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 min-w-min px-2"
+                    className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 min-w-min px-2"
                   >
                     {filteredContent.map((content, index) => (
                       <Draggable
