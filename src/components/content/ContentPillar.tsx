@@ -118,6 +118,22 @@ const ContentPillar = ({
     };
   }, [filteredContent]);
 
+  // Function to group content into rows of 3
+  const getContentRows = () => {
+    if (isGridView) {
+      return [filteredContent]; // In grid view, return all content in a single array
+    }
+    
+    // In row view, group content into groups of 3 items
+    const rows = [];
+    for (let i = 0; i < filteredContent.length; i += 3) {
+      rows.push(filteredContent.slice(i, i + 3));
+    }
+    return rows;
+  };
+
+  const contentRows = getContentRows();
+
   return (
     <div className="space-y-4 relative">
       {filteredContent.length === 0 ? (
@@ -142,74 +158,108 @@ const ContentPillar = ({
             </div>
           </div>
           
-          <div className="relative">
-            {!isGridView && showLeftArrow && (
-              <Button 
-                onClick={scrollLeft} 
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
-                variant="outline"
-                size="icon"
-                aria-label="Scroll left"
+          {isGridView ? (
+            // Grid view layout
+            <DragDropContext onDragEnd={onDragEnd}>
+              <Droppable 
+                droppableId={`content-cards-${pillar.id}`} 
+                direction="vertical"
               >
-                <ChevronLeft className="h-6 w-6" />
-              </Button>
-            )}
-            
-            <div 
-              ref={scrollContainerRef} 
-              className={`${!isGridView ? 'overflow-x-auto pb-4 hide-scrollbar' : 'overflow-visible'}`}
-              style={!isGridView ? { scrollbarWidth: 'none', msOverflowStyle: 'none' } : {}}
-            >
-              <DragDropContext onDragEnd={onDragEnd}>
-                <Droppable 
-                  droppableId={`content-cards-${pillar.id}`} 
-                  direction={isGridView ? "vertical" : "horizontal"}
-                >
-                  {(provided) => (
-                    <div 
-                      {...provided.droppableProps}
-                      ref={provided.innerRef}
-                      className={
-                        isGridView 
-                          ? "grid grid-cols-3 gap-4 p-2" 
-                          : "flex space-x-4 min-w-min pb-4 pl-2 pr-2"
-                      }
+                {(provided) => (
+                  <div 
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                    className="grid grid-cols-3 gap-4 p-2"
+                  >
+                    {filteredContent.map((content, index) => (
+                      <div key={content.id}>
+                        <ContentCard
+                          content={content}
+                          index={index}
+                          pillar={pillar}
+                          pillars={pillars}
+                          onDeleteContent={onDeleteContent}
+                          onMoveContent={onMoveContent}
+                          onEditContent={onEditContent}
+                        />
+                      </div>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
+          ) : (
+            // Row view layout with multiple rows of 3 items each
+            <div className="space-y-4">
+              {contentRows.map((row, rowIndex) => (
+                <div key={rowIndex} className="relative">
+                  {row.length > 3 && showLeftArrow && (
+                    <Button 
+                      onClick={scrollLeft} 
+                      className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
+                      variant="outline"
+                      size="icon"
+                      aria-label="Scroll left"
                     >
-                      {filteredContent.map((content, index) => (
-                        <div 
-                          key={content.id} 
-                          className={isGridView ? "" : "min-w-[280px] max-w-[280px]"}
-                        >
-                          <ContentCard
-                            content={content}
-                            index={index}
-                            pillar={pillar}
-                            pillars={pillars}
-                            onDeleteContent={onDeleteContent}
-                            onMoveContent={onMoveContent}
-                            onEditContent={onEditContent}
-                          />
-                        </div>
-                      ))}
-                      {provided.placeholder}
-                    </div>
+                      <ChevronLeft className="h-6 w-6" />
+                    </Button>
                   )}
-                </Droppable>
-              </DragDropContext>
+                  
+                  <div 
+                    ref={scrollContainerRef} 
+                    className="flex items-start space-x-4 overflow-x-auto pb-4 hide-scrollbar"
+                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                  >
+                    <DragDropContext onDragEnd={onDragEnd}>
+                      <Droppable 
+                        droppableId={`content-cards-row-${rowIndex}-${pillar.id}`} 
+                        direction="horizontal"
+                      >
+                        {(provided) => (
+                          <div 
+                            {...provided.droppableProps}
+                            ref={provided.innerRef}
+                            className="flex space-x-4 min-w-min pb-2 pl-2 pr-2"
+                          >
+                            {row.map((content, index) => (
+                              <div 
+                                key={content.id} 
+                                className="min-w-[280px] max-w-[280px]"
+                              >
+                                <ContentCard
+                                  content={content}
+                                  index={index + (rowIndex * 3)}
+                                  pillar={pillar}
+                                  pillars={pillars}
+                                  onDeleteContent={onDeleteContent}
+                                  onMoveContent={onMoveContent}
+                                  onEditContent={onEditContent}
+                                />
+                              </div>
+                            ))}
+                            {provided.placeholder}
+                          </div>
+                        )}
+                      </Droppable>
+                    </DragDropContext>
+                  </div>
+                  
+                  {row.length > 3 && showRightArrow && (
+                    <Button 
+                      onClick={scrollRight} 
+                      className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
+                      variant="outline"
+                      size="icon"
+                      aria-label="Scroll right"
+                    >
+                      <ChevronRight className="h-6 w-6" />
+                    </Button>
+                  )}
+                </div>
+              ))}
             </div>
-            
-            {!isGridView && showRightArrow && (
-              <Button 
-                onClick={scrollRight} 
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
-                variant="outline"
-                size="icon"
-                aria-label="Scroll right"
-              >
-                <ChevronRight className="h-6 w-6" />
-              </Button>
-            )}
-          </div>
+          )}
         </>
       )}
     </div>
