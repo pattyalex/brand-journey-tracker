@@ -1,18 +1,9 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { FileText, Pencil } from "lucide-react";
 import { ContentItem } from "@/types/content";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import ContentUploaderFields from "./ContentUploaderFields";
+import IdeaCreationDialog from "./IdeaCreationDialog";
 
 interface ContentUploaderProps {
   pillarId: string;
@@ -184,70 +175,50 @@ const ContentUploader = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => {
-      setIsOpen(open);
-      if (!open && isEditMode && onCancelEdit) {
-        onCancelEdit();
-      }
-    }}>
-      <DialogTrigger asChild>
-        <Button>
-          {isEditMode ? (
-            <>
-              <Pencil className="mr-2 h-4 w-4" /> Edit Idea
-            </>
-          ) : (
-            <>
-              <FileText className="mr-2 h-4 w-4" /> Add New Idea
-            </>
-          )}
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[525px] max-h-[85vh]">
-        <DialogHeader>
-          <DialogTitle>{isEditMode ? "Edit Idea" : "Add New Idea"}</DialogTitle>
-          <DialogDescription>
-            {isEditMode ? "Update your content idea" : "Write down your content ideas and notes"}
-          </DialogDescription>
-        </DialogHeader>
-        
-        <ScrollArea className="max-h-[calc(85vh-140px)]">
-          <ContentUploaderFields
-            title={title}
-            setTitle={setTitle}
-            textContent={textContent}
-            setTextContent={setTextContent}
-            formatText={formatText}
-            setFormatText={setFormatText}
-            shootDetails={shootDetails}
-            setShootDetails={setShootDetails}
-            captionText={captionText}
-            setCaptionText={setCaptionText}
-            tagsList={tagsList}
-            currentTag={currentTag}
-            setCurrentTag={setCurrentTag}
-            handleAddTag={handleAddTag}
-            handleRemoveTag={handleRemoveTag}
-            platformsList={platformsList}
-            currentPlatform={currentPlatform}
-            setCurrentPlatform={setCurrentPlatform}
-            handleAddPlatform={handleAddPlatform}
-            handleRemovePlatform={handleRemovePlatform}
-            scheduledDate={scheduledDate}
-            setScheduledDate={setScheduledDate}
-          />
-        </ScrollArea>
-        
-        <DialogFooter className="mt-4">
-          <Button variant="outline" onClick={handleClose}>
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit}>
-            {isEditMode ? "Update" : "Create"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <>
+      <Button onClick={() => setIsOpen(true)}>
+        {isEditMode ? (
+          <>
+            <Pencil className="mr-2 h-4 w-4" /> Edit Idea
+          </>
+        ) : (
+          <>
+            <FileText className="mr-2 h-4 w-4" /> Add New Idea
+          </>
+        )}
+      </Button>
+      
+      <IdeaCreationDialog
+        open={isOpen}
+        onOpenChange={setIsOpen}
+        title={title}
+        onTitleChange={setTitle}
+        scriptText={textContent}
+        onScriptTextChange={setTextContent}
+        formatText={formatText}
+        onFormatTextChange={setFormatText}
+        shootDetails={shootDetails}
+        onShootDetailsChange={setShootDetails}
+        captionText={captionText}
+        onCaptionTextChange={setCaptionText}
+        platforms={platformsList}
+        currentPlatform={currentPlatform}
+        onCurrentPlatformChange={setCurrentPlatform}
+        onAddPlatform={handleAddPlatform}
+        onRemovePlatform={handleRemovePlatform}
+        tags={tagsList}
+        currentTag={currentTag}
+        onCurrentTagChange={setCurrentTag}
+        onAddTag={handleAddTag}
+        onRemoveTag={handleRemoveTag}
+        scheduledDate={scheduledDate}
+        onScheduledDateChange={setScheduledDate}
+        onSave={handleSubmit}
+        onCancel={handleClose}
+        isEditMode={isEditMode}
+        dialogTitle={isEditMode ? "Edit Idea" : "Add New Idea"}
+      />
+    </>
   );
 };
 
