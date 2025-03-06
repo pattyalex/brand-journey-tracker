@@ -194,7 +194,7 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
 
   return (
     <>
-      {/* Separate popover for title hook suggestions */}
+      {/* Popover for title hook suggestions */}
       <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
         <PopoverTrigger asChild>
           <Button 
@@ -256,7 +256,7 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
         </PopoverContent>
       </Popover>
 
-      {/* Separate sheet for displaying subcategories and hooks */}
+      {/* Sheet for displaying subcategories and hooks */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent side="right" className="w-[400px] p-0 overflow-y-auto">
           <SheetHeader className="p-4 border-b">
