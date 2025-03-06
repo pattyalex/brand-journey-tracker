@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import {
   Dialog,
@@ -46,7 +47,11 @@ const ContentSearchModal = ({
     ? content.filter(item => 
         item.title.toLowerCase().includes(localSearchQuery.toLowerCase()) ||
         item.description.toLowerCase().includes(localSearchQuery.toLowerCase()) ||
-        item.tags.some(tag => tag.toLowerCase().includes(localSearchQuery.toLowerCase()))
+        item.tags.some(tag => tag.toLowerCase().includes(localSearchQuery.toLowerCase())) ||
+        item.format.toLowerCase().includes(localSearchQuery.toLowerCase()) ||
+        (item.platforms && item.platforms.some(platform => 
+          platform.toLowerCase().includes(localSearchQuery.toLowerCase())
+        ))
       )
     : [];
 
@@ -63,7 +68,7 @@ const ContentSearchModal = ({
         <DialogHeader>
           <DialogTitle>Search Content</DialogTitle>
           <DialogDescription>
-            Find content across all your pillars
+            Find content across all your pillars by title, description, tags, formats, and platforms
           </DialogDescription>
         </DialogHeader>
         
@@ -71,7 +76,7 @@ const ContentSearchModal = ({
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search content..."
+              placeholder="Search..."
               className="pl-8"
               value={localSearchQuery}
               onChange={(e) => setLocalSearchQuery(e.target.value)}
@@ -129,6 +134,23 @@ const ContentSearchModal = ({
                           className={`text-xs px-2 py-0.5 rounded-full ${getTagColorClasses(tag)}`}
                         >
                           {tag}
+                        </span>
+                      ))}
+                      
+                      {/* Display format */}
+                      {item.format && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
+                          {item.format}
+                        </span>
+                      )}
+                      
+                      {/* Display platforms */}
+                      {item.platforms && item.platforms.map((platform, index) => (
+                        <span 
+                          key={`platform-${index}`} 
+                          className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-800"
+                        >
+                          {platform}
                         </span>
                       ))}
                     </div>

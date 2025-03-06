@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
@@ -40,7 +41,11 @@ const ContentPillar = ({
     ? pillar.content.filter(item => 
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+        item.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        item.format.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (item.platforms && item.platforms.some(platform => 
+          platform.toLowerCase().includes(searchQuery.toLowerCase())
+        ))
       )
     : pillar.content;
 
