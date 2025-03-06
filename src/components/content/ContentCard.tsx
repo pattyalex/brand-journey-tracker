@@ -5,7 +5,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  Trash2, Pencil, Calendar, FileText 
+  Trash2, Pencil, Calendar, FileText, Share2
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ContentItem } from "@/types/content";
@@ -60,6 +60,27 @@ const ContentCard = ({
 
   const contentFormat = getContentFormat();
 
+  // Extract platforms from content
+  const getPlatforms = () => {
+    if (content.platforms && content.platforms.length > 0) {
+      return content.platforms;
+    }
+    
+    if (content.format === 'text' && content.url) {
+      try {
+        const parsedContent = JSON.parse(content.url);
+        if (parsedContent.platforms && Array.isArray(parsedContent.platforms)) {
+          return parsedContent.platforms;
+        }
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  };
+
+  const platforms = getPlatforms();
+
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (!selectedDate) return;
     
@@ -113,10 +134,21 @@ const ContentCard = ({
               {contentFormat}
             </span>
           )}
+          
+          {platforms.length > 0 && platforms.slice(0, 2).map((platform, index) => (
+            <span 
+              key={`platform-${index}`} 
+              className="bg-purple-100 text-purple-800 text-xs px-2 py-0.5 rounded-full flex items-center gap-1"
+            >
+              <Share2 className="h-3 w-3 mr-0.5" />
+              {platform}
+            </span>
+          ))}
+          
           {content.tags && content.tags.length > 0 ? (
             content.tags.slice(0, 2).map((tag, index) => (
               <span 
-                key={index} 
+                key={`tag-${index}`} 
                 className={`text-xs px-2 py-0.5 rounded-full ${getTagColorClasses(tag)}`}
               >
                 {tag}

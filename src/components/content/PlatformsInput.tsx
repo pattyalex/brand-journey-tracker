@@ -1,5 +1,5 @@
 
-import { X, Plus } from "lucide-react";
+import { X, Plus, Share2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -23,13 +23,16 @@ const PlatformsInput = ({
   return (
     <div className="grid gap-2">
       <div className="flex gap-2">
-        <Input
-          value={currentPlatform}
-          onChange={(e) => onPlatformChange(e.target.value)}
-          placeholder={placeholder}
-          onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), onAddPlatform())}
-          className="flex-1"
-        />
+        <div className="relative flex-1">
+          <Input
+            value={currentPlatform}
+            onChange={(e) => onPlatformChange(e.target.value)}
+            placeholder={placeholder}
+            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), onAddPlatform())}
+            className="pl-8"
+          />
+          <Share2 className="h-4 w-4 absolute left-2.5 top-[10px] text-muted-foreground" />
+        </div>
         <Button type="button" onClick={onAddPlatform} variant="outline" size="icon" className="shrink-0">
           <Plus className="h-4 w-4" />
         </Button>
@@ -39,13 +42,14 @@ const PlatformsInput = ({
         {platforms.map((platform, index) => (
           <span 
             key={index} 
-            className="bg-primary/10 text-primary text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5"
+            className="bg-purple-100 text-purple-800 text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5"
           >
+            <Share2 className="h-3 w-3" />
             {platform}
             <button 
               type="button" 
               onClick={() => onRemovePlatform(platform)}
-              className="text-primary hover:text-primary/80"
+              className="text-purple-800 hover:text-purple-900"
             >
               <X className="h-3 w-3" />
             </button>
