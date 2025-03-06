@@ -140,23 +140,77 @@ const HOOK_DATA = {
   "Entertaining Hooks": {
     subcategories: [
       {
-        name: "Story Hooks",
+        name: "Shock & Surprise Hooks",
         hooks: [
-          "The day everything changed for my [business/life]",
-          "I tried [trendy thing] for a week and here's what happened",
-          "My biggest [failure/mistake] and what I learned",
-          "Behind the scenes of [interesting process]",
-          "What a day in my life really looks like"
+          "You won't believe this…",
+          "This outfit combo is a game-changer!",
+          "No one is talking about this, but…",
+          "This is actually a HUGE mistake!",
+          "You won't believe this beauty hack…",
+          "This trend is taking over and it's not what you think!",
+          "I just discovered a game-changing way to wear [X]—you have to try it!",
+          "This beauty routine transformed my skin in a week—here's how.",
+          "What's the secret behind perfect [hair/skin]?"
         ]
       },
       {
         name: "Curiosity Hooks",
         hooks: [
-          "The strange trick that [solved my problem]",
-          "You won't believe what happened when I [action]",
-          "This changes everything I thought about [topic]",
-          "The surprising truth about [common belief]",
-          "What I discovered after [time period] of [activity]"
+          "I tried [X] for a week—here's what happened.",
+          "Something weird happened when I did this…",
+          "Ever wondered why [X]?"
+        ]
+      },
+      {
+        name: "Relatable & Personal Hooks",
+        hooks: [
+          "I used to feel [X], but then I discovered this.",
+          "If you've ever felt [X], you're not alone.",
+          "This is for anyone who feels stuck right now.",
+          "I used to think I couldn't pull off [X], but now I'm obsessed.",
+          "Ever feel like you're stuck in a style rut? Here's how I got out of mine.",
+          "This beauty routine changed everything for me—I swear by it now."
+        ]
+      },
+      {
+        name: "Dramatic Storytelling Hooks",
+        hooks: [
+          "I was today years old when I learned this.",
+          "I thought my life was over until…",
+          "Here's how I went from [X] to [Y] in [Z] days."
+        ]
+      },
+      {
+        name: "Controversial & Polarizing Hooks",
+        hooks: [
+          "Unpopular opinion, but…",
+          "Stop doing [X] if you want [Y].",
+          "Everyone is wrong about [X]!"
+        ]
+      },
+      {
+        name: "Question-Based Hooks",
+        hooks: [
+          "What if I told you [X]?",
+          "Did you know you could [X]?",
+          "Would you rather [X] or [Y]?",
+          "What if I told you you could style [X] in 5 different ways?",
+          "Did you know you can wear [X] all year round?",
+          "Would you rather invest in a classic piece or go for the latest trend?"
+        ]
+      },
+      {
+        name: "FOMO & Call-to-Action Hooks",
+        hooks: [
+          "You're missing out if you're not doing this.",
+          "This won't be available for long!",
+          "Only [X] spots left—act fast!",
+          "Everyone is doing this—are you?",
+          "You NEED to know this before [X]!",
+          "This trend is blowing up—don't miss out!",
+          "This limited-edition item is almost sold out!",
+          "You won't want to miss this new release—[X] is finally here!",
+          "Get this look before it's gone—limited stock available!"
         ]
       }
     ]
