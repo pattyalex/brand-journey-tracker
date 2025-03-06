@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -275,13 +276,132 @@ const HOOK_DATA = {
         ]
       },
       {
-        name: "Fitness & Wellness",
+        name: "Health & Fitness",
         hooks: [
-          "The X-minute workout that burns more than an hour at the gym",
-          "I ate like [celebrity] for a week and here's what happened",
-          "The supplement that boosted my [energy/performance/sleep]",
-          "How I lost X pounds without giving up [favorite food]",
-          "The wellness habit that improved my mental health"
+          "The secret to getting stronger without spending hours at the gym.",
+          "This quick 10-minute workout is all you need.",
+          "Transform your body with this simple routine.",
+          "You won't believe the benefits of this one exercise!",
+          "How I stay fit without stressing about the gym.",
+          "This one food changed my energy levels completely.",
+          "The best-kept secret for glowing skin: [X]!",
+          "My go-to meal prep for a busy week.",
+          "Get glowing skin with these easy food swaps.",
+          "This is how I eat healthy while traveling."
+        ]
+      },
+      {
+        name: "Travel & Experiences",
+        hooks: [
+          "The top 5 destinations you NEED to visit in 2025.",
+          "Why [X] is the perfect vacation destination for [Y].",
+          "These travel hacks will save you hours at the airport.",
+          "Pack smarter with these must-have travel accessories.",
+          "The ultimate travel guide to [destination].",
+          "This activity will give you the ultimate adrenaline rush.",
+          "The best hidden gems for travelers who want something unique.",
+          "How to explore [destination] like a local.",
+          "Here's what it's really like to hike [famous mountain]."
+        ]
+      },
+      {
+        name: "Personal Finance & Investing",
+        hooks: [
+          "The #1 mistake people make when managing money (and how to fix it).",
+          "Here's how I saved $X in 6 months—without sacrificing anything.",
+          "Why you should start investing today—even with a small amount.",
+          "3 simple tips to start budgeting effectively.",
+          "The best apps to track your spending and save money.",
+          "How I started investing and made my first $X.",
+          "The safest way to start building wealth in your 20s/30s.",
+          "I turned $X into $Y by making these smart investments.",
+          "Stop waiting—here's why you need to invest in real estate now.",
+          "The secret to financial freedom? Consistency and [X]."
+        ]
+      },
+      {
+        name: "Home Decor & Interior Design",
+        hooks: [
+          "Transform any room with this one design tip.",
+          "This season's must-have decor items for your home.",
+          "5 ways to create a cozy, stylish living space on a budget.",
+          "Why [X] is the perfect statement piece for any room.",
+          "Create a luxury vibe in your home with these affordable tips.",
+          "This DIY project will give your home a complete makeover.",
+          "Organize your space with these genius hacks.",
+          "How I decluttered my home in just one weekend.",
+          "Get your home ready for guests with these quick and easy fixes."
+        ]
+      },
+      {
+        name: "Technology & Gadgets",
+        hooks: [
+          "This gadget will change the way you work from home.",
+          "How I use [tech product] to make my life easier every day.",
+          "Top 5 apps to make you more productive.",
+          "This one feature of [X] makes it my favorite gadget.",
+          "Here's why you need [tech product] in your life.",
+          "The future of tech is here—here's what to expect.",
+          "Why [X] is the next big thing in the tech world.",
+          "How AI is going to revolutionize your daily life.",
+          "Everything you need to know about the new [X] gadget."
+        ]
+      },
+      {
+        name: "Parenting & Family",
+        hooks: [
+          "How I keep my kids entertained without screen time.",
+          "The ultimate guide to creating a peaceful bedtime routine.",
+          "How to balance work and parenting without losing your mind.",
+          "Parenting hacks every mom needs to know.",
+          "Why [X] parenting method works better than the others.",
+          "How to create family memories that will last a lifetime.",
+          "Best family vacation destinations for 2025.",
+          "Here's how we make family dinner time fun and engaging.",
+          "How we organize our home to fit everyone's needs."
+        ]
+      },
+      {
+        name: "Career & Professional Development",
+        hooks: [
+          "How to level up your career and get noticed by top companies.",
+          "The best advice I ever received when starting my career.",
+          "3 things I wish I knew before going into [industry].",
+          "Why networking is the key to growing your career.",
+          "How I landed my dream job in [X] industry.",
+          "The first thing you need to do before starting a business.",
+          "Why [X] business model is the future.",
+          "5 mistakes I made when starting my business and how to avoid them.",
+          "What I wish I knew before becoming an entrepreneur.",
+          "How to find your niche and build a business around it."
+        ]
+      },
+      {
+        name: "Education & Learning",
+        hooks: [
+          "This one method helped me learn [X] in half the time.",
+          "Top 5 online courses to take in [X] field.",
+          "How I study effectively without getting overwhelmed.",
+          "The best apps to help you learn something new every day.",
+          "This technique will improve your concentration instantly.",
+          "How to develop a growth mindset and change your life.",
+          "The best way to set goals that actually stick.",
+          "Stop procrastinating and start achieving with these 3 simple steps.",
+          "This productivity hack will make your day 10x more efficient."
+        ]
+      },
+      {
+        name: "Food & Cooking",
+        hooks: [
+          "This 5-ingredient recipe is all you need for dinner tonight.",
+          "My go-to healthy recipe for busy weekdays.",
+          "How to cook [X] in under 20 minutes.",
+          "Make dinner easier with these 3 simple hacks.",
+          "The one kitchen gadget that saves me hours every week.",
+          "The latest food trend everyone's talking about.",
+          "Why you need to try [X] before it's everywhere.",
+          "This food trend is going to blow your mind.",
+          "The healthiest (and most delicious) trend this year."
         ]
       }
     ]
