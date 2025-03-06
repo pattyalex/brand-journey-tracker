@@ -106,7 +106,7 @@ const ContentPillar = ({
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="space-y-4 relative">
+      <div className="space-y-2 relative">
         {filteredContent.length === 0 ? (
           <div className="text-center p-8 border border-dashed rounded-lg bg-muted/30">
             <p className="text-muted-foreground">
@@ -139,7 +139,7 @@ const ContentPillar = ({
                   <div 
                     {...provided.droppableProps}
                     ref={provided.innerRef}
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 min-w-min px-2"
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 min-w-min px-2"
                   >
                     {filteredContent.map((content, index) => (
                       <Draggable

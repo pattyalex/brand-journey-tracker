@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
@@ -106,8 +107,8 @@ const ContentCard = ({
 
   return (
     <Card className="overflow-hidden relative h-full border-2 w-full">
-      <CardHeader className="p-3">
-        <CardTitle className="text-sm font-bold mb-1 line-clamp-2">
+      <CardHeader className="p-4 pb-2">
+        <CardTitle className="text-base font-bold mb-1 line-clamp-2">
           {content.title}
           {date && (
             <Badge variant="outline" className="ml-2 text-xs">
@@ -116,12 +117,12 @@ const ContentCard = ({
             </Badge>
           )}
         </CardTitle>
-        <CardDescription className="line-clamp-2 text-xs">
+        <CardDescription className="line-clamp-2 text-sm">
           {content.description}
         </CardDescription>
       </CardHeader>
       
-      <CardContent className="p-3 pt-0">
+      <CardContent className="p-4 pt-0">
         <div className="flex flex-wrap gap-1 mb-2">
           {contentFormat && (
             <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
@@ -150,7 +151,7 @@ const ContentCard = ({
             ))
           ) : null}
         </div>
-        <div className="flex items-center text-xs text-muted-foreground mt-1">
+        <div className="flex items-center text-xs text-muted-foreground mt-2">
           <Calendar className="h-3 w-3 mr-1" />
           <span>
             {content.dateCreated ? formatDistanceToNow(new Date(content.dateCreated), { addSuffix: true }) : 'Unknown date'}
@@ -158,16 +159,16 @@ const ContentCard = ({
         </div>
       </CardContent>
       
-      <CardFooter className="p-3 pt-0 flex justify-between">
+      <CardFooter className="p-4 pt-0 flex justify-between">
         <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="outline" 
               size="sm"
               aria-label="Schedule"
-              className="h-7 w-7 p-0"
+              className="h-8 w-8 p-0"
             >
-              <CalendarIcon className="h-3 w-3" />
+              <CalendarIcon className="h-4 w-4" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0 bg-white" align="start">
@@ -183,24 +184,24 @@ const ContentCard = ({
           </PopoverContent>
         </Popover>
         
-        <div className="flex gap-1">
+        <div className="flex gap-2">
           <Button 
             variant="ghost" 
             size="sm"
             onClick={() => onDeleteContent(content.id)}
             aria-label="Delete"
-            className="h-7 w-7 p-0"
+            className="h-8 w-8 p-0"
           >
-            <Trash2 className="h-3 w-3" />
+            <Trash2 className="h-4 w-4" />
           </Button>
           <Button 
             variant="outline" 
             size="sm"
             onClick={() => onEditContent(content.id)}
             aria-label="Edit"
-            className="h-7 w-7 p-0"
+            className="h-8 w-8 p-0"
           >
-            <Pencil className="h-3 w-3" />
+            <Pencil className="h-4 w-4" />
           </Button>
         </div>
       </CardFooter>
