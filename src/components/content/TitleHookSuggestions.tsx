@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -151,30 +150,6 @@ const HOOK_DATA = {
           "The supplement that boosted my [energy/performance/sleep]",
           "How I lost X pounds without giving up [favorite food]",
           "The wellness habit that improved my mental health"
-        ]
-      }
-    ]
-  },
-  "Question Hooks": {
-    subcategories: [
-      {
-        name: "Challenging Questions",
-        hooks: [
-          "Are you making these common [topic] mistakes?",
-          "Is your [daily habit] actually making [problem] worse?",
-          "What would happen if you stopped [common practice]?",
-          "Could this be the reason your [goal] isn't working?",
-          "Are you ready to transform your [area of life]?"
-        ]
-      },
-      {
-        name: "Reflective Questions",
-        hooks: [
-          "When was the last time you felt truly [emotion]?",
-          "What's holding you back from [desired outcome]?",
-          "How would your life change if you mastered [skill]?",
-          "What would you do if [limitation] wasn't an issue?",
-          "Have you been approaching [topic] all wrong?"
         ]
       }
     ]
