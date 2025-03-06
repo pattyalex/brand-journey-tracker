@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Check, Plus } from "lucide-react";
+import { Check, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,9 +10,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Common content formats that creators might use
-const PREDEFINED_FORMATS = [
+const DEFAULT_PREDEFINED_FORMATS = [
   "POV Skit",
   "Tutorial",
   "Vlog",
@@ -37,6 +38,17 @@ interface FormatSelectorProps {
 const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps) => {
   const [customFormat, setCustomFormat] = useState("");
   const [isAddingCustom, setIsAddingCustom] = useState(false);
+  const [formats, setFormats] = useState<string[]>(() => {
+    // Try to load saved formats from localStorage, fallback to defaults
+    const savedFormats = localStorage.getItem("contentFormats");
+    return savedFormats ? JSON.parse(savedFormats) : DEFAULT_PREDEFINED_FORMATS;
+  });
+
+  // Save formats to localStorage whenever they change
+  const saveFormats = (newFormats: string[]) => {
+    localStorage.setItem("contentFormats", JSON.stringify(newFormats));
+    setFormats(newFormats);
+  };
 
   const handleSelectFormat = (value: string) => {
     if (value === "custom") {
@@ -48,9 +60,31 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
 
   const handleAddCustomFormat = () => {
     if (customFormat.trim()) {
-      onFormatChange(customFormat.trim());
+      const newFormat = customFormat.trim();
+      
+      // Only add if not already in the list
+      if (!formats.includes(newFormat)) {
+        const newFormats = [...formats, newFormat];
+        saveFormats(newFormats);
+      }
+      
+      onFormatChange(newFormat);
       setCustomFormat("");
       setIsAddingCustom(false);
+    }
+  };
+
+  const handleDeleteFormat = (formatToDelete: string, e: React.MouseEvent) => {
+    // Stop the event from bubbling up to the parent SelectItem
+    e.stopPropagation();
+    
+    // Filter out the format to delete
+    const newFormats = formats.filter(format => format !== formatToDelete);
+    saveFormats(newFormats);
+    
+    // If the currently selected format is being deleted, clear the selection
+    if (selectedFormat === formatToDelete) {
+      onFormatChange("");
     }
   };
 
@@ -88,18 +122,32 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select a content format" />
           </SelectTrigger>
-          <SelectContent className="max-h-[300px] overflow-y-auto">
-            {PREDEFINED_FORMATS.map((format) => (
-              <SelectItem key={format} value={format} className="hover:bg-gray-100 dark:hover:bg-gray-700">
-                {format}
+          <SelectContent className="max-h-[300px]">
+            <ScrollArea className="h-[280px]">
+              {formats.map((format) => (
+                <SelectItem 
+                  key={format} 
+                  value={format} 
+                  className="hover:bg-gray-100 dark:hover:bg-gray-700 group flex items-center justify-between pr-2"
+                >
+                  <div className="flex-1">{format}</div>
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    onClick={(e) => handleDeleteFormat(format, e)}
+                    className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </SelectItem>
+              ))}
+              <SelectItem value="custom" className="hover:bg-gray-100 dark:hover:bg-gray-700">
+                <span className="flex items-center">
+                  <Plus className="h-3.5 w-3.5 mr-2" />
+                  Add custom format
+                </span>
               </SelectItem>
-            ))}
-            <SelectItem value="custom" className="hover:bg-gray-100 dark:hover:bg-gray-700">
-              <span className="flex items-center">
-                <Plus className="h-3.5 w-3.5 mr-2" />
-                Add custom format
-              </span>
-            </SelectItem>
+            </ScrollArea>
           </SelectContent>
         </Select>
       )}
