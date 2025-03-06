@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Lightbulb, FileText } from "lucide-react";
+import { Lightbulb, FileText, FilePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
