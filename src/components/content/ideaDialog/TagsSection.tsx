@@ -26,7 +26,7 @@ const TagsSection = ({
         onTagChange={onCurrentTagChange}
         onAddTag={onAddTag}
         onRemoveTag={onRemoveTag}
-        placeholder="Add tags (e.g., To Film, To Edit, To Post, Finalize Details)"
+        placeholder="Add tags (e.g., Finalize Details, To Film, To Edit, To Post)"
       />
     </div>
   );
