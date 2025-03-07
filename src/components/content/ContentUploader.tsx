@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { FileText, Pencil } from "lucide-react";
@@ -189,8 +188,6 @@ const ContentUploader = ({
         onTitleChange={setTitle}
         scriptText={textContent}
         onScriptTextChange={setTextContent}
-        format={contentFormat}
-        onFormatChange={setContentFormat}
         shootDetails={shootDetails}
         onShootDetailsChange={setShootDetails}
         captionText={captionText}
