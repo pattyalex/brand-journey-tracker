@@ -195,7 +195,7 @@ const QuickNotes = () => {
                         </div>
                       ) : (
                         filteredNotes.map((note) => (
-                          <Card key={note.id} className="group">
+                          <Card key={note.id} className="group relative">
                             <CardHeader className="pb-2">
                               <div className="flex items-center justify-between">
                                 <CardTitle className="text-lg">{note.title}</CardTitle>
@@ -204,8 +204,9 @@ const QuickNotes = () => {
                                   size="icon"
                                   className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
                                   onClick={() => handleDeleteNote(note.id)}
+                                  aria-label={`Delete ${note.type === 'idea' ? 'idea' : 'note'}`}
                                 >
-                                  <Trash2 className="h-4 w-4 text-muted-foreground" />
+                                  <Trash2 className="h-4 w-4 text-destructive" />
                                 </Button>
                               </div>
                               <CardDescription className="text-xs">
