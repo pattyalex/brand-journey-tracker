@@ -293,8 +293,18 @@ const TaskBoard = () => {
         
         <Tabs defaultValue="tasks-board" value={activePage} onValueChange={setActivePage} className="mb-8">
           <TabsList className="mb-6 w-full justify-start">
-            <TabsTrigger value="tasks-board" className="px-6">Tasks Board</TabsTrigger>
-            <TabsTrigger value="daily-planner" className="px-6">Daily Planner</TabsTrigger>
+            <TabsTrigger 
+              value="tasks-board" 
+              className="px-8 py-3 text-base font-medium bg-primary/5 hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              Tasks Board
+            </TabsTrigger>
+            <TabsTrigger 
+              value="daily-planner" 
+              className="px-8 py-3 text-base font-medium bg-primary/5 hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              Daily Planner
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="tasks-board" className="m-0">
@@ -647,3 +657,4 @@ const TaskColumn = ({ title, icon, tasks, moveTask, onEditTask, onDeleteTask, ge
 };
 
 export default TaskBoard;
+
