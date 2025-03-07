@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -161,9 +160,9 @@ const IdeaCreationDialog = ({
             </Button>
           </DialogHeader>
           
-          <div className="flex-1 overflow-y-auto pr-4 -mr-4">
-            <ScrollArea className="h-[calc(90vh-140px)]">
-              <div className="grid gap-4 py-4">
+          <div className="flex-1">
+            <ScrollArea className="h-[calc(90vh-140px)] pr-4" style={{ overflowY: 'auto', touchAction: 'pan-y' }}>
+              <div className="grid gap-4 py-4 pr-2">
                 <div className="grid gap-2">
                   <Label htmlFor="idea-title">Title</Label>
                   <div className="relative flex items-center">
