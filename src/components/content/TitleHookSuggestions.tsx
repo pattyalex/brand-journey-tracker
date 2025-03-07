@@ -470,7 +470,7 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
       </Button>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[500px] fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
           <DialogHeader>
             <DialogTitle>Catchy Hook Ideas</DialogTitle>
           </DialogHeader>
@@ -501,7 +501,7 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
       </Dialog>
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent side="right" className="w-[400px] p-0 overflow-y-auto">
+        <SheetContent side="right" className="w-[500px] max-w-[80vw] p-0 overflow-y-auto">
           <SheetHeader className="p-4 border-b">
             <SheetTitle>{selectedCategory}</SheetTitle>
           </SheetHeader>
