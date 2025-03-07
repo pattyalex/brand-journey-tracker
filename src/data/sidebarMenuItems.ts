@@ -5,6 +5,7 @@ import { MenuItem } from '@/types/sidebar';
 export const defaultMenuItems: MenuItem[] = [
   { title: 'Dashboard', icon: Home, url: '/', isDeletable: false },
   { title: 'Quick Notes', icon: Clipboard, url: '/quick-notes', isDeletable: false },
+  { title: 'Task Board', icon: CheckSquare, url: '/task-board', isDeletable: true },
   { 
     title: 'Workflow', 
     icon: FolderOpen, 
@@ -19,7 +20,6 @@ export const defaultMenuItems: MenuItem[] = [
       { title: 'Analytics', icon: BarChart, url: '/analytics' },
     ]
   },
-  { title: 'Task Board', icon: CheckSquare, url: '/task-board', isDeletable: true },
   { title: 'Goals and Objectives', icon: Lightbulb, url: '/projects/vision-board', isDeletable: true },
   { title: 'Documents', icon: FileText, url: '/documents', isDeletable: true },
 ];
