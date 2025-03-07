@@ -6,7 +6,8 @@ type TagColorMap = {
 // Tag colors mapping - tailwind classes
 export const tagColorMap: TagColorMap = {
   // Status-based tags
-  "to film": "bg-red-100 text-red-800",
+  "to film": "bg-amber-100 text-amber-800", // Light brown color
+  "film": "bg-amber-100 text-amber-800", // Light brown color
   "to edit": "bg-yellow-100 text-yellow-800",
   "to post": "bg-green-100 text-green-800",
   "posted": "bg-amber-100 text-amber-800", // Brown-ish color
