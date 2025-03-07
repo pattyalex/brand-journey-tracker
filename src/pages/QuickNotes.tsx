@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from "react";
-import { PlusCircle, Trash2, Lightbulb, Bell, FileText } from "lucide-react";
+import { PlusCircle, Trash2, Lightbulb, Bell, FileText, Search } from "lucide-react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,6 +26,7 @@ const QuickNotes = () => {
   const [newNoteTitle, setNewNoteTitle] = useState("");
   const [newNoteContent, setNewNoteContent] = useState("");
   const [activeTab, setActiveTab] = useState<NoteType>("idea");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const savedNotes = localStorage.getItem("quickNotes");
@@ -62,7 +64,16 @@ const QuickNotes = () => {
     toast.success("Note deleted successfully");
   };
 
-  const filteredNotes = notes.filter((note) => note.type === activeTab);
+  const filteredNotes = notes
+    .filter((note) => note.type === activeTab)
+    .filter((note) => {
+      if (!searchQuery.trim()) return true;
+      const query = searchQuery.toLowerCase();
+      return (
+        note.title.toLowerCase().includes(query) ||
+        note.content.toLowerCase().includes(query)
+      );
+    });
 
   return (
     <Layout>
@@ -73,6 +84,17 @@ const QuickNotes = () => {
             <p className="text-muted-foreground mt-1">
               Jot down ideas, thoughts, and reminders
             </p>
+          </div>
+          
+          <div className="relative w-64">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search notes..."
+              className="pl-9 w-full"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
         </div>
 
@@ -169,12 +191,14 @@ const QuickNotes = () => {
                         <div className="flex h-[200px] items-center justify-center rounded-md border border-dashed">
                           <div className="text-center">
                             <p className="text-sm text-muted-foreground">
-                              {type === "idea" ? "No ideas yet" :
+                              {searchQuery ? "No matching notes found" :
+                               type === "idea" ? "No ideas yet" :
                                type === "reminder" ? "No reminders yet" :
                                "No notes yet"}
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              {type === "idea" ? "Create your first idea" :
+                              {searchQuery ? "Try a different search term" :
+                               type === "idea" ? "Create your first idea" :
                                type === "reminder" ? "Create your first reminder" :
                                "Create your first note"}
                             </p>
