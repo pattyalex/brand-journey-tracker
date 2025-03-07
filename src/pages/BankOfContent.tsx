@@ -1,682 +1,238 @@
-import { useState, useRef, useEffect } from "react";
-import Layout from "@/components/Layout";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
+"use client";
+import React, { useState, useEffect, useCallback } from "react";
+import { Plus, Search, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "@/components/ui/use-toast";
+import { v4 as uuidv4 } from 'uuid';
 import { ContentItem } from "@/types/content";
-import { toast } from "sonner";
-import ContentSearchModal from "@/components/content/ContentSearchModal";
-import PillarTabs from "@/components/content/PillarTabs";
-import WritingSpace from "@/components/content/WritingSpace";
-import IdeaSection from "@/components/content/IdeaSection";
 import IdeaCreationDialog from "@/components/content/IdeaCreationDialog";
 
-export type Pillar = {
-  id: string;
-  name: string;
-  content: ContentItem[];
-  writingSpace?: string;
-  onUpdateWritingSpace?: (pillarId: string, text: string) => void;
-};
+interface BankOfContentProps {
+  initialContent?: ContentItem[];
+}
 
-const BankOfContent = () => {
-  const [pillars, setPillars] = useState<Pillar[]>([
-    { id: "1", name: "Pillar 1", content: [], writingSpace: "" },
-    { id: "2", name: "Pillar 2", content: [], writingSpace: "" },
-    { id: "3", name: "Pillar 3", content: [], writingSpace: "" },
-  ]);
-  const [activeTab, setActiveTab] = useState("1");
+const BankOfContent: React.FC<BankOfContentProps> = ({ initialContent = [] }) => {
+  const [contentList, setContentList] = useState<ContentItem[]>(initialContent);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-  const [writingText, setWritingText] = useState("");
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  
-  const [selectedText, setSelectedText] = useState("");
-  const [developScriptText, setDevelopScriptText] = useState("");
-  const [shootDetails, setShootDetails] = useState("");
-  const [captionText, setCaptionText] = useState("");
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
-  const [currentPlatform, setCurrentPlatform] = useState("");
-  const [showNewIdeaDialog, setShowNewIdeaDialog] = useState(false);
-  const [newIdeaTitle, setNewIdeaTitle] = useState("");
-  const [newIdeaTags, setNewIdeaTags] = useState<string[]>([]);
-  const [currentTag, setCurrentTag] = useState("");
-  const [developIdeaMode, setDevelopIdeaMode] = useState(false);
-  const [editingContent, setEditingContent] = useState<ContentItem | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
+  const [searchTags, setSearchTags] = useState<string[]>([]);
+  const [newTag, setNewTag] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newContentTitle, setNewContentTitle] = useState("");
+  const [newContentText, setNewContentText] = useState("");
 
   useEffect(() => {
-    try {
-      const savedPillarsData = localStorage.getItem('pillars');
-      
-      if (savedPillarsData) {
-        const savedPillars = JSON.parse(savedPillarsData);
-        setPillars(current => 
-          current.map(pillar => {
-            const savedPillar = savedPillars.find((p: {id: string}) => p.id === pillar.id);
-            return savedPillar ? {...pillar, name: savedPillar.name} : pillar;
-          })
-        );
-      }
-    } catch (error) {
-      console.error("Failed to load pillar names:", error);
+    const storedContent = localStorage.getItem("contentList");
+    if (storedContent) {
+      setContentList(JSON.parse(storedContent));
     }
-    
-    const loadedPillars = pillars.map(pillar => {
-      try {
-        const savedContent = localStorage.getItem(`pillar-content-${pillar.id}`);
-        if (savedContent) {
-          console.log(`Loading content for pillar ${pillar.id} (${pillar.name}):`, savedContent);
-          const parsedContent = JSON.parse(savedContent);
-          
-          const contentWithDates = parsedContent.map((item: any) => ({
-            ...item,
-            dateCreated: item.dateCreated ? new Date(item.dateCreated) : new Date(),
-            tags: Array.isArray(item.tags) ? item.tags : [],
-            platforms: item.platforms ? 
-              (Array.isArray(item.platforms) ? item.platforms : []) : 
-              []
-          }));
-          
-          return {
-            ...pillar,
-            content: contentWithDates
-          };
-        }
-        return pillar;
-      } catch (error) {
-        console.error(`Failed to load content for pillar ${pillar.id}:`, error);
-        return pillar;
-      }
-    });
-    
-    console.log("Loaded pillars with content:", loadedPillars);
-    setPillars(loadedPillars);
   }, []);
 
   useEffect(() => {
-    if (activeTab && writingText) {
-      const saveTimer = setTimeout(() => {
-        localStorage.setItem(`writing-${activeTab}`, writingText);
-      }, 1000);
-      
-      return () => clearTimeout(saveTimer);
-    }
-  }, [writingText, activeTab]);
+    localStorage.setItem("contentList", JSON.stringify(contentList));
+  }, [contentList]);
 
-  useEffect(() => {
-    const savedWriting = localStorage.getItem(`writing-${activeTab}`);
-    if (savedWriting) {
-      setWritingText(savedWriting);
-    } else {
-      setWritingText("");
-    }
-  }, [activeTab]);
-
-  const addPillar = () => {
-    const newId = `${Date.now()}`;
-    const newPillars = [...pillars, { id: newId, name: "New Pillar", content: [], writingSpace: "" }];
-    setPillars(newPillars);
-    setActiveTab(newId);
-    
-    try {
-      localStorage.setItem('pillars', JSON.stringify(newPillars.map(p => ({
-        id: p.id,
-        name: p.name
-      }))));
-    } catch (error) {
-      console.error("Failed to save pillars to localStorage:", error);
-    }
-    
-    toast.success("New pillar added");
-  };
-
-  const renamePillar = (id: string, newName: string) => {
-    const updatedPillars = pillars.map(p => p.id === id ? {...p, name: newName} : p);
-    setPillars(updatedPillars);
-    
-    try {
-      localStorage.setItem('pillars', JSON.stringify(updatedPillars.map(p => ({
-        id: p.id,
-        name: p.name
-      }))));
-    } catch (error) {
-      console.error("Failed to save renamed pillar to localStorage:", error);
-    }
-    
-    toast.success(`Pillar renamed to "${newName}"`);
-  };
-
-  const deletePillar = (id: string) => {
-    const newPillars = pillars.filter(p => p.id !== id);
-    
-    if (newPillars.length === 0) {
-      toast.error("Cannot delete the last pillar");
-      return;
-    }
-    
-    setPillars(newPillars);
-    
-    if (activeTab === id) {
-      setActiveTab(newPillars[0].id);
-    }
-    
-    try {
-      localStorage.setItem('pillars', JSON.stringify(newPillars.map(p => ({
-        id: p.id,
-        name: p.name
-      }))));
-      
-      localStorage.removeItem(`pillar-content-${id}`);
-      localStorage.removeItem(`writing-${id}`);
-    } catch (error) {
-      console.error("Failed to update localStorage after pillar deletion:", error);
-    }
-    
-    toast.success("Pillar deleted");
-  };
-
-  const updateWritingSpace = (text: string) => {
-    setWritingText(text);
-  };
-
-  const addPlatform = () => {
-    if (currentPlatform.trim() && !selectedPlatforms.includes(currentPlatform.trim())) {
-      setSelectedPlatforms([...selectedPlatforms, currentPlatform.trim()]);
-      setCurrentPlatform("");
-    }
-  };
-
-  const removePlatform = (platformToRemove: string) => {
-    setSelectedPlatforms(selectedPlatforms.filter(platform => platform !== platformToRemove));
-  };
-
-  const addTag = () => {
-    if (currentTag.trim() && !newIdeaTags.includes(currentTag.trim())) {
-      setNewIdeaTags([...newIdeaTags, currentTag.trim()]);
-      setCurrentTag("");
-    }
-  };
-
-  const removeTag = (tagToRemove: string) => {
-    setNewIdeaTags(newIdeaTags.filter(tag => tag !== tagToRemove));
-  };
-
-  const handleTextSelection = (selectedContent: string) => {
-    setSelectedText(selectedContent);
-  };
-
-  const saveWritingAsIdea = () => {
-    if (!writingText.trim()) {
-      toast.error("Please write something first");
-      return;
-    }
-    
-    setSelectedText(writingText);
-    setDevelopScriptText(writingText);
-    setNewIdeaTitle("");
-    setNewIdeaTags([]);
-    setDevelopIdeaMode(true);
-    setShowNewIdeaDialog(true);
-  };
-
-  const saveSelectedTextAsIdea = () => {
-    if (!selectedText.trim()) {
-      toast.error("Please select some text first");
-      return;
-    }
-    
-    setNewIdeaTitle("");
-    setNewIdeaTags([]);
-    setShowNewIdeaDialog(true);
-  };
-
-  const developSelectedIdea = () => {
-    if (!selectedText.trim()) {
-      toast.error("Please select some text first");
-      return;
-    }
-    
-    setNewIdeaTitle("");
-    setDevelopScriptText(selectedText);
-    setNewIdeaTags([]);
-    setDevelopIdeaMode(true);
-    setShowNewIdeaDialog(true);
-  };
-
-  const handleFormatText = (formatType: string, formatValue?: string) => {
-    if (!textareaRef.current) {
-      let newText = writingText;
-      const selectionStart = 0;
-      const selectionEnd = writingText.length;
-      const selectedText = writingText;
-      
-      switch (formatType) {
-        case 'bold':
-          newText = `**${selectedText}**`;
-          break;
-        case 'italic':
-          newText = `_${selectedText}_`;
-          break;
-        case 'underline':
-          newText = `<u>${selectedText}</u>`;
-          break;
-        case 'bullet':
-          newText = `• ${selectedText}`;
-          break;
-        case 'numbered':
-          newText = `1. ${selectedText}`;
-          break;
-        case 'align':
-          if (formatValue) {
-            newText = `<div style="text-align: ${formatValue};">${selectedText}</div>`;
-          }
-          break;
-        case 'size':
-          if (formatValue) {
-            newText = `<span style="font-size: ${formatValue};">${selectedText}</span>`;
-          }
-          break;
-        default:
-          return;
-      }
-      
-      setWritingText(newText);
+  const handleAddContent = useCallback(() => {
+    if (!newContentTitle || !newContentText) {
+      toast({
+        title: "Error",
+        description: "Title and text cannot be empty.",
+        variant: "destructive",
+      });
       return;
     }
 
-    const { selectionStart, selectionEnd, value } = textareaRef.current;
-    const selectedText = value.substring(selectionStart, selectionEnd);
-    
-    if (selectionStart === selectionEnd && formatType !== 'bullet' && formatType !== 'numbered') {
-      toast.info("Select some text first to apply formatting");
-      return;
-    }
-    
-    let newText;
-    let newCursorPos;
-    
-    switch (formatType) {
-      case 'bold':
-        newText = value.substring(0, selectionStart) + "**" + selectedText + "**" + value.substring(selectionEnd);
-        newCursorPos = selectionEnd + 4;
-        break;
-      case 'italic':
-        newText = value.substring(0, selectionStart) + "_" + selectedText + "_" + value.substring(selectionEnd);
-        newCursorPos = selectionEnd + 2;
-        break;
-      case 'underline':
-        newText = value.substring(0, selectionStart) + "<u>" + selectedText + "</u>" + value.substring(selectionEnd);
-        newCursorPos = selectionEnd + 7;
-        break;
-      case 'bullet':
-        if (selectionStart === selectionEnd) {
-          newText = value.substring(0, selectionStart) + "• " + value.substring(selectionEnd);
-          newCursorPos = selectionStart + 2;
-        } else {
-          newText = value.substring(0, selectionStart) + "• " + selectedText + value.substring(selectionEnd);
-          newCursorPos = selectionEnd + 2;
-        }
-        break;
-      case 'numbered':
-        if (selectionStart === selectionEnd) {
-          newText = value.substring(0, selectionStart) + "1. " + value.substring(selectionEnd);
-          newCursorPos = selectionStart + 3;
-        } else {
-          newText = value.substring(0, selectionStart) + "1. " + selectedText + value.substring(selectionEnd);
-          newCursorPos = selectionEnd + 3;
-        }
-        break;
-      case 'align':
-        if (formatValue) {
-          newText = value.substring(0, selectionStart) + 
-                    `<div style="text-align: ${formatValue};">${selectedText}</div>` + 
-                    value.substring(selectionEnd);
-          newCursorPos = selectionEnd + 30 + formatValue.length;
-        } else {
-          return;
-        }
-        break;
-      case 'size':
-        if (formatValue) {
-          newText = value.substring(0, selectionStart) + 
-                    `<span style="font-size: ${formatValue};">${selectedText}</span>` + 
-                    value.substring(selectionEnd);
-          newCursorPos = selectionEnd + 30 + formatValue.length;
-        } else {
-          return;
-        }
-        break;
-      default:
-        return;
-    }
-    
-    setWritingText(newText);
-    
-    setTimeout(() => {
-      if (textareaRef.current) {
-        textareaRef.current.focus();
-        textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
-      }
-    }, 10);
-  };
-
-  const createNewIdeaFromSelection = () => {
-    if (!newIdeaTitle.trim()) {
-      toast.error("Title is required");
-      return;
-    }
-    
-    const scriptContent = developScriptText.trim() || selectedText;
-    
-    if (!scriptContent) {
-      toast.error("Script content is required");
-      return;
-    }
-    
-    const newIdea: ContentItem = {
-      id: `${Date.now()}`,
-      title: newIdeaTitle,
-      description: scriptContent.slice(0, 100) + (scriptContent.length > 100 ? "..." : ""),
-      url: JSON.stringify({
-        script: scriptContent,
-        shootDetails: shootDetails,
-        caption: captionText,
-        platforms: selectedPlatforms
-      }),
+    const newContentItem: ContentItem = {
+      id: uuidv4(),
+      title: newContentTitle,
+      description: newContentText.slice(0, 100) + (newContentText.length > 100 ? "..." : ""),
       format: "text",
+      url: newContentText,
       dateCreated: new Date(),
-      tags: newIdeaTags,
-      platforms: selectedPlatforms,
-      scheduledDate: scheduledDate,
+      tags: searchTags,
     };
-    
-    addContentToPillar(activeTab, newIdea);
-    
-    if (scheduledDate) {
-      try {
-        const existingScheduledContents = localStorage.getItem('scheduledContents');
-        let scheduledContents: any[] = [];
-        
-        if (existingScheduledContents) {
-          scheduledContents = JSON.parse(existingScheduledContents);
-        }
-        
-        scheduledContents.push({
-          ...newIdea,
-          dateCreated: newIdea.dateCreated.toISOString(),
-          scheduledDate: scheduledDate.toISOString(),
-          pillarId: activeTab,
-          pillarName: pillars.find(p => p.id === activeTab)?.name || "Unknown"
-        });
-        
-        localStorage.setItem('scheduledContents', JSON.stringify(scheduledContents));
-        toast.success(`Scheduled for ${scheduledDate.toLocaleDateString()}`);
-      } catch (error) {
-        console.error("Error saving scheduled content:", error);
-      }
-    }
-    
-    setShowNewIdeaDialog(false);
-    setSelectedText("");
-    setDevelopScriptText("");
-    setShootDetails("");
-    setCaptionText("");
-    setSelectedPlatforms([]);
-    setCurrentPlatform("");
-    setNewIdeaTitle("");
-    setNewIdeaTags([]);
-    setScheduledDate(undefined);
-    toast.success("Idea saved successfully");
+
+    setContentList((prevContentList) => [...prevContentList, newContentItem]);
+    setNewContentTitle("");
+    setNewContentText("");
+    setSearchTags([]);
+    setIsModalOpen(false);
+
+    toast({
+      title: "Success",
+      description: "Content added successfully.",
+    });
+  }, [newContentTitle, newContentText, searchTags]);
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
   };
 
-  const addContentToPillar = (pillarId: string, content: ContentItem) => {
-    console.log(`Adding content to pillar ${pillarId}:`, content);
-    
-    const updatedPillars = pillars.map(p => 
-      p.id === pillarId 
-        ? {...p, content: [...p.content, content]} 
-        : p
-    );
-    
-    setPillars(updatedPillars);
-    
-    try {
-      const pillarContent = updatedPillars.find(p => p.id === pillarId)?.content || [];
-      const serializableContent = pillarContent.map(item => ({
-        ...item,
-        dateCreated: item.dateCreated.toISOString()
-      }));
-      localStorage.setItem(`pillar-content-${pillarId}`, JSON.stringify(serializableContent));
-      console.log(`Saved content for pillar ${pillarId}:`, serializableContent);
-    } catch (error) {
-      console.error("Failed to save content to localStorage:", error);
-    }
-    
-    toast.success(`Content added to ${pillars.find(p => p.id === pillarId)?.name}`);
-  };
-
-  const deleteContent = (pillarId: string, contentId: string) => {
-    console.log(`Deleting content ${contentId} from pillar ${pillarId}`);
-    
-    const updatedPillars = pillars.map(p => 
-      p.id === pillarId 
-        ? {...p, content: p.content.filter(c => c.id !== contentId)} 
-        : p
-    );
-    
-    setPillars(updatedPillars);
-    
-    try {
-      const updatedPillar = updatedPillars.find(p => p.id === pillarId);
-      if (updatedPillar) {
-        const serializableContent = updatedPillar.content.map(item => ({
-          ...item,
-          dateCreated: item.dateCreated.toISOString()
-        }));
-        localStorage.setItem(`pillar-content-${pillarId}`, JSON.stringify(serializableContent));
-        console.log(`Updated localStorage after deletion for pillar ${pillarId}:`, serializableContent);
-      }
-    } catch (error) {
-      console.error("Failed to update localStorage after deletion:", error);
-    }
-    
-    toast.success("Content deleted");
-  };
-
-  const moveContent = (fromPillarId: string, toPillarId: string, contentId: string) => {
-    const sourcePillar = pillars.find(p => p.id === fromPillarId);
-    const contentToMove = sourcePillar?.content.find(c => c.id === contentId);
-    
-    if (!contentToMove) return;
-    
-    setPillars(pillars.map(p => {
-      if (p.id === fromPillarId) {
-        return {...p, content: p.content.filter(c => c.id !== contentId)};
-      }
-      if (p.id === toPillarId) {
-        return {...p, content: [...p.content, contentToMove]};
-      }
-      return p;
-    }));
-    
-    const targetPillar = pillars.find(p => p.id === toPillarId);
-    toast.success(`Content moved to ${targetPillar?.name}`);
-  };
-
-  const editContent = (pillarId: string, contentId: string) => {
-    const pillar = pillars.find(p => p.id === pillarId);
-    if (!pillar) return;
-    
-    const content = pillar.content.find(c => c.id === contentId);
-    if (!content) return;
-    
-    setEditingContent(content);
-    setIsEditing(true);
-  };
-  
-  const updateContent = (pillarId: string, updatedContent: ContentItem) => {
-    const updatedPillars = pillars.map(p => 
-      p.id === pillarId 
-        ? {
-            ...p, 
-            content: p.content.map(c => 
-              c.id === updatedContent.id ? updatedContent : c
-            )
-          } 
-        : p
-    );
-    
-    setPillars(updatedPillars);
-    
-    try {
-      const pillarContent = updatedPillars.find(p => p.id === pillarId)?.content || [];
-      const serializableContent = pillarContent.map(item => ({
-        ...item,
-        dateCreated: item.dateCreated.toISOString()
-      }));
-      localStorage.setItem(`pillar-content-${pillarId}`, JSON.stringify(serializableContent));
-    } catch (error) {
-      console.error("Failed to save updated content to localStorage:", error);
-    }
-    
-    setEditingContent(null);
-    setIsEditing(false);
-    toast.success("Content updated successfully");
-  };
-
-  const cancelEditing = () => {
-    setEditingContent(null);
-    setIsEditing(false);
-  };
-
-  const handleReorderContent = (pillarId: string, newItems: ContentItem[]) => {
-    console.log(`Reordering content for pillar ${pillarId}:`, newItems);
-    
-    setPillars(prev => 
-      prev.map(p => 
-        p.id === pillarId 
-          ? {...p, content: newItems} 
-          : p
-      )
-    );
-    
-    try {
-      const serializableContent = newItems.map(item => ({
-        ...item,
-        dateCreated: item.dateCreated instanceof Date 
-          ? item.dateCreated.toISOString() 
-          : item.dateCreated
-      }));
-      localStorage.setItem(`pillar-content-${pillarId}`, JSON.stringify(serializableContent));
-      console.log(`Saved reordered content for pillar ${pillarId}:`, serializableContent);
-    } catch (error) {
-      console.error("Failed to save reordered content to localStorage:", error);
+  const handleAddTag = () => {
+    if (newTag && !searchTags.includes(newTag)) {
+      setSearchTags([...searchTags, newTag]);
+      setNewTag("");
     }
   };
 
-  const openNewIdeaDialog = () => {
-    setNewIdeaTitle("");
-    setNewIdeaTags([]);
-    setSelectedText("");
-    setDevelopScriptText("");
-    setShootDetails("");
-    setShowNewIdeaDialog(true);
-    setScheduledDate(undefined);
+  const handleRemoveTag = (tagToRemove: string) => {
+    setSearchTags(searchTags.filter((tag) => tag !== tagToRemove));
   };
 
-  const activePillar = pillars.find(p => p.id === activeTab);
-  const allContent = pillars.flatMap(pillar => pillar.content);
+  const filteredContent = contentList.filter((content) => {
+    const searchText = searchQuery.toLowerCase();
+    const titleMatch = content.title.toLowerCase().includes(searchText);
+    const descriptionMatch = content.description?.toLowerCase().includes(searchText);
+    const tagMatch = searchTags.every((tag) => content.tags?.includes(tag));
+
+    return titleMatch || descriptionMatch && tagMatch;
+  });
 
   return (
-    <Layout>
-      <div className="container mx-auto py-6 space-y-6 fade-in">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Idea Development</h1>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Bank of Content</h1>
+
+      <div className="flex items-center space-x-4 mb-4">
+        <Input
+          type="text"
+          placeholder="Search content..."
+          value={searchQuery}
+          onChange={handleSearch}
+          className="flex-grow"
+        />
+
+        <div className="flex items-center space-x-2">
+          <Input
+            type="text"
+            placeholder="Add tags..."
+            value={newTag}
+            onChange={(e) => setNewTag(e.target.value)}
+            className="w-32"
+          />
+          <Button onClick={handleAddTag} variant="outline" size="sm">
+            Add Tag
+          </Button>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <PillarTabs 
-            pillars={pillars}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            onAddPillar={addPillar}
-            onRenamePillar={renamePillar}
-            onDeletePillar={deletePillar}
-          />
-
-          {pillars.map((pillar) => (
-            <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <WritingSpace 
-                  writingText={writingText}
-                  onTextChange={updateWritingSpace}
-                  onTextSelection={handleTextSelection}
-                  onFormatText={handleFormatText}
-                />
-                
-                <IdeaSection 
-                  pillar={pillar}
-                  pillars={pillars}
-                  searchQuery={searchQuery}
-                  onNewIdeaClick={openNewIdeaDialog}
-                  onDeleteContent={(contentId) => deleteContent(pillar.id, contentId)}
-                  onMoveContent={(toPillarId, contentId) => moveContent(pillar.id, toPillarId, contentId)}
-                  onEditContent={(contentId) => editContent(pillar.id, contentId)}
-                  onReorderContent={(newItems) => handleReorderContent(pillar.id, newItems)}
-                  editingContent={editingContent}
-                  isEditing={isEditing}
-                  onContentUpdated={updateContent}
-                  onCancelEdit={cancelEditing}
-                  onContentAdded={addContentToPillar}
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline">
+              <Plus className="mr-2 h-4 w-4" />
+              Add New Content
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Add New Content</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  placeholder="Content Title"
+                  value={newContentTitle}
+                  onChange={(e) => setNewContentTitle(e.target.value)}
                 />
               </div>
-            </TabsContent>
-          ))}
-        </Tabs>
+              <div className="grid gap-2">
+                <Label htmlFor="content">Content</Label>
+                <Textarea
+                  id="content"
+                  placeholder="Your content here"
+                  className="min-h-[100px]"
+                  value={newContentText}
+                  onChange={(e) => setNewContentText(e.target.value)}
+                />
+              </div>
 
-        <ContentSearchModal
-          isOpen={isSearchModalOpen}
-          onClose={() => setIsSearchModalOpen(false)}
-          searchQuery={searchQuery}
-          onChangeSearchQuery={setSearchQuery}
-          content={allContent}
-          pillars={pillars}
-        />
-        
-        <IdeaCreationDialog
-          open={showNewIdeaDialog}
-          onOpenChange={setShowNewIdeaDialog}
-          title={newIdeaTitle}
-          onTitleChange={setNewIdeaTitle}
-          scriptText={developScriptText || selectedText}
-          onScriptTextChange={setDevelopScriptText}
-          shootDetails={shootDetails}
-          onShootDetailsChange={setShootDetails}
-          captionText={captionText}
-          onCaptionTextChange={setCaptionText}
-          platforms={selectedPlatforms}
-          currentPlatform={currentPlatform}
-          onCurrentPlatformChange={setCurrentPlatform}
-          onAddPlatform={addPlatform}
-          onRemovePlatform={removePlatform}
-          tags={newIdeaTags}
-          currentTag={currentTag}
-          onCurrentTagChange={setCurrentTag}
-          onAddTag={addTag}
-          onRemoveTag={removeTag}
-          scheduledDate={scheduledDate}
-          onScheduledDateChange={setScheduledDate}
-          onSave={createNewIdeaFromSelection}
-          onCancel={() => {
-            setShowNewIdeaDialog(false);
-            setDevelopIdeaMode(false);
-            setScheduledDate(undefined);
-          }}
-          isEditMode={developIdeaMode}
-          dialogTitle={developIdeaMode ? "Develop Selected Idea" : "Create New Idea"}
-        />
+              <div className="grid gap-2">
+                <Label htmlFor="tags">Tags</Label>
+                <div className="flex items-center space-x-2">
+                  {searchTags.map((tag) => (
+                    <Badge key={tag} variant="secondary">
+                      {tag}
+                      <X
+                        className="ml-1 h-3 w-3 cursor-pointer"
+                        onClick={() => handleRemoveTag(tag)}
+                      />
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setIsModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" onClick={handleAddContent}>
+                Add Content
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
-    </Layout>
+
+      <div className="flex flex-wrap gap-4">
+        {filteredContent.map((content) => (
+          <div key={content.id} className="border rounded-md p-4 w-64">
+            <h2 className="text-lg font-semibold">{content.title}</h2>
+            <p className="text-sm text-gray-500">{content.description}</p>
+            <div className="mt-2">
+              {content.tags?.map((tag) => (
+                <Badge key={tag} variant="outline" className="mr-1">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <IdeaCreationDialog
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        title={newContentTitle}
+        onTitleChange={setNewContentTitle}
+        contentType="video" // Add this line
+        onContentTypeChange={() => {}} // Add this line
+        scriptText={newContentText}
+        onScriptTextChange={setNewContentText}
+        shootDetails=""
+        onShootDetailsChange={() => {}}
+        captionText=""
+        onCaptionTextChange={() => {}}
+        platforms={[]}
+        currentPlatform=""
+        onCurrentPlatformChange={() => {}}
+        onAddPlatform={() => {}}
+        onRemovePlatform={() => {}}
+        tags={searchTags}
+        currentTag={newTag}
+        onCurrentTagChange={setNewTag}
+        onAddTag={handleAddTag}
+        onRemoveTag={handleRemoveTag}
+        onSave={handleAddContent}
+        onCancel={() => setIsModalOpen(false)}
+        isEditMode={false}
+        dialogTitle="Add New Content"
+      />
+    </div>
   );
 };
 

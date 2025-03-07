@@ -12,18 +12,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
+import { Film, Image, FileText, Headphones, Layout, MessageCircle, Video } from "lucide-react";
 import TagsInput from "./TagsInput";
 import PlatformsInput from "./PlatformsInput";
 import DateSchedulePicker from "./DateSchedulePicker";
 import MeganAIChat from "./MeganAIChat";
 import TitleHookSuggestions from "./TitleHookSuggestions";
+import ContentTypeSelector from "./ContentTypeSelector";
 
 interface IdeaCreationDialogProps {
   open: boolean;
@@ -57,6 +53,17 @@ interface IdeaCreationDialogProps {
   isEditMode: boolean;
   dialogTitle?: string;
 }
+
+// Content type options with icons
+const contentTypeOptions = [
+  { value: "video", label: "Video", icon: <Film className="h-6 w-6" /> },
+  { value: "image", label: "Image", icon: <Image className="h-6 w-6" /> },
+  { value: "text", label: "Text", icon: <FileText className="h-6 w-6" /> },
+  { value: "audio", label: "Audio", icon: <Headphones className="h-6 w-6" /> },
+  { value: "carousel", label: "Carousel", icon: <Layout className="h-6 w-6" /> },
+  { value: "story", label: "Story", icon: <MessageCircle className="h-6 w-6" /> },
+  { value: "reel", label: "Reel", icon: <Video className="h-6 w-6" /> },
+];
 
 const IdeaCreationDialog = ({
   open,
@@ -144,24 +151,12 @@ const IdeaCreationDialog = ({
                 </div>
                 
                 <div className="grid gap-2">
-                  <Label htmlFor="content-type">Content Type</Label>
-                  <Select
+                  <Label>Content Type</Label>
+                  <ContentTypeSelector 
                     value={contentType}
-                    onValueChange={onContentTypeChange}
-                  >
-                    <SelectTrigger id="content-type" className="w-full">
-                      <SelectValue placeholder="Select content type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="video">Video</SelectItem>
-                      <SelectItem value="image">Image/Photo</SelectItem>
-                      <SelectItem value="text">Text/Article</SelectItem>
-                      <SelectItem value="audio">Audio/Podcast</SelectItem>
-                      <SelectItem value="carousel">Carousel</SelectItem>
-                      <SelectItem value="story">Story</SelectItem>
-                      <SelectItem value="reel">Reel</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    onChange={onContentTypeChange}
+                    options={contentTypeOptions}
+                  />
                 </div>
                 
                 <div className="h-4"></div>
