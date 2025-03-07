@@ -1,4 +1,3 @@
-
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -308,7 +307,6 @@ const TaskBoard = () => {
 
           <TabsContent value="all" className="m-0">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* To Do All Column */}
               <TaskColumn 
                 title="To Do"
                 icon={<CheckSquare size={18} />}
@@ -319,7 +317,6 @@ const TaskBoard = () => {
                 getPriorityColor={getPriorityColor}
               />
               
-              {/* To Do Today Column */}
               <TaskColumn 
                 title="Today"
                 icon={<Clock size={18} />}
@@ -330,7 +327,6 @@ const TaskBoard = () => {
                 getPriorityColor={getPriorityColor}
               />
               
-              {/* Scheduled Column */}
               <TaskColumn 
                 title="Scheduled"
                 icon={<Calendar size={18} />}
@@ -341,7 +337,6 @@ const TaskBoard = () => {
                 getPriorityColor={getPriorityColor}
               />
               
-              {/* Completed Column */}
               <TaskColumn 
                 title="Completed"
                 icon={<CheckCircle2 size={18} />}
@@ -453,16 +448,16 @@ const TaskBoard = () => {
                                     variant="outline" 
                                     className="text-xs"
                                     onClick={() => {
-                                      // Update task with a future date and move to scheduled
-                                      const updatedTasks = tasks.map((t) => 
-                                        t.id === task.id 
-                                          ? { 
-                                              ...t, 
-                                              status: "scheduled", 
-                                              dueDate: t.dueDate || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-                                            } 
-                                          : t
-                                      );
+                                      const updatedTasks = tasks.map((t) => {
+                                        if (t.id === task.id) {
+                                          return { 
+                                            ...t, 
+                                            status: "scheduled" as Task["status"], 
+                                            dueDate: t.dueDate || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                                          };
+                                        }
+                                        return t;
+                                      });
                                       setTasks(updatedTasks);
                                       toast.success("Task scheduled");
                                     }}
