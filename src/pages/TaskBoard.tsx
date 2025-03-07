@@ -1,3 +1,4 @@
+
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -176,7 +177,7 @@ const TaskBoard = () => {
 
   const getStatusDisplayName = (status: Task["status"]) => {
     switch (status) {
-      case "todo-all": return "To Do";
+      case "todo-all": return "All";
       case "todo-today": return "Today";
       case "scheduled": return "Scheduled";
       case "completed": return "Completed";
@@ -231,7 +232,7 @@ const TaskBoard = () => {
                 <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="mb-8">
                   <TabsList className="mb-6">
                     <TabsTrigger value="all">All Tasks</TabsTrigger>
-                    <TabsTrigger value="todo-all">To Do</TabsTrigger>
+                    <TabsTrigger value="todo-all">All</TabsTrigger>
                     <TabsTrigger value="todo-today">Today</TabsTrigger>
                     <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
                     <TabsTrigger value="completed">Completed</TabsTrigger>
@@ -250,7 +251,7 @@ const TaskBoard = () => {
                       />
                       
                       <TaskColumn 
-                        title="To Do"
+                        title="All"
                         icon={<CheckSquare size={18} />}
                         tasks={getTasksByStatus("todo-all")}
                         moveTask={moveTask}
