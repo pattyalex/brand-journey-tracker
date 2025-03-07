@@ -17,6 +17,13 @@ import {
   MessageSquare, Newspaper, SquareStack, 
   Youtube, Instagram, Radio, Server
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import TagsInput from "./TagsInput";
 import PlatformsInput from "./PlatformsInput";
 import DateSchedulePicker from "./DateSchedulePicker";
@@ -52,6 +59,8 @@ interface IdeaCreationDialogProps {
   onCancel: () => void;
   isEditMode: boolean;
   dialogTitle?: string;
+  xOption?: string;
+  onXOptionChange?: (value: string) => void;
 }
 
 const IdeaCreationDialog = ({
@@ -82,7 +91,9 @@ const IdeaCreationDialog = ({
   onSave,
   onCancel,
   isEditMode,
-  dialogTitle = "Create New Idea"
+  dialogTitle = "Create New Idea",
+  xOption = "A",
+  onXOptionChange = () => {},
 }: IdeaCreationDialogProps) => {
   const [isMeganOpen, setIsMeganOpen] = useState(false);
   
@@ -135,6 +146,23 @@ const IdeaCreationDialog = ({
                       onSelectHook={(hook) => onTitleChange(hook)}
                     />
                   </div>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="x-option">X</Label>
+                  <Select
+                    value={xOption}
+                    onValueChange={onXOptionChange}
+                  >
+                    <SelectTrigger id="x-option" className="w-full">
+                      <SelectValue placeholder="Select an option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="A">A</SelectItem>
+                      <SelectItem value="B">B</SelectItem>
+                      <SelectItem value="C">C</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 
                 <div className="h-4"></div>

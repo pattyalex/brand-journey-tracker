@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { FileText, Pencil } from "lucide-react";
@@ -34,6 +35,7 @@ const ContentUploader = ({
   const [currentPlatform, setCurrentPlatform] = useState("");
   const [platformsList, setPlatformsList] = useState<string[]>([]);
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
+  const [xOption, setXOption] = useState("A");
   
   useEffect(() => {
     if (contentToEdit && isEditMode) {
@@ -47,6 +49,7 @@ const ContentUploader = ({
             setTextContent(parsedContent.script || '');
             setShootDetails(parsedContent.shootDetails || '');
             setCaptionText(parsedContent.caption || '');
+            setXOption(parsedContent.xOption || 'A');
             
             if (parsedContent.platforms && Array.isArray(parsedContent.platforms)) {
               setPlatformsList(parsedContent.platforms);
@@ -108,7 +111,8 @@ const ContentUploader = ({
         script: textContent,
         shootDetails: shootDetails,
         caption: captionText,
-        platforms: platformsList
+        platforms: platformsList,
+        xOption: xOption
       }),
       dateCreated: contentToEdit ? contentToEdit.dateCreated : new Date(),
       tags: tagsList,
@@ -164,6 +168,7 @@ const ContentUploader = ({
     setPlatformsList([]);
     setCurrentPlatform("");
     setScheduledDate(undefined);
+    setXOption("A");
   };
 
   const handleClose = () => {
@@ -208,6 +213,8 @@ const ContentUploader = ({
         onCancel={handleClose}
         isEditMode={isEditMode}
         dialogTitle={isEditMode ? "Edit Idea" : "Add New Idea"}
+        xOption={xOption}
+        onXOptionChange={setXOption}
       />
     </>
   );
