@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -126,6 +125,13 @@
 
 [data-radix-select-viewport]::-webkit-scrollbar-thumb:hover {
   background: #9ca3af !important;
+}
+
+/* Additional dropdown menu customization */
+[data-radix-popper] [role="menu"] {
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 .writing-expanded {
