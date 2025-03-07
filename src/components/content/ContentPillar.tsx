@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
@@ -128,8 +129,8 @@ const ContentPillar = ({
             
             <div 
               ref={scrollContainerRef} 
-              className="overflow-x-auto pb-4 hide-scrollbar"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              className="overflow-x-auto pb-4"
+              style={{ scrollbarWidth: 'thin' }}
             >
               <Droppable droppableId="content-cards" direction="horizontal">
                 {(provided) => (
