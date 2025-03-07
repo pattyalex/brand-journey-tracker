@@ -18,6 +18,9 @@ export const tagColorMap: TagColorMap = {
   "finalize script": "bg-red-600 text-white", // More intense red
   "to finalize script": "bg-red-600 text-white", // More intense red
   "script": "bg-red-600 text-white", // More intense red
+  "to finalize details": "bg-red-600 text-white", // Intense red for new tags
+  "finish details": "bg-red-600 text-white", // Intense red for new tags
+  "script and details": "bg-red-600 text-white", // Intense red for new tags
   
   // Default for other tags
   "default": "bg-gray-100 text-gray-800"
