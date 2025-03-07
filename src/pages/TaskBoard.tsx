@@ -449,7 +449,6 @@ const TaskBoard = () => {
         </Tabs>
       </div>
 
-      
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
