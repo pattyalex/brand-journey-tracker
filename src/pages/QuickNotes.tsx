@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { PlusCircle, Trash2, Lightbulb, Bell, FileText, Search } from "lucide-react";
+import { PlusCircle, Trash2, Lightbulb, FileText, Search } from "lucide-react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
-type NoteType = "idea" | "reminder" | "other";
+type NoteType = "idea" | "other";
 
 type Note = {
   id: string;
@@ -31,7 +31,12 @@ const QuickNotes = () => {
   useEffect(() => {
     const savedNotes = localStorage.getItem("quickNotes");
     if (savedNotes) {
-      setNotes(JSON.parse(savedNotes));
+      const parsedNotes = JSON.parse(savedNotes);
+      // Filter out any reminder notes when loading from localStorage
+      const filteredNotes = parsedNotes.filter(
+        (note: Note) => note.type === "idea" || note.type === "other"
+      );
+      setNotes(filteredNotes);
     }
   }, []);
 
@@ -82,7 +87,7 @@ const QuickNotes = () => {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Quick Notes</h1>
             <p className="text-muted-foreground mt-1">
-              Jot down ideas, thoughts, and reminders
+              Jot down ideas, thoughts, and notes
             </p>
           </div>
           
@@ -104,29 +109,23 @@ const QuickNotes = () => {
               <Lightbulb className="mr-2 h-4 w-4" />
               Quick Ideas
             </TabsTrigger>
-            <TabsTrigger value="reminder" className="flex items-center">
-              <Bell className="mr-2 h-4 w-4" />
-              Quick Reminders
-            </TabsTrigger>
             <TabsTrigger value="other" className="flex items-center">
               <FileText className="mr-2 h-4 w-4" />
               Other Notes
             </TabsTrigger>
           </TabsList>
 
-          {["idea", "reminder", "other"].map((type) => (
+          {["idea", "other"].map((type) => (
             <TabsContent key={type} value={type} className="mt-0">
               <div className="grid gap-6 md:grid-cols-[1fr_300px]">
                 <Card>
                   <CardHeader>
                     <CardTitle>
                       {type === "idea" && "Create New Idea"}
-                      {type === "reminder" && "Create New Reminder"}
                       {type === "other" && "Create New Note"}
                     </CardTitle>
                     <CardDescription>
                       {type === "idea" && "Capture your brilliant ideas before they fade away"}
-                      {type === "reminder" && "Add reminders for things you need to remember"}
                       {type === "other" && "Keep track of miscellaneous notes"}
                     </CardDescription>
                   </CardHeader>
@@ -135,7 +134,6 @@ const QuickNotes = () => {
                       <Input
                         placeholder={
                           type === "idea" ? "Idea title" : 
-                          type === "reminder" ? "Reminder title" : 
                           "Note title"
                         }
                         value={newNoteTitle}
@@ -146,7 +144,6 @@ const QuickNotes = () => {
                       <Textarea
                         placeholder={
                           type === "idea" ? "Write your idea here..." :
-                          type === "reminder" ? "Write your reminder here..." :
                           "Write your note here..."
                         }
                         className="min-h-[200px] resize-y"
@@ -162,9 +159,7 @@ const QuickNotes = () => {
                       className="bg-[#8B6B4E] hover:bg-[#6D5540]"
                     >
                       <PlusCircle className="mr-2 h-3.5 w-3.5" />
-                      {type === "idea" ? "Add Idea" : 
-                       type === "reminder" ? "Add Reminder" : 
-                       "Add Note"}
+                      {type === "idea" ? "Add Idea" : "Add Note"}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -172,15 +167,11 @@ const QuickNotes = () => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl font-semibold">
-                      {type === "idea" ? "Your Ideas" :
-                       type === "reminder" ? "Your Reminders" :
-                       "Your Notes"}
+                      {type === "idea" ? "Your Ideas" : "Your Notes"}
                     </h2>
                     <span className="text-sm text-muted-foreground">
                       {filteredNotes.length} {type === "idea" ? 
                         (filteredNotes.length !== 1 ? "ideas" : "idea") : 
-                        type === "reminder" ? 
-                        (filteredNotes.length !== 1 ? "reminders" : "reminder") : 
                         (filteredNotes.length !== 1 ? "notes" : "note")}
                     </span>
                   </div>
@@ -193,13 +184,11 @@ const QuickNotes = () => {
                             <p className="text-sm text-muted-foreground">
                               {searchQuery ? "No matching notes found" :
                                type === "idea" ? "No ideas yet" :
-                               type === "reminder" ? "No reminders yet" :
                                "No notes yet"}
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">
                               {searchQuery ? "Try a different search term" :
                                type === "idea" ? "Create your first idea" :
-                               type === "reminder" ? "Create your first reminder" :
                                "Create your first note"}
                             </p>
                           </div>
