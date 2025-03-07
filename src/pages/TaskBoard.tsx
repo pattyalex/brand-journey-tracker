@@ -283,17 +283,6 @@ const TaskBoard = () => {
                     <DragDropContext onDragEnd={handleDragEnd}>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <TaskColumn 
-                          title="Today"
-                          icon={<Clock size={18} />}
-                          tasks={getTasksByStatus("todo-today")}
-                          moveTask={moveTask}
-                          onEditTask={handleEditTask}
-                          onDeleteTask={handleDeleteTask}
-                          getPriorityColor={getPriorityColor}
-                          columnId="todo-today"
-                        />
-                        
-                        <TaskColumn 
                           title="All"
                           icon={<CheckSquare size={18} />}
                           tasks={getTasksByStatus("todo-all")}
@@ -302,6 +291,17 @@ const TaskBoard = () => {
                           onDeleteTask={handleDeleteTask}
                           getPriorityColor={getPriorityColor}
                           columnId="todo-all"
+                        />
+                        
+                        <TaskColumn 
+                          title="Today"
+                          icon={<Clock size={18} />}
+                          tasks={getTasksByStatus("todo-today")}
+                          moveTask={moveTask}
+                          onEditTask={handleEditTask}
+                          onDeleteTask={handleDeleteTask}
+                          getPriorityColor={getPriorityColor}
+                          columnId="todo-today"
                         />
                         
                         <TaskColumn 
