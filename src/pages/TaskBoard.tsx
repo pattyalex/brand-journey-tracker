@@ -839,8 +839,7 @@ const SimplifiedTaskColumn = ({
                                   <Circle className="h-5 w-5 text-gray-400 hover:text-primary" />
                                 </button>
                                 <span className="flex-1 text-gray-800">{task.title}</span>
-                                <button 
-                                  className="opacity-0 group-hover:opacity-100 transition-opacity"
-                                  onClick={() => onEditTask(task)}
-                                >
-                                  <Edit className="h-4 w-4 text-gray-50
+                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button 
+                                    className="text-gray-400 hover:text-primary"
+                                    onClick={() => onEditTask(
