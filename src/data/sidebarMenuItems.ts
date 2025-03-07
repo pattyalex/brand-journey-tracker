@@ -1,5 +1,5 @@
 
-import { Home, FolderOpen, FileText, Settings, Lightbulb, Database, CreditCard, PenLine, Calendar, TrendingUp, BarChart, HelpCircle, CheckSquare, Zap } from 'lucide-react';
+import { Home, FolderOpen, FileText, Settings, Lightbulb, Database, CreditCard, PenLine, Calendar, TrendingUp, BarChart, HelpCircle, CheckSquare } from 'lucide-react';
 import { MenuItem } from '@/types/sidebar';
 
 export const defaultMenuItems: MenuItem[] = [
@@ -10,7 +10,6 @@ export const defaultMenuItems: MenuItem[] = [
     url: '/get-started', 
     isDeletable: false,
     subItems: [
-      { title: 'Quick Ideas', icon: Zap, url: '/quick-ideas' },
       { title: 'Idea Development', icon: Database, url: '/bank-of-content' },
       { title: 'Content Ideation and Planning', icon: PenLine, url: '/content-ideation' },
       { title: 'Content Calendar', icon: Calendar, url: '/content-calendar' },
