@@ -92,7 +92,7 @@ const IdeaCreationDialog = ({
         className={`max-h-[90vh] transition-all duration-300 ${
           isMeganOpen 
             ? "sm:max-w-[900px] md:max-w-[1100px] grid grid-cols-[1fr,320px]" 
-            : "sm:max-w-[700px] md:max-w-[800px]"
+            : "sm:max-w-[650px] md:max-w-[750px]"
         }`}
       >
         <div className="h-full flex flex-col">
