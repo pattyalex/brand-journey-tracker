@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import { Plus, Search, X } from "lucide-react";
@@ -18,6 +19,13 @@ import { toast } from "@/components/ui/use-toast";
 import { v4 as uuidv4 } from 'uuid';
 import { ContentItem } from "@/types/content";
 import IdeaCreationDialog from "@/components/content/IdeaCreationDialog";
+
+// Export the Pillar interface to be used by other components
+export interface Pillar {
+  id: string;
+  name: string;
+  content: ContentItem[];
+}
 
 interface BankOfContentProps {
   initialContent?: ContentItem[];
@@ -209,8 +217,8 @@ const BankOfContent: React.FC<BankOfContentProps> = ({ initialContent = [] }) =>
         onOpenChange={setIsModalOpen}
         title={newContentTitle}
         onTitleChange={setNewContentTitle}
-        contentType="video" // Add this line
-        onContentTypeChange={() => {}} // Add this line
+        contentType="video"
+        onContentTypeChange={() => {}}
         scriptText={newContentText}
         onScriptTextChange={setNewContentText}
         shootDetails=""
