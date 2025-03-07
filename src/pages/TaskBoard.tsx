@@ -104,7 +104,6 @@ const TaskBoard = () => {
       task.id === taskId ? { ...task, status: newStatus } : task
     );
     setTasks(updatedTasks);
-    toast.success(`Task moved to ${getStatusDisplayName(newStatus)}`);
   };
 
   const handleDragEnd = (result: DropResult) => {
@@ -147,10 +146,6 @@ const TaskBoard = () => {
     ];
     
     setTasks(finalTasks);
-    
-    if (source.droppableId !== destination.droppableId) {
-      toast.success(`Task moved to ${getStatusDisplayName(destination.droppableId as Task["status"])}`);
-    }
   };
 
   const handleAddTask = () => {
