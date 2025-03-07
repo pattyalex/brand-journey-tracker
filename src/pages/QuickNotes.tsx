@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { PlusCircle, Trash2, Lightbulb, FileText, Search } from "lucide-react";
 import Layout from "@/components/Layout";
@@ -85,7 +86,7 @@ const QuickNotes = () => {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Quick Notes</h1>
             <p className="text-muted-foreground mt-1">
-              Jot down ideas, thoughts, and notes
+              Write down ideas, thoughts, and notes
             </p>
           </div>
           
