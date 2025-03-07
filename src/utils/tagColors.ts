@@ -8,7 +8,8 @@ export const tagColorMap: TagColorMap = {
   // Status-based tags
   "to film": "bg-blue-900 text-blue-100", // Dark navy blue
   "film": "bg-blue-900 text-blue-100", // Dark navy blue
-  "to edit": "bg-yellow-100 text-yellow-800",
+  "to edit": "bg-yellow-500 text-yellow-50", // More intense yellow
+  "edit": "bg-yellow-500 text-yellow-50", // More intense yellow
   "to post": "bg-green-100 text-green-800",
   "posted": "bg-amber-100 text-amber-800", // Brown-ish color
   "idea": "bg-pink-100 text-pink-800",
