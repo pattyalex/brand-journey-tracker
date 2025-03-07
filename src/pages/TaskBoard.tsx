@@ -201,7 +201,6 @@ const TaskBoard = () => {
             <h1 className="text-3xl font-playfair font-bold text-primary">To-Do's</h1>
             <p className="text-muted-foreground">Organize and track your content creation tasks</p>
           </div>
-          
         </div>
         
         <Tabs defaultValue="tasks-board" value={activePage} onValueChange={setActivePage} className="mb-8">
