@@ -196,7 +196,7 @@ const TaskBoard = () => {
       <div className="container mx-auto py-6 fade-in">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-playfair font-bold text-primary">To-Dos</h1>
+            <h1 className="text-3xl font-playfair font-bold text-primary">To-Do's</h1>
             <p className="text-muted-foreground">Organize and track your content creation tasks</p>
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
