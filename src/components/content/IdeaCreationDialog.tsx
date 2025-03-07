@@ -12,6 +12,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import TagsInput from "./TagsInput";
 import PlatformsInput from "./PlatformsInput";
 import DateSchedulePicker from "./DateSchedulePicker";
@@ -59,7 +66,7 @@ const IdeaCreationDialog = ({
   scriptText,
   onScriptTextChange,
   format = "text",
-  onFormatChange,
+  onFormatChange = () => {},
   shootDetails,
   onShootDetailsChange,
   captionText,
@@ -84,6 +91,17 @@ const IdeaCreationDialog = ({
   onXOptionChange = () => {},
 }: IdeaCreationDialogProps) => {
   const [isMeganOpen, setIsMeganOpen] = useState(false);
+  
+  const contentFormats = [
+    { value: "text", label: "Text (Article, Blog)" },
+    { value: "video", label: "Video Content" },
+    { value: "image", label: "Image/Photo" },
+    { value: "audio", label: "Audio/Podcast" },
+    { value: "reels", label: "Reels/Short Form" },
+    { value: "carousel", label: "Carousel Post" },
+    { value: "livestream", label: "Livestream" },
+    { value: "other", label: "Other Format" },
+  ];
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -134,6 +152,28 @@ const IdeaCreationDialog = ({
                       onSelectHook={(hook) => onTitleChange(hook)}
                     />
                   </div>
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="content-format">Content Format</Label>
+                  <Select 
+                    value={format} 
+                    onValueChange={onFormatChange}
+                  >
+                    <SelectTrigger id="content-format" className="w-full">
+                      <SelectValue placeholder="Select content format" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {contentFormats.map((formatOption) => (
+                        <SelectItem 
+                          key={formatOption.value} 
+                          value={formatOption.value}
+                        >
+                          {formatOption.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 
                 <div className="h-4"></div>

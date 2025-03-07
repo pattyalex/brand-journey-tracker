@@ -33,6 +33,7 @@ const BankOfContent = () => {
   const [developScriptText, setDevelopScriptText] = useState("");
   const [shootDetails, setShootDetails] = useState("");
   const [captionText, setCaptionText] = useState("");
+  const [selectedFormat, setSelectedFormat] = useState("text");
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [currentPlatform, setCurrentPlatform] = useState("");
   const [showNewIdeaDialog, setShowNewIdeaDialog] = useState(false);
@@ -383,7 +384,7 @@ const BankOfContent = () => {
         caption: captionText,
         platforms: selectedPlatforms
       }),
-      format: "text",
+      format: selectedFormat,
       dateCreated: new Date(),
       tags: newIdeaTags,
       platforms: selectedPlatforms,
@@ -580,6 +581,7 @@ const BankOfContent = () => {
     setSelectedText("");
     setDevelopScriptText("");
     setShootDetails("");
+    setSelectedFormat("text");
     setShowNewIdeaDialog(true);
     setScheduledDate(undefined);
   };
@@ -650,6 +652,8 @@ const BankOfContent = () => {
           onTitleChange={setNewIdeaTitle}
           scriptText={developScriptText || selectedText}
           onScriptTextChange={setDevelopScriptText}
+          format={selectedFormat}
+          onFormatChange={setSelectedFormat}
           shootDetails={shootDetails}
           onShootDetailsChange={setShootDetails}
           captionText={captionText}
