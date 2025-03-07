@@ -102,6 +102,32 @@
   scrollbar-color: #d1d5db transparent;
 }
 
+/* Select dropdown scrollbar customization */
+[data-radix-select-viewport] {
+  scrollbar-width: thin !important;
+  scrollbar-color: #d1d5db transparent !important;
+}
+
+[data-radix-select-viewport]::-webkit-scrollbar {
+  width: 8px !important;
+  display: block !important;
+}
+
+[data-radix-select-viewport]::-webkit-scrollbar-track {
+  background: transparent !important;
+  border-radius: 10px !important;
+  margin: 2px !important;
+}
+
+[data-radix-select-viewport]::-webkit-scrollbar-thumb {
+  background: #d1d5db !important;
+  border-radius: 10px !important;
+}
+
+[data-radix-select-viewport]::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af !important;
+}
+
 .writing-expanded {
   margin-right: 1.5rem;
 }

@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import { Check, ChevronDown, ChevronUp } from "lucide-react"
@@ -93,7 +94,9 @@ const SelectContent = React.forwardRef<
         )}
         style={{ 
           touchAction: "pan-y",
-          WebkitOverflowScrolling: "touch"
+          WebkitOverflowScrolling: "touch",
+          overflow: "auto",
+          scrollbarWidth: "thin"
         }}
       >
         {children}
