@@ -12,6 +12,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import TagsInput from "./TagsInput";
 import PlatformsInput from "./PlatformsInput";
 import DateSchedulePicker from "./DateSchedulePicker";
@@ -23,6 +30,8 @@ interface IdeaCreationDialogProps {
   onOpenChange: (open: boolean) => void;
   title: string;
   onTitleChange: (value: string) => void;
+  contentType: string;
+  onContentTypeChange: (value: string) => void;
   scriptText: string;
   onScriptTextChange: (value: string) => void;
   format?: string;
@@ -47,8 +56,6 @@ interface IdeaCreationDialogProps {
   onCancel: () => void;
   isEditMode: boolean;
   dialogTitle?: string;
-  xOption?: string;
-  onXOptionChange?: (value: string) => void;
 }
 
 const IdeaCreationDialog = ({
@@ -56,6 +63,8 @@ const IdeaCreationDialog = ({
   onOpenChange,
   title,
   onTitleChange,
+  contentType,
+  onContentTypeChange,
   scriptText,
   onScriptTextChange,
   format = "text",
@@ -80,8 +89,6 @@ const IdeaCreationDialog = ({
   onCancel,
   isEditMode,
   dialogTitle = "Create New Idea",
-  xOption = "A",
-  onXOptionChange = () => {},
 }: IdeaCreationDialogProps) => {
   const [isMeganOpen, setIsMeganOpen] = useState(false);
   
@@ -134,6 +141,27 @@ const IdeaCreationDialog = ({
                       onSelectHook={(hook) => onTitleChange(hook)}
                     />
                   </div>
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="content-type">Content Type</Label>
+                  <Select
+                    value={contentType}
+                    onValueChange={onContentTypeChange}
+                  >
+                    <SelectTrigger id="content-type" className="w-full">
+                      <SelectValue placeholder="Select content type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="video">Video</SelectItem>
+                      <SelectItem value="image">Image/Photo</SelectItem>
+                      <SelectItem value="text">Text/Article</SelectItem>
+                      <SelectItem value="audio">Audio/Podcast</SelectItem>
+                      <SelectItem value="carousel">Carousel</SelectItem>
+                      <SelectItem value="story">Story</SelectItem>
+                      <SelectItem value="reel">Reel</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 
                 <div className="h-4"></div>

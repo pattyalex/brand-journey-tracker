@@ -26,6 +26,7 @@ const ContentUploader = ({
 }: ContentUploaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState("");
+  const [contentType, setContentType] = useState("video");
   const [textContent, setTextContent] = useState("");
   const [contentFormat, setContentFormat] = useState("text");
   const [shootDetails, setShootDetails] = useState("");
@@ -48,6 +49,7 @@ const ContentUploader = ({
             setTextContent(parsedContent.script || '');
             setShootDetails(parsedContent.shootDetails || '');
             setCaptionText(parsedContent.caption || '');
+            setContentType(parsedContent.contentType || 'video');
             
             if (parsedContent.platforms && Array.isArray(parsedContent.platforms)) {
               setPlatformsList(parsedContent.platforms);
@@ -109,7 +111,8 @@ const ContentUploader = ({
         script: textContent,
         shootDetails: shootDetails,
         caption: captionText,
-        platforms: platformsList
+        platforms: platformsList,
+        contentType: contentType
       }),
       dateCreated: contentToEdit ? contentToEdit.dateCreated : new Date(),
       tags: tagsList,
@@ -156,6 +159,7 @@ const ContentUploader = ({
 
   const resetForm = () => {
     setTitle("");
+    setContentType("video");
     setTextContent("");
     setContentFormat("text");
     setShootDetails("");
@@ -187,6 +191,8 @@ const ContentUploader = ({
         onOpenChange={setIsOpen}
         title={title}
         onTitleChange={setTitle}
+        contentType={contentType}
+        onContentTypeChange={setContentType}
         scriptText={textContent}
         onScriptTextChange={setTextContent}
         shootDetails={shootDetails}
