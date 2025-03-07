@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useState } from "react";
 import { Pencil } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -32,12 +31,8 @@ const WritingSpace = ({
     onTextChange(e.target.value);
   };
 
-  const handleTextSelection = () => {
-    if (textareaRef.current) {
-      const selectedText = textareaRef.current.value.substring(
-        textareaRef.current.selectionStart,
-        textareaRef.current.selectionEnd
-      );
+  const handleTextSelection = (selectedText: string) => {
+    if (selectedText.trim()) {
       onTextSelection(selectedText);
     }
   };
@@ -72,17 +67,16 @@ const WritingSpace = ({
         <div className="rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full relative bg-[#F6F6F7] flex flex-col">
           <SimpleTextFormattingToolbar onFormat={handleFormatClick} />
           
-          <ScrollArea className="h-full w-full flex-1">
+          <div className="h-full w-full flex-1">
             <Textarea
               ref={textareaRef}
               value={writingText}
               onChange={handleTextChange}
-              onSelect={handleTextSelection}
+              onTextSelect={handleTextSelection}
               placeholder="Start writing your content ideas here..."
-              className="min-h-full w-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-sm p-4"
-              style={{ position: 'relative', height: '100%' }}
+              className="min-h-full w-full h-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-sm p-4"
             />
-          </ScrollArea>
+          </div>
         </div>
       </div>
     </div>

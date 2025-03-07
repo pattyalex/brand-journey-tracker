@@ -22,6 +22,20 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       }
     };
 
+    const handleSelectEvent = () => {
+      if (onTextSelect && ref && 'current' in ref && ref.current) {
+        const textarea = ref.current;
+        const selectedText = textarea.value.substring(
+          textarea.selectionStart || 0, 
+          textarea.selectionEnd || 0
+        ).trim();
+        
+        if (selectedText) {
+          onTextSelect(selectedText);
+        }
+      }
+    };
+
     return (
       <textarea
         className={cn(
@@ -30,6 +44,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         )}
         ref={ref}
         onMouseUp={handleMouseUp}
+        onSelect={handleSelectEvent}
         {...props}
       />
     )
