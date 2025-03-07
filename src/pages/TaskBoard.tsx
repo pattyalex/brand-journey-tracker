@@ -1,3 +1,4 @@
+
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -842,3 +843,144 @@ const SimplifiedTaskColumn = ({
                                 <button 
                                   className="opacity-0 group-hover:opacity-100 transition-opacity"
                                   onClick={() => onEditTask(task)}
+                                >
+                                  <Edit className="h-3.5 w-3.5 text-gray-400 hover:text-gray-600" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))
+                  )}
+                  {provided.placeholder}
+                  
+                  <button
+                    className="mt-1 flex items-center gap-2 text-muted-foreground hover:text-primary p-2 rounded-lg text-sm"
+                    onClick={() => {
+                      setNewTask({ status: columnId as Task["status"] });
+                      setIsAddDialogOpen(true);
+                    }}
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>Add a card</span>
+                  </button>
+                </div>
+              </ScrollArea>
+            </div>
+          )}
+        </Droppable>
+      </CardContent>
+    </Card>
+  );
+};
+
+interface SimplifiedTaskListProps {
+  tasks: Task[];
+  status: Task["status"];
+  moveTask: (taskId: string, newStatus: Task["status"]) => void;
+  onEditTask: (task: Task) => void;
+  onDeleteTask: (taskId: string) => void;
+  setIsAddDialogOpen: (isOpen: boolean) => void;
+  setNewTask: (task: Partial<Task>) => void;
+}
+
+const SimplifiedTaskList = ({ 
+  tasks, 
+  status, 
+  moveTask, 
+  onEditTask, 
+  onDeleteTask,
+  setIsAddDialogOpen,
+  setNewTask
+}: SimplifiedTaskListProps) => {
+  return (
+    <DragDropContext onDragEnd={(result) => {
+      if (!result.destination) return;
+      
+      const task = tasks.find(t => t.id === result.draggableId);
+      if (!task) return;
+      
+      if (result.destination.droppableId !== status) {
+        moveTask(task.id, result.destination.droppableId as Task["status"]);
+      }
+    }}>
+      <Droppable droppableId={status}>
+        {(provided) => (
+          <div
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+            className="bg-gray-50 p-3 rounded-lg"
+          >
+            {tasks.length === 0 ? (
+              <div className="flex h-[100px] items-center justify-center rounded-md border border-dashed">
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground">No tasks in this section</p>
+                  <Button 
+                    variant="link" 
+                    className="mt-2 text-sm"
+                    onClick={() => {
+                      setNewTask({ status });
+                      setIsAddDialogOpen(true);
+                    }}
+                  >
+                    Add a task
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <ScrollArea className="h-[calc(100vh-250px)]">
+                <div className="space-y-2 pr-2">
+                  {tasks.map((task, index) => (
+                    <Draggable key={task.id} draggableId={task.id} index={index}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          className={`${snapshot.isDragging ? "opacity-70" : ""}`}
+                        >
+                          <div className="group bg-white rounded-lg border py-2.5 px-3 hover:shadow-sm transition-shadow">
+                            <div className="flex items-center gap-2">
+                              <button 
+                                className="flex-shrink-0" 
+                                onClick={() => moveTask(task.id, "completed")}
+                              >
+                                <Circle className="h-4 w-4 text-gray-400 hover:text-primary" />
+                              </button>
+                              <span className="flex-1 text-gray-800 text-sm">{task.title}</span>
+                              <button 
+                                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => onEditTask(task)}
+                              >
+                                <Edit className="h-3.5 w-3.5 text-gray-400 hover:text-gray-600" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              </ScrollArea>
+            )}
+            
+            <button
+              className="mt-3 flex items-center gap-2 text-muted-foreground hover:text-primary p-2 rounded-lg text-sm"
+              onClick={() => {
+                setNewTask({ status });
+                setIsAddDialogOpen(true);
+              }}
+            >
+              <Plus className="h-4 w-4" />
+              <span>Add a card</span>
+            </button>
+          </div>
+        )}
+      </Droppable>
+    </DragDropContext>
+  );
+};
+
+export default TaskBoard;
