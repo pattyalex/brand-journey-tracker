@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { PlusCircle, Trash2, Lightbulb, Bell, FileText } from "lucide-react";
 import Layout from "@/components/Layout";
@@ -27,7 +26,6 @@ const QuickNotes = () => {
   const [newNoteContent, setNewNoteContent] = useState("");
   const [activeTab, setActiveTab] = useState<NoteType>("idea");
 
-  // Load notes from localStorage on component mount
   useEffect(() => {
     const savedNotes = localStorage.getItem("quickNotes");
     if (savedNotes) {
@@ -35,7 +33,6 @@ const QuickNotes = () => {
     }
   }, []);
 
-  // Save notes to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("quickNotes", JSON.stringify(notes));
   }, [notes]);
@@ -140,7 +137,7 @@ const QuickNotes = () => {
                     <Button 
                       onClick={handleAddNote} 
                       size="sm" 
-                      className="bg-[#9b87f5] hover:bg-[#7E69AB]"
+                      className="bg-[#8B6B4E] hover:bg-[#6D5540]"
                     >
                       <PlusCircle className="mr-2 h-3.5 w-3.5" />
                       {type === "idea" ? "Add Idea" : 
