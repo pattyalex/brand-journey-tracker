@@ -136,9 +136,13 @@ const QuickNotes = () => {
                       />
                     </div>
                   </CardContent>
-                  <CardFooter className="pt-6">
-                    <Button onClick={handleAddNote}>
-                      <PlusCircle className="mr-2 h-4 w-4" />
+                  <CardFooter className="pt-6 flex justify-end">
+                    <Button 
+                      onClick={handleAddNote} 
+                      size="sm" 
+                      className="bg-[#9b87f5] hover:bg-[#7E69AB]"
+                    >
+                      <PlusCircle className="mr-2 h-3.5 w-3.5" />
                       {type === "idea" ? "Add Idea" : 
                        type === "reminder" ? "Add Reminder" : 
                        "Add Note"}
