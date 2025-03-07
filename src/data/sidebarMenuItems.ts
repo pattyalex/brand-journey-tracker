@@ -1,9 +1,10 @@
 
-import { Home, FolderOpen, FileText, Settings, Lightbulb, Database, CreditCard, PenLine, Calendar, TrendingUp, BarChart, HelpCircle, CheckSquare } from 'lucide-react';
+import { Home, FolderOpen, FileText, Settings, Lightbulb, Database, CreditCard, PenLine, Calendar, TrendingUp, BarChart, HelpCircle, CheckSquare, Clipboard } from 'lucide-react';
 import { MenuItem } from '@/types/sidebar';
 
 export const defaultMenuItems: MenuItem[] = [
   { title: 'Dashboard', icon: Home, url: '/', isDeletable: false },
+  { title: 'Quick Notes', icon: Clipboard, url: '/quick-notes', isDeletable: false },
   { 
     title: 'Workflow', 
     icon: FolderOpen, 

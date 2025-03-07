@@ -19,6 +19,7 @@ import StrategyGrowth from "./pages/StrategyGrowth";
 import IncomeTracker from "./pages/IncomeTracker";
 import TaskBoard from "./pages/TaskBoard";
 import Help from "./pages/Help";
+import QuickNotes from "./pages/QuickNotes";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const App = () => (
           <Route path="/income-tracker" element={<IncomeTracker />} />
           <Route path="/task-board" element={<TaskBoard />} />
           <Route path="/help" element={<Help />} />
+          <Route path="/quick-notes" element={<QuickNotes />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
