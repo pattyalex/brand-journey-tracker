@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { PlusCircle, Trash2, Lightbulb, FileText, Search } from "lucide-react";
 import Layout from "@/components/Layout";
@@ -32,7 +31,6 @@ const QuickNotes = () => {
     const savedNotes = localStorage.getItem("quickNotes");
     if (savedNotes) {
       const parsedNotes = JSON.parse(savedNotes);
-      // Filter out any reminder notes when loading from localStorage
       const filteredNotes = parsedNotes.filter(
         (note: Note) => note.type === "idea" || note.type === "other"
       );
@@ -206,7 +204,7 @@ const QuickNotes = () => {
                                   onClick={() => handleDeleteNote(note.id)}
                                   aria-label={`Delete ${note.type === 'idea' ? 'idea' : 'note'}`}
                                 >
-                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                  <Trash2 className="h-4 w-4 text-muted-foreground" />
                                 </Button>
                               </div>
                               <CardDescription className="text-xs">
