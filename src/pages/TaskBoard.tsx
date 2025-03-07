@@ -859,5 +859,6 @@ const SimplifiedTaskColumn = ({
             >
               <ScrollArea className="h-full">
                 <div className="flex flex-col gap-2 min-h-40 pr-4">
-                  {tasks.length === 0 && !isAdding ? (
-                    <div className="flex h-[130px] items-center
+                  {isAdding ? (
+                    <div className="bg-white rounded-lg border p-2 shadow-sm">
+                      <div className
