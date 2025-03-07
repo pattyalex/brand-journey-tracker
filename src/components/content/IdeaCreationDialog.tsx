@@ -161,6 +161,16 @@ const IdeaCreationDialog = ({
                       <SelectItem value="A">A</SelectItem>
                       <SelectItem value="B">B</SelectItem>
                       <SelectItem value="C">C</SelectItem>
+                      <SelectItem value="D">D</SelectItem>
+                      <SelectItem value="E">E</SelectItem>
+                      <SelectItem value="F">F</SelectItem>
+                      <SelectItem value="G">G</SelectItem>
+                      <SelectItem value="H">H</SelectItem>
+                      <SelectItem value="I">I</SelectItem>
+                      <SelectItem value="J">J</SelectItem>
+                      <SelectItem value="K">K</SelectItem>
+                      <SelectItem value="L">L</SelectItem>
+                      <SelectItem value="M">M</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
