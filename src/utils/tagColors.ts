@@ -11,6 +11,7 @@ export const tagColorMap: TagColorMap = {
   "to post": "bg-green-100 text-green-800",
   "posted": "bg-amber-100 text-amber-800", // Brown-ish color
   "idea": "bg-pink-100 text-pink-800",
+  "finalize details": "bg-purple-100 text-purple-800", // New tag color for "finalize details"
   
   // Default for other tags
   "default": "bg-gray-100 text-gray-800"
