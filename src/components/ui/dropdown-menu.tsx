@@ -52,7 +52,8 @@ const DropdownMenuSubContent = React.forwardRef<
     style={{
       touchAction: "pan-y",
       WebkitOverflowScrolling: "touch",
-      overscrollBehavior: "contain"
+      overscrollBehavior: "contain",
+      scrollbarWidth: "auto"
     }}
     {...props}
   />
@@ -79,7 +80,8 @@ const DropdownMenuContent = React.forwardRef<
         WebkitOverflowScrolling: "touch",
         overscrollBehavior: "contain",
         maxHeight: "var(--radix-dropdown-menu-content-available-height)",
-        overflow: "auto"
+        overflow: "auto",
+        scrollbarWidth: "auto"
       }}
       {...props}
     />

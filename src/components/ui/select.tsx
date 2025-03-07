@@ -61,7 +61,7 @@ const SelectContent = React.forwardRef<
           WebkitOverflowScrolling: "touch",
           overscrollBehavior: "contain",
           overflow: "auto",
-          scrollbarWidth: "thin"
+          scrollbarWidth: "auto"
         }}
       >
         {children}

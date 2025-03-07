@@ -61,12 +61,10 @@
 }
 
 @layer utilities {
-  /* Hide scrollbar for Chrome, Safari and Opera */
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
   }
 
-  /* Hide scrollbar for IE, Edge and Firefox */
   .hide-scrollbar {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
@@ -103,12 +101,12 @@
 
 /* Select dropdown scrollbar customization */
 [data-radix-select-viewport] {
-  scrollbar-width: thin !important;
-  scrollbar-color: #d1d5db transparent !important;
+  scrollbar-width: auto !important;
+  scrollbar-color: #8E9196 transparent !important;
 }
 
 [data-radix-select-viewport]::-webkit-scrollbar {
-  width: 8px !important;
+  width: 10px !important;
   display: block !important;
 }
 
@@ -119,12 +117,12 @@
 }
 
 [data-radix-select-viewport]::-webkit-scrollbar-thumb {
-  background: #d1d5db !important;
+  background: #8E9196 !important;
   border-radius: 10px !important;
 }
 
 [data-radix-select-viewport]::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af !important;
+  background: #8A898C !important;
 }
 
 /* Additional dropdown menu customization */
