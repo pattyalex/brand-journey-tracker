@@ -1,4 +1,3 @@
-
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -798,7 +797,7 @@ const SimplifiedTaskColumn = ({
 }: SimplifiedTaskColumnProps) => {
   return (
     <Card className="h-full bg-gray-50">
-      <CardHeader className="pb-2 p-4">
+      <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-lg">
           {icon}
           {title} <span className="ml-2 text-sm bg-primary/10 px-2.5 py-0.5 rounded-full">{tasks.length}</span>
@@ -807,7 +806,7 @@ const SimplifiedTaskColumn = ({
           {title === "All" ? "Tasks to be completed" : "Tasks for today"}
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-3 pt-0">
+      <CardContent>
         <Droppable droppableId={columnId}>
           {(provided) => (
             <div
@@ -816,9 +815,9 @@ const SimplifiedTaskColumn = ({
               className="h-[calc(100vh-280px)]"
             >
               <ScrollArea className="h-full">
-                <div className="flex flex-col gap-2 min-h-40 pr-2">
+                <div className="flex flex-col gap-2 min-h-40 pr-4">
                   {tasks.length === 0 ? (
-                    <div className="flex h-[100px] items-center justify-center rounded-md border border-dashed">
+                    <div className="flex h-[130px] items-center justify-center rounded-md border border-dashed">
                       <p className="text-center text-muted-foreground text-sm px-2">No tasks in this section</p>
                     </div>
                   ) : (
@@ -831,20 +830,20 @@ const SimplifiedTaskColumn = ({
                             {...provided.dragHandleProps}
                             className={`${snapshot.isDragging ? "opacity-70" : ""}`}
                           >
-                            <div className="group bg-white rounded-lg border py-2.5 px-3 hover:shadow-sm transition-shadow">
+                            <div className="group bg-white rounded-lg border p-3 hover:shadow transition-shadow">
                               <div className="flex items-center gap-2">
                                 <button 
                                   className="flex-shrink-0" 
                                   onClick={() => moveTask(task.id, "completed")}
                                 >
-                                  <Circle className="h-4 w-4 text-gray-400 hover:text-primary" />
+                                  <Circle className="h-5 w-5 text-gray-400 hover:text-primary" />
                                 </button>
-                                <span className="flex-1 text-gray-800 text-sm">{task.title}</span>
+                                <span className="flex-1 text-gray-800">{task.title}</span>
                                 <button 
                                   className="opacity-0 group-hover:opacity-100 transition-opacity"
                                   onClick={() => onEditTask(task)}
                                 >
-                                  <Edit className="h-3.5 w-3.5 text-gray-400 hover:text-gray-600" />
+                                  <Edit className="h-4 w-4 text-gray-500" />
                                 </button>
                               </div>
                             </div>
@@ -856,7 +855,7 @@ const SimplifiedTaskColumn = ({
                   {provided.placeholder}
                   
                   <button
-                    className="mt-1 flex items-center gap-2 text-muted-foreground hover:text-primary p-2 rounded-lg text-sm"
+                    className="mt-2 flex items-center gap-2 text-muted-foreground hover:text-primary p-2 rounded-lg"
                     onClick={() => {
                       setNewTask({ status: columnId as Task["status"] });
                       setIsAddDialogOpen(true);
@@ -910,7 +909,7 @@ const SimplifiedTaskList = ({
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className="bg-gray-50 p-3 rounded-lg"
+            className="bg-gray-50 p-4 rounded-lg"
           >
             {tasks.length === 0 ? (
               <div className="flex h-[100px] items-center justify-center rounded-md border border-dashed">
@@ -918,7 +917,7 @@ const SimplifiedTaskList = ({
                   <p className="text-sm text-muted-foreground">No tasks in this section</p>
                   <Button 
                     variant="link" 
-                    className="mt-2 text-sm"
+                    className="mt-2"
                     onClick={() => {
                       setNewTask({ status });
                       setIsAddDialogOpen(true);
@@ -930,7 +929,7 @@ const SimplifiedTaskList = ({
               </div>
             ) : (
               <ScrollArea className="h-[calc(100vh-250px)]">
-                <div className="space-y-2 pr-2">
+                <div className="space-y-2 pr-4">
                   {tasks.map((task, index) => (
                     <Draggable key={task.id} draggableId={task.id} index={index}>
                       {(provided, snapshot) => (
@@ -940,20 +939,20 @@ const SimplifiedTaskList = ({
                           {...provided.dragHandleProps}
                           className={`${snapshot.isDragging ? "opacity-70" : ""}`}
                         >
-                          <div className="group bg-white rounded-lg border py-2.5 px-3 hover:shadow-sm transition-shadow">
+                          <div className="group bg-white rounded-lg border p-3 hover:shadow transition-shadow">
                             <div className="flex items-center gap-2">
                               <button 
                                 className="flex-shrink-0" 
                                 onClick={() => moveTask(task.id, "completed")}
                               >
-                                <Circle className="h-4 w-4 text-gray-400 hover:text-primary" />
+                                <Circle className="h-5 w-5 text-gray-400 hover:text-primary" />
                               </button>
-                              <span className="flex-1 text-gray-800 text-sm">{task.title}</span>
+                              <span className="flex-1 text-gray-800">{task.title}</span>
                               <button 
                                 className="opacity-0 group-hover:opacity-100 transition-opacity"
                                 onClick={() => onEditTask(task)}
                               >
-                                <Edit className="h-3.5 w-3.5 text-gray-400 hover:text-gray-600" />
+                                <Edit className="h-4 w-4 text-gray-500" />
                               </button>
                             </div>
                           </div>
@@ -967,7 +966,7 @@ const SimplifiedTaskList = ({
             )}
             
             <button
-              className="mt-3 flex items-center gap-2 text-muted-foreground hover:text-primary p-2 rounded-lg text-sm"
+              className="mt-4 flex items-center gap-2 text-muted-foreground hover:text-primary p-2 rounded-lg"
               onClick={() => {
                 setNewTask({ status });
                 setIsAddDialogOpen(true);
