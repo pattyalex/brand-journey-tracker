@@ -201,94 +201,7 @@ const TaskBoard = () => {
             <h1 className="text-3xl font-playfair font-bold text-primary">To-Do's</h1>
             <p className="text-muted-foreground">Organize and track your content creation tasks</p>
           </div>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="flex items-center gap-2">
-                <PlusCircle size={16} />
-                Add New Task
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>{isEditMode ? "Edit Task" : "Add New Task"}</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="title">Task Title</Label>
-                  <Input
-                    id="title"
-                    value={newTask.title}
-                    onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                    placeholder="Enter task title"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="description">Description (Optional)</Label>
-                  <Textarea
-                    id="description"
-                    value={newTask.description}
-                    onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                    placeholder="Add more details about this task"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="status">Status</Label>
-                    <Select
-                      value={newTask.status}
-                      onValueChange={(value: string) => setNewTask({ ...newTask, status: value as Task["status"] })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="todo-all">To Do</SelectItem>
-                        <SelectItem value="todo-today">Today</SelectItem>
-                        <SelectItem value="scheduled">Scheduled</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="priority">Priority</Label>
-                    <Select
-                      value={newTask.priority}
-                      onValueChange={(value: string) => setNewTask({ ...newTask, priority: value as Task["priority"] })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select priority" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">Low</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                {(newTask.status === "scheduled") && (
-                  <div className="grid gap-2">
-                    <Label htmlFor="dueDate">Due Date</Label>
-                    <div className="flex items-center">
-                      <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="dueDate"
-                        type="date"
-                        value={newTask.dueDate}
-                        onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={handleDialogClose}>Cancel</Button>
-                <Button onClick={handleAddTask}>
-                  {isEditMode ? "Update Task" : "Add Task"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          
         </div>
         
         <Tabs defaultValue="tasks-board" value={activePage} onValueChange={setActivePage} className="mb-8">
@@ -535,6 +448,90 @@ const TaskBoard = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>{isEditMode ? "Edit Task" : "Add New Task"}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="title">Task Title</Label>
+              <Input
+                id="title"
+                value={newTask.title}
+                onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                placeholder="Enter task title"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="description">Description (Optional)</Label>
+              <Textarea
+                id="description"
+                value={newTask.description}
+                onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                placeholder="Add more details about this task"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="status">Status</Label>
+                <Select
+                  value={newTask.status}
+                  onValueChange={(value: string) => setNewTask({ ...newTask, status: value as Task["status"] })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todo-all">To Do</SelectItem>
+                    <SelectItem value="todo-today">Today</SelectItem>
+                    <SelectItem value="scheduled">Scheduled</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="priority">Priority</Label>
+                <Select
+                  value={newTask.priority}
+                  onValueChange={(value: string) => setNewTask({ ...newTask, priority: value as Task["priority"] })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select priority" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            {(newTask.status === "scheduled") && (
+              <div className="grid gap-2">
+                <Label htmlFor="dueDate">Due Date</Label>
+                <div className="flex items-center">
+                  <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="dueDate"
+                    type="date"
+                    value={newTask.dueDate}
+                    onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleDialogClose}>Cancel</Button>
+            <Button onClick={handleAddTask}>
+              {isEditMode ? "Update Task" : "Add Task"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };
@@ -657,4 +654,3 @@ const TaskColumn = ({ title, icon, tasks, moveTask, onEditTask, onDeleteTask, ge
 };
 
 export default TaskBoard;
-
