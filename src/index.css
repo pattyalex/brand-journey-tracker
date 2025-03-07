@@ -69,6 +69,13 @@
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
   }
+  
+  .touch-scroll {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+    touch-action: pan-y;
+    overscroll-behavior: contain;
+  }
 }
 
 /* Custom Scrollbar */
@@ -103,6 +110,10 @@
 [data-radix-select-viewport] {
   scrollbar-width: auto !important;
   scrollbar-color: #8E9196 transparent !important;
+  touch-action: pan-y !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain !important;
+  user-select: none !important;
 }
 
 [data-radix-select-viewport]::-webkit-scrollbar {
@@ -126,10 +137,12 @@
 }
 
 /* Additional dropdown menu customization */
-[data-radix-popper] [role="menu"] {
+[data-radix-popper] [role="menu"],
+[data-radix-popper] [role="listbox"] {
   overscroll-behavior: contain;
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
+  user-select: none;
 }
 
 .writing-expanded {

@@ -47,7 +47,12 @@ const SelectContent = React.forwardRef<
         className
       )}
       position={position}
-      style={{ backgroundColor: "white", opacity: 1 }}
+      style={{ 
+        backgroundColor: "white", 
+        opacity: 1,
+        touchAction: "pan-y",
+        overscrollBehavior: "contain" 
+      }}
       {...props}
     >
       <SelectPrimitive.Viewport
@@ -61,7 +66,9 @@ const SelectContent = React.forwardRef<
           WebkitOverflowScrolling: "touch",
           overscrollBehavior: "contain",
           overflow: "auto",
-          scrollbarWidth: "auto"
+          scrollbarWidth: "auto",
+          "-webkit-user-select": "none",
+          userSelect: "none"
         }}
       >
         {children}
