@@ -240,9 +240,9 @@ const TaskBoard = () => {
                   <TabsContent value="all" className="m-0">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                       <TaskColumn 
-                        title="To Do"
-                        icon={<CheckSquare size={18} />}
-                        tasks={getTasksByStatus("todo-all")}
+                        title="Today"
+                        icon={<Clock size={18} />}
+                        tasks={getTasksByStatus("todo-today")}
                         moveTask={moveTask}
                         onEditTask={handleEditTask}
                         onDeleteTask={handleDeleteTask}
@@ -250,9 +250,9 @@ const TaskBoard = () => {
                       />
                       
                       <TaskColumn 
-                        title="Today"
-                        icon={<Clock size={18} />}
-                        tasks={getTasksByStatus("todo-today")}
+                        title="To Do"
+                        icon={<CheckSquare size={18} />}
+                        tasks={getTasksByStatus("todo-all")}
                         moveTask={moveTask}
                         onEditTask={handleEditTask}
                         onDeleteTask={handleDeleteTask}
