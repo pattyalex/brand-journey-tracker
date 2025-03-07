@@ -12,7 +12,6 @@ import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-// Define task types
 interface Task {
   id: string;
   title: string;
@@ -36,13 +35,11 @@ const TaskBoard = () => {
   const [editTaskId, setEditTaskId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("all");
 
-  // Load tasks from localStorage on component mount
   useEffect(() => {
     const savedTasks = localStorage.getItem("taskBoardTasks");
     if (savedTasks) {
       setTasks(JSON.parse(savedTasks));
     } else {
-      // Example tasks
       const exampleTasks: Task[] = [
         { 
           id: "1", 
@@ -91,7 +88,6 @@ const TaskBoard = () => {
     }
   }, []);
 
-  // Save tasks to localStorage whenever tasks change
   useEffect(() => {
     localStorage.setItem("taskBoardTasks", JSON.stringify(tasks));
   }, [tasks]);
@@ -127,17 +123,14 @@ const TaskBoard = () => {
     };
 
     if (isEditMode && editTaskId) {
-      // Update existing task
       const updatedTasks = tasks.map((t) => t.id === editTaskId ? task : t);
       setTasks(updatedTasks);
       toast.success("Task updated successfully");
     } else {
-      // Add new task
       setTasks([task, ...tasks]);
       toast.success("Task added successfully");
     }
 
-    // Reset form
     setNewTask({
       title: "",
       description: "",
@@ -203,7 +196,7 @@ const TaskBoard = () => {
       <div className="container mx-auto py-6 fade-in">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-playfair font-bold text-primary">Task Board</h1>
+            <h1 className="text-3xl font-playfair font-bold text-primary">Planner</h1>
             <p className="text-muted-foreground">Organize and track your content creation tasks</p>
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
