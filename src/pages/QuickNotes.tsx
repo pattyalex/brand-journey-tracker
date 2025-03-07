@@ -130,14 +130,14 @@ const QuickNotes = () => {
                           type === "reminder" ? "Write your reminder here..." :
                           "Write your note here..."
                         }
-                        className="min-h-[200px]"
+                        className="min-h-[200px] resize-y"
                         value={newNoteContent}
                         onChange={(e) => setNewNoteContent(e.target.value)}
                       />
                     </div>
                   </CardContent>
-                  <CardFooter>
-                    <Button onClick={handleAddNote} className="ml-auto">
+                  <CardFooter className="pt-6">
+                    <Button onClick={handleAddNote}>
                       <PlusCircle className="mr-2 h-4 w-4" />
                       {type === "idea" ? "Add Idea" : 
                        type === "reminder" ? "Add Reminder" : 
