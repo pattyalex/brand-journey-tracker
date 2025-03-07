@@ -12,22 +12,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-import { Film, Image, FileText, Headphones, Layout, MessageCircle, Video } from "lucide-react";
 import TagsInput from "./TagsInput";
 import PlatformsInput from "./PlatformsInput";
 import DateSchedulePicker from "./DateSchedulePicker";
 import MeganAIChat from "./MeganAIChat";
 import TitleHookSuggestions from "./TitleHookSuggestions";
-import ContentTypeSelector from "./ContentTypeSelector";
 
 interface IdeaCreationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
   onTitleChange: (value: string) => void;
-  contentType: string;
-  onContentTypeChange: (value: string) => void;
   scriptText: string;
   onScriptTextChange: (value: string) => void;
   format?: string;
@@ -52,26 +47,15 @@ interface IdeaCreationDialogProps {
   onCancel: () => void;
   isEditMode: boolean;
   dialogTitle?: string;
+  xOption?: string;
+  onXOptionChange?: (value: string) => void;
 }
-
-// Content type options with icons
-const contentTypeOptions = [
-  { value: "video", label: "Video", icon: <Film className="h-6 w-6" /> },
-  { value: "image", label: "Image", icon: <Image className="h-6 w-6" /> },
-  { value: "text", label: "Text", icon: <FileText className="h-6 w-6" /> },
-  { value: "audio", label: "Audio", icon: <Headphones className="h-6 w-6" /> },
-  { value: "carousel", label: "Carousel", icon: <Layout className="h-6 w-6" /> },
-  { value: "story", label: "Story", icon: <MessageCircle className="h-6 w-6" /> },
-  { value: "reel", label: "Reel", icon: <Video className="h-6 w-6" /> },
-];
 
 const IdeaCreationDialog = ({
   open,
   onOpenChange,
   title,
   onTitleChange,
-  contentType,
-  onContentTypeChange,
   scriptText,
   onScriptTextChange,
   format = "text",
@@ -96,6 +80,8 @@ const IdeaCreationDialog = ({
   onCancel,
   isEditMode,
   dialogTitle = "Create New Idea",
+  xOption = "A",
+  onXOptionChange = () => {},
 }: IdeaCreationDialogProps) => {
   const [isMeganOpen, setIsMeganOpen] = useState(false);
   
@@ -148,15 +134,6 @@ const IdeaCreationDialog = ({
                       onSelectHook={(hook) => onTitleChange(hook)}
                     />
                   </div>
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label>Content Type</Label>
-                  <ContentTypeSelector 
-                    value={contentType}
-                    onChange={onContentTypeChange}
-                    options={contentTypeOptions}
-                  />
                 </div>
                 
                 <div className="h-4"></div>
