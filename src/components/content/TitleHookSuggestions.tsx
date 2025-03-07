@@ -7,6 +7,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Sheet,
@@ -470,9 +471,12 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
       </Button>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Catchy Hook Ideas</DialogTitle>
+            <DialogDescription>
+              Select a category to find the perfect hook for your content
+            </DialogDescription>
           </DialogHeader>
           
           <div className="max-h-[350px] overflow-y-auto">
