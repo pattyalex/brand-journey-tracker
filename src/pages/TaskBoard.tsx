@@ -1,3 +1,4 @@
+
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -222,7 +223,7 @@ const TaskBoard = () => {
           <TabsContent value="tasks-board" className="m-0">
             <Card className="border-none shadow-none">
               <CardHeader className="px-0">
-                <CardTitle className="text-xl">Tasks Board</CardTitle>
+                <CardTitle className="text-xl">X</CardTitle>
                 <CardDescription>
                   Organize your tasks by status and track your progress
                 </CardDescription>
