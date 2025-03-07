@@ -12,18 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { 
-  Text, Video, Image, FileAudio, Code, 
-  MessageSquare, Newspaper, SquareStack, 
-  Youtube, Instagram, Radio, Server
-} from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import TagsInput from "./TagsInput";
 import PlatformsInput from "./PlatformsInput";
 import DateSchedulePicker from "./DateSchedulePicker";
@@ -146,33 +134,6 @@ const IdeaCreationDialog = ({
                       onSelectHook={(hook) => onTitleChange(hook)}
                     />
                   </div>
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="x-option">X</Label>
-                  <Select
-                    value={xOption}
-                    onValueChange={onXOptionChange}
-                  >
-                    <SelectTrigger id="x-option" className="w-full">
-                      <SelectValue placeholder="Select an option" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="A">A</SelectItem>
-                      <SelectItem value="B">B</SelectItem>
-                      <SelectItem value="C">C</SelectItem>
-                      <SelectItem value="D">D</SelectItem>
-                      <SelectItem value="E">E</SelectItem>
-                      <SelectItem value="F">F</SelectItem>
-                      <SelectItem value="G">G</SelectItem>
-                      <SelectItem value="H">H</SelectItem>
-                      <SelectItem value="I">I</SelectItem>
-                      <SelectItem value="J">J</SelectItem>
-                      <SelectItem value="K">K</SelectItem>
-                      <SelectItem value="L">L</SelectItem>
-                      <SelectItem value="M">M</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
                 
                 <div className="h-4"></div>
