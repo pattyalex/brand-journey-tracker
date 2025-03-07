@@ -1,4 +1,3 @@
-
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,6 +12,7 @@ import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 
 interface Task {
   id: string;
@@ -105,6 +105,52 @@ const TaskBoard = () => {
     );
     setTasks(updatedTasks);
     toast.success(`Task moved to ${getStatusDisplayName(newStatus)}`);
+  };
+
+  const handleDragEnd = (result: DropResult) => {
+    const { destination, source, draggableId } = result;
+
+    if (!destination || 
+        (destination.droppableId === source.droppableId && 
+         destination.index === source.index)) {
+      return;
+    }
+
+    const task = tasks.find(t => t.id === draggableId);
+    if (!task) return;
+
+    const newTasks = tasks.filter(t => t.id !== draggableId);
+    
+    const updatedTask = { ...task, status: destination.droppableId as Task["status"] };
+    
+    const sourceColumnTasks = getTasksByStatus(source.droppableId as Task["status"]);
+    const destinationColumnTasks = source.droppableId === destination.droppableId ? 
+      sourceColumnTasks : getTasksByStatus(destination.droppableId as Task["status"]);
+    
+    const remainingTasks = newTasks.filter(t => 
+      t.status !== source.droppableId && t.status !== destination.droppableId
+    );
+
+    const updatedSourceTasks = sourceColumnTasks.filter(t => t.id !== draggableId);
+    
+    let updatedDestinationTasks = [...destinationColumnTasks];
+    if (source.droppableId === destination.droppableId) {
+      updatedDestinationTasks = updatedSourceTasks;
+    }
+    
+    updatedDestinationTasks.splice(destination.index, 0, updatedTask);
+    
+    const finalTasks = [
+      ...remainingTasks,
+      ...updatedSourceTasks.filter(t => t.id !== updatedTask.id),
+      ...updatedDestinationTasks
+    ];
+    
+    setTasks(finalTasks);
+    
+    if (source.droppableId !== destination.droppableId) {
+      toast.success(`Task moved to ${getStatusDisplayName(destination.droppableId as Task["status"])}`);
+    }
   };
 
   const handleAddTask = () => {
@@ -239,47 +285,53 @@ const TaskBoard = () => {
                   </TabsList>
 
                   <TabsContent value="all" className="m-0">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                      <TaskColumn 
-                        title="Today"
-                        icon={<Clock size={18} />}
-                        tasks={getTasksByStatus("todo-today")}
-                        moveTask={moveTask}
-                        onEditTask={handleEditTask}
-                        onDeleteTask={handleDeleteTask}
-                        getPriorityColor={getPriorityColor}
-                      />
-                      
-                      <TaskColumn 
-                        title="All"
-                        icon={<CheckSquare size={18} />}
-                        tasks={getTasksByStatus("todo-all")}
-                        moveTask={moveTask}
-                        onEditTask={handleEditTask}
-                        onDeleteTask={handleDeleteTask}
-                        getPriorityColor={getPriorityColor}
-                      />
-                      
-                      <TaskColumn 
-                        title="Scheduled"
-                        icon={<Calendar size={18} />}
-                        tasks={getTasksByStatus("scheduled")}
-                        moveTask={moveTask}
-                        onEditTask={handleEditTask}
-                        onDeleteTask={handleDeleteTask}
-                        getPriorityColor={getPriorityColor}
-                      />
-                      
-                      <TaskColumn 
-                        title="Completed"
-                        icon={<CheckCircle2 size={18} />}
-                        tasks={getTasksByStatus("completed")}
-                        moveTask={moveTask}
-                        onEditTask={handleEditTask}
-                        onDeleteTask={handleDeleteTask}
-                        getPriorityColor={getPriorityColor}
-                      />
-                    </div>
+                    <DragDropContext onDragEnd={handleDragEnd}>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <TaskColumn 
+                          title="Today"
+                          icon={<Clock size={18} />}
+                          tasks={getTasksByStatus("todo-today")}
+                          moveTask={moveTask}
+                          onEditTask={handleEditTask}
+                          onDeleteTask={handleDeleteTask}
+                          getPriorityColor={getPriorityColor}
+                          columnId="todo-today"
+                        />
+                        
+                        <TaskColumn 
+                          title="All"
+                          icon={<CheckSquare size={18} />}
+                          tasks={getTasksByStatus("todo-all")}
+                          moveTask={moveTask}
+                          onEditTask={handleEditTask}
+                          onDeleteTask={handleDeleteTask}
+                          getPriorityColor={getPriorityColor}
+                          columnId="todo-all"
+                        />
+                        
+                        <TaskColumn 
+                          title="Scheduled"
+                          icon={<Calendar size={18} />}
+                          tasks={getTasksByStatus("scheduled")}
+                          moveTask={moveTask}
+                          onEditTask={handleEditTask}
+                          onDeleteTask={handleDeleteTask}
+                          getPriorityColor={getPriorityColor}
+                          columnId="scheduled"
+                        />
+                        
+                        <TaskColumn 
+                          title="Completed"
+                          icon={<CheckCircle2 size={18} />}
+                          tasks={getTasksByStatus("completed")}
+                          moveTask={moveTask}
+                          onEditTask={handleEditTask}
+                          onDeleteTask={handleDeleteTask}
+                          getPriorityColor={getPriorityColor}
+                          columnId="completed"
+                        />
+                      </div>
+                    </DragDropContext>
                   </TabsContent>
 
                   {["todo-all", "todo-today", "scheduled", "completed"].map((status) => (
@@ -293,130 +345,155 @@ const TaskBoard = () => {
                         </div>
                         
                         <div className="grid grid-cols-1 gap-3">
-                          {getTasksByStatus(status as Task["status"]).length === 0 ? (
-                            <div className="flex h-[150px] items-center justify-center rounded-md border border-dashed">
-                              <div className="text-center">
-                                <p className="text-sm text-muted-foreground">No tasks in this section</p>
-                                <Button 
-                                  variant="link" 
-                                  className="mt-2"
-                                  onClick={() => {
-                                    setNewTask({ ...newTask, status: status as Task["status"] });
-                                    setIsAddDialogOpen(true);
-                                  }}
+                          <DragDropContext onDragEnd={handleDragEnd}>
+                            <Droppable droppableId={status}>
+                              {(provided) => (
+                                <div 
+                                  ref={provided.innerRef}
+                                  {...provided.droppableProps}
+                                  className="space-y-3"
                                 >
-                                  Add a task
-                                </Button>
-                              </div>
-                            </div>
-                          ) : (
-                            <ScrollArea className="h-[calc(100vh-250px)]">
-                              <div className="space-y-3 pr-4">
-                                {getTasksByStatus(status as Task["status"]).map((task) => (
-                                  <Card key={task.id} className="group hover:shadow-md transition-shadow">
-                                    <CardContent className="p-4">
-                                      <div className="flex justify-between items-start gap-4">
-                                        <div className="flex-1">
-                                          <div className="flex items-center gap-2 mb-1">
-                                            <h3 className="font-medium">{task.title}</h3>
-                                            <span className={`text-xs font-medium ${getPriorityColor(task.priority)}`}>
-                                              {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
-                                            </span>
-                                          </div>
-                                          {task.description && (
-                                            <p className="text-sm text-muted-foreground mb-2">{task.description}</p>
-                                          )}
-                                          {task.dueDate && (
-                                            <div className="flex items-center text-xs text-muted-foreground mt-2">
-                                              <CalendarIcon className="mr-1 h-3 w-3" />
-                                              {new Date(task.dueDate).toLocaleDateString()}
-                                            </div>
-                                          )}
-                                        </div>
-                                        <div className="flex gap-1">
-                                          <Button 
-                                            size="icon" 
-                                            variant="ghost" 
-                                            className="h-8 w-8" 
-                                            onClick={() => handleEditTask(task)}
-                                          >
-                                            <Edit size={14} />
-                                          </Button>
-                                          <Button 
-                                            size="icon" 
-                                            variant="ghost" 
-                                            className="h-8 w-8 hover:text-destructive" 
-                                            onClick={() => handleDeleteTask(task.id)}
-                                          >
-                                            <Trash2 size={14} />
-                                          </Button>
-                                        </div>
+                                  {getTasksByStatus(status as Task["status"]).length === 0 ? (
+                                    <div className="flex h-[150px] items-center justify-center rounded-md border border-dashed">
+                                      <div className="text-center">
+                                        <p className="text-sm text-muted-foreground">No tasks in this section</p>
+                                        <Button 
+                                          variant="link" 
+                                          className="mt-2"
+                                          onClick={() => {
+                                            setNewTask({ ...newTask, status: status as Task["status"] });
+                                            setIsAddDialogOpen(true);
+                                          }}
+                                        >
+                                          Add a task
+                                        </Button>
                                       </div>
-                                      <div className="flex gap-2 mt-3 flex-wrap">
-                                        {status !== "todo-today" && (
-                                          <Button 
-                                            size="xs" 
-                                            variant="outline" 
-                                            className="text-xs"
-                                            onClick={() => moveTask(task.id, "todo-today")}
-                                          >
-                                            <Clock size={12} className="mr-1" />
-                                            Move to Today
-                                          </Button>
-                                        )}
-                                        {status !== "todo-all" && status !== "completed" && (
-                                          <Button 
-                                            size="xs" 
-                                            variant="outline" 
-                                            className="text-xs"
-                                            onClick={() => moveTask(task.id, "todo-all")}
-                                          >
-                                            <CheckSquare size={12} className="mr-1" />
-                                            Move to To Do
-                                          </Button>
-                                        )}
-                                        {status !== "scheduled" && (
-                                          <Button 
-                                            size="xs" 
-                                            variant="outline" 
-                                            className="text-xs"
-                                            onClick={() => {
-                                              const updatedTasks = tasks.map((t) => {
-                                                if (t.id === task.id) {
-                                                  return { 
-                                                    ...t, 
-                                                    status: "scheduled" as Task["status"], 
-                                                    dueDate: t.dueDate || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-                                                  };
-                                                }
-                                                return t;
-                                              });
-                                              setTasks(updatedTasks);
-                                              toast.success("Task scheduled");
-                                            }}
-                                          >
-                                            <Calendar size={12} className="mr-1" />
-                                            Schedule
-                                          </Button>
-                                        )}
-                                        {status !== "completed" && (
-                                          <Button 
-                                            size="xs" 
-                                            variant="outline" 
-                                            className="text-xs text-green-600"
-                                            onClick={() => moveTask(task.id, "completed")}
-                                          >
-                                            <CheckCircle2 size={12} className="mr-1" />
-                                            Complete
-                                          </Button>
-                                        )}
+                                    </div>
+                                  ) : (
+                                    <ScrollArea className="h-[calc(100vh-250px)]">
+                                      <div className="space-y-3 pr-4">
+                                        {getTasksByStatus(status as Task["status"]).map((task, index) => (
+                                          <Draggable key={task.id} draggableId={task.id} index={index}>
+                                            {(provided, snapshot) => (
+                                              <div
+                                                ref={provided.innerRef}
+                                                {...provided.draggableProps}
+                                                {...provided.dragHandleProps}
+                                                className={`${snapshot.isDragging ? "opacity-70" : ""}`}
+                                              >
+                                                <Card key={task.id} className="group hover:shadow-md transition-shadow">
+                                                  <CardContent className="p-4">
+                                                    <div className="flex justify-between items-start gap-4">
+                                                      <div className="flex-1">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                          <h3 className="font-medium">{task.title}</h3>
+                                                          <span className={`text-xs font-medium ${getPriorityColor(task.priority)}`}>
+                                                            {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                                                          </span>
+                                                        </div>
+                                                        {task.description && (
+                                                          <p className="text-sm text-muted-foreground mb-2">{task.description}</p>
+                                                        )}
+                                                        {task.dueDate && (
+                                                          <div className="flex items-center text-xs text-muted-foreground mt-2">
+                                                            <CalendarIcon className="mr-1 h-3 w-3" />
+                                                            {new Date(task.dueDate).toLocaleDateString()}
+                                                          </div>
+                                                        )}
+                                                      </div>
+                                                      <div className="flex gap-1">
+                                                        <Button 
+                                                          size="icon" 
+                                                          variant="ghost" 
+                                                          className="h-8 w-8" 
+                                                          onClick={() => handleEditTask(task)}
+                                                        >
+                                                          <Edit size={14} />
+                                                        </Button>
+                                                        <Button 
+                                                          size="icon" 
+                                                          variant="ghost" 
+                                                          className="h-8 w-8 hover:text-destructive" 
+                                                          onClick={() => handleDeleteTask(task.id)}
+                                                        >
+                                                          <Trash2 size={14} />
+                                                        </Button>
+                                                      </div>
+                                                    </div>
+                                                    <div className="flex gap-2 mt-3 flex-wrap">
+                                                      {status !== "todo-today" && (
+                                                        <Button 
+                                                          size="xs" 
+                                                          variant="outline" 
+                                                          className="text-xs"
+                                                          onClick={() => moveTask(task.id, "todo-today")}
+                                                        >
+                                                          <Clock size={12} className="mr-1" />
+                                                          Move to Today
+                                                        </Button>
+                                                      )}
+                                                      {status !== "todo-all" && status !== "completed" && (
+                                                        <Button 
+                                                          size="xs" 
+                                                          variant="outline" 
+                                                          className="text-xs"
+                                                          onClick={() => moveTask(task.id, "todo-all")}
+                                                        >
+                                                          <CheckSquare size={12} className="mr-1" />
+                                                          Move to To Do
+                                                        </Button>
+                                                      )}
+                                                      {status !== "scheduled" && (
+                                                        <Button 
+                                                          size="xs" 
+                                                          variant="outline" 
+                                                          className="text-xs"
+                                                          onClick={() => {
+                                                            const updatedTasks = tasks.map((t) => {
+                                                              if (t.id === task.id) {
+                                                                return { 
+                                                                  ...t, 
+                                                                  status: "scheduled" as Task["status"], 
+                                                                  dueDate: t.dueDate || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                                                                };
+                                                              }
+                                                              return t;
+                                                            });
+                                                            setTasks(updatedTasks);
+                                                            toast.success("Task scheduled");
+                                                          }}
+                                                        >
+                                                          <Calendar size={12} className="mr-1" />
+                                                          Schedule
+                                                        </Button>
+                                                      )}
+                                                      {status !== "completed" && (
+                                                        <Button 
+                                                          size="xs" 
+                                                          variant="outline" 
+                                                          className="text-xs text-green-600"
+                                                          onClick={() => moveTask(task.id, "completed")}
+                                                        >
+                                                          <CheckCircle2 size={12} className="mr-1" />
+                                                          Complete
+                                                        </Button>
+                                                      )}
+                                                    </div>
+                                                  </CardContent>
+                                                </Card>
+                                              </div>
+                                            )}
+                                          </Draggable>
+                                        ))}
+                                        {provided.placeholder}
                                       </div>
-                                    </CardContent>
-                                  </Card>
-                                ))}
-                              </div>
-                            </ScrollArea>
-                          )}
+                                    </ScrollArea>
+                                  )}
+                                  {provided.placeholder}
+                                </div>
+                              )}
+                            </Droppable>
+                          </DragDropContext>
                         </div>
                       </div>
                     </TabsContent>
@@ -543,20 +620,19 @@ interface TaskColumnProps {
   onEditTask: (task: Task) => void;
   onDeleteTask: (taskId: string) => void;
   getPriorityColor: (priority: Task["priority"]) => string;
+  columnId: Task["status"];
 }
 
-const TaskColumn = ({ title, icon, tasks, moveTask, onEditTask, onDeleteTask, getPriorityColor }: TaskColumnProps) => {
+const TaskColumn = ({ title, icon, tasks, moveTask, onEditTask, onDeleteTask, getPriorityColor, columnId }: TaskColumnProps) => {
   const getStatusFromTitle = (title: string): Task["status"] => {
     switch (title) {
-      case "To Do": return "todo-all";
+      case "All": return "todo-all";
       case "Today": return "todo-today";
       case "Scheduled": return "scheduled";
       default: return "completed";
     }
   };
 
-  const columnStatus = getStatusFromTitle(title);
-  
   return (
     <Card className="h-full">
       <CardHeader className="pb-2">
@@ -565,88 +641,110 @@ const TaskColumn = ({ title, icon, tasks, moveTask, onEditTask, onDeleteTask, ge
           {title} <span className="ml-2 text-sm bg-primary/10 px-2 py-0.5 rounded-full">{tasks.length}</span>
         </CardTitle>
         <CardDescription>
-          {title === "To Do" ? "Tasks to be completed" : 
+          {title === "All" ? "Tasks to be completed" : 
            title === "Today" ? "Tasks for today" : 
            title === "Scheduled" ? "Future scheduled tasks" :
            "Completed tasks"}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[calc(100vh-280px)]">
-          <div className="flex flex-col gap-3 min-h-40 pr-4">
-            {tasks.length === 0 ? (
-              <div className="flex h-[130px] items-center justify-center rounded-md border border-dashed">
-                <p className="text-center text-muted-foreground text-sm px-2">No tasks in this section</p>
-              </div>
-            ) : (
-              tasks.map((task) => (
-                <Card key={task.id} className="group p-3 shadow-sm border hover:shadow-md transition-shadow">
-                  <div className="grid gap-2">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h3 className="font-medium mb-1">{task.title}</h3>
-                        {task.description && (
-                          <p className="text-sm text-muted-foreground line-clamp-2">{task.description}</p>
+        <Droppable droppableId={columnId}>
+          {(provided) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className="h-[calc(100vh-280px)]"
+            >
+              <ScrollArea className="h-full">
+                <div className="flex flex-col gap-3 min-h-40 pr-4">
+                  {tasks.length === 0 ? (
+                    <div className="flex h-[130px] items-center justify-center rounded-md border border-dashed">
+                      <p className="text-center text-muted-foreground text-sm px-2">No tasks in this section</p>
+                    </div>
+                  ) : (
+                    tasks.map((task, index) => (
+                      <Draggable key={task.id} draggableId={task.id} index={index}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            className={`${snapshot.isDragging ? "opacity-70" : ""}`}
+                          >
+                            <Card key={task.id} className={`group p-3 shadow-sm border hover:shadow-md transition-shadow ${snapshot.isDragging ? "ring-2 ring-primary" : ""}`}>
+                              <div className="grid gap-2">
+                                <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                    <h3 className="font-medium mb-1">{task.title}</h3>
+                                    {task.description && (
+                                      <p className="text-sm text-muted-foreground line-clamp-2">{task.description}</p>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button 
+                                      size="icon" 
+                                      variant="ghost" 
+                                      className="h-7 w-7" 
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onEditTask(task);
+                                      }}
+                                    >
+                                      <Edit size={14} />
+                                    </Button>
+                                    <Button 
+                                      size="icon" 
+                                      variant="ghost" 
+                                      className="h-7 w-7 hover:text-destructive" 
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onDeleteTask(task.id);
+                                      }}
+                                    >
+                                      <Trash2 size={14} />
+                                    </Button>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex items-center justify-between text-xs">
+                                  <span className={`font-medium ${getPriorityColor(task.priority)}`}>
+                                    {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                                  </span>
+                                  
+                                  {task.dueDate && (
+                                    <div className="flex items-center text-muted-foreground">
+                                      <CalendarIcon className="mr-1 h-3 w-3" />
+                                      {new Date(task.dueDate).toLocaleDateString()}
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                {columnId !== "completed" && (
+                                  <div className="pt-2 border-t mt-2">
+                                    <Button 
+                                      size="xs" 
+                                      variant="outline" 
+                                      className="text-xs w-full"
+                                      onClick={() => moveTask(task.id, "completed")}
+                                    >
+                                      <CheckCircle2 size={12} className="mr-1" />
+                                      Complete
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                            </Card>
+                          </div>
                         )}
-                      </div>
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button 
-                          size="icon" 
-                          variant="ghost" 
-                          className="h-7 w-7" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onEditTask(task);
-                          }}
-                        >
-                          <Edit size={14} />
-                        </Button>
-                        <Button 
-                          size="icon" 
-                          variant="ghost" 
-                          className="h-7 w-7 hover:text-destructive" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onDeleteTask(task.id);
-                          }}
-                        >
-                          <Trash2 size={14} />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between text-xs">
-                      <span className={`font-medium ${getPriorityColor(task.priority)}`}>
-                        {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
-                      </span>
-                      
-                      {task.dueDate && (
-                        <div className="flex items-center text-muted-foreground">
-                          <CalendarIcon className="mr-1 h-3 w-3" />
-                          {new Date(task.dueDate).toLocaleDateString()}
-                        </div>
-                      )}
-                    </div>
-                    
-                    {columnStatus !== "completed" && (
-                      <div className="pt-2 border-t mt-2">
-                        <Button 
-                          size="xs" 
-                          variant="outline" 
-                          className="text-xs w-full"
-                          onClick={() => moveTask(task.id, "completed")}
-                        >
-                          <CheckCircle2 size={12} className="mr-1" />
-                          Complete
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              ))
-            )}
-          </div>
-        </ScrollArea>
+                      </Draggable>
+                    ))
+                  )}
+                  {provided.placeholder}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
+        </Droppable>
       </CardContent>
     </Card>
   );
