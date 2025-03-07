@@ -222,6 +222,7 @@ const TaskBoard = () => {
           <TabsContent value="tasks-board" className="m-0">
             <Card className="border-none shadow-none">
               <CardHeader className="px-0">
+                <CardTitle className="text-xl">Tasks Board</CardTitle>
                 <CardDescription>
                   Organize your tasks by status and track your progress
                 </CardDescription>
