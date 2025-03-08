@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Copy } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Copy, Trash2 } from "lucide-react";
 import { PlannerDay, PlannerItem } from "@/types/planner";
 import { PlannerSection } from "./PlannerSection";
 import { toast } from "sonner";
@@ -12,6 +11,17 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export const DailyPlanner = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -133,38 +143,33 @@ export const DailyPlanner = () => {
     
     const targetDateString = copyToDate.toISOString().split('T')[0];
     
-    // Don't copy to the same day
     if (targetDateString === dateString) {
       toast.error("Cannot copy to the same day");
       return;
     }
     
-    // Copy the items to the target date
     const newItems = currentDay.items.map(item => ({
       ...item,
       id: Date.now() + Math.random().toString(),
       date: targetDateString,
-      isCompleted: false  // Reset completion status for the new day
+      isCompleted: false
     }));
     
     const targetDayIndex = plannerData.findIndex(day => day.date === targetDateString);
     let updatedPlannerData = [...plannerData];
     
     if (targetDayIndex >= 0) {
-      // If the target day already exists, merge the items
       updatedPlannerData[targetDayIndex] = {
         ...updatedPlannerData[targetDayIndex],
         items: [...updatedPlannerData[targetDayIndex].items, ...newItems]
       };
     } else {
-      // If the target day doesn't exist, create it
       updatedPlannerData = [...updatedPlannerData, {
         date: targetDateString,
         items: newItems
       }];
     }
     
-    // Delete the current day template if checkbox is checked
     if (deleteAfterCopy) {
       const currentDayIndex = updatedPlannerData.findIndex(day => day.date === dateString);
       if (currentDayIndex >= 0) {
@@ -180,6 +185,21 @@ export const DailyPlanner = () => {
     setCopyToDate(undefined);
     setDeleteAfterCopy(false);
   };
+
+  const handleDeleteAllItems = () => {
+    const dayIndex = plannerData.findIndex(day => day.date === dateString);
+    
+    if (dayIndex >= 0) {
+      const updatedPlannerData = [...plannerData];
+      updatedPlannerData.splice(dayIndex, 1);
+      setPlannerData(updatedPlannerData);
+      toast.success(`All items for ${format(selectedDate, "MMMM do, yyyy")} have been deleted`);
+    } else {
+      toast.info("No items to delete for this day");
+    }
+  };
+
+  const hasItems = currentDay.items.length > 0;
 
   return (
     <Card className="border-none shadow-none">
@@ -237,6 +257,7 @@ export const DailyPlanner = () => {
                   variant="outline"
                   size="sm"
                   className="ml-3"
+                  disabled={!hasItems}
                 >
                   <Copy className="mr-2 h-4 w-4" />
                   Copy template
@@ -291,6 +312,35 @@ export const DailyPlanner = () => {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+            
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  className="ml-3"
+                  disabled={!hasItems}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete All
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete all items for this day?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete all planner items 
+                    for {format(selectedDate, "MMMM do, yyyy")}.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDeleteAllItems}>
+                    Delete All
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
         
