@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Copy, Trash2 } from "lucide-react";
@@ -211,7 +212,7 @@ export const DailyPlanner = () => {
       </CardHeader>
       <CardContent className="px-0">
         <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Button 
               variant="outline" 
               size="icon" 
@@ -255,12 +256,12 @@ export const DailyPlanner = () => {
               <DialogTrigger asChild>
                 <Button 
                   variant="outline"
-                  size="sm"
-                  className="ml-3"
+                  size="xs"
+                  className="ml-2"
                   disabled={!hasItems}
                 >
-                  <Copy className="mr-2 h-4 w-4" />
-                  Copy template
+                  <Copy className="h-3 w-3" />
+                  <span className="ml-1">Copy</span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
@@ -317,12 +318,12 @@ export const DailyPlanner = () => {
               <AlertDialogTrigger asChild>
                 <Button 
                   variant="outline"
-                  size="sm"
-                  className="ml-3"
+                  size="xs"
+                  className="ml-2"
                   disabled={!hasItems}
                 >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete All
+                  <Trash2 className="h-3 w-3" />
+                  <span className="ml-1">Delete</span>
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
