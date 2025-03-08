@@ -11,5 +11,5 @@ export interface PlannerDay {
   date: string; // ISO string format
   items: PlannerItem[];
   notes?: string; // Optional notes for the day
+  greatDay?: string; // Optional "What would make today great?" section
 }
-

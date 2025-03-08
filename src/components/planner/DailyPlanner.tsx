@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Copy, Trash2, StickyNote } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Copy, Trash2, StickyNote, Sun } from "lucide-react";
 import { PlannerDay, PlannerItem } from "@/types/planner";
 import { PlannerSection } from "./PlannerSection";
 import { toast } from "sonner";
@@ -37,6 +37,7 @@ export const DailyPlanner = () => {
   const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
   const [deleteAfterCopy, setDeleteAfterCopy] = useState(false);
   const [notes, setNotes] = useState<string>("");
+  const [greatDay, setGreatDay] = useState<string>("");
 
   const dateString = selectedDate.toISOString().split('T')[0];
 
@@ -53,17 +54,29 @@ export const DailyPlanner = () => {
 
   useEffect(() => {
     const currentDay = plannerData.find(day => day.date === dateString);
-    if (currentDay && currentDay.notes) {
-      setNotes(currentDay.notes);
+    if (currentDay) {
+      if (currentDay.notes) {
+        setNotes(currentDay.notes);
+      } else {
+        setNotes("");
+      }
+      
+      if (currentDay.greatDay) {
+        setGreatDay(currentDay.greatDay);
+      } else {
+        setGreatDay("");
+      }
     } else {
       setNotes("");
+      setGreatDay("");
     }
   }, [dateString, plannerData]);
 
   const currentDay = plannerData.find(day => day.date === dateString) || {
     date: dateString,
     items: [],
-    notes: ""
+    notes: "",
+    greatDay: ""
   };
 
   const getSectionItems = (section: PlannerItem["section"]) => {
@@ -92,7 +105,8 @@ export const DailyPlanner = () => {
       setPlannerData([...plannerData, { 
         date: dateString, 
         items: [newItem],
-        notes: ""
+        notes: "",
+        greatDay: ""
       }]);
     }
   };
@@ -234,7 +248,32 @@ export const DailyPlanner = () => {
       updatedPlannerData.push({
         date: dateString,
         items: [],
-        notes: newNotes
+        notes: newNotes,
+        greatDay: greatDay
+      });
+    }
+    
+    setPlannerData(updatedPlannerData);
+  };
+
+  const handleGreatDayChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newGreatDay = e.target.value;
+    setGreatDay(newGreatDay);
+    
+    const dayIndex = plannerData.findIndex(day => day.date === dateString);
+    const updatedPlannerData = [...plannerData];
+    
+    if (dayIndex >= 0) {
+      updatedPlannerData[dayIndex] = {
+        ...updatedPlannerData[dayIndex],
+        greatDay: newGreatDay
+      };
+    } else {
+      updatedPlannerData.push({
+        date: dateString,
+        items: [],
+        notes: notes,
+        greatDay: newGreatDay
       });
     }
     
@@ -442,6 +481,52 @@ export const DailyPlanner = () => {
             onEditItem={handleEditItem}
             onAddItem={handleAddItem}
           />
+        </div>
+        
+        <div className="mt-8">
+          <div className="flex items-center gap-2 mb-3">
+            <Sun className="h-5 w-5 text-amber-500" />
+            <h3 className="text-lg font-medium">What would make today great?</h3>
+          </div>
+          <div className="border rounded-lg p-1">
+            <Textarea
+              value={greatDay}
+              onChange={handleGreatDayChange}
+              placeholder="List 1-3 things that would make today wonderful..."
+              className="min-h-[120px] resize-none"
+              onTextSelect={(selectedText) => {
+                if (selectedText) {
+                  const newItem: PlannerItem = {
+                    id: Date.now().toString(),
+                    text: selectedText,
+                    section: "morning",
+                    isCompleted: false,
+                    date: dateString
+                  };
+                  
+                  const dayIndex = plannerData.findIndex(day => day.date === dateString);
+                  
+                  if (dayIndex >= 0) {
+                    const updatedPlannerData = [...plannerData];
+                    updatedPlannerData[dayIndex] = {
+                      ...updatedPlannerData[dayIndex],
+                      items: [...updatedPlannerData[dayIndex].items, newItem]
+                    };
+                    setPlannerData(updatedPlannerData);
+                    toast.success("Added as a task for today!");
+                  } else {
+                    setPlannerData([...plannerData, { 
+                      date: dateString, 
+                      items: [newItem],
+                      notes: notes,
+                      greatDay: greatDay
+                    }]);
+                    toast.success("Added as a task for today!");
+                  }
+                }
+              }}
+            />
+          </div>
         </div>
         
         <div className="mt-8">
