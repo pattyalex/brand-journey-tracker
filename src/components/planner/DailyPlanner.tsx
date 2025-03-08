@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Copy, Trash2, StickyNote, Sun, Heart } from "lucide-react";
@@ -585,7 +584,7 @@ export const DailyPlanner = () => {
         
         <div className="mt-8">
           <div className="flex items-center gap-2 mb-3">
-            <Heart className="h-5 w-5 text-rose-500" />
+            <Heart className="h-4 w-4 text-rose-500" />
             <h3 className="text-lg font-medium">Things I'm Grateful For Today</h3>
           </div>
           <div className="border rounded-lg p-1">
