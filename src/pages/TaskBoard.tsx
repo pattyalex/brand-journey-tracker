@@ -1,15 +1,29 @@
-
-import React, { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { PlusCircle, CheckSquare, Calendar, Clock, CheckCircle2, Edit, Trash2, CalendarIcon, Plus, Circle, CheckCircle, ArrowLeft, Flag } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DragDropContext, DropResult } from 'react-beautiful-dnd';
-import { Task } from "@/types/task";
-import TaskStatusTabs from "@/components/tasks/TaskStatusTabs";
-import TaskAddEditDialog from "@/components/tasks/TaskAddEditDialog";
-import { getStatusDisplayName, getPriorityColor, getPriorityIcon, getExampleTasks } from "@/utils/taskUtils";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+
+interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  status: "todo-all" | "todo-today" | "scheduled" | "completed";
+  dueDate?: string;
+  priority: "low" | "medium" | "high";
+  createdAt: string;
+  isCompleted?: boolean; // New property to track completion status within a column
+}
 
 const TaskBoard = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -30,7 +44,49 @@ const TaskBoard = () => {
     if (savedTasks) {
       setTasks(JSON.parse(savedTasks));
     } else {
-      const exampleTasks = getExampleTasks();
+      const exampleTasks: Task[] = [
+        { 
+          id: "1", 
+          title: "Create content calendar", 
+          description: "Plan out content for the next month", 
+          status: "todo-all", 
+          priority: "high",
+          createdAt: new Date().toISOString()
+        },
+        { 
+          id: "2", 
+          title: "Write blog post", 
+          description: "Complete draft for review", 
+          status: "todo-today", 
+          priority: "medium",
+          createdAt: new Date().toISOString()
+        },
+        { 
+          id: "3", 
+          title: "Record Instagram Reel", 
+          description: "Film short tutorial clip", 
+          status: "todo-all", 
+          priority: "low",
+          createdAt: new Date().toISOString()
+        },
+        { 
+          id: "4", 
+          title: "Edit YouTube video", 
+          description: "Final edits and add transitions", 
+          status: "scheduled", 
+          dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          priority: "medium",
+          createdAt: new Date().toISOString()
+        },
+        { 
+          id: "5", 
+          title: "Schedule social posts", 
+          description: "Queue up content for next week", 
+          status: "completed", 
+          priority: "medium",
+          createdAt: new Date().toISOString()
+        },
+      ];
       setTasks(exampleTasks);
       localStorage.setItem("taskBoardTasks", JSON.stringify(exampleTasks));
     }
@@ -168,6 +224,38 @@ const TaskBoard = () => {
     setIsAddDialogOpen(false);
   };
 
+  const getStatusDisplayName = (status: Task["status"]) => {
+    switch (status) {
+      case "todo-all": return "All";
+      case "todo-today": return "Today";
+      case "scheduled": return "Scheduled";
+      case "completed": return "Completed";
+      default: return status;
+    }
+  };
+
+  const getPriorityColor = (priority: Task["priority"]) => {
+    switch (priority) {
+      case "high": return "text-red-500";
+      case "medium": return "text-amber-500";
+      case "low": return "text-green-500";
+      default: return "";
+    }
+  };
+
+  const getPriorityIcon = (priority: Task["priority"]) => {
+    switch (priority) {
+      case "high": 
+        return <Flag className="h-3 w-3 text-red-500 fill-red-500" />;
+      case "medium": 
+        return <Flag className="h-3 w-3 text-amber-500 fill-amber-500" />;
+      case "low": 
+        return <Flag className="h-3 w-3 text-green-500 fill-green-500" />;
+      default: 
+        return null;
+    }
+  };
+
   const handleAddQuickTask = (title: string, status: Task["status"]) => {
     if (!title.trim()) {
       return;
@@ -221,23 +309,266 @@ const TaskBoard = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="px-0">
-                <TaskStatusTabs 
-                  activeTab={activeTab}
-                  setActiveTab={setActiveTab}
-                  tasks={tasks}
-                  getTasksByStatus={getTasksByStatus}
-                  moveTask={moveTask}
-                  handleEditTask={handleEditTask}
-                  handleDeleteTask={handleDeleteTask}
-                  setIsAddDialogOpen={setIsAddDialogOpen}
-                  setNewTask={setNewTask}
-                  handleAddQuickTask={handleAddQuickTask}
-                  toggleTaskCompletion={toggleTaskCompletion}
-                  getPriorityColor={getPriorityColor}
-                  getPriorityIcon={getPriorityIcon}
-                  handleDragEnd={handleDragEnd}
-                  getStatusDisplayName={getStatusDisplayName}
-                />
+                <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="mb-8">
+                  <TabsList className="mb-6">
+                    <TabsTrigger value="all">All Tasks</TabsTrigger>
+                    <TabsTrigger value="todo-all">All</TabsTrigger>
+                    <TabsTrigger value="todo-today">Today</TabsTrigger>
+                    <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
+                    <TabsTrigger value="completed">Completed</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="all" className="m-0">
+                    <DragDropContext onDragEnd={handleDragEnd}>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <SimplifiedTaskColumn 
+                          title="All"
+                          icon={<CheckSquare size={18} />}
+                          tasks={getTasksByStatus("todo-all")}
+                          moveTask={moveTask}
+                          onEditTask={handleEditTask}
+                          onDeleteTask={handleDeleteTask}
+                          setIsAddDialogOpen={setIsAddDialogOpen}
+                          setNewTask={setNewTask}
+                          columnId="todo-all"
+                          onAddQuickTask={handleAddQuickTask}
+                          toggleTaskCompletion={toggleTaskCompletion}
+                          getPriorityIcon={getPriorityIcon}
+                        />
+                        
+                        <SimplifiedTaskColumn 
+                          title="Today"
+                          icon={<Clock size={18} />}
+                          tasks={getTasksByStatus("todo-today")}
+                          moveTask={moveTask}
+                          onEditTask={handleEditTask}
+                          onDeleteTask={handleDeleteTask}
+                          setIsAddDialogOpen={setIsAddDialogOpen}
+                          setNewTask={setNewTask}
+                          columnId="todo-today"
+                          onAddQuickTask={handleAddQuickTask}
+                          toggleTaskCompletion={toggleTaskCompletion}
+                          getPriorityIcon={getPriorityIcon}
+                        />
+                        
+                        <TaskColumn 
+                          title="Scheduled"
+                          icon={<Calendar size={18} />}
+                          tasks={getTasksByStatus("scheduled")}
+                          moveTask={moveTask}
+                          onEditTask={handleEditTask}
+                          onDeleteTask={handleDeleteTask}
+                          getPriorityColor={getPriorityColor}
+                          columnId="scheduled"
+                        />
+                        
+                        <TaskColumn 
+                          title="Completed"
+                          icon={<CheckCircle2 size={18} />}
+                          tasks={getTasksByStatus("completed")}
+                          moveTask={moveTask}
+                          onEditTask={handleEditTask}
+                          onDeleteTask={handleDeleteTask}
+                          getPriorityColor={getPriorityColor}
+                          columnId="completed"
+                        />
+                      </div>
+                    </DragDropContext>
+                  </TabsContent>
+
+                  {["todo-all", "todo-today"].map((status) => (
+                    <TabsContent key={status} value={status} className="m-0">
+                      <div className="space-y-4">
+                        <div className="flex items-center mb-2">
+                          <h2 className="text-xl font-semibold">{getStatusDisplayName(status as Task["status"])} Tasks</h2>
+                          <span className="ml-2 text-sm bg-primary/10 px-2.5 py-0.5 rounded-full">
+                            {getTasksByStatus(status as Task["status"]).length}
+                          </span>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 gap-3">
+                          <SimplifiedTaskList 
+                            tasks={getTasksByStatus(status as Task["status"])} 
+                            status={status as Task["status"]}
+                            moveTask={moveTask}
+                            onEditTask={handleEditTask}
+                            onDeleteTask={handleDeleteTask}
+                            setIsAddDialogOpen={setIsAddDialogOpen}
+                            setNewTask={setNewTask}
+                            onAddQuickTask={handleAddQuickTask}
+                            toggleTaskCompletion={toggleTaskCompletion}
+                            getPriorityIcon={getPriorityIcon}
+                          />
+                        </div>
+                      </div>
+                    </TabsContent>
+                  ))}
+
+                  {["scheduled", "completed"].map((status) => (
+                    <TabsContent key={status} value={status} className="m-0">
+                      <div className="space-y-4">
+                        <div className="flex items-center mb-2">
+                          <h2 className="text-xl font-semibold">{getStatusDisplayName(status as Task["status"])} Tasks</h2>
+                          <span className="ml-2 text-sm bg-primary/10 px-2.5 py-0.5 rounded-full">
+                            {getTasksByStatus(status as Task["status"]).length}
+                          </span>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 gap-3">
+                          <DragDropContext onDragEnd={handleDragEnd}>
+                            <Droppable droppableId={status}>
+                              {(provided) => (
+                                <div 
+                                  ref={provided.innerRef}
+                                  {...provided.droppableProps}
+                                  className="space-y-3"
+                                >
+                                  {getTasksByStatus(status as Task["status"]).length === 0 ? (
+                                    <div className="flex h-[150px] items-center justify-center rounded-md border border-dashed">
+                                      <div className="text-center">
+                                        <p className="text-sm text-muted-foreground">No tasks in this section</p>
+                                        <Button 
+                                          variant="link" 
+                                          className="mt-2"
+                                          onClick={() => {
+                                            setNewTask({ ...newTask, status: status as Task["status"] });
+                                            setIsAddDialogOpen(true);
+                                          }}
+                                        >
+                                          Add a task
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <ScrollArea className="h-[calc(100vh-250px)]">
+                                      <div className="space-y-3 pr-4">
+                                        {getTasksByStatus(status as Task["status"]).map((task, index) => (
+                                          <Draggable key={task.id} draggableId={task.id} index={index}>
+                                            {(provided, snapshot) => (
+                                              <div
+                                                ref={provided.innerRef}
+                                                {...provided.draggableProps}
+                                                {...provided.dragHandleProps}
+                                                className={`${snapshot.isDragging ? "opacity-70" : ""}`}
+                                              >
+                                                <Card key={task.id} className="group hover:shadow-md transition-shadow">
+                                                  <CardContent className="p-4">
+                                                    <div className="flex justify-between items-start gap-4">
+                                                      <div className="flex-1">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                          <h3 className="font-medium">{task.title}</h3>
+                                                          <span className={`text-xs font-medium ${getPriorityColor(task.priority)}`}>
+                                                            {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                                                          </span>
+                                                        </div>
+                                                        {task.description && (
+                                                          <p className="text-sm text-muted-foreground mb-2">{task.description}</p>
+                                                        )}
+                                                        {task.dueDate && (
+                                                          <div className="flex items-center text-xs text-muted-foreground mt-2">
+                                                            <CalendarIcon className="mr-1 h-3 w-3" />
+                                                            {new Date(task.dueDate).toLocaleDateString()}
+                                                          </div>
+                                                        )}
+                                                      </div>
+                                                      <div className="flex gap-1">
+                                                        <Button 
+                                                          size="icon" 
+                                                          variant="ghost" 
+                                                          className="h-8 w-8" 
+                                                          onClick={() => handleEditTask(task)}
+                                                        >
+                                                          <Edit size={14} />
+                                                        </Button>
+                                                        <Button 
+                                                          size="icon" 
+                                                          variant="ghost" 
+                                                          className="h-8 w-8 hover:text-destructive" 
+                                                          onClick={() => handleDeleteTask(task.id)}
+                                                        >
+                                                          <Trash2 size={14} />
+                                                        </Button>
+                                                      </div>
+                                                    </div>
+                                                    
+                                                    <div className="flex gap-2 mt-3 flex-wrap">
+                                                      {status !== "todo-today" && (
+                                                        <Button 
+                                                          size="xs" 
+                                                          variant="outline" 
+                                                          className="text-xs"
+                                                          onClick={() => moveTask(task.id, "todo-today")}
+                                                        >
+                                                          <Clock size={12} className="mr-1" />
+                                                          Move to Today
+                                                        </Button>
+                                                      )}
+                                                      {status !== "todo-all" && status !== "completed" && (
+                                                        <Button 
+                                                          size="xs" 
+                                                          variant="outline" 
+                                                          className="text-xs"
+                                                          onClick={() => moveTask(task.id, "todo-all")}
+                                                        >
+                                                          <CheckSquare size={12} className="mr-1" />
+                                                          Move to To Do
+                                                        </Button>
+                                                      )}
+                                                      {status !== "scheduled" && (
+                                                        <Button 
+                                                          size="xs" 
+                                                          variant="outline" 
+                                                          className="text-xs"
+                                                          onClick={() => {
+                                                            const updatedTasks = tasks.map((t) => {
+                                                              if (t.id === task.id) {
+                                                                return { 
+                                                                  ...t, 
+                                                                  status: "scheduled" as Task["status"], 
+                                                                  dueDate: t.dueDate || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                                                                };
+                                                              }
+                                                              return t;
+                                                            });
+                                                            setTasks(updatedTasks);
+                                                          }}
+                                                        >
+                                                          <Calendar size={12} className="mr-1" />
+                                                          Schedule
+                                                        </Button>
+                                                      )}
+                                                      {status !== "completed" && (
+                                                        <Button 
+                                                          size="xs" 
+                                                          variant="outline" 
+                                                          className="text-xs text-green-600"
+                                                          onClick={() => moveTask(task.id, "completed")}
+                                                        >
+                                                          <CheckCircle2 size={12} className="mr-1" />
+                                                          Complete
+                                                        </Button>
+                                                      )}
+                                                    </div>
+                                                  </CardContent>
+                                                </Card>
+                                              </div>
+                                            )}
+                                          </Draggable>
+                                        ))}
+                                        {provided.placeholder}
+                                      </div>
+                                    </ScrollArea>
+                                  )}
+                                  {provided.placeholder}
+                                </div>
+                              )}
+                            </Droppable>
+                          </DragDropContext>
+                        </div>
+                      </div>
+                    </TabsContent>
+                  ))}
+                </Tabs>
               </CardContent>
             </Card>
           </TabsContent>
@@ -265,16 +596,667 @@ const TaskBoard = () => {
         </Tabs>
       </div>
 
-      <TaskAddEditDialog 
-        isOpen={isAddDialogOpen}
-        onOpenChange={setIsAddDialogOpen}
-        newTask={newTask}
-        setNewTask={setNewTask}
-        handleAddTask={handleAddTask}
-        handleDialogClose={handleDialogClose}
-        isEditMode={isEditMode}
-      />
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>{isEditMode ? "Edit Task" : "Add New Task"}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="title">Task Title</Label>
+              <Input
+                id="title"
+                value={newTask.title}
+                onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                placeholder="Enter task title"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="description">Description (Optional)</Label>
+              <Textarea
+                id="description"
+                value={newTask.description}
+                onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                placeholder="Add more details about this task"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="status">Status</Label>
+                <Select
+                  value={newTask.status}
+                  onValueChange={(value: string) => setNewTask({ ...newTask, status: value as Task["status"] })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todo-all">To Do</SelectItem>
+                    <SelectItem value="todo-today">Today</SelectItem>
+                    <SelectItem value="scheduled">Scheduled</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="priority">Priority</Label>
+                <Select
+                  value={newTask.priority}
+                  onValueChange={(value: string) => setNewTask({ ...newTask, priority: value as Task["priority"] })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select priority" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            {(newTask.status === "scheduled") && (
+              <div className="grid gap-2">
+                <Label htmlFor="dueDate">Due Date</Label>
+                <div className="flex items-center">
+                  <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="dueDate"
+                    type="date"
+                    value={newTask.dueDate}
+                    onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleDialogClose}>Cancel</Button>
+            <Button onClick={handleAddTask}>
+              {isEditMode ? "Update Task" : "Add Task"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
+  );
+};
+
+interface TaskColumnProps {
+  title: string;
+  icon: React.ReactNode;
+  tasks: Task[];
+  moveTask: (taskId: string, newStatus: Task["status"]) => void;
+  onEditTask: (task: Task) => void;
+  onDeleteTask: (taskId: string) => void;
+  getPriorityColor: (priority: Task["priority"]) => string;
+  columnId: Task["status"];
+}
+
+const TaskColumn = ({ title, icon, tasks, moveTask, onEditTask, onDeleteTask, getPriorityColor, columnId }: TaskColumnProps) => {
+  const getStatusFromTitle = (title: string): Task["status"] => {
+    switch (title) {
+      case "All": return "todo-all";
+      case "Today": return "todo-today";
+      case "Scheduled": return "scheduled";
+      default: return "completed";
+    }
+  };
+
+  if (columnId === "completed") {
+    return (
+      <Card className="h-full bg-gray-50">
+        <CardHeader className="pb-2 p-4">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            {icon}
+            {title} <span className="ml-2 text-sm bg-primary/10 px-2.5 py-0.5 rounded-full">{tasks.length}</span>
+          </CardTitle>
+          <CardDescription>
+            Completed tasks
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-3 pt-0">
+          <Droppable droppableId={columnId}>
+            {(provided) => (
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className="h-[calc(100vh-280px)]"
+              >
+                <ScrollArea className="h-full">
+                  <div className="flex flex-col gap-2 min-h-40 pr-2">
+                    {tasks.length === 0 ? (
+                      <div className="flex h-[100px] items-center justify-center rounded-md border border-dashed">
+                        <p className="text-center text-muted-foreground text-sm px-2">No completed tasks</p>
+                      </div>
+                    ) : (
+                      tasks.map((task, index) => (
+                        <Draggable key={task.id} draggableId={task.id} index={index}>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              className={`${snapshot.isDragging ? "opacity-70" : ""}`}
+                            >
+                              <div className="group bg-white rounded-lg border py-2.5 px-3 hover:shadow-sm transition-shadow">
+                                <div className="flex items-center gap-2">
+                                  <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                                  <div className="flex-1">
+                                    <span className="text-gray-800 text-sm line-through">{task.title}</span>
+                                    {task.dueDate && (
+                                      <div className="flex items-center text-xs text-muted-foreground mt-0.5">
+                                        <CalendarIcon className="mr-1 h-3 w-3" />
+                                        {new Date(task.dueDate).toLocaleDateString()}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button 
+                                      variant="ghost" 
+                                      className="h-7 px-2" 
+                                      size="sm"
+                                      onClick={() => moveTask(task.id, "todo-all")}
+                                    >
+                                      <ArrowLeft className="h-3.5 w-3.5 mr-1" />
+                                      <span className="text-xs">Restore</span>
+                                    </Button>
+                                    <Button 
+                                      size="icon" 
+                                      variant="ghost" 
+                                      className="h-6 w-6 hover:text-destructive" 
+                                      onClick={() => onDeleteTask(task.id)}
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))
+                    )}
+                    {provided.placeholder}
+                  </div>
+                </ScrollArea>
+              </div>
+            )}
+          </Droppable>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="h-full">
+      <CardHeader className="pb-2">
+        <CardTitle className="flex items-center gap-2 text-lg">
+          {icon}
+          {title} <span className="ml-2 text-sm bg-primary/10 px-2.5 py-0.5 rounded-full">{tasks.length}</span>
+        </CardTitle>
+        <CardDescription>
+          {title === "All" ? "Tasks to be completed" : 
+           title === "Today" ? "Tasks for today" : 
+           title === "Scheduled" ? "Future scheduled tasks" :
+           "Completed tasks"}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Droppable droppableId={columnId}>
+          {(provided) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className="h-[calc(100vh-280px)]"
+            >
+              <ScrollArea className="h-full">
+                <div className="flex flex-col gap-3 min-h-40 pr-4">
+                  {tasks.length === 0 ? (
+                    <div className="flex h-[130px] items-center justify-center rounded-md border border-dashed">
+                      <p className="text-center text-muted-foreground text-sm px-2">No tasks in this section</p>
+                    </div>
+                  ) : (
+                    tasks.map((task, index) => (
+                      <Draggable key={task.id} draggableId={task.id} index={index}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            className={`${snapshot.isDragging ? "opacity-70" : ""}`}
+                          >
+                            <Card key={task.id} className={`group p-3 shadow-sm border hover:shadow-md transition-shadow ${snapshot.isDragging ? "ring-2 ring-primary" : ""}`}>
+                              <div className="grid gap-2">
+                                <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                    <h3 className="font-medium mb-1">{task.title}</h3>
+                                    {task.description && (
+                                      <p className="text-sm text-muted-foreground line-clamp-2">{task.description}</p>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button 
+                                      size="icon" 
+                                      variant="ghost" 
+                                      className="h-7 w-7" 
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onEditTask(task);
+                                      }}
+                                    >
+                                      <Edit size={14} />
+                                    </Button>
+                                    <Button 
+                                      size="icon" 
+                                      variant="ghost" 
+                                      className="h-7 w-7 hover:text-destructive" 
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onDeleteTask(task.id);
+                                      }}
+                                    >
+                                      <Trash2 size={14} />
+                                    </Button>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex items-center justify-between text-xs">
+                                  <span className={`font-medium ${getPriorityColor(task.priority)}`}>
+                                    {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                                  </span>
+                                  
+                                  {task.dueDate && (
+                                    <div className="flex items-center text-muted-foreground">
+                                      <CalendarIcon className="mr-1 h-3 w-3" />
+                                      {new Date(task.dueDate).toLocaleDateString()}
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                {columnId !== "completed" && (
+                                  <div className="pt-2 border-t mt-2">
+                                    <Button 
+                                      size="xs" 
+                                      variant="outline" 
+                                      className="text-xs w-full"
+                                      onClick={() => moveTask(task.id, "completed")}
+                                    >
+                                      <CheckCircle2 size={12} className="mr-1" />
+                                      Complete
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                            </Card>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))
+                  )}
+                  {provided.placeholder}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
+        </Droppable>
+      </CardContent>
+    </Card>
+  );
+};
+
+interface SimplifiedTaskColumnProps {
+  title: string;
+  icon: React.ReactNode;
+  tasks: Task[];
+  moveTask: (taskId: string, newStatus: Task["status"]) => void;
+  onEditTask: (task: Task) => void;
+  onDeleteTask: (taskId: string) => void;
+  setIsAddDialogOpen: (isOpen: boolean) => void;
+  setNewTask: (task: Partial<Task>) => void;
+  columnId: Task["status"];
+  onAddQuickTask: (title: string, status: Task["status"]) => void;
+  toggleTaskCompletion: (taskId: string) => void;
+  getPriorityIcon?: (priority: Task["priority"]) => React.ReactNode;
+}
+
+const SimplifiedTaskColumn = ({ 
+  title, 
+  icon, 
+  tasks, 
+  moveTask, 
+  onEditTask, 
+  onDeleteTask, 
+  setIsAddDialogOpen, 
+  setNewTask, 
+  columnId,
+  onAddQuickTask,
+  toggleTaskCompletion,
+  getPriorityIcon
+}: SimplifiedTaskColumnProps) => {
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleAddTask = () => {
+    if (newTaskTitle.trim()) {
+      onAddQuickTask(newTaskTitle, columnId);
+      setNewTaskTitle("");
+      setIsAdding(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleAddTask();
+    } else if (e.key === "Escape") {
+      setIsAdding(false);
+      setNewTaskTitle("");
+    }
+  };
+
+  useEffect(() => {
+    if (isAdding && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isAdding]);
+
+  return (
+    <Card className="h-full bg-gray-50">
+      <CardHeader className="pb-2 p-4">
+        <CardTitle className="flex items-center gap-2 text-lg">
+          {icon}
+          {title} <span className="ml-2 text-sm bg-primary/10 px-2.5 py-0.5 rounded-full">{tasks.length}</span>
+        </CardTitle>
+        <CardDescription>
+          {title === "All" ? "Tasks to be completed" : "Tasks for today"}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="p-3 pt-0">
+        <Droppable droppableId={columnId}>
+          {(provided) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className="h-[calc(100vh-280px)]"
+            >
+              <ScrollArea className="h-full">
+                <div className="flex flex-col gap-2 min-h-40 pr-2">
+                  {tasks.length === 0 && !isAdding ? (
+                    <div className="flex h-[100px] items-center justify-center rounded-md border border-dashed">
+                      <p className="text-center text-muted-foreground text-sm px-2">No tasks in this section</p>
+                    </div>
+                  ) : (
+                    tasks.map((task, index) => (
+                      <Draggable key={task.id} draggableId={task.id} index={index}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            className={`${snapshot.isDragging ? "opacity-70" : ""}`}
+                          >
+                            <div className="group bg-white rounded-lg border py-2.5 px-3 hover:shadow-sm transition-shadow">
+                              <div className="flex items-center gap-2">
+                                <button 
+                                  className="flex-shrink-0" 
+                                  onClick={() => toggleTaskCompletion(task.id)}
+                                >
+                                  {task.isCompleted ? (
+                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                  ) : (
+                                    <Circle className="h-4 w-4 text-gray-400 hover:text-primary" />
+                                  )}
+                                </button>
+                                <div className="flex-1 flex items-center gap-1.5">
+                                  <span className={`text-gray-800 text-sm ${task.isCompleted ? 'line-through text-gray-500' : ''}`}>
+                                    {task.title}
+                                  </span>
+                                  {getPriorityIcon && getPriorityIcon(task.priority)}
+                                </div>
+                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button 
+                                    className="text-gray-400 hover:text-gray-600"
+                                    onClick={() => onEditTask(task)}
+                                  >
+                                    <Edit className="h-3.5 w-3.5" />
+                                  </button>
+                                  {task.isCompleted && (
+                                    <button
+                                      className="text-green-500 hover:text-green-600"
+                                      onClick={() => moveTask(task.id, "completed")}
+                                    >
+                                      <ArrowLeft className="h-3.5 w-3.5 rotate-90" />
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))
+                  )}
+                  {provided.placeholder}
+                  
+                  {isAdding ? (
+                    <div className="bg-white rounded-lg border py-1.5 px-2">
+                      <div className="flex items-center gap-2">
+                        <Circle className="h-4 w-4 text-gray-400" />
+                        <Input
+                          ref={inputRef}
+                          value={newTaskTitle}
+                          onChange={(e) => setNewTaskTitle(e.target.value)}
+                          onKeyDown={handleKeyDown}
+                          placeholder="What needs to be done?"
+                          className="flex-1 border-0 p-1 text-sm focus-visible:ring-0"
+                          autoFocus
+                        />
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="h-7 px-2 text-xs" 
+                          onClick={handleAddTask}
+                        >
+                          Add
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      className="mt-1 flex items-center gap-2 text-muted-foreground hover:text-primary p-2 rounded-lg text-sm"
+                      onClick={() => setIsAdding(true)}
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>Add a task</span>
+                    </button>
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
+        </Droppable>
+      </CardContent>
+    </Card>
+  );
+};
+
+interface SimplifiedTaskListProps {
+  tasks: Task[];
+  status: Task["status"];
+  moveTask: (taskId: string, newStatus: Task["status"]) => void;
+  onEditTask: (task: Task) => void;
+  onDeleteTask: (taskId: string) => void;
+  setIsAddDialogOpen: (isOpen: boolean) => void;
+  setNewTask: (task: Partial<Task>) => void;
+  onAddQuickTask: (title: string, status: Task["status"]) => void;
+  toggleTaskCompletion: (taskId: string) => void;
+  getPriorityIcon?: (priority: Task["priority"]) => React.ReactNode;
+}
+
+const SimplifiedTaskList = ({ 
+  tasks, 
+  status, 
+  moveTask, 
+  onEditTask, 
+  onDeleteTask,
+  setIsAddDialogOpen,
+  setNewTask,
+  onAddQuickTask,
+  toggleTaskCompletion,
+  getPriorityIcon
+}: SimplifiedTaskListProps) => {
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleAddTask = () => {
+    if (newTaskTitle.trim()) {
+      onAddQuickTask(newTaskTitle, status);
+      setNewTaskTitle("");
+      setIsAdding(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleAddTask();
+    } else if (e.key === "Escape") {
+      setIsAdding(false);
+      setNewTaskTitle("");
+    }
+  };
+
+  useEffect(() => {
+    if (isAdding && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isAdding]);
+  
+  return (
+    <DragDropContext onDragEnd={(result) => {
+      if (!result.destination) return;
+      
+      const task = tasks.find(t => t.id === result.draggableId);
+      if (!task) return;
+      
+      if (result.destination.droppableId !== status) {
+        moveTask(task.id, result.destination.droppableId as Task["status"]);
+      }
+    }}>
+      <Droppable droppableId={status}>
+        {(provided) => (
+          <div
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+            className="bg-gray-50 p-3 rounded-lg"
+          >
+            {tasks.length === 0 && !isAdding ? (
+              <div className="flex h-[100px] items-center justify-center rounded-md border border-dashed">
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground">No tasks in this section</p>
+                  <Button 
+                    variant="link" 
+                    className="mt-2 text-sm"
+                    onClick={() => setIsAdding(true)}
+                  >
+                    Add a task
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <ScrollArea className="h-[calc(100vh-250px)]">
+                <div className="space-y-2 pr-2">
+                  {tasks.map((task, index) => (
+                    <Draggable key={task.id} draggableId={task.id} index={index}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          className={`${snapshot.isDragging ? "opacity-70" : ""}`}
+                        >
+                          <div className="group bg-white rounded-lg border py-2.5 px-3 hover:shadow-sm transition-shadow">
+                            <div className="flex items-center gap-2">
+                              <button 
+                                className="flex-shrink-0" 
+                                onClick={() => toggleTaskCompletion(task.id)}
+                              >
+                                {task.isCompleted ? (
+                                  <CheckCircle className="h-4 w-4 text-green-500" />
+                                ) : (
+                                  <Circle className="h-4 w-4 text-gray-400 hover:text-primary" />
+                                )}
+                              </button>
+                              <div className="flex-1 flex items-center gap-1.5">
+                                <span className={`text-gray-800 text-sm ${task.isCompleted ? 'line-through text-gray-500' : ''}`}>
+                                  {task.title}
+                                </span>
+                                {getPriorityIcon && getPriorityIcon(task.priority)}
+                              </div>
+                              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button 
+                                  className="text-gray-400 hover:text-gray-600"
+                                  onClick={() => onEditTask(task)}
+                                >
+                                  <Edit className="h-3.5 w-3.5" />
+                                </button>
+                                {task.isCompleted && (
+                                  <button
+                                    className="text-green-500 hover:text-green-600"
+                                    onClick={() => moveTask(task.id, "completed")}
+                                  >
+                                    <ArrowLeft className="h-3.5 w-3.5 rotate-90" />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              </ScrollArea>
+            )}
+            
+            {isAdding ? (
+              <div className="mt-3 bg-white rounded-lg border py-1.5 px-2">
+                <div className="flex items-center gap-2">
+                  <Circle className="h-4 w-4 text-gray-400" />
+                  <Input
+                    ref={inputRef}
+                    value={newTaskTitle}
+                    onChange={(e) => setNewTaskTitle(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="What needs to be done?"
+                    className="flex-1 border-0 p-1 text-sm focus-visible:ring-0"
+                    autoFocus
+                  />
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    className="h-7 px-2 text-xs" 
+                    onClick={handleAddTask}
+                  >
+                    Add
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <button
+                className="mt-3 flex items-center gap-2 text-muted-foreground hover:text-primary p-2 rounded-lg text-sm"
+                onClick={() => setIsAdding(true)}
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add a task</span>
+              </button>
+            )}
+          </div>
+        )}
+      </Droppable>
+    </DragDropContext>
   );
 };
 
