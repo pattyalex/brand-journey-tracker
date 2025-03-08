@@ -1,4 +1,4 @@
-<lov-code>
+
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -860,6 +860,270 @@ const SimplifiedTaskColumn = ({
             >
               <ScrollArea className="h-full">
                 <div className="flex flex-col gap-2 min-h-40 pr-4">
-                  {tasks.length === 0 ? (
-                    !isAdding && (
-                      <div className="flex h-[13
+                  {tasks.length === 0 && !isAdding ? (
+                    <div className="flex h-[130px] items-center justify-center rounded-md border border-dashed">
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">No tasks in this section</p>
+                        <Button 
+                          variant="link" 
+                          className="mt-2"
+                          onClick={() => setIsAdding(true)}
+                        >
+                          Add a task
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {tasks.map((task, index) => (
+                        <Draggable key={task.id} draggableId={task.id} index={index}>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              className={`${snapshot.isDragging ? "opacity-70" : ""}`}
+                            >
+                              <div className="group flex items-center gap-2 p-2 rounded-md bg-white border hover:border-primary hover:shadow-sm transition-all">
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-5 w-5 rounded-full"
+                                  onClick={() => moveTask(task.id, "completed")}
+                                >
+                                  <Circle className="h-4 w-4 text-muted-foreground" />
+                                </Button>
+                                <div className="flex-1 flex items-center gap-2">
+                                  <span className="text-sm font-medium">{task.title}</span>
+                                  <span className={`text-xs ${getPriorityColor(task.priority)}`}>
+                                    {task.priority.charAt(0).toUpperCase()}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <Button 
+                                    size="icon" 
+                                    variant="ghost" 
+                                    className="h-7 w-7" 
+                                    onClick={() => onEditTask(task)}
+                                  >
+                                    <Edit size={12} />
+                                  </Button>
+                                  <Button 
+                                    size="icon" 
+                                    variant="ghost" 
+                                    className="h-7 w-7 hover:text-destructive" 
+                                    onClick={() => onDeleteTask(task.id)}
+                                  >
+                                    <Trash2 size={12} />
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      
+                      {isAdding ? (
+                        <div className="flex items-center gap-2 p-2 rounded-md bg-white border">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-5 w-5 rounded-full"
+                            onClick={() => setIsAdding(false)}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                          <Input
+                            value={newTaskTitle}
+                            onChange={(e) => setNewTaskTitle(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            placeholder="Add a new task"
+                            className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-0 h-7 text-sm"
+                            autoFocus
+                          />
+                          <Button 
+                            size="sm" 
+                            className="h-7 text-xs"
+                            onClick={handleAddTask}
+                          >
+                            Add
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          className="flex items-center justify-start p-2 text-muted-foreground text-sm h-auto mt-2"
+                          onClick={() => setIsAdding(true)}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add a task
+                        </Button>
+                      )}
+                    </>
+                  )}
+                  {provided.placeholder}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
+        </Droppable>
+      </CardContent>
+    </Card>
+  );
+};
+
+interface SimplifiedTaskListProps {
+  tasks: Task[];
+  status: Task["status"];
+  moveTask: (taskId: string, newStatus: Task["status"]) => void;
+  onEditTask: (task: Task) => void;
+  onDeleteTask: (taskId: string) => void;
+  setIsAddDialogOpen: (isOpen: boolean) => void;
+  setNewTask: (task: Partial<Task>) => void;
+  onAddQuickTask: (title: string, status: Task["status"]) => void;
+}
+
+const SimplifiedTaskList = ({
+  tasks,
+  status,
+  moveTask,
+  onEditTask,
+  onDeleteTask,
+  setIsAddDialogOpen,
+  setNewTask,
+  onAddQuickTask
+}: SimplifiedTaskListProps) => {
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
+
+  const handleAddTask = () => {
+    if (newTaskTitle.trim()) {
+      onAddQuickTask(newTaskTitle, status);
+      setNewTaskTitle("");
+      setIsAdding(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleAddTask();
+    } else if (e.key === "Escape") {
+      setIsAdding(false);
+      setNewTaskTitle("");
+    }
+  };
+
+  const getPriorityColor = (priority: Task["priority"]) => {
+    switch (priority) {
+      case "high": return "text-red-500";
+      case "medium": return "text-amber-500";
+      case "low": return "text-green-500";
+      default: return "";
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      {tasks.length === 0 && !isAdding ? (
+        <div className="flex h-[150px] items-center justify-center rounded-md border border-dashed">
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">No tasks in this section</p>
+            <Button 
+              variant="link" 
+              className="mt-2"
+              onClick={() => setIsAdding(true)}
+            >
+              Add a task
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {tasks.map((task) => (
+            <div 
+              key={task.id} 
+              className="group flex items-center gap-2 p-3 rounded-md bg-white border hover:border-primary hover:shadow-sm transition-all"
+            >
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-5 w-5 rounded-full"
+                onClick={() => moveTask(task.id, "completed")}
+              >
+                <Circle className="h-4 w-4 text-muted-foreground" />
+              </Button>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">{task.title}</span>
+                  <span className={`text-xs ${getPriorityColor(task.priority)}`}>
+                    {task.priority.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                {task.description && (
+                  <p className="text-xs text-muted-foreground mt-1">{task.description}</p>
+                )}
+              </div>
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button 
+                  size="icon" 
+                  variant="ghost" 
+                  className="h-7 w-7" 
+                  onClick={() => onEditTask(task)}
+                >
+                  <Edit size={14} />
+                </Button>
+                <Button 
+                  size="icon" 
+                  variant="ghost" 
+                  className="h-7 w-7 hover:text-destructive" 
+                  onClick={() => onDeleteTask(task.id)}
+                >
+                  <Trash2 size={14} />
+                </Button>
+              </div>
+            </div>
+          ))}
+          
+          {isAdding ? (
+            <div className="flex items-center gap-2 p-3 rounded-md bg-white border">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-5 w-5 rounded-full"
+                onClick={() => setIsAdding(false)}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+              <Input
+                value={newTaskTitle}
+                onChange={(e) => setNewTaskTitle(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Add a new task"
+                className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-0 h-8 text-sm"
+                autoFocus
+              />
+              <Button 
+                size="sm" 
+                className="h-8 text-xs"
+                onClick={handleAddTask}
+              >
+                Add
+              </Button>
+            </div>
+          ) : (
+            <Button
+              variant="ghost"
+              className="flex items-center justify-start p-2 text-muted-foreground text-sm h-auto w-full mt-2"
+              onClick={() => setIsAdding(true)}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add a task
+            </Button>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
+
+export default TaskBoard;
