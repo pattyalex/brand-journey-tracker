@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Copy, Trash2 } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Copy, Trash2, StickyNote } from "lucide-react";
 import { PlannerDay, PlannerItem } from "@/types/planner";
 import { PlannerSection } from "./PlannerSection";
 import { toast } from "sonner";
@@ -12,6 +11,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -36,7 +36,8 @@ export const DailyPlanner = () => {
   const [copyToDate, setCopyToDate] = useState<Date | undefined>(undefined);
   const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
   const [deleteAfterCopy, setDeleteAfterCopy] = useState(false);
-  
+  const [notes, setNotes] = useState<string>("");
+
   const dateString = selectedDate.toISOString().split('T')[0];
 
   useEffect(() => {
@@ -50,9 +51,19 @@ export const DailyPlanner = () => {
     localStorage.setItem("plannerData", JSON.stringify(plannerData));
   }, [plannerData]);
 
+  useEffect(() => {
+    const currentDay = plannerData.find(day => day.date === dateString);
+    if (currentDay && currentDay.notes) {
+      setNotes(currentDay.notes);
+    } else {
+      setNotes("");
+    }
+  }, [dateString, plannerData]);
+
   const currentDay = plannerData.find(day => day.date === dateString) || {
     date: dateString,
-    items: []
+    items: [],
+    notes: ""
   };
 
   const getSectionItems = (section: PlannerItem["section"]) => {
@@ -80,7 +91,8 @@ export const DailyPlanner = () => {
     } else {
       setPlannerData([...plannerData, { 
         date: dateString, 
-        items: [newItem] 
+        items: [newItem],
+        notes: ""
       }]);
     }
   };
@@ -204,6 +216,29 @@ export const DailyPlanner = () => {
     } else {
       toast.info("No items to delete for this day");
     }
+  };
+
+  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newNotes = e.target.value;
+    setNotes(newNotes);
+    
+    const dayIndex = plannerData.findIndex(day => day.date === dateString);
+    const updatedPlannerData = [...plannerData];
+    
+    if (dayIndex >= 0) {
+      updatedPlannerData[dayIndex] = {
+        ...updatedPlannerData[dayIndex],
+        notes: newNotes
+      };
+    } else {
+      updatedPlannerData.push({
+        date: dateString,
+        items: [],
+        notes: newNotes
+      });
+    }
+    
+    setPlannerData(updatedPlannerData);
   };
 
   const hasItems = currentDay.items.length > 0;
@@ -408,6 +443,22 @@ export const DailyPlanner = () => {
             onAddItem={handleAddItem}
           />
         </div>
+        
+        <div className="mt-8">
+          <div className="flex items-center gap-2 mb-3">
+            <StickyNote className="h-5 w-5" />
+            <h3 className="text-lg font-medium">Daily Notes</h3>
+          </div>
+          <div className="border rounded-lg p-1">
+            <Textarea
+              value={notes}
+              onChange={handleNotesChange}
+              placeholder="Write your notes, reminders or thoughts for the day..."
+              className="min-h-[150px] resize-none"
+            />
+          </div>
+        </div>
+        
       </CardContent>
     </Card>
   );

@@ -10,4 +10,6 @@ export interface PlannerItem {
 export interface PlannerDay {
   date: string; // ISO string format
   items: PlannerItem[];
+  notes?: string; // Optional notes for the day
 }
+
