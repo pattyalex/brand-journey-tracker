@@ -11,12 +11,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const DailyPlanner = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [plannerData, setPlannerData] = useState<PlannerDay[]>([]);
   const [copyToDate, setCopyToDate] = useState<Date | undefined>(undefined);
   const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
+  const [deleteAfterCopy, setDeleteAfterCopy] = useState(false);
   
   const dateString = selectedDate.toISOString().split('T')[0];
 
@@ -162,10 +164,21 @@ export const DailyPlanner = () => {
       }];
     }
     
+    // Delete the current day template if checkbox is checked
+    if (deleteAfterCopy) {
+      const currentDayIndex = updatedPlannerData.findIndex(day => day.date === dateString);
+      if (currentDayIndex >= 0) {
+        updatedPlannerData.splice(currentDayIndex, 1);
+        toast.success(`Template copied to ${format(copyToDate, "MMMM do, yyyy")} and deleted from current day`);
+      }
+    } else {
+      toast.success(`Template copied to ${format(copyToDate, "MMMM do, yyyy")}`);
+    }
+    
     setPlannerData(updatedPlannerData);
     setIsCopyDialogOpen(false);
     setCopyToDate(undefined);
-    toast.success(`Template copied to ${format(copyToDate, "MMMM do, yyyy")}`);
+    setDeleteAfterCopy(false);
   };
 
   return (
@@ -244,11 +257,27 @@ export const DailyPlanner = () => {
                     initialFocus
                   />
                 </div>
+                <div className="flex items-center space-x-2 py-2">
+                  <Checkbox 
+                    id="delete-after-copy" 
+                    checked={deleteAfterCopy}
+                    onCheckedChange={(checked) => setDeleteAfterCopy(checked === true)}
+                  />
+                  <label
+                    htmlFor="delete-after-copy"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Delete template from current day after copying
+                  </label>
+                </div>
                 <DialogFooter>
                   <Button 
                     type="button" 
                     variant="outline" 
-                    onClick={() => setIsCopyDialogOpen(false)}
+                    onClick={() => {
+                      setIsCopyDialogOpen(false);
+                      setDeleteAfterCopy(false);
+                    }}
                   >
                     Cancel
                   </Button>
