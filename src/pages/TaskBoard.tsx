@@ -748,7 +748,7 @@ const TaskColumn = ({ title, icon, tasks, moveTask, onEditTask, onDeleteTask, ge
                                     <Button 
                                       size="icon" 
                                       variant="ghost" 
-                                      className="h-6 w-6 hover:text-destructive" 
+                                      className="h-6 w-6 text-gray-500 hover:text-gray-700" 
                                       onClick={() => onDeleteTask(task.id)}
                                     >
                                       <Trash2 className="h-3.5 w-3.5" />
@@ -834,7 +834,7 @@ const TaskColumn = ({ title, icon, tasks, moveTask, onEditTask, onDeleteTask, ge
                                     <Button 
                                       size="icon" 
                                       variant="ghost" 
-                                      className="h-7 w-7 hover:text-destructive" 
+                                      className="h-7 w-7 text-gray-500 hover:text-gray-700" 
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         onDeleteTask(task.id);
@@ -858,7 +858,7 @@ const TaskColumn = ({ title, icon, tasks, moveTask, onEditTask, onDeleteTask, ge
                                   )}
                                 </div>
                                 
-                                {columnId !== "completed" && (
+                                {columnId === "scheduled" || columnId === "todo-all" || columnId === "todo-today" ? (
                                   <div className="pt-2 border-t mt-2">
                                     <Button 
                                       size="xs" 
@@ -870,7 +870,7 @@ const TaskColumn = ({ title, icon, tasks, moveTask, onEditTask, onDeleteTask, ge
                                       Complete
                                     </Button>
                                   </div>
-                                )}
+                                ) : null}
                               </div>
                             </Card>
                           </div>

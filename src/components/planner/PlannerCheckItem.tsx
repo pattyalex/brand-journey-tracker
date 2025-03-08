@@ -79,7 +79,7 @@ export const PlannerCheckItem = ({
             </button>
             <button 
               onClick={() => onDelete(item.id)} 
-              className="p-1 rounded-sm text-destructive hover:bg-destructive/10"
+              className="p-1 rounded-sm text-gray-500 hover:bg-muted"
             >
               <Trash2 size={14} />
             </button>
