@@ -1,7 +1,7 @@
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, CheckSquare, Calendar, Clock, CheckCircle2, Edit, Trash2, CalendarIcon, Plus, Circle, CheckCircle, ArrowLeft } from "lucide-react";
+import { PlusCircle, CheckSquare, Calendar, Clock, CheckCircle2, Edit, Trash2, CalendarIcon, Plus, Circle, CheckCircle, ArrowLeft, Flag } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -243,6 +243,19 @@ const TaskBoard = () => {
     }
   };
 
+  const getPriorityIcon = (priority: Task["priority"]) => {
+    switch (priority) {
+      case "high": 
+        return <Flag className="h-3 w-3 text-red-500 fill-red-500" />;
+      case "medium": 
+        return <Flag className="h-3 w-3 text-amber-500 fill-amber-500" />;
+      case "low": 
+        return <Flag className="h-3 w-3 text-green-500 fill-green-500" />;
+      default: 
+        return null;
+    }
+  };
+
   const handleAddQuickTask = (title: string, status: Task["status"]) => {
     if (!title.trim()) {
       return;
@@ -320,6 +333,7 @@ const TaskBoard = () => {
                           columnId="todo-all"
                           onAddQuickTask={handleAddQuickTask}
                           toggleTaskCompletion={toggleTaskCompletion}
+                          getPriorityIcon={getPriorityIcon}
                         />
                         
                         <SimplifiedTaskColumn 
@@ -334,6 +348,7 @@ const TaskBoard = () => {
                           columnId="todo-today"
                           onAddQuickTask={handleAddQuickTask}
                           toggleTaskCompletion={toggleTaskCompletion}
+                          getPriorityIcon={getPriorityIcon}
                         />
                         
                         <TaskColumn 
@@ -382,6 +397,7 @@ const TaskBoard = () => {
                             setNewTask={setNewTask}
                             onAddQuickTask={handleAddQuickTask}
                             toggleTaskCompletion={toggleTaskCompletion}
+                            getPriorityIcon={getPriorityIcon}
                           />
                         </div>
                       </div>
@@ -901,6 +917,7 @@ interface SimplifiedTaskColumnProps {
   columnId: Task["status"];
   onAddQuickTask: (title: string, status: Task["status"]) => void;
   toggleTaskCompletion: (taskId: string) => void;
+  getPriorityIcon?: (priority: Task["priority"]) => React.ReactNode;
 }
 
 const SimplifiedTaskColumn = ({ 
@@ -914,7 +931,8 @@ const SimplifiedTaskColumn = ({
   setNewTask, 
   columnId,
   onAddQuickTask,
-  toggleTaskCompletion
+  toggleTaskCompletion,
+  getPriorityIcon
 }: SimplifiedTaskColumnProps) => {
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [isAdding, setIsAdding] = useState(false);
@@ -990,9 +1008,12 @@ const SimplifiedTaskColumn = ({
                                     <Circle className="h-4 w-4 text-gray-400 hover:text-primary" />
                                   )}
                                 </button>
-                                <span className={`flex-1 text-gray-800 text-sm ${task.isCompleted ? 'line-through text-gray-500' : ''}`}>
-                                  {task.title}
-                                </span>
+                                <div className="flex-1 flex items-center gap-1.5">
+                                  <span className={`text-gray-800 text-sm ${task.isCompleted ? 'line-through text-gray-500' : ''}`}>
+                                    {task.title}
+                                  </span>
+                                  {getPriorityIcon && getPriorityIcon(task.priority)}
+                                </div>
                                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                   <button 
                                     className="text-gray-400 hover:text-gray-600"
@@ -1070,6 +1091,7 @@ interface SimplifiedTaskListProps {
   setNewTask: (task: Partial<Task>) => void;
   onAddQuickTask: (title: string, status: Task["status"]) => void;
   toggleTaskCompletion: (taskId: string) => void;
+  getPriorityIcon?: (priority: Task["priority"]) => React.ReactNode;
 }
 
 const SimplifiedTaskList = ({ 
@@ -1081,7 +1103,8 @@ const SimplifiedTaskList = ({
   setIsAddDialogOpen,
   setNewTask,
   onAddQuickTask,
-  toggleTaskCompletion
+  toggleTaskCompletion,
+  getPriorityIcon
 }: SimplifiedTaskListProps) => {
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [isAdding, setIsAdding] = useState(false);
@@ -1165,9 +1188,12 @@ const SimplifiedTaskList = ({
                                   <Circle className="h-4 w-4 text-gray-400 hover:text-primary" />
                                 )}
                               </button>
-                              <span className={`flex-1 text-gray-800 text-sm ${task.isCompleted ? 'line-through text-gray-500' : ''}`}>
-                                {task.title}
-                              </span>
+                              <div className="flex-1 flex items-center gap-1.5">
+                                <span className={`text-gray-800 text-sm ${task.isCompleted ? 'line-through text-gray-500' : ''}`}>
+                                  {task.title}
+                                </span>
+                                {getPriorityIcon && getPriorityIcon(task.priority)}
+                              </div>
                               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button 
                                   className="text-gray-400 hover:text-gray-600"
