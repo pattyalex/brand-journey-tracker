@@ -485,6 +485,21 @@ export const DailyPlanner = () => {
         
         <div className="mt-8">
           <div className="flex items-center gap-2 mb-3">
+            <StickyNote className="h-5 w-5" />
+            <h3 className="text-lg font-medium">Notes</h3>
+          </div>
+          <div className="border rounded-lg p-1">
+            <Textarea
+              value={notes}
+              onChange={handleNotesChange}
+              placeholder="Write your notes, reminders or thoughts for the day..."
+              className="min-h-[150px] resize-none"
+            />
+          </div>
+        </div>
+        
+        <div className="mt-8">
+          <div className="flex items-center gap-2 mb-3">
             <Sun className="h-5 w-5 text-amber-500" />
             <h3 className="text-lg font-medium">What would make today great?</h3>
           </div>
@@ -525,21 +540,6 @@ export const DailyPlanner = () => {
                   }
                 }
               }}
-            />
-          </div>
-        </div>
-        
-        <div className="mt-8">
-          <div className="flex items-center gap-2 mb-3">
-            <StickyNote className="h-5 w-5" />
-            <h3 className="text-lg font-medium">Notes</h3>
-          </div>
-          <div className="border rounded-lg p-1">
-            <Textarea
-              value={notes}
-              onChange={handleNotesChange}
-              placeholder="Write your notes, reminders or thoughts for the day..."
-              className="min-h-[150px] resize-none"
             />
           </div>
         </div>
