@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Copy, Trash2, StickyNote, Sun } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Copy, Trash2, StickyNote, Sun, Heart } from "lucide-react";
 import { PlannerDay, PlannerItem } from "@/types/planner";
 import { PlannerSection } from "./PlannerSection";
 import { toast } from "sonner";
@@ -38,6 +38,7 @@ export const DailyPlanner = () => {
   const [deleteAfterCopy, setDeleteAfterCopy] = useState(false);
   const [notes, setNotes] = useState<string>("");
   const [greatDay, setGreatDay] = useState<string>("");
+  const [grateful, setGrateful] = useState<string>("");
 
   const dateString = selectedDate.toISOString().split('T')[0];
 
@@ -66,9 +67,16 @@ export const DailyPlanner = () => {
       } else {
         setGreatDay("");
       }
+      
+      if (currentDay.grateful) {
+        setGrateful(currentDay.grateful);
+      } else {
+        setGrateful("");
+      }
     } else {
       setNotes("");
       setGreatDay("");
+      setGrateful("");
     }
   }, [dateString, plannerData]);
 
@@ -76,7 +84,8 @@ export const DailyPlanner = () => {
     date: dateString,
     items: [],
     notes: "",
-    greatDay: ""
+    greatDay: "",
+    grateful: ""
   };
 
   const getSectionItems = (section: PlannerItem["section"]) => {
@@ -106,7 +115,8 @@ export const DailyPlanner = () => {
         date: dateString, 
         items: [newItem],
         notes: "",
-        greatDay: ""
+        greatDay: "",
+        grateful: ""
       }]);
     }
   };
@@ -249,7 +259,8 @@ export const DailyPlanner = () => {
         date: dateString,
         items: [],
         notes: newNotes,
-        greatDay: greatDay
+        greatDay: greatDay,
+        grateful: grateful
       });
     }
     
@@ -273,7 +284,33 @@ export const DailyPlanner = () => {
         date: dateString,
         items: [],
         notes: notes,
-        greatDay: newGreatDay
+        greatDay: newGreatDay,
+        grateful: grateful
+      });
+    }
+    
+    setPlannerData(updatedPlannerData);
+  };
+
+  const handleGratefulChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newGrateful = e.target.value;
+    setGrateful(newGrateful);
+    
+    const dayIndex = plannerData.findIndex(day => day.date === dateString);
+    const updatedPlannerData = [...plannerData];
+    
+    if (dayIndex >= 0) {
+      updatedPlannerData[dayIndex] = {
+        ...updatedPlannerData[dayIndex],
+        grateful: newGrateful
+      };
+    } else {
+      updatedPlannerData.push({
+        date: dateString,
+        items: [],
+        notes: notes,
+        greatDay: greatDay,
+        grateful: newGrateful
       });
     }
     
@@ -500,6 +537,53 @@ export const DailyPlanner = () => {
         
         <div className="mt-8">
           <div className="flex items-center gap-2 mb-3">
+            <Heart className="h-5 w-5 text-rose-500" />
+            <h3 className="text-lg font-medium">Things I'm Grateful For Today</h3>
+          </div>
+          <div className="border rounded-lg p-1">
+            <Textarea
+              value={grateful}
+              onChange={handleGratefulChange}
+              placeholder="List things you're grateful for today..."
+              className="min-h-[120px] resize-none"
+              onTextSelect={(selectedText) => {
+                if (selectedText) {
+                  const newItem: PlannerItem = {
+                    id: Date.now().toString(),
+                    text: selectedText,
+                    section: "morning",
+                    isCompleted: false,
+                    date: dateString
+                  };
+                  
+                  const dayIndex = plannerData.findIndex(day => day.date === dateString);
+                  
+                  if (dayIndex >= 0) {
+                    const updatedPlannerData = [...plannerData];
+                    updatedPlannerData[dayIndex] = {
+                      ...updatedPlannerData[dayIndex],
+                      items: [...updatedPlannerData[dayIndex].items, newItem]
+                    };
+                    setPlannerData(updatedPlannerData);
+                    toast.success("Added as a task for today!");
+                  } else {
+                    setPlannerData([...plannerData, { 
+                      date: dateString, 
+                      items: [newItem],
+                      notes: notes,
+                      greatDay: greatDay,
+                      grateful: grateful
+                    }]);
+                    toast.success("Added as a task for today!");
+                  }
+                }
+              }}
+            />
+          </div>
+        </div>
+        
+        <div className="mt-8">
+          <div className="flex items-center gap-2 mb-3">
             <Sun className="h-5 w-5 text-amber-500" />
             <h3 className="text-lg font-medium">What would make today great?</h3>
           </div>
@@ -534,7 +618,8 @@ export const DailyPlanner = () => {
                       date: dateString, 
                       items: [newItem],
                       notes: notes,
-                      greatDay: greatDay
+                      greatDay: greatDay,
+                      grateful: grateful
                     }]);
                     toast.success("Added as a task for today!");
                   }

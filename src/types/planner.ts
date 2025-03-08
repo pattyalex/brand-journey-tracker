@@ -12,4 +12,5 @@ export interface PlannerDay {
   items: PlannerItem[];
   notes?: string; // Optional notes for the day
   greatDay?: string; // Optional "What would make today great?" section
+  grateful?: string; // Optional "Things I'm Grateful For Today" section
 }
