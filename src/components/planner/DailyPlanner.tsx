@@ -258,7 +258,7 @@ export const DailyPlanner = () => {
               <ChevronRight className="h-4 w-4" />
             </Button>
             
-            <TooltipProvider>
+            <TooltipProvider delayDuration={0}>
               <Dialog open={isCopyDialogOpen} onOpenChange={setIsCopyDialogOpen}>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -273,7 +273,7 @@ export const DailyPlanner = () => {
                       </Button>
                     </DialogTrigger>
                   </TooltipTrigger>
-                  <TooltipContent>
+                  <TooltipContent side="bottom" sideOffset={5}>
                     <p>Copy Template</p>
                   </TooltipContent>
                 </Tooltip>
@@ -328,7 +328,7 @@ export const DailyPlanner = () => {
               </Dialog>
             </TooltipProvider>
             
-            <TooltipProvider>
+            <TooltipProvider delayDuration={0}>
               <AlertDialog>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -343,7 +343,7 @@ export const DailyPlanner = () => {
                       </Button>
                     </AlertDialogTrigger>
                   </TooltipTrigger>
-                  <TooltipContent>
+                  <TooltipContent side="bottom" sideOffset={5}>
                     <p>Delete All</p>
                   </TooltipContent>
                 </Tooltip>
