@@ -1,0 +1,13 @@
+
+export interface PlannerItem {
+  id: string;
+  text: string;
+  section: "morning" | "midday" | "afternoon" | "evening";
+  isCompleted: boolean;
+  date: string; // ISO string format
+}
+
+export interface PlannerDay {
+  date: string; // ISO string format
+  items: PlannerItem[];
+}

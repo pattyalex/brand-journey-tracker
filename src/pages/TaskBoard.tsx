@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+import { DailyPlanner } from "@/components/planner/DailyPlanner";
 
 interface Task {
   id: string;
@@ -22,7 +23,7 @@ interface Task {
   dueDate?: string;
   priority: "low" | "medium" | "high";
   createdAt: string;
-  isCompleted?: boolean; // New property to track completion status within a column
+  isCompleted?: boolean;
 }
 
 const TaskBoard = () => {
@@ -574,24 +575,7 @@ const TaskBoard = () => {
           </TabsContent>
 
           <TabsContent value="daily-planner" className="m-0">
-            <Card className="border-none shadow-none">
-              <CardHeader className="px-0">
-                <CardTitle className="text-xl">Daily Planner</CardTitle>
-                <CardDescription>
-                  Plan your day and organize your schedule
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="px-0">
-                <div className="bg-muted/50 p-12 rounded-lg flex items-center justify-center h-[500px]">
-                  <div className="text-center">
-                    <h3 className="text-lg font-medium mb-2">Daily Planner Coming Soon</h3>
-                    <p className="text-muted-foreground">
-                      This section is under development. Check back soon for updates.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <DailyPlanner />
           </TabsContent>
         </Tabs>
       </div>

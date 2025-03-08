@@ -1,0 +1,221 @@
+
+import { useState, useEffect } from "react";
+import { format, addDays, subDays, parseISO } from "date-fns";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { PlannerDay, PlannerItem } from "@/types/planner";
+import { PlannerSection } from "./PlannerSection";
+import { toast } from "sonner";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+
+export const DailyPlanner = () => {
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [plannerData, setPlannerData] = useState<PlannerDay[]>([]);
+  const dateString = selectedDate.toISOString().split('T')[0];
+
+  useEffect(() => {
+    const savedData = localStorage.getItem("plannerData");
+    if (savedData) {
+      setPlannerData(JSON.parse(savedData));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("plannerData", JSON.stringify(plannerData));
+  }, [plannerData]);
+
+  const currentDay = plannerData.find(day => day.date === dateString) || {
+    date: dateString,
+    items: []
+  };
+
+  const getSectionItems = (section: PlannerItem["section"]) => {
+    return currentDay.items.filter(item => item.section === section);
+  };
+
+  const handleAddItem = (text: string, section: PlannerItem["section"]) => {
+    const newItem: PlannerItem = {
+      id: Date.now().toString(),
+      text,
+      section,
+      isCompleted: false,
+      date: dateString
+    };
+
+    const dayIndex = plannerData.findIndex(day => day.date === dateString);
+    
+    if (dayIndex >= 0) {
+      const updatedPlannerData = [...plannerData];
+      updatedPlannerData[dayIndex] = {
+        ...updatedPlannerData[dayIndex],
+        items: [...updatedPlannerData[dayIndex].items, newItem]
+      };
+      setPlannerData(updatedPlannerData);
+    } else {
+      setPlannerData([...plannerData, { 
+        date: dateString, 
+        items: [newItem] 
+      }]);
+    }
+  };
+
+  const handleToggleItem = (id: string) => {
+    const dayIndex = plannerData.findIndex(day => day.date === dateString);
+    if (dayIndex < 0) return;
+
+    const updatedPlannerData = [...plannerData];
+    const itemIndex = updatedPlannerData[dayIndex].items.findIndex(item => item.id === id);
+    
+    if (itemIndex >= 0) {
+      updatedPlannerData[dayIndex].items[itemIndex] = {
+        ...updatedPlannerData[dayIndex].items[itemIndex],
+        isCompleted: !updatedPlannerData[dayIndex].items[itemIndex].isCompleted
+      };
+      setPlannerData(updatedPlannerData);
+    }
+  };
+
+  const handleDeleteItem = (id: string) => {
+    const dayIndex = plannerData.findIndex(day => day.date === dateString);
+    if (dayIndex < 0) return;
+
+    const updatedPlannerData = [...plannerData];
+    updatedPlannerData[dayIndex] = {
+      ...updatedPlannerData[dayIndex],
+      items: updatedPlannerData[dayIndex].items.filter(item => item.id !== id)
+    };
+    setPlannerData(updatedPlannerData);
+    toast.success("Item removed");
+  };
+
+  const handleEditItem = (id: string, newText: string) => {
+    const dayIndex = plannerData.findIndex(day => day.date === dateString);
+    if (dayIndex < 0) return;
+
+    const updatedPlannerData = [...plannerData];
+    const itemIndex = updatedPlannerData[dayIndex].items.findIndex(item => item.id === id);
+    
+    if (itemIndex >= 0) {
+      updatedPlannerData[dayIndex].items[itemIndex] = {
+        ...updatedPlannerData[dayIndex].items[itemIndex],
+        text: newText
+      };
+      setPlannerData(updatedPlannerData);
+      toast.success("Item updated");
+    }
+  };
+
+  const handlePreviousDay = () => {
+    setSelectedDate(prev => subDays(prev, 1));
+  };
+
+  const handleNextDay = () => {
+    setSelectedDate(prev => addDays(prev, 1));
+  };
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      setSelectedDate(date);
+    }
+  };
+
+  return (
+    <Card className="border-none shadow-none">
+      <CardHeader className="px-0">
+        <CardTitle className="text-xl">Daily Planner</CardTitle>
+        <CardDescription>
+          Plan your day and organize your schedule
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="px-0">
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              onClick={handlePreviousDay}
+              aria-label="Previous day"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  className="min-w-[240px] justify-start text-left font-normal"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  <span>{format(selectedDate, "EEEE, MMMM do, yyyy")}</span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={handleDateSelect}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+            
+            <Button 
+              variant="outline" 
+              size="icon" 
+              onClick={handleNextDay}
+              aria-label="Next day"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <PlannerSection
+            title="Morning Routine"
+            items={getSectionItems("morning")}
+            section="morning"
+            onToggleItem={handleToggleItem}
+            onDeleteItem={handleDeleteItem}
+            onEditItem={handleEditItem}
+            onAddItem={handleAddItem}
+          />
+          
+          <PlannerSection
+            title="9am-1pm"
+            items={getSectionItems("midday")}
+            section="midday"
+            onToggleItem={handleToggleItem}
+            onDeleteItem={handleDeleteItem}
+            onEditItem={handleEditItem}
+            onAddItem={handleAddItem}
+          />
+          
+          <PlannerSection
+            title="Afternoon"
+            items={getSectionItems("afternoon")}
+            section="afternoon"
+            onToggleItem={handleToggleItem}
+            onDeleteItem={handleDeleteItem}
+            onEditItem={handleEditItem}
+            onAddItem={handleAddItem}
+          />
+          
+          <PlannerSection
+            title="Evening Routine"
+            items={getSectionItems("evening")}
+            section="evening"
+            onToggleItem={handleToggleItem}
+            onDeleteItem={handleDeleteItem}
+            onEditItem={handleEditItem}
+            onAddItem={handleAddItem}
+          />
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
