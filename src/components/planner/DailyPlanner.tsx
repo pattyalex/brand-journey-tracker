@@ -186,7 +186,7 @@ export const DailyPlanner = () => {
           />
           
           <PlannerSection
-            title="9am-1pm"
+            title="Morning"
             items={getSectionItems("midday")}
             section="midday"
             onToggleItem={handleToggleItem}
