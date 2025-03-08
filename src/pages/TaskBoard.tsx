@@ -22,6 +22,7 @@ interface Task {
   dueDate?: string;
   priority: "low" | "medium" | "high";
   createdAt: string;
+  isCompleted?: boolean; // New property to track completion status within a column
 }
 
 const TaskBoard = () => {
@@ -95,13 +96,20 @@ const TaskBoard = () => {
     localStorage.setItem("taskBoardTasks", JSON.stringify(tasks));
   }, [tasks]);
 
+  const toggleTaskCompletion = (taskId: string) => {
+    const updatedTasks = tasks.map((task) => 
+      task.id === taskId ? { ...task, isCompleted: !task.isCompleted } : task
+    );
+    setTasks(updatedTasks);
+  };
+
   const getTasksByStatus = (status: Task["status"]) => {
     return tasks.filter((task) => task.status === status);
   };
 
   const moveTask = (taskId: string, newStatus: Task["status"]) => {
     const updatedTasks = tasks.map((task) => 
-      task.id === taskId ? { ...task, status: newStatus } : task
+      task.id === taskId ? { ...task, status: newStatus, isCompleted: newStatus === "completed" ? true : false } : task
     );
     setTasks(updatedTasks);
   };
@@ -311,6 +319,7 @@ const TaskBoard = () => {
                           setNewTask={setNewTask}
                           columnId="todo-all"
                           onAddQuickTask={handleAddQuickTask}
+                          toggleTaskCompletion={toggleTaskCompletion}
                         />
                         
                         <SimplifiedTaskColumn 
@@ -324,6 +333,7 @@ const TaskBoard = () => {
                           setNewTask={setNewTask}
                           columnId="todo-today"
                           onAddQuickTask={handleAddQuickTask}
+                          toggleTaskCompletion={toggleTaskCompletion}
                         />
                         
                         <TaskColumn 
@@ -371,6 +381,7 @@ const TaskBoard = () => {
                             setIsAddDialogOpen={setIsAddDialogOpen}
                             setNewTask={setNewTask}
                             onAddQuickTask={handleAddQuickTask}
+                            toggleTaskCompletion={toggleTaskCompletion}
                           />
                         </div>
                       </div>
@@ -889,6 +900,7 @@ interface SimplifiedTaskColumnProps {
   setNewTask: (task: Partial<Task>) => void;
   columnId: Task["status"];
   onAddQuickTask: (title: string, status: Task["status"]) => void;
+  toggleTaskCompletion: (taskId: string) => void;
 }
 
 const SimplifiedTaskColumn = ({ 
@@ -901,7 +913,8 @@ const SimplifiedTaskColumn = ({
   setIsAddDialogOpen, 
   setNewTask, 
   columnId,
-  onAddQuickTask
+  onAddQuickTask,
+  toggleTaskCompletion
 }: SimplifiedTaskColumnProps) => {
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [isAdding, setIsAdding] = useState(false);
@@ -969,17 +982,33 @@ const SimplifiedTaskColumn = ({
                               <div className="flex items-center gap-2">
                                 <button 
                                   className="flex-shrink-0" 
-                                  onClick={() => moveTask(task.id, "completed")}
+                                  onClick={() => toggleTaskCompletion(task.id)}
                                 >
-                                  <Circle className="h-4 w-4 text-gray-400 hover:text-primary" />
+                                  {task.isCompleted ? (
+                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                  ) : (
+                                    <Circle className="h-4 w-4 text-gray-400 hover:text-primary" />
+                                  )}
                                 </button>
-                                <span className="flex-1 text-gray-800 text-sm">{task.title}</span>
-                                <button 
-                                  className="opacity-0 group-hover:opacity-100 transition-opacity"
-                                  onClick={() => onEditTask(task)}
-                                >
-                                  <Edit className="h-3.5 w-3.5 text-gray-400 hover:text-gray-600" />
-                                </button>
+                                <span className={`flex-1 text-gray-800 text-sm ${task.isCompleted ? 'line-through text-gray-500' : ''}`}>
+                                  {task.title}
+                                </span>
+                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button 
+                                    className="text-gray-400 hover:text-gray-600"
+                                    onClick={() => onEditTask(task)}
+                                  >
+                                    <Edit className="h-3.5 w-3.5" />
+                                  </button>
+                                  {task.isCompleted && (
+                                    <button
+                                      className="text-green-500 hover:text-green-600"
+                                      onClick={() => moveTask(task.id, "completed")}
+                                    >
+                                      <ArrowLeft className="h-3.5 w-3.5 rotate-90" />
+                                    </button>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -1040,6 +1069,7 @@ interface SimplifiedTaskListProps {
   setIsAddDialogOpen: (isOpen: boolean) => void;
   setNewTask: (task: Partial<Task>) => void;
   onAddQuickTask: (title: string, status: Task["status"]) => void;
+  toggleTaskCompletion: (taskId: string) => void;
 }
 
 const SimplifiedTaskList = ({ 
@@ -1050,7 +1080,8 @@ const SimplifiedTaskList = ({
   onDeleteTask,
   setIsAddDialogOpen,
   setNewTask,
-  onAddQuickTask
+  onAddQuickTask,
+  toggleTaskCompletion
 }: SimplifiedTaskListProps) => {
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [isAdding, setIsAdding] = useState(false);
@@ -1126,17 +1157,33 @@ const SimplifiedTaskList = ({
                             <div className="flex items-center gap-2">
                               <button 
                                 className="flex-shrink-0" 
-                                onClick={() => moveTask(task.id, "completed")}
+                                onClick={() => toggleTaskCompletion(task.id)}
                               >
-                                <Circle className="h-4 w-4 text-gray-400 hover:text-primary" />
+                                {task.isCompleted ? (
+                                  <CheckCircle className="h-4 w-4 text-green-500" />
+                                ) : (
+                                  <Circle className="h-4 w-4 text-gray-400 hover:text-primary" />
+                                )}
                               </button>
-                              <span className="flex-1 text-gray-800 text-sm">{task.title}</span>
-                              <button 
-                                className="opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={() => onEditTask(task)}
-                              >
-                                <Edit className="h-3.5 w-3.5 text-gray-400 hover:text-gray-600" />
-                              </button>
+                              <span className={`flex-1 text-gray-800 text-sm ${task.isCompleted ? 'line-through text-gray-500' : ''}`}>
+                                {task.title}
+                              </span>
+                              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button 
+                                  className="text-gray-400 hover:text-gray-600"
+                                  onClick={() => onEditTask(task)}
+                                >
+                                  <Edit className="h-3.5 w-3.5" />
+                                </button>
+                                {task.isCompleted && (
+                                  <button
+                                    className="text-green-500 hover:text-green-600"
+                                    onClick={() => moveTask(task.id, "completed")}
+                                  >
+                                    <ArrowLeft className="h-3.5 w-3.5 rotate-90" />
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
