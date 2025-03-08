@@ -47,7 +47,7 @@ export const PlannerSection = ({
   };
 
   return (
-    <Card className="h-full">
+    <Card className="h-full border-none shadow-sm">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-medium">{title}</CardTitle>
       </CardHeader>
