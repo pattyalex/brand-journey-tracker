@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Copy, Trash2, StickyNote, Sun, Heart } from "lucide-react";
@@ -537,14 +538,14 @@ export const DailyPlanner = () => {
         
         <div className="mt-8">
           <div className="flex items-center gap-2 mb-3">
-            <Heart className="h-5 w-5 text-rose-500" />
-            <h3 className="text-lg font-medium">Things I'm Grateful For Today</h3>
+            <Sun className="h-5 w-5 text-amber-500" />
+            <h3 className="text-lg font-medium">What would make today great?</h3>
           </div>
           <div className="border rounded-lg p-1">
             <Textarea
-              value={grateful}
-              onChange={handleGratefulChange}
-              placeholder="List things you're grateful for today..."
+              value={greatDay}
+              onChange={handleGreatDayChange}
+              placeholder="List 1-3 things that would make today wonderful..."
               className="min-h-[120px] resize-none"
               onTextSelect={(selectedText) => {
                 if (selectedText) {
@@ -584,14 +585,14 @@ export const DailyPlanner = () => {
         
         <div className="mt-8">
           <div className="flex items-center gap-2 mb-3">
-            <Sun className="h-5 w-5 text-amber-500" />
-            <h3 className="text-lg font-medium">What would make today great?</h3>
+            <Heart className="h-5 w-5 text-rose-500" />
+            <h3 className="text-lg font-medium">Things I'm Grateful For Today</h3>
           </div>
           <div className="border rounded-lg p-1">
             <Textarea
-              value={greatDay}
-              onChange={handleGreatDayChange}
-              placeholder="List 1-3 things that would make today wonderful..."
+              value={grateful}
+              onChange={handleGratefulChange}
+              placeholder="List things you're grateful for today..."
               className="min-h-[120px] resize-none"
               onTextSelect={(selectedText) => {
                 if (selectedText) {
