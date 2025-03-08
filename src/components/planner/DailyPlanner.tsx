@@ -261,7 +261,7 @@ export const DailyPlanner = () => {
                   disabled={!hasItems}
                 >
                   <Copy className="h-3 w-3" />
-                  <span className="ml-1">Copy</span>
+                  <span className="ml-1">Copy Template</span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
