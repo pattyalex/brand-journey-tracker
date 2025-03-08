@@ -3,7 +3,7 @@ import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, CheckSquare, Calendar, Clock, CheckCircle2, Edit, Trash2, CalendarIcon, Plus, Circle, CheckCircle } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -236,6 +236,24 @@ const TaskBoard = () => {
     }
   };
 
+  const handleAddQuickTask = (title: string, status: Task["status"]) => {
+    if (!title.trim()) {
+      return;
+    }
+    
+    const task: Task = {
+      id: Date.now().toString(),
+      title: title,
+      description: "",
+      status: status,
+      priority: "medium",
+      createdAt: new Date().toISOString()
+    };
+    
+    setTasks([task, ...tasks]);
+    toast.success("Task added successfully");
+  };
+
   return (
     <Layout>
       <div className="container mx-auto py-6 fade-in">
@@ -293,6 +311,7 @@ const TaskBoard = () => {
                           setIsAddDialogOpen={setIsAddDialogOpen}
                           setNewTask={setNewTask}
                           columnId="todo-all"
+                          onAddQuickTask={handleAddQuickTask}
                         />
                         
                         <SimplifiedTaskColumn 
@@ -305,6 +324,7 @@ const TaskBoard = () => {
                           setIsAddDialogOpen={setIsAddDialogOpen}
                           setNewTask={setNewTask}
                           columnId="todo-today"
+                          onAddQuickTask={handleAddQuickTask}
                         />
                         
                         <TaskColumn 
@@ -351,6 +371,7 @@ const TaskBoard = () => {
                             onDeleteTask={handleDeleteTask}
                             setIsAddDialogOpen={setIsAddDialogOpen}
                             setNewTask={setNewTask}
+                            onAddQuickTask={handleAddQuickTask}
                           />
                         </div>
                       </div>
@@ -661,7 +682,7 @@ const TaskColumn = ({ title, icon, tasks, moveTask, onEditTask, onDeleteTask, ge
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-lg">
           {icon}
-          {title} <span className="ml-2 text-sm bg-primary/10 px-2 py-0.5 rounded-full">{tasks.length}</span>
+          {title} <span className="ml-2 text-sm bg-primary/10 px-2.5 py-0.5 rounded-full">{tasks.length}</span>
         </CardTitle>
         <CardDescription>
           {title === "All" ? "Tasks to be completed" : 
@@ -783,6 +804,7 @@ interface SimplifiedTaskColumnProps {
   setIsAddDialogOpen: (isOpen: boolean) => void;
   setNewTask: (task: Partial<Task>) => void;
   columnId: Task["status"];
+  onAddQuickTask: (title: string, status: Task["status"]) => void;
 }
 
 const SimplifiedTaskColumn = ({ 
@@ -794,8 +816,37 @@ const SimplifiedTaskColumn = ({
   onDeleteTask, 
   setIsAddDialogOpen, 
   setNewTask, 
-  columnId 
+  columnId,
+  onAddQuickTask
 }: SimplifiedTaskColumnProps) => {
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleAddTask = () => {
+    if (newTaskTitle.trim()) {
+      onAddQuickTask(newTaskTitle, columnId);
+      setNewTaskTitle("");
+      setIsAdding(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleAddTask();
+    } else if (e.key === "Escape") {
+      setIsAdding(false);
+      setNewTaskTitle("");
+    }
+  };
+
+  // Focus the input when isAdding changes to true
+  useEffect(() => {
+    if (isAdding && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isAdding]);
+
   return (
     <Card className="h-full bg-gray-50">
       <CardHeader className="pb-2 p-4">
@@ -817,7 +868,7 @@ const SimplifiedTaskColumn = ({
             >
               <ScrollArea className="h-full">
                 <div className="flex flex-col gap-2 min-h-40 pr-2">
-                  {tasks.length === 0 ? (
+                  {tasks.length === 0 && !isAdding ? (
                     <div className="flex h-[100px] items-center justify-center rounded-md border border-dashed">
                       <p className="text-center text-muted-foreground text-sm px-2">No tasks in this section</p>
                     </div>
@@ -855,16 +906,38 @@ const SimplifiedTaskColumn = ({
                   )}
                   {provided.placeholder}
                   
-                  <button
-                    className="mt-1 flex items-center gap-2 text-muted-foreground hover:text-primary p-2 rounded-lg text-sm"
-                    onClick={() => {
-                      setNewTask({ status: columnId as Task["status"] });
-                      setIsAddDialogOpen(true);
-                    }}
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span>Add a card</span>
-                  </button>
+                  {isAdding ? (
+                    <div className="bg-white rounded-lg border py-1.5 px-2">
+                      <div className="flex items-center gap-2">
+                        <Circle className="h-4 w-4 text-gray-400" />
+                        <Input
+                          ref={inputRef}
+                          value={newTaskTitle}
+                          onChange={(e) => setNewTaskTitle(e.target.value)}
+                          onKeyDown={handleKeyDown}
+                          placeholder="What needs to be done?"
+                          className="flex-1 border-0 p-1 text-sm focus-visible:ring-0"
+                          autoFocus
+                        />
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="h-7 px-2 text-xs" 
+                          onClick={handleAddTask}
+                        >
+                          Add
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      className="mt-1 flex items-center gap-2 text-muted-foreground hover:text-primary p-2 rounded-lg text-sm"
+                      onClick={() => setIsAdding(true)}
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>Add a task</span>
+                    </button>
+                  )}
                 </div>
               </ScrollArea>
             </div>
@@ -883,6 +956,7 @@ interface SimplifiedTaskListProps {
   onDeleteTask: (taskId: string) => void;
   setIsAddDialogOpen: (isOpen: boolean) => void;
   setNewTask: (task: Partial<Task>) => void;
+  onAddQuickTask: (title: string, status: Task["status"]) => void;
 }
 
 const SimplifiedTaskList = ({ 
@@ -892,8 +966,37 @@ const SimplifiedTaskList = ({
   onEditTask, 
   onDeleteTask,
   setIsAddDialogOpen,
-  setNewTask
+  setNewTask,
+  onAddQuickTask
 }: SimplifiedTaskListProps) => {
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleAddTask = () => {
+    if (newTaskTitle.trim()) {
+      onAddQuickTask(newTaskTitle, status);
+      setNewTaskTitle("");
+      setIsAdding(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleAddTask();
+    } else if (e.key === "Escape") {
+      setIsAdding(false);
+      setNewTaskTitle("");
+    }
+  };
+
+  // Focus the input when isAdding changes to true
+  useEffect(() => {
+    if (isAdding && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isAdding]);
+  
   return (
     <DragDropContext onDragEnd={(result) => {
       if (!result.destination) return;
@@ -912,17 +1015,14 @@ const SimplifiedTaskList = ({
             {...provided.droppableProps}
             className="bg-gray-50 p-3 rounded-lg"
           >
-            {tasks.length === 0 ? (
+            {tasks.length === 0 && !isAdding ? (
               <div className="flex h-[100px] items-center justify-center rounded-md border border-dashed">
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground">No tasks in this section</p>
                   <Button 
                     variant="link" 
                     className="mt-2 text-sm"
-                    onClick={() => {
-                      setNewTask({ status });
-                      setIsAddDialogOpen(true);
-                    }}
+                    onClick={() => setIsAdding(true)}
                   >
                     Add a task
                   </Button>
@@ -966,16 +1066,38 @@ const SimplifiedTaskList = ({
               </ScrollArea>
             )}
             
-            <button
-              className="mt-3 flex items-center gap-2 text-muted-foreground hover:text-primary p-2 rounded-lg text-sm"
-              onClick={() => {
-                setNewTask({ status });
-                setIsAddDialogOpen(true);
-              }}
-            >
-              <Plus className="h-4 w-4" />
-              <span>Add a card</span>
-            </button>
+            {isAdding ? (
+              <div className="mt-3 bg-white rounded-lg border py-1.5 px-2">
+                <div className="flex items-center gap-2">
+                  <Circle className="h-4 w-4 text-gray-400" />
+                  <Input
+                    ref={inputRef}
+                    value={newTaskTitle}
+                    onChange={(e) => setNewTaskTitle(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="What needs to be done?"
+                    className="flex-1 border-0 p-1 text-sm focus-visible:ring-0"
+                    autoFocus
+                  />
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    className="h-7 px-2 text-xs" 
+                    onClick={handleAddTask}
+                  >
+                    Add
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <button
+                className="mt-3 flex items-center gap-2 text-muted-foreground hover:text-primary p-2 rounded-lg text-sm"
+                onClick={() => setIsAdding(true)}
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add a task</span>
+              </button>
+            )}
           </div>
         )}
       </Droppable>
