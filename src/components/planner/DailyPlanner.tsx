@@ -591,7 +591,7 @@ export const DailyPlanner = () => {
             <Textarea
               value={grateful}
               onChange={handleGratefulChange}
-              placeholder="List things you're grateful for today..."
+              placeholder="List 1-3 things you're grateful for today..."
               className="min-h-[120px] resize-none"
               onTextSelect={(selectedText) => {
                 if (selectedText) {
