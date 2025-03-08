@@ -23,6 +23,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export const DailyPlanner = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -252,96 +258,112 @@ export const DailyPlanner = () => {
               <ChevronRight className="h-4 w-4" />
             </Button>
             
-            <Dialog open={isCopyDialogOpen} onOpenChange={setIsCopyDialogOpen}>
-              <DialogTrigger asChild>
-                <Button 
-                  variant="outline"
-                  size="xs"
-                  className="ml-2"
-                  disabled={!hasItems}
-                >
-                  <Copy className="h-3 w-3" />
-                  <span className="ml-1">Copy Template</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Copy template to another day</DialogTitle>
-                  <DialogDescription>
-                    Select the date you want to copy this day's template to.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="py-4">
-                  <Calendar
-                    mode="single"
-                    selected={copyToDate}
-                    onSelect={setCopyToDate}
-                    initialFocus
-                  />
-                </div>
-                <div className="flex items-center space-x-2 py-2">
-                  <Checkbox 
-                    id="delete-after-copy" 
-                    checked={deleteAfterCopy}
-                    onCheckedChange={(checked) => setDeleteAfterCopy(checked === true)}
-                  />
-                  <label
-                    htmlFor="delete-after-copy"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    Delete template from current day after copying
-                  </label>
-                </div>
-                <DialogFooter>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => {
-                      setIsCopyDialogOpen(false);
-                      setDeleteAfterCopy(false);
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    type="button" 
-                    onClick={copyTemplate}
-                    disabled={!copyToDate}
-                  >
-                    Copy template
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            <TooltipProvider>
+              <Dialog open={isCopyDialogOpen} onOpenChange={setIsCopyDialogOpen}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="outline"
+                        size="icon"
+                        className="ml-2 h-8 w-8"
+                        disabled={!hasItems}
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </Button>
+                    </DialogTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Copy Template</p>
+                  </TooltipContent>
+                </Tooltip>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Copy template to another day</DialogTitle>
+                    <DialogDescription>
+                      Select the date you want to copy this day's template to.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="py-4">
+                    <Calendar
+                      mode="single"
+                      selected={copyToDate}
+                      onSelect={setCopyToDate}
+                      initialFocus
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2 py-2">
+                    <Checkbox 
+                      id="delete-after-copy" 
+                      checked={deleteAfterCopy}
+                      onCheckedChange={(checked) => setDeleteAfterCopy(checked === true)}
+                    />
+                    <label
+                      htmlFor="delete-after-copy"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Delete template from current day after copying
+                    </label>
+                  </div>
+                  <DialogFooter>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => {
+                        setIsCopyDialogOpen(false);
+                        setDeleteAfterCopy(false);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      type="button" 
+                      onClick={copyTemplate}
+                      disabled={!copyToDate}
+                    >
+                      Copy template
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </TooltipProvider>
             
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button 
-                  variant="outline"
-                  size="xs"
-                  className="ml-2"
-                  disabled={!hasItems}
-                >
-                  <Trash2 className="h-3 w-3" />
-                  <span className="ml-1">Delete</span>
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete all items for this day?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete all planner items 
-                    for {format(selectedDate, "MMMM do, yyyy")}.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeleteAllItems}>
-                    Delete All
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <TooltipProvider>
+              <AlertDialog>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AlertDialogTrigger asChild>
+                      <Button 
+                        variant="outline"
+                        size="icon"
+                        className="ml-2 h-8 w-8"
+                        disabled={!hasItems}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </AlertDialogTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Delete All</p>
+                  </TooltipContent>
+                </Tooltip>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete all items for this day?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete all planner items 
+                      for {format(selectedDate, "MMMM do, yyyy")}.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteAllItems}>
+                      Delete All
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </TooltipProvider>
           </div>
         </div>
         
