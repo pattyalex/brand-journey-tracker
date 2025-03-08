@@ -12,5 +12,11 @@ export interface PlannerDay {
   items: PlannerItem[];
   notes?: string; // Optional notes for the day
   greatDay?: string; // Optional "What would make today great?" section
-  grateful?: string; // Optional "Things I'm Grateful For Today" section
+  grateful?: string; // Optional "Things I'm grateful for today" section
+}
+
+export interface VisionBoardData {
+  type: "image" | "link";
+  content: string; // Either image URL or external link URL
+  title?: string; // Optional title for the vision board
 }

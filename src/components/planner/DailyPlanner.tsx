@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Copy, Trash2, StickyNote, Sun, Heart } from "lucide-react";
 import { PlannerDay, PlannerItem } from "@/types/planner";
 import { PlannerSection } from "./PlannerSection";
+import { VisionBoardButton } from "./VisionBoardButton";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -323,10 +323,15 @@ export const DailyPlanner = () => {
   return (
     <Card className="border-none shadow-none">
       <CardHeader className="px-0">
-        <CardTitle className="text-xl">Daily Planner</CardTitle>
-        <CardDescription>
-          Plan your day and organize your schedule
-        </CardDescription>
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle className="text-xl">Daily Planner</CardTitle>
+            <CardDescription>
+              Plan your day and organize your schedule
+            </CardDescription>
+          </div>
+          <VisionBoardButton />
+        </div>
       </CardHeader>
       <CardContent className="px-0">
         <div className="flex justify-between items-center mb-6">
