@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PlannerCheckItem } from "./PlannerCheckItem";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
 
 interface PlannerSectionProps {
   title: string;
@@ -61,25 +62,31 @@ export const PlannerSection = ({
   };
 
   return (
-    <Card className="h-full border-none shadow-sm">
-      <CardHeader className="pb-2">
+    <Card className="h-full border border-border shadow-sm">
+      <CardHeader className="pb-2 bg-muted/50">
         <CardTitle className="text-lg font-medium">{title}</CardTitle>
       </CardHeader>
-      <CardContent className="pt-0">
-        <ScrollArea className="h-[calc(100vh-320px)]">
-          <div className="space-y-2 pr-2">
-            {items.map((item) => (
-              <PlannerCheckItem
-                key={item.id}
-                item={item}
-                onToggle={onToggleItem}
-                onDelete={onDeleteItem}
-                onEdit={onEditItem}
-              />
-            ))}
+      <CardContent className="pt-3">
+        <ScrollArea className="h-[calc(100vh-350px)]">
+          <div className="space-y-3 pr-2">
+            {items.length > 0 ? (
+              items.map((item) => (
+                <PlannerCheckItem
+                  key={item.id}
+                  item={item}
+                  onToggle={onToggleItem}
+                  onDelete={onDeleteItem}
+                  onEdit={onEditItem}
+                />
+              ))
+            ) : (
+              <div className="text-sm text-muted-foreground italic text-center py-2">
+                No tasks in this section
+              </div>
+            )}
             
             {isAddingItem ? (
-              <div className="flex flex-col gap-2 mt-2">
+              <div className="flex flex-col gap-2 mt-2 border border-border p-2 rounded-md">
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5"></div>
                   <Input
@@ -114,12 +121,13 @@ export const PlannerSection = ({
                         className="w-24 h-7 py-1 text-sm"
                       />
                     </div>
-                    <button
+                    <Button
                       onClick={handleAddItem}
-                      className="text-primary hover:text-primary/80 text-sm"
+                      size="sm"
+                      className="text-xs"
                     >
                       Add
-                    </button>
+                    </Button>
                   </div>
                 ) : (
                   <button
@@ -134,7 +142,7 @@ export const PlannerSection = ({
             ) : (
               <button
                 onClick={() => setIsAddingItem(true)}
-                className="flex items-center gap-2 text-muted-foreground hover:text-primary text-base mt-2 w-full"
+                className="flex items-center gap-2 text-muted-foreground hover:text-primary text-base mt-2 w-full p-2 rounded-md hover:bg-muted/50"
               >
                 <Plus size={18} />
                 <span>Add item</span>

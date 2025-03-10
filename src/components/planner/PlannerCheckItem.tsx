@@ -42,7 +42,7 @@ export const PlannerCheckItem = ({
   };
 
   return (
-    <div className="flex items-center gap-2 group">
+    <div className="flex items-center gap-2 group bg-white p-2 rounded-md">
       {isEditing ? (
         <div className="flex flex-1 items-center gap-1">
           <Input
