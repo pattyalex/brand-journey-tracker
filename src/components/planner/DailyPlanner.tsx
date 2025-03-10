@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar } from "@/components/ui/calendar"; // Adding the missing Calendar import
+import { Calendar } from "@/components/ui/calendar";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -358,7 +358,7 @@ export const DailyPlanner = () => {
     <Card className="border-none shadow-none">
       <CardHeader className="px-0">
         <div>
-          <CardTitle className="text-xl">Daily Planner</CardTitle>
+          <CardTitle className="text-xl">X</CardTitle>
         </div>
       </CardHeader>
       <CardContent className="px-0">
