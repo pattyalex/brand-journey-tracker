@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
 import { Copy, Trash2, Sun, Heart, ListTodo, CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
@@ -189,13 +190,19 @@ export const DailyPlanner = () => {
   const copyTemplate = () => {
     if (!copyToDate) return;
     
-    // Format date consistently to avoid timezone issues
-    const formattedSelectedDate = selectedDate.toISOString().split('T')[0];
-    const formattedCopyToDate = copyToDate.toISOString().split('T')[0];
+    // Get a clean date string without time information
+    // Use UTC methods to avoid timezone issues
+    const selectedDateFormatted = new Date(
+      Date.UTC(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())
+    ).toISOString().split('T')[0];
     
-    console.log("Copying from:", formattedSelectedDate, "to:", formattedCopyToDate);
+    const copyToDateFormatted = new Date(
+      Date.UTC(copyToDate.getFullYear(), copyToDate.getMonth(), copyToDate.getDate())
+    ).toISOString().split('T')[0];
     
-    if (formattedSelectedDate === formattedCopyToDate) {
+    console.log("Copying from:", selectedDateFormatted, "to:", copyToDateFormatted);
+    
+    if (selectedDateFormatted === copyToDateFormatted) {
       toast.error("Cannot copy to the same day");
       return;
     }
@@ -203,11 +210,11 @@ export const DailyPlanner = () => {
     const newItems = currentDay.items.map(item => ({
       ...item,
       id: Date.now() + Math.random().toString(),
-      date: formattedCopyToDate,
+      date: copyToDateFormatted,
       isCompleted: false
     }));
     
-    const targetDayIndex = plannerData.findIndex(day => day.date === formattedCopyToDate);
+    const targetDayIndex = plannerData.findIndex(day => day.date === copyToDateFormatted);
     let updatedPlannerData = [...plannerData];
     
     if (targetDayIndex >= 0) {
@@ -227,7 +234,7 @@ export const DailyPlanner = () => {
       }
     } else {
       updatedPlannerData = [...updatedPlannerData, {
-        date: formattedCopyToDate,
+        date: copyToDateFormatted,
         items: newItems,
         tasks: currentDay.tasks || "",
         greatDay: currentDay.greatDay || "",
@@ -236,7 +243,7 @@ export const DailyPlanner = () => {
     }
     
     if (deleteAfterCopy) {
-      const currentDayIndex = updatedPlannerData.findIndex(day => day.date === formattedSelectedDate);
+      const currentDayIndex = updatedPlannerData.findIndex(day => day.date === selectedDateFormatted);
       if (currentDayIndex >= 0) {
         updatedPlannerData.splice(currentDayIndex, 1);
         toast.success(`Template copied to ${format(copyToDate, "MMMM do, yyyy")} and deleted from current day`);
