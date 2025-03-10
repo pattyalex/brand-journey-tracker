@@ -1,8 +1,10 @@
+
 import { useState } from "react";
 import { PlannerItem } from "@/types/planner";
 import { Plus, Clock, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { PlannerCheckItem } from "./PlannerCheckItem";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -72,13 +74,31 @@ export const PlannerSection = ({
           <div className="space-y-3 pr-2">
             {items.length > 0 ? (
               items.map((item) => (
-                <PlannerCheckItem
-                  key={item.id}
-                  item={item}
-                  onToggle={onToggleItem}
-                  onDelete={onDeleteItem}
-                  onEdit={onEditItem}
-                />
+                <div key={item.id} className="flex items-center gap-3">
+                  <div className="w-[80px] text-xs text-right text-muted-foreground">
+                    {(item.startTime || item.endTime) && (
+                      <div className="flex flex-col">
+                        {item.startTime && <span>{item.startTime}</span>}
+                        {item.endTime && (
+                          <>
+                            {item.startTime && (
+                              <span className="text-[10px] opacity-50">to</span>
+                            )}
+                            <span>{item.endTime}</span>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <PlannerCheckItem
+                      item={item}
+                      onToggle={onToggleItem}
+                      onDelete={onDeleteItem}
+                      onEdit={onEditItem}
+                    />
+                  </div>
+                </div>
               ))
             ) : (
               <div className="text-sm text-muted-foreground italic text-center py-2 bg-white rounded-md border border-gray-200 shadow-sm">
@@ -87,63 +107,73 @@ export const PlannerSection = ({
             )}
             
             {isAddingItem ? (
-              <div className="flex flex-col gap-2 mt-2 border border-border p-2 rounded-md bg-white shadow-sm">
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center w-[100px] mr-2 text-sm text-muted-foreground">
-                    {showTimeInput ? (
-                      <Clock size={12} className="mr-1 flex-shrink-0" />
-                    ) : null}
-                  </div>
-                  <Checkbox className="h-5 w-5 mr-2 opacity-0" disabled />
-                  <Input
-                    value={newItemText}
-                    onChange={(e) => setNewItemText(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Add new item"
-                    className="flex-1 h-8 py-1 text-base text-gray-800"
-                    autoFocus
-                  />
+              <div className="flex gap-3 mt-2">
+                <div className="w-[80px] text-xs text-right text-muted-foreground">
+                  {showTimeInput && (
+                    <div className="flex flex-col">
+                      <span>{newItemStartTime || "--:--"}</span>
+                      {newItemEndTime && (
+                        <>
+                          <span className="text-[10px] opacity-50">to</span>
+                          <span>{newItemEndTime}</span>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
-                
-                {showTimeInput ? (
-                  <div className="flex items-center ml-[100px] pl-[25px] gap-2">
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs text-muted-foreground">Start:</span>
-                      <Input
-                        type="time"
-                        value={newItemStartTime}
-                        onChange={(e) => setNewItemStartTime(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        className="w-24 h-7 py-1 text-sm"
-                      />
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs text-muted-foreground">End:</span>
-                      <Input
-                        type="time"
-                        value={newItemEndTime}
-                        onChange={(e) => setNewItemEndTime(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        className="w-24 h-7 py-1 text-sm"
-                      />
-                    </div>
-                    <Button
-                      onClick={handleAddItem}
-                      size="sm"
-                      className="text-xs"
-                    >
-                      Add
-                    </Button>
+                <div className="flex-1 border border-border p-2 rounded-md bg-white shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <Checkbox className="h-5 w-5 mr-2 opacity-0" disabled />
+                    <Input
+                      value={newItemText}
+                      onChange={(e) => setNewItemText(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      placeholder="Add new item"
+                      className="flex-1 h-8 py-1 text-base text-gray-800"
+                      autoFocus
+                    />
                   </div>
-                ) : (
-                  <button
-                    onClick={() => setShowTimeInput(true)}
-                    className="flex items-center gap-1 text-muted-foreground hover:text-primary text-sm ml-[100px] pl-[25px]"
-                  >
-                    <Clock size={12} />
-                    <span>Add time</span>
-                  </button>
-                )}
+                  
+                  {showTimeInput ? (
+                    <div className="flex items-center ml-[25px] gap-2 mt-2">
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground">Start:</span>
+                        <Input
+                          type="time"
+                          value={newItemStartTime}
+                          onChange={(e) => setNewItemStartTime(e.target.value)}
+                          onKeyDown={handleKeyDown}
+                          className="w-24 h-7 py-1 text-sm"
+                        />
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground">End:</span>
+                        <Input
+                          type="time"
+                          value={newItemEndTime}
+                          onChange={(e) => setNewItemEndTime(e.target.value)}
+                          onKeyDown={handleKeyDown}
+                          className="w-24 h-7 py-1 text-sm"
+                        />
+                      </div>
+                      <Button
+                        onClick={handleAddItem}
+                        size="sm"
+                        className="text-xs"
+                      >
+                        Add
+                      </Button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setShowTimeInput(true)}
+                      className="flex items-center gap-1 text-muted-foreground hover:text-primary text-sm ml-[25px] mt-1"
+                    >
+                      <Clock size={12} />
+                      <span>Add time</span>
+                    </button>
+                  )}
+                </div>
               </div>
             ) : (
               <button

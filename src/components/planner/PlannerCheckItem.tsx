@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -65,17 +66,13 @@ export const PlannerCheckItem = ({
   const renderTimeDisplay = () => {
     if (item.startTime || item.endTime) {
       return (
-        <button 
-          onClick={handleTimeEdit} 
-          className="flex items-center hover:text-primary"
-          title="Edit time"
-        >
+        <div className="flex items-center text-xs text-muted-foreground hover:text-primary">
           {item.startTime && <span>{item.startTime}</span>}
           {item.startTime && item.endTime && (
             <ArrowRight size={10} className="mx-1" />
           )}
           {item.endTime && <span>{item.endTime}</span>}
-        </button>
+        </div>
       );
     }
     
@@ -190,12 +187,7 @@ export const PlannerCheckItem = ({
           </div>
           
           {/* Main content */}
-          <div className="flex items-center p-2 min-w-full flex-shrink-0 group">
-            <div className="flex items-center w-[100px] mr-2 text-sm text-muted-foreground">
-              <Clock size={12} className="mr-1 flex-shrink-0" />
-              {renderTimeDisplay()}
-            </div>
-            
+          <div className="flex items-center p-2 min-w-full flex-shrink-0 group">            
             <Checkbox 
               checked={item.isCompleted} 
               onCheckedChange={() => onToggle(item.id)}
@@ -208,6 +200,14 @@ export const PlannerCheckItem = ({
             >
               <span>{item.text}</span>
             </div>
+            
+            <button 
+              onClick={handleTimeEdit}
+              className="ml-2 p-1 rounded-sm text-muted-foreground hover:text-primary hover:bg-gray-100"
+              title="Edit time"
+            >
+              <Clock size={14} />
+            </button>
           </div>
           
           {/* Right side actions (swipe left to reveal) */}
