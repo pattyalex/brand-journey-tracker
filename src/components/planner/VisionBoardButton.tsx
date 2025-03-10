@@ -99,7 +99,34 @@ export const VisionBoardButton = () => {
 
   const openPDFInNewTab = () => {
     if (visionBoardData?.type === "pdf" && visionBoardData.content) {
-      window.open(visionBoardData.content, "_blank");
+      const pdfWindow = window.open();
+      if (pdfWindow) {
+        pdfWindow.document.write(`
+          <html>
+            <head>
+              <title>${visionBoardData.title || 'PDF Vision Board'}</title>
+              <style>
+                body, html {
+                  margin: 0;
+                  padding: 0;
+                  height: 100%;
+                  overflow: hidden;
+                }
+                embed {
+                  width: 100%;
+                  height: 100%;
+                }
+              </style>
+            </head>
+            <body>
+              <embed src="${visionBoardData.content}" type="application/pdf" width="100%" height="100%">
+            </body>
+          </html>
+        `);
+        pdfWindow.document.close();
+      } else {
+        toast.error("Unable to open PDF. Please check your popup settings.");
+      }
     }
   };
 
