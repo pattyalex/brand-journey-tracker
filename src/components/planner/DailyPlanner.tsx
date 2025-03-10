@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Copy, Trash2, StickyNote, Sun, Heart, ListTodo } from "lucide-react";
-import { PlannerDay, PlannerItem } from "@/types/planner";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Copy, Trash2, StickyNote, Sun, Heart, ListTodo, BookmarkCheck, Plus, Edit, X } from "lucide-react";
+import { PlannerDay, PlannerItem, GeneralTasks } from "@/types/planner";
 import { PlannerSection } from "./PlannerSection";
 import { VisionBoardButton } from "./VisionBoardButton";
 import { toast } from "sonner";
@@ -14,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -35,6 +35,10 @@ import {
 export const DailyPlanner = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [plannerData, setPlannerData] = useState<PlannerDay[]>([]);
+  const [generalTasks, setGeneralTasks] = useState<GeneralTasks[]>([]);
+  const [newGeneralTask, setNewGeneralTask] = useState<string>("");
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const [editingTaskText, setEditingTaskText] = useState<string>("");
   const [copyToDate, setCopyToDate] = useState<Date | undefined>(undefined);
   const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
   const [deleteAfterCopy, setDeleteAfterCopy] = useState(false);
@@ -50,11 +54,20 @@ export const DailyPlanner = () => {
     if (savedData) {
       setPlannerData(JSON.parse(savedData));
     }
+    
+    const savedGeneralTasks = localStorage.getItem("generalTasks");
+    if (savedGeneralTasks) {
+      setGeneralTasks(JSON.parse(savedGeneralTasks));
+    }
   }, []);
 
   useEffect(() => {
     localStorage.setItem("plannerData", JSON.stringify(plannerData));
   }, [plannerData]);
+  
+  useEffect(() => {
+    localStorage.setItem("generalTasks", JSON.stringify(generalTasks));
+  }, [generalTasks]);
 
   useEffect(() => {
     const currentDay = plannerData.find(day => day.date === dateString);
@@ -101,6 +114,89 @@ export const DailyPlanner = () => {
 
   const getSectionItems = (section: PlannerItem["section"]) => {
     return currentDay.items.filter(item => item.section === section);
+  };
+
+  const handleAddGeneralTask = () => {
+    if (newGeneralTask.trim() === "") return;
+    
+    const newTask: GeneralTasks = {
+      id: Date.now().toString(),
+      text: newGeneralTask,
+      isCompleted: false
+    };
+    
+    setGeneralTasks([...generalTasks, newTask]);
+    setNewGeneralTask("");
+    toast.success("Task added to general tasks");
+  };
+
+  const handleToggleGeneralTask = (id: string) => {
+    const updatedTasks = generalTasks.map(task => 
+      task.id === id ? { ...task, isCompleted: !task.isCompleted } : task
+    );
+    setGeneralTasks(updatedTasks);
+  };
+
+  const handleDeleteGeneralTask = (id: string) => {
+    setGeneralTasks(generalTasks.filter(task => task.id !== id));
+    toast.success("Task removed from general tasks");
+  };
+
+  const handleEditGeneralTask = (id: string) => {
+    const task = generalTasks.find(task => task.id === id);
+    if (task) {
+      setEditingTaskId(id);
+      setEditingTaskText(task.text);
+    }
+  };
+
+  const saveEditedGeneralTask = () => {
+    if (!editingTaskId) return;
+    
+    const updatedTasks = generalTasks.map(task => 
+      task.id === editingTaskId ? { ...task, text: editingTaskText } : task
+    );
+    
+    setGeneralTasks(updatedTasks);
+    setEditingTaskId(null);
+    setEditingTaskText("");
+    toast.success("Task updated");
+  };
+
+  const moveTaskToDay = (taskId: string) => {
+    const task = generalTasks.find(task => task.id === taskId);
+    if (!task) return;
+    
+    const newItem: PlannerItem = {
+      id: Date.now().toString(),
+      text: task.text,
+      section: "morning",
+      isCompleted: false,
+      date: dateString
+    };
+    
+    const dayIndex = plannerData.findIndex(day => day.date === dateString);
+    
+    if (dayIndex >= 0) {
+      const updatedPlannerData = [...plannerData];
+      updatedPlannerData[dayIndex] = {
+        ...updatedPlannerData[dayIndex],
+        items: [...updatedPlannerData[dayIndex].items, newItem]
+      };
+      setPlannerData(updatedPlannerData);
+    } else {
+      setPlannerData([...plannerData, { 
+        date: dateString, 
+        items: [newItem],
+        notes: notes,
+        tasks: tasks,
+        greatDay: greatDay,
+        grateful: grateful
+      }]);
+    }
+    
+    handleDeleteGeneralTask(taskId);
+    toast.success("Task moved to today's planner");
   };
 
   const handleAddItem = (text: string, section: PlannerItem["section"]) => {
@@ -371,6 +467,127 @@ export const DailyPlanner = () => {
         </div>
       </CardHeader>
       <CardContent className="px-0">
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-3">
+            <div className="flex items-center gap-2">
+              <BookmarkCheck className="h-5 w-5 text-blue-600" />
+              <h3 className="text-lg font-medium">Tasks</h3>
+            </div>
+            <TooltipProvider delayDuration={300}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="task" 
+                    size="sm" 
+                    className="ml-2"
+                    onClick={handleAddGeneralTask}
+                    disabled={!newGeneralTask.trim()}
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Task
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p>Add a new task to your list</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          
+          <div className="border rounded-lg p-4 bg-white shadow-sm">
+            <div className="flex items-center gap-2 mb-4">
+              <Input 
+                placeholder="Add a new task or reminder..."
+                value={newGeneralTask}
+                onChange={(e) => setNewGeneralTask(e.target.value)}
+                className="flex-1"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && newGeneralTask.trim() !== '') {
+                    handleAddGeneralTask();
+                  }
+                }}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              {generalTasks.length === 0 ? (
+                <p className="text-sm text-gray-500 italic">No tasks yet. Add a task to get started!</p>
+              ) : (
+                generalTasks.map((task) => (
+                  <div key={task.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-md group">
+                    {editingTaskId === task.id ? (
+                      <div className="flex items-center gap-2 flex-1">
+                        <Input 
+                          value={editingTaskText}
+                          onChange={(e) => setEditingTaskText(e.target.value)}
+                          className="flex-1"
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              saveEditedGeneralTask();
+                            } else if (e.key === 'Escape') {
+                              setEditingTaskId(null);
+                            }
+                          }}
+                        />
+                        <Button size="sm" variant="default" onClick={saveEditedGeneralTask}>
+                          Save
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditingTaskId(null)}>
+                          Cancel
+                        </Button>
+                      </div>
+                    ) : (
+                      <>
+                        <Checkbox 
+                          checked={task.isCompleted}
+                          onCheckedChange={() => handleToggleGeneralTask(task.id)}
+                          id={`general-task-${task.id}`}
+                        />
+                        <label 
+                          htmlFor={`general-task-${task.id}`}
+                          className={cn(
+                            "flex-1 text-sm cursor-pointer",
+                            task.isCompleted && "line-through text-gray-500"
+                          )}
+                          onClick={() => handleToggleGeneralTask(task.id)}
+                        >
+                          {task.text}
+                        </label>
+                        
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button 
+                            variant="ghost" 
+                            size="xs" 
+                            onClick={() => moveTaskToDay(task.id)}
+                            title="Move to today"
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="xs" 
+                            onClick={() => handleEditGeneralTask(task.id)}
+                          >
+                            <Edit className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="xs" 
+                            onClick={() => handleDeleteGeneralTask(task.id)}
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+        
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-2 flex-wrap">
             <Button 
@@ -521,11 +738,10 @@ export const DailyPlanner = () => {
           </div>
         </div>
         
-        {/* Add Tasks Section above the daily columns */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <ListTodo className="h-5 w-5 text-blue-500" />
-            <h3 className="text-lg font-medium">Tasks</h3>
+            <h3 className="text-lg font-medium">Today's Tasks</h3>
           </div>
           <div className="border rounded-lg p-1">
             <Textarea
