@@ -10,7 +10,6 @@ export interface PlannerItem {
 export interface PlannerDay {
   date: string; // ISO string format
   items: PlannerItem[];
-  notes?: string; // Optional notes for the day
   tasks?: string; // Optional tasks section
   greatDay?: string; // Optional "What would make today great?" section
   grateful?: string; // Optional "Things I'm grateful for today" section

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
-import { Copy, Trash2, StickyNote, Sun, Heart, ListTodo } from "lucide-react";
+import { Copy, Trash2, Sun, Heart, ListTodo } from "lucide-react";
 import { PlannerDay, PlannerItem } from "@/types/planner";
 import { PlannerSection } from "./PlannerSection";
 import { toast } from "sonner";
@@ -34,7 +34,6 @@ export const DailyPlanner = () => {
   const [copyToDate, setCopyToDate] = useState<Date | undefined>(undefined);
   const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
   const [deleteAfterCopy, setDeleteAfterCopy] = useState(false);
-  const [notes, setNotes] = useState<string>("");
   const [tasks, setTasks] = useState<string>("");
   const [greatDay, setGreatDay] = useState<string>("");
   const [grateful, setGrateful] = useState<string>("");
@@ -55,12 +54,6 @@ export const DailyPlanner = () => {
   useEffect(() => {
     const currentDay = plannerData.find(day => day.date === dateString);
     if (currentDay) {
-      if (currentDay.notes) {
-        setNotes(currentDay.notes);
-      } else {
-        setNotes("");
-      }
-      
       if (currentDay.tasks) {
         setTasks(currentDay.tasks);
       } else {
@@ -79,7 +72,6 @@ export const DailyPlanner = () => {
         setGrateful("");
       }
     } else {
-      setNotes("");
       setTasks("");
       setGreatDay("");
       setGrateful("");
@@ -89,7 +81,6 @@ export const DailyPlanner = () => {
   const currentDay = plannerData.find(day => day.date === dateString) || {
     date: dateString,
     items: [],
-    notes: "",
     tasks: "",
     greatDay: "",
     grateful: ""
@@ -121,9 +112,9 @@ export const DailyPlanner = () => {
       setPlannerData([...plannerData, { 
         date: dateString, 
         items: [newItem],
-        notes: "",
-        greatDay: "",
-        grateful: ""
+        tasks: tasks,
+        greatDay: greatDay,
+        grateful: grateful
       }]);
     }
   };
@@ -249,32 +240,6 @@ export const DailyPlanner = () => {
     }
   };
 
-  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newNotes = e.target.value;
-    setNotes(newNotes);
-    
-    const dayIndex = plannerData.findIndex(day => day.date === dateString);
-    const updatedPlannerData = [...plannerData];
-    
-    if (dayIndex >= 0) {
-      updatedPlannerData[dayIndex] = {
-        ...updatedPlannerData[dayIndex],
-        notes: newNotes
-      };
-    } else {
-      updatedPlannerData.push({
-        date: dateString,
-        items: [],
-        notes: newNotes,
-        tasks: tasks,
-        greatDay: greatDay,
-        grateful: grateful
-      });
-    }
-    
-    setPlannerData(updatedPlannerData);
-  };
-
   const handleTasksChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newTasks = e.target.value;
     setTasks(newTasks);
@@ -291,7 +256,6 @@ export const DailyPlanner = () => {
       updatedPlannerData.push({
         date: dateString,
         items: [],
-        notes: notes,
         tasks: newTasks,
         greatDay: greatDay,
         grateful: grateful
@@ -317,7 +281,7 @@ export const DailyPlanner = () => {
       updatedPlannerData.push({
         date: dateString,
         items: [],
-        notes: notes,
+        tasks: tasks,
         greatDay: newGreatDay,
         grateful: grateful
       });
@@ -342,7 +306,7 @@ export const DailyPlanner = () => {
       updatedPlannerData.push({
         date: dateString,
         items: [],
-        notes: notes,
+        tasks: tasks,
         greatDay: greatDay,
         grateful: newGrateful
       });
@@ -505,7 +469,6 @@ export const DailyPlanner = () => {
                     setPlannerData([...plannerData, { 
                       date: dateString, 
                       items: [newItem],
-                      notes: notes,
                       tasks: tasks,
                       greatDay: greatDay,
                       grateful: grateful
@@ -568,21 +531,6 @@ export const DailyPlanner = () => {
         
         <div className="mt-8">
           <div className="flex items-center gap-2 mb-3">
-            <StickyNote className="h-5 w-5" />
-            <h3 className="text-lg font-medium">Notes</h3>
-          </div>
-          <div className="border rounded-lg p-1">
-            <Textarea
-              value={notes}
-              onChange={handleNotesChange}
-              placeholder="Write your notes, reminders or thoughts for the day..."
-              className="min-h-[150px] resize-none"
-            />
-          </div>
-        </div>
-        
-        <div className="mt-8">
-          <div className="flex items-center gap-2 mb-3">
             <Sun className="h-5 w-5 text-amber-500" />
             <h3 className="text-lg font-medium">What would make today great?</h3>
           </div>
@@ -616,7 +564,7 @@ export const DailyPlanner = () => {
                     setPlannerData([...plannerData, { 
                       date: dateString, 
                       items: [newItem],
-                      notes: notes,
+                      tasks: tasks,
                       greatDay: greatDay,
                       grateful: grateful
                     }]);
@@ -663,7 +611,7 @@ export const DailyPlanner = () => {
                     setPlannerData([...plannerData, { 
                       date: dateString, 
                       items: [newItem],
-                      notes: notes,
+                      tasks: tasks,
                       greatDay: greatDay,
                       grateful: grateful
                     }]);
@@ -679,4 +627,3 @@ export const DailyPlanner = () => {
     </Card>
   );
 };
-
