@@ -62,9 +62,9 @@ export const PlannerSection = ({
   };
 
   return (
-    <Card className="h-full border border-border shadow-sm">
+    <Card className="h-full border border-border shadow-sm bg-gray-50">
       <CardHeader className="pb-2 bg-muted/50">
-        <CardTitle className="text-lg font-medium">{title}</CardTitle>
+        <CardTitle className="text-lg font-medium text-gray-800">{title}</CardTitle>
       </CardHeader>
       <CardContent className="pt-3">
         <ScrollArea className="h-[calc(100vh-350px)]">
@@ -80,13 +80,13 @@ export const PlannerSection = ({
                 />
               ))
             ) : (
-              <div className="text-sm text-muted-foreground italic text-center py-2">
+              <div className="text-sm text-muted-foreground italic text-center py-2 bg-white rounded-md border border-gray-200 shadow-sm">
                 No tasks in this section
               </div>
             )}
             
             {isAddingItem ? (
-              <div className="flex flex-col gap-2 mt-2 border border-border p-2 rounded-md">
+              <div className="flex flex-col gap-2 mt-2 border border-border p-2 rounded-md bg-white shadow-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5"></div>
                   <Input
@@ -94,7 +94,7 @@ export const PlannerSection = ({
                     onChange={(e) => setNewItemText(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Add new item"
-                    className="flex-1 h-8 py-1 text-base"
+                    className="flex-1 h-8 py-1 text-base text-gray-800"
                     autoFocus
                   />
                 </div>
@@ -142,7 +142,7 @@ export const PlannerSection = ({
             ) : (
               <button
                 onClick={() => setIsAddingItem(true)}
-                className="flex items-center gap-2 text-muted-foreground hover:text-primary text-base mt-2 w-full p-2 rounded-md hover:bg-muted/50"
+                className="flex items-center gap-2 text-muted-foreground hover:text-primary text-base mt-2 w-full p-2 rounded-md hover:bg-white hover:shadow-sm"
               >
                 <Plus size={18} />
                 <span>Add item</span>

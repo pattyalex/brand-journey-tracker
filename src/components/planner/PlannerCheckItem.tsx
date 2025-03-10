@@ -42,7 +42,7 @@ export const PlannerCheckItem = ({
   };
 
   return (
-    <div className="flex items-center gap-2 group bg-white p-2 rounded-md">
+    <div className="flex items-center gap-2 group bg-white p-2 rounded-md border border-gray-200 shadow-sm">
       {isEditing ? (
         <div className="flex flex-1 items-center gap-1">
           <Input
@@ -95,7 +95,7 @@ export const PlannerCheckItem = ({
             className="h-5 w-5 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
           />
           
-          <div className={`flex-1 text-base ${item.isCompleted ? 'line-through text-muted-foreground' : ''}`}>
+          <div className={`flex-1 text-base ${item.isCompleted ? 'line-through text-muted-foreground' : 'text-gray-800'}`}>
             <span>{item.text}</span>
           </div>
           
