@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from "react";
-import { Eye, ExternalLink, Upload, X } from "lucide-react";
+import { Eye, ExternalLink, Upload, X, Maximize } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ export const VisionBoardButton = () => {
   const [title, setTitle] = useState("");
   const [linkUrl, setLinkUrl] = useState("");
   const [activeSection, setActiveSection] = useState<"upload" | "link" | "view">("view");
+  const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load vision board data from localStorage on component mount
@@ -118,6 +119,11 @@ export const VisionBoardButton = () => {
     fileInputRef.current?.click();
   };
 
+  // Toggle the full screen view
+  const toggleFullScreen = () => {
+    setIsFullScreenOpen(!isFullScreenOpen);
+  };
+
   const renderContent = () => {
     // If we're already showing a vision board, show it with the remove option
     if (visionBoardData && activeSection === "view") {
@@ -143,20 +149,31 @@ export const VisionBoardButton = () => {
               </div>
             ) : (
               <>
-                <img 
-                  src={visionBoardData.content}
-                  alt="Vision Board"
-                  className="w-full h-auto max-h-[400px] object-contain rounded-md"
-                  onError={() => toast.error("Unable to load image.")}
-                />
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="absolute top-2 right-2 bg-background/80 rounded-full"
-                  onClick={handleRemoveVisionBoard}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+                <div className="relative">
+                  <img 
+                    src={visionBoardData.content}
+                    alt="Vision Board"
+                    className="w-full h-auto max-h-[400px] object-contain rounded-md cursor-pointer"
+                    onError={() => toast.error("Unable to load image.")}
+                    onClick={toggleFullScreen}
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="absolute top-2 right-2 bg-background/80 rounded-full"
+                    onClick={handleRemoveVisionBoard}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="absolute bottom-2 right-2 bg-background/80 rounded-full"
+                    onClick={toggleFullScreen}
+                  >
+                    <Maximize className="h-4 w-4" />
+                  </Button>
+                </div>
               </>
             )}
           </div>
@@ -279,35 +296,59 @@ export const VisionBoardButton = () => {
     );
   };
 
+  // Full screen dialog for viewing images
+  const renderFullScreenDialog = () => {
+    if (!visionBoardData || visionBoardData.type !== "image" || visionBoardData.content.includes("application/pdf")) {
+      return null;
+    }
+
+    return (
+      <Dialog open={isFullScreenOpen} onOpenChange={setIsFullScreenOpen}>
+        <DialogContent className="max-w-screen max-h-screen w-[90vw] h-[90vh] flex items-center justify-center">
+          <img 
+            src={visionBoardData.content}
+            alt="Vision Board"
+            className="max-w-full max-h-full object-contain"
+            onError={() => toast.error("Unable to load image.")}
+          />
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={handleDialogClose}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
-          <Eye className="h-4 w-4" />
-          Vision Board
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader>
-          <DialogTitle>
-            {visionBoardData ? visionBoardData.title || "Vision Board" : "Vision Board"}
-          </DialogTitle>
-          <DialogDescription>
-            Visualize your goals and aspirations to stay motivated.
-          </DialogDescription>
-        </DialogHeader>
-
-        {renderContent()}
-
-        <DialogFooter>
-          <Button 
-            variant="secondary" 
-            onClick={() => setIsOpen(false)}
-          >
-            Close
+    <>
+      <Dialog open={isOpen} onOpenChange={handleDialogClose}>
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm" className="gap-2">
+            <Eye className="h-4 w-4" />
+            Vision Board
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[550px]">
+          <DialogHeader>
+            <DialogTitle>
+              {visionBoardData ? visionBoardData.title || "Vision Board" : "Vision Board"}
+            </DialogTitle>
+            <DialogDescription>
+              Visualize your goals and aspirations to stay motivated.
+            </DialogDescription>
+          </DialogHeader>
+
+          {renderContent()}
+
+          <DialogFooter>
+            <Button 
+              variant="secondary" 
+              onClick={() => setIsOpen(false)}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {renderFullScreenDialog()}
+    </>
   );
 };
