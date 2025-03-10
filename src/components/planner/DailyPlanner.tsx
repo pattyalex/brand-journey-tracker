@@ -359,14 +359,11 @@ export const DailyPlanner = () => {
   return (
     <Card className="border-none shadow-none">
       <CardHeader className="px-0">
-        <div className="flex justify-between items-center">
-          <div>
-            <CardTitle className="text-xl">Daily Planner</CardTitle>
-            <CardDescription>
-              Plan your day and organize your schedule
-            </CardDescription>
-          </div>
-          <VisionBoardButton />
+        <div>
+          <CardTitle className="text-xl">Daily Planner</CardTitle>
+          <CardDescription>
+            Plan your day and organize your schedule
+          </CardDescription>
         </div>
       </CardHeader>
       <CardContent className="px-0">
