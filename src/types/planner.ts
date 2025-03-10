@@ -17,7 +17,7 @@ export interface PlannerDay {
 }
 
 export interface VisionBoardData {
-  type: "image" | "link";
-  content: string; // Either image URL or external link URL
+  type: "image" | "link" | "pdf";
+  content: string; // Either image URL or external link URL or PDF data URL
   title?: string; // Optional title for the vision board
 }

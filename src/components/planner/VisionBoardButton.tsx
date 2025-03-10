@@ -1,6 +1,5 @@
-
 import { useState, useEffect, useRef } from "react";
-import { Eye, ExternalLink, Upload, X, Maximize } from "lucide-react";
+import { Eye, ExternalLink, Upload, X, Maximize, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -17,7 +16,6 @@ export const VisionBoardButton = () => {
   const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load vision board data from localStorage on component mount
   useEffect(() => {
     const savedData = localStorage.getItem("visionBoardData");
     if (savedData) {
@@ -25,7 +23,6 @@ export const VisionBoardButton = () => {
     }
   }, []);
 
-  // Handle actual file upload
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     
@@ -34,20 +31,18 @@ export const VisionBoardButton = () => {
       return;
     }
 
-    // Check file type
     const fileType = file.type;
     if (!fileType.startsWith("image/") && fileType !== "application/pdf") {
       toast.error("Please upload an image (JPG, PNG) or PDF file");
       return;
     }
 
-    // Convert file to data URL
     const reader = new FileReader();
     reader.onload = (e) => {
       const fileDataUrl = e.target?.result as string;
       
       const newVisionBoard: VisionBoardData = {
-        type: "image",
+        type: fileType === "application/pdf" ? "pdf" : "image",
         content: fileDataUrl,
         title: title || "My Vision Board"
       };
@@ -65,14 +60,12 @@ export const VisionBoardButton = () => {
     reader.readAsDataURL(file);
   };
 
-  // Handle link upload
   const handleLinkUpload = () => {
     if (!linkUrl) {
       toast.error("Please enter a valid URL");
       return;
     }
 
-    // Simple URL validation
     if (!linkUrl.startsWith("http://") && !linkUrl.startsWith("https://")) {
       toast.error("Please enter a valid URL starting with http:// or https://");
       return;
@@ -90,7 +83,6 @@ export const VisionBoardButton = () => {
     toast.success("Vision board link saved!");
   };
 
-  // Handle removing the vision board
   const handleRemoveVisionBoard = () => {
     setVisionBoardData(null);
     localStorage.removeItem("visionBoardData");
@@ -99,14 +91,18 @@ export const VisionBoardButton = () => {
     toast.success("Vision board removed");
   };
 
-  // Open external link in a new tab
   const openExternalLink = () => {
     if (visionBoardData?.type === "link" && visionBoardData.content) {
       window.open(visionBoardData.content, "_blank", "noopener,noreferrer");
     }
   };
 
-  // Reset form when dialog closes
+  const openPDFInNewTab = () => {
+    if (visionBoardData?.type === "pdf" && visionBoardData.content) {
+      window.open(visionBoardData.content, "_blank");
+    }
+  };
+
   const handleDialogClose = (open: boolean) => {
     setIsOpen(open);
     if (!open) {
@@ -114,68 +110,66 @@ export const VisionBoardButton = () => {
     }
   };
 
-  // Trigger file input click
   const triggerFileUpload = () => {
     fileInputRef.current?.click();
   };
 
-  // Toggle the full screen view
   const toggleFullScreen = () => {
     setIsFullScreenOpen(!isFullScreenOpen);
   };
 
   const renderContent = () => {
-    // If we're already showing a vision board, show it with the remove option
     if (visionBoardData && activeSection === "view") {
       if (visionBoardData.type === "image") {
         return (
           <div className="relative w-full">
-            {visionBoardData.content.includes("application/pdf") ? (
-              <div className="flex flex-col items-center gap-4 border rounded-md p-4">
-                <p>PDF Vision Board</p>
-                <Button 
-                  onClick={() => window.open(visionBoardData.content, "_blank")}
-                >
-                  View PDF
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="absolute top-2 right-2 bg-background/80 rounded-full"
-                  onClick={handleRemoveVisionBoard}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ) : (
-              <>
-                <div className="relative">
-                  <img 
-                    src={visionBoardData.content}
-                    alt="Vision Board"
-                    className="w-full h-auto max-h-[400px] object-contain rounded-md cursor-pointer"
-                    onError={() => toast.error("Unable to load image.")}
-                    onClick={toggleFullScreen}
-                  />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="absolute top-2 right-2 bg-background/80 rounded-full"
-                    onClick={handleRemoveVisionBoard}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="absolute bottom-2 right-2 bg-background/80 rounded-full"
-                    onClick={toggleFullScreen}
-                  >
-                    <Maximize className="h-4 w-4" />
-                  </Button>
-                </div>
-              </>
-            )}
+            <div className="relative">
+              <img 
+                src={visionBoardData.content}
+                alt="Vision Board"
+                className="w-full h-auto max-h-[400px] object-contain rounded-md cursor-pointer"
+                onError={() => toast.error("Unable to load image.")}
+                onClick={toggleFullScreen}
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute top-2 right-2 bg-background/80 rounded-full"
+                onClick={handleRemoveVisionBoard}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute bottom-2 right-2 bg-background/80 rounded-full"
+                onClick={toggleFullScreen}
+              >
+                <Maximize className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        );
+      } else if (visionBoardData.type === "pdf") {
+        return (
+          <div className="flex flex-col items-center gap-4 border rounded-md p-6 relative">
+            <FileText className="h-16 w-16 text-primary" />
+            <p className="text-center font-medium">PDF Vision Board</p>
+            <Button 
+              onClick={openPDFInNewTab}
+              className="gap-2"
+            >
+              <Eye className="h-4 w-4" />
+              View PDF
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="absolute top-2 right-2 bg-background/80 rounded-full"
+              onClick={handleRemoveVisionBoard}
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
         );
       } else {
@@ -199,7 +193,6 @@ export const VisionBoardButton = () => {
       }
     }
 
-    // If we're in upload mode, show the upload form
     if (activeSection === "upload") {
       return (
         <div className="space-y-4">
@@ -241,7 +234,6 @@ export const VisionBoardButton = () => {
       );
     }
 
-    // If we're in link mode, show the link form
     if (activeSection === "link") {
       return (
         <div className="space-y-4">
@@ -276,7 +268,6 @@ export const VisionBoardButton = () => {
       );
     }
 
-    // Default view - just show the two main options
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-6">
         <p className="text-center text-muted-foreground mb-4">
@@ -296,7 +287,6 @@ export const VisionBoardButton = () => {
     );
   };
 
-  // Full screen view for images - now truly full screen
   const renderFullScreenDialog = () => {
     if (!visionBoardData || visionBoardData.type !== "image" || visionBoardData.content.includes("application/pdf")) {
       return null;
