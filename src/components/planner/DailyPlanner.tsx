@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from "react";
-import { format, addDays, subDays, isSameDay, parseISO } from "date-fns";
+import { format, addDays, subDays } from "date-fns";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Copy, Trash2, StickyNote, Sun, Heart, ListTodo } from "lucide-react";
 import { PlannerDay, PlannerItem } from "@/types/planner";
 import { PlannerSection } from "./PlannerSection";
@@ -193,33 +194,14 @@ export const DailyPlanner = () => {
   const copyTemplate = () => {
     if (!copyToDate) return;
     
-    // Get the target date string in ISO format (YYYY-MM-DD)
     const targetDateString = copyToDate.toISOString().split('T')[0];
     
-    // Get the source date string (the currently selected date)
-    const sourceDateString = dateString;
-    
-    // Log dates for debugging
-    console.log('Source date:', sourceDateString);
-    console.log('Target date:', targetDateString);
-    
-    // Make sure we're not copying to the same day
-    if (targetDateString === sourceDateString) {
+    if (targetDateString === dateString) {
       toast.error("Cannot copy to the same day");
       return;
     }
     
-    // Find the source day in the planner data
-    const sourceDay = plannerData.find(day => day.date === sourceDateString);
-    
-    // If there is no source day data, show a message and return
-    if (!sourceDay || sourceDay.items.length === 0) {
-      toast.error("No items to copy from this day");
-      return;
-    }
-    
-    // Create new items for the target day, with new IDs and updated date
-    const newItems = sourceDay.items.map(item => ({
+    const newItems = currentDay.items.map(item => ({
       ...item,
       id: Date.now() + Math.random().toString(),
       date: targetDateString,
@@ -230,31 +212,25 @@ export const DailyPlanner = () => {
     let updatedPlannerData = [...plannerData];
     
     if (targetDayIndex >= 0) {
-      // Replace the items array instead of appending to it to prevent duplication
       updatedPlannerData[targetDayIndex] = {
         ...updatedPlannerData[targetDayIndex],
-        items: newItems  // Replace instead of append
+        items: [...updatedPlannerData[targetDayIndex].items, ...newItems]
       };
-      toast.success(`Template copied to ${format(copyToDate, "MMMM do, yyyy")}`);
     } else {
-      // If the target day doesn't exist yet, create it
       updatedPlannerData = [...updatedPlannerData, {
         date: targetDateString,
-        items: newItems,
-        notes: "",
-        tasks: "",
-        greatDay: "",
-        grateful: ""
+        items: newItems
       }];
-      toast.success(`Template copied to ${format(copyToDate, "MMMM do, yyyy")}`);
     }
     
     if (deleteAfterCopy) {
-      const currentDayIndex = updatedPlannerData.findIndex(day => day.date === sourceDateString);
+      const currentDayIndex = updatedPlannerData.findIndex(day => day.date === dateString);
       if (currentDayIndex >= 0) {
         updatedPlannerData.splice(currentDayIndex, 1);
         toast.success(`Template copied to ${format(copyToDate, "MMMM do, yyyy")} and deleted from current day`);
       }
+    } else {
+      toast.success(`Template copied to ${format(copyToDate, "MMMM do, yyyy")}`);
     }
     
     setPlannerData(updatedPlannerData);
@@ -541,6 +517,7 @@ export const DailyPlanner = () => {
           </div>
         </div>
         
+        {/* Tasks section moved below the date controls */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <ListTodo className="h-5 w-5 text-blue-500" />
