@@ -359,9 +359,6 @@ export const DailyPlanner = () => {
       <CardHeader className="px-0">
         <div>
           <CardTitle className="text-xl">Daily Planner</CardTitle>
-          <CardDescription>
-            Plan your day and organize your schedule
-          </CardDescription>
         </div>
       </CardHeader>
       <CardContent className="px-0">
@@ -523,6 +520,13 @@ export const DailyPlanner = () => {
               }}
             />
           </div>
+        </div>
+        
+        {/* Moved description text to here, right above the day sections */}
+        <div className="mb-6">
+          <CardDescription>
+            Plan your day and organize your schedule
+          </CardDescription>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
