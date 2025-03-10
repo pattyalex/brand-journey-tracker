@@ -100,13 +100,14 @@ export const DailyPlanner = () => {
     return currentDay.items.filter(item => item.section === section);
   };
 
-  const handleAddItem = (text: string, section: PlannerItem["section"]) => {
+  const handleAddItem = (text: string, section: PlannerItem["section"], time?: string) => {
     const newItem: PlannerItem = {
       id: Date.now().toString(),
       text,
       section,
       isCompleted: false,
-      date: dateString
+      date: dateString,
+      time
     };
 
     const dayIndex = plannerData.findIndex(day => day.date === dateString);
@@ -158,7 +159,7 @@ export const DailyPlanner = () => {
     toast.success("Item removed");
   };
 
-  const handleEditItem = (id: string, newText: string) => {
+  const handleEditItem = (id: string, newText: string, newTime?: string) => {
     const dayIndex = plannerData.findIndex(day => day.date === dateString);
     if (dayIndex < 0) return;
 
@@ -168,7 +169,8 @@ export const DailyPlanner = () => {
     if (itemIndex >= 0) {
       updatedPlannerData[dayIndex].items[itemIndex] = {
         ...updatedPlannerData[dayIndex].items[itemIndex],
-        text: newText
+        text: newText,
+        time: newTime
       };
       setPlannerData(updatedPlannerData);
       toast.success("Item updated");

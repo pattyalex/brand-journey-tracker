@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { PlannerItem } from "@/types/planner";
-import { Plus } from "lucide-react";
+import { Plus, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PlannerCheckItem } from "./PlannerCheckItem";
@@ -13,8 +13,8 @@ interface PlannerSectionProps {
   section: PlannerItem["section"];
   onToggleItem: (id: string) => void;
   onDeleteItem: (id: string) => void;
-  onEditItem: (id: string, newText: string) => void;
-  onAddItem: (text: string, section: PlannerItem["section"]) => void;
+  onEditItem: (id: string, newText: string, newTime?: string) => void;
+  onAddItem: (text: string, section: PlannerItem["section"], time?: string) => void;
 }
 
 export const PlannerSection = ({
@@ -27,13 +27,17 @@ export const PlannerSection = ({
   onAddItem
 }: PlannerSectionProps) => {
   const [newItemText, setNewItemText] = useState("");
+  const [newItemTime, setNewItemTime] = useState("");
   const [isAddingItem, setIsAddingItem] = useState(false);
+  const [showTimeInput, setShowTimeInput] = useState(false);
 
   const handleAddItem = () => {
     if (newItemText.trim()) {
-      onAddItem(newItemText, section);
+      onAddItem(newItemText, section, newItemTime || undefined);
       setNewItemText("");
+      setNewItemTime("");
       setIsAddingItem(false);
+      setShowTimeInput(false);
     }
   };
 
@@ -43,6 +47,8 @@ export const PlannerSection = ({
     } else if (e.key === "Escape") {
       setIsAddingItem(false);
       setNewItemText("");
+      setNewItemTime("");
+      setShowTimeInput(false);
     }
   };
 
@@ -65,16 +71,45 @@ export const PlannerSection = ({
             ))}
             
             {isAddingItem ? (
-              <div className="flex items-center gap-2 mt-2">
-                <div className="w-5 h-5"></div> {/* Increased placeholder size for alignment */}
-                <Input
-                  value={newItemText}
-                  onChange={(e) => setNewItemText(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Add new item"
-                  className="flex-1 h-8 py-1 text-base"
-                  autoFocus
-                />
+              <div className="flex flex-col gap-2 mt-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5"></div>
+                  <Input
+                    value={newItemText}
+                    onChange={(e) => setNewItemText(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Add new item"
+                    className="flex-1 h-8 py-1 text-base"
+                    autoFocus
+                  />
+                </div>
+                
+                {showTimeInput ? (
+                  <div className="flex items-center gap-2 ml-7">
+                    <Input
+                      type="time"
+                      value={newItemTime}
+                      onChange={(e) => setNewItemTime(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      className="w-32 h-7 py-1 text-sm"
+                      placeholder="Time"
+                    />
+                    <button
+                      onClick={handleAddItem}
+                      className="text-primary hover:text-primary/80 text-sm"
+                    >
+                      Add
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowTimeInput(true)}
+                    className="flex items-center gap-1 text-muted-foreground hover:text-primary text-sm ml-7"
+                  >
+                    <Clock size={12} />
+                    <span>Add time</span>
+                  </button>
+                )}
               </div>
             ) : (
               <button
