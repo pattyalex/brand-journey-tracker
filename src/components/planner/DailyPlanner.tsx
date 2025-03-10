@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Copy, Trash2, StickyNote, Sun, Heart, ListTodo } from "lucide-react";
@@ -371,7 +370,6 @@ export const DailyPlanner = () => {
         </div>
       </CardHeader>
       <CardContent className="px-0">
-        {/* Tasks Section moved above the date controls */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <ListTodo className="h-5 w-5 text-blue-500" />
@@ -381,7 +379,7 @@ export const DailyPlanner = () => {
             <Textarea
               value={tasks}
               onChange={handleTasksChange}
-              placeholder="Write down your tasks for the day..."
+              placeholder="Write down your to dos..."
               className="min-h-[120px] resize-none"
               onTextSelect={(selectedText) => {
                 if (selectedText) {
