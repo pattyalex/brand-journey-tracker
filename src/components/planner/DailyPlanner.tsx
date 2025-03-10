@@ -344,7 +344,7 @@ export const DailyPlanner = () => {
         items: [],
         notes: notes,
         greatDay: greatDay,
-        grateful: grateful
+        grateful: newGrateful
       });
     }
     
@@ -470,11 +470,10 @@ export const DailyPlanner = () => {
           </div>
         </div>
         
-        {/* Updated Tasks section title and placeholder text */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <ListTodo className="h-5 w-5 text-blue-500" />
-            <h3 className="text-lg font-medium">Tasks and Notes</h3>
+            <h3 className="text-lg font-medium">To-Dos</h3>
           </div>
           <div className="border rounded-lg p-1">
             <Textarea
@@ -519,7 +518,6 @@ export const DailyPlanner = () => {
           </div>
         </div>
         
-        {/* Moved description text to here, right above the day sections */}
         <div className="mb-6">
           <CardDescription>
             Schedule your tasks and organize your day:
@@ -681,3 +679,4 @@ export const DailyPlanner = () => {
     </Card>
   );
 };
+
