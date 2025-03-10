@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
 import { Copy, Trash2, StickyNote, Sun, Heart, ListTodo } from "lucide-react";
@@ -9,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar } from "@/components/ui/calendar";
+import { Calendar } from "@/components/ui/calendar"; // Adding the missing Calendar import
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -472,6 +473,7 @@ export const DailyPlanner = () => {
           </div>
         </div>
         
+        {/* Updated Tasks section title and placeholder text */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <ListTodo className="h-5 w-5 text-blue-500" />
@@ -520,6 +522,7 @@ export const DailyPlanner = () => {
           </div>
         </div>
         
+        {/* Moved description text to here, right above the day sections */}
         <div className="mb-6">
           <CardDescription>
             Schedule your tasks and organize your day:
