@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Eye, ExternalLink, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -11,10 +11,10 @@ import { VisionBoardData } from "@/types/planner";
 export const VisionBoardButton = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [visionBoardData, setVisionBoardData] = useState<VisionBoardData | null>(null);
-  const [imageUrl, setImageUrl] = useState("");
-  const [linkUrl, setLinkUrl] = useState("");
   const [title, setTitle] = useState("");
+  const [linkUrl, setLinkUrl] = useState("");
   const [activeSection, setActiveSection] = useState<"upload" | "link" | "view">("view");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load vision board data from localStorage on component mount
   useEffect(() => {
@@ -24,23 +24,44 @@ export const VisionBoardButton = () => {
     }
   }, []);
 
-  // Handle image upload through URL
-  const handleImageUpload = () => {
-    if (!imageUrl) {
-      toast.error("Please enter an image URL");
+  // Handle actual file upload
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    
+    if (!file) {
+      toast.error("No file selected");
       return;
     }
 
-    const newVisionBoard: VisionBoardData = {
-      type: "image",
-      content: imageUrl,
-      title: title || "My Vision Board"
+    // Check file type
+    const fileType = file.type;
+    if (!fileType.startsWith("image/") && fileType !== "application/pdf") {
+      toast.error("Please upload an image (JPG, PNG) or PDF file");
+      return;
+    }
+
+    // Convert file to data URL
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const fileDataUrl = e.target?.result as string;
+      
+      const newVisionBoard: VisionBoardData = {
+        type: "image",
+        content: fileDataUrl,
+        title: title || "My Vision Board"
+      };
+
+      setVisionBoardData(newVisionBoard);
+      localStorage.setItem("visionBoardData", JSON.stringify(newVisionBoard));
+      setActiveSection("view");
+      toast.success("Vision board uploaded!");
     };
 
-    setVisionBoardData(newVisionBoard);
-    localStorage.setItem("visionBoardData", JSON.stringify(newVisionBoard));
-    setActiveSection("view");
-    toast.success("Vision board image saved!");
+    reader.onerror = () => {
+      toast.error("Error reading file");
+    };
+
+    reader.readAsDataURL(file);
   };
 
   // Handle link upload
@@ -72,9 +93,8 @@ export const VisionBoardButton = () => {
   const handleRemoveVisionBoard = () => {
     setVisionBoardData(null);
     localStorage.removeItem("visionBoardData");
-    setImageUrl("");
-    setLinkUrl("");
     setTitle("");
+    setLinkUrl("");
     toast.success("Vision board removed");
   };
 
@@ -93,6 +113,11 @@ export const VisionBoardButton = () => {
     }
   };
 
+  // Trigger file input click
+  const triggerFileUpload = () => {
+    fileInputRef.current?.click();
+  };
+
   const renderContent = () => {
     if (activeSection === "upload") {
       return (
@@ -108,21 +133,28 @@ export const VisionBoardButton = () => {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="image-url">Image URL</Label>
-            <Input
-              id="image-url"
-              placeholder="https://example.com/my-vision-board.jpg"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              className="hidden"
+              accept="image/*,application/pdf"
             />
+            <Button 
+              onClick={triggerFileUpload} 
+              className="w-full py-8 border-dashed border-2"
+              variant="outline"
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Click to upload image or PDF
+            </Button>
             <p className="text-xs text-muted-foreground">
-              Enter the URL of an image to use as your vision board
+              Select a JPG, PNG or PDF file from your computer
             </p>
           </div>
           
           <div className="flex justify-end gap-2 mt-4">
             <Button variant="outline" onClick={() => setActiveSection("view")}>Cancel</Button>
-            <Button onClick={handleImageUpload}>Save</Button>
           </div>
         </div>
       );
@@ -168,20 +200,41 @@ export const VisionBoardButton = () => {
           <>
             {visionBoardData.type === "image" ? (
               <div className="relative w-full">
-                <img 
-                  src={visionBoardData.content}
-                  alt="Vision Board"
-                  className="w-full h-auto max-h-[400px] object-contain rounded-md"
-                  onError={() => toast.error("Unable to load image. Please check the URL.")}
-                />
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="absolute top-2 right-2 bg-background/80 rounded-full"
-                  onClick={handleRemoveVisionBoard}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+                {visionBoardData.content.includes("application/pdf") ? (
+                  <div className="flex flex-col items-center gap-4 border rounded-md p-4">
+                    <p>PDF Vision Board</p>
+                    <Button 
+                      onClick={() => window.open(visionBoardData.content, "_blank")}
+                    >
+                      View PDF
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="absolute top-2 right-2 bg-background/80 rounded-full"
+                      onClick={handleRemoveVisionBoard}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <img 
+                      src={visionBoardData.content}
+                      alt="Vision Board"
+                      className="w-full h-auto max-h-[400px] object-contain rounded-md"
+                      onError={() => toast.error("Unable to load image.")}
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="absolute top-2 right-2 bg-background/80 rounded-full"
+                      onClick={handleRemoveVisionBoard}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
               </div>
             ) : (
               <div className="flex flex-col items-center gap-4 w-full">
@@ -209,11 +262,11 @@ export const VisionBoardButton = () => {
             <div className="flex gap-4">
               <Button onClick={() => setActiveSection("upload")} variant="vision">
                 <Upload className="h-4 w-4 mr-2" />
-                Upload Image
+                Upload
               </Button>
               <Button onClick={() => setActiveSection("link")} variant="outline">
                 <ExternalLink className="h-4 w-4 mr-2" />
-                External Link
+                Link
               </Button>
             </div>
           </div>
