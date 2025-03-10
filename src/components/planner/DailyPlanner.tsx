@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
-import { Copy, Trash2, Sun, Heart, ListTodo } from "lucide-react";
+import { Copy, Trash2, Sun, Heart, ListTodo, CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { PlannerDay, PlannerItem } from "@/types/planner";
 import { PlannerSection } from "./PlannerSection";
 import { toast } from "sonner";
@@ -27,6 +27,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export const DailyPlanner = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -37,6 +42,7 @@ export const DailyPlanner = () => {
   const [tasks, setTasks] = useState<string>("");
   const [greatDay, setGreatDay] = useState<string>("");
   const [grateful, setGrateful] = useState<string>("");
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   const dateString = selectedDate.toISOString().split('T')[0];
 
@@ -176,6 +182,7 @@ export const DailyPlanner = () => {
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
       setSelectedDate(date);
+      setCalendarOpen(false);
     }
   };
 
@@ -308,7 +315,7 @@ export const DailyPlanner = () => {
         items: [],
         tasks: tasks,
         greatDay: greatDay,
-        grateful: newGrateful
+        grateful: grateful
       });
     }
     
@@ -317,13 +324,55 @@ export const DailyPlanner = () => {
 
   const hasItems = currentDay.items.length > 0;
 
+  // Filter out days with items to highlight in the calendar
+  const daysWithItems = plannerData
+    .filter(day => day.items.length > 0)
+    .map(day => new Date(day.date));
+
   return (
     <Card className="border-none shadow-none">
       <CardHeader className="px-0">
-        
-      </CardHeader>
-      <CardContent className="px-0">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center">
+            <Button variant="outline" size="icon" onClick={handlePreviousDay}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            
+            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="mx-2 min-w-[200px] justify-start text-left font-medium"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {format(selectedDate, "EEEE, MMMM d, yyyy")}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={handleDateSelect}
+                  className="rounded-md border"
+                  modifiers={{
+                    booked: daysWithItems,
+                  }}
+                  modifiersStyles={{
+                    booked: {
+                      backgroundColor: "hsl(var(--primary) / 0.1)",
+                      fontWeight: "bold",
+                      borderRadius: "0",
+                    },
+                  }}
+                />
+              </PopoverContent>
+            </Popover>
+            
+            <Button variant="outline" size="icon" onClick={handleNextDay}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+          
           <div className="flex items-center gap-2 flex-wrap">
             <TooltipProvider delayDuration={0}>
               <Dialog open={isCopyDialogOpen} onOpenChange={setIsCopyDialogOpen}>
@@ -433,7 +482,8 @@ export const DailyPlanner = () => {
             </TooltipProvider>
           </div>
         </div>
-        
+      </CardHeader>
+      <CardContent className="px-0">
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <ListTodo className="h-5 w-5 text-blue-500" />
