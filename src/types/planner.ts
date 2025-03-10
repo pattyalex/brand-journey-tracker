@@ -12,6 +12,7 @@ export interface PlannerDay {
   items: PlannerItem[];
   greatDay?: string; // Optional "What would make today great?" section
   grateful?: string; // Optional "Things I'm grateful for today" section
+  tasks?: string; // Optional general tasks section
 }
 
 export interface VisionBoardData {
