@@ -521,7 +521,7 @@ export const DailyPlanner = () => {
           </div>
         </div>
         
-        {/* Add Tasks Section above the daily columns */}
+        {/* Tasks Section moved above the daily columns */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <ListTodo className="h-5 w-5 text-blue-500" />
