@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Copy, Trash2, StickyNote, Sun, Heart } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Copy, Trash2, StickyNote, Sun, Heart, ListTodo } from "lucide-react";
 import { PlannerDay, PlannerItem } from "@/types/planner";
 import { PlannerSection } from "./PlannerSection";
 import { VisionBoardButton } from "./VisionBoardButton";
@@ -38,6 +39,7 @@ export const DailyPlanner = () => {
   const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
   const [deleteAfterCopy, setDeleteAfterCopy] = useState(false);
   const [notes, setNotes] = useState<string>("");
+  const [tasks, setTasks] = useState<string>("");
   const [greatDay, setGreatDay] = useState<string>("");
   const [grateful, setGrateful] = useState<string>("");
 
@@ -63,6 +65,12 @@ export const DailyPlanner = () => {
         setNotes("");
       }
       
+      if (currentDay.tasks) {
+        setTasks(currentDay.tasks);
+      } else {
+        setTasks("");
+      }
+      
       if (currentDay.greatDay) {
         setGreatDay(currentDay.greatDay);
       } else {
@@ -76,6 +84,7 @@ export const DailyPlanner = () => {
       }
     } else {
       setNotes("");
+      setTasks("");
       setGreatDay("");
       setGrateful("");
     }
@@ -85,6 +94,7 @@ export const DailyPlanner = () => {
     date: dateString,
     items: [],
     notes: "",
+    tasks: "",
     greatDay: "",
     grateful: ""
   };
@@ -260,6 +270,33 @@ export const DailyPlanner = () => {
         date: dateString,
         items: [],
         notes: newNotes,
+        tasks: tasks,
+        greatDay: greatDay,
+        grateful: grateful
+      });
+    }
+    
+    setPlannerData(updatedPlannerData);
+  };
+
+  const handleTasksChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newTasks = e.target.value;
+    setTasks(newTasks);
+    
+    const dayIndex = plannerData.findIndex(day => day.date === dateString);
+    const updatedPlannerData = [...plannerData];
+    
+    if (dayIndex >= 0) {
+      updatedPlannerData[dayIndex] = {
+        ...updatedPlannerData[dayIndex],
+        tasks: newTasks
+      };
+    } else {
+      updatedPlannerData.push({
+        date: dateString,
+        items: [],
+        notes: notes,
+        tasks: newTasks,
         greatDay: greatDay,
         grateful: grateful
       });
@@ -481,6 +518,55 @@ export const DailyPlanner = () => {
                 </AlertDialogContent>
               </AlertDialog>
             </TooltipProvider>
+          </div>
+        </div>
+        
+        {/* Add Tasks Section above the daily columns */}
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-3">
+            <ListTodo className="h-5 w-5 text-blue-500" />
+            <h3 className="text-lg font-medium">Tasks</h3>
+          </div>
+          <div className="border rounded-lg p-1">
+            <Textarea
+              value={tasks}
+              onChange={handleTasksChange}
+              placeholder="Write down your tasks for the day..."
+              className="min-h-[120px] resize-none"
+              onTextSelect={(selectedText) => {
+                if (selectedText) {
+                  const newItem: PlannerItem = {
+                    id: Date.now().toString(),
+                    text: selectedText,
+                    section: "morning",
+                    isCompleted: false,
+                    date: dateString
+                  };
+                  
+                  const dayIndex = plannerData.findIndex(day => day.date === dateString);
+                  
+                  if (dayIndex >= 0) {
+                    const updatedPlannerData = [...plannerData];
+                    updatedPlannerData[dayIndex] = {
+                      ...updatedPlannerData[dayIndex],
+                      items: [...updatedPlannerData[dayIndex].items, newItem]
+                    };
+                    setPlannerData(updatedPlannerData);
+                    toast.success("Added as a task for today!");
+                  } else {
+                    setPlannerData([...plannerData, { 
+                      date: dateString, 
+                      items: [newItem],
+                      notes: notes,
+                      tasks: tasks,
+                      greatDay: greatDay,
+                      grateful: grateful
+                    }]);
+                    toast.success("Added as a task for today!");
+                  }
+                }
+              }}
+            />
           </div>
         </div>
         
