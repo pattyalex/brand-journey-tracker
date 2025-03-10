@@ -194,20 +194,33 @@ export const DailyPlanner = () => {
   const copyTemplate = () => {
     if (!copyToDate) return;
     
+    // Get the target date string in ISO format (YYYY-MM-DD)
     const targetDateString = copyToDate.toISOString().split('T')[0];
-    const currentDateString = dateString;
+    
+    // Get the source date string (the currently selected date)
+    const sourceDateString = dateString;
     
     // Log dates for debugging
-    console.log('Current date:', currentDateString);
+    console.log('Source date:', sourceDateString);
     console.log('Target date:', targetDateString);
     
-    // Compare the actual date strings to check if they're the same day
-    if (currentDateString === targetDateString) {
+    // Compare the date strings directly to ensure they're different days
+    if (sourceDateString === targetDateString) {
       toast.error("Cannot copy to the same day");
       return;
     }
     
-    const newItems = currentDay.items.map(item => ({
+    // Find the source day in the planner data
+    const sourceDay = plannerData.find(day => day.date === sourceDateString);
+    
+    // If there is no source day data, show a message and return
+    if (!sourceDay || sourceDay.items.length === 0) {
+      toast.error("No items to copy from this day");
+      return;
+    }
+    
+    // Create new items for the target day, with new IDs and updated date
+    const newItems = sourceDay.items.map(item => ({
       ...item,
       id: Date.now() + Math.random().toString(),
       date: targetDateString,
@@ -223,7 +236,7 @@ export const DailyPlanner = () => {
         ...updatedPlannerData[targetDayIndex],
         items: newItems  // Replace instead of append
       };
-      toast.success(`Template replaced existing items on ${format(copyToDate, "MMMM do, yyyy")}`);
+      toast.success(`Template copied to ${format(copyToDate, "MMMM do, yyyy")}`);
     } else {
       // If the target day doesn't exist yet, create it
       updatedPlannerData = [...updatedPlannerData, {
@@ -238,7 +251,7 @@ export const DailyPlanner = () => {
     }
     
     if (deleteAfterCopy) {
-      const currentDayIndex = updatedPlannerData.findIndex(day => day.date === currentDateString);
+      const currentDayIndex = updatedPlannerData.findIndex(day => day.date === sourceDateString);
       if (currentDayIndex >= 0) {
         updatedPlannerData.splice(currentDayIndex, 1);
         toast.success(`Template copied to ${format(copyToDate, "MMMM do, yyyy")} and deleted from current day`);
