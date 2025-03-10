@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
 import { Copy, Trash2, Sun, Heart, ListTodo, CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
@@ -39,12 +40,19 @@ export const DailyPlanner = () => {
   const [copyToDate, setCopyToDate] = useState<Date | undefined>(undefined);
   const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
   const [deleteAfterCopy, setDeleteAfterCopy] = useState(false);
-  const [tasks, setTasks] = useState<string>("");
   const [greatDay, setGreatDay] = useState<string>("");
   const [grateful, setGrateful] = useState<string>("");
   const [calendarOpen, setCalendarOpen] = useState(false);
 
-  const dateString = selectedDate.toISOString().split('T')[0];
+  // Convert date to a consistent format for storage, ensuring no timezone issues
+  const getDateString = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const dateString = getDateString(selectedDate);
 
   useEffect(() => {
     const savedData = localStorage.getItem("plannerData");
@@ -60,12 +68,6 @@ export const DailyPlanner = () => {
   useEffect(() => {
     const currentDay = plannerData.find(day => day.date === dateString);
     if (currentDay) {
-      if (currentDay.tasks) {
-        setTasks(currentDay.tasks);
-      } else {
-        setTasks("");
-      }
-      
       if (currentDay.greatDay) {
         setGreatDay(currentDay.greatDay);
       } else {
@@ -78,7 +80,6 @@ export const DailyPlanner = () => {
         setGrateful("");
       }
     } else {
-      setTasks("");
       setGreatDay("");
       setGrateful("");
     }
@@ -87,7 +88,6 @@ export const DailyPlanner = () => {
   const currentDay = plannerData.find(day => day.date === dateString) || {
     date: dateString,
     items: [],
-    tasks: "",
     greatDay: "",
     grateful: ""
   };
@@ -118,7 +118,6 @@ export const DailyPlanner = () => {
       setPlannerData([...plannerData, { 
         date: dateString, 
         items: [newItem],
-        tasks: tasks,
         greatDay: greatDay,
         grateful: grateful
       }]);
@@ -189,7 +188,7 @@ export const DailyPlanner = () => {
   const copyTemplate = () => {
     if (!copyToDate) return;
     
-    const targetDateString = copyToDate.toISOString().split('T')[0];
+    const targetDateString = getDateString(copyToDate);
     
     if (targetDateString === dateString) {
       toast.error("Cannot copy to the same day");
@@ -247,31 +246,6 @@ export const DailyPlanner = () => {
     }
   };
 
-  const handleTasksChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newTasks = e.target.value;
-    setTasks(newTasks);
-    
-    const dayIndex = plannerData.findIndex(day => day.date === dateString);
-    const updatedPlannerData = [...plannerData];
-    
-    if (dayIndex >= 0) {
-      updatedPlannerData[dayIndex] = {
-        ...updatedPlannerData[dayIndex],
-        tasks: newTasks
-      };
-    } else {
-      updatedPlannerData.push({
-        date: dateString,
-        items: [],
-        tasks: newTasks,
-        greatDay: greatDay,
-        grateful: grateful
-      });
-    }
-    
-    setPlannerData(updatedPlannerData);
-  };
-
   const handleGreatDayChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newGreatDay = e.target.value;
     setGreatDay(newGreatDay);
@@ -288,7 +262,6 @@ export const DailyPlanner = () => {
       updatedPlannerData.push({
         date: dateString,
         items: [],
-        tasks: tasks,
         greatDay: newGreatDay,
         grateful: grateful
       });
@@ -313,9 +286,8 @@ export const DailyPlanner = () => {
       updatedPlannerData.push({
         date: dateString,
         items: [],
-        tasks: tasks,
         greatDay: greatDay,
-        grateful: grateful
+        grateful: newGrateful
       });
     }
     
@@ -327,7 +299,11 @@ export const DailyPlanner = () => {
   // Filter out days with items to highlight in the calendar
   const daysWithItems = plannerData
     .filter(day => day.items.length > 0)
-    .map(day => new Date(day.date));
+    .map(day => {
+      // Create a date object from the date string, ensuring we get the correct day
+      const [year, month, day_num] = day.date.split('-').map(n => parseInt(n));
+      return new Date(year, month - 1, day_num);
+    });
 
   return (
     <Card className="border-none shadow-none">
@@ -484,53 +460,6 @@ export const DailyPlanner = () => {
         </div>
       </CardHeader>
       <CardContent className="px-0">
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-3">
-            <ListTodo className="h-5 w-5 text-blue-500" />
-            <h3 className="text-lg font-medium">To-Dos</h3>
-          </div>
-          <div className="border rounded-lg p-1">
-            <Textarea
-              value={tasks}
-              onChange={handleTasksChange}
-              placeholder="Write your to dos, reminders or other notes for the day..."
-              className="min-h-[120px] resize-none"
-              onTextSelect={(selectedText) => {
-                if (selectedText) {
-                  const newItem: PlannerItem = {
-                    id: Date.now().toString(),
-                    text: selectedText,
-                    section: "morning",
-                    isCompleted: false,
-                    date: dateString
-                  };
-                  
-                  const dayIndex = plannerData.findIndex(day => day.date === dateString);
-                  
-                  if (dayIndex >= 0) {
-                    const updatedPlannerData = [...plannerData];
-                    updatedPlannerData[dayIndex] = {
-                      ...updatedPlannerData[dayIndex],
-                      items: [...updatedPlannerData[dayIndex].items, newItem]
-                    };
-                    setPlannerData(updatedPlannerData);
-                    toast.success("Added as a task for today!");
-                  } else {
-                    setPlannerData([...plannerData, { 
-                      date: dateString, 
-                      items: [newItem],
-                      tasks: tasks,
-                      greatDay: greatDay,
-                      grateful: grateful
-                    }]);
-                    toast.success("Added as a task for today!");
-                  }
-                }
-              }}
-            />
-          </div>
-        </div>
-        
         <div className="mb-6">
           <CardDescription>
             Schedule your tasks and organize your day:
@@ -614,7 +543,6 @@ export const DailyPlanner = () => {
                     setPlannerData([...plannerData, { 
                       date: dateString, 
                       items: [newItem],
-                      tasks: tasks,
                       greatDay: greatDay,
                       grateful: grateful
                     }]);
@@ -661,7 +589,6 @@ export const DailyPlanner = () => {
                     setPlannerData([...plannerData, { 
                       date: dateString, 
                       items: [newItem],
-                      tasks: tasks,
                       greatDay: greatDay,
                       grateful: grateful
                     }]);
