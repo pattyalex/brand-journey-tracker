@@ -191,11 +191,6 @@ export const DailyPlanner = () => {
     
     const targetDateString = copyToDate.toISOString().split('T')[0];
     
-    if (targetDateString === dateString) {
-      toast.error("Cannot copy to the same day");
-      return;
-    }
-    
     const newItems = currentDay.items.map(item => ({
       ...item,
       id: Date.now() + Math.random().toString(),
@@ -211,10 +206,23 @@ export const DailyPlanner = () => {
         ...updatedPlannerData[targetDayIndex],
         items: [...updatedPlannerData[targetDayIndex].items, ...newItems]
       };
+
+      if (currentDay.tasks) {
+        updatedPlannerData[targetDayIndex].tasks = currentDay.tasks;
+      }
+      if (currentDay.greatDay) {
+        updatedPlannerData[targetDayIndex].greatDay = currentDay.greatDay;
+      }
+      if (currentDay.grateful) {
+        updatedPlannerData[targetDayIndex].grateful = currentDay.grateful;
+      }
     } else {
       updatedPlannerData = [...updatedPlannerData, {
         date: targetDateString,
-        items: newItems
+        items: newItems,
+        tasks: currentDay.tasks || "",
+        greatDay: currentDay.greatDay || "",
+        grateful: currentDay.grateful || ""
       }];
     }
     
@@ -324,7 +332,6 @@ export const DailyPlanner = () => {
 
   const hasItems = currentDay.items.length > 0;
 
-  // Filter out days with items to highlight in the calendar
   const daysWithItems = plannerData
     .filter(day => day.items.length > 0)
     .map(day => new Date(day.date));
