@@ -20,6 +20,7 @@ export const PlannerCheckItem = ({
   onEdit 
 }: PlannerCheckItemProps) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [isSimpleEdit, setIsSimpleEdit] = useState(false);
   const [editText, setEditText] = useState(item.text);
   const [editStartTime, setEditStartTime] = useState(item.startTime || "");
   const [editEndTime, setEditEndTime] = useState(item.endTime || "");
@@ -29,6 +30,7 @@ export const PlannerCheckItem = ({
     if (editText.trim()) {
       onEdit(item.id, editText, editStartTime, editEndTime);
       setIsEditing(false);
+      setIsSimpleEdit(false);
     }
   };
 
@@ -37,6 +39,7 @@ export const PlannerCheckItem = ({
       handleSaveEdit();
     } else if (e.key === "Escape") {
       setIsEditing(false);
+      setIsSimpleEdit(false);
       setEditText(item.text);
       setEditStartTime(item.startTime || "");
       setEditEndTime(item.endTime || "");
@@ -45,16 +48,14 @@ export const PlannerCheckItem = ({
 
   const handleDoubleClick = () => {
     if (!isEditing) {
-      setIsEditing(true);
+      setIsSimpleEdit(true);
       setEditText(item.text);
-      setEditStartTime(item.startTime || "");
-      setEditEndTime(item.endTime || "");
     }
   };
 
   return (
     <div className="flex items-center gap-2 group bg-white p-2 rounded-md border border-gray-200 shadow-sm">
-      {isEditing ? (
+      {isEditing && !isSimpleEdit ? (
         <div className="flex flex-1 items-center gap-1">
           <Input
             type="time"
@@ -81,6 +82,27 @@ export const PlannerCheckItem = ({
           <button 
             onClick={handleSaveEdit} 
             className="text-green-600 p-1 rounded-sm hover:bg-green-100"
+          >
+            <Check size={15} />
+          </button>
+        </div>
+      ) : isSimpleEdit ? (
+        <div className="flex flex-1 items-center">
+          <Checkbox 
+            checked={item.isCompleted} 
+            onCheckedChange={() => onToggle(item.id)}
+            className="h-5 w-5 mr-2 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+          />
+          <Input
+            value={editText}
+            onChange={(e) => setEditText(e.target.value)}
+            onKeyDown={handleKeyDown}
+            autoFocus
+            className="h-7 py-1 flex-1 text-base"
+          />
+          <button 
+            onClick={handleSaveEdit} 
+            className="text-green-600 p-1 rounded-sm hover:bg-green-100 ml-1"
           >
             <Check size={15} />
           </button>
@@ -113,7 +135,7 @@ export const PlannerCheckItem = ({
             <span>{item.text}</span>
           </div>
           
-          <div className={`flex items-center gap-2 ${isMobile ? 'opacity-100' : ''}`}>
+          <div className="flex items-center gap-2">
             <button 
               onClick={() => {
                 setIsEditing(true);
