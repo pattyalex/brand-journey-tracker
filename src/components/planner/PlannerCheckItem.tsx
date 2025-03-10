@@ -11,13 +11,15 @@ interface PlannerCheckItemProps {
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit: (id: string, newText: string, startTime?: string, endTime?: string) => void;
+  showTimeInItem?: boolean;
 }
 
 export const PlannerCheckItem = ({ 
   item, 
   onToggle, 
   onDelete, 
-  onEdit 
+  onEdit,
+  showTimeInItem = false
 }: PlannerCheckItemProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSimpleEdit, setIsSimpleEdit] = useState(false);
@@ -61,30 +63,6 @@ export const PlannerCheckItem = ({
     setIsTimeEdit(true);
     setEditStartTime(item.startTime || "");
     setEditEndTime(item.endTime || "");
-  };
-
-  const renderTimeDisplay = () => {
-    if (item.startTime || item.endTime) {
-      return (
-        <div className="flex items-center text-xs text-muted-foreground hover:text-primary">
-          {item.startTime && <span>{item.startTime}</span>}
-          {item.startTime && item.endTime && (
-            <ArrowRight size={10} className="mx-1" />
-          )}
-          {item.endTime && <span>{item.endTime}</span>}
-        </div>
-      );
-    }
-    
-    return (
-      <button 
-        onClick={handleTimeEdit}
-        className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary"
-        title="Add time"
-      >
-        <span className="text-xs">Add time</span>
-      </button>
-    );
   };
 
   return (
@@ -201,13 +179,15 @@ export const PlannerCheckItem = ({
               <span>{item.text}</span>
             </div>
             
-            <button 
-              onClick={handleTimeEdit}
-              className="ml-2 p-1 rounded-sm text-muted-foreground hover:text-primary hover:bg-gray-100"
-              title="Edit time"
-            >
-              <Clock size={14} />
-            </button>
+            {showTimeInItem && (
+              <button 
+                onClick={handleTimeEdit}
+                className="ml-2 p-1 rounded-sm text-muted-foreground hover:text-primary hover:bg-gray-100"
+                title="Edit time"
+              >
+                <Clock size={14} />
+              </button>
+            )}
           </div>
           
           {/* Right side actions (swipe left to reveal) */}

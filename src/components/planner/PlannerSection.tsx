@@ -64,6 +64,21 @@ export const PlannerSection = ({
     }
   };
 
+  const renderTimeDisplay = (item: PlannerItem) => {
+    if (item.startTime || item.endTime) {
+      return (
+        <div className="w-[80px] text-xs text-right text-muted-foreground mr-2">
+          {item.startTime && <span>{item.startTime}</span>}
+          {item.startTime && item.endTime && (
+            <span className="text-[10px] opacity-50 block">to</span>
+          )}
+          {item.endTime && <span>{item.endTime}</span>}
+        </div>
+      );
+    }
+    return <div className="w-[80px] text-xs text-right mr-2"></div>;
+  };
+
   return (
     <Card className="h-full border border-border shadow-sm bg-gray-50">
       <CardHeader className="pb-2 bg-muted/50">
@@ -74,28 +89,15 @@ export const PlannerSection = ({
           <div className="space-y-3 pr-2">
             {items.length > 0 ? (
               items.map((item) => (
-                <div key={item.id} className="flex items-center gap-3">
-                  <div className="w-[80px] text-xs text-right text-muted-foreground">
-                    {(item.startTime || item.endTime) && (
-                      <div className="flex flex-col">
-                        {item.startTime && <span>{item.startTime}</span>}
-                        {item.endTime && (
-                          <>
-                            {item.startTime && (
-                              <span className="text-[10px] opacity-50">to</span>
-                            )}
-                            <span>{item.endTime}</span>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                <div key={item.id} className="flex items-start gap-2">
+                  {renderTimeDisplay(item)}
                   <div className="flex-1">
                     <PlannerCheckItem
                       item={item}
                       onToggle={onToggleItem}
                       onDelete={onDeleteItem}
                       onEdit={onEditItem}
+                      showTimeInItem={false}
                     />
                   </div>
                 </div>
@@ -107,7 +109,7 @@ export const PlannerSection = ({
             )}
             
             {isAddingItem ? (
-              <div className="flex gap-3 mt-2">
+              <div className="flex gap-2 mt-2">
                 <div className="w-[80px] text-xs text-right text-muted-foreground">
                   {showTimeInput && (
                     <div className="flex flex-col">
