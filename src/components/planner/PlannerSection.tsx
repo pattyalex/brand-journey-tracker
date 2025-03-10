@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PlannerItem } from "@/types/planner";
 import { Plus, Clock, ArrowRight } from "lucide-react";
@@ -90,7 +89,12 @@ export const PlannerSection = ({
             {isAddingItem ? (
               <div className="flex flex-col gap-2 mt-2 border border-border p-2 rounded-md bg-white shadow-sm">
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5"></div>
+                  <div className="flex items-center w-[100px] mr-2 text-sm text-muted-foreground">
+                    {showTimeInput ? (
+                      <Clock size={12} className="mr-1 flex-shrink-0" />
+                    ) : null}
+                  </div>
+                  <Checkbox className="h-5 w-5 mr-2 opacity-0" disabled />
                   <Input
                     value={newItemText}
                     onChange={(e) => setNewItemText(e.target.value)}
@@ -102,7 +106,7 @@ export const PlannerSection = ({
                 </div>
                 
                 {showTimeInput ? (
-                  <div className="flex items-center gap-2 ml-7">
+                  <div className="flex items-center ml-[100px] pl-[25px] gap-2">
                     <div className="flex items-center gap-1">
                       <span className="text-xs text-muted-foreground">Start:</span>
                       <Input
@@ -134,7 +138,7 @@ export const PlannerSection = ({
                 ) : (
                   <button
                     onClick={() => setShowTimeInput(true)}
-                    className="flex items-center gap-1 text-muted-foreground hover:text-primary text-sm ml-7"
+                    className="flex items-center gap-1 text-muted-foreground hover:text-primary text-sm ml-[100px] pl-[25px]"
                   >
                     <Clock size={12} />
                     <span>Add time</span>

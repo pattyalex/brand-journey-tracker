@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -61,6 +60,34 @@ export const PlannerCheckItem = ({
     setIsTimeEdit(true);
     setEditStartTime(item.startTime || "");
     setEditEndTime(item.endTime || "");
+  };
+
+  const renderTimeDisplay = () => {
+    if (item.startTime || item.endTime) {
+      return (
+        <button 
+          onClick={handleTimeEdit} 
+          className="flex items-center hover:text-primary"
+          title="Edit time"
+        >
+          {item.startTime && <span>{item.startTime}</span>}
+          {item.startTime && item.endTime && (
+            <ArrowRight size={10} className="mx-1" />
+          )}
+          {item.endTime && <span>{item.endTime}</span>}
+        </button>
+      );
+    }
+    
+    return (
+      <button 
+        onClick={handleTimeEdit}
+        className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary"
+        title="Add time"
+      >
+        <span className="text-xs">Add time</span>
+      </button>
+    );
   };
 
   return (
@@ -163,39 +190,16 @@ export const PlannerCheckItem = ({
           </div>
           
           {/* Main content */}
-          <div className="flex items-center gap-2 p-2 min-w-full flex-shrink-0 group">
-            <div className="flex items-center min-w-[110px] mr-2 text-sm text-muted-foreground">
-              {(item.startTime || item.endTime) ? (
-                <div className="flex items-center">
-                  <button 
-                    onClick={handleTimeEdit} 
-                    className="flex items-center hover:text-primary"
-                    title="Edit time"
-                  >
-                    <Clock size={12} className="mr-1" />
-                    {item.startTime && <span>{item.startTime}</span>}
-                    {item.startTime && item.endTime && (
-                      <ArrowRight size={10} className="mx-1" />
-                    )}
-                    {item.endTime && <span>{item.endTime}</span>}
-                  </button>
-                </div>
-              ) : (
-                <button 
-                  onClick={handleTimeEdit}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary flex items-center"
-                  title="Add time"
-                >
-                  <Clock size={12} className="mr-1" />
-                  <span className="text-xs">Add time</span>
-                </button>
-              )}
+          <div className="flex items-center p-2 min-w-full flex-shrink-0 group">
+            <div className="flex items-center w-[100px] mr-2 text-sm text-muted-foreground">
+              <Clock size={12} className="mr-1 flex-shrink-0" />
+              {renderTimeDisplay()}
             </div>
             
             <Checkbox 
               checked={item.isCompleted} 
               onCheckedChange={() => onToggle(item.id)}
-              className="h-5 w-5 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+              className="h-5 w-5 mr-2 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
             />
             
             <div 
