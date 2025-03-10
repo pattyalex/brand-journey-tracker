@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { format, addDays, subDays } from "date-fns";
+import { format, addDays, subDays, parseISO } from "date-fns";
 import { Copy, Trash2, Sun, Heart, ListTodo, CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { PlannerDay, PlannerItem } from "@/types/planner";
 import { PlannerSection } from "./PlannerSection";
@@ -34,6 +33,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
+const getDateString = (date: Date): string => {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
 export const DailyPlanner = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [plannerData, setPlannerData] = useState<PlannerDay[]>([]);
@@ -45,7 +48,7 @@ export const DailyPlanner = () => {
   const [grateful, setGrateful] = useState<string>("");
   const [calendarOpen, setCalendarOpen] = useState(false);
 
-  const dateString = selectedDate.toISOString().split('T')[0];
+  const dateString = getDateString(selectedDate);
 
   useEffect(() => {
     const savedData = localStorage.getItem("plannerData");
@@ -190,19 +193,12 @@ export const DailyPlanner = () => {
   const copyTemplate = () => {
     if (!copyToDate) return;
     
-    // Get a clean date string without time information
-    // Use UTC methods to avoid timezone issues
-    const selectedDateFormatted = new Date(
-      Date.UTC(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())
-    ).toISOString().split('T')[0];
+    const fromDateString = getDateString(selectedDate);
+    const toDateString = getDateString(copyToDate);
     
-    const copyToDateFormatted = new Date(
-      Date.UTC(copyToDate.getFullYear(), copyToDate.getMonth(), copyToDate.getDate())
-    ).toISOString().split('T')[0];
+    console.log("Copying from:", fromDateString, "to:", toDateString);
     
-    console.log("Copying from:", selectedDateFormatted, "to:", copyToDateFormatted);
-    
-    if (selectedDateFormatted === copyToDateFormatted) {
+    if (fromDateString === toDateString) {
       toast.error("Cannot copy to the same day");
       return;
     }
@@ -210,11 +206,11 @@ export const DailyPlanner = () => {
     const newItems = currentDay.items.map(item => ({
       ...item,
       id: Date.now() + Math.random().toString(),
-      date: copyToDateFormatted,
+      date: toDateString,
       isCompleted: false
     }));
     
-    const targetDayIndex = plannerData.findIndex(day => day.date === copyToDateFormatted);
+    const targetDayIndex = plannerData.findIndex(day => day.date === toDateString);
     let updatedPlannerData = [...plannerData];
     
     if (targetDayIndex >= 0) {
@@ -234,7 +230,7 @@ export const DailyPlanner = () => {
       }
     } else {
       updatedPlannerData = [...updatedPlannerData, {
-        date: copyToDateFormatted,
+        date: toDateString,
         items: newItems,
         tasks: currentDay.tasks || "",
         greatDay: currentDay.greatDay || "",
@@ -243,7 +239,7 @@ export const DailyPlanner = () => {
     }
     
     if (deleteAfterCopy) {
-      const currentDayIndex = updatedPlannerData.findIndex(day => day.date === selectedDateFormatted);
+      const currentDayIndex = updatedPlannerData.findIndex(day => day.date === fromDateString);
       if (currentDayIndex >= 0) {
         updatedPlannerData.splice(currentDayIndex, 1);
         toast.success(`Template copied to ${format(copyToDate, "MMMM do, yyyy")} and deleted from current day`);
@@ -339,7 +335,7 @@ export const DailyPlanner = () => {
         items: [],
         tasks: tasks,
         greatDay: greatDay,
-        grateful: grateful
+        grateful: newGrateful
       });
     }
     
@@ -350,7 +346,10 @@ export const DailyPlanner = () => {
 
   const daysWithItems = plannerData
     .filter(day => day.items.length > 0)
-    .map(day => new Date(day.date));
+    .map(day => {
+      const [year, month, day_num] = day.date.split('-').map(Number);
+      return new Date(year, month - 1, day_num);
+    });
 
   return (
     <Card className="border-none shadow-none">

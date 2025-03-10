@@ -4,11 +4,11 @@ export interface PlannerItem {
   text: string;
   section: "morning" | "midday" | "afternoon" | "evening";
   isCompleted: boolean;
-  date: string; // ISO string format
+  date: string; // ISO string format YYYY-MM-DD
 }
 
 export interface PlannerDay {
-  date: string; // ISO string format
+  date: string; // ISO string format YYYY-MM-DD
   items: PlannerItem[];
   greatDay?: string; // Optional "What would make today great?" section
   grateful?: string; // Optional "Things I'm grateful for today" section
