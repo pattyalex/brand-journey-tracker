@@ -66,7 +66,7 @@ export const PlannerCheckItem = ({
   };
 
   return (
-    <div className="relative overflow-hidden bg-white rounded-md border border-gray-200 shadow-sm">
+    <div className="relative overflow-hidden bg-white rounded-lg border border-gray-200 shadow-sm transition-all hover:border-gray-300 hover:shadow">
       {isEditing && !isSimpleEdit && !isTimeEdit ? (
         <div className="flex flex-1 items-center gap-1 p-2">
           <Input
@@ -150,48 +150,32 @@ export const PlannerCheckItem = ({
       ) : (
         <div 
           ref={scrollableRef}
-          className="flex items-center w-full overflow-x-auto touch-scroll hide-scrollbar" 
-          style={{ scrollbarWidth: 'none' }}
+          className="group flex items-center w-full p-2" 
         >
-          {/* Left side actions (swipe right to reveal) */}
-          <div className="flex-shrink-0 bg-gray-100 p-2 flex items-center justify-center min-w-[48px]">
+          <Checkbox 
+            checked={item.isCompleted} 
+            onCheckedChange={() => onToggle(item.id)}
+            className="h-5 w-5 mr-3 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+          />
+          
+          <div 
+            className={`flex-1 text-base ${item.isCompleted ? 'line-through text-muted-foreground' : 'text-gray-800'} cursor-pointer`}
+            onDoubleClick={handleDoubleClick}
+          >
+            <span>{item.text}</span>
+          </div>
+          
+          {showTimeInItem && (
             <button 
-              onClick={() => onDelete(item.id)} 
-              className="p-1 rounded-sm text-red-500 hover:bg-red-100"
-              title="Delete"
+              onClick={handleTimeEdit}
+              className="ml-2 p-1 rounded-sm text-muted-foreground hover:text-primary hover:bg-gray-100"
+              title="Edit time"
             >
-              <Trash2 size={16} />
+              <Clock size={14} />
             </button>
-          </div>
+          )}
           
-          {/* Main content */}
-          <div className="flex items-center p-2 min-w-full flex-shrink-0 group">            
-            <Checkbox 
-              checked={item.isCompleted} 
-              onCheckedChange={() => onToggle(item.id)}
-              className="h-5 w-5 mr-2 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
-            />
-            
-            <div 
-              className={`flex-1 text-base ${item.isCompleted ? 'line-through text-muted-foreground' : 'text-gray-800'} cursor-pointer`}
-              onDoubleClick={handleDoubleClick}
-            >
-              <span>{item.text}</span>
-            </div>
-            
-            {showTimeInItem && (
-              <button 
-                onClick={handleTimeEdit}
-                className="ml-2 p-1 rounded-sm text-muted-foreground hover:text-primary hover:bg-gray-100"
-                title="Edit time"
-              >
-                <Clock size={14} />
-              </button>
-            )}
-          </div>
-          
-          {/* Right side actions (swipe left to reveal) */}
-          <div className="flex-shrink-0 bg-gray-100 p-2 flex items-center justify-center min-w-[48px]">
+          <div className="flex items-center ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <button 
               onClick={() => {
                 setIsEditing(true);
@@ -199,10 +183,17 @@ export const PlannerCheckItem = ({
                 setEditStartTime(item.startTime || "");
                 setEditEndTime(item.endTime || "");
               }}
-              className="p-1 rounded-sm hover:bg-muted"
+              className="p-1 rounded-sm text-muted-foreground hover:bg-gray-100 hover:text-primary"
               title="Edit"
             >
               <Pencil size={16} />
+            </button>
+            <button 
+              onClick={() => onDelete(item.id)} 
+              className="p-1 rounded-sm text-muted-foreground hover:bg-red-50 hover:text-red-500 ml-1"
+              title="Delete"
+            >
+              <Trash2 size={16} />
             </button>
           </div>
         </div>

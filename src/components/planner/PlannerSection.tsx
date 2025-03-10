@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { PlannerItem } from "@/types/planner";
-import { Plus, Clock, ArrowRight } from "lucide-react";
+import { Plus, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -67,29 +67,29 @@ export const PlannerSection = ({
   const renderTimeDisplay = (item: PlannerItem) => {
     if (item.startTime || item.endTime) {
       return (
-        <div className="w-[80px] text-xs text-right text-muted-foreground mr-2">
-          {item.startTime && <span>{item.startTime}</span>}
+        <div className="min-w-[70px] w-[70px] flex-shrink-0 text-xs text-muted-foreground pr-1 text-right">
+          {item.startTime && <div className="font-medium">{item.startTime}</div>}
           {item.startTime && item.endTime && (
-            <span className="text-[10px] opacity-50 block">to</span>
+            <div className="text-[10px] opacity-60">to</div>
           )}
-          {item.endTime && <span>{item.endTime}</span>}
+          {item.endTime && <div className="font-medium">{item.endTime}</div>}
         </div>
       );
     }
-    return <div className="w-[80px] text-xs text-right mr-2"></div>;
+    return <div className="min-w-[70px] w-[70px] flex-shrink-0"></div>;
   };
 
   return (
-    <Card className="h-full border border-border shadow-sm bg-gray-50">
-      <CardHeader className="pb-2 bg-muted/50">
+    <Card className="h-full border border-border shadow-sm bg-gray-50/70 overflow-hidden">
+      <CardHeader className="pb-2 bg-muted/20 border-b">
         <CardTitle className="text-lg font-medium text-gray-800">{title}</CardTitle>
       </CardHeader>
-      <CardContent className="pt-3">
+      <CardContent className="pt-4 px-3">
         <ScrollArea className={`${isMobile ? 'h-[calc(100vh-400px)]' : 'h-[calc(100vh-350px)]'}`}>
           <div className="space-y-3 pr-2">
             {items.length > 0 ? (
               items.map((item) => (
-                <div key={item.id} className="flex items-start gap-2">
+                <div key={item.id} className="flex items-start">
                   {renderTimeDisplay(item)}
                   <div className="flex-1">
                     <PlannerCheckItem
@@ -103,27 +103,27 @@ export const PlannerSection = ({
                 </div>
               ))
             ) : (
-              <div className="text-sm text-muted-foreground italic text-center py-2 bg-white rounded-md border border-gray-200 shadow-sm">
+              <div className="text-sm text-muted-foreground italic text-center py-3 bg-white/70 rounded-md border border-gray-200">
                 No tasks in this section
               </div>
             )}
             
             {isAddingItem ? (
-              <div className="flex gap-2 mt-2">
-                <div className="w-[80px] text-xs text-right text-muted-foreground">
+              <div className="flex mt-2">
+                <div className="min-w-[70px] w-[70px] flex-shrink-0 text-xs text-muted-foreground pr-1 text-right">
                   {showTimeInput && (
-                    <div className="flex flex-col">
-                      <span>{newItemStartTime || "--:--"}</span>
+                    <>
+                      <div className="font-medium">{newItemStartTime || "--:--"}</div>
                       {newItemEndTime && (
                         <>
-                          <span className="text-[10px] opacity-50">to</span>
-                          <span>{newItemEndTime}</span>
+                          <div className="text-[10px] opacity-60">to</div>
+                          <div className="font-medium">{newItemEndTime}</div>
                         </>
                       )}
-                    </div>
+                    </>
                   )}
                 </div>
-                <div className="flex-1 border border-border p-2 rounded-md bg-white shadow-sm">
+                <div className="flex-1 border border-gray-200 p-2 rounded-lg bg-white shadow-sm">
                   <div className="flex items-center gap-2">
                     <Checkbox className="h-5 w-5 mr-2 opacity-0" disabled />
                     <Input
@@ -131,13 +131,13 @@ export const PlannerSection = ({
                       onChange={(e) => setNewItemText(e.target.value)}
                       onKeyDown={handleKeyDown}
                       placeholder="Add new item"
-                      className="flex-1 h-8 py-1 text-base text-gray-800"
+                      className="flex-1 h-8 py-1 text-base text-gray-800 border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
                       autoFocus
                     />
                   </div>
                   
                   {showTimeInput ? (
-                    <div className="flex items-center ml-[25px] gap-2 mt-2">
+                    <div className="flex items-center ml-[28px] gap-2 mt-2">
                       <div className="flex items-center gap-1">
                         <span className="text-xs text-muted-foreground">Start:</span>
                         <Input
@@ -169,7 +169,7 @@ export const PlannerSection = ({
                   ) : (
                     <button
                       onClick={() => setShowTimeInput(true)}
-                      className="flex items-center gap-1 text-muted-foreground hover:text-primary text-sm ml-[25px] mt-1"
+                      className="flex items-center gap-1 text-muted-foreground hover:text-primary text-sm ml-[28px] mt-1"
                     >
                       <Clock size={12} />
                       <span>Add time</span>
@@ -180,7 +180,7 @@ export const PlannerSection = ({
             ) : (
               <button
                 onClick={() => setIsAddingItem(true)}
-                className="flex items-center gap-2 text-muted-foreground hover:text-primary text-base mt-2 w-full p-2 rounded-md hover:bg-white hover:shadow-sm"
+                className="flex items-center justify-center gap-2 text-muted-foreground hover:text-primary text-base mt-3 w-full p-2 rounded-md hover:bg-white hover:shadow-sm"
               >
                 <Plus size={18} />
                 <span>Add item</span>
