@@ -189,23 +189,25 @@ export const DailyPlanner = () => {
   const copyTemplate = () => {
     if (!copyToDate) return;
     
-    const targetDateString = copyToDate.toISOString().split('T')[0];
+    // Format date consistently to avoid timezone issues
+    const formattedSelectedDate = selectedDate.toISOString().split('T')[0];
+    const formattedCopyToDate = copyToDate.toISOString().split('T')[0];
     
-    if (targetDateString === dateString) {
+    console.log("Copying from:", formattedSelectedDate, "to:", formattedCopyToDate);
+    
+    if (formattedSelectedDate === formattedCopyToDate) {
       toast.error("Cannot copy to the same day");
       return;
     }
     
-    console.log("Copying from:", dateString, "to:", targetDateString);
-    
     const newItems = currentDay.items.map(item => ({
       ...item,
       id: Date.now() + Math.random().toString(),
-      date: targetDateString,
+      date: formattedCopyToDate,
       isCompleted: false
     }));
     
-    const targetDayIndex = plannerData.findIndex(day => day.date === targetDateString);
+    const targetDayIndex = plannerData.findIndex(day => day.date === formattedCopyToDate);
     let updatedPlannerData = [...plannerData];
     
     if (targetDayIndex >= 0) {
@@ -225,7 +227,7 @@ export const DailyPlanner = () => {
       }
     } else {
       updatedPlannerData = [...updatedPlannerData, {
-        date: targetDateString,
+        date: formattedCopyToDate,
         items: newItems,
         tasks: currentDay.tasks || "",
         greatDay: currentDay.greatDay || "",
@@ -234,7 +236,7 @@ export const DailyPlanner = () => {
     }
     
     if (deleteAfterCopy) {
-      const currentDayIndex = updatedPlannerData.findIndex(day => day.date === dateString);
+      const currentDayIndex = updatedPlannerData.findIndex(day => day.date === formattedSelectedDate);
       if (currentDayIndex >= 0) {
         updatedPlannerData.splice(currentDayIndex, 1);
         toast.success(`Template copied to ${format(copyToDate, "MMMM do, yyyy")} and deleted from current day`);
@@ -330,7 +332,7 @@ export const DailyPlanner = () => {
         items: [],
         tasks: tasks,
         greatDay: greatDay,
-        grateful: newGrateful
+        grateful: grateful
       });
     }
     
