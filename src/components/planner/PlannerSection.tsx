@@ -66,22 +66,22 @@ export const PlannerSection = ({
             
             {isAddingItem ? (
               <div className="flex items-center gap-2 mt-2">
-                <div className="w-4 h-4"></div> {/* Placeholder for alignment */}
+                <div className="w-5 h-5"></div> {/* Increased placeholder size for alignment */}
                 <Input
                   value={newItemText}
                   onChange={(e) => setNewItemText(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Add new item"
-                  className="flex-1 h-7 py-1"
+                  className="flex-1 h-8 py-1 text-base"
                   autoFocus
                 />
               </div>
             ) : (
               <button
                 onClick={() => setIsAddingItem(true)}
-                className="flex items-center gap-2 text-muted-foreground hover:text-primary text-sm mt-2 w-full"
+                className="flex items-center gap-2 text-muted-foreground hover:text-primary text-base mt-2 w-full"
               >
-                <Plus size={16} />
+                <Plus size={18} />
                 <span>Add item</span>
               </button>
             )}

@@ -42,7 +42,7 @@ export const PlannerCheckItem = ({
       <Checkbox 
         checked={item.isCompleted} 
         onCheckedChange={() => onToggle(item.id)}
-        className="h-4 w-4 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+        className="h-5 w-5 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
       />
       
       {isEditing ? (
@@ -52,18 +52,18 @@ export const PlannerCheckItem = ({
             onChange={(e) => setEditText(e.target.value)}
             onKeyDown={handleKeyDown}
             autoFocus
-            className="h-7 py-1 flex-1"
+            className="h-7 py-1 flex-1 text-base"
           />
           <button 
             onClick={handleSaveEdit} 
             className="text-green-600 p-1 rounded-sm hover:bg-green-100"
           >
-            <Check size={14} />
+            <Check size={15} />
           </button>
         </div>
       ) : (
         <>
-          <span className={`flex-1 text-sm ${item.isCompleted ? 'line-through text-muted-foreground' : ''}`}>
+          <span className={`flex-1 text-base ${item.isCompleted ? 'line-through text-muted-foreground' : ''}`}>
             {item.text}
           </span>
           
@@ -75,13 +75,13 @@ export const PlannerCheckItem = ({
               }}
               className="p-1 rounded-sm hover:bg-muted"
             >
-              <Pencil size={14} />
+              <Pencil size={15} />
             </button>
             <button 
               onClick={() => onDelete(item.id)} 
               className="p-1 rounded-sm text-gray-500 hover:bg-muted"
             >
-              <Trash2 size={14} />
+              <Trash2 size={15} />
             </button>
           </div>
         </>
