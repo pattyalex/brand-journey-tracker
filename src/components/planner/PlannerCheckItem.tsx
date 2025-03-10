@@ -4,7 +4,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { PlannerItem } from "@/types/planner";
 import { Pencil, Trash2, Check, Clock, ArrowRight } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PlannerCheckItemProps {
   item: PlannerItem;
@@ -23,7 +22,6 @@ export const PlannerCheckItem = ({
   const [editText, setEditText] = useState(item.text);
   const [editStartTime, setEditStartTime] = useState(item.startTime || "");
   const [editEndTime, setEditEndTime] = useState(item.endTime || "");
-  const isMobile = useIsMobile();
 
   const handleSaveEdit = () => {
     if (editText.trim()) {
@@ -101,7 +99,7 @@ export const PlannerCheckItem = ({
             <span>{item.text}</span>
           </div>
           
-          <div className={`flex items-center gap-1 ${isMobile ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}>
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <button 
               onClick={() => {
                 setIsEditing(true);
