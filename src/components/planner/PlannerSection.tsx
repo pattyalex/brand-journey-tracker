@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { PlannerItem } from "@/types/planner";
-import { Plus, Clock } from "lucide-react";
+import { Plus, Clock, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PlannerCheckItem } from "./PlannerCheckItem";
@@ -13,8 +13,8 @@ interface PlannerSectionProps {
   section: PlannerItem["section"];
   onToggleItem: (id: string) => void;
   onDeleteItem: (id: string) => void;
-  onEditItem: (id: string, newText: string, newTime?: string) => void;
-  onAddItem: (text: string, section: PlannerItem["section"], time?: string) => void;
+  onEditItem: (id: string, newText: string, startTime?: string, endTime?: string) => void;
+  onAddItem: (text: string, section: PlannerItem["section"], startTime?: string, endTime?: string) => void;
 }
 
 export const PlannerSection = ({
@@ -27,15 +27,22 @@ export const PlannerSection = ({
   onAddItem
 }: PlannerSectionProps) => {
   const [newItemText, setNewItemText] = useState("");
-  const [newItemTime, setNewItemTime] = useState("");
+  const [newItemStartTime, setNewItemStartTime] = useState("");
+  const [newItemEndTime, setNewItemEndTime] = useState("");
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [showTimeInput, setShowTimeInput] = useState(false);
 
   const handleAddItem = () => {
     if (newItemText.trim()) {
-      onAddItem(newItemText, section, newItemTime || undefined);
+      onAddItem(
+        newItemText, 
+        section, 
+        newItemStartTime || undefined, 
+        newItemEndTime || undefined
+      );
       setNewItemText("");
-      setNewItemTime("");
+      setNewItemStartTime("");
+      setNewItemEndTime("");
       setIsAddingItem(false);
       setShowTimeInput(false);
     }
@@ -47,7 +54,8 @@ export const PlannerSection = ({
     } else if (e.key === "Escape") {
       setIsAddingItem(false);
       setNewItemText("");
-      setNewItemTime("");
+      setNewItemStartTime("");
+      setNewItemEndTime("");
       setShowTimeInput(false);
     }
   };
@@ -86,14 +94,26 @@ export const PlannerSection = ({
                 
                 {showTimeInput ? (
                   <div className="flex items-center gap-2 ml-7">
-                    <Input
-                      type="time"
-                      value={newItemTime}
-                      onChange={(e) => setNewItemTime(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      className="w-32 h-7 py-1 text-sm"
-                      placeholder="Time"
-                    />
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-muted-foreground">Start:</span>
+                      <Input
+                        type="time"
+                        value={newItemStartTime}
+                        onChange={(e) => setNewItemStartTime(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        className="w-24 h-7 py-1 text-sm"
+                      />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-muted-foreground">End:</span>
+                      <Input
+                        type="time"
+                        value={newItemEndTime}
+                        onChange={(e) => setNewItemEndTime(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        className="w-24 h-7 py-1 text-sm"
+                      />
+                    </div>
                     <button
                       onClick={handleAddItem}
                       className="text-primary hover:text-primary/80 text-sm"

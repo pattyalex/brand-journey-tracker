@@ -5,7 +5,8 @@ export interface PlannerItem {
   section: "morning" | "midday" | "afternoon" | "evening";
   isCompleted: boolean;
   date: string; // ISO string format YYYY-MM-DD
-  time?: string; // Optional time in format HH:MM (24-hour format)
+  startTime?: string; // Optional start time in format HH:MM (24-hour format)
+  endTime?: string; // Optional end time in format HH:MM (24-hour format)
 }
 
 export interface PlannerDay {
