@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
 import { Copy, Trash2, Sun, Heart, ListTodo, CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
@@ -192,11 +191,12 @@ export const DailyPlanner = () => {
     
     const targetDateString = copyToDate.toISOString().split('T')[0];
     
-    // Prevent copying to the same day
     if (targetDateString === dateString) {
       toast.error("Cannot copy to the same day");
       return;
     }
+    
+    console.log("Copying from:", dateString, "to:", targetDateString);
     
     const newItems = currentDay.items.map(item => ({
       ...item,
@@ -330,7 +330,7 @@ export const DailyPlanner = () => {
         items: [],
         tasks: tasks,
         greatDay: greatDay,
-        grateful: grateful
+        grateful: newGrateful
       });
     }
     
