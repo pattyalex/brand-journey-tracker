@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { format, addDays, subDays } from "date-fns";
+import { format, addDays, subDays, isSameDay } from "date-fns";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Copy, Trash2, StickyNote, Sun, Heart, ListTodo } from "lucide-react";
 import { PlannerDay, PlannerItem } from "@/types/planner";
 import { PlannerSection } from "./PlannerSection";
@@ -195,8 +195,10 @@ export const DailyPlanner = () => {
     if (!copyToDate) return;
     
     const targetDateString = copyToDate.toISOString().split('T')[0];
+    const currentDateString = dateString;
     
-    if (targetDateString === dateString) {
+    // Fix the date comparison to use isSameDay from date-fns instead of string comparison
+    if (isSameDay(copyToDate, selectedDate)) {
       toast.error("Cannot copy to the same day");
       return;
     }
@@ -219,12 +221,16 @@ export const DailyPlanner = () => {
     } else {
       updatedPlannerData = [...updatedPlannerData, {
         date: targetDateString,
-        items: newItems
+        items: newItems,
+        notes: "",
+        tasks: "",
+        greatDay: "",
+        grateful: ""
       }];
     }
     
     if (deleteAfterCopy) {
-      const currentDayIndex = updatedPlannerData.findIndex(day => day.date === dateString);
+      const currentDayIndex = updatedPlannerData.findIndex(day => day.date === currentDateString);
       if (currentDayIndex >= 0) {
         updatedPlannerData.splice(currentDayIndex, 1);
         toast.success(`Template copied to ${format(copyToDate, "MMMM do, yyyy")} and deleted from current day`);
