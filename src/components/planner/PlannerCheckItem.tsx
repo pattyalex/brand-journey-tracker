@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { PlannerItem } from "@/types/planner";
@@ -25,6 +25,7 @@ export const PlannerCheckItem = ({
   const [editStartTime, setEditStartTime] = useState(item.startTime || "");
   const [editEndTime, setEditEndTime] = useState(item.endTime || "");
   const isMobile = useIsMobile();
+  const scrollableRef = useRef<HTMLDivElement>(null);
 
   const handleSaveEdit = () => {
     if (editText.trim()) {
@@ -54,9 +55,9 @@ export const PlannerCheckItem = ({
   };
 
   return (
-    <div className="flex items-center gap-2 group bg-white p-2 rounded-md border border-gray-200 shadow-sm">
+    <div className="relative overflow-hidden bg-white rounded-md border border-gray-200 shadow-sm">
       {isEditing && !isSimpleEdit ? (
-        <div className="flex flex-1 items-center gap-1">
+        <div className="flex flex-1 items-center gap-1 p-2">
           <Input
             type="time"
             value={editStartTime}
@@ -87,7 +88,7 @@ export const PlannerCheckItem = ({
           </button>
         </div>
       ) : isSimpleEdit ? (
-        <div className="flex flex-1 items-center">
+        <div className="flex flex-1 items-center p-2">
           <Checkbox 
             checked={item.isCompleted} 
             onCheckedChange={() => onToggle(item.id)}
@@ -108,34 +109,53 @@ export const PlannerCheckItem = ({
           </button>
         </div>
       ) : (
-        <>
-          <div className="flex items-center min-w-[110px] mr-2 text-sm text-muted-foreground">
-            {(item.startTime || item.endTime) && (
-              <div className="flex items-center">
-                <Clock size={12} className="mr-1" />
-                {item.startTime && <span>{item.startTime}</span>}
-                {item.startTime && item.endTime && (
-                  <ArrowRight size={10} className="mx-1" />
-                )}
-                {item.endTime && <span>{item.endTime}</span>}
-              </div>
-            )}
+        <div 
+          ref={scrollableRef}
+          className="flex items-center w-full overflow-x-auto touch-scroll hide-scrollbar" 
+          style={{ scrollbarWidth: 'none' }}
+        >
+          {/* Left side actions (swipe right to reveal) */}
+          <div className="flex-shrink-0 bg-gray-100 p-2 flex items-center justify-center min-w-[48px]">
+            <button 
+              onClick={() => onDelete(item.id)} 
+              className="p-1 rounded-sm text-red-500 hover:bg-red-100"
+              title="Delete"
+            >
+              <Trash2 size={16} />
+            </button>
           </div>
           
-          <Checkbox 
-            checked={item.isCompleted} 
-            onCheckedChange={() => onToggle(item.id)}
-            className="h-5 w-5 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
-          />
-          
-          <div 
-            className={`flex-1 text-base ${item.isCompleted ? 'line-through text-muted-foreground' : 'text-gray-800'} cursor-pointer`}
-            onDoubleClick={handleDoubleClick}
-          >
-            <span>{item.text}</span>
+          {/* Main content */}
+          <div className="flex items-center gap-2 p-2 min-w-full flex-shrink-0">
+            <div className="flex items-center min-w-[110px] mr-2 text-sm text-muted-foreground">
+              {(item.startTime || item.endTime) && (
+                <div className="flex items-center">
+                  <Clock size={12} className="mr-1" />
+                  {item.startTime && <span>{item.startTime}</span>}
+                  {item.startTime && item.endTime && (
+                    <ArrowRight size={10} className="mx-1" />
+                  )}
+                  {item.endTime && <span>{item.endTime}</span>}
+                </div>
+              )}
+            </div>
+            
+            <Checkbox 
+              checked={item.isCompleted} 
+              onCheckedChange={() => onToggle(item.id)}
+              className="h-5 w-5 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+            />
+            
+            <div 
+              className={`flex-1 text-base ${item.isCompleted ? 'line-through text-muted-foreground' : 'text-gray-800'} cursor-pointer`}
+              onDoubleClick={handleDoubleClick}
+            >
+              <span>{item.text}</span>
+            </div>
           </div>
           
-          <div className="flex items-center gap-2">
+          {/* Right side actions (swipe left to reveal) */}
+          <div className="flex-shrink-0 bg-gray-100 p-2 flex items-center justify-center min-w-[48px]">
             <button 
               onClick={() => {
                 setIsEditing(true);
@@ -146,17 +166,10 @@ export const PlannerCheckItem = ({
               className="p-1 rounded-sm hover:bg-muted"
               title="Edit"
             >
-              <Pencil size={15} />
-            </button>
-            <button 
-              onClick={() => onDelete(item.id)} 
-              className="p-1 rounded-sm text-gray-500 hover:bg-red-100 hover:text-red-500"
-              title="Delete"
-            >
-              <Trash2 size={15} />
+              <Pencil size={16} />
             </button>
           </div>
-        </>
+        </div>
       )}
     </div>
   );
