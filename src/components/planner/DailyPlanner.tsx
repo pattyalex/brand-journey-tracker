@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
 import { Copy, Trash2, StickyNote, Sun, Heart, ListTodo } from "lucide-react";
@@ -345,7 +344,7 @@ export const DailyPlanner = () => {
         items: [],
         notes: notes,
         greatDay: greatDay,
-        grateful: newGrateful
+        grateful: grateful
       });
     }
     
@@ -357,9 +356,7 @@ export const DailyPlanner = () => {
   return (
     <Card className="border-none shadow-none">
       <CardHeader className="px-0">
-        <div>
-          <CardTitle className="text-xl">X</CardTitle>
-        </div>
+        
       </CardHeader>
       <CardContent className="px-0">
         <div className="flex justify-between items-center mb-6">
