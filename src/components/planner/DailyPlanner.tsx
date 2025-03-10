@@ -214,11 +214,14 @@ export const DailyPlanner = () => {
     let updatedPlannerData = [...plannerData];
     
     if (targetDayIndex >= 0) {
+      // Replace the items array instead of appending to it to prevent duplication
       updatedPlannerData[targetDayIndex] = {
         ...updatedPlannerData[targetDayIndex],
-        items: [...updatedPlannerData[targetDayIndex].items, ...newItems]
+        items: newItems  // Replace instead of append
       };
+      toast.success(`Template replaced existing items on ${format(copyToDate, "MMMM do, yyyy")}`);
     } else {
+      // If the target day doesn't exist yet, create it
       updatedPlannerData = [...updatedPlannerData, {
         date: targetDateString,
         items: newItems,
@@ -227,6 +230,7 @@ export const DailyPlanner = () => {
         greatDay: "",
         grateful: ""
       }];
+      toast.success(`Template copied to ${format(copyToDate, "MMMM do, yyyy")}`);
     }
     
     if (deleteAfterCopy) {
@@ -235,8 +239,6 @@ export const DailyPlanner = () => {
         updatedPlannerData.splice(currentDayIndex, 1);
         toast.success(`Template copied to ${format(copyToDate, "MMMM do, yyyy")} and deleted from current day`);
       }
-    } else {
-      toast.success(`Template copied to ${format(copyToDate, "MMMM do, yyyy")}`);
     }
     
     setPlannerData(updatedPlannerData);
