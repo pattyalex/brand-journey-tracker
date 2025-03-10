@@ -476,17 +476,17 @@ export const DailyPlanner = () => {
           </div>
         </div>
         
-        {/* Tasks section moved below the date controls */}
+        {/* Updated Tasks section title and placeholder text */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <ListTodo className="h-5 w-5 text-blue-500" />
-            <h3 className="text-lg font-medium">Tasks</h3>
+            <h3 className="text-lg font-medium">Tasks and Notes</h3>
           </div>
           <div className="border rounded-lg p-1">
             <Textarea
               value={tasks}
               onChange={handleTasksChange}
-              placeholder="Write down your to dos..."
+              placeholder="Write your to dos, reminders or other notes for the day..."
               className="min-h-[120px] resize-none"
               onTextSelect={(selectedText) => {
                 if (selectedText) {
