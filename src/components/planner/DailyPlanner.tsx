@@ -525,7 +525,7 @@ export const DailyPlanner = () => {
         {/* Moved description text to here, right above the day sections */}
         <div className="mb-6">
           <CardDescription>
-            Plan your day and organize your schedule:
+            Schedule your tasks and organize your day:
           </CardDescription>
         </div>
         
