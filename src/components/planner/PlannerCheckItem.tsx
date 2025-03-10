@@ -21,6 +21,7 @@ export const PlannerCheckItem = ({
 }: PlannerCheckItemProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSimpleEdit, setIsSimpleEdit] = useState(false);
+  const [isTimeEdit, setIsTimeEdit] = useState(false);
   const [editText, setEditText] = useState(item.text);
   const [editStartTime, setEditStartTime] = useState(item.startTime || "");
   const [editEndTime, setEditEndTime] = useState(item.endTime || "");
@@ -28,10 +29,11 @@ export const PlannerCheckItem = ({
   const scrollableRef = useRef<HTMLDivElement>(null);
 
   const handleSaveEdit = () => {
-    if (editText.trim()) {
-      onEdit(item.id, editText, editStartTime, editEndTime);
+    if (isTimeEdit || editText.trim()) {
+      onEdit(item.id, isTimeEdit ? item.text : editText, editStartTime, editEndTime);
       setIsEditing(false);
       setIsSimpleEdit(false);
+      setIsTimeEdit(false);
     }
   };
 
@@ -41,6 +43,7 @@ export const PlannerCheckItem = ({
     } else if (e.key === "Escape") {
       setIsEditing(false);
       setIsSimpleEdit(false);
+      setIsTimeEdit(false);
       setEditText(item.text);
       setEditStartTime(item.startTime || "");
       setEditEndTime(item.endTime || "");
@@ -54,9 +57,15 @@ export const PlannerCheckItem = ({
     }
   };
 
+  const handleTimeEdit = () => {
+    setIsTimeEdit(true);
+    setEditStartTime(item.startTime || "");
+    setEditEndTime(item.endTime || "");
+  };
+
   return (
     <div className="relative overflow-hidden bg-white rounded-md border border-gray-200 shadow-sm">
-      {isEditing && !isSimpleEdit ? (
+      {isEditing && !isSimpleEdit && !isTimeEdit ? (
         <div className="flex flex-1 items-center gap-1 p-2">
           <Input
             type="time"
@@ -108,6 +117,34 @@ export const PlannerCheckItem = ({
             <Check size={15} />
           </button>
         </div>
+      ) : isTimeEdit ? (
+        <div className="flex flex-1 items-center p-2">
+          <div className="flex items-center gap-1 flex-1">
+            <Clock size={15} className="text-muted-foreground mr-1" />
+            <Input
+              type="time"
+              value={editStartTime}
+              onChange={(e) => setEditStartTime(e.target.value)}
+              onKeyDown={handleKeyDown}
+              autoFocus
+              className="h-7 py-1 w-24 text-sm"
+            />
+            <ArrowRight size={12} className="mx-1 text-muted-foreground" />
+            <Input
+              type="time"
+              value={editEndTime}
+              onChange={(e) => setEditEndTime(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="h-7 py-1 w-24 text-sm"
+            />
+          </div>
+          <button 
+            onClick={handleSaveEdit} 
+            className="text-green-600 p-1 rounded-sm hover:bg-green-100 ml-1"
+          >
+            <Check size={15} />
+          </button>
+        </div>
       ) : (
         <div 
           ref={scrollableRef}
@@ -126,17 +163,32 @@ export const PlannerCheckItem = ({
           </div>
           
           {/* Main content */}
-          <div className="flex items-center gap-2 p-2 min-w-full flex-shrink-0">
+          <div className="flex items-center gap-2 p-2 min-w-full flex-shrink-0 group">
             <div className="flex items-center min-w-[110px] mr-2 text-sm text-muted-foreground">
-              {(item.startTime || item.endTime) && (
+              {(item.startTime || item.endTime) ? (
                 <div className="flex items-center">
-                  <Clock size={12} className="mr-1" />
-                  {item.startTime && <span>{item.startTime}</span>}
-                  {item.startTime && item.endTime && (
-                    <ArrowRight size={10} className="mx-1" />
-                  )}
-                  {item.endTime && <span>{item.endTime}</span>}
+                  <button 
+                    onClick={handleTimeEdit} 
+                    className="flex items-center hover:text-primary"
+                    title="Edit time"
+                  >
+                    <Clock size={12} className="mr-1" />
+                    {item.startTime && <span>{item.startTime}</span>}
+                    {item.startTime && item.endTime && (
+                      <ArrowRight size={10} className="mx-1" />
+                    )}
+                    {item.endTime && <span>{item.endTime}</span>}
+                  </button>
                 </div>
+              ) : (
+                <button 
+                  onClick={handleTimeEdit}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary flex items-center"
+                  title="Add time"
+                >
+                  <Clock size={12} className="mr-1" />
+                  <span className="text-xs">Add time</span>
+                </button>
               )}
             </div>
             
