@@ -4,6 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { PlannerItem } from "@/types/planner";
 import { Pencil, Trash2, Check, Clock, ArrowRight } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PlannerCheckItemProps {
   item: PlannerItem;
@@ -22,6 +23,7 @@ export const PlannerCheckItem = ({
   const [editText, setEditText] = useState(item.text);
   const [editStartTime, setEditStartTime] = useState(item.startTime || "");
   const [editEndTime, setEditEndTime] = useState(item.endTime || "");
+  const isMobile = useIsMobile();
 
   const handleSaveEdit = () => {
     if (editText.trim()) {
@@ -35,6 +37,15 @@ export const PlannerCheckItem = ({
       handleSaveEdit();
     } else if (e.key === "Escape") {
       setIsEditing(false);
+      setEditText(item.text);
+      setEditStartTime(item.startTime || "");
+      setEditEndTime(item.endTime || "");
+    }
+  };
+
+  const handleDoubleClick = () => {
+    if (!isEditing) {
+      setIsEditing(true);
       setEditText(item.text);
       setEditStartTime(item.startTime || "");
       setEditEndTime(item.endTime || "");
@@ -95,11 +106,14 @@ export const PlannerCheckItem = ({
             className="h-5 w-5 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
           />
           
-          <div className={`flex-1 text-base ${item.isCompleted ? 'line-through text-muted-foreground' : 'text-gray-800'}`}>
+          <div 
+            className={`flex-1 text-base ${item.isCompleted ? 'line-through text-muted-foreground' : 'text-gray-800'} cursor-pointer`}
+            onDoubleClick={handleDoubleClick}
+          >
             <span>{item.text}</span>
           </div>
           
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className={`flex items-center gap-2 ${isMobile ? 'opacity-100' : ''}`}>
             <button 
               onClick={() => {
                 setIsEditing(true);
@@ -108,12 +122,14 @@ export const PlannerCheckItem = ({
                 setEditEndTime(item.endTime || "");
               }}
               className="p-1 rounded-sm hover:bg-muted"
+              title="Edit"
             >
               <Pencil size={15} />
             </button>
             <button 
               onClick={() => onDelete(item.id)} 
-              className="p-1 rounded-sm text-gray-500 hover:bg-muted"
+              className="p-1 rounded-sm text-gray-500 hover:bg-red-100 hover:text-red-500"
+              title="Delete"
             >
               <Trash2 size={15} />
             </button>

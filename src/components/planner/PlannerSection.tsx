@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { PlannerCheckItem } from "./PlannerCheckItem";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PlannerSectionProps {
   title: string;
@@ -32,6 +33,7 @@ export const PlannerSection = ({
   const [newItemEndTime, setNewItemEndTime] = useState("");
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [showTimeInput, setShowTimeInput] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleAddItem = () => {
     if (newItemText.trim()) {
@@ -67,7 +69,7 @@ export const PlannerSection = ({
         <CardTitle className="text-lg font-medium text-gray-800">{title}</CardTitle>
       </CardHeader>
       <CardContent className="pt-3">
-        <ScrollArea className="h-[calc(100vh-350px)]">
+        <ScrollArea className={`${isMobile ? 'h-[calc(100vh-400px)]' : 'h-[calc(100vh-350px)]'}`}>
           <div className="space-y-3 pr-2">
             {items.length > 0 ? (
               items.map((item) => (
