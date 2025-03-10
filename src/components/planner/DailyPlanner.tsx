@@ -1,15 +1,12 @@
 
 import { useState, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Copy, Trash2, StickyNote, Sun, Heart, ListTodo } from "lucide-react";
+import { Copy, Trash2, StickyNote, Sun, Heart, ListTodo } from "lucide-react";
 import { PlannerDay, PlannerItem } from "@/types/planner";
 import { PlannerSection } from "./PlannerSection";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
@@ -369,45 +366,6 @@ export const DailyPlanner = () => {
       <CardContent className="px-0">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-2 flex-wrap">
-            <Button 
-              variant="outline" 
-              size="icon" 
-              onClick={handlePreviousDay}
-              aria-label="Previous day"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className="min-w-[240px] justify-start text-left font-normal"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  <span>{format(selectedDate, "EEEE, MMMM do, yyyy")}</span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={handleDateSelect}
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
-                />
-              </PopoverContent>
-            </Popover>
-            
-            <Button 
-              variant="outline" 
-              size="icon" 
-              onClick={handleNextDay}
-              aria-label="Next day"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            
             <TooltipProvider delayDuration={0}>
               <Dialog open={isCopyDialogOpen} onOpenChange={setIsCopyDialogOpen}>
                 <Tooltip>
