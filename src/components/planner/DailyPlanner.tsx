@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { format, addDays, subDays, isSameDay, parseISO } from "date-fns";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Copy, Trash2, StickyNote, Sun, Heart, ListTodo } from "lucide-react";
@@ -204,8 +203,8 @@ export const DailyPlanner = () => {
     console.log('Source date:', sourceDateString);
     console.log('Target date:', targetDateString);
     
-    // Compare the date strings directly to ensure they're different days
-    if (sourceDateString === targetDateString) {
+    // Make sure we're not copying to the same day
+    if (targetDateString === sourceDateString) {
       toast.error("Cannot copy to the same day");
       return;
     }
@@ -542,7 +541,6 @@ export const DailyPlanner = () => {
           </div>
         </div>
         
-        {/* Tasks section moved below the date controls */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <ListTodo className="h-5 w-5 text-blue-500" />
