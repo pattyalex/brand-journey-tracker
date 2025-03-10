@@ -296,23 +296,32 @@ export const VisionBoardButton = () => {
     );
   };
 
-  // Full screen dialog for viewing images
+  // Full screen view for images - now truly full screen
   const renderFullScreenDialog = () => {
     if (!visionBoardData || visionBoardData.type !== "image" || visionBoardData.content.includes("application/pdf")) {
       return null;
     }
 
     return (
-      <Dialog open={isFullScreenOpen} onOpenChange={setIsFullScreenOpen}>
-        <DialogContent className="max-w-screen max-h-screen w-[90vw] h-[90vh] flex items-center justify-center">
-          <img 
-            src={visionBoardData.content}
-            alt="Vision Board"
-            className="max-w-full max-h-full object-contain"
-            onError={() => toast.error("Unable to load image.")}
-          />
-        </DialogContent>
-      </Dialog>
+      <div 
+        className={`fixed inset-0 z-[100] bg-black ${isFullScreenOpen ? 'flex' : 'hidden'} items-center justify-center`}
+        style={{ width: '100vw', height: '100vh' }}
+      >
+        <Button
+          variant="outline"
+          size="icon"
+          className="absolute top-4 right-4 bg-background/80 rounded-full z-[101]"
+          onClick={toggleFullScreen}
+        >
+          <X className="h-4 w-4" />
+        </Button>
+        <img 
+          src={visionBoardData.content}
+          alt="Vision Board"
+          className="max-w-full max-h-full object-contain px-4"
+          onError={() => toast.error("Unable to load image.")}
+        />
+      </div>
     );
   };
 
