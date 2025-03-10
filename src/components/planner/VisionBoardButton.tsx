@@ -119,6 +119,70 @@ export const VisionBoardButton = () => {
   };
 
   const renderContent = () => {
+    // If we're already showing a vision board, show it with the remove option
+    if (visionBoardData && activeSection === "view") {
+      if (visionBoardData.type === "image") {
+        return (
+          <div className="relative w-full">
+            {visionBoardData.content.includes("application/pdf") ? (
+              <div className="flex flex-col items-center gap-4 border rounded-md p-4">
+                <p>PDF Vision Board</p>
+                <Button 
+                  onClick={() => window.open(visionBoardData.content, "_blank")}
+                >
+                  View PDF
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="absolute top-2 right-2 bg-background/80 rounded-full"
+                  onClick={handleRemoveVisionBoard}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <>
+                <img 
+                  src={visionBoardData.content}
+                  alt="Vision Board"
+                  className="w-full h-auto max-h-[400px] object-contain rounded-md"
+                  onError={() => toast.error("Unable to load image.")}
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="absolute top-2 right-2 bg-background/80 rounded-full"
+                  onClick={handleRemoveVisionBoard}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </>
+            )}
+          </div>
+        );
+      } else {
+        return (
+          <div className="flex flex-col items-center gap-4 w-full">
+            <p className="text-center">
+              Your vision board is linked to an external website.
+            </p>
+            <div className="flex gap-2">
+              <Button onClick={openExternalLink}>
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Open Vision Board
+              </Button>
+              <Button variant="outline" onClick={handleRemoveVisionBoard}>
+                <X className="h-4 w-4 mr-2" />
+                Remove Link
+              </Button>
+            </div>
+          </div>
+        );
+      }
+    }
+
+    // If we're in upload mode, show the upload form
     if (activeSection === "upload") {
       return (
         <div className="space-y-4">
@@ -159,7 +223,8 @@ export const VisionBoardButton = () => {
         </div>
       );
     }
-    
+
+    // If we're in link mode, show the link form
     if (activeSection === "link") {
       return (
         <div className="space-y-4">
@@ -193,84 +258,23 @@ export const VisionBoardButton = () => {
         </div>
       );
     }
-    
+
+    // Default view - just show the two main options
     return (
-      <div className="flex flex-col items-center gap-4">
-        {visionBoardData ? (
-          <>
-            {visionBoardData.type === "image" ? (
-              <div className="relative w-full">
-                {visionBoardData.content.includes("application/pdf") ? (
-                  <div className="flex flex-col items-center gap-4 border rounded-md p-4">
-                    <p>PDF Vision Board</p>
-                    <Button 
-                      onClick={() => window.open(visionBoardData.content, "_blank")}
-                    >
-                      View PDF
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="absolute top-2 right-2 bg-background/80 rounded-full"
-                      onClick={handleRemoveVisionBoard}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    <img 
-                      src={visionBoardData.content}
-                      alt="Vision Board"
-                      className="w-full h-auto max-h-[400px] object-contain rounded-md"
-                      onError={() => toast.error("Unable to load image.")}
-                    />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="absolute top-2 right-2 bg-background/80 rounded-full"
-                      onClick={handleRemoveVisionBoard}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </>
-                )}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-4 w-full">
-                <p className="text-center">
-                  Your vision board is linked to an external website.
-                </p>
-                <div className="flex gap-2">
-                  <Button onClick={openExternalLink}>
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Open Vision Board
-                  </Button>
-                  <Button variant="outline" onClick={handleRemoveVisionBoard}>
-                    <X className="h-4 w-4 mr-2" />
-                    Remove Link
-                  </Button>
-                </div>
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="flex flex-col items-center justify-center gap-4 py-6">
-            <p className="text-center text-muted-foreground mb-4">
-              Choose how to create your vision board:
-            </p>
-            <div className="flex gap-4">
-              <Button onClick={() => setActiveSection("upload")} variant="vision">
-                <Upload className="h-4 w-4 mr-2" />
-                Upload
-              </Button>
-              <Button onClick={() => setActiveSection("link")} variant="outline">
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Link
-              </Button>
-            </div>
-          </div>
-        )}
+      <div className="flex flex-col items-center justify-center gap-4 py-6">
+        <p className="text-center text-muted-foreground mb-4">
+          Choose how to create your vision board:
+        </p>
+        <div className="flex gap-4">
+          <Button onClick={() => setActiveSection("upload")} variant="vision">
+            <Upload className="h-4 w-4 mr-2" />
+            Upload
+          </Button>
+          <Button onClick={() => setActiveSection("link")} variant="outline">
+            <ExternalLink className="h-4 w-4 mr-2" />
+            External Link
+          </Button>
+        </div>
       </div>
     );
   };
