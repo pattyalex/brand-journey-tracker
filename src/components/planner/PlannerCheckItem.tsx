@@ -160,7 +160,7 @@ export const PlannerCheckItem = ({
           />
           
           <div 
-            className={`flex-1 text-base ${item.isCompleted ? 'line-through text-muted-foreground' : 'text-gray-800'} cursor-pointer`}
+            className={`flex-1 pr-2 text-base ${item.isCompleted ? 'line-through text-muted-foreground' : 'text-gray-800'} cursor-pointer`}
             onDoubleClick={handleDoubleClick}
           >
             <span>{item.text}</span>
