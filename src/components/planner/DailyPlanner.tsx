@@ -32,6 +32,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { DragDropContext } from "react-beautiful-dnd";
 
 const getDateString = (date: Date): string => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -355,351 +356,47 @@ export const DailyPlanner = () => {
       return new Date(year, month - 1, day_num);
     });
 
+  const onDragEnd = (result: any) => {
+    if (!result.destination) {
+      return;
+    }
+
+    const sourceSection = result.source.droppableId;
+    const destinationSection = result.destination.droppableId;
+    const itemId = result.draggableId;
+
+    const dayIndex = plannerData.findIndex(day => day.date === dateString);
+    if (dayIndex < 0) return;
+
+    const updatedPlannerData = [...plannerData];
+    const items = [...updatedPlannerData[dayIndex].items];
+    const itemIndex = items.findIndex(item => item.id === itemId);
+    
+    if (itemIndex >= 0) {
+      const [movedItem] = items.splice(itemIndex, 1);
+      const updatedItem = {
+        ...movedItem,
+        section: destinationSection as PlannerItem["section"]
+      };
+      
+      const destinationIndex = result.destination.index;
+      items.splice(destinationIndex, 0, updatedItem);
+      
+      updatedPlannerData[dayIndex] = {
+        ...updatedPlannerData[dayIndex],
+        items
+      };
+      
+      setPlannerData(updatedPlannerData);
+    }
+  };
+
   return (
-    <Card className="border-none shadow-none">
-      <CardHeader className="px-0">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center">
-            <Button variant="outline" size="icon" onClick={handlePreviousDay}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            
-            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="mx-2 min-w-[200px] justify-start text-left font-medium"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {format(selectedDate, "EEEE, MMMM d, yyyy")}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={handleDateSelect}
-                  className="rounded-md border"
-                  modifiers={{
-                    booked: daysWithItems,
-                  }}
-                  modifiersStyles={{
-                    booked: {
-                      backgroundColor: "hsl(var(--primary) / 0.1)",
-                      fontWeight: "bold",
-                      borderRadius: "0",
-                    },
-                  }}
-                />
-              </PopoverContent>
-            </Popover>
-            
-            <Button variant="outline" size="icon" onClick={handleNextDay}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          <div className="flex items-center gap-2 flex-wrap">
-            <TooltipProvider delayDuration={0}>
-              <Dialog open={isCopyDialogOpen} onOpenChange={setIsCopyDialogOpen}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <DialogTrigger asChild>
-                      <Button 
-                        variant="outline"
-                        size="icon"
-                        className="ml-2 h-8 w-8"
-                        disabled={!hasItems}
-                      >
-                        <Copy className="h-3.5 w-3.5" />
-                      </Button>
-                    </DialogTrigger>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" sideOffset={5}>
-                    <p>Copy Template</p>
-                  </TooltipContent>
-                </Tooltip>
-                <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle>Copy template to another day</DialogTitle>
-                    <DialogDescription>
-                      Select the date you want to copy this day's template to.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="py-4">
-                    <Calendar
-                      mode="single"
-                      selected={copyToDate}
-                      onSelect={setCopyToDate}
-                      initialFocus
-                    />
-                  </div>
-                  <div className="flex items-center space-x-2 py-2">
-                    <Checkbox 
-                      id="delete-after-copy" 
-                      checked={deleteAfterCopy}
-                      onCheckedChange={(checked) => setDeleteAfterCopy(checked === true)}
-                    />
-                    <label
-                      htmlFor="delete-after-copy"
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      Delete template from current day after copying
-                    </label>
-                  </div>
-                  <DialogFooter>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={() => {
-                        setIsCopyDialogOpen(false);
-                        setDeleteAfterCopy(false);
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button 
-                      type="button" 
-                      onClick={copyTemplate}
-                      disabled={!copyToDate}
-                    >
-                      Copy template
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </TooltipProvider>
-            
-            <TooltipProvider delayDuration={0}>
-              <AlertDialog>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <AlertDialogTrigger asChild>
-                      <Button 
-                        variant="outline"
-                        size="icon"
-                        className="ml-2 h-8 w-8"
-                        disabled={!hasItems}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </AlertDialogTrigger>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" sideOffset={5}>
-                    <p>Delete All</p>
-                  </TooltipContent>
-                </Tooltip>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete all items for this day?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete all planner items 
-                      for {format(selectedDate, "MMMM do, yyyy")}.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteAllItems}>
-                      Delete All
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </TooltipProvider>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="px-0">
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-3">
-            <ListTodo className="h-5 w-5 text-blue-500" />
-            <h3 className="text-lg font-medium">To-Dos</h3>
-          </div>
-          <div className="border rounded-lg p-1">
-            <Textarea
-              value={tasks}
-              onChange={handleTasksChange}
-              placeholder="Write your to dos, reminders or other notes for the day..."
-              className="min-h-[120px] resize-none"
-              onTextSelect={(selectedText) => {
-                if (selectedText) {
-                  const newItem: PlannerItem = {
-                    id: Date.now().toString(),
-                    text: selectedText,
-                    section: "morning",
-                    isCompleted: false,
-                    date: dateString
-                  };
-                  
-                  const dayIndex = plannerData.findIndex(day => day.date === dateString);
-                  
-                  if (dayIndex >= 0) {
-                    const updatedPlannerData = [...plannerData];
-                    updatedPlannerData[dayIndex] = {
-                      ...updatedPlannerData[dayIndex],
-                      items: [...updatedPlannerData[dayIndex].items, newItem]
-                    };
-                    setPlannerData(updatedPlannerData);
-                    toast.success("Added as a task for today!");
-                  } else {
-                    setPlannerData([...plannerData, { 
-                      date: dateString, 
-                      items: [newItem],
-                      tasks: tasks,
-                      greatDay: greatDay,
-                      grateful: grateful
-                    }]);
-                    toast.success("Added as a task for today!");
-                  }
-                }
-              }}
-            />
-          </div>
-        </div>
-        
-        <div className="mb-6">
-          <CardDescription>
-            Schedule your tasks and organize your day:
-          </CardDescription>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <PlannerSection
-            title="Morning Routine"
-            items={getSectionItems("morning")}
-            section="morning"
-            onToggleItem={handleToggleItem}
-            onDeleteItem={handleDeleteItem}
-            onEditItem={handleEditItem}
-            onAddItem={handleAddItem}
-          />
-          
-          <PlannerSection
-            title="Morning"
-            items={getSectionItems("midday")}
-            section="midday"
-            onToggleItem={handleToggleItem}
-            onDeleteItem={handleDeleteItem}
-            onEditItem={handleEditItem}
-            onAddItem={handleAddItem}
-          />
-          
-          <PlannerSection
-            title="Afternoon"
-            items={getSectionItems("afternoon")}
-            section="afternoon"
-            onToggleItem={handleToggleItem}
-            onDeleteItem={handleDeleteItem}
-            onEditItem={handleEditItem}
-            onAddItem={handleAddItem}
-          />
-          
-          <PlannerSection
-            title="Evening Routine"
-            items={getSectionItems("evening")}
-            section="evening"
-            onToggleItem={handleToggleItem}
-            onDeleteItem={handleDeleteItem}
-            onEditItem={handleEditItem}
-            onAddItem={handleAddItem}
-          />
-        </div>
-        
-        <div className="mt-8">
-          <div className="flex items-center gap-2 mb-3">
-            <Sun className="h-5 w-5 text-amber-500" />
-            <h3 className="text-lg font-medium">What would make today great?</h3>
-          </div>
-          <div className="border rounded-lg p-1">
-            <Textarea
-              value={greatDay}
-              onChange={handleGreatDayChange}
-              placeholder="List 1-3 things that would make today wonderful..."
-              className="min-h-[120px] resize-none"
-              onTextSelect={(selectedText) => {
-                if (selectedText) {
-                  const newItem: PlannerItem = {
-                    id: Date.now().toString(),
-                    text: selectedText,
-                    section: "morning",
-                    isCompleted: false,
-                    date: dateString
-                  };
-                  
-                  const dayIndex = plannerData.findIndex(day => day.date === dateString);
-                  
-                  if (dayIndex >= 0) {
-                    const updatedPlannerData = [...plannerData];
-                    updatedPlannerData[dayIndex] = {
-                      ...updatedPlannerData[dayIndex],
-                      items: [...updatedPlannerData[dayIndex].items, newItem]
-                    };
-                    setPlannerData(updatedPlannerData);
-                    toast.success("Added as a task for today!");
-                  } else {
-                    setPlannerData([...plannerData, { 
-                      date: dateString, 
-                      items: [newItem],
-                      tasks: tasks,
-                      greatDay: greatDay,
-                      grateful: grateful
-                    }]);
-                    toast.success("Added as a task for today!");
-                  }
-                }
-              }}
-            />
-          </div>
-        </div>
-        
-        <div className="mt-8">
-          <div className="flex items-center gap-2 mb-3">
-            <Heart className="h-4 w-4 text-rose-500" />
-            <h3 className="text-lg font-medium">Things I'm grateful for today</h3>
-          </div>
-          <div className="border rounded-lg p-1">
-            <Textarea
-              value={grateful}
-              onChange={handleGratefulChange}
-              placeholder="List 1-3 things you're grateful for today..."
-              className="min-h-[120px] resize-none"
-              onTextSelect={(selectedText) => {
-                if (selectedText) {
-                  const newItem: PlannerItem = {
-                    id: Date.now().toString(),
-                    text: selectedText,
-                    section: "morning",
-                    isCompleted: false,
-                    date: dateString
-                  };
-                  
-                  const dayIndex = plannerData.findIndex(day => day.date === dateString);
-                  
-                  if (dayIndex >= 0) {
-                    const updatedPlannerData = [...plannerData];
-                    updatedPlannerData[dayIndex] = {
-                      ...updatedPlannerData[dayIndex],
-                      items: [...updatedPlannerData[dayIndex].items, newItem]
-                    };
-                    setPlannerData(updatedPlannerData);
-                    toast.success("Added as a task for today!");
-                  } else {
-                    setPlannerData([...plannerData, { 
-                      date: dateString, 
-                      items: [newItem],
-                      tasks: tasks,
-                      greatDay: greatDay,
-                      grateful: grateful
-                    }]);
-                    toast.success("Added as a task for today!");
-                  }
-                }
-              }}
-            />
-          </div>
-        </div>
-        
-      </CardContent>
-    </Card>
-  );
-};
+    <DragDropContext onDragEnd={onDragEnd}>
+      <Card className="border-none shadow-none">
+        <CardHeader className="px-0">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center">
+              <Button variant="outline" size="icon" onClick={handlePreviousDay}>
+                <Che
+
