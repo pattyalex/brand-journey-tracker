@@ -30,6 +30,7 @@ export const PlannerCheckItem = ({
   const [editText, setEditText] = useState(item.text);
   const [editStartTime, setEditStartTime] = useState(item.startTime || "");
   const [editEndTime, setEditEndTime] = useState(item.endTime || "");
+  const [secondaryChecked, setSecondaryChecked] = useState(false);
   const isMobile = useIsMobile();
   const scrollableRef = useRef<HTMLDivElement>(null);
 
@@ -175,10 +176,18 @@ export const PlannerCheckItem = ({
           )}
           
           <div 
-            className={`flex-1 text-base ${item.isCompleted ? 'line-through text-gray-600' : 'text-gray-800'} cursor-pointer overflow-visible flex items-center`}
+            className={`flex-1 text-base ${item.isCompleted ? 'line-through text-gray-600' : 'text-gray-800'} cursor-pointer overflow-visible flex flex-col`}
             onDoubleClick={handleDoubleClick}
           >
             <span className="break-words whitespace-normal">{item.text}</span>
+            
+            <div className="mt-1 flex items-center">
+              <Checkbox 
+                checked={secondaryChecked}
+                onCheckedChange={() => setSecondaryChecked(!secondaryChecked)}
+                className="h-3 w-3 mr-1 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
+              />
+            </div>
           </div>
           
           <button 
