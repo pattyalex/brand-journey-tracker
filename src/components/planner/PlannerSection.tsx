@@ -212,12 +212,12 @@ export const PlannerSection = ({
             {items.length > 0 ? (
               items.map((item) => (
                 <div key={item.id} className="flex flex-col w-full group">
-                  <div className="flex items-start">
-                    <div className="pl-3 pr-1 pt-4">
+                  <div className="flex items-center">
+                    <div className="pl-3 pr-1">
                       <Checkbox 
                         checked={item.isCompleted} 
                         onCheckedChange={() => onToggleItem(item.id)}
-                        className="h-3.5 w-3.5 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                        className="h-4 w-4 flex-shrink-0 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
                       />
                     </div>
                     
@@ -246,9 +246,9 @@ export const PlannerSection = ({
             
             {isAddingItem ? (
               <div className="flex flex-col mt-2">
-                <div className="flex items-start">
-                  <div className="pl-3 pr-1 pt-4">
-                    <div className="h-3.5 w-3.5 border border-gray-300 rounded-sm"></div>
+                <div className="flex items-center">
+                  <div className="pl-3 pr-1">
+                    <div className="h-4 w-4 border border-gray-400 rounded-sm"></div>
                   </div>
                   <div className="flex-1 ml-1 border border-gray-200 p-1 rounded-lg bg-white shadow-sm">
                     <div className="flex items-center gap-1">
@@ -287,7 +287,7 @@ export const PlannerSection = ({
                         <Button
                           onClick={handleAddItem}
                           size="sm"
-                          className="text-xs"
+                          className="text-xs bg-purple-500 hover:bg-purple-600"
                         >
                           Add
                         </Button>
@@ -298,7 +298,7 @@ export const PlannerSection = ({
                           type="button"
                           variant="ghost"
                           size="xs"
-                          className="flex items-center gap-1 text-muted-foreground hover:text-primary h-6 p-0"
+                          className="flex items-center gap-1 text-muted-foreground hover:text-purple-500 h-6 p-0"
                         >
                           <Clock size={12} />
                           <span>Add time</span>
@@ -311,7 +311,7 @@ export const PlannerSection = ({
             ) : (
               <button
                 onClick={() => setIsAddingItem(true)}
-                className="flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 text-base mt-3 w-full p-2 rounded-md transition-colors"
+                className="flex items-center justify-center gap-2 text-gray-500 hover:text-purple-500 text-base mt-3 w-full p-2 rounded-md transition-colors"
               >
                 <Plus size={18} />
                 <span>Add item</span>
