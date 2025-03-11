@@ -163,7 +163,7 @@ export const PlannerSection = ({
   };
 
   return (
-    <Card className="h-full border border-border shadow-sm bg-gray-50/70 overflow-hidden">
+    <Card className="h-full border border-border shadow-sm bg-white overflow-hidden">
       <CardHeader className="pb-2 bg-muted/20 border-b">
         <CardTitle className="text-lg font-medium text-gray-800">{title}</CardTitle>
       </CardHeader>
@@ -186,7 +186,7 @@ export const PlannerSection = ({
                 </div>
               ))
             ) : (
-              <div className="text-sm text-muted-foreground italic text-center py-3 bg-white/70 rounded-md border border-gray-200">
+              <div className="text-sm text-muted-foreground italic text-center py-3 bg-white rounded-md border border-gray-200">
                 No tasks in this section
               </div>
             )}
