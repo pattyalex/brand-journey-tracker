@@ -6,6 +6,7 @@ export const defaultMenuItems: MenuItem[] = [
   { title: 'Dashboard', icon: Home, url: '/', isDeletable: false },
   { title: 'Quick Notes', icon: Clipboard, url: '/quick-notes', isDeletable: false },
   { title: 'Daily Planner', icon: CheckCircle, url: '/task-board', isDeletable: true },
+  { title: 'Weekly Content Flow', icon: CalendarDays, url: '/weekly-content-flow', isDeletable: true },
   { 
     title: 'Workflow', 
     icon: FolderOpen, 

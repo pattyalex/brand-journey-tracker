@@ -20,6 +20,7 @@ import IncomeTracker from "./pages/IncomeTracker";
 import TaskBoard from "./pages/TaskBoard";
 import Help from "./pages/Help";
 import QuickNotes from "./pages/QuickNotes";
+import WeeklyContentFlow from "./pages/WeeklyContentFlow";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
           <Route path="/task-board" element={<TaskBoard />} />
           <Route path="/help" element={<Help />} />
           <Route path="/quick-notes" element={<QuickNotes />} />
+          <Route path="/weekly-content-flow" element={<WeeklyContentFlow />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
