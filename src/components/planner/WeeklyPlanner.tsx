@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { format, addDays, startOfWeek, subWeeks, addWeeks } from "date-fns";
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CalendarDays, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,9 +12,10 @@ interface WeeklyPlannerProps {
 
 // Time slots for the calendar (24 hours) in American format (12-hour with AM/PM)
 const TIME_SLOTS = [
-  "10 AM", "11 AM", "12 PM", "1 PM", "2 PM", "3 PM", 
-  "4 PM", "5 PM", "6 PM", "7 PM", "8 PM", "9 PM", 
-  "10 PM", "11 PM"
+  "1:00 AM", "2:00 AM", "3:00 AM", "4:00 AM", "5:00 AM", "6:00 AM", 
+  "7:00 AM", "8:00 AM", "9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", 
+  "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", 
+  "7:00 PM", "8:00 PM", "9:00 PM", "10:00 PM", "11:00 PM", "12:00 AM"
 ];
 
 export const WeeklyPlanner = ({ plannerData }: WeeklyPlannerProps) => {
@@ -155,15 +156,12 @@ export const WeeklyPlanner = ({ plannerData }: WeeklyPlannerProps) => {
             })}
           </div>
         ) : (
-          <div className="relative" style={{ height: '840px' }}> {/* Adjusted height for visible hours */}
+          <div className="relative" style={{ height: '1440px' }}> {/* Adjusted height for 24 hours */}
             {/* Time column */}
-            <div className="absolute left-0 top-0 w-16 h-full border-r z-10 bg-background">
+            <div className="absolute left-0 top-0 w-16 h-full border-r z-10 bg-white">
               {TIME_SLOTS.map((time, index) => (
-                <div 
-                  key={`time-${index}`} 
-                  className="h-[60px] border-b border-gray-100 text-xs text-muted-foreground"
-                >
-                  <span className="absolute -top-2.5 left-2">{time}</span>
+                <div key={`time-${index}`} className="h-[60px] relative border-b text-xs text-muted-foreground px-2">
+                  <span className="absolute -top-2 right-2">{time}</span>
                 </div>
               ))}
             </div>
@@ -172,12 +170,9 @@ export const WeeklyPlanner = ({ plannerData }: WeeklyPlannerProps) => {
             <div className="ml-16 grid grid-cols-7 h-full">
               {/* Day headers */}
               {weekDays.map((day, index) => (
-                <div 
-                  key={`header-cal-${index}`} 
-                  className="text-center p-2 border-b border-gray-200 font-medium sticky top-0 bg-background z-10"
-                >
-                  <div className="text-xs uppercase text-muted-foreground">{format(day, "EEE")}</div>
-                  <div className="text-xl">{format(day, "d")}</div>
+                <div key={`header-cal-${index}`} className="text-center p-2 border-b font-medium sticky top-0 bg-white z-10">
+                  <div className="text-sm">{format(day, "EEE")}</div>
+                  <div className="text-sm">{format(day, "d")}</div>
                 </div>
               ))}
               
@@ -193,10 +188,7 @@ export const WeeklyPlanner = ({ plannerData }: WeeklyPlannerProps) => {
                   >
                     {/* Time grid lines */}
                     {TIME_SLOTS.map((_, timeIndex) => (
-                      <div 
-                        key={`grid-${dayIndex}-${timeIndex}`} 
-                        className="h-[60px] border-b border-gray-100"
-                      />
+                      <div key={`grid-${dayIndex}-${timeIndex}`} className="h-[60px] border-b border-gray-100"></div>
                     ))}
                     
                     {/* Events */}
@@ -207,7 +199,7 @@ export const WeeklyPlanner = ({ plannerData }: WeeklyPlannerProps) => {
                         <div 
                           key={item.id}
                           className={`
-                            absolute text-xs p-1.5 rounded-md border left-1 right-1 overflow-hidden
+                            absolute text-xs p-1.5 rounded border left-1 right-1 overflow-hidden
                             ${item.isCompleted ? "bg-green-50 border-green-200 text-green-800" : "bg-white border-gray-200"}
                             ${item.section === "morning" ? "border-l-4 border-l-blue-500" : ""}
                             ${item.section === "midday" ? "border-l-4 border-l-amber-500" : ""}
@@ -219,18 +211,37 @@ export const WeeklyPlanner = ({ plannerData }: WeeklyPlannerProps) => {
                             height: `${Math.max(height, 30)}px`,
                           }}
                         >
-                          <div className={`${item.isCompleted ? "line-through opacity-70" : ""}`}>
+                          <div className={`${item.isCompleted ? "line-through opacity-70" : ""} text-xs`}>
                             {item.text}
                           </div>
-                          {item.startTime && (
-                            <div className="text-[10px] text-muted-foreground mt-0.5">
-                              {formatTime(item.startTime)}
-                              {item.endTime && ` - ${formatTime(item.endTime)}`}
-                            </div>
-                          )}
+                          <div className="text-[10px] text-muted-foreground">
+                            {formatTime(item.startTime)}
+                            {item.endTime && ` - ${formatTime(item.endTime)}`}
+                          </div>
                         </div>
                       );
                     })}
+                    
+                    {/* Items without specific times are shown at top */}
+                    <div className="absolute top-10 left-1 right-1 z-10">
+                      {items.filter(item => !item.startTime).map((item) => (
+                        <div 
+                          key={item.id}
+                          className={`
+                            text-xs p-1.5 mb-1 rounded border
+                            ${item.isCompleted ? "bg-green-50 border-green-200 text-green-800" : "bg-white border-gray-200"}
+                            ${item.section === "morning" ? "border-l-4 border-l-blue-500" : ""}
+                            ${item.section === "midday" ? "border-l-4 border-l-amber-500" : ""}
+                            ${item.section === "afternoon" ? "border-l-4 border-l-orange-500" : ""}
+                            ${item.section === "evening" ? "border-l-4 border-l-purple-500" : ""}
+                          `}
+                        >
+                          <div className={`${item.isCompleted ? "line-through opacity-70" : ""}`}>
+                            {item.text}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 );
               })}
