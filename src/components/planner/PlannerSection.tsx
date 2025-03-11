@@ -174,7 +174,7 @@ export const PlannerSection = ({
             {items.length > 0 ? (
               items.map((item) => (
                 <div key={item.id} className="flex items-center w-full">
-                  <div className="pl-2 w-[60px] flex-shrink-0 flex items-center justify-start">
+                  <div className="pl-3 w-[50px] flex-shrink-0 flex items-center justify-start">
                     {editingTimeItemId === item.id ? (
                       <div className="flex flex-col space-y-1">
                         <Input
@@ -245,15 +245,15 @@ export const PlannerSection = ({
                     )}
                   </div>
                   
-                  <div className="flex items-center ml-1 self-center">
+                  <div className="flex items-center self-center px-1">
                     <Checkbox 
                       checked={item.isCompleted} 
                       onCheckedChange={() => onToggleItem(item.id)}
-                      className="h-3.5 w-3.5 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                      className="h-3.5 w-3.5 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground self-center"
                     />
                   </div>
                   
-                  <div className="flex-1 min-w-0 ml-0">
+                  <div className="flex-1 min-w-0 ml-1">
                     <PlannerCheckItem
                       item={item}
                       onToggle={onToggleItem}
@@ -273,7 +273,7 @@ export const PlannerSection = ({
             
             {isAddingItem ? (
               <div className="flex mt-2">
-                <div className="pl-2 w-[60px] flex-shrink-0">
+                <div className="pl-3 w-[50px] flex-shrink-0">
                   {showTimeInput && (
                     <>
                       <div className="font-medium text-xs">{newItemStartTime || "--:--"}</div>
@@ -282,6 +282,9 @@ export const PlannerSection = ({
                       )}
                     </>
                   )}
+                </div>
+                <div className="px-1 flex items-center">
+                  <div className="h-3.5 w-3.5 border border-gray-300 rounded-sm"></div>
                 </div>
                 <div className="flex-1 ml-1 border border-gray-200 p-1 rounded-lg bg-white shadow-sm">
                   <div className="flex items-center gap-1">
