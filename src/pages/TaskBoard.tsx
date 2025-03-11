@@ -1,7 +1,7 @@
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, CheckSquare, Calendar, Clock, CheckCircle2, Edit, Trash2, CalendarIcon, Plus, Circle, CheckCircle, ArrowLeft, Flag } from "lucide-react";
+import { PlusCircle, CheckSquare, CalendarIcon as CalendarIconBase, Clock, CheckCircle2, Edit, Trash2, Plus, Circle, CheckCircle, ArrowLeft, Flag } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautif
 import { DailyPlanner } from "@/components/planner/DailyPlanner";
 import { WeeklyPlanner } from "@/components/planner/WeeklyPlanner";
 import { Calendar } from "@/components/planner/Calendar";
+import { LovableCalendar } from "@/components/planner/LovableCalendar";
 import { PlannerDay } from "@/types/planner";
 
 interface Task {
@@ -325,6 +326,12 @@ const TaskBoard = () => {
             >
               Calendar
             </TabsTrigger>
+            <TabsTrigger 
+              value="lovable-calendar" 
+              className="px-8 py-3 text-base font-medium bg-primary/5 hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              Lovable Calendar
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="tasks-board" className="m-0">
@@ -610,6 +617,10 @@ const TaskBoard = () => {
 
           <TabsContent value="calendar-view" className="m-0">
             <Calendar plannerData={plannerData} onUpdatePlannerData={handleUpdatePlannerData} />
+          </TabsContent>
+
+          <TabsContent value="lovable-calendar" className="m-0">
+            <LovableCalendar plannerData={plannerData} onUpdatePlannerData={handleUpdatePlannerData} />
           </TabsContent>
         </Tabs>
       </div>
@@ -1279,6 +1290,3 @@ const SimplifiedTaskList = ({
 };
 
 export default TaskBoard;
-
-
-
