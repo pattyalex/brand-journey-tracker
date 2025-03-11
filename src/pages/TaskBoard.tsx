@@ -1,3 +1,4 @@
+
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,421 @@ interface Task {
   createdAt: string;
   isCompleted?: boolean;
 }
+
+// Define types for content schedule
+type WeekDay = "monday" | "tuesday" | "wednesday" | "thursday" | "friday";
+
+interface ContentPlatform {
+  id: string;
+  name: string;
+  icon: string;
+}
+
+interface ContentScheduleItem {
+  id: string;
+  platformId: string;
+  day: WeekDay;
+  content: string;
+}
+
+// Task Column component
+const TaskColumn = ({ 
+  title, 
+  icon, 
+  tasks, 
+  moveTask, 
+  onEditTask, 
+  onDeleteTask, 
+  getPriorityColor,
+  columnId 
+}: { 
+  title: string; 
+  icon: React.ReactNode;
+  tasks: Task[];
+  moveTask: (taskId: string, newStatus: Task['status']) => void;
+  onEditTask: (task: Task) => void;
+  onDeleteTask: (taskId: string) => void;
+  getPriorityColor: (priority: Task['priority']) => string;
+  columnId: string;
+}) => {
+  return (
+    <div className="flex flex-col">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="bg-primary/10 p-1.5 rounded-full">{icon}</div>
+        <h3 className="font-medium">{title}</h3>
+        <span className="ml-auto text-xs bg-primary/10 px-2 py-0.5 rounded-full">{tasks.length}</span>
+      </div>
+      
+      <DragDropContext onDragEnd={() => {}}>
+        <Droppable droppableId={columnId}>
+          {(provided) => (
+            <div 
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className="flex-1 bg-gray-50 rounded-md p-2 min-h-[200px] h-[calc(100vh-250px)]"
+            >
+              {tasks.length === 0 ? (
+                <div className="flex h-full items-center justify-center rounded-md border border-dashed">
+                  <p className="text-sm text-muted-foreground">No tasks</p>
+                </div>
+              ) : (
+                <ScrollArea className="h-full">
+                  <div className="space-y-2 pr-4">
+                    {tasks.map((task, index) => (
+                      <Draggable key={task.id} draggableId={task.id} index={index}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            className={`${snapshot.isDragging ? "opacity-70" : ""}`}
+                          >
+                            <Card key={task.id} className="group hover:shadow-md transition-shadow">
+                              <CardContent className="p-3">
+                                <div className="flex justify-between items-start gap-2">
+                                  <div className="flex-1">
+                                    <h3 className="font-medium text-sm">{task.title}</h3>
+                                    {task.description && (
+                                      <p className="text-xs text-muted-foreground mt-1">{task.description}</p>
+                                    )}
+                                    {task.dueDate && (
+                                      <div className="flex items-center text-xs text-muted-foreground mt-2">
+                                        <CalendarIcon className="mr-1 h-3 w-3" />
+                                        {new Date(task.dueDate).toLocaleDateString()}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="flex gap-1">
+                                    <Button 
+                                      size="icon" 
+                                      variant="ghost" 
+                                      className="h-6 w-6" 
+                                      onClick={() => onEditTask(task)}
+                                    >
+                                      <Edit size={12} />
+                                    </Button>
+                                    <Button 
+                                      size="icon" 
+                                      variant="ghost" 
+                                      className="h-6 w-6 hover:text-destructive" 
+                                      onClick={() => onDeleteTask(task.id)}
+                                    >
+                                      <Trash2 size={12} />
+                                    </Button>
+                                  </div>
+                                </div>
+                                <div className="flex justify-between items-center mt-2">
+                                  <span className={`text-xs ${getPriorityColor(task.priority)}`}>
+                                    {task.priority}
+                                  </span>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                </ScrollArea>
+              )}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
+    </div>
+  );
+};
+
+// Simplified Task Column component
+const SimplifiedTaskColumn = ({ 
+  title, 
+  icon, 
+  tasks, 
+  moveTask, 
+  onEditTask, 
+  onDeleteTask,
+  setIsAddDialogOpen,
+  setNewTask,
+  columnId,
+  onAddQuickTask,
+  toggleTaskCompletion,
+  getPriorityIcon
+}: { 
+  title: string; 
+  icon: React.ReactNode;
+  tasks: Task[];
+  moveTask: (taskId: string, newStatus: Task['status']) => void;
+  onEditTask: (task: Task) => void;
+  onDeleteTask: (taskId: string) => void;
+  setIsAddDialogOpen: (isOpen: boolean) => void;
+  setNewTask: (task: Partial<Task>) => void;
+  columnId: string;
+  onAddQuickTask: (title: string, status: Task['status']) => void;
+  toggleTaskCompletion: (taskId: string) => void;
+  getPriorityIcon: (priority: Task['priority']) => React.ReactNode;
+}) => {
+  const [quickTask, setQuickTask] = useState("");
+  
+  const handleQuickAddTask = () => {
+    if (quickTask.trim()) {
+      onAddQuickTask(quickTask, columnId as Task['status']);
+      setQuickTask("");
+    }
+  };
+
+  return (
+    <div className="flex flex-col">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="bg-primary/10 p-1.5 rounded-full">{icon}</div>
+        <h3 className="font-medium">{title}</h3>
+        <span className="ml-auto text-xs bg-primary/10 px-2 py-0.5 rounded-full">{tasks.length}</span>
+      </div>
+      
+      <DragDropContext onDragEnd={() => {}}>
+        <Droppable droppableId={columnId}>
+          {(provided) => (
+            <div 
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className="flex-1 bg-gray-50 rounded-md p-2 min-h-[200px] h-[calc(100vh-250px)]"
+            >
+              <div className="mb-3 flex items-center gap-2">
+                <Input 
+                  value={quickTask}
+                  onChange={(e) => setQuickTask(e.target.value)}
+                  placeholder="Add quick task..."
+                  className="h-8 bg-white"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleQuickAddTask();
+                    }
+                  }}
+                />
+                <Button 
+                  size="icon" 
+                  className="h-8 w-8 shrink-0"
+                  onClick={handleQuickAddTask}
+                >
+                  <Plus size={16} />
+                </Button>
+              </div>
+              {tasks.length === 0 ? (
+                <div className="flex h-[calc(100%-40px)] items-center justify-center rounded-md border border-dashed">
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">No tasks</p>
+                    <Button 
+                      variant="link" 
+                      className="mt-2"
+                      onClick={() => {
+                        setNewTask({ status: columnId as Task['status'] });
+                        setIsAddDialogOpen(true);
+                      }}
+                    >
+                      Add a task
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <ScrollArea className="h-[calc(100%-40px)]">
+                  <div className="space-y-2 pr-4">
+                    {tasks.map((task, index) => (
+                      <Draggable key={task.id} draggableId={task.id} index={index}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            className={`${snapshot.isDragging ? "opacity-70" : ""}`}
+                          >
+                            <div className="group flex items-start gap-2 bg-white p-2 rounded-md hover:shadow-sm">
+                              <button 
+                                className="mt-1 flex-shrink-0" 
+                                onClick={() => toggleTaskCompletion(task.id)}
+                              >
+                                {task.isCompleted ? 
+                                  <CheckCircle className="h-4 w-4 text-primary" /> : 
+                                  <Circle className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                }
+                              </button>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1">
+                                  <span className={`text-sm ${task.isCompleted ? "line-through text-muted-foreground" : ""}`}>
+                                    {task.title}
+                                  </span>
+                                  {getPriorityIcon(task.priority)}
+                                </div>
+                                {task.description && (
+                                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                    {task.description}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="h-6 w-6" 
+                                  onClick={() => onEditTask(task)}
+                                >
+                                  <Edit size={12} />
+                                </Button>
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="h-6 w-6 hover:text-destructive" 
+                                  onClick={() => onDeleteTask(task.id)}
+                                >
+                                  <Trash2 size={12} />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                </ScrollArea>
+              )}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
+    </div>
+  );
+};
+
+// Simplified Task List component
+const SimplifiedTaskList = ({ 
+  tasks, 
+  status,
+  moveTask,
+  onEditTask,
+  onDeleteTask,
+  setIsAddDialogOpen,
+  setNewTask,
+  onAddQuickTask,
+  toggleTaskCompletion,
+  getPriorityIcon
+}: { 
+  tasks: Task[];
+  status: Task['status'];
+  moveTask: (taskId: string, newStatus: Task['status']) => void;
+  onEditTask: (task: Task) => void;
+  onDeleteTask: (taskId: string) => void;
+  setIsAddDialogOpen: (isOpen: boolean) => void;
+  setNewTask: (task: Partial<Task>) => void;
+  onAddQuickTask: (title: string, status: Task['status']) => void;
+  toggleTaskCompletion: (taskId: string) => void;
+  getPriorityIcon: (priority: Task['priority']) => React.ReactNode;
+}) => {
+  const [quickTask, setQuickTask] = useState("");
+  
+  const handleQuickAddTask = () => {
+    if (quickTask.trim()) {
+      onAddQuickTask(quickTask, status);
+      setQuickTask("");
+    }
+  };
+
+  return (
+    <>
+      <div className="mb-3 flex items-center gap-2">
+        <Input 
+          value={quickTask}
+          onChange={(e) => setQuickTask(e.target.value)}
+          placeholder="Add quick task..."
+          className="h-8"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              handleQuickAddTask();
+            }
+          }}
+        />
+        <Button 
+          size="icon" 
+          className="h-8 w-8 shrink-0"
+          onClick={handleQuickAddTask}
+        >
+          <Plus size={16} />
+        </Button>
+      </div>
+      {tasks.length === 0 ? (
+        <div className="flex h-[150px] items-center justify-center rounded-md border border-dashed">
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">No tasks in this section</p>
+            <Button 
+              variant="link" 
+              className="mt-2"
+              onClick={() => {
+                setNewTask({ status });
+                setIsAddDialogOpen(true);
+              }}
+            >
+              Add a task
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {tasks.map((task) => (
+            <div key={task.id} className="group flex items-start gap-2 bg-white p-3 rounded-md border hover:shadow-sm">
+              <button 
+                className="mt-1 flex-shrink-0" 
+                onClick={() => toggleTaskCompletion(task.id)}
+              >
+                {task.isCompleted ? 
+                  <CheckCircle className="h-4 w-4 text-primary" /> : 
+                  <Circle className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                }
+              </button>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1">
+                  <span className={`text-sm ${task.isCompleted ? "line-through text-muted-foreground" : ""}`}>
+                    {task.title}
+                  </span>
+                  {getPriorityIcon(task.priority)}
+                </div>
+                {task.description && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {task.description}
+                  </p>
+                )}
+                {task.dueDate && (
+                  <div className="flex items-center text-xs text-muted-foreground mt-2">
+                    <CalendarIcon className="mr-1 h-3 w-3" />
+                    {new Date(task.dueDate).toLocaleDateString()}
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button 
+                  size="icon" 
+                  variant="ghost" 
+                  className="h-6 w-6" 
+                  onClick={() => onEditTask(task)}
+                >
+                  <Edit size={12} />
+                </Button>
+                <Button 
+                  size="icon" 
+                  variant="ghost" 
+                  className="h-6 w-6 hover:text-destructive" 
+                  onClick={() => onDeleteTask(task.id)}
+                >
+                  <Trash2 size={12} />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+};
 
 const TaskBoard = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -822,4 +1238,231 @@ const TaskBoard = () => {
                                     className="h-6 w-6" 
                                     onClick={() => handleEditScheduleItem(item)}
                                   >
-                                    <Edit size={
+                                    <Edit size={12} />
+                                  </Button>
+                                  <Button 
+                                    size="icon" 
+                                    variant="ghost" 
+                                    className="h-6 w-6 hover:text-destructive" 
+                                    onClick={() => handleDeleteScheduleItem(item.id)}
+                                  >
+                                    <Trash2 size={12} />
+                                  </Button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* Add Task Dialog */}
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogContent className="sm:max-w-[550px]">
+            <DialogHeader>
+              <DialogTitle>{isEditMode ? "Edit Task" : "Add New Task"}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="grid w-full gap-2">
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  value={newTask.title || ""}
+                  onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                  placeholder="Enter task title"
+                />
+              </div>
+              <div className="grid w-full gap-2">
+                <Label htmlFor="description">Description (optional)</Label>
+                <Textarea
+                  id="description"
+                  value={newTask.description || ""}
+                  onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                  placeholder="Enter task description"
+                  className="resize-none"
+                  rows={3}
+                />
+              </div>
+              <div className="grid w-full gap-2">
+                <Label htmlFor="status">Status</Label>
+                <Select
+                  value={newTask.status || "todo-all"}
+                  onValueChange={(value) => setNewTask({ ...newTask, status: value as Task["status"] })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todo-all">All</SelectItem>
+                    <SelectItem value="todo-today">Today</SelectItem>
+                    <SelectItem value="scheduled">Scheduled</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {newTask.status === "scheduled" && (
+                <div className="grid w-full gap-2">
+                  <Label htmlFor="dueDate">Due Date</Label>
+                  <Input
+                    id="dueDate"
+                    type="date"
+                    value={newTask.dueDate || ""}
+                    onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+              )}
+              <div className="grid w-full gap-2">
+                <Label htmlFor="priority">Priority</Label>
+                <Select
+                  value={newTask.priority || "medium"}
+                  onValueChange={(value) => setNewTask({ ...newTask, priority: value as Task["priority"] })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select priority" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={handleDialogClose}>Cancel</Button>
+              <Button type="submit" onClick={handleAddTask}>
+                {isEditMode ? "Update Task" : "Add Task"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Add Platform Dialog */}
+        <Dialog open={isAddPlatformOpen} onOpenChange={setIsAddPlatformOpen}>
+          <DialogContent className="sm:max-w-[450px]">
+            <DialogHeader>
+              <DialogTitle>Add Content Platform</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="grid w-full gap-2">
+                <Label htmlFor="platform-name">Platform Name</Label>
+                <Input
+                  id="platform-name"
+                  value={newPlatform.name || ""}
+                  onChange={(e) => setNewPlatform({ ...newPlatform, name: e.target.value })}
+                  placeholder="e.g. Instagram, YouTube, Blog"
+                />
+              </div>
+              <div className="grid w-full gap-2">
+                <Label htmlFor="platform-icon">Icon</Label>
+                <Select
+                  value={newPlatform.icon || "Globe"}
+                  onValueChange={(value) => setNewPlatform({ ...newPlatform, icon: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select icon" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Instagram">Instagram</SelectItem>
+                    <SelectItem value="Youtube">YouTube</SelectItem>
+                    <SelectItem value="Facebook">Facebook</SelectItem>
+                    <SelectItem value="Twitter">Twitter</SelectItem>
+                    <SelectItem value="FileText">Blog</SelectItem>
+                    <SelectItem value="Globe">Website</SelectItem>
+                    <SelectItem value="Podcast">Podcast</SelectItem>
+                    <SelectItem value="VideoIcon">Video</SelectItem>
+                    <SelectItem value="MessageSquare">Messaging</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setIsAddPlatformOpen(false)}>Cancel</Button>
+              <Button type="submit" onClick={handleAddPlatform}>
+                Add Platform
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Add Schedule Item Dialog */}
+        <Dialog open={isAddScheduleItemOpen} onOpenChange={setIsAddScheduleItemOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>{editScheduleItemId ? "Edit Scheduled Content" : "Add Content to Schedule"}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="grid w-full gap-2">
+                <Label htmlFor="schedule-platform">Platform</Label>
+                <Select
+                  value={newScheduleItem.platformId || ""}
+                  onValueChange={(value) => setNewScheduleItem({ ...newScheduleItem, platformId: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select platform" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {contentPlatforms.map(platform => (
+                      <SelectItem key={platform.id} value={platform.id}>
+                        {platform.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid w-full gap-2">
+                <Label htmlFor="schedule-day">Day</Label>
+                <Select
+                  value={newScheduleItem.day || "monday"}
+                  onValueChange={(value) => setNewScheduleItem({ ...newScheduleItem, day: value as WeekDay })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select day" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="monday">Monday</SelectItem>
+                    <SelectItem value="tuesday">Tuesday</SelectItem>
+                    <SelectItem value="wednesday">Wednesday</SelectItem>
+                    <SelectItem value="thursday">Thursday</SelectItem>
+                    <SelectItem value="friday">Friday</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid w-full gap-2">
+                <Label htmlFor="schedule-content">Content Description</Label>
+                <Textarea
+                  id="schedule-content"
+                  value={newScheduleItem.content || ""}
+                  onChange={(e) => setNewScheduleItem({ ...newScheduleItem, content: e.target.value })}
+                  placeholder="Describe the content to create"
+                  className="resize-none"
+                  rows={3}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => {
+                setNewScheduleItem({ platformId: "", day: "monday", content: "" });
+                setEditScheduleItemId(null);
+                setIsAddScheduleItemOpen(false);
+              }}>
+                Cancel
+              </Button>
+              <Button type="submit" onClick={handleAddScheduleItem}>
+                {editScheduleItemId ? "Update" : "Add to Schedule"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </Layout>
+  );
+};
+
+export default TaskBoard;
