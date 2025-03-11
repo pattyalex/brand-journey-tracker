@@ -30,6 +30,11 @@ export const PlannerCheckItem = ({
   const [editText, setEditText] = useState(item.text);
   const [editStartTime, setEditStartTime] = useState(item.startTime || "");
   const [editEndTime, setEditEndTime] = useState(item.endTime || "");
+  const [secondaryChecks, setSecondaryChecks] = useState({
+    important: false,
+    urgent: false,
+    followUp: false
+  });
   const isMobile = useIsMobile();
   const scrollableRef = useRef<HTMLDivElement>(null);
 
@@ -76,6 +81,13 @@ export const PlannerCheckItem = ({
     setIsTimeEdit(true);
     setEditStartTime(item.startTime || "");
     setEditEndTime(item.endTime || "");
+  };
+
+  const handleSecondaryToggle = (key: keyof typeof secondaryChecks) => {
+    setSecondaryChecks(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
   };
 
   return (
@@ -164,30 +176,65 @@ export const PlannerCheckItem = ({
       ) : (
         <div 
           ref={scrollableRef}
-          className="group flex items-start w-full py-2 px-2 bg-white border border-gray-200 rounded-lg relative overflow-visible" 
+          className="group flex flex-col w-full py-2 px-2 bg-white border border-gray-200 rounded-lg relative overflow-visible" 
         >
-          {renderCheckbox && (
-            <Checkbox 
-              checked={item.isCompleted} 
-              onCheckedChange={() => onToggle(item.id)}
-              className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
-            />
-          )}
-          
-          <div 
-            className={`flex-1 text-base ${item.isCompleted ? 'line-through text-gray-600' : 'text-gray-800'} cursor-pointer overflow-visible flex items-center`}
-            onDoubleClick={handleDoubleClick}
-          >
-            <span className="break-words whitespace-normal">{item.text}</span>
+          <div className="flex items-start w-full">
+            {renderCheckbox && (
+              <Checkbox 
+                checked={item.isCompleted} 
+                onCheckedChange={() => onToggle(item.id)}
+                className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
+              />
+            )}
+            
+            <div 
+              className={`flex-1 text-base ${item.isCompleted ? 'line-through text-gray-600' : 'text-gray-800'} cursor-pointer overflow-visible flex items-center`}
+              onDoubleClick={handleDoubleClick}
+            >
+              <span className="break-words whitespace-normal">{item.text}</span>
+            </div>
+            
+            <button 
+              onClick={() => onDelete(item.id)} 
+              className="p-1 rounded-sm text-gray-400 hover:text-red-500 absolute right-1 top-1/2 transform -translate-y-1/2 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0 z-10"
+              title="Delete"
+            >
+              <Trash2 size={16} />
+            </button>
           </div>
           
-          <button 
-            onClick={() => onDelete(item.id)} 
-            className="p-1 rounded-sm text-gray-400 hover:text-red-500 absolute right-1 top-1/2 transform -translate-y-1/2 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0 z-10"
-            title="Delete"
-          >
-            <Trash2 size={16} />
-          </button>
+          {/* Secondary checkboxes row */}
+          <div className="flex items-center mt-2 ml-0.5 text-xs space-x-2">
+            <div className="flex items-center space-x-1">
+              <Checkbox 
+                id={`important-${item.id}`}
+                checked={secondaryChecks.important}
+                onCheckedChange={() => handleSecondaryToggle('important')}
+                className="h-3 w-3 flex-shrink-0 data-[state=checked]:bg-red-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
+              />
+              <label htmlFor={`important-${item.id}`} className="text-gray-600 cursor-pointer">Important</label>
+            </div>
+            
+            <div className="flex items-center space-x-1">
+              <Checkbox 
+                id={`urgent-${item.id}`}
+                checked={secondaryChecks.urgent}
+                onCheckedChange={() => handleSecondaryToggle('urgent')}
+                className="h-3 w-3 flex-shrink-0 data-[state=checked]:bg-orange-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
+              />
+              <label htmlFor={`urgent-${item.id}`} className="text-gray-600 cursor-pointer">Urgent</label>
+            </div>
+            
+            <div className="flex items-center space-x-1">
+              <Checkbox 
+                id={`followup-${item.id}`}
+                checked={secondaryChecks.followUp}
+                onCheckedChange={() => handleSecondaryToggle('followUp')}
+                className="h-3 w-3 flex-shrink-0 data-[state=checked]:bg-blue-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
+              />
+              <label htmlFor={`followup-${item.id}`} className="text-gray-600 cursor-pointer">Follow-up</label>
+            </div>
+          </div>
         </div>
       )}
     </div>
