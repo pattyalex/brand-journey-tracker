@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+import { Droppable, Draggable } from 'react-beautiful-dnd';
 
 interface PlannerSectionProps {
   title: string;
@@ -221,61 +221,59 @@ export const PlannerSection = ({
       <CardContent className="pt-4 px-1">
         <ScrollArea className={`${isMobile ? 'h-[calc(100vh-400px)]' : 'h-[calc(100vh-350px)]'}`}>
           <div className="space-y-2 pr-2 pb-1">
-            <DragDropContext onDragEnd={handleDragEnd}>
-              <Droppable droppableId={`section-${section}`}>
-                {(provided) => (
-                  <div 
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    className="space-y-2"
-                  >
-                    {items.length > 0 ? (
-                      items.map((item, index) => (
-                        <Draggable 
-                          key={item.id} 
-                          draggableId={item.id} 
-                          index={index}
-                        >
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              className={`${snapshot.isDragging ? 'opacity-80' : ''}`}
-                            >
-                              <div key={item.id} className="flex flex-col w-full group">
-                                <div className="flex items-center pl-3">
-                                  <div className="flex-1 min-w-0 ml-1 relative flex flex-col">
-                                    <div className="mb-1 ml-0.5">
-                                      {renderTimeDisplay(item)}
-                                    </div>
-                                    
-                                    <PlannerCheckItem
-                                      item={item}
-                                      onToggle={onToggleItem}
-                                      onDelete={onDeleteItem}
-                                      onEdit={onEditItem}
-                                      showTimeInItem={false}
-                                      renderCheckbox={false}
-                                      index={index}
-                                    />
+            <Droppable droppableId={section}>
+              {(provided) => (
+                <div 
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                  className="space-y-2 min-h-[50px]"
+                >
+                  {items.length > 0 ? (
+                    items.map((item, index) => (
+                      <Draggable 
+                        key={item.id} 
+                        draggableId={item.id} 
+                        index={index}
+                      >
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            className={`${snapshot.isDragging ? 'opacity-80 bg-muted' : ''}`}
+                          >
+                            <div className="flex flex-col w-full group">
+                              <div className="flex items-center pl-3">
+                                <div className="flex-1 min-w-0 ml-1 relative flex flex-col">
+                                  <div className="mb-1 ml-0.5">
+                                    {renderTimeDisplay(item)}
                                   </div>
+                                  
+                                  <PlannerCheckItem
+                                    item={item}
+                                    onToggle={onToggleItem}
+                                    onDelete={onDeleteItem}
+                                    onEdit={onEditItem}
+                                    showTimeInItem={false}
+                                    renderCheckbox={false}
+                                    index={index}
+                                  />
                                 </div>
                               </div>
                             </div>
-                          )}
-                        </Draggable>
-                      ))
-                    ) : (
-                      <div className="text-sm text-muted-foreground italic text-center py-3 bg-white rounded-md border border-gray-200">
-                        No tasks in this section
-                      </div>
-                    )}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </DragDropContext>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))
+                  ) : (
+                    <div className="text-sm text-muted-foreground italic text-center py-3 bg-white rounded-md border border-gray-200">
+                      No tasks in this section
+                    </div>
+                  )}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
             
             {isAddingItem ? (
               <div className="flex flex-col mt-2">

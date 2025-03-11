@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { format, addDays, subDays, parseISO } from "date-fns";
-import { Copy, Trash2, Sun, Heart, ListTodo, CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { Copy, Trash2, Sun, Heart, ListTodo, CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PlannerDay, PlannerItem } from "@/types/planner";
 import { PlannerSection } from "./PlannerSection";
 import { toast } from "sonner";
@@ -340,7 +340,7 @@ export const DailyPlanner = () => {
         items: [],
         tasks: tasks,
         greatDay: greatDay,
-        grateful: newGrateful
+        grateful: grateful
       });
     }
     
@@ -370,37 +370,58 @@ export const DailyPlanner = () => {
       return;
     }
     
-    const sourceSection = source.droppableId.split("-")[1] as PlannerItem["section"];
-    const destSection = destination.droppableId.split("-")[1] as PlannerItem["section"];
+    const sourceSection = source.droppableId as PlannerItem["section"];
+    const destSection = destination.droppableId as PlannerItem["section"];
     
     const dayIndex = plannerData.findIndex(day => day.date === dateString);
     if (dayIndex < 0) return;
     
     const updatedPlannerData = [...plannerData];
     const sourceItems = getSectionItems(sourceSection);
-    const destItems = sourceItems === getSectionItems(destSection) 
+    const destItems = sourceSection === destSection 
       ? sourceItems 
       : getSectionItems(destSection);
     
-    const [movedItem] = sourceItems.splice(source.index, 1);
-    movedItem.section = destSection;
+    // Find the actual item to move
+    const itemToMove = sourceItems[source.index];
     
-    destItems.splice(destination.index, 0, movedItem);
+    if (!itemToMove) return;
     
-    const allItemsWithoutSource = updatedPlannerData[dayIndex].items.filter(
-      item => item.section !== sourceSection && item.section !== destSection
+    // Create a new array without the moved item
+    const newSourceItems = updatedPlannerData[dayIndex].items.filter(
+      item => !(item.id === itemToMove.id && item.section === sourceSection)
     );
+    
+    // Create the updated item with new section
+    const updatedItem = {
+      ...itemToMove,
+      section: destSection
+    };
+    
+    // Insert the item at the correct position
+    const newItems = [...newSourceItems];
+    
+    // Find the insertion index in the destination
+    const insertIndex = newItems.filter(i => i.section === destSection).length <= destination.index
+      ? newItems.length
+      : newItems.findIndex((item, idx) => {
+          const sectionItems = newItems.filter(i => i.section === destSection);
+          return item.section === destSection && idx === destination.index;
+        });
+    
+    if (insertIndex >= 0) {
+      newItems.splice(insertIndex, 0, updatedItem);
+    } else {
+      newItems.push(updatedItem);
+    }
     
     updatedPlannerData[dayIndex] = {
       ...updatedPlannerData[dayIndex],
-      items: [
-        ...allItemsWithoutSource,
-        ...sourceItems.map(item => ({ ...item, section: sourceSection })),
-        ...destItems.map(item => ({ ...item, section: destSection }))
-      ]
+      items: newItems
     };
     
     setPlannerData(updatedPlannerData);
+    toast.success(`Task moved to ${destSection}`);
   };
 
   return (
@@ -608,7 +629,7 @@ export const DailyPlanner = () => {
         
         <div className="mb-6">
           <CardDescription>
-            Schedule your tasks and organize your day:
+            Schedule your tasks:
           </CardDescription>
         </div>
         
