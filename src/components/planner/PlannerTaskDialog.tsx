@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlannerItem } from "@/types/planner";
-import { loadGoogleMapsAPI } from "@/utils/googleMapsLoader";
+import { loadGoogleMapsAPI, hasGoogleMapsError } from "@/utils/googleMapsLoader";
+import { AlertTriangle } from "lucide-react";
 
 interface PlannerTaskDialogProps {
   isOpen: boolean;
@@ -30,43 +32,56 @@ export const PlannerTaskDialog = ({
   const [startTime, setStartTime] = useState(selectedTime);
   const [endTime, setEndTime] = useState("none");
   const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
+  const [googleMapsError, setGoogleMapsError] = useState(false);
   const locationInputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   useEffect(() => {
-    if (isOpen && !googleMapsLoaded) {
-      loadGoogleMapsAPI(() => {
-        setGoogleMapsLoaded(true);
-      });
+    if (isOpen) {
+      loadGoogleMapsAPI(
+        () => {
+          setGoogleMapsLoaded(true);
+          setGoogleMapsError(false);
+        },
+        () => {
+          setGoogleMapsError(true);
+          setGoogleMapsLoaded(false);
+        }
+      );
     }
-  }, [isOpen, googleMapsLoaded]);
+  }, [isOpen]);
 
   useEffect(() => {
     if (googleMapsLoaded && locationInputRef.current) {
-      autocompleteRef.current = new google.maps.places.Autocomplete(locationInputRef.current, {
-        fields: ["name", "formatted_address"],
-        types: ["establishment", "geocode"],
-      });
+      try {
+        autocompleteRef.current = new google.maps.places.Autocomplete(locationInputRef.current, {
+          fields: ["name", "formatted_address"],
+          types: ["establishment", "geocode"],
+        });
 
-      autocompleteRef.current.addListener("place_changed", () => {
-        const place = autocompleteRef.current?.getPlace();
-        if (place && place.formatted_address) {
-          setLocation(place.formatted_address);
-        } else if (place && place.name) {
-          setLocation(place.name);
-        }
-      });
-
-      return () => {
-        if (locationInputRef.current) {
-          const parent = locationInputRef.current.parentNode;
-          if (parent) {
-            const newInput = locationInputRef.current.cloneNode(true) as HTMLInputElement;
-            parent.replaceChild(newInput, locationInputRef.current);
-            locationInputRef.current = newInput;
+        autocompleteRef.current.addListener("place_changed", () => {
+          const place = autocompleteRef.current?.getPlace();
+          if (place && place.formatted_address) {
+            setLocation(place.formatted_address);
+          } else if (place && place.name) {
+            setLocation(place.name);
           }
-        }
-      };
+        });
+
+        return () => {
+          if (locationInputRef.current) {
+            const parent = locationInputRef.current.parentNode;
+            if (parent) {
+              const newInput = locationInputRef.current.cloneNode(true) as HTMLInputElement;
+              parent.replaceChild(newInput, locationInputRef.current);
+              locationInputRef.current = newInput;
+            }
+          }
+        };
+      } catch (error) {
+        console.error("Error initializing Google Maps Autocomplete:", error);
+        setGoogleMapsError(true);
+      }
     }
   }, [googleMapsLoaded]);
 
@@ -144,7 +159,15 @@ export const PlannerTaskDialog = ({
               placeholder="Search for a location"
               className="pr-10"
             />
-            {!googleMapsLoaded && (
+            {googleMapsError && (
+              <div className="text-destructive flex items-center gap-1.5 text-xs mt-1">
+                <AlertTriangle className="h-3.5 w-3.5" />
+                <span>
+                  Google Maps API not available. Please check your API key.
+                </span>
+              </div>
+            )}
+            {!googleMapsLoaded && !googleMapsError && (
               <div className="text-xs text-gray-500 mt-1">
                 Loading Google Maps...
               </div>
