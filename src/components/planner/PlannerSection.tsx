@@ -169,12 +169,12 @@ export const PlannerSection = ({
       </CardHeader>
       <CardContent className="pt-4 px-3">
         <ScrollArea className={`${isMobile ? 'h-[calc(100vh-400px)]' : 'h-[calc(100vh-350px)]'}`}>
-          <div className="space-y-3 pr-2">
+          <div className="space-y-3 pr-4 pb-1">
             {items.length > 0 ? (
               items.map((item) => (
-                <div key={item.id} className="flex items-start">
+                <div key={item.id} className="flex items-start w-full">
                   {renderTimeDisplay(item)}
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0 overflow-visible">
                     <PlannerCheckItem
                       item={item}
                       onToggle={onToggleItem}
