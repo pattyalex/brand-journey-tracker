@@ -175,74 +175,7 @@ export const PlannerSection = ({
               items.map((item) => (
                 <div key={item.id} className="flex items-center w-full group">
                   <div className="pl-3 w-[50px] flex-shrink-0 flex items-center justify-start">
-                    {editingTimeItemId === item.id ? (
-                      <div className="flex flex-col space-y-1">
-                        <Input
-                          type="time"
-                          defaultValue={item.startTime || ""}
-                          className="h-6 py-0 text-xs"
-                          autoFocus
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              handleTimeEditSave(
-                                item.id, 
-                                (e.target as HTMLInputElement).value, 
-                                item.endTime || ""
-                              );
-                            } else if (e.key === "Escape") {
-                              handleTimeEditCancel();
-                            }
-                          }}
-                          onBlur={(e) => {
-                            const nextInput = e.currentTarget.parentElement?.querySelector('input:nth-child(2)');
-                            if (nextInput) {
-                              (nextInput as HTMLInputElement).focus();
-                            }
-                          }}
-                        />
-                        <Input
-                          type="time"
-                          defaultValue={item.endTime || ""}
-                          className="h-6 py-0 text-xs"
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              handleTimeEditSave(
-                                item.id,
-                                item.startTime || "",
-                                (e.target as HTMLInputElement).value
-                              );
-                            } else if (e.key === "Escape") {
-                              handleTimeEditCancel();
-                            }
-                          }}
-                          onBlur={(e) => {
-                            handleTimeEditSave(
-                              item.id,
-                              item.startTime || "",
-                              (e.target as HTMLInputElement).value
-                            );
-                          }}
-                        />
-                      </div>
-                    ) : (
-                      <div 
-                        className="text-xs text-gray-600 flex flex-col justify-center cursor-pointer"
-                        onDoubleClick={() => handleTimeDoubleClick(item)}
-                        title="Double-click to edit time"
-                      >
-                        {item.startTime && <div className="font-medium">{item.startTime}</div>}
-                        {item.endTime && <div className="font-medium">{item.endTime}</div>}
-                        {!item.startTime && !item.endTime && (
-                          <div 
-                            className="text-xs text-muted-foreground cursor-pointer hover:text-primary transition-colors group"
-                            onClick={() => handleTimeDoubleClick(item)}
-                            title="Click to add time"
-                          >
-                            <span className="opacity-0 group-hover:opacity-70">+ Add time</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    {renderTimeDisplay(item)}
                   </div>
                   
                   <div className="flex items-center self-center px-1">
@@ -262,14 +195,6 @@ export const PlannerSection = ({
                       showTimeInItem={false}
                       renderCheckbox={false}
                     />
-                    
-                    <button 
-                      onClick={() => onDeleteItem(item.id)} 
-                      className="p-1 rounded-sm absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                      title="Delete"
-                    >
-                      <Trash2 size={16} />
-                    </button>
                   </div>
                 </div>
               ))
