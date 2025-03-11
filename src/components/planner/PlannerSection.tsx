@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PlannerItem } from "@/types/planner";
 import { Plus, Clock, ArrowRight } from "lucide-react";
@@ -9,6 +8,7 @@ import { PlannerCheckItem } from "./PlannerCheckItem";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface PlannerSectionProps {
   title: string;
@@ -78,9 +78,14 @@ export const PlannerSection = ({
     setEditingTimeItemId(null);
   };
 
+  const handleAddTimeClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowTimeInput(true);
+  };
+
   const renderTimeDisplay = (item: PlannerItem) => {
     if (editingTimeItemId === item.id) {
-      // Editing time mode
       return (
         <div className="min-w-[60px] w-[60px] flex-shrink-0 mr-1">
           <div className="flex flex-col space-y-1">
@@ -246,14 +251,16 @@ export const PlannerSection = ({
                       </Button>
                     </div>
                   ) : (
-                    <button
+                    <Button
                       type="button"
-                      onClick={() => setShowTimeInput(true)}
-                      className="flex items-center gap-1 text-muted-foreground hover:text-primary text-sm ml-[28px] mt-1 cursor-pointer"
+                      variant="ghost"
+                      size="xs"
+                      onClick={handleAddTimeClick}
+                      className="flex items-center gap-1 text-muted-foreground hover:text-primary ml-[28px] mt-1 h-6 p-0"
                     >
                       <Clock size={12} />
                       <span>Add time</span>
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>
