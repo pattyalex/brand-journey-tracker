@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { DailyPlanner } from "@/components/planner/DailyPlanner";
 import { WeeklyPlanner } from "@/components/planner/WeeklyPlanner";
+import { Calendar } from "@/components/planner/Calendar";
 import { PlannerDay } from "@/types/planner";
 
 interface Task {
@@ -283,6 +284,11 @@ const TaskBoard = () => {
     toast.success("Task added successfully");
   };
 
+  const handleUpdatePlannerData = (updatedData: PlannerDay[]) => {
+    setPlannerData(updatedData);
+    localStorage.setItem("plannerData", JSON.stringify(updatedData));
+  };
+
   return (
     <Layout>
       <div className="container mx-auto py-6 fade-in">
@@ -312,6 +318,12 @@ const TaskBoard = () => {
               className="px-8 py-3 text-base font-medium bg-primary/5 hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               Weekly View
+            </TabsTrigger>
+            <TabsTrigger 
+              value="calendar-view" 
+              className="px-8 py-3 text-base font-medium bg-primary/5 hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              Calendar
             </TabsTrigger>
           </TabsList>
 
@@ -593,7 +605,11 @@ const TaskBoard = () => {
           </TabsContent>
 
           <TabsContent value="weekly-view" className="m-0">
-            <WeeklyPlanner plannerData={plannerData} />
+            <WeeklyPlanner plannerData={plannerData} onUpdatePlannerData={handleUpdatePlannerData} />
+          </TabsContent>
+
+          <TabsContent value="calendar-view" className="m-0">
+            <Calendar plannerData={plannerData} onUpdatePlannerData={handleUpdatePlannerData} />
           </TabsContent>
         </Tabs>
       </div>
@@ -1263,3 +1279,6 @@ const SimplifiedTaskList = ({
 };
 
 export default TaskBoard;
+
+
+
