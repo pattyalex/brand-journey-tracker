@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { format, addDays, startOfWeek, subWeeks, addWeeks, parseISO } from "date-fns";
+import { format, addDays, startOfWeek, subWeeks, addWeeks } from "date-fns";
 import { ChevronLeft, ChevronRight, CalendarDays, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,10 +11,11 @@ interface WeeklyPlannerProps {
   plannerData: PlannerDay[];
 }
 
-// Time slots for the calendar
+// Time slots for the calendar (24 hours)
 const TIME_SLOTS = [
-  "6:00", "7:00", "8:00", "9:00", "10:00", "11:00", "12:00", 
-  "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"
+  "1:00", "2:00", "3:00", "4:00", "5:00", "6:00", "7:00", "8:00", "9:00", "10:00", 
+  "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", 
+  "20:00", "21:00", "22:00", "23:00", "24:00"
 ];
 
 export const WeeklyPlanner = ({ plannerData }: WeeklyPlannerProps) => {
@@ -146,7 +147,7 @@ export const WeeklyPlanner = ({ plannerData }: WeeklyPlannerProps) => {
             })}
           </div>
         ) : (
-          <div className="relative" style={{ height: '900px' }}>
+          <div className="relative" style={{ height: '1440px' }}> {/* Adjusted height for 24 hours */}
             {/* Time column */}
             <div className="absolute left-0 top-0 w-16 h-full border-r z-10 bg-white">
               {TIME_SLOTS.map((time, index) => (
@@ -242,3 +243,5 @@ export const WeeklyPlanner = ({ plannerData }: WeeklyPlannerProps) => {
     </Card>
   );
 };
+
+export default WeeklyPlanner;
