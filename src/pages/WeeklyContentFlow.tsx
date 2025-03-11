@@ -50,7 +50,7 @@ const WeeklyContentFlow = () => {
   const initialPlatforms: Platform[] = [
     { id: "instagram", name: "Instagram", icon: "instagram" },
     { id: "youtube", name: "YouTube", icon: "youtube" },
-    { id: "newsletter", name: "Newsletter", icon: "file-text" }
+    { id: "newsletter", name: "Newsletter", icon: "mail" }
   ];
 
   const [platforms, setPlatforms] = useState<Platform[]>(initialPlatforms);

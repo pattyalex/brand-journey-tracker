@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Platform } from "@/types/content-flow";
 import { v4 as uuidv4 } from "uuid";
-import { Instagram, Youtube, FileText } from "lucide-react";
+import { Instagram, Youtube, FileText, Mail } from "lucide-react";
 
 interface AddPlatformDialogProps {
   open: boolean;
@@ -24,6 +24,7 @@ const PLATFORM_ICONS = [
   { icon: "instagram", component: Instagram },
   { icon: "youtube", component: Youtube },
   { icon: "file-text", component: FileText },
+  { icon: "mail", component: Mail },
 ];
 
 const AddPlatformDialog = ({ open, onOpenChange, onAdd }: AddPlatformDialogProps) => {

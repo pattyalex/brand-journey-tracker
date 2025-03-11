@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Platform } from "@/types/content-flow";
@@ -6,13 +5,15 @@ import * as LucideIcons from "lucide-react";
 
 interface WeeklyAgendaProps {
   platforms: Platform[];
+  contentItems: ContentItem[];
+  className?: string;
 }
 
 const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-const WeeklyAgenda = ({ platforms }: WeeklyAgendaProps) => {
+const WeeklyAgenda = ({ platforms, contentItems, className }: WeeklyAgendaProps) => {
   return (
-    <Card>
+    <Card className={className}>
       <CardContent className="p-0">
         <div className="grid grid-cols-7 border-b">
           {DAYS_OF_WEEK.map((day) => (

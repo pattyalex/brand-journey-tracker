@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Platform } from "@/types/content-flow";
-import { Instagram, Youtube, FileText } from "lucide-react";
+import { Instagram, Youtube, FileText, Mail } from "lucide-react";
 
 interface PlatformIconProps {
   platform: Platform;
@@ -18,6 +18,8 @@ const PlatformIcon = ({ platform, size = 24, className = "" }: PlatformIconProps
         return <Youtube size={size} className={className} />;
       case "file-text":
         return <FileText size={size} className={className} />;
+      case "mail":
+        return <Mail size={size} className={className} />;
       default:
         return null;
     }
