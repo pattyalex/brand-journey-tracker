@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PlannerItem } from "@/types/planner";
 import { Plus, Clock, ArrowRight } from "lucide-react";
@@ -175,7 +174,7 @@ export const PlannerSection = ({
             {items.length > 0 ? (
               items.map((item) => (
                 <div key={item.id} className="flex items-center w-full">
-                  <div className="w-[60px] flex-shrink-0 flex items-center justify-end pr-0">
+                  <div className="pl-2 w-[60px] flex-shrink-0 flex items-center justify-start">
                     {editingTimeItemId === item.id ? (
                       <div className="flex flex-col space-y-1">
                         <Input
@@ -246,7 +245,7 @@ export const PlannerSection = ({
                     )}
                   </div>
                   
-                  <div className="flex items-center mx-1 self-center">
+                  <div className="flex items-center ml-1 self-center">
                     <Checkbox 
                       checked={item.isCompleted} 
                       onCheckedChange={() => onToggleItem(item.id)}
@@ -274,7 +273,7 @@ export const PlannerSection = ({
             
             {isAddingItem ? (
               <div className="flex mt-2">
-                <div className="w-[60px] flex-shrink-0 pr-0">
+                <div className="pl-2 w-[60px] flex-shrink-0">
                   {showTimeInput && (
                     <>
                       <div className="font-medium text-xs">{newItemStartTime || "--:--"}</div>
@@ -284,7 +283,7 @@ export const PlannerSection = ({
                     </>
                   )}
                 </div>
-                <div className="flex-1 ml-0 border border-gray-200 p-1 rounded-lg bg-white shadow-sm">
+                <div className="flex-1 ml-1 border border-gray-200 p-1 rounded-lg bg-white shadow-sm">
                   <div className="flex items-center gap-1">
                     <Input
                       value={newItemText}
