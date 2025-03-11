@@ -25,7 +25,7 @@ export const PlannerTaskDialog = ({
   const [text, setText] = useState("");
   const [section, setSection] = useState<"morning" | "midday" | "afternoon" | "evening">("morning");
   const [startTime, setStartTime] = useState(selectedTime);
-  const [endTime, setEndTime] = useState("");
+  const [endTime, setEndTime] = useState("none"); // Changed from empty string to "none"
 
   const handleSave = () => {
     if (!text.trim()) return;
@@ -36,13 +36,13 @@ export const PlannerTaskDialog = ({
       isCompleted: false,
       date: selectedDate,
       startTime,
-      endTime: endTime || undefined,
+      endTime: endTime === "none" ? undefined : endTime, // Convert "none" back to undefined
     });
 
     // Reset form
     setText("");
     setSection("morning");
-    setEndTime("");
+    setEndTime("none");
     onClose();
   };
 
@@ -116,7 +116,7 @@ export const PlannerTaskDialog = ({
                 <SelectValue placeholder="Select end time" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="none">None</SelectItem>
                 {timeOptions.map((time) => (
                   <SelectItem key={`end-${time}`} value={time}>
                     {time}
