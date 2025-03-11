@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -170,7 +169,7 @@ export const PlannerCheckItem = ({
             <Checkbox 
               checked={item.isCompleted} 
               onCheckedChange={() => onToggle(item.id)}
-              className="h-3.5 w-3.5 mr-1 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground self-center"
+              className="h-3.5 w-3.5 mr-1 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
             />
           )}
           
