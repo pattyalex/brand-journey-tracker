@@ -1,13 +1,17 @@
 
 import { useState } from "react";
-import { format, addDays, startOfWeek, subWeeks, addWeeks } from "date-fns";
-import { ChevronLeft, ChevronRight, AlarmClock } from 'lucide-react';
+import { format, addDays, startOfWeek, subWeeks, addWeeks, parseISO } from "date-fns";
+import { ChevronLeft, ChevronRight, AlarmClock, Plus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlannerDay } from "@/types/planner";
+import { useToast } from "@/hooks/use-toast";
+import { PlannerDay, PlannerItem } from "@/types/planner";
+import PlannerTaskDialog from "./PlannerTaskDialog";
+import { v4 as uuidv4 } from "uuid";
 
 interface WeeklyPlannerProps {
   plannerData: PlannerDay[];
+  onUpdatePlannerData?: (updatedData: PlannerDay[]) => void;
 }
 
 // Time slots for the agenda in American format (12-hour with AM/PM)
@@ -17,8 +21,19 @@ const TIME_SLOTS = [
   "10 PM", "11 PM"
 ];
 
-export const WeeklyPlanner = ({ plannerData }: WeeklyPlannerProps) => {
+// Convert 12-hour format to 24-hour format for internal use
+const TIME_SLOTS_24H = [
+  "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", 
+  "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", 
+  "22:00", "23:00"
+];
+
+export const WeeklyPlanner = ({ plannerData, onUpdatePlannerData }: WeeklyPlannerProps) => {
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedTime, setSelectedTime] = useState("");
+  const { toast } = useToast();
   
   const handlePreviousWeek = () => {
     setCurrentWeekStart(prevDate => subWeeks(prevDate, 1));
@@ -58,6 +73,61 @@ export const WeeklyPlanner = ({ plannerData }: WeeklyPlannerProps) => {
     if (!timeString) return 0;
     const [hours] = timeString.split(':').map(Number);
     return hours || 0;
+  };
+
+  // Handle clicking on a time slot
+  const handleTimeSlotClick = (day: Date, timeIndex: number) => {
+    const dateString = format(day, "yyyy-MM-dd");
+    setSelectedDate(dateString);
+    setSelectedTime(TIME_SLOTS_24H[timeIndex]);
+    setIsDialogOpen(true);
+  };
+
+  // Handle saving a new task
+  const handleSaveTask = (task: Omit<PlannerItem, "id">) => {
+    if (!onUpdatePlannerData) {
+      toast({
+        title: "Cannot save task",
+        description: "The planner is in read-only mode",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newTask: PlannerItem = {
+      ...task,
+      id: uuidv4(),
+    };
+
+    const dateString = task.date;
+    const existingDayIndex = plannerData.findIndex(day => day.date === dateString);
+
+    let updatedPlannerData: PlannerDay[];
+
+    if (existingDayIndex >= 0) {
+      // Day exists, add task to existing day
+      updatedPlannerData = [...plannerData];
+      updatedPlannerData[existingDayIndex] = {
+        ...updatedPlannerData[existingDayIndex],
+        items: [...updatedPlannerData[existingDayIndex].items, newTask],
+      };
+    } else {
+      // Day doesn't exist, create new day with task
+      updatedPlannerData = [
+        ...plannerData,
+        {
+          date: dateString,
+          items: [newTask],
+        },
+      ];
+    }
+
+    onUpdatePlannerData(updatedPlannerData);
+    
+    toast({
+      title: "Task added",
+      description: "Your task has been added to the planner",
+    });
   };
 
   return (
@@ -109,14 +179,24 @@ export const WeeklyPlanner = ({ plannerData }: WeeklyPlannerProps) => {
                 return (
                   <div 
                     key={`day-agenda-${dayIndex}`} 
-                    className={`border-r overflow-y-auto ${isToday ? "bg-primary/5" : ""}`}
+                    className={`border-r overflow-y-auto relative ${isToday ? "bg-primary/5" : ""}`}
                   >
                     {/* Time grid lines for agenda view */}
                     {TIME_SLOTS.map((_, timeIndex) => (
-                      <div key={`agenda-grid-${dayIndex}-${timeIndex}`} className="h-[42px] border-b border-gray-200"></div>
+                      <div 
+                        key={`agenda-grid-${dayIndex}-${timeIndex}`} 
+                        className="h-[42px] border-b border-gray-200 relative group"
+                        onClick={() => handleTimeSlotClick(day, timeIndex)}
+                      >
+                        {onUpdatePlannerData && (
+                          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 flex items-center justify-center hover:bg-primary/5 cursor-pointer transition-opacity">
+                            <Plus className="h-4 w-4 text-gray-400" />
+                          </div>
+                        )}
+                      </div>
                     ))}
 
-                    <div className="space-y-1 px-1 absolute w-full">
+                    <div className="absolute w-full">
                       {items.map((item) => {
                         const positionTop = item.startTime ? 
                           Math.max(0, (getHourFromTimeString(item.startTime) - 10) * 42) : 0;
@@ -125,7 +205,7 @@ export const WeeklyPlanner = ({ plannerData }: WeeklyPlannerProps) => {
                           <div 
                             key={item.id}
                             className={`
-                              text-xs p-1.5 rounded border my-1
+                              text-xs p-1.5 rounded border mx-1 my-1
                               ${item.isCompleted ? "bg-green-50 border-green-200 text-green-800" : "bg-white border-gray-200"}
                               ${item.section === "morning" ? "border-l-4 border-l-blue-500" : ""}
                               ${item.section === "midday" ? "border-l-4 border-l-amber-500" : ""}
@@ -133,8 +213,10 @@ export const WeeklyPlanner = ({ plannerData }: WeeklyPlannerProps) => {
                               ${item.section === "evening" ? "border-l-4 border-l-purple-500" : ""}
                             `}
                             style={item.startTime ? {
-                              position: 'relative',
-                              top: `${positionTop}px`
+                              position: 'absolute',
+                              top: `${positionTop}px`,
+                              width: 'calc(100% - 0.5rem)',
+                              zIndex: 5
                             } : {}}
                           >
                             {item.startTime && (
@@ -158,6 +240,15 @@ export const WeeklyPlanner = ({ plannerData }: WeeklyPlannerProps) => {
           </div>
         </div>
       </CardContent>
+
+      {/* Task dialog for adding new tasks */}
+      <PlannerTaskDialog
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        onSave={handleSaveTask}
+        selectedDate={selectedDate}
+        selectedTime={selectedTime}
+      />
     </Card>
   );
 };
