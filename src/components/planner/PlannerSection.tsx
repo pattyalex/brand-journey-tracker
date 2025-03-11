@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PlannerItem } from "@/types/planner";
 import { Plus, Clock, ArrowRight } from "lucide-react";
@@ -87,7 +86,7 @@ export const PlannerSection = ({
   const renderTimeDisplay = (item: PlannerItem) => {
     if (editingTimeItemId === item.id) {
       return (
-        <div className="min-w-[80px] flex-shrink-0">
+        <div className="w-[70px] flex-shrink-0">
           <div className="flex flex-col space-y-1">
             <Input
               type="time"
@@ -143,7 +142,7 @@ export const PlannerSection = ({
     if (item.startTime || item.endTime) {
       return (
         <div 
-          className="min-w-[80px] flex-shrink-0 text-xs text-gray-600 flex flex-col justify-center cursor-pointer"
+          className="w-[70px] flex-shrink-0 text-xs text-gray-600 flex flex-col justify-center cursor-pointer"
           onDoubleClick={() => handleTimeDoubleClick(item)}
           title="Double-click to edit time"
         >
@@ -155,7 +154,7 @@ export const PlannerSection = ({
     
     return (
       <div 
-        className="min-w-[80px] flex-shrink-0 text-xs text-muted-foreground cursor-pointer hover:text-primary transition-colors group"
+        className="w-[70px] flex-shrink-0 text-xs text-muted-foreground cursor-pointer hover:text-primary transition-colors group"
         onClick={() => handleTimeDoubleClick(item)}
         title="Click to add time"
       >
@@ -169,14 +168,14 @@ export const PlannerSection = ({
       <CardHeader className="pb-2 bg-gray-50 border-b">
         <CardTitle className="text-lg font-medium text-gray-800">{title}</CardTitle>
       </CardHeader>
-      <CardContent className="pt-4 px-2">
+      <CardContent className="pt-4 px-1">
         <ScrollArea className={`${isMobile ? 'h-[calc(100vh-400px)]' : 'h-[calc(100vh-350px)]'}`}>
           <div className="space-y-2 pr-2 pb-1">
             {items.length > 0 ? (
               items.map((item) => (
                 <div key={item.id} className="flex items-start w-full">
                   {renderTimeDisplay(item)}
-                  <div className="flex-1 min-w-0 overflow-visible">
+                  <div className="flex-1 min-w-0 ml-0 overflow-visible">
                     <PlannerCheckItem
                       item={item}
                       onToggle={onToggleItem}
@@ -195,7 +194,7 @@ export const PlannerSection = ({
             
             {isAddingItem ? (
               <div className="flex mt-2">
-                <div className="min-w-[80px] flex-shrink-0">
+                <div className="w-[70px] flex-shrink-0">
                   {showTimeInput && (
                     <>
                       <div className="font-medium text-xs">{newItemStartTime || "--:--"}</div>
@@ -205,7 +204,7 @@ export const PlannerSection = ({
                     </>
                   )}
                 </div>
-                <div className="flex-1 border border-gray-200 p-1 rounded-lg bg-white shadow-sm">
+                <div className="flex-1 ml-0 border border-gray-200 p-1 rounded-lg bg-white shadow-sm">
                   <div className="flex items-center gap-1">
                     <Checkbox className="h-5 w-5 mr-1 opacity-0" disabled />
                     <Input
