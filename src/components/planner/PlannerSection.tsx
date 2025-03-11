@@ -251,16 +251,17 @@ export const PlannerSection = ({
                       </Button>
                     </div>
                   ) : (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="xs"
-                      onClick={handleAddTimeClick}
-                      className="flex items-center gap-1 text-muted-foreground hover:text-primary ml-[28px] mt-1 h-6 p-0"
-                    >
-                      <Clock size={12} />
-                      <span>Add time</span>
-                    </Button>
+                    <div onClick={handleAddTimeClick} className="ml-[28px] mt-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="xs"
+                        className="flex items-center gap-1 text-muted-foreground hover:text-primary h-6 p-0"
+                      >
+                        <Clock size={12} />
+                        <span>Add time</span>
+                      </Button>
+                    </div>
                   )}
                 </div>
               </div>
