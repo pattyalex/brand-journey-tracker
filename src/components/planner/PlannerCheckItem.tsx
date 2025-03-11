@@ -164,18 +164,18 @@ export const PlannerCheckItem = ({
       ) : (
         <div 
           ref={scrollableRef}
-          className="group flex items-center w-full py-1 px-2 bg-white border border-gray-200 rounded-lg relative overflow-visible" 
+          className="group flex items-center w-full py-2 px-2 bg-white border border-gray-200 rounded-lg relative overflow-visible" 
         >
           {renderCheckbox && (
             <Checkbox 
               checked={item.isCompleted} 
               onCheckedChange={() => onToggle(item.id)}
-              className="h-4 w-4 mr-1 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+              className="h-3.5 w-3.5 mr-1 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground self-center"
             />
           )}
           
           <div 
-            className={`flex-1 text-base ${item.isCompleted ? 'line-through text-gray-600' : 'text-gray-800'} cursor-pointer overflow-visible`}
+            className={`flex-1 text-base ${item.isCompleted ? 'line-through text-gray-600' : 'text-gray-800'} cursor-pointer overflow-visible flex items-center`}
             onDoubleClick={handleDoubleClick}
           >
             <span className="break-words whitespace-normal">{item.text}</span>

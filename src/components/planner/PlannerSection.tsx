@@ -174,8 +174,8 @@ export const PlannerSection = ({
           <div className="space-y-2 pr-2 pb-1">
             {items.length > 0 ? (
               items.map((item) => (
-                <div key={item.id} className="flex items-start w-full">
-                  <div className="w-[60px] flex-shrink-0 flex items-center pr-0">
+                <div key={item.id} className="flex items-center w-full">
+                  <div className="w-[60px] flex-shrink-0 flex items-center justify-end pr-0">
                     {editingTimeItemId === item.id ? (
                       <div className="flex flex-col space-y-1">
                         <Input
@@ -246,11 +246,11 @@ export const PlannerSection = ({
                     )}
                   </div>
                   
-                  <div className="flex items-center mr-1">
+                  <div className="flex items-center mx-1 self-center">
                     <Checkbox 
                       checked={item.isCompleted} 
                       onCheckedChange={() => onToggleItem(item.id)}
-                      className="h-4 w-4 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                      className="h-3.5 w-3.5 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
                     />
                   </div>
                   
