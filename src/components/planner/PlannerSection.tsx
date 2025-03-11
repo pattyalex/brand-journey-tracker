@@ -175,7 +175,7 @@ export const PlannerSection = ({
             {items.length > 0 ? (
               items.map((item) => (
                 <div key={item.id} className="flex items-start w-full">
-                  <div className="w-[70px] flex-shrink-0 pr-1 flex items-center">
+                  <div className="w-[60px] flex-shrink-0 flex items-center pr-0">
                     {editingTimeItemId === item.id ? (
                       <div className="flex flex-col space-y-1">
                         <Input
@@ -226,35 +226,35 @@ export const PlannerSection = ({
                         />
                       </div>
                     ) : (
-                      <>
-                        <div className="flex items-center">
-                          <Checkbox 
-                            checked={item.isCompleted} 
-                            onCheckedChange={() => onToggleItem(item.id)}
-                            className="h-5 w-5 mr-2 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
-                          />
-                        </div>
-                        <div 
-                          className="text-xs text-gray-600 flex flex-col justify-center cursor-pointer"
-                          onDoubleClick={() => handleTimeDoubleClick(item)}
-                          title="Double-click to edit time"
-                        >
-                          {item.startTime && <div className="font-medium">{item.startTime}</div>}
-                          {item.endTime && <div className="font-medium">{item.endTime}</div>}
-                          {!item.startTime && !item.endTime && (
-                            <div 
-                              className="text-xs text-muted-foreground cursor-pointer hover:text-primary transition-colors group"
-                              onClick={() => handleTimeDoubleClick(item)}
-                              title="Click to add time"
-                            >
-                              <span className="opacity-0 group-hover:opacity-70">+ Add time</span>
-                            </div>
-                          )}
-                        </div>
-                      </>
+                      <div 
+                        className="text-xs text-gray-600 flex flex-col justify-center cursor-pointer"
+                        onDoubleClick={() => handleTimeDoubleClick(item)}
+                        title="Double-click to edit time"
+                      >
+                        {item.startTime && <div className="font-medium">{item.startTime}</div>}
+                        {item.endTime && <div className="font-medium">{item.endTime}</div>}
+                        {!item.startTime && !item.endTime && (
+                          <div 
+                            className="text-xs text-muted-foreground cursor-pointer hover:text-primary transition-colors group"
+                            onClick={() => handleTimeDoubleClick(item)}
+                            title="Click to add time"
+                          >
+                            <span className="opacity-0 group-hover:opacity-70">+ Add time</span>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
+                  
+                  <div className="flex items-center mr-1">
+                    <Checkbox 
+                      checked={item.isCompleted} 
+                      onCheckedChange={() => onToggleItem(item.id)}
+                      className="h-4 w-4 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                    />
+                  </div>
+                  
+                  <div className="flex-1 min-w-0 ml-0">
                     <PlannerCheckItem
                       item={item}
                       onToggle={onToggleItem}
@@ -274,7 +274,7 @@ export const PlannerSection = ({
             
             {isAddingItem ? (
               <div className="flex mt-2">
-                <div className="w-[70px] flex-shrink-0 pr-1">
+                <div className="w-[60px] flex-shrink-0 pr-0">
                   {showTimeInput && (
                     <>
                       <div className="font-medium text-xs">{newItemStartTime || "--:--"}</div>
