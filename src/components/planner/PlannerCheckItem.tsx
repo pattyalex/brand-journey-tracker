@@ -68,7 +68,7 @@ export const PlannerCheckItem = ({
   };
 
   return (
-    <div className="relative overflow-hidden bg-white rounded-lg border border-gray-200 shadow-sm transition-all hover:border-gray-300 hover:shadow w-full">
+    <div className="relative overflow-visible bg-white rounded-lg border border-gray-200 shadow-sm transition-all hover:border-gray-300 hover:shadow w-full">
       {isEditing && !isSimpleEdit && !isTimeEdit ? (
         <div className="flex flex-1 items-center gap-1 p-2">
           <Input
@@ -151,7 +151,7 @@ export const PlannerCheckItem = ({
       ) : (
         <div 
           ref={scrollableRef}
-          className="group flex items-center w-full p-2 pr-3" 
+          className="group flex items-center w-full p-2 pr-4" 
         >
           <Checkbox 
             checked={item.isCompleted} 
@@ -160,10 +160,10 @@ export const PlannerCheckItem = ({
           />
           
           <div 
-            className={`flex-1 pr-4 text-base ${item.isCompleted ? 'line-through text-muted-foreground' : 'text-gray-800'} cursor-pointer overflow-visible`}
+            className={`flex-1 pr-6 text-base ${item.isCompleted ? 'line-through text-muted-foreground' : 'text-gray-800'} cursor-pointer overflow-visible`}
             onDoubleClick={handleDoubleClick}
           >
-            <span className="break-words">{item.text}</span>
+            <span className="break-words whitespace-normal">{item.text}</span>
           </div>
           
           <button 
