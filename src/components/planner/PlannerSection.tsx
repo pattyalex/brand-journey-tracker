@@ -182,8 +182,8 @@ export const PlannerSection = ({
             {items.length > 0 ? (
               items.map((item) => (
                 <div key={item.id} className="flex flex-col w-full group">
-                  <div className="flex items-start">
-                    <div className="pl-3 px-1 flex items-center justify-center" style={{ paddingTop: "18px" }}>
+                  <div className="flex items-center">
+                    <div className="pl-3 px-1 flex items-center justify-center">
                       <Checkbox 
                         checked={item.isCompleted} 
                         onCheckedChange={() => onToggleItem(item.id)}
@@ -191,7 +191,7 @@ export const PlannerSection = ({
                       />
                     </div>
                     
-                    <div className="flex-1 min-w-0 ml-1 relative flex flex-col">
+                    <div className="flex-1 min-w-0 ml-1 relative flex flex-col justify-center">
                       <div className="mb-1 ml-0.5">
                         {renderTimeDisplay(item)}
                       </div>
