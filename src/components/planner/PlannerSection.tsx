@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { PlannerItem } from "@/types/planner";
 import { Plus, Clock, ArrowRight, Trash2 } from "lucide-react";
@@ -9,7 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import { Droppable, Draggable } from 'react-beautiful-dnd';
+import { Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 
 interface PlannerSectionProps {
   title: string;
@@ -244,6 +245,11 @@ export const PlannerSection = ({
                           >
                             <div className="flex flex-col w-full group">
                               <div className="flex items-center pl-3">
+                                <Checkbox
+                                  checked={item.isCompleted}
+                                  onCheckedChange={() => onToggleItem(item.id)}
+                                  className="h-4 w-4 border-gray-400 rounded-sm data-[state=checked]:bg-purple-500 data-[state=checked]:text-white"
+                                />
                                 <div className="flex-1 min-w-0 ml-1 relative flex flex-col">
                                   <div className="mb-1 ml-0.5">
                                     {renderTimeDisplay(item)}
