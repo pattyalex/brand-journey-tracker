@@ -161,7 +161,7 @@ export const PlannerSection = ({
     
     return (
       <div 
-        className="w-full flex-shrink-0 text-xs text-muted-foreground mt-1 cursor-pointer hover:text-primary transition-colors flex items-center gap-1"
+        className="w-full flex-shrink-0 text-xs text-muted-foreground cursor-pointer hover:text-primary transition-colors flex items-center gap-1"
         onClick={() => handleTimeDoubleClick(item)}
         title="Click to add time"
       >
@@ -182,8 +182,8 @@ export const PlannerSection = ({
             {items.length > 0 ? (
               items.map((item) => (
                 <div key={item.id} className="flex flex-col w-full group">
-                  <div className="flex items-center">
-                    <div className="pl-3 px-1">
+                  <div className="flex items-start">
+                    <div className="pl-3 px-1 pt-2">
                       <Checkbox 
                         checked={item.isCompleted} 
                         onCheckedChange={() => onToggleItem(item.id)}
@@ -191,7 +191,12 @@ export const PlannerSection = ({
                       />
                     </div>
                     
-                    <div className="flex-1 min-w-0 ml-1 relative">
+                    <div className="flex-1 min-w-0 ml-1 relative flex flex-col">
+                      {/* Time display moved above the task text */}
+                      <div className="mb-1 ml-0.5">
+                        {renderTimeDisplay(item)}
+                      </div>
+                      
                       <PlannerCheckItem
                         item={item}
                         onToggle={onToggleItem}
@@ -201,10 +206,6 @@ export const PlannerSection = ({
                         renderCheckbox={false}
                       />
                     </div>
-                  </div>
-                  
-                  <div className="ml-8">
-                    {renderTimeDisplay(item)}
                   </div>
                 </div>
               ))
