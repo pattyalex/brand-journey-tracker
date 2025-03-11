@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { PlannerItem } from "@/types/planner";
 import { Plus, Clock, ArrowRight } from "lucide-react";
@@ -174,8 +175,77 @@ export const PlannerSection = ({
             {items.length > 0 ? (
               items.map((item) => (
                 <div key={item.id} className="flex items-start w-full">
-                  {renderTimeDisplay(item)}
-                  <div className="flex-1 min-w-0 ml-0 overflow-visible">
+                  <div className="w-[70px] flex-shrink-0 pr-1">
+                    {editingTimeItemId === item.id ? (
+                      <div className="flex flex-col space-y-1">
+                        <Input
+                          type="time"
+                          defaultValue={item.startTime || ""}
+                          className="h-6 py-0 text-xs"
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              handleTimeEditSave(
+                                item.id, 
+                                (e.target as HTMLInputElement).value, 
+                                item.endTime || ""
+                              );
+                            } else if (e.key === "Escape") {
+                              handleTimeEditCancel();
+                            }
+                          }}
+                          onBlur={(e) => {
+                            const nextInput = e.currentTarget.parentElement?.querySelector('input:nth-child(2)');
+                            if (nextInput) {
+                              (nextInput as HTMLInputElement).focus();
+                            }
+                          }}
+                        />
+                        <Input
+                          type="time"
+                          defaultValue={item.endTime || ""}
+                          className="h-6 py-0 text-xs"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              handleTimeEditSave(
+                                item.id,
+                                item.startTime || "",
+                                (e.target as HTMLInputElement).value
+                              );
+                            } else if (e.key === "Escape") {
+                              handleTimeEditCancel();
+                            }
+                          }}
+                          onBlur={(e) => {
+                            handleTimeEditSave(
+                              item.id,
+                              item.startTime || "",
+                              (e.target as HTMLInputElement).value
+                            );
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div 
+                        className="text-xs text-gray-600 flex flex-col justify-center cursor-pointer h-full"
+                        onDoubleClick={() => handleTimeDoubleClick(item)}
+                        title="Double-click to edit time"
+                      >
+                        {item.startTime && <div className="font-medium">{item.startTime}</div>}
+                        {item.endTime && <div className="font-medium">{item.endTime}</div>}
+                        {!item.startTime && !item.endTime && (
+                          <div 
+                            className="text-xs text-muted-foreground cursor-pointer hover:text-primary transition-colors group"
+                            onClick={() => handleTimeDoubleClick(item)}
+                            title="Click to add time"
+                          >
+                            <span className="opacity-0 group-hover:opacity-70">+ Add time</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0 ml-0">
                     <PlannerCheckItem
                       item={item}
                       onToggle={onToggleItem}
@@ -194,7 +264,7 @@ export const PlannerSection = ({
             
             {isAddingItem ? (
               <div className="flex mt-2">
-                <div className="w-[70px] flex-shrink-0">
+                <div className="w-[70px] flex-shrink-0 pr-1">
                   {showTimeInput && (
                     <>
                       <div className="font-medium text-xs">{newItemStartTime || "--:--"}</div>

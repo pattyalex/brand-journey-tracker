@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -160,7 +159,7 @@ export const PlannerCheckItem = ({
       ) : (
         <div 
           ref={scrollableRef}
-          className="group flex items-center w-full py-1 pl-1 pr-2 bg-white border border-gray-200 rounded-lg relative overflow-visible -ml-1" 
+          className="group flex items-center w-full py-1 pl-1 pr-2 bg-white border border-gray-200 rounded-lg relative overflow-visible" 
         >
           <Checkbox 
             checked={item.isCompleted} 
