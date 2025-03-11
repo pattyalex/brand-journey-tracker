@@ -3,8 +3,9 @@ import { useState, useRef } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { PlannerItem } from "@/types/planner";
-import { Trash2, Check, ArrowRight } from "lucide-react";
+import { Trash2, Check, ArrowRight, Clock } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
 
 interface PlannerCheckItemProps {
   item: PlannerItem;
@@ -59,12 +60,20 @@ export const PlannerCheckItem = ({
     }
   };
 
-  const handleTimeDoubleClick = () => {
+  const handleTimeDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!isEditing) {
       setIsTimeEdit(true);
       setEditStartTime(item.startTime || "");
       setEditEndTime(item.endTime || "");
     }
+  };
+
+  const handleAddTime = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsTimeEdit(true);
+    setEditStartTime(item.startTime || "");
+    setEditEndTime(item.endTime || "");
   };
 
   return (
@@ -164,6 +173,18 @@ export const PlannerCheckItem = ({
             onDoubleClick={handleDoubleClick}
           >
             <span className="break-words whitespace-normal">{item.text}</span>
+            
+            {!item.startTime && !item.endTime && (
+              <Button
+                variant="ghost"
+                size="xs"
+                onClick={handleAddTime}
+                className="inline-flex items-center ml-2 text-xs text-muted-foreground hover:text-primary h-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <Clock size={10} className="mr-1" />
+                <span>Add time</span>
+              </Button>
+            )}
           </div>
           
           <button 
@@ -178,3 +199,4 @@ export const PlannerCheckItem = ({
     </div>
   );
 };
+

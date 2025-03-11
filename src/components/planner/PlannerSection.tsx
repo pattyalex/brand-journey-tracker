@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { PlannerItem } from "@/types/planner";
 import { Plus, Clock, ArrowRight } from "lucide-react";
@@ -143,7 +144,7 @@ export const PlannerSection = ({
     if (item.startTime || item.endTime) {
       return (
         <div 
-          className="min-w-[60px] w-[60px] flex-shrink-0 text-xs text-gray-600 mr-1 flex flex-col items-end justify-center"
+          className="min-w-[60px] w-[60px] flex-shrink-0 text-xs text-gray-600 mr-1 flex flex-col items-end justify-center cursor-pointer"
           onDoubleClick={() => handleTimeDoubleClick(item)}
           title="Double-click to edit time"
         >
@@ -156,8 +157,8 @@ export const PlannerSection = ({
     return (
       <div 
         className="min-w-[60px] w-[60px] flex-shrink-0 text-xs text-muted-foreground pr-1 text-right mr-1 cursor-pointer hover:text-primary transition-colors group"
-        onDoubleClick={() => handleTimeDoubleClick(item)}
-        title="Double-click to add time"
+        onClick={() => handleTimeDoubleClick(item)}
+        title="Click to add time"
       >
         <span className="opacity-0 group-hover:opacity-70">+ Add time</span>
       </div>
@@ -251,7 +252,7 @@ export const PlannerSection = ({
                       </Button>
                     </div>
                   ) : (
-                    <div onClick={handleAddTimeClick} className="ml-[28px] mt-1">
+                    <div className="ml-[28px] mt-1" onClick={handleAddTimeClick}>
                       <Button
                         type="button"
                         variant="ghost"
@@ -280,3 +281,4 @@ export const PlannerSection = ({
     </Card>
   );
 }
+
