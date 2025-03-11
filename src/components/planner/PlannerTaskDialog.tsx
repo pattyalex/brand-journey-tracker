@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlannerItem } from "@/types/planner";
+import { loadGoogleMapsAPI } from "@/utils/googleMapsLoader";
 
 interface PlannerTaskDialogProps {
   isOpen: boolean;
@@ -29,36 +30,51 @@ export const PlannerTaskDialog = ({
   const [section, setSection] = useState<"morning" | "midday" | "afternoon" | "evening">("morning");
   const [startTime, setStartTime] = useState(selectedTime);
   const [endTime, setEndTime] = useState("none"); // Changed from empty string to "none"
-  const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
+  const locationInputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
-  // Sample location history - in a real app, this would come from user's history or API
-  const locationHistory = [
-    "Home Office",
-    "Coffee Shop",
-    "Downtown Meeting Room",
-    "Client Office",
-    "Library",
-    "Conference Center",
-    "Zoom Call",
-    "Google Meet",
-    "Phone Call",
-  ];
-
-  // Update suggestions when location input changes
+  // Load Google Maps API when the dialog opens
   useEffect(() => {
-    if (location.trim() === "") {
-      setLocationSuggestions([]);
-      setShowSuggestions(false);
-      return;
+    if (isOpen && !googleMapsLoaded) {
+      loadGoogleMapsAPI(() => {
+        setGoogleMapsLoaded(true);
+      });
     }
+  }, [isOpen, googleMapsLoaded]);
 
-    const filtered = locationHistory.filter(loc => 
-      loc.toLowerCase().includes(location.toLowerCase())
-    );
-    setLocationSuggestions(filtered);
-    setShowSuggestions(filtered.length > 0);
-  }, [location]);
+  // Initialize autocomplete when Google Maps is loaded and the input is available
+  useEffect(() => {
+    if (googleMapsLoaded && locationInputRef.current) {
+      autocompleteRef.current = new google.maps.places.Autocomplete(locationInputRef.current, {
+        fields: ["name", "formatted_address"],
+        types: ["establishment", "geocode"],
+      });
+
+      // Add a listener for when a place is selected
+      autocompleteRef.current.addListener("place_changed", () => {
+        const place = autocompleteRef.current?.getPlace();
+        if (place && place.formatted_address) {
+          setLocation(place.formatted_address);
+        } else if (place && place.name) {
+          setLocation(place.name);
+        }
+      });
+
+      return () => {
+        // Google Maps doesn't provide a clean way to destroy an Autocomplete instance
+        // But we can remove the listeners by replacing the input
+        if (locationInputRef.current) {
+          const parent = locationInputRef.current.parentNode;
+          if (parent) {
+            const newInput = locationInputRef.current.cloneNode(true) as HTMLInputElement;
+            parent.replaceChild(newInput, locationInputRef.current);
+            locationInputRef.current = newInput;
+          }
+        }
+      };
+    }
+  }, [googleMapsLoaded]);
 
   const handleSave = () => {
     if (!text.trim()) return;
@@ -81,11 +97,6 @@ export const PlannerTaskDialog = ({
     setSection("morning");
     setEndTime("none");
     onClose();
-  };
-
-  const selectSuggestion = (suggestion: string) => {
-    setLocation(suggestion);
-    setShowSuggestions(false);
   };
 
   // Helper to format times for the select dropdowns
@@ -135,22 +146,15 @@ export const PlannerTaskDialog = ({
             <Label htmlFor="location">Location</Label>
             <Input
               id="location"
+              ref={locationInputRef}
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              onFocus={() => setShowSuggestions(locationSuggestions.length > 0)}
-              placeholder="Where will this task take place?"
+              placeholder="Search for a location"
+              className="pr-10"
             />
-            {showSuggestions && (
-              <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-md shadow-lg z-10 mt-1 max-h-[150px] overflow-y-auto">
-                {locationSuggestions.map((suggestion, index) => (
-                  <div
-                    key={index}
-                    className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => selectSuggestion(suggestion)}
-                  >
-                    {suggestion}
-                  </div>
-                ))}
+            {!googleMapsLoaded && (
+              <div className="text-xs text-gray-500 mt-1">
+                Loading Google Maps...
               </div>
             )}
           </div>
