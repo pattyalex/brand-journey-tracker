@@ -12,8 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Platform } from "@/types/content-flow";
 import { v4 as uuidv4 } from "uuid";
-import IconSelector from "./IconSelector";
-import { LucideIcon, Instagram, Youtube, Twitter, Facebook, Linkedin, Globe } from "lucide-react";
+import { Instagram, Youtube, FileText } from "lucide-react";
 
 interface AddPlatformDialogProps {
   open: boolean;
@@ -21,9 +20,15 @@ interface AddPlatformDialogProps {
   onAdd: (platform: Platform) => void;
 }
 
+const PLATFORM_ICONS = [
+  { icon: "instagram", component: Instagram },
+  { icon: "youtube", component: Youtube },
+  { icon: "file-text", component: FileText },
+];
+
 const AddPlatformDialog = ({ open, onOpenChange, onAdd }: AddPlatformDialogProps) => {
   const [platformName, setPlatformName] = useState("");
-  const [selectedIcon, setSelectedIcon] = useState<LucideIcon | null>(null);
+  const [selectedIcon, setSelectedIcon] = useState<string>("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +42,7 @@ const AddPlatformDialog = ({ open, onOpenChange, onAdd }: AddPlatformDialogProps
       
       // Reset form
       setPlatformName("");
-      setSelectedIcon(null);
+      setSelectedIcon("");
       onOpenChange(false);
     }
   };
@@ -64,10 +69,19 @@ const AddPlatformDialog = ({ open, onOpenChange, onAdd }: AddPlatformDialogProps
             
             <div className="grid gap-2">
               <Label>Platform Icon</Label>
-              <IconSelector 
-                selectedIcon={selectedIcon} 
-                onSelectIcon={setSelectedIcon} 
-              />
+              <div className="grid grid-cols-3 gap-2">
+                {PLATFORM_ICONS.map(({ icon, component: Icon }) => (
+                  <Button
+                    key={icon}
+                    type="button"
+                    variant="outline"
+                    className={`aspect-square h-10 ${selectedIcon === icon ? 'ring-2 ring-purple-500 bg-purple-50' : ''}`}
+                    onClick={() => setSelectedIcon(icon)}
+                  >
+                    <Icon className={`h-5 w-5 ${selectedIcon === icon ? 'text-purple-500' : 'text-gray-500'}`} />
+                  </Button>
+                ))}
+              </div>
             </div>
           </div>
           
