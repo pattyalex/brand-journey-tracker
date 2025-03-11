@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Platform } from "@/types/content-flow";
 import { v4 as uuidv4 } from "uuid";
 import IconSelector from "./IconSelector";
-import { LucideIcon, Instagram, Youtube, Twitter, Facebook, Linkedin, TikTok, Globe } from "lucide-react";
+import { LucideIcon, Instagram, Youtube, Twitter, Facebook, Linkedin, Globe } from "lucide-react";
 
 interface AddPlatformDialogProps {
   open: boolean;
@@ -57,7 +57,7 @@ const AddPlatformDialog = ({ open, onOpenChange, onAdd }: AddPlatformDialogProps
                 id="platform-name"
                 value={platformName}
                 onChange={(e) => setPlatformName(e.target.value)}
-                placeholder="e.g., Instagram, YouTube, TikTok"
+                placeholder="e.g., Instagram, YouTube, Blog"
                 required
               />
             </div>

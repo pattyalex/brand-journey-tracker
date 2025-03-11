@@ -1,5 +1,5 @@
 
-import { LucideIcon, Instagram, Youtube, Twitter, Facebook, Linkedin, TikTok, Globe, Mail, MessageCircle, Image, Video, Link } from "lucide-react";
+import { LucideIcon, Instagram, Youtube, Twitter, Facebook, Linkedin, Globe, Mail, MessageCircle, Image, Video, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +14,6 @@ const PLATFORM_ICONS: LucideIcon[] = [
   Twitter,
   Facebook,
   Linkedin,
-  TikTok,
   Globe,
   Mail,
   MessageCircle,
