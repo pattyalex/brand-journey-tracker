@@ -21,9 +21,9 @@ const initialContentItems: ContentItem[] = [
   },
   {
     id: "2",
-    platformId: "blog",
+    platformId: "newsletter",
     day: "Tuesday",
-    title: "Blog post: Industry trends",
+    title: "Newsletter post: Industry trends",
     description: "",
     time: ""
   },
@@ -50,7 +50,7 @@ const WeeklyContentFlow = () => {
   const initialPlatforms: Platform[] = [
     { id: "instagram", name: "Instagram", icon: "instagram" },
     { id: "youtube", name: "YouTube", icon: "youtube" },
-    { id: "blog", name: "Blog", icon: "file-text" }
+    { id: "newsletter", name: "Newsletter", icon: "file-text" }
   ];
 
   const [platforms, setPlatforms] = useState<Platform[]>(initialPlatforms);
