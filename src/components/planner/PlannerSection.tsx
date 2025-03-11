@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { PlannerItem } from "@/types/planner";
 import { Plus, Clock, ArrowRight, Trash2 } from "lucide-react";
@@ -214,7 +215,7 @@ export const PlannerSection = ({
   };
 
   return (
-    <Card className="h-full border border-gray-200 shadow-sm bg-white overflow-hidden rounded-lg">
+    <Card className="h-full border-0 shadow-sm bg-white overflow-hidden rounded-lg">
       <CardHeader className="pb-2 bg-gray-50 border-b">
         <CardTitle className="text-lg font-medium text-gray-800">{title}</CardTitle>
       </CardHeader>
@@ -266,7 +267,7 @@ export const PlannerSection = ({
                       </Draggable>
                     ))
                   ) : (
-                    <div className="text-sm text-muted-foreground italic text-center py-3 bg-white rounded-md border border-gray-200">
+                    <div className="text-sm text-muted-foreground italic text-center py-3 bg-white rounded-md border-0">
                       No tasks in this section
                     </div>
                   )}

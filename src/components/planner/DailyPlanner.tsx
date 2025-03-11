@@ -340,7 +340,7 @@ export const DailyPlanner = () => {
         items: [],
         tasks: tasks,
         greatDay: greatDay,
-        grateful: grateful
+        grateful: newGrateful
       });
     }
     
