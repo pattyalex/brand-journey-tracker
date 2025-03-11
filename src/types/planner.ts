@@ -7,6 +7,8 @@ export interface PlannerItem {
   date: string; // ISO string format YYYY-MM-DD
   startTime?: string; // Optional start time in format HH:MM (24-hour format)
   endTime?: string; // Optional end time in format HH:MM (24-hour format)
+  description?: string; // Optional description for additional details
+  location?: string; // Optional location of the task
 }
 
 export interface PlannerDay {

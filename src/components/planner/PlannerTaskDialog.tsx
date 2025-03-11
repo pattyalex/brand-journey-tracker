@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlannerItem } from "@/types/planner";
 
@@ -23,6 +24,8 @@ export const PlannerTaskDialog = ({
   selectedTime,
 }: PlannerTaskDialogProps) => {
   const [text, setText] = useState("");
+  const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("");
   const [section, setSection] = useState<"morning" | "midday" | "afternoon" | "evening">("morning");
   const [startTime, setStartTime] = useState(selectedTime);
   const [endTime, setEndTime] = useState("none"); // Changed from empty string to "none"
@@ -37,10 +40,14 @@ export const PlannerTaskDialog = ({
       date: selectedDate,
       startTime,
       endTime: endTime === "none" ? undefined : endTime, // Convert "none" back to undefined
+      description: description.trim() || undefined,
+      location: location.trim() || undefined,
     });
 
     // Reset form
     setText("");
+    setDescription("");
+    setLocation("");
     setSection("morning");
     setEndTime("none");
     onClose();
@@ -75,6 +82,27 @@ export const PlannerTaskDialog = ({
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="Enter task description"
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Add more details about this task"
+              className="min-h-[80px] resize-none"
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="location">Location</Label>
+            <Input
+              id="location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="Where will this task take place?"
             />
           </div>
 
