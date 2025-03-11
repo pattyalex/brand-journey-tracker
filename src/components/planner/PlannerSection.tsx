@@ -182,11 +182,11 @@ export const PlannerSection = ({
               items.map((item) => (
                 <div key={item.id} className="flex flex-col w-full group">
                   <div className="flex items-start">
-                    <div className="pl-3 px-1 flex items-center self-center">
+                    <div className="pl-3 px-1 flex items-center h-full justify-center my-auto">
                       <Checkbox 
                         checked={item.isCompleted} 
                         onCheckedChange={() => onToggleItem(item.id)}
-                        className="h-3.5 w-3.5 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground self-center"
+                        className="h-3.5 w-3.5 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
                       />
                     </div>
                     
