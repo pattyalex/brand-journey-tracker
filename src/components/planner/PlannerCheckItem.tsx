@@ -166,30 +166,32 @@ export const PlannerCheckItem = ({
       ) : (
         <div 
           ref={scrollableRef}
-          className="group flex items-start w-full py-2 px-2 bg-white border border-gray-200 rounded-lg relative overflow-visible" 
+          className="group flex flex-col w-full py-2 px-2 bg-white border border-gray-200 rounded-lg relative overflow-visible" 
         >
-          {renderCheckbox && (
-            <Checkbox 
-              checked={item.isCompleted} 
-              onCheckedChange={() => onToggle(item.id)}
-              className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
-            />
-          )}
-          
           <div 
-            className={`flex-1 text-base ${item.isCompleted ? 'line-through text-gray-600' : 'text-gray-800'} cursor-pointer overflow-visible flex items-center`}
+            className={`text-base ${item.isCompleted ? 'line-through text-gray-600' : 'text-gray-800'} cursor-pointer overflow-visible`}
             onDoubleClick={handleDoubleClick}
           >
             <span className="break-words whitespace-normal">{item.text}</span>
           </div>
           
-          <button 
-            onClick={() => onDelete(item.id)} 
-            className="p-1 rounded-sm text-gray-400 hover:text-gray-600 absolute right-1 top-1/2 transform -translate-y-1/2 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0 z-10"
-            title="Delete"
-          >
-            <Trash2 size={16} />
-          </button>
+          <div className="flex items-center justify-between mt-2">
+            {renderCheckbox && (
+              <Checkbox 
+                checked={item.isCompleted} 
+                onCheckedChange={() => onToggle(item.id)}
+                className="h-4 w-4 flex-shrink-0 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
+              />
+            )}
+            
+            <button 
+              onClick={() => onDelete(item.id)} 
+              className="p-1 rounded-sm text-gray-400 hover:text-gray-600 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0 z-10"
+              title="Delete"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
         </div>
       )}
     </div>
