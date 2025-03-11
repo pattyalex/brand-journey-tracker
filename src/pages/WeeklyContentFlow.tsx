@@ -21,7 +21,7 @@ const WeeklyContentFlow = () => {
       <div className="container mx-auto py-6">
         <h1 className="text-3xl font-bold mb-6">Weekly Content Flow</h1>
         
-        <div className="flex gap-4">
+        <div className="flex gap-4 relative">
           {/* Platforms sidebar */}
           <div className="w-56 shrink-0">
             <Card>
@@ -45,15 +45,18 @@ const WeeklyContentFlow = () => {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {platforms.map((platform) => (
-                      <div 
-                        key={platform.id}
-                        className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
-                      >
-                        <platform.icon className="h-4 w-4 text-purple-500" />
-                        <span>{platform.name}</span>
-                      </div>
-                    ))}
+                    {platforms.map((platform) => {
+                      const Icon = platform.icon;
+                      return (
+                        <div 
+                          key={platform.id}
+                          className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
+                        >
+                          <Icon className="h-4 w-4 text-purple-500" />
+                          <span>{platform.name}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>
@@ -61,7 +64,7 @@ const WeeklyContentFlow = () => {
           </div>
           
           {/* Weekly agenda */}
-          <div className="flex-1">
+          <div className="flex-1 ml-14">
             <WeeklyAgenda platforms={platforms} />
           </div>
         </div>
