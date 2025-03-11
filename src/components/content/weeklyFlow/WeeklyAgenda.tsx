@@ -30,10 +30,11 @@ const WeeklyAgenda = ({ platforms }: WeeklyAgendaProps) => {
             {platforms.map((platform) => {
               // Create the icon element safely
               const IconComponent = platform.icon;
+              
               return (
                 <div key={platform.id} className="grid grid-cols-7 relative py-2">
                   <div className="absolute -left-14 top-1/2 transform -translate-y-1/2 flex items-center gap-2 p-2">
-                    <IconComponent className="h-4 w-4 text-purple-500" />
+                    {IconComponent && <IconComponent className="h-4 w-4 text-purple-500" />}
                     <span className="text-sm font-medium">{platform.name}</span>
                   </div>
                   {DAYS_OF_WEEK.map((day) => (
