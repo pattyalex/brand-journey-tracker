@@ -14,6 +14,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { DailyPlanner } from "@/components/planner/DailyPlanner";
+import { WeeklyPlanner } from "@/components/planner/WeeklyPlanner";
+import { PlannerDay } from "@/types/planner";
 
 interface Task {
   id: string;
@@ -39,6 +41,7 @@ const TaskBoard = () => {
   const [editTaskId, setEditTaskId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("all");
   const [activePage, setActivePage] = useState<string>("tasks-board");
+  const [plannerData, setPlannerData] = useState<PlannerDay[]>([]);
 
   useEffect(() => {
     const savedTasks = localStorage.getItem("taskBoardTasks");
@@ -90,6 +93,11 @@ const TaskBoard = () => {
       ];
       setTasks(exampleTasks);
       localStorage.setItem("taskBoardTasks", JSON.stringify(exampleTasks));
+    }
+
+    const savedPlannerData = localStorage.getItem("plannerData");
+    if (savedPlannerData) {
+      setPlannerData(JSON.parse(savedPlannerData));
     }
   }, []);
 
@@ -298,6 +306,12 @@ const TaskBoard = () => {
               className="px-8 py-3 text-base font-medium bg-primary/5 hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               Daily Planner
+            </TabsTrigger>
+            <TabsTrigger 
+              value="weekly-view" 
+              className="px-8 py-3 text-base font-medium bg-primary/5 hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              Weekly View
             </TabsTrigger>
           </TabsList>
 
@@ -576,6 +590,10 @@ const TaskBoard = () => {
 
           <TabsContent value="daily-planner" className="m-0">
             <DailyPlanner />
+          </TabsContent>
+
+          <TabsContent value="weekly-view" className="m-0">
+            <WeeklyPlanner plannerData={plannerData} />
           </TabsContent>
         </Tabs>
       </div>
