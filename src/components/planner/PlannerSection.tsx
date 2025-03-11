@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { PlannerItem } from "@/types/planner";
 import { Plus, Clock, ArrowRight, Trash2 } from "lucide-react";
@@ -86,7 +87,7 @@ export const PlannerSection = ({
   const renderTimeDisplay = (item: PlannerItem) => {
     if (editingTimeItemId === item.id) {
       return (
-        <div className="w-[70px] flex-shrink-0">
+        <div className="w-full flex-shrink-0 mt-1">
           <div className="flex flex-col space-y-1">
             <Input
               type="time"
@@ -142,23 +143,30 @@ export const PlannerSection = ({
     if (item.startTime || item.endTime) {
       return (
         <div 
-          className="w-[70px] flex-shrink-0 text-xs text-gray-600 flex flex-col justify-center cursor-pointer"
+          className="w-full flex-shrink-0 text-xs text-gray-600 mt-1 cursor-pointer"
           onDoubleClick={() => handleTimeDoubleClick(item)}
           title="Double-click to edit time"
         >
-          {item.startTime && <div className="font-medium">{item.startTime}</div>}
-          {item.endTime && <div className="font-medium">{item.endTime}</div>}
+          <div className="flex items-center gap-1">
+            <Clock size={10} />
+            <span className="font-medium">
+              {item.startTime && item.startTime}
+              {item.startTime && item.endTime && " - "}
+              {item.endTime && item.endTime}
+            </span>
+          </div>
         </div>
       );
     }
     
     return (
       <div 
-        className="w-[70px] flex-shrink-0 text-xs text-muted-foreground cursor-pointer hover:text-primary transition-colors group"
+        className="w-full flex-shrink-0 text-xs text-muted-foreground mt-1 cursor-pointer hover:text-primary transition-colors flex items-center gap-1"
         onClick={() => handleTimeDoubleClick(item)}
         title="Click to add time"
       >
-        <span className="opacity-0 group-hover:opacity-70">+ Add time</span>
+        <Clock size={10} />
+        <span>Add time</span>
       </div>
     );
   };
@@ -173,28 +181,30 @@ export const PlannerSection = ({
           <div className="space-y-2 pr-2 pb-1">
             {items.length > 0 ? (
               items.map((item) => (
-                <div key={item.id} className="flex items-center w-full group">
-                  <div className="pl-3 w-[50px] flex-shrink-0 flex items-center justify-start">
+                <div key={item.id} className="flex flex-col w-full group">
+                  <div className="flex items-center">
+                    <div className="pl-3 px-1">
+                      <Checkbox 
+                        checked={item.isCompleted} 
+                        onCheckedChange={() => onToggleItem(item.id)}
+                        className="h-3.5 w-3.5 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground self-center"
+                      />
+                    </div>
+                    
+                    <div className="flex-1 min-w-0 ml-1 relative">
+                      <PlannerCheckItem
+                        item={item}
+                        onToggle={onToggleItem}
+                        onDelete={onDeleteItem}
+                        onEdit={onEditItem}
+                        showTimeInItem={false}
+                        renderCheckbox={false}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="ml-8">
                     {renderTimeDisplay(item)}
-                  </div>
-                  
-                  <div className="flex items-center self-center px-1">
-                    <Checkbox 
-                      checked={item.isCompleted} 
-                      onCheckedChange={() => onToggleItem(item.id)}
-                      className="h-3.5 w-3.5 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground self-center"
-                    />
-                  </div>
-                  
-                  <div className="flex-1 min-w-0 ml-1 relative">
-                    <PlannerCheckItem
-                      item={item}
-                      onToggle={onToggleItem}
-                      onDelete={onDeleteItem}
-                      onEdit={onEditItem}
-                      showTimeInItem={false}
-                      renderCheckbox={false}
-                    />
                   </div>
                 </div>
               ))
@@ -205,75 +215,67 @@ export const PlannerSection = ({
             )}
             
             {isAddingItem ? (
-              <div className="flex mt-2">
-                <div className="pl-3 w-[50px] flex-shrink-0">
-                  {showTimeInput && (
-                    <>
-                      <div className="font-medium text-xs">{newItemStartTime || "--:--"}</div>
-                      {newItemEndTime && (
-                        <div className="font-medium text-xs">{newItemEndTime}</div>
-                      )}
-                    </>
-                  )}
-                </div>
-                <div className="px-1 flex items-center">
-                  <div className="h-3.5 w-3.5 border border-gray-300 rounded-sm"></div>
-                </div>
-                <div className="flex-1 ml-1 border border-gray-200 p-1 rounded-lg bg-white shadow-sm">
-                  <div className="flex items-center gap-1">
-                    <Input
-                      value={newItemText}
-                      onChange={(e) => setNewItemText(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      placeholder="Add new item"
-                      className="flex-1 h-7 py-1 text-base text-gray-800 border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                      autoFocus
-                    />
+              <div className="flex flex-col mt-2">
+                <div className="flex">
+                  <div className="pl-3 px-1 flex items-center">
+                    <div className="h-3.5 w-3.5 border border-gray-300 rounded-sm"></div>
                   </div>
-                  
-                  {showTimeInput ? (
-                    <div className="flex items-center gap-2 mt-1">
-                      <div className="flex items-center gap-1">
-                        <span className="text-xs text-muted-foreground">Start:</span>
-                        <Input
-                          type="time"
-                          value={newItemStartTime}
-                          onChange={(e) => setNewItemStartTime(e.target.value)}
-                          onKeyDown={handleKeyDown}
-                          className="w-24 h-7 py-1 text-sm"
-                        />
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <span className="text-xs text-muted-foreground">End:</span>
-                        <Input
-                          type="time"
-                          value={newItemEndTime}
-                          onChange={(e) => setNewItemEndTime(e.target.value)}
-                          onKeyDown={handleKeyDown}
-                          className="w-24 h-7 py-1 text-sm"
-                        />
-                      </div>
-                      <Button
-                        onClick={handleAddItem}
-                        size="sm"
-                        className="text-xs"
-                      >
-                        Add
-                      </Button>
+                  <div className="flex-1 ml-1 border border-gray-200 p-1 rounded-lg bg-white shadow-sm">
+                    <div className="flex items-center gap-1">
+                      <Input
+                        value={newItemText}
+                        onChange={(e) => setNewItemText(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Add new item"
+                        className="flex-1 h-7 py-1 text-base text-gray-800 border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                        autoFocus
+                      />
                     </div>
-                  ) : (
-                    <div className="mt-1" onClick={handleAddTimeClick}>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="xs"
-                        className="flex items-center gap-1 text-muted-foreground hover:text-primary h-6 p-0"
-                      >
-                        <Clock size={12} />
-                        <span>Add time</span>
-                      </Button>
-                    </div>
-                  )}
+                    
+                    {showTimeInput ? (
+                      <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs text-muted-foreground">Start:</span>
+                          <Input
+                            type="time"
+                            value={newItemStartTime}
+                            onChange={(e) => setNewItemStartTime(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            className="w-24 h-7 py-1 text-sm"
+                          />
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs text-muted-foreground">End:</span>
+                          <Input
+                            type="time"
+                            value={newItemEndTime}
+                            onChange={(e) => setNewItemEndTime(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            className="w-24 h-7 py-1 text-sm"
+                          />
+                        </div>
+                        <Button
+                          onClick={handleAddItem}
+                          size="sm"
+                          className="text-xs"
+                        >
+                          Add
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="mt-1 ml-1" onClick={handleAddTimeClick}>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="xs"
+                          className="flex items-center gap-1 text-muted-foreground hover:text-primary h-6 p-0"
+                        >
+                          <Clock size={12} />
+                          <span>Add time</span>
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ) : (
