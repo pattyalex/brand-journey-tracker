@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PlannerItem } from "@/types/planner";
 import { Plus, Clock, ArrowRight, Trash2 } from "lucide-react";
@@ -183,7 +182,7 @@ export const PlannerSection = ({
               items.map((item) => (
                 <div key={item.id} className="flex flex-col w-full group">
                   <div className="flex items-start">
-                    <div className="pl-3 px-1 pt-2">
+                    <div className="pl-3 px-1 flex items-center self-center">
                       <Checkbox 
                         checked={item.isCompleted} 
                         onCheckedChange={() => onToggleItem(item.id)}
@@ -192,7 +191,6 @@ export const PlannerSection = ({
                     </div>
                     
                     <div className="flex-1 min-w-0 ml-1 relative flex flex-col">
-                      {/* Time display moved above the task text */}
                       <div className="mb-1 ml-0.5">
                         {renderTimeDisplay(item)}
                       </div>
