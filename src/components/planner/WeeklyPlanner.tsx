@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { format, addDays, startOfWeek, subWeeks, addWeeks } from "date-fns";
 import { ChevronLeft, ChevronRight, CalendarDays, Clock } from 'lucide-react';
@@ -11,11 +10,12 @@ interface WeeklyPlannerProps {
   plannerData: PlannerDay[];
 }
 
-// Time slots for the calendar (24 hours)
+// Time slots for the calendar (24 hours) in American format (12-hour with AM/PM)
 const TIME_SLOTS = [
-  "1:00", "2:00", "3:00", "4:00", "5:00", "6:00", "7:00", "8:00", "9:00", "10:00", 
-  "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", 
-  "20:00", "21:00", "22:00", "23:00", "24:00"
+  "1:00 AM", "2:00 AM", "3:00 AM", "4:00 AM", "5:00 AM", "6:00 AM", 
+  "7:00 AM", "8:00 AM", "9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", 
+  "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", 
+  "7:00 PM", "8:00 PM", "9:00 PM", "10:00 PM", "11:00 PM", "12:00 AM"
 ];
 
 export const WeeklyPlanner = ({ plannerData }: WeeklyPlannerProps) => {
@@ -40,10 +40,19 @@ export const WeeklyPlanner = ({ plannerData }: WeeklyPlannerProps) => {
     return dayData?.items || [];
   };
 
-  // Format time for display
+  // Format time for display in American style (12-hour with AM/PM)
   const formatTime = (timeString: string | undefined) => {
     if (!timeString) return "";
-    return timeString;
+    
+    const [hoursStr, minutesStr] = timeString.split(':');
+    const hours = parseInt(hoursStr, 10);
+    
+    if (isNaN(hours)) return timeString;
+    
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const hours12 = hours % 12 || 12; // Convert 0 to 12 for 12 AM
+    
+    return `${hours12}:${minutesStr} ${period}`;
   };
 
   // Parse time string to get hour for positioning in calendar view
@@ -66,7 +75,7 @@ export const WeeklyPlanner = ({ plannerData }: WeeklyPlannerProps) => {
     }
     
     // Each hour is 60px in height
-    const top = (startHour - 6) * 60; // Starting from 6 AM
+    const top = startHour * 60; // Starting from 1 AM (index 0)
     const height = (endHour - startHour) * 60;
     
     return { top, height };
