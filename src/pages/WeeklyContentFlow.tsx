@@ -2,77 +2,132 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Plus } from "lucide-react";
+import { ContentItem, Platform } from "@/types/content-flow";
 import AddPlatformDialog from "@/components/content/weeklyFlow/AddPlatformDialog";
-import WeeklyAgenda from "@/components/content/weeklyFlow/WeeklyAgenda";
-import { Platform } from "@/types/content-flow";
+import ContentSchedule from "@/components/content/weeklyFlow/ContentSchedule";
+import PlatformIcon from "@/components/content/weeklyFlow/PlatformIcon";
+import AddContentDialog from "@/components/content/weeklyFlow/AddContentDialog";
+
+// Sample content items
+const initialContentItems: ContentItem[] = [
+  {
+    id: "1",
+    platformId: "instagram",
+    day: "Monday",
+    title: "Instagram Story: Behind the scenes",
+    description: "",
+    time: ""
+  },
+  {
+    id: "2",
+    platformId: "blog",
+    day: "Tuesday",
+    title: "Blog post: Industry trends",
+    description: "",
+    time: ""
+  },
+  {
+    id: "3",
+    platformId: "youtube",
+    day: "Wednesday",
+    title: "Tutorial video on new feature",
+    description: "",
+    time: ""
+  },
+  {
+    id: "4",
+    platformId: "instagram",
+    day: "Friday",
+    title: "Carousel post: Top 5 tips",
+    description: "",
+    time: ""
+  }
+];
 
 const WeeklyContentFlow = () => {
-  const [platforms, setPlatforms] = useState<Platform[]>([]);
+  // Define initial platforms
+  const initialPlatforms: Platform[] = [
+    { id: "instagram", name: "Instagram", icon: "instagram" },
+    { id: "youtube", name: "YouTube", icon: "youtube" },
+    { id: "blog", name: "Blog", icon: "file-text" }
+  ];
+
+  const [platforms, setPlatforms] = useState<Platform[]>(initialPlatforms);
+  const [contentItems, setContentItems] = useState<ContentItem[]>(initialContentItems);
   const [isAddPlatformOpen, setIsAddPlatformOpen] = useState(false);
+  const [isAddContentOpen, setIsAddContentOpen] = useState(false);
 
   const addPlatform = (platform: Platform) => {
     setPlatforms([...platforms, platform]);
   };
 
+  const addContentItem = (item: ContentItem) => {
+    setContentItems([...contentItems, item]);
+  };
+
   return (
     <Layout>
-      <div className="container mx-auto py-6">
-        <h1 className="text-3xl font-bold mb-6">Weekly Content Flow</h1>
+      <div className="container mx-auto py-6 max-w-6xl">
+        <h1 className="text-4xl font-bold mb-2">Content Creation Schedule</h1>
+        <p className="text-gray-600 text-lg mb-8">
+          Plan your content across different platforms for the week
+        </p>
         
-        <div className="flex gap-4 relative">
-          {/* Platforms sidebar */}
-          <div className="w-56 shrink-0">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="font-medium">Platforms</h2>
-                  <Button 
-                    onClick={() => setIsAddPlatformOpen(true)}
-                    variant="outline" 
-                    size="sm" 
-                    className="flex items-center gap-1"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    <span>Add Platform</span>
-                  </Button>
-                </div>
-                
-                {platforms.length === 0 ? (
-                  <div className="text-sm text-muted-foreground p-4 text-center bg-slate-50 dark:bg-slate-900 rounded-md">
-                    No platforms added yet
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {platforms.map((platform) => {
-                      const IconComponent = platform.icon;
-                      return (
-                        <div 
-                          key={platform.id}
-                          className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
-                        >
-                          {IconComponent && <IconComponent className="h-4 w-4 text-purple-500" />}
-                          <span>{platform.name}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+        <div className="mb-10">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-semibold">Platforms</h2>
+            <Button 
+              onClick={() => setIsAddPlatformOpen(true)} 
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-5 w-5" />
+              Add Platform
+            </Button>
           </div>
           
-          {/* Weekly agenda */}
-          <div className="flex-1 ml-14">
-            <WeeklyAgenda platforms={platforms} />
+          <div className="flex flex-wrap gap-8">
+            {platforms.map((platform) => (
+              <div key={platform.id} className="flex flex-col items-center">
+                <div className="bg-gray-100 rounded-full p-6 mb-2">
+                  <PlatformIcon platform={platform} size={24} />
+                </div>
+                <span className="text-center">{platform.name}</span>
+              </div>
+            ))}
           </div>
+        </div>
+        
+        <div className="border-t border-gray-200 pt-8">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-semibold">Weekly Schedule</h2>
+            <Button 
+              onClick={() => setIsAddContentOpen(true)}
+              className="flex items-center gap-2 bg-[#8B6B4E] hover:bg-[#75593e]"
+            >
+              <Plus className="h-5 w-5" />
+              Add Content
+            </Button>
+          </div>
+          
+          <ContentSchedule 
+            platforms={platforms} 
+            contentItems={contentItems} 
+          />
         </div>
         
         <AddPlatformDialog 
           open={isAddPlatformOpen} 
           onOpenChange={setIsAddPlatformOpen}
           onAdd={addPlatform}
+        />
+        
+        <AddContentDialog
+          open={isAddContentOpen}
+          onOpenChange={setIsAddContentOpen}
+          onAdd={addContentItem}
+          platforms={platforms}
         />
       </div>
     </Layout>

@@ -1,10 +1,8 @@
 
-import { LucideIcon } from "lucide-react";
-
 export interface Platform {
   id: string;
   name: string;
-  icon: LucideIcon;
+  icon: string;
 }
 
 export interface ContentItem {
