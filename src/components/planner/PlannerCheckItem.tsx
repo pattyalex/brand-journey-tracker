@@ -156,7 +156,7 @@ export const PlannerCheckItem = ({
           <Checkbox 
             checked={item.isCompleted} 
             onCheckedChange={() => onToggle(item.id)}
-            className="h-5 w-5 mr-3 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+            className="h-5 w-5 mr-1.5 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
           />
           
           <div 
