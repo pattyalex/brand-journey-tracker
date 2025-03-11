@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PlannerItem } from "@/types/planner";
 import { Plus, Clock, ArrowRight, Trash2 } from "lucide-react";
@@ -244,13 +243,8 @@ export const PlannerSection = ({
                             className={`${snapshot.isDragging ? 'opacity-80 bg-muted' : ''}`}
                           >
                             <div className="flex flex-col w-full group">
-                              <div className="flex items-center pl-3">
-                                <Checkbox
-                                  checked={item.isCompleted}
-                                  onCheckedChange={() => onToggleItem(item.id)}
-                                  className="h-4 w-4 border-gray-400 rounded-sm data-[state=checked]:bg-purple-500 data-[state=checked]:text-white"
-                                />
-                                <div className="flex-1 min-w-0 ml-1 relative flex flex-col">
+                              <div className="flex items-center">
+                                <div className="flex-1 min-w-0 relative flex flex-col">
                                   <div className="mb-1 ml-0.5">
                                     {renderTimeDisplay(item)}
                                   </div>
@@ -261,7 +255,7 @@ export const PlannerSection = ({
                                     onDelete={onDeleteItem}
                                     onEdit={onEditItem}
                                     showTimeInItem={false}
-                                    renderCheckbox={false}
+                                    renderCheckbox={true}
                                     index={index}
                                   />
                                 </div>
