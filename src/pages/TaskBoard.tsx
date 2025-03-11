@@ -1,7 +1,8 @@
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, CheckSquare, CalendarIcon as CalendarIconBase, Clock, CheckCircle2, Edit, Trash2, Plus, Circle, CheckCircle, ArrowLeft, Flag } from "lucide-react";
+import { PlusCircle, CheckSquare, Clock, CheckCircle2, Edit, Trash2, Plus, Circle, CheckCircle, ArrowLeft, Flag } from "lucide-react";
+import { CalendarIcon as CalendarIconBase } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -15,7 +16,6 @@ import { Separator } from "@/components/ui/separator";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { DailyPlanner } from "@/components/planner/DailyPlanner";
 import { WeeklyPlanner } from "@/components/planner/WeeklyPlanner";
-import { Calendar } from "@/components/planner/Calendar";
 import { LovableCalendar } from "@/components/planner/LovableCalendar";
 import { PlannerDay } from "@/types/planner";
 
@@ -321,12 +321,6 @@ const TaskBoard = () => {
               Weekly View
             </TabsTrigger>
             <TabsTrigger 
-              value="calendar-view" 
-              className="px-8 py-3 text-base font-medium bg-primary/5 hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              Calendar
-            </TabsTrigger>
-            <TabsTrigger 
               value="lovable-calendar" 
               className="px-8 py-3 text-base font-medium bg-primary/5 hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
@@ -387,7 +381,7 @@ const TaskBoard = () => {
                         
                         <TaskColumn 
                           title="Scheduled"
-                          icon={<Calendar size={18} />}
+                          icon={<CalendarIconBase size={18} />}
                           tasks={getTasksByStatus("scheduled")}
                           moveTask={moveTask}
                           onEditTask={handleEditTask}
@@ -500,7 +494,7 @@ const TaskBoard = () => {
                                                         )}
                                                         {task.dueDate && (
                                                           <div className="flex items-center text-xs text-muted-foreground mt-2">
-                                                            <CalendarIcon className="mr-1 h-3 w-3" />
+                                                            <CalendarIconBase className="mr-1 h-3 w-3" />
                                                             {new Date(task.dueDate).toLocaleDateString()}
                                                           </div>
                                                         )}
@@ -567,7 +561,7 @@ const TaskBoard = () => {
                                                             setTasks(updatedTasks);
                                                           }}
                                                         >
-                                                          <Calendar size={12} className="mr-1" />
+                                                          <CalendarIconBase size={12} className="mr-1" />
                                                           Schedule
                                                         </Button>
                                                       )}
@@ -613,10 +607,6 @@ const TaskBoard = () => {
 
           <TabsContent value="weekly-view" className="m-0">
             <WeeklyPlanner plannerData={plannerData} onUpdatePlannerData={handleUpdatePlannerData} />
-          </TabsContent>
-
-          <TabsContent value="calendar-view" className="m-0">
-            <Calendar plannerData={plannerData} onUpdatePlannerData={handleUpdatePlannerData} />
           </TabsContent>
 
           <TabsContent value="lovable-calendar" className="m-0">
@@ -688,7 +678,7 @@ const TaskBoard = () => {
               <div className="grid gap-2">
                 <Label htmlFor="dueDate">Due Date</Label>
                 <div className="flex items-center">
-                  <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                  <CalendarIconBase className="mr-2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="dueDate"
                     type="date"
@@ -775,7 +765,7 @@ const TaskColumn = ({ title, icon, tasks, moveTask, onEditTask, onDeleteTask, ge
                                     <span className="text-gray-800 text-sm line-through">{task.title}</span>
                                     {task.dueDate && (
                                       <div className="flex items-center text-xs text-muted-foreground mt-0.5">
-                                        <CalendarIcon className="mr-1 h-3 w-3" />
+                                        <CalendarIconBase className="mr-1 h-3 w-3" />
                                         {new Date(task.dueDate).toLocaleDateString()}
                                       </div>
                                     )}
@@ -843,450 +833,4 @@ const TaskColumn = ({ title, icon, tasks, moveTask, onEditTask, onDeleteTask, ge
                 <div className="flex flex-col gap-3 min-h-40 pr-4">
                   {tasks.length === 0 ? (
                     <div className="flex h-[130px] items-center justify-center rounded-md border border-dashed">
-                      <p className="text-center text-muted-foreground text-sm px-2">No tasks in this section</p>
-                    </div>
-                  ) : (
-                    tasks.map((task, index) => (
-                      <Draggable key={task.id} draggableId={task.id} index={index}>
-                        {(provided, snapshot) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            className={`${snapshot.isDragging ? "opacity-70" : ""}`}
-                          >
-                            <Card key={task.id} className={`group p-3 shadow-sm border hover:shadow-md transition-shadow ${snapshot.isDragging ? "ring-2 ring-primary" : ""}`}>
-                              <div className="grid gap-2">
-                                <div className="flex justify-between items-start">
-                                  <div className="flex-1">
-                                    <h3 className="font-medium mb-1">{task.title}</h3>
-                                    {task.description && (
-                                      <p className="text-sm text-muted-foreground line-clamp-2">{task.description}</p>
-                                    )}
-                                  </div>
-                                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Button 
-                                      size="icon" 
-                                      variant="ghost" 
-                                      className="h-7 w-7" 
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        onEditTask(task);
-                                      }}
-                                    >
-                                      <Edit size={14} />
-                                    </Button>
-                                    <Button 
-                                      size="icon" 
-                                      variant="ghost" 
-                                      className="h-7 w-7 text-gray-500 hover:text-gray-700" 
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        onDeleteTask(task.id);
-                                      }}
-                                    >
-                                      <Trash2 size={14} />
-                                    </Button>
-                                  </div>
-                                </div>
-                                
-                                <div className="flex items-center justify-between text-xs">
-                                  <span className={`font-medium ${getPriorityColor(task.priority)}`}>
-                                    {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
-                                  </span>
-                                  
-                                  {task.dueDate && (
-                                    <div className="flex items-center text-muted-foreground">
-                                      <CalendarIcon className="mr-1 h-3 w-3" />
-                                      {new Date(task.dueDate).toLocaleDateString()}
-                                    </div>
-                                  )}
-                                </div>
-                                
-                                {columnId === "scheduled" || columnId === "todo-all" || columnId === "todo-today" ? (
-                                  <div className="pt-2 border-t mt-2">
-                                    <Button 
-                                      size="xs" 
-                                      variant="outline" 
-                                      className="text-xs w-full"
-                                      onClick={() => moveTask(task.id, "completed")}
-                                    >
-                                      <CheckCircle2 size={12} className="mr-1" />
-                                      Complete
-                                    </Button>
-                                  </div>
-                                ) : null}
-                              </div>
-                            </Card>
-                          </div>
-                        )}
-                      </Draggable>
-                    ))
-                  )}
-                  {provided.placeholder}
-                </div>
-              </ScrollArea>
-            </div>
-          )}
-        </Droppable>
-      </CardContent>
-    </Card>
-  );
-};
-
-interface SimplifiedTaskColumnProps {
-  title: string;
-  icon: React.ReactNode;
-  tasks: Task[];
-  moveTask: (taskId: string, newStatus: Task["status"]) => void;
-  onEditTask: (task: Task) => void;
-  onDeleteTask: (taskId: string) => void;
-  setIsAddDialogOpen: (isOpen: boolean) => void;
-  setNewTask: (task: Partial<Task>) => void;
-  columnId: Task["status"];
-  onAddQuickTask: (title: string, status: Task["status"]) => void;
-  toggleTaskCompletion: (taskId: string) => void;
-  getPriorityIcon?: (priority: Task["priority"]) => React.ReactNode;
-}
-
-const SimplifiedTaskColumn = ({ 
-  title, 
-  icon, 
-  tasks, 
-  moveTask, 
-  onEditTask, 
-  onDeleteTask, 
-  setIsAddDialogOpen, 
-  setNewTask, 
-  columnId,
-  onAddQuickTask,
-  toggleTaskCompletion,
-  getPriorityIcon
-}: SimplifiedTaskColumnProps) => {
-  const [newTaskTitle, setNewTaskTitle] = useState("");
-  const [isAdding, setIsAdding] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleAddTask = () => {
-    if (newTaskTitle.trim()) {
-      onAddQuickTask(newTaskTitle, columnId);
-      setNewTaskTitle("");
-      setIsAdding(false);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleAddTask();
-    } else if (e.key === "Escape") {
-      setIsAdding(false);
-      setNewTaskTitle("");
-    }
-  };
-
-  useEffect(() => {
-    if (isAdding && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isAdding]);
-
-  return (
-    <Card className="h-full bg-gray-50">
-      <CardHeader className="pb-2 p-4">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          {icon}
-          {title} <span className="ml-2 text-sm bg-primary/10 px-2.5 py-0.5 rounded-full">{tasks.length}</span>
-        </CardTitle>
-        <CardDescription>
-          {title === "All" ? "Tasks to be completed" : "Tasks for today"}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="p-3 pt-0">
-        <Droppable droppableId={columnId}>
-          {(provided) => (
-            <div
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              className="h-[calc(100vh-280px)]"
-            >
-              <ScrollArea className="h-full">
-                <div className="flex flex-col gap-2 min-h-40 pr-2">
-                  {tasks.length === 0 && !isAdding ? (
-                    <div className="flex h-[100px] items-center justify-center rounded-md border border-dashed">
-                      <p className="text-center text-muted-foreground text-sm px-2">No tasks in this section</p>
-                    </div>
-                  ) : (
-                    tasks.map((task, index) => (
-                      <Draggable key={task.id} draggableId={task.id} index={index}>
-                        {(provided, snapshot) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            className={`${snapshot.isDragging ? "opacity-70" : ""}`}
-                          >
-                            <div className="group bg-white rounded-lg border py-2.5 px-3 hover:shadow-sm transition-shadow">
-                              <div className="flex items-center gap-2">
-                                <button 
-                                  className="flex-shrink-0" 
-                                  onClick={() => toggleTaskCompletion(task.id)}
-                                >
-                                  {task.isCompleted ? (
-                                    <CheckCircle className="h-4 w-4 text-green-500" />
-                                  ) : (
-                                    <Circle className="h-4 w-4 text-gray-400 hover:text-primary" />
-                                  )}
-                                </button>
-                                <div className="flex-1 flex items-center gap-1.5">
-                                  <span className={`text-gray-800 text-sm ${task.isCompleted ? 'line-through text-gray-500' : ''}`}>
-                                    {task.title}
-                                  </span>
-                                  {getPriorityIcon && getPriorityIcon(task.priority)}
-                                </div>
-                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <button 
-                                    className="text-gray-400 hover:text-gray-600"
-                                    onClick={() => onEditTask(task)}
-                                  >
-                                    <Edit className="h-3.5 w-3.5" />
-                                  </button>
-                                  {task.isCompleted && (
-                                    <button
-                                      className="text-green-500 hover:text-green-600"
-                                      onClick={() => moveTask(task.id, "completed")}
-                                    >
-                                      <ArrowLeft className="h-3.5 w-3.5 rotate-90" />
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </Draggable>
-                    ))
-                  )}
-                  {provided.placeholder}
-                  
-                  {isAdding ? (
-                    <div className="bg-white rounded-lg border py-1.5 px-2">
-                      <div className="flex items-center gap-2">
-                        <Circle className="h-4 w-4 text-gray-400" />
-                        <Input
-                          ref={inputRef}
-                          value={newTaskTitle}
-                          onChange={(e) => setNewTaskTitle(e.target.value)}
-                          onKeyDown={handleKeyDown}
-                          placeholder="What needs to be done?"
-                          className="flex-1 border-0 p-1 text-sm focus-visible:ring-0"
-                          autoFocus
-                        />
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          className="h-7 px-2 text-xs" 
-                          onClick={handleAddTask}
-                        >
-                          Add
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      className="mt-1 flex items-center gap-2 text-muted-foreground hover:text-primary p-2 rounded-lg text-sm"
-                      onClick={() => setIsAdding(true)}
-                    >
-                      <Plus className="h-4 w-4" />
-                      <span>Add a task</span>
-                    </button>
-                  )}
-                </div>
-              </ScrollArea>
-            </div>
-          )}
-        </Droppable>
-      </CardContent>
-    </Card>
-  );
-};
-
-interface SimplifiedTaskListProps {
-  tasks: Task[];
-  status: Task["status"];
-  moveTask: (taskId: string, newStatus: Task["status"]) => void;
-  onEditTask: (task: Task) => void;
-  onDeleteTask: (taskId: string) => void;
-  setIsAddDialogOpen: (isOpen: boolean) => void;
-  setNewTask: (task: Partial<Task>) => void;
-  onAddQuickTask: (title: string, status: Task["status"]) => void;
-  toggleTaskCompletion: (taskId: string) => void;
-  getPriorityIcon?: (priority: Task["priority"]) => React.ReactNode;
-}
-
-const SimplifiedTaskList = ({ 
-  tasks, 
-  status, 
-  moveTask, 
-  onEditTask, 
-  onDeleteTask,
-  setIsAddDialogOpen,
-  setNewTask,
-  onAddQuickTask,
-  toggleTaskCompletion,
-  getPriorityIcon
-}: SimplifiedTaskListProps) => {
-  const [newTaskTitle, setNewTaskTitle] = useState("");
-  const [isAdding, setIsAdding] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleAddTask = () => {
-    if (newTaskTitle.trim()) {
-      onAddQuickTask(newTaskTitle, status);
-      setNewTaskTitle("");
-      setIsAdding(false);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleAddTask();
-    } else if (e.key === "Escape") {
-      setIsAdding(false);
-      setNewTaskTitle("");
-    }
-  };
-
-  useEffect(() => {
-    if (isAdding && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isAdding]);
-  
-  return (
-    <DragDropContext onDragEnd={(result) => {
-      if (!result.destination) return;
-      
-      const task = tasks.find(t => t.id === result.draggableId);
-      if (!task) return;
-      
-      if (result.destination.droppableId !== status) {
-        moveTask(task.id, result.destination.droppableId as Task["status"]);
-      }
-    }}>
-      <Droppable droppableId={status}>
-        {(provided) => (
-          <div
-            ref={provided.innerRef}
-            {...provided.droppableProps}
-            className="bg-gray-50 p-3 rounded-lg"
-          >
-            {tasks.length === 0 && !isAdding ? (
-              <div className="flex h-[100px] items-center justify-center rounded-md border border-dashed">
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground">No tasks in this section</p>
-                  <Button 
-                    variant="link" 
-                    className="mt-2 text-sm"
-                    onClick={() => setIsAdding(true)}
-                  >
-                    Add a task
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <ScrollArea className="h-[calc(100vh-250px)]">
-                <div className="space-y-2 pr-2">
-                  {tasks.map((task, index) => (
-                    <Draggable key={task.id} draggableId={task.id} index={index}>
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          className={`${snapshot.isDragging ? "opacity-70" : ""}`}
-                        >
-                          <div className="group bg-white rounded-lg border py-2.5 px-3 hover:shadow-sm transition-shadow">
-                            <div className="flex items-center gap-2">
-                              <button 
-                                className="flex-shrink-0" 
-                                onClick={() => toggleTaskCompletion(task.id)}
-                              >
-                                {task.isCompleted ? (
-                                  <CheckCircle className="h-4 w-4 text-green-500" />
-                                ) : (
-                                  <Circle className="h-4 w-4 text-gray-400 hover:text-primary" />
-                                )}
-                              </button>
-                              <div className="flex-1 flex items-center gap-1.5">
-                                <span className={`text-gray-800 text-sm ${task.isCompleted ? 'line-through text-gray-500' : ''}`}>
-                                  {task.title}
-                                </span>
-                                {getPriorityIcon && getPriorityIcon(task.priority)}
-                              </div>
-                              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button 
-                                  className="text-gray-400 hover:text-gray-600"
-                                  onClick={() => onEditTask(task)}
-                                >
-                                  <Edit className="h-3.5 w-3.5" />
-                                </button>
-                                {task.isCompleted && (
-                                  <button
-                                    className="text-green-500 hover:text-green-600"
-                                    onClick={() => moveTask(task.id, "completed")}
-                                  >
-                                    <ArrowLeft className="h-3.5 w-3.5 rotate-90" />
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </div>
-              </ScrollArea>
-            )}
-            
-            {isAdding ? (
-              <div className="mt-3 bg-white rounded-lg border py-1.5 px-2">
-                <div className="flex items-center gap-2">
-                  <Circle className="h-4 w-4 text-gray-400" />
-                  <Input
-                    ref={inputRef}
-                    value={newTaskTitle}
-                    onChange={(e) => setNewTaskTitle(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="What needs to be done?"
-                    className="flex-1 border-0 p-1 text-sm focus-visible:ring-0"
-                    autoFocus
-                  />
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    className="h-7 px-2 text-xs" 
-                    onClick={handleAddTask}
-                  >
-                    Add
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <button
-                className="mt-3 flex items-center gap-2 text-muted-foreground hover:text-primary p-2 rounded-lg text-sm"
-                onClick={() => setIsAdding(true)}
-              >
-                <Plus className="h-4 w-4" />
-                <span>Add a task</span>
-              </button>
-            )}
-          </div>
-        )}
-      </Droppable>
-    </DragDropContext>
-  );
-};
-
-export default TaskBoard;
+                      <p className="text-center text-muted-foreground text-sm px-
