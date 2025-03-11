@@ -247,8 +247,9 @@ export const PlannerSection = ({
                     </div>
                   ) : (
                     <button
+                      type="button"
                       onClick={() => setShowTimeInput(true)}
-                      className="flex items-center gap-1 text-muted-foreground hover:text-primary text-sm ml-[28px] mt-1"
+                      className="flex items-center gap-1 text-muted-foreground hover:text-primary text-sm ml-[28px] mt-1 cursor-pointer"
                     >
                       <Clock size={12} />
                       <span>Add time</span>
