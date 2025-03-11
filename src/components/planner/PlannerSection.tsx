@@ -244,15 +244,7 @@ export const PlannerSection = ({
                               className={`${snapshot.isDragging ? 'opacity-80' : ''}`}
                             >
                               <div key={item.id} className="flex flex-col w-full group">
-                                <div className="flex items-center">
-                                  <div className="pl-3 pr-1">
-                                    <Checkbox 
-                                      checked={item.isCompleted} 
-                                      onCheckedChange={() => onToggleItem(item.id)}
-                                      className="h-4 w-4 flex-shrink-0 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
-                                    />
-                                  </div>
-                                  
+                                <div className="flex items-center pl-3">
                                   <div className="flex-1 min-w-0 ml-1 relative flex flex-col">
                                     <div className="mb-1 ml-0.5">
                                       {renderTimeDisplay(item)}
