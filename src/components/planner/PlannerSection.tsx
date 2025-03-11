@@ -9,6 +9,7 @@ import { PlannerCheckItem } from "./PlannerCheckItem";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
 interface PlannerSectionProps {
   title: string;
@@ -160,14 +161,43 @@ export const PlannerSection = ({
     }
     
     return (
-      <div 
-        className="w-full flex-shrink-0 text-xs text-muted-foreground cursor-pointer hover:text-primary transition-colors flex items-center gap-1"
-        onClick={() => handleTimeDoubleClick(item)}
-        title="Click to add time"
-      >
-        <Clock size={10} />
-        <span>Add time</span>
-      </div>
+      <Popover>
+        <PopoverTrigger asChild>
+          <div className="w-full flex-shrink-0 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:text-primary mt-1 flex items-center gap-1">
+            <Clock size={10} />
+            <span>Add time</span>
+          </div>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-2" align="start">
+          <div className="space-y-2">
+            <div className="text-xs font-medium">Set time</div>
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs">Start:</span>
+                <Input 
+                  type="time" 
+                  className="h-7 w-32" 
+                  value={item.startTime || ""}
+                  onChange={(e) => {
+                    onEditItem(item.id, item.text, e.target.value, item.endTime);
+                  }}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs">End:</span>
+                <Input 
+                  type="time" 
+                  className="h-7 w-32" 
+                  value={item.endTime || ""}
+                  onChange={(e) => {
+                    onEditItem(item.id, item.text, item.startTime, e.target.value);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
     );
   };
 
@@ -183,11 +213,11 @@ export const PlannerSection = ({
               items.map((item) => (
                 <div key={item.id} className="flex flex-col w-full group">
                   <div className="flex">
-                    <div className="pl-3 px-1 self-center">
+                    <div className="pl-3 px-1 flex items-center">
                       <Checkbox 
                         checked={item.isCompleted} 
                         onCheckedChange={() => onToggleItem(item.id)}
-                        className="h-3.5 w-3.5 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground mt-0.5"
+                        className="h-3.5 w-3.5 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
                       />
                     </div>
                     
@@ -217,7 +247,7 @@ export const PlannerSection = ({
             {isAddingItem ? (
               <div className="flex flex-col mt-2">
                 <div className="flex">
-                  <div className="pl-3 px-1 flex items-center self-center">
+                  <div className="pl-3 px-1 flex items-center">
                     <div className="h-3.5 w-3.5 border border-gray-300 rounded-sm"></div>
                   </div>
                   <div className="flex-1 ml-1 border border-gray-200 p-1 rounded-lg bg-white shadow-sm">
