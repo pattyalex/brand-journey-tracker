@@ -1,3 +1,4 @@
+
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -313,6 +314,12 @@ const TaskBoard = () => {
             >
               Weekly View
             </TabsTrigger>
+            <TabsTrigger 
+              value="x-section" 
+              className="px-8 py-3 text-base font-medium bg-primary/5 hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              X
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="tasks-board" className="m-0">
@@ -594,6 +601,22 @@ const TaskBoard = () => {
 
           <TabsContent value="weekly-view" className="m-0">
             <WeeklyPlanner plannerData={plannerData} />
+          </TabsContent>
+
+          <TabsContent value="x-section" className="m-0">
+            <Card className="border-none shadow-none">
+              <CardHeader className="px-0">
+                <CardTitle className="text-xl">X Section</CardTitle>
+                <CardDescription>
+                  This is the new X section
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-0">
+                <div className="bg-gray-50 p-6 rounded-lg">
+                  <p className="text-center text-muted-foreground">X content goes here</p>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
