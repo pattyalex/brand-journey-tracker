@@ -8,12 +8,12 @@ interface ContentScheduleProps {
   contentItems: ContentItem[];
 }
 
-const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 const ContentSchedule = ({ platforms, contentItems }: ContentScheduleProps) => {
   return (
     <div className="rounded-lg border border-gray-200">
-      <div className="grid grid-cols-6 gap-0">
+      <div className="grid grid-cols-8 gap-0">
         {/* Header row */}
         <div className="p-6 font-medium text-gray-700">
           Platforms
