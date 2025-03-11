@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -29,12 +28,11 @@ export const PlannerTaskDialog = ({
   const [location, setLocation] = useState("");
   const [section, setSection] = useState<"morning" | "midday" | "afternoon" | "evening">("morning");
   const [startTime, setStartTime] = useState(selectedTime);
-  const [endTime, setEndTime] = useState("none"); // Changed from empty string to "none"
+  const [endTime, setEndTime] = useState("none");
   const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
   const locationInputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
-  // Load Google Maps API when the dialog opens
   useEffect(() => {
     if (isOpen && !googleMapsLoaded) {
       loadGoogleMapsAPI(() => {
@@ -43,7 +41,6 @@ export const PlannerTaskDialog = ({
     }
   }, [isOpen, googleMapsLoaded]);
 
-  // Initialize autocomplete when Google Maps is loaded and the input is available
   useEffect(() => {
     if (googleMapsLoaded && locationInputRef.current) {
       autocompleteRef.current = new google.maps.places.Autocomplete(locationInputRef.current, {
@@ -51,7 +48,6 @@ export const PlannerTaskDialog = ({
         types: ["establishment", "geocode"],
       });
 
-      // Add a listener for when a place is selected
       autocompleteRef.current.addListener("place_changed", () => {
         const place = autocompleteRef.current?.getPlace();
         if (place && place.formatted_address) {
@@ -62,8 +58,6 @@ export const PlannerTaskDialog = ({
       });
 
       return () => {
-        // Google Maps doesn't provide a clean way to destroy an Autocomplete instance
-        // But we can remove the listeners by replacing the input
         if (locationInputRef.current) {
           const parent = locationInputRef.current.parentNode;
           if (parent) {
@@ -85,12 +79,11 @@ export const PlannerTaskDialog = ({
       isCompleted: false,
       date: selectedDate,
       startTime,
-      endTime: endTime === "none" ? undefined : endTime, // Convert "none" back to undefined
+      endTime: endTime === "none" ? undefined : endTime,
       description: description.trim() || undefined,
       location: location.trim() || undefined,
     });
 
-    // Reset form
     setText("");
     setDescription("");
     setLocation("");
@@ -99,7 +92,6 @@ export const PlannerTaskDialog = ({
     onClose();
   };
 
-  // Helper to format times for the select dropdowns
   const generateTimeOptions = () => {
     const times = [];
     for (let hour = 0; hour < 24; hour++) {
