@@ -1,6 +1,6 @@
 
+import Layout from "@/components/Layout";
 import { useState } from "react";
-import { Layout } from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { DailyPlanner } from "@/components/planner/DailyPlanner";
