@@ -32,6 +32,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 
 const getDateString = (date: Date): string => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -355,16 +356,64 @@ export const DailyPlanner = () => {
       return new Date(year, month - 1, day_num);
     });
 
+  const handleDragEnd = (result: DropResult) => {
+    const { source, destination } = result;
+    
+    if (!destination) {
+      return;
+    }
+    
+    if (
+      source.droppableId === destination.droppableId &&
+      source.index === destination.index
+    ) {
+      return;
+    }
+    
+    const sourceSection = source.droppableId.split("-")[1] as PlannerItem["section"];
+    const destSection = destination.droppableId.split("-")[1] as PlannerItem["section"];
+    
+    const dayIndex = plannerData.findIndex(day => day.date === dateString);
+    if (dayIndex < 0) return;
+    
+    const updatedPlannerData = [...plannerData];
+    const sourceItems = getSectionItems(sourceSection);
+    const destItems = sourceItems === getSectionItems(destSection) 
+      ? sourceItems 
+      : getSectionItems(destSection);
+    
+    const [movedItem] = sourceItems.splice(source.index, 1);
+    movedItem.section = destSection;
+    
+    destItems.splice(destination.index, 0, movedItem);
+    
+    const allItemsWithoutSource = updatedPlannerData[dayIndex].items.filter(
+      item => item.section !== sourceSection && item.section !== destSection
+    );
+    
+    updatedPlannerData[dayIndex] = {
+      ...updatedPlannerData[dayIndex],
+      items: [
+        ...allItemsWithoutSource,
+        ...sourceItems.map(item => ({ ...item, section: sourceSection })),
+        ...destItems.map(item => ({ ...item, section: destSection }))
+      ]
+    };
+    
+    setPlannerData(updatedPlannerData);
+  };
+
   return (
-    <Card className="border-none shadow-none">
-      <CardHeader className="px-0">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center">
-            <Button variant="outline" size="icon" onClick={handlePreviousDay}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            
-            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+    <DragDropContext onDragEnd={handleDragEnd}>
+      <Card className="border-none shadow-none">
+        <CardHeader className="px-0">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center">
+              <Button variant="outline" size="icon" onClick={handlePreviousDay}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              
+              <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -393,13 +442,13 @@ export const DailyPlanner = () => {
                 />
               </PopoverContent>
             </Popover>
+              
+              <Button variant="outline" size="icon" onClick={handleNextDay}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
             
-            <Button variant="outline" size="icon" onClick={handleNextDay}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap">
             <TooltipProvider delayDuration={0}>
               <Dialog open={isCopyDialogOpen} onOpenChange={setIsCopyDialogOpen}>
                 <Tooltip>
@@ -595,7 +644,7 @@ export const DailyPlanner = () => {
           />
           
           <PlannerSection
-            title="Evening Routine"
+            title="Evening"
             items={getSectionItems("evening")}
             section="evening"
             onToggleItem={handleToggleItem}
@@ -701,5 +750,6 @@ export const DailyPlanner = () => {
         
       </CardContent>
     </Card>
+  </DragDropContext>
   );
 };
