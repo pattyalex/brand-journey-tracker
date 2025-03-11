@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { format, addDays, startOfWeek, subWeeks, addWeeks } from "date-fns";
+import { format, addDays, startOfWeek, subWeeks, addWeeks, parseISO } from "date-fns";
 import { ChevronLeft, ChevronRight, AlarmClock, Plus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,6 @@ import { useToast } from "@/hooks/use-toast";
 import { PlannerDay, PlannerItem } from "@/types/planner";
 import PlannerTaskDialog from "./PlannerTaskDialog";
 import { v4 as uuidv4 } from "uuid";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface WeeklyPlannerProps {
   plannerData: PlannerDay[];
@@ -170,79 +170,78 @@ export const WeeklyPlanner = ({ plannerData, onUpdatePlannerData }: WeeklyPlanne
               ))}
             </div>
             
-            {/* Calendar cells with ScrollArea */}
+            {/* Calendar cells */}
             <div className="col-span-7 grid grid-cols-7 h-[688px]">
               {weekDays.map((day, dayIndex) => {
                 const items = getDayItems(day);
                 const isToday = format(day, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
                 
                 return (
-                  <ScrollArea 
+                  <div 
                     key={`day-agenda-${dayIndex}`} 
-                    className={`border-r h-full ${isToday ? "bg-primary/5" : ""}`}
+                    className={`border-r overflow-y-auto relative ${isToday ? "bg-primary/5" : ""}`}
                   >
-                    <div className="relative">
-                      {/* Time grid lines for agenda view */}
-                      {TIME_SLOTS.map((_, timeIndex) => (
-                        <div 
-                          key={`agenda-grid-${dayIndex}-${timeIndex}`} 
-                          className="h-[28px] border-b border-gray-200 relative group"
-                          onClick={() => handleTimeSlotClick(day, timeIndex)}
-                        >
-                          {onUpdatePlannerData && (
-                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 flex items-center justify-center hover:bg-primary/5 cursor-pointer transition-opacity">
-                              <Plus className="h-4 w-4 text-gray-400" />
-                            </div>
-                          )}
-                        </div>
-                      ))}
-
-                      <div className="absolute w-full">
-                        {items.map((item) => {
-                          // Calculate position based on 24-hour clock
-                          let positionTop = 0;
-                          if (item.startTime) {
-                            const [hours, minutes] = item.startTime.split(':').map(Number);
-                            // Adjust for midnight (00:00) which should be at the bottom
-                            const adjustedHour = hours === 0 ? 24 : hours;
-                            // 1 AM is position 0, so subtract 1 from hour
-                            positionTop = (adjustedHour - 1) * 28 + (minutes / 60) * 28;
-                          }
-                              
-                          return (
-                            <div 
-                              key={item.id}
-                              className={`
-                                text-xs p-1.5 rounded border mx-1 my-1
-                                ${item.isCompleted ? "bg-green-50 border-green-200 text-green-800" : "bg-white border-gray-200"}
-                                ${item.section === "morning" ? "border-l-4 border-l-blue-500" : ""}
-                                ${item.section === "midday" ? "border-l-4 border-l-amber-500" : ""}
-                                ${item.section === "afternoon" ? "border-l-4 border-l-orange-500" : ""}
-                                ${item.section === "evening" ? "border-l-4 border-l-purple-500" : ""}
-                              `}
-                              style={item.startTime ? {
-                                position: 'absolute',
-                                top: `${positionTop}px`,
-                                width: 'calc(100% - 0.5rem)',
-                                zIndex: 5
-                              } : {}}
-                            >
-                              {item.startTime && (
-                                <div className="font-semibold text-xs text-muted-foreground flex items-center">
-                                  <AlarmClock className="h-3 w-3 mr-1" />
-                                  {formatTime(item.startTime)}
-                                  {item.endTime && ` - ${formatTime(item.endTime)}`}
-                                </div>
-                              )}
-                              <div className={`${item.isCompleted ? "line-through opacity-70" : ""}`}>
-                                {item.text}
-                              </div>
-                            </div>
-                          );
-                        })}
+                    {/* Time grid lines for agenda view */}
+                    {TIME_SLOTS.map((_, timeIndex) => (
+                      <div 
+                        key={`agenda-grid-${dayIndex}-${timeIndex}`} 
+                        className="h-[28px] border-b border-gray-200 relative group"
+                        onClick={() => handleTimeSlotClick(day, timeIndex)}
+                      >
+                        {onUpdatePlannerData && (
+                          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 flex items-center justify-center hover:bg-primary/5 cursor-pointer transition-opacity">
+                            <Plus className="h-4 w-4 text-gray-400" />
+                          </div>
+                        )}
                       </div>
+                    ))}
+
+                    <div className="absolute w-full">
+                      {items.map((item) => {
+                        // Calculate position based on 24-hour clock
+                        // For 1 AM (01:00) to midnight (00:00)
+                        let positionTop = 0;
+                        if (item.startTime) {
+                          const [hours, minutes] = item.startTime.split(':').map(Number);
+                          // Adjust for midnight (00:00) which should be at the bottom
+                          const adjustedHour = hours === 0 ? 24 : hours;
+                          // 1 AM is position 0, so subtract 1 from hour
+                          positionTop = (adjustedHour - 1) * 28 + (minutes / 60) * 28;
+                        }
+                          
+                        return (
+                          <div 
+                            key={item.id}
+                            className={`
+                              text-xs p-1.5 rounded border mx-1 my-1
+                              ${item.isCompleted ? "bg-green-50 border-green-200 text-green-800" : "bg-white border-gray-200"}
+                              ${item.section === "morning" ? "border-l-4 border-l-blue-500" : ""}
+                              ${item.section === "midday" ? "border-l-4 border-l-amber-500" : ""}
+                              ${item.section === "afternoon" ? "border-l-4 border-l-orange-500" : ""}
+                              ${item.section === "evening" ? "border-l-4 border-l-purple-500" : ""}
+                            `}
+                            style={item.startTime ? {
+                              position: 'absolute',
+                              top: `${positionTop}px`,
+                              width: 'calc(100% - 0.5rem)',
+                              zIndex: 5
+                            } : {}}
+                          >
+                            {item.startTime && (
+                              <div className="font-semibold text-xs text-muted-foreground flex items-center">
+                                <AlarmClock className="h-3 w-3 mr-1" />
+                                {formatTime(item.startTime)}
+                                {item.endTime && ` - ${formatTime(item.endTime)}`}
+                              </div>
+                            )}
+                            <div className={`${item.isCompleted ? "line-through opacity-70" : ""}`}>
+                              {item.text}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  </ScrollArea>
+                  </div>
                 );
               })}
             </div>
