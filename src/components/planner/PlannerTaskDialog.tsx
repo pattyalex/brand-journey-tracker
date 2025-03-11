@@ -116,6 +116,7 @@ export const PlannerTaskDialog = ({
         times.push(`${formattedHour}:${formattedMinute}`);
       }
     }
+    times.push("00:00"); // Add midnight at the end
     return times;
   };
 
@@ -195,7 +196,7 @@ export const PlannerTaskDialog = ({
               <SelectTrigger id="start-time">
                 <SelectValue placeholder="Select start time" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-[200px] overflow-y-auto">
                 {timeOptions.map((time) => (
                   <SelectItem key={`start-${time}`} value={time}>
                     {time}
@@ -211,7 +212,7 @@ export const PlannerTaskDialog = ({
               <SelectTrigger id="end-time">
                 <SelectValue placeholder="Select end time" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-[200px] overflow-y-auto">
                 <SelectItem value="none">None</SelectItem>
                 {timeOptions.map((time) => (
                   <SelectItem key={`end-${time}`} value={time}>

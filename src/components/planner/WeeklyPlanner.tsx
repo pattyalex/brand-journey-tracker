@@ -16,16 +16,16 @@ interface WeeklyPlannerProps {
 
 // Time slots for the agenda in American format (12-hour with AM/PM)
 const TIME_SLOTS = [
-  "10 AM", "11 AM", "12 PM", "1 PM", "2 PM", "3 PM", 
-  "4 PM", "5 PM", "6 PM", "7 PM", "8 PM", "9 PM", 
-  "10 PM", "11 PM"
+  "1 AM", "2 AM", "3 AM", "4 AM", "5 AM", "6 AM", "7 AM", "8 AM", "9 AM", 
+  "10 AM", "11 AM", "12 PM", "1 PM", "2 PM", "3 PM", "4 PM", "5 PM", "6 PM", 
+  "7 PM", "8 PM", "9 PM", "10 PM", "11 PM", "12 AM"
 ];
 
 // Convert 12-hour format to 24-hour format for internal use
 const TIME_SLOTS_24H = [
-  "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", 
-  "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", 
-  "22:00", "23:00"
+  "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00", "08:00", "09:00", 
+  "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", 
+  "19:00", "20:00", "21:00", "22:00", "23:00", "00:00"
 ];
 
 export const WeeklyPlanner = ({ plannerData, onUpdatePlannerData }: WeeklyPlannerProps) => {
@@ -148,12 +148,12 @@ export const WeeklyPlanner = ({ plannerData, onUpdatePlannerData }: WeeklyPlanne
         </div>
       </CardHeader>
       <CardContent className="px-0">
-        <div className="relative" style={{ height: '600px' }}>
+        <div className="relative" style={{ height: '700px' }}>
           {/* Time column for agenda view */}
           <div className="absolute left-0 top-0 w-16 h-full z-10 bg-white">
             <div className="h-12 border-b"></div> {/* Empty cell for the day headers */}
             {TIME_SLOTS.map((time, index) => (
-              <div key={`agenda-time-${index}`} className="h-[42px] relative border-b border-gray-200 text-xs text-gray-500">
+              <div key={`agenda-time-${index}`} className="h-[28px] relative border-b border-gray-200 text-xs text-gray-500">
                 <span className="absolute -top-2.5 left-2">{time}</span>
               </div>
             ))}
@@ -171,7 +171,7 @@ export const WeeklyPlanner = ({ plannerData, onUpdatePlannerData }: WeeklyPlanne
             </div>
             
             {/* Calendar cells */}
-            <div className="col-span-7 grid grid-cols-7 h-[588px]">
+            <div className="col-span-7 grid grid-cols-7 h-[688px]">
               {weekDays.map((day, dayIndex) => {
                 const items = getDayItems(day);
                 const isToday = format(day, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
@@ -185,7 +185,7 @@ export const WeeklyPlanner = ({ plannerData, onUpdatePlannerData }: WeeklyPlanne
                     {TIME_SLOTS.map((_, timeIndex) => (
                       <div 
                         key={`agenda-grid-${dayIndex}-${timeIndex}`} 
-                        className="h-[42px] border-b border-gray-200 relative group"
+                        className="h-[28px] border-b border-gray-200 relative group"
                         onClick={() => handleTimeSlotClick(day, timeIndex)}
                       >
                         {onUpdatePlannerData && (
@@ -198,8 +198,16 @@ export const WeeklyPlanner = ({ plannerData, onUpdatePlannerData }: WeeklyPlanne
 
                     <div className="absolute w-full">
                       {items.map((item) => {
-                        const positionTop = item.startTime ? 
-                          Math.max(0, (getHourFromTimeString(item.startTime) - 10) * 42) : 0;
+                        // Calculate position based on 24-hour clock
+                        // For 1 AM (01:00) to midnight (00:00)
+                        let positionTop = 0;
+                        if (item.startTime) {
+                          const [hours, minutes] = item.startTime.split(':').map(Number);
+                          // Adjust for midnight (00:00) which should be at the bottom
+                          const adjustedHour = hours === 0 ? 24 : hours;
+                          // 1 AM is position 0, so subtract 1 from hour
+                          positionTop = (adjustedHour - 1) * 28 + (minutes / 60) * 28;
+                        }
                           
                         return (
                           <div 
