@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { PlannerItem } from "@/types/planner";
 import { Plus, Clock, ArrowRight } from "lucide-react";
@@ -86,7 +87,7 @@ export const PlannerSection = ({
   const renderTimeDisplay = (item: PlannerItem) => {
     if (editingTimeItemId === item.id) {
       return (
-        <div className="min-w-[80px] flex-shrink-0 mr-1">
+        <div className="min-w-[80px] flex-shrink-0">
           <div className="flex flex-col space-y-1">
             <Input
               type="time"
@@ -142,7 +143,7 @@ export const PlannerSection = ({
     if (item.startTime || item.endTime) {
       return (
         <div 
-          className="min-w-[80px] flex-shrink-0 text-xs text-gray-600 mr-0 flex flex-col justify-center cursor-pointer"
+          className="min-w-[80px] flex-shrink-0 text-xs text-gray-600 flex flex-col justify-center cursor-pointer"
           onDoubleClick={() => handleTimeDoubleClick(item)}
           title="Double-click to edit time"
         >
@@ -154,7 +155,7 @@ export const PlannerSection = ({
     
     return (
       <div 
-        className="min-w-[80px] flex-shrink-0 text-xs text-muted-foreground mr-0 cursor-pointer hover:text-primary transition-colors group"
+        className="min-w-[80px] flex-shrink-0 text-xs text-muted-foreground cursor-pointer hover:text-primary transition-colors group"
         onClick={() => handleTimeDoubleClick(item)}
         title="Click to add time"
       >
@@ -194,7 +195,7 @@ export const PlannerSection = ({
             
             {isAddingItem ? (
               <div className="flex mt-2">
-                <div className="min-w-[80px] flex-shrink-0 mr-0">
+                <div className="min-w-[80px] flex-shrink-0">
                   {showTimeInput && (
                     <>
                       <div className="font-medium text-xs">{newItemStartTime || "--:--"}</div>

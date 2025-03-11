@@ -77,7 +77,7 @@ export const PlannerCheckItem = ({
   };
 
   return (
-    <div className="relative overflow-visible rounded-lg transition-all w-full">
+    <div className="relative overflow-visible transition-all w-full">
       {isEditing && !isSimpleEdit && !isTimeEdit ? (
         <div className="flex flex-1 items-center gap-1 p-1 bg-white border border-gray-200 rounded-lg">
           <Input
@@ -160,7 +160,7 @@ export const PlannerCheckItem = ({
       ) : (
         <div 
           ref={scrollableRef}
-          className="group flex items-center w-full py-1 px-2 bg-white border border-gray-200 rounded-lg relative overflow-visible" 
+          className="group flex items-center w-full py-1 pl-0 pr-2 bg-white border border-gray-200 rounded-lg relative overflow-visible" 
         >
           <Checkbox 
             checked={item.isCompleted} 
