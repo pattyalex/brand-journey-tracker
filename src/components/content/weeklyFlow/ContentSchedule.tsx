@@ -12,7 +12,7 @@ const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
 const ContentSchedule = ({ platforms, contentItems }: ContentScheduleProps) => {
   return (
-    <div className="bg-gray-50 rounded-lg">
+    <div className="rounded-lg border border-gray-200">
       <div className="grid grid-cols-6 gap-0">
         {/* Header row */}
         <div className="p-6 font-medium text-gray-700">
