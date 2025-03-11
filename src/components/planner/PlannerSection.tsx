@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PlannerItem } from "@/types/planner";
 import { Plus, Clock, ArrowRight, Trash2 } from "lucide-react";
@@ -10,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 
 interface PlannerSectionProps {
   title: string;
@@ -19,6 +19,7 @@ interface PlannerSectionProps {
   onDeleteItem: (id: string) => void;
   onEditItem: (id: string, newText: string, startTime?: string, endTime?: string) => void;
   onAddItem: (text: string, section: PlannerItem["section"], startTime?: string, endTime?: string) => void;
+  onReorderItems?: (items: PlannerItem[]) => void;
 }
 
 export const PlannerSection = ({
@@ -28,7 +29,8 @@ export const PlannerSection = ({
   onToggleItem,
   onDeleteItem,
   onEditItem,
-  onAddItem
+  onAddItem,
+  onReorderItems
 }: PlannerSectionProps) => {
   const [newItemText, setNewItemText] = useState("");
   const [newItemStartTime, setNewItemStartTime] = useState("");
@@ -83,6 +85,16 @@ export const PlannerSection = ({
     e.preventDefault();
     e.stopPropagation();
     setShowTimeInput(true);
+  };
+
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination || !onReorderItems) return;
+
+    const reorderedItems = Array.from(items);
+    const [removed] = reorderedItems.splice(result.source.index, 1);
+    reorderedItems.splice(result.destination.index, 0, removed);
+
+    onReorderItems(reorderedItems);
   };
 
   const renderTimeDisplay = (item: PlannerItem) => {
@@ -209,40 +221,69 @@ export const PlannerSection = ({
       <CardContent className="pt-4 px-1">
         <ScrollArea className={`${isMobile ? 'h-[calc(100vh-400px)]' : 'h-[calc(100vh-350px)]'}`}>
           <div className="space-y-2 pr-2 pb-1">
-            {items.length > 0 ? (
-              items.map((item) => (
-                <div key={item.id} className="flex flex-col w-full group">
-                  <div className="flex items-center">
-                    <div className="pl-3 pr-1">
-                      <Checkbox 
-                        checked={item.isCompleted} 
-                        onCheckedChange={() => onToggleItem(item.id)}
-                        className="h-4 w-4 flex-shrink-0 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
-                      />
-                    </div>
-                    
-                    <div className="flex-1 min-w-0 ml-1 relative flex flex-col">
-                      <div className="mb-1 ml-0.5">
-                        {renderTimeDisplay(item)}
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId={`section-${section}`}>
+                {(provided) => (
+                  <div 
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                    className="space-y-2"
+                  >
+                    {items.length > 0 ? (
+                      items.map((item, index) => (
+                        <Draggable 
+                          key={item.id} 
+                          draggableId={item.id} 
+                          index={index}
+                        >
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              className={`${snapshot.isDragging ? 'opacity-80' : ''}`}
+                            >
+                              <div key={item.id} className="flex flex-col w-full group">
+                                <div className="flex items-center">
+                                  <div className="pl-3 pr-1">
+                                    <Checkbox 
+                                      checked={item.isCompleted} 
+                                      onCheckedChange={() => onToggleItem(item.id)}
+                                      className="h-4 w-4 flex-shrink-0 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
+                                    />
+                                  </div>
+                                  
+                                  <div className="flex-1 min-w-0 ml-1 relative flex flex-col">
+                                    <div className="mb-1 ml-0.5">
+                                      {renderTimeDisplay(item)}
+                                    </div>
+                                    
+                                    <PlannerCheckItem
+                                      item={item}
+                                      onToggle={onToggleItem}
+                                      onDelete={onDeleteItem}
+                                      onEdit={onEditItem}
+                                      showTimeInItem={false}
+                                      renderCheckbox={false}
+                                      index={index}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))
+                    ) : (
+                      <div className="text-sm text-muted-foreground italic text-center py-3 bg-white rounded-md border border-gray-200">
+                        No tasks in this section
                       </div>
-                      
-                      <PlannerCheckItem
-                        item={item}
-                        onToggle={onToggleItem}
-                        onDelete={onDeleteItem}
-                        onEdit={onEditItem}
-                        showTimeInItem={false}
-                        renderCheckbox={false}
-                      />
-                    </div>
+                    )}
+                    {provided.placeholder}
                   </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-sm text-muted-foreground italic text-center py-3 bg-white rounded-md border border-gray-200">
-                No tasks in this section
-              </div>
-            )}
+                )}
+              </Droppable>
+            </DragDropContext>
             
             {isAddingItem ? (
               <div className="flex flex-col mt-2">
@@ -322,4 +363,4 @@ export const PlannerSection = ({
       </CardContent>
     </Card>
   );
-}
+};

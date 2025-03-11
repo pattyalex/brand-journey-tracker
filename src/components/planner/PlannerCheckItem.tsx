@@ -1,9 +1,8 @@
-
 import { useState, useRef } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { PlannerItem } from "@/types/planner";
-import { Trash2, Check, ArrowRight, Clock } from "lucide-react";
+import { Trash2, Check, ArrowRight, Clock, GripVertical } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 
@@ -14,6 +13,7 @@ interface PlannerCheckItemProps {
   onEdit: (id: string, newText: string, startTime?: string, endTime?: string) => void;
   showTimeInItem?: boolean;
   renderCheckbox?: boolean;
+  index?: number;
 }
 
 export const PlannerCheckItem = ({ 
@@ -22,7 +22,8 @@ export const PlannerCheckItem = ({
   onDelete, 
   onEdit,
   showTimeInItem = false,
-  renderCheckbox = false
+  renderCheckbox = false,
+  index
 }: PlannerCheckItemProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSimpleEdit, setIsSimpleEdit] = useState(false);
@@ -173,6 +174,10 @@ export const PlannerCheckItem = ({
               className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
             />
           )}
+          
+          <div className="mr-2 cursor-grab text-gray-400 flex-shrink-0 mt-0.5">
+            <GripVertical size={16} />
+          </div>
           
           <div 
             className={`flex-1 text-base ${item.isCompleted ? 'line-through text-gray-600' : 'text-gray-800'} cursor-pointer overflow-visible flex items-center`}
