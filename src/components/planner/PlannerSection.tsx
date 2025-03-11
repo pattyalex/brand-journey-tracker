@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { PlannerItem } from "@/types/planner";
 import { Plus, Clock, ArrowRight, Trash2 } from "lucide-react";
@@ -182,7 +183,7 @@ export const PlannerSection = ({
               items.map((item) => (
                 <div key={item.id} className="flex flex-col w-full group">
                   <div className="flex items-start">
-                    <div className="pl-3 px-1 flex items-center h-full justify-center my-auto">
+                    <div className="pl-3 px-1 flex items-center justify-center" style={{ paddingTop: "18px" }}>
                       <Checkbox 
                         checked={item.isCompleted} 
                         onCheckedChange={() => onToggleItem(item.id)}
