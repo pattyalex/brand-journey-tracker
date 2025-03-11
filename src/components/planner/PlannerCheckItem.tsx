@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,7 @@ interface PlannerCheckItemProps {
   onDelete: (id: string) => void;
   onEdit: (id: string, newText: string, startTime?: string, endTime?: string) => void;
   showTimeInItem?: boolean;
+  renderCheckbox?: boolean;
 }
 
 export const PlannerCheckItem = ({ 
@@ -19,7 +21,8 @@ export const PlannerCheckItem = ({
   onToggle, 
   onDelete, 
   onEdit,
-  showTimeInItem = false
+  showTimeInItem = false,
+  renderCheckbox = false
 }: PlannerCheckItemProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSimpleEdit, setIsSimpleEdit] = useState(false);
@@ -110,11 +113,13 @@ export const PlannerCheckItem = ({
         </div>
       ) : isSimpleEdit ? (
         <div className="flex flex-1 items-center p-1 bg-white border border-gray-200 rounded-lg">
-          <Checkbox 
-            checked={item.isCompleted} 
-            onCheckedChange={() => onToggle(item.id)}
-            className="h-5 w-5 mr-1 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
-          />
+          {renderCheckbox && (
+            <Checkbox 
+              checked={item.isCompleted} 
+              onCheckedChange={() => onToggle(item.id)}
+              className="h-5 w-5 mr-1 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground flex-shrink-0"
+            />
+          )}
           <Input
             value={editText}
             onChange={(e) => setEditText(e.target.value)}
@@ -159,16 +164,18 @@ export const PlannerCheckItem = ({
       ) : (
         <div 
           ref={scrollableRef}
-          className="group flex items-center w-full py-1 pl-1 pr-2 bg-white border border-gray-200 rounded-lg relative overflow-visible" 
+          className="group flex items-center w-full py-1 px-2 bg-white border border-gray-200 rounded-lg relative overflow-visible" 
         >
-          <Checkbox 
-            checked={item.isCompleted} 
-            onCheckedChange={() => onToggle(item.id)}
-            className="h-5 w-5 mr-1 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
-          />
+          {renderCheckbox && (
+            <Checkbox 
+              checked={item.isCompleted} 
+              onCheckedChange={() => onToggle(item.id)}
+              className="h-5 w-5 mr-1 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+            />
+          )}
           
           <div 
-            className={`flex-1 pr-6 text-base ${item.isCompleted ? 'line-through text-gray-600' : 'text-gray-800'} cursor-pointer overflow-visible`}
+            className={`flex-1 text-base ${item.isCompleted ? 'line-through text-gray-600' : 'text-gray-800'} cursor-pointer overflow-visible`}
             onDoubleClick={handleDoubleClick}
           >
             <span className="break-words whitespace-normal">{item.text}</span>
