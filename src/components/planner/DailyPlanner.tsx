@@ -340,7 +340,7 @@ export const DailyPlanner = () => {
         items: [],
         tasks: tasks,
         greatDay: greatDay,
-        grateful: grateful
+        grateful: newGrateful
       });
     }
     
@@ -608,7 +608,7 @@ export const DailyPlanner = () => {
         
         <div className="mb-6">
           <CardDescription>
-            Schedule your tasks:
+            Schedule your tasks and organize your day:
           </CardDescription>
         </div>
         
