@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { PlannerItem } from "@/types/planner";
-import { Plus, Clock, ArrowRight } from "lucide-react";
+import { Plus, Clock, ArrowRight, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -82,7 +82,7 @@ export const PlannerSection = ({
     if (editingTimeItemId === item.id) {
       // Editing time mode
       return (
-        <div className="min-w-[85px] w-[85px] flex-shrink-0 mr-2">
+        <div className="min-w-[60px] w-[60px] flex-shrink-0 mr-1">
           <div className="flex flex-col space-y-1">
             <Input
               type="time"
@@ -138,14 +138,11 @@ export const PlannerSection = ({
     if (item.startTime || item.endTime) {
       return (
         <div 
-          className="min-w-[85px] w-[85px] flex-shrink-0 text-xs text-muted-foreground pr-1 text-right mr-2 cursor-pointer hover:text-primary transition-colors"
+          className="min-w-[60px] w-[60px] flex-shrink-0 text-xs text-gray-600 mr-1 flex flex-col items-end justify-center"
           onDoubleClick={() => handleTimeDoubleClick(item)}
           title="Double-click to edit time"
         >
           {item.startTime && <div className="font-medium">{item.startTime}</div>}
-          {item.startTime && item.endTime && (
-            <div className="text-[10px] opacity-60">to</div>
-          )}
           {item.endTime && <div className="font-medium">{item.endTime}</div>}
         </div>
       );
@@ -153,7 +150,7 @@ export const PlannerSection = ({
     
     return (
       <div 
-        className="min-w-[85px] w-[85px] flex-shrink-0 text-xs text-muted-foreground pr-1 text-right mr-2 cursor-pointer hover:text-primary transition-colors group"
+        className="min-w-[60px] w-[60px] flex-shrink-0 text-xs text-muted-foreground pr-1 text-right mr-1 cursor-pointer hover:text-primary transition-colors group"
         onDoubleClick={() => handleTimeDoubleClick(item)}
         title="Double-click to add time"
       >
@@ -163,8 +160,8 @@ export const PlannerSection = ({
   };
 
   return (
-    <Card className="h-full border border-border shadow-sm bg-white overflow-hidden">
-      <CardHeader className="pb-2 bg-muted/20 border-b">
+    <Card className="h-full border border-gray-200 shadow-sm bg-white overflow-hidden rounded-lg">
+      <CardHeader className="pb-2 bg-gray-50 border-b">
         <CardTitle className="text-lg font-medium text-gray-800">{title}</CardTitle>
       </CardHeader>
       <CardContent className="pt-4 px-3">
@@ -193,13 +190,12 @@ export const PlannerSection = ({
             
             {isAddingItem ? (
               <div className="flex mt-2">
-                <div className="min-w-[85px] w-[85px] flex-shrink-0 text-xs text-muted-foreground pr-1 text-right mr-2">
+                <div className="min-w-[60px] w-[60px] flex-shrink-0 text-xs text-gray-600 pr-1 text-right mr-1">
                   {showTimeInput && (
                     <>
                       <div className="font-medium">{newItemStartTime || "--:--"}</div>
                       {newItemEndTime && (
                         <>
-                          <div className="text-[10px] opacity-60">to</div>
                           <div className="font-medium">{newItemEndTime}</div>
                         </>
                       )}
@@ -263,7 +259,7 @@ export const PlannerSection = ({
             ) : (
               <button
                 onClick={() => setIsAddingItem(true)}
-                className="flex items-center justify-center gap-2 text-muted-foreground hover:text-primary text-base mt-3 w-full p-2 rounded-md hover:bg-white hover:shadow-sm"
+                className="flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 text-base mt-3 w-full p-2 rounded-md transition-colors"
               >
                 <Plus size={18} />
                 <span>Add item</span>

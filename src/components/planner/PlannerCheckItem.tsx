@@ -68,9 +68,9 @@ export const PlannerCheckItem = ({
   };
 
   return (
-    <div className="relative overflow-visible bg-white rounded-lg border border-gray-200 shadow-sm transition-all hover:border-gray-300 hover:shadow w-full">
+    <div className="relative overflow-visible rounded-lg transition-all w-full">
       {isEditing && !isSimpleEdit && !isTimeEdit ? (
-        <div className="flex flex-1 items-center gap-1 p-2">
+        <div className="flex flex-1 items-center gap-1 p-2 bg-white border border-gray-200 rounded-lg">
           <Input
             type="time"
             value={editStartTime}
@@ -101,7 +101,7 @@ export const PlannerCheckItem = ({
           </button>
         </div>
       ) : isSimpleEdit ? (
-        <div className="flex flex-1 items-center p-2">
+        <div className="flex flex-1 items-center p-2 bg-white border border-gray-200 rounded-lg">
           <Checkbox 
             checked={item.isCompleted} 
             onCheckedChange={() => onToggle(item.id)}
@@ -122,7 +122,7 @@ export const PlannerCheckItem = ({
           </button>
         </div>
       ) : isTimeEdit ? (
-        <div className="flex flex-1 items-center p-2">
+        <div className="flex flex-1 items-center p-2 bg-white border border-gray-200 rounded-lg">
           <div className="flex items-center gap-1 flex-1">
             <Input
               type="time"
@@ -151,16 +151,16 @@ export const PlannerCheckItem = ({
       ) : (
         <div 
           ref={scrollableRef}
-          className="group flex items-center w-full p-2 pr-4" 
+          className="group flex items-center w-full p-2 pr-8 bg-pink-300 rounded-lg relative overflow-visible" 
         >
           <Checkbox 
             checked={item.isCompleted} 
             onCheckedChange={() => onToggle(item.id)}
-            className="h-5 w-5 mr-1.5 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+            className="h-5 w-5 mr-1.5 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground bg-white"
           />
           
           <div 
-            className={`flex-1 pr-6 text-base ${item.isCompleted ? 'line-through text-muted-foreground' : 'text-gray-800'} cursor-pointer overflow-visible`}
+            className={`flex-1 pr-6 text-base ${item.isCompleted ? 'line-through text-gray-600' : 'text-gray-800'} cursor-pointer overflow-visible`}
             onDoubleClick={handleDoubleClick}
           >
             <span className="break-words whitespace-normal">{item.text}</span>
@@ -168,7 +168,7 @@ export const PlannerCheckItem = ({
           
           <button 
             onClick={() => onDelete(item.id)} 
-            className="p-1 rounded-sm text-gray-400 hover:bg-gray-100 hover:text-gray-600 ml-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+            className="p-1 rounded-sm text-gray-600 hover:text-gray-900 absolute right-2 top-1/2 transform -translate-y-1/2 transition-opacity flex-shrink-0"
             title="Delete"
           >
             <Trash2 size={16} />
