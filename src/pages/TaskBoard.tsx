@@ -1,3 +1,4 @@
+
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -407,16 +408,16 @@ const TaskBoard = () => {
 
                   {["scheduled", "completed"].map((status) => (
                     <TabsContent key={status} value={status} className="m-0">
-                      <div className="space-y-4">
-                        <div className="flex items-center mb-2">
-                          <h2 className="text-xl font-semibold">{getStatusDisplayName(status as Task["status"])} Tasks</h2>
-                          <span className="ml-2 text-sm bg-primary/10 px-2.5 py-0.5 rounded-full">
-                            {getTasksByStatus(status as Task["status"]).length}
-                          </span>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 gap-3">
-                          <DragDropContext onDragEnd={handleDragEnd}>
+                      <DragDropContext onDragEnd={handleDragEnd}>
+                        <div className="space-y-4">
+                          <div className="flex items-center mb-2">
+                            <h2 className="text-xl font-semibold">{getStatusDisplayName(status as Task["status"])} Tasks</h2>
+                            <span className="ml-2 text-sm bg-primary/10 px-2.5 py-0.5 rounded-full">
+                              {getTasksByStatus(status as Task["status"]).length}
+                            </span>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 gap-3">
                             <Droppable droppableId={status}>
                               {(provided) => (
                                 <div 
@@ -564,9 +565,9 @@ const TaskBoard = () => {
                                 </div>
                               )}
                             </Droppable>
-                          </DragDropContext>
+                          </div>
                         </div>
-                      </div>
+                      </DragDropContext>
                     </TabsContent>
                   ))}
                 </Tabs>

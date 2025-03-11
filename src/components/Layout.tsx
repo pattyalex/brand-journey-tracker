@@ -5,6 +5,7 @@ import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sid
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { DragDropContext } from 'react-beautiful-dnd';
 
 const ToggleSidebarButton = () => {
   const { state, toggleSidebar } = useSidebar();
