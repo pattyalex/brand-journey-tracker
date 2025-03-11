@@ -30,11 +30,6 @@ export const PlannerCheckItem = ({
   const [editText, setEditText] = useState(item.text);
   const [editStartTime, setEditStartTime] = useState(item.startTime || "");
   const [editEndTime, setEditEndTime] = useState(item.endTime || "");
-  const [secondaryChecks, setSecondaryChecks] = useState({
-    important: false,
-    urgent: false,
-    followUp: false
-  });
   const isMobile = useIsMobile();
   const scrollableRef = useRef<HTMLDivElement>(null);
 
@@ -81,13 +76,6 @@ export const PlannerCheckItem = ({
     setIsTimeEdit(true);
     setEditStartTime(item.startTime || "");
     setEditEndTime(item.endTime || "");
-  };
-
-  const handleSecondaryToggle = (key: keyof typeof secondaryChecks) => {
-    setSecondaryChecks(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
   };
 
   return (
@@ -203,37 +191,22 @@ export const PlannerCheckItem = ({
             </button>
           </div>
           
-          {/* Secondary checkboxes row */}
-          <div className="flex items-center mt-2 ml-0.5 text-xs space-x-2">
-            <div className="flex items-center space-x-1">
-              <Checkbox 
-                id={`important-${item.id}`}
-                checked={secondaryChecks.important}
-                onCheckedChange={() => handleSecondaryToggle('important')}
-                className="h-3 w-3 flex-shrink-0 data-[state=checked]:bg-red-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
-              />
-              <label htmlFor={`important-${item.id}`} className="text-gray-600 cursor-pointer">Important</label>
-            </div>
+          {/* Row of small checkboxes side by side */}
+          <div className="flex items-center mt-2 gap-3">
+            <Checkbox 
+              id={`imp-${item.id}`}
+              className="h-3 w-3 data-[state=checked]:bg-red-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
+            />
             
-            <div className="flex items-center space-x-1">
-              <Checkbox 
-                id={`urgent-${item.id}`}
-                checked={secondaryChecks.urgent}
-                onCheckedChange={() => handleSecondaryToggle('urgent')}
-                className="h-3 w-3 flex-shrink-0 data-[state=checked]:bg-orange-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
-              />
-              <label htmlFor={`urgent-${item.id}`} className="text-gray-600 cursor-pointer">Urgent</label>
-            </div>
+            <Checkbox 
+              id={`urg-${item.id}`}
+              className="h-3 w-3 data-[state=checked]:bg-orange-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
+            />
             
-            <div className="flex items-center space-x-1">
-              <Checkbox 
-                id={`followup-${item.id}`}
-                checked={secondaryChecks.followUp}
-                onCheckedChange={() => handleSecondaryToggle('followUp')}
-                className="h-3 w-3 flex-shrink-0 data-[state=checked]:bg-blue-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
-              />
-              <label htmlFor={`followup-${item.id}`} className="text-gray-600 cursor-pointer">Follow-up</label>
-            </div>
+            <Checkbox 
+              id={`fol-${item.id}`}
+              className="h-3 w-3 data-[state=checked]:bg-blue-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
+            />
           </div>
         </div>
       )}
