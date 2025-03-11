@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -29,6 +29,36 @@ export const PlannerTaskDialog = ({
   const [section, setSection] = useState<"morning" | "midday" | "afternoon" | "evening">("morning");
   const [startTime, setStartTime] = useState(selectedTime);
   const [endTime, setEndTime] = useState("none"); // Changed from empty string to "none"
+  const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Sample location history - in a real app, this would come from user's history or API
+  const locationHistory = [
+    "Home Office",
+    "Coffee Shop",
+    "Downtown Meeting Room",
+    "Client Office",
+    "Library",
+    "Conference Center",
+    "Zoom Call",
+    "Google Meet",
+    "Phone Call",
+  ];
+
+  // Update suggestions when location input changes
+  useEffect(() => {
+    if (location.trim() === "") {
+      setLocationSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const filtered = locationHistory.filter(loc => 
+      loc.toLowerCase().includes(location.toLowerCase())
+    );
+    setLocationSuggestions(filtered);
+    setShowSuggestions(filtered.length > 0);
+  }, [location]);
 
   const handleSave = () => {
     if (!text.trim()) return;
@@ -51,6 +81,11 @@ export const PlannerTaskDialog = ({
     setSection("morning");
     setEndTime("none");
     onClose();
+  };
+
+  const selectSuggestion = (suggestion: string) => {
+    setLocation(suggestion);
+    setShowSuggestions(false);
   };
 
   // Helper to format times for the select dropdowns
@@ -96,14 +131,28 @@ export const PlannerTaskDialog = ({
             />
           </div>
 
-          <div className="grid gap-2">
+          <div className="grid gap-2 relative">
             <Label htmlFor="location">Location</Label>
             <Input
               id="location"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
+              onFocus={() => setShowSuggestions(locationSuggestions.length > 0)}
               placeholder="Where will this task take place?"
             />
+            {showSuggestions && (
+              <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-md shadow-lg z-10 mt-1 max-h-[150px] overflow-y-auto">
+                {locationSuggestions.map((suggestion, index) => (
+                  <div
+                    key={index}
+                    className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                    onClick={() => selectSuggestion(suggestion)}
+                  >
+                    {suggestion}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="grid gap-2">
