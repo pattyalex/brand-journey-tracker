@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { PlannerItem } from "@/types/planner";
-import { Pencil, Trash2, Check, Clock, ArrowRight } from "lucide-react";
+import { Trash2, Check, ArrowRight } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PlannerCheckItemProps {
@@ -59,10 +59,12 @@ export const PlannerCheckItem = ({
     }
   };
 
-  const handleTimeEdit = () => {
-    setIsTimeEdit(true);
-    setEditStartTime(item.startTime || "");
-    setEditEndTime(item.endTime || "");
+  const handleTimeDoubleClick = () => {
+    if (!isEditing) {
+      setIsTimeEdit(true);
+      setEditStartTime(item.startTime || "");
+      setEditEndTime(item.endTime || "");
+    }
   };
 
   return (
@@ -122,7 +124,6 @@ export const PlannerCheckItem = ({
       ) : isTimeEdit ? (
         <div className="flex flex-1 items-center p-2">
           <div className="flex items-center gap-1 flex-1">
-            <Clock size={15} className="text-muted-foreground mr-1" />
             <Input
               type="time"
               value={editStartTime}
@@ -165,37 +166,13 @@ export const PlannerCheckItem = ({
             <span>{item.text}</span>
           </div>
           
-          {showTimeInItem && (
-            <button 
-              onClick={handleTimeEdit}
-              className="ml-2 p-1 rounded-sm text-muted-foreground hover:text-primary hover:bg-gray-100"
-              title="Edit time"
-            >
-              <Clock size={14} />
-            </button>
-          )}
-          
-          <div className="flex items-center ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button 
-              onClick={() => {
-                setIsEditing(true);
-                setEditText(item.text);
-                setEditStartTime(item.startTime || "");
-                setEditEndTime(item.endTime || "");
-              }}
-              className="p-1 rounded-sm text-muted-foreground hover:bg-gray-100 hover:text-primary"
-              title="Edit"
-            >
-              <Pencil size={16} />
-            </button>
-            <button 
-              onClick={() => onDelete(item.id)} 
-              className="p-1 rounded-sm text-muted-foreground hover:bg-red-50 hover:text-red-500 ml-1"
-              title="Delete"
-            >
-              <Trash2 size={16} />
-            </button>
-          </div>
+          <button 
+            onClick={() => onDelete(item.id)} 
+            className="p-1 rounded-sm text-muted-foreground hover:bg-red-50 hover:text-red-500 ml-2 opacity-0 group-hover:opacity-100 transition-opacity"
+            title="Delete"
+          >
+            <Trash2 size={16} />
+          </button>
         </div>
       )}
     </div>
