@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PlannerItem } from "@/types/planner";
 import { Plus, Clock, ArrowRight } from "lucide-react";
@@ -9,7 +8,6 @@ import { PlannerCheckItem } from "./PlannerCheckItem";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface PlannerSectionProps {
   title: string;
@@ -88,7 +86,7 @@ export const PlannerSection = ({
   const renderTimeDisplay = (item: PlannerItem) => {
     if (editingTimeItemId === item.id) {
       return (
-        <div className="min-w-[90px] flex-shrink-0 mr-2">
+        <div className="min-w-[80px] flex-shrink-0 mr-1">
           <div className="flex flex-col space-y-1">
             <Input
               type="time"
@@ -144,7 +142,7 @@ export const PlannerSection = ({
     if (item.startTime || item.endTime) {
       return (
         <div 
-          className="min-w-[90px] flex-shrink-0 text-xs text-gray-600 mr-2 flex flex-col justify-center cursor-pointer"
+          className="min-w-[80px] flex-shrink-0 text-xs text-gray-600 mr-0 flex flex-col justify-center cursor-pointer"
           onDoubleClick={() => handleTimeDoubleClick(item)}
           title="Double-click to edit time"
         >
@@ -156,7 +154,7 @@ export const PlannerSection = ({
     
     return (
       <div 
-        className="min-w-[90px] flex-shrink-0 text-xs text-muted-foreground mr-2 cursor-pointer hover:text-primary transition-colors group"
+        className="min-w-[80px] flex-shrink-0 text-xs text-muted-foreground mr-0 cursor-pointer hover:text-primary transition-colors group"
         onClick={() => handleTimeDoubleClick(item)}
         title="Click to add time"
       >
@@ -170,9 +168,9 @@ export const PlannerSection = ({
       <CardHeader className="pb-2 bg-gray-50 border-b">
         <CardTitle className="text-lg font-medium text-gray-800">{title}</CardTitle>
       </CardHeader>
-      <CardContent className="pt-4 px-3">
+      <CardContent className="pt-4 px-2">
         <ScrollArea className={`${isMobile ? 'h-[calc(100vh-400px)]' : 'h-[calc(100vh-350px)]'}`}>
-          <div className="space-y-3 pr-4 pb-1">
+          <div className="space-y-2 pr-2 pb-1">
             {items.length > 0 ? (
               items.map((item) => (
                 <div key={item.id} className="flex items-start w-full">
@@ -196,7 +194,7 @@ export const PlannerSection = ({
             
             {isAddingItem ? (
               <div className="flex mt-2">
-                <div className="min-w-[90px] flex-shrink-0 mr-2">
+                <div className="min-w-[80px] flex-shrink-0 mr-0">
                   {showTimeInput && (
                     <>
                       <div className="font-medium text-xs">{newItemStartTime || "--:--"}</div>
@@ -206,21 +204,21 @@ export const PlannerSection = ({
                     </>
                   )}
                 </div>
-                <div className="flex-1 border border-gray-200 p-2 rounded-lg bg-white shadow-sm">
-                  <div className="flex items-center gap-2">
-                    <Checkbox className="h-5 w-5 mr-2 opacity-0" disabled />
+                <div className="flex-1 border border-gray-200 p-1 rounded-lg bg-white shadow-sm">
+                  <div className="flex items-center gap-1">
+                    <Checkbox className="h-5 w-5 mr-1 opacity-0" disabled />
                     <Input
                       value={newItemText}
                       onChange={(e) => setNewItemText(e.target.value)}
                       onKeyDown={handleKeyDown}
                       placeholder="Add new item"
-                      className="flex-1 h-8 py-1 text-base text-gray-800 border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                      className="flex-1 h-7 py-1 text-base text-gray-800 border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
                       autoFocus
                     />
                   </div>
                   
                   {showTimeInput ? (
-                    <div className="flex items-center ml-[28px] gap-2 mt-2">
+                    <div className="flex items-center ml-[28px] gap-2 mt-1">
                       <div className="flex items-center gap-1">
                         <span className="text-xs text-muted-foreground">Start:</span>
                         <Input
