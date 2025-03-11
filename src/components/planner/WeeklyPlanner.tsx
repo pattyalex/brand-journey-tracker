@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { format, addDays, startOfWeek, subWeeks, addWeeks } from "date-fns";
 import { ChevronLeft, ChevronRight, AlarmClock } from 'lucide-react';
@@ -106,54 +107,79 @@ export const WeeklyPlanner = ({ plannerData }: WeeklyPlannerProps) => {
       </CardHeader>
       <CardContent className="px-0">
         {viewMode === "agenda" ? (
-          <div className="grid grid-cols-7 gap-2">
-            {/* Day headers */}
-            {weekDays.map((day, index) => (
-              <div key={`header-${index}`} className="text-center p-2 border-b font-medium">
-                <div className="text-sm">{format(day, "EEE")}</div>
-                <div className="text-sm text-muted-foreground">{format(day, "d")}</div>
-              </div>
-            ))}
-            
-            {/* Calendar cells */}
-            {weekDays.map((day, dayIndex) => {
-              const items = getDayItems(day);
-              const isToday = format(day, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
-              
-              return (
-                <div 
-                  key={`day-${dayIndex}`} 
-                  className={`h-[500px] border-r border-b overflow-y-auto p-1 ${isToday ? "bg-primary/5" : ""}`}
-                >
-                  <div className="space-y-1">
-                    {items.map((item) => (
-                      <div 
-                        key={item.id}
-                        className={`
-                          text-xs p-1.5 rounded border 
-                          ${item.isCompleted ? "bg-green-50 border-green-200 text-green-800" : "bg-white border-gray-200"}
-                          ${item.section === "morning" ? "border-l-4 border-l-blue-500" : ""}
-                          ${item.section === "midday" ? "border-l-4 border-l-amber-500" : ""}
-                          ${item.section === "afternoon" ? "border-l-4 border-l-orange-500" : ""}
-                          ${item.section === "evening" ? "border-l-4 border-l-purple-500" : ""}
-                        `}
-                      >
-                        {item.startTime && (
-                          <div className="font-semibold text-xs text-muted-foreground flex items-center">
-                            <AlarmClock className="h-3 w-3 mr-1" />
-                            {formatTime(item.startTime)}
-                            {item.endTime && ` - ${formatTime(item.endTime)}`}
-                          </div>
-                        )}
-                        <div className={`${item.isCompleted ? "line-through opacity-70" : ""}`}>
-                          {item.text}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+          <div className="relative" style={{ height: '600px' }}>
+            {/* Time column for agenda view */}
+            <div className="absolute left-0 top-0 w-16 h-full z-10 bg-white">
+              <div className="h-12 border-b"></div> {/* Empty cell for the day headers */}
+              {TIME_SLOTS.map((time, index) => (
+                <div key={`agenda-time-${index}`} className="h-[42px] relative border-b border-gray-200 text-xs text-gray-500">
+                  <span className="absolute -top-2.5 -right-2">{time}</span>
                 </div>
-              );
-            })}
+              ))}
+            </div>
+
+            <div className="ml-16 grid grid-cols-7 h-full">
+              {/* Day headers for agenda view */}
+              <div className="col-span-7 grid grid-cols-7 h-12 border-b">
+                {weekDays.map((day, index) => (
+                  <div key={`header-agenda-${index}`} className="text-center p-2 font-medium">
+                    <div className="text-sm">{format(day, "EEE")}</div>
+                    <div className="text-sm text-muted-foreground">{format(day, "d")}</div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Calendar cells */}
+              <div className="col-span-7 grid grid-cols-7 h-[588px]">
+                {weekDays.map((day, dayIndex) => {
+                  const items = getDayItems(day);
+                  const isToday = format(day, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
+                  
+                  return (
+                    <div 
+                      key={`day-agenda-${dayIndex}`} 
+                      className={`border-r overflow-y-auto ${isToday ? "bg-primary/5" : ""}`}
+                    >
+                      {/* Time grid lines for agenda view */}
+                      {TIME_SLOTS.map((_, timeIndex) => (
+                        <div key={`agenda-grid-${dayIndex}-${timeIndex}`} className="h-[42px] border-b border-gray-200"></div>
+                      ))}
+
+                      <div className="space-y-1 px-1 absolute w-full">
+                        {items.map((item) => (
+                          <div 
+                            key={item.id}
+                            className={`
+                              text-xs p-1.5 rounded border my-1
+                              ${item.isCompleted ? "bg-green-50 border-green-200 text-green-800" : "bg-white border-gray-200"}
+                              ${item.section === "morning" ? "border-l-4 border-l-blue-500" : ""}
+                              ${item.section === "midday" ? "border-l-4 border-l-amber-500" : ""}
+                              ${item.section === "afternoon" ? "border-l-4 border-l-orange-500" : ""}
+                              ${item.section === "evening" ? "border-l-4 border-l-purple-500" : ""}
+                            `}
+                            style={item.startTime ? {
+                              position: 'relative',
+                              top: `${Math.max(0, (getHourFromTimeString(item.startTime) - 10) * 42)}px`
+                            } : {}}
+                          >
+                            {item.startTime && (
+                              <div className="font-semibold text-xs text-muted-foreground flex items-center">
+                                <AlarmClock className="h-3 w-3 mr-1" />
+                                {formatTime(item.startTime)}
+                                {item.endTime && ` - ${formatTime(item.endTime)}`}
+                              </div>
+                            )}
+                            <div className={`${item.isCompleted ? "line-through opacity-70" : ""}`}>
+                              {item.text}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         ) : (
           <div className="relative" style={{ height: '840px' }}> {/* Height adjusted for 14 time slots at 60px each */}
