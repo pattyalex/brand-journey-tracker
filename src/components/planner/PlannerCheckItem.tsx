@@ -151,12 +151,12 @@ export const PlannerCheckItem = ({
       ) : (
         <div 
           ref={scrollableRef}
-          className="group flex items-center w-full p-2 pr-8 bg-pink-300 rounded-lg relative overflow-visible" 
+          className="group flex items-center w-full p-2 pr-8 bg-white border border-gray-200 rounded-lg relative overflow-visible" 
         >
           <Checkbox 
             checked={item.isCompleted} 
             onCheckedChange={() => onToggle(item.id)}
-            className="h-5 w-5 mr-1.5 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground bg-white"
+            className="h-5 w-5 mr-1.5 flex-shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
           />
           
           <div 

@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { PlannerItem } from "@/types/planner";
-import { Plus, Clock, ArrowRight, Trash2 } from "lucide-react";
+import { Plus, Clock, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -270,4 +270,4 @@ export const PlannerSection = ({
       </CardContent>
     </Card>
   );
-};
+}
