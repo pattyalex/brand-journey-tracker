@@ -35,7 +35,6 @@ export default function TaskBoard() {
               <TabsTrigger value="daily">Daily View</TabsTrigger>
               <TabsTrigger value="weekly">Weekly View</TabsTrigger>
               <TabsTrigger value="x-section">X</TabsTrigger>
-              <TabsTrigger value="weekly-content-flow">Weekly Content Flow</TabsTrigger>
             </TabsList>
 
             <TabsContent value="daily" className="mt-0">
@@ -57,19 +56,6 @@ export default function TaskBoard() {
                 <CardContent className="px-0">
                   <p className="text-muted-foreground">
                     This is the new X section. More details will be added soon.
-                  </p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="weekly-content-flow" className="mt-0">
-              <Card className="border-none shadow-none">
-                <CardHeader className="px-0">
-                  <CardTitle>Weekly Content Flow</CardTitle>
-                </CardHeader>
-                <CardContent className="px-0">
-                  <p className="text-muted-foreground">
-                    Content planning section - waiting for further instructions.
                   </p>
                 </CardContent>
               </Card>
