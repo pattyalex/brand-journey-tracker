@@ -46,13 +46,13 @@ const WeeklyContentFlow = () => {
                 ) : (
                   <div className="space-y-2">
                     {platforms.map((platform) => {
-                      const Icon = platform.icon;
+                      const IconComponent = platform.icon;
                       return (
                         <div 
                           key={platform.id}
                           className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
                         >
-                          <Icon className="h-4 w-4 text-purple-500" />
+                          <IconComponent className="h-4 w-4 text-purple-500" />
                           <span>{platform.name}</span>
                         </div>
                       );
