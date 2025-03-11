@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { format, addDays, startOfWeek, subWeeks, addWeeks, parseISO, isBefore, isAfter, isSameDay, isWithinInterval } from "date-fns";
 import { ChevronLeft, ChevronRight, AlarmClock, Plus, Filter, Printer, Calendar as CalendarIcon, Move, Search, MoveVertical } from 'lucide-react';
@@ -13,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { generateRecurringInstances } from "@/utils/recurringEvents";
 import { Input } from "@/components/ui/input";
 
-// Add this only if html2pdf.js is being used
+// Import html2pdf safely - this import should work as long as the dependency is installed
 import html2pdf from "html2pdf.js";
 
 // Time slots for the agenda in American format (12-hour with AM/PM)
