@@ -343,7 +343,7 @@ export const PlannerSection = ({
                 onClick={() => setIsAddingItem(true)}
                 className="flex items-center justify-center w-10 h-10 mx-auto mt-3 text-gray-500 hover:text-white hover:bg-purple-500 rounded-full transition-all hover:scale-110"
               >
-                <Plus size={20} />
+                <Plus size={15} />
               </button>
             )}
           </div>
