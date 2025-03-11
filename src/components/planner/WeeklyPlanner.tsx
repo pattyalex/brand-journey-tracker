@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { format, addDays, startOfWeek, subWeeks, addWeeks, parseISO, isBefore, isAfter, isSameDay, isWithinInterval } from "date-fns";
 import { ChevronLeft, ChevronRight, AlarmClock, Plus, Filter, Printer, Calendar as CalendarIcon, Move, Search, MoveVertical } from 'lucide-react';
@@ -13,12 +12,9 @@ import { v4 as uuidv4 } from "uuid";
 import { cn } from "@/lib/utils";
 import { generateRecurringInstances } from "@/utils/recurringEvents";
 import { Input } from "@/components/ui/input";
-import html2pdf from "html2pdf.js";
 
-interface WeeklyPlannerProps {
-  plannerData: PlannerDay[];
-  onUpdatePlannerData?: (updatedData: PlannerDay[]) => void;
-}
+// Add this only if html2pdf.js is being used
+import html2pdf from "html2pdf.js";
 
 // Time slots for the agenda in American format (12-hour with AM/PM)
 const TIME_SLOTS = [
@@ -33,6 +29,11 @@ const TIME_SLOTS_24H = [
   "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", 
   "22:00", "23:00"
 ];
+
+interface WeeklyPlannerProps {
+  plannerData: PlannerDay[];
+  onUpdatePlannerData?: (updatedData: PlannerDay[]) => void;
+}
 
 export const WeeklyPlanner = ({ plannerData, onUpdatePlannerData }: WeeklyPlannerProps) => {
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(startOfWeek(new Date(), { weekStartsOn: 1 }));
@@ -755,6 +756,3 @@ export const WeeklyPlanner = ({ plannerData, onUpdatePlannerData }: WeeklyPlanne
 };
 
 export default WeeklyPlanner;
-
-// Add the html2pdf.js dependency
-<lov-add-dependency>html2pdf.js@latest</lov-add-dependency>
