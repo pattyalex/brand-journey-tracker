@@ -179,18 +179,6 @@ export const PlannerCheckItem = ({
             onDoubleClick={handleDoubleClick}
           >
             <span className="break-words whitespace-normal">{item.text}</span>
-            
-            {!item.startTime && !item.endTime && (
-              <Button
-                variant="ghost"
-                size="xs"
-                onClick={handleAddTime}
-                className="inline-flex items-center ml-2 text-xs text-muted-foreground hover:text-primary h-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <Clock size={10} className="mr-1" />
-                <span>Add time</span>
-              </Button>
-            )}
           </div>
           
           <button 
