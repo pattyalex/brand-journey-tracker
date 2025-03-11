@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { PlannerItem } from "@/types/planner";
-import { Plus, Clock, ArrowRight } from "lucide-react";
+import { Plus, Clock, ArrowRight, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -173,7 +173,7 @@ export const PlannerSection = ({
           <div className="space-y-2 pr-2 pb-1">
             {items.length > 0 ? (
               items.map((item) => (
-                <div key={item.id} className="flex items-center w-full">
+                <div key={item.id} className="flex items-center w-full group">
                   <div className="pl-3 w-[50px] flex-shrink-0 flex items-center justify-start">
                     {editingTimeItemId === item.id ? (
                       <div className="flex flex-col space-y-1">
@@ -253,7 +253,7 @@ export const PlannerSection = ({
                     />
                   </div>
                   
-                  <div className="flex-1 min-w-0 ml-1">
+                  <div className="flex-1 min-w-0 ml-1 relative">
                     <PlannerCheckItem
                       item={item}
                       onToggle={onToggleItem}
@@ -262,6 +262,14 @@ export const PlannerSection = ({
                       showTimeInItem={false}
                       renderCheckbox={false}
                     />
+                    
+                    <button 
+                      onClick={() => onDeleteItem(item.id)} 
+                      className="p-1 rounded-sm absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                      title="Delete"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 </div>
               ))
