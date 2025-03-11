@@ -20,6 +20,8 @@ interface PlannerSectionProps {
   onEditItem: (id: string, newText: string, startTime?: string, endTime?: string) => void;
   onAddItem: (text: string, section: PlannerItem["section"], startTime?: string, endTime?: string) => void;
   onReorderItems?: (items: PlannerItem[]) => void;
+  onMoveItem?: (itemId: string, fromSection: PlannerItem["section"], toSection: PlannerItem["section"]) => void;
+  droppableId?: string;
 }
 
 export const PlannerSection = ({
@@ -30,7 +32,9 @@ export const PlannerSection = ({
   onDeleteItem,
   onEditItem,
   onAddItem,
-  onReorderItems
+  onReorderItems,
+  onMoveItem,
+  droppableId
 }: PlannerSectionProps) => {
   const [newItemText, setNewItemText] = useState("");
   const [newItemStartTime, setNewItemStartTime] = useState("");
@@ -88,13 +92,26 @@ export const PlannerSection = ({
   };
 
   const handleDragEnd = (result: DropResult) => {
-    if (!result.destination || !onReorderItems) return;
+    if (!result.destination) return;
 
-    const reorderedItems = Array.from(items);
-    const [removed] = reorderedItems.splice(result.source.index, 1);
-    reorderedItems.splice(result.destination.index, 0, removed);
+    if (result.source.droppableId === result.destination.droppableId) {
+      // Reordering within the same section
+      if (onReorderItems) {
+        const reorderedItems = Array.from(items);
+        const [removed] = reorderedItems.splice(result.source.index, 1);
+        reorderedItems.splice(result.destination.index, 0, removed);
 
-    onReorderItems(reorderedItems);
+        onReorderItems(reorderedItems);
+      }
+    } else if (onMoveItem) {
+      // Moving between sections
+      const itemId = result.draggableId;
+      onMoveItem(
+        itemId,
+        section,
+        result.destination.droppableId as PlannerItem["section"]
+      );
+    }
   };
 
   const renderTimeDisplay = (item: PlannerItem) => {
@@ -221,61 +238,59 @@ export const PlannerSection = ({
       <CardContent className="pt-4 px-1">
         <ScrollArea className={`${isMobile ? 'h-[calc(100vh-400px)]' : 'h-[calc(100vh-350px)]'}`}>
           <div className="space-y-2 pr-2 pb-1">
-            <DragDropContext onDragEnd={handleDragEnd}>
-              <Droppable droppableId={`section-${section}`}>
-                {(provided) => (
-                  <div 
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    className="space-y-2"
-                  >
-                    {items.length > 0 ? (
-                      items.map((item, index) => (
-                        <Draggable 
-                          key={item.id} 
-                          draggableId={item.id} 
-                          index={index}
-                        >
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              className={`${snapshot.isDragging ? 'opacity-80' : ''}`}
-                            >
-                              <div key={item.id} className="flex flex-col w-full group">
-                                <div className="flex items-center pl-3">
-                                  <div className="flex-1 min-w-0 ml-1 relative flex flex-col">
-                                    <div className="mb-1 ml-0.5">
-                                      {renderTimeDisplay(item)}
-                                    </div>
-                                    
-                                    <PlannerCheckItem
-                                      item={item}
-                                      onToggle={onToggleItem}
-                                      onDelete={onDeleteItem}
-                                      onEdit={onEditItem}
-                                      showTimeInItem={false}
-                                      renderCheckbox={false}
-                                      index={index}
-                                    />
+            <Droppable droppableId={droppableId || section}>
+              {(provided) => (
+                <div 
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                  className="space-y-2"
+                >
+                  {items.length > 0 ? (
+                    items.map((item, index) => (
+                      <Draggable 
+                        key={item.id} 
+                        draggableId={item.id} 
+                        index={index}
+                      >
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            className={`${snapshot.isDragging ? 'opacity-80' : ''}`}
+                          >
+                            <div key={item.id} className="flex flex-col w-full group">
+                              <div className="flex items-center pl-3">
+                                <div className="flex-1 min-w-0 ml-1 relative flex flex-col">
+                                  <div className="mb-1 ml-0.5">
+                                    {renderTimeDisplay(item)}
                                   </div>
+                                  
+                                  <PlannerCheckItem
+                                    item={item}
+                                    onToggle={onToggleItem}
+                                    onDelete={onDeleteItem}
+                                    onEdit={onEditItem}
+                                    showTimeInItem={false}
+                                    renderCheckbox={false}
+                                    index={index}
+                                  />
                                 </div>
                               </div>
                             </div>
-                          )}
-                        </Draggable>
-                      ))
-                    ) : (
-                      <div className="text-sm text-muted-foreground italic text-center py-3 bg-white rounded-md border border-gray-200">
-                        No tasks in this section
-                      </div>
-                    )}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </DragDropContext>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))
+                  ) : (
+                    <div className="text-sm text-muted-foreground italic text-center py-3 bg-white rounded-md border border-gray-200">
+                      No tasks in this section
+                    </div>
+                  )}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
             
             {isAddingItem ? (
               <div className="flex flex-col mt-2">
