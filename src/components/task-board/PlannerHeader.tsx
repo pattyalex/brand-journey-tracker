@@ -8,7 +8,7 @@ interface PlannerHeaderProps {
 
 const PlannerHeader = ({ activePage, setActivePage }: PlannerHeaderProps) => {
   return (
-    <div className="fixed top-0 left-0 right-0 z-20 bg-background pt-16 pb-4 px-6 border-b shadow-sm">
+    <div className="fixed top-0 left-0 right-0 z-30 bg-background pt-20 pb-4 px-6 border-b shadow-sm">
       <div className="container mx-auto max-w-6xl">
         <div className="flex items-center justify-between mb-6">
           <div>
