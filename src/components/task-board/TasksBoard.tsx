@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 import { Task } from "@/types/task-board";
-import { CheckSquare } from "lucide-react";
+import { CheckSquare, AlarmClock, Sun } from "lucide-react";
 import { SimplifiedTaskColumn } from "./";
 import { getPriorityIcon } from "./TaskUtils";
 
@@ -41,10 +41,25 @@ const TasksBoard = ({
       </CardHeader>
       <CardContent className="px-0">
         <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="grid grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <SimplifiedTaskColumn 
-              title="All"
-              icon={<CheckSquare size={18} />}
+              title="To Do Today"
+              icon={<Sun size={18} className="text-amber-500" />}
+              tasks={getTasksByStatus("todo-today")}
+              moveTask={moveTask}
+              onEditTask={handleEditTask}
+              onDeleteTask={handleDeleteTask}
+              setIsAddDialogOpen={setIsAddDialogOpen}
+              setNewTask={setNewTask}
+              columnId="todo-today"
+              onAddQuickTask={handleAddQuickTask}
+              toggleTaskCompletion={toggleTaskCompletion}
+              getPriorityIcon={getPriorityIcon}
+            />
+            
+            <SimplifiedTaskColumn 
+              title="To Do Later"
+              icon={<AlarmClock size={18} className="text-blue-500" />}
               tasks={getTasksByStatus("todo-all")}
               moveTask={moveTask}
               onEditTask={handleEditTask}

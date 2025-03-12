@@ -4,8 +4,8 @@ import { Task } from "@/types/task-board";
 
 export const getStatusDisplayName = (status: Task["status"]): string => {
   switch (status) {
-    case "todo-all": return "All";
-    case "todo-today": return "Today";
+    case "todo-all": return "To Do Later";
+    case "todo-today": return "To Do Today";
     case "scheduled": return "Scheduled";
     case "completed": return "Completed";
     default: return status;
