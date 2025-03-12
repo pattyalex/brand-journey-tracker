@@ -85,11 +85,15 @@ const WeeklyContentFlow = () => {
     <Layout>
       <div className="container mx-auto py-6 max-w-6xl">
         <h1 className="text-4xl font-bold mb-2">Content Creation Schedule</h1>
+        <p className="text-gray-600 text-lg mb-8">
+          Plan your content across different platforms for the week
+        </p>
         
         <div className="mb-10">
           <div className="flex justify-between items-center mb-6">
             <div>
               <h2 className="text-2xl font-semibold">Weekly Content Tasks</h2>
+              <p className="text-gray-600 mt-1">Map out your content workflow: Drag and drop tasks into the day you want to complete them</p>
             </div>
             <Button 
               variant="outline" 
