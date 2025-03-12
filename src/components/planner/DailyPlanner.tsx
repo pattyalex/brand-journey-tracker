@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { format, addDays, subDays, parseISO } from "date-fns";
 import { Copy, Trash2, Heart, AlarmClock, CalendarIcon, ChevronLeft, ChevronRight, ListChecks } from 'lucide-react';
@@ -193,7 +192,6 @@ export const DailyPlanner = () => {
       items: updatedPlannerData[dayIndex].items.filter(item => item.id !== id)
     };
     setPlannerData(updatedPlannerData);
-    toast.success("Item removed");
   };
 
   const handleEditItem = (id: string, newText: string, startTime?: string, endTime?: string) => {
@@ -211,7 +209,6 @@ export const DailyPlanner = () => {
         endTime
       };
       setPlannerData(updatedPlannerData);
-      toast.success("Item updated");
     }
   };
 
@@ -448,7 +445,6 @@ export const DailyPlanner = () => {
     };
     
     setPlannerData(updatedPlannerData);
-    toast.success(`Task moved to ${destSection}`);
   };
 
   return (
