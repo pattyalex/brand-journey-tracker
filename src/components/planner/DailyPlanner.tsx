@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { format, addDays, subDays, parseISO } from "date-fns";
 import { Copy, Trash2, Sun, Heart, ListTodo, CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -488,7 +489,10 @@ export const DailyPlanner = () => {
               </Button>
               
               <div className="flex flex-col">
-                <h3 className="text-lg font-medium mb-2">To Do Today</h3>
+                <div className="flex items-center gap-2 mb-3">
+                  <ListTodo className="h-5 w-5 text-blue-500" />
+                  <h3 className="text-lg font-medium">To Do Today</h3>
+                </div>
                 <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                   <PopoverTrigger asChild>
                     <Button
