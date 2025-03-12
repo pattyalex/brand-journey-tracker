@@ -14,6 +14,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { DailyPlanner } from "@/components/planner/DailyPlanner";
+import { ContentItem, Platform } from "@/types/content-flow";
+import ContentSchedule from "@/components/content/weeklyFlow/ContentSchedule";
+import PlatformIcon from "@/components/content/weeklyFlow/PlatformIcon";
+import AddPlatformDialog from "@/components/content/weeklyFlow/AddPlatformDialog";
 
 interface Task {
   id: string;
@@ -40,6 +44,25 @@ const TaskBoard = () => {
   const [activeTab, setActiveTab] = useState<string>("all");
   const [activePage, setActivePage] = useState<string>("tasks-board");
   const [plannerData, setPlannerData] = useState<PlannerDay[]>([]);
+
+  // ContentTask states
+  const initialPlatforms: Platform[] = [
+    { id: "film", name: "Film", icon: "camera" },
+    { id: "edit", name: "Edit", icon: "laptop" },
+    { id: "script", name: "Script", icon: "scroll" },
+    { id: "admin", name: "Admin", icon: "user-cog" },
+    { id: "record", name: "Record", icon: "mic" },
+    { id: "ideation", name: "Ideation", icon: "lightbulb" },
+    { id: "planning", name: "Planning", icon: "calendar" },
+    { id: "styling", name: "Styling", icon: "dress" },
+    { id: "emails", name: "Emails", icon: "at-sign" },
+    { id: "strategy", name: "Strategy", icon: "target" },
+    { id: "financials", name: "Financials", icon: "wallet" }
+  ];
+
+  const [platforms, setPlatforms] = useState<Platform[]>(initialPlatforms);
+  const [contentItems, setContentItems] = useState<ContentItem[]>([]);
+  const [isAddPlatformOpen, setIsAddPlatformOpen] = useState(false);
 
   useEffect(() => {
     const savedTasks = localStorage.getItem("taskBoardTasks");
@@ -97,11 +120,21 @@ const TaskBoard = () => {
     if (savedPlannerData) {
       setPlannerData(JSON.parse(savedPlannerData));
     }
+
+    // Load content items
+    const savedContentItems = localStorage.getItem("contentItems");
+    if (savedContentItems) {
+      setContentItems(JSON.parse(savedContentItems));
+    }
   }, []);
 
   useEffect(() => {
     localStorage.setItem("taskBoardTasks", JSON.stringify(tasks));
   }, [tasks]);
+
+  useEffect(() => {
+    localStorage.setItem("contentItems", JSON.stringify(contentItems));
+  }, [contentItems]);
 
   const toggleTaskCompletion = (taskId: string) => {
     const updatedTasks = tasks.map((task) => 
@@ -281,6 +314,60 @@ const TaskBoard = () => {
     toast.success("Task added successfully");
   };
 
+  // Content Tasks Functions
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, platformId: string) => {
+    e.dataTransfer.setData("platformId", platformId);
+    
+    const platform = platforms.find(p => p.id === platformId);
+    if (!platform) return;
+    
+    e.dataTransfer.effectAllowed = "copy";
+    
+    const dragPreview = document.createElement("div");
+    dragPreview.className = "bg-white rounded-lg p-3 flex items-center shadow-lg";
+    dragPreview.innerHTML = `
+      <div class="flex items-center gap-2">
+        <div class="icon-container"></div>
+        <span class="font-medium">${platform.name}</span>
+      </div>
+    `;
+    
+    document.body.appendChild(dragPreview);
+    dragPreview.style.position = "absolute";
+    dragPreview.style.top = "-1000px";
+    dragPreview.style.opacity = "0.8";
+    
+    e.dataTransfer.setDragImage(dragPreview, 20, 20);
+    
+    setTimeout(() => {
+      document.body.removeChild(dragPreview);
+    }, 100);
+  };
+
+  const clearSchedule = () => {
+    setContentItems([]);
+    toast({
+      title: "Schedule cleared",
+      description: "All tasks have been removed from the schedule",
+    });
+  };
+
+  const addPlatform = (platform: Platform) => {
+    setPlatforms([...platforms, platform]);
+    toast({
+      title: "Platform added",
+      description: `${platform.name} has been added to your content tasks`
+    });
+  };
+
+  const AddYourOwnIcon = ({ size = 24 }: { size?: number }) => {
+    return (
+      <div className="bg-gradient-to-tr from-purple-100 to-purple-200 rounded-full p-1 flex items-center justify-center">
+        <Plus size={size} className="text-purple-600" />
+      </div>
+    );
+  };
+
   return (
     <Layout>
       <div className="container mx-auto py-6 fade-in">
@@ -304,6 +391,12 @@ const TaskBoard = () => {
               className="px-8 py-3 text-base font-medium bg-primary/5 hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               Daily Planner
+            </TabsTrigger>
+            <TabsTrigger 
+              value="weekly-content-tasks" 
+              className="px-8 py-3 text-base font-medium bg-primary/5 hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              Weekly Content Tasks
             </TabsTrigger>
           </TabsList>
 
@@ -583,6 +676,70 @@ const TaskBoard = () => {
           <TabsContent value="daily-planner" className="m-0">
             <DailyPlanner />
           </TabsContent>
+
+          <TabsContent value="weekly-content-tasks" className="m-0">
+            <div className="container mx-auto max-w-6xl">
+              <h1 className="text-2xl font-bold mb-2">Weekly Content Tasks</h1>
+              <p className="text-gray-600 text-lg mb-8">
+                Map out your content workflow: Drag and drop tasks into the day you want to complete them
+              </p>
+              
+              <div className="mb-10">
+                <div className="flex flex-wrap gap-8">
+                  {platforms.map((platform) => (
+                    <div 
+                      key={platform.id} 
+                      className="flex flex-col items-center"
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, platform.id)}
+                    >
+                      <div className="p-3 mb-2 cursor-grab active:cursor-grabbing hover:scale-110 transition-transform">
+                        <PlatformIcon platform={platform} size={24} />
+                      </div>
+                      <span className="text-center text-sm font-medium">{platform.name}</span>
+                    </div>
+                  ))}
+                  
+                  <div 
+                    className="flex flex-col items-center"
+                    onClick={() => setIsAddPlatformOpen(true)}
+                  >
+                    <div className="p-3 mb-2 cursor-pointer hover:scale-110 transition-transform">
+                      <AddYourOwnIcon size={24} />
+                    </div>
+                    <span className="text-center text-sm font-medium">Add your own</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="pt-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-semibold">Weekly Schedule</h2>
+                  <Button 
+                    variant="outline" 
+                    size="xs"
+                    onClick={clearSchedule}
+                    className="gap-1.5 text-gray-600 hover:text-gray-700"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Clear All
+                  </Button>
+                </div>
+                
+                <ContentSchedule 
+                  platforms={platforms} 
+                  contentItems={contentItems}
+                  setContentItems={setContentItems}
+                />
+              </div>
+              
+              <AddPlatformDialog 
+                open={isAddPlatformOpen} 
+                onOpenChange={setIsAddPlatformOpen}
+                onAdd={addPlatform}
+              />
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
 
@@ -689,148 +846,3 @@ const TaskColumn = ({ title, icon, tasks, moveTask, onEditTask, onDeleteTask, ge
       case "All": return "todo-all";
       case "Today": return "todo-today";
       case "Scheduled": return "scheduled";
-      default: return "completed";
-    }
-  };
-
-  if (columnId === "completed") {
-    return (
-      <Card className="h-full bg-gray-50">
-        <CardHeader className="pb-2 p-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            {icon}
-            {title} <span className="ml-2 text-sm bg-primary/10 px-2.5 py-0.5 rounded-full">{tasks.length}</span>
-          </CardTitle>
-          <CardDescription>
-            Completed tasks
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-3 pt-0">
-          <Droppable droppableId={columnId}>
-            {(provided) => (
-              <div
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-                className="h-[calc(100vh-280px)]"
-              >
-                <ScrollArea className="h-full">
-                  <div className="flex flex-col gap-2 min-h-40 pr-2">
-                    {tasks.length === 0 ? (
-                      <div className="flex h-[100px] items-center justify-center rounded-md border border-dashed">
-                        <p className="text-center text-muted-foreground text-sm px-2">No completed tasks</p>
-                      </div>
-                    ) : (
-                      tasks.map((task, index) => (
-                        <Draggable key={task.id} draggableId={task.id} index={index}>
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              className={`${snapshot.isDragging ? "opacity-70" : ""}`}
-                            >
-                              <div className="group bg-white rounded-lg border py-2.5 px-3 hover:shadow-sm transition-shadow">
-                                <div className="flex items-center gap-2">
-                                  <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-                                  <div className="flex-1">
-                                    <span className="text-gray-800 text-sm line-through">{task.title}</span>
-                                    {task.dueDate && (
-                                      <div className="flex items-center text-xs text-muted-foreground mt-0.5">
-                                        <CalendarIcon className="mr-1 h-3 w-3" />
-                                        {new Date(task.dueDate).toLocaleDateString()}
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Button 
-                                      variant="ghost" 
-                                      className="h-7 px-2" 
-                                      size="sm"
-                                      onClick={() => moveTask(task.id, "todo-all")}
-                                    >
-                                      <ArrowLeft className="h-3.5 w-3.5 mr-1" />
-                                      <span className="text-xs">Restore</span>
-                                    </Button>
-                                    <Button 
-                                      size="icon" 
-                                      variant="ghost" 
-                                      className="h-6 w-6 text-gray-500 hover:text-gray-700" 
-                                      onClick={() => onDeleteTask(task.id)}
-                                    >
-                                      <Trash2 className="h-3.5 w-3.5" />
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </Draggable>
-                      ))
-                    )}
-                    {provided.placeholder}
-                  </div>
-                </ScrollArea>
-              </div>
-            )}
-          </Droppable>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card className="h-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          {icon}
-          {title} <span className="ml-2 text-sm bg-primary/10 px-2.5 py-0.5 rounded-full">{tasks.length}</span>
-        </CardTitle>
-        <CardDescription>
-          {title === "All" ? "Tasks to be completed" : 
-           title === "Today" ? "Tasks for today" : 
-           title === "Scheduled" ? "Future scheduled tasks" :
-           "Completed tasks"}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Droppable droppableId={columnId}>
-          {(provided) => (
-            <div
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              className="h-[calc(100vh-280px)]"
-            >
-              <ScrollArea className="h-full">
-                <div className="flex flex-col gap-3 min-h-40 pr-4">
-                  {tasks.length === 0 ? (
-                    <div className="flex h-[130px] items-center justify-center rounded-md border border-dashed">
-                      <p className="text-center text-muted-foreground text-sm px-2">No tasks in this section</p>
-                    </div>
-                  ) : (
-                    tasks.map((task, index) => (
-                      <Draggable key={task.id} draggableId={task.id} index={index}>
-                        {(provided, snapshot) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            className={`${snapshot.isDragging ? "opacity-70" : ""}`}
-                          >
-                            <Card key={task.id} className={`group p-3 shadow-sm border hover:shadow-md transition-shadow ${snapshot.isDragging ? "ring-2 ring-primary" : ""}`}>
-                              <div className="grid gap-2">
-                                <div className="flex justify-between items-start">
-                                  <div className="flex-1">
-                                    <h3 className="font-medium mb-1">{task.title}</h3>
-                                    {task.description && (
-                                      <p className="text-sm text-muted-foreground line-clamp-2">{task.description}</p>
-                                    )}
-                                  </div>
-                                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Button 
-                                      size="icon" 
-                                      variant="ghost" 
-                                      className="h-7 w-7" 
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        onEditTask(task);
-                                      }}
