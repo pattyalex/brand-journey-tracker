@@ -501,7 +501,7 @@ export const DailyPlanner = () => {
           </div>
         </div>
 
-        <div className="mb-6">
+        <div className="mb-3">
           <div className="flex items-center gap-2 mb-3">
             <ListChecks className="h-5 w-5 text-amber-500" />
             <h3 className="text-lg font-medium">To Do Today</h3>
@@ -660,9 +660,9 @@ export const DailyPlanner = () => {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="px-0">
+        <CardContent className="px-0 pt-2">
           
-          <div className="mb-6">
+          <div className="mb-2">
             <CardDescription>
               Schedule your tasks:
             </CardDescription>
