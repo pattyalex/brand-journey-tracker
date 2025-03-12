@@ -51,7 +51,7 @@ const TaskBoard = () => {
       <div className="container mx-auto py-6 fade-in">
         <PlannerHeader activePage={activePage} setActivePage={setActivePage} />
         
-        <div className="mt-28">
+        <div className="mt-40">
           <Tabs value={activePage} onValueChange={setActivePage}>
             <TabsContent value="daily-planner" className="m-0">
               <DailyPlanner />
