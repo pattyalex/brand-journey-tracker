@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -11,16 +10,19 @@ import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { v4 as uuidv4 } from "uuid";
 
 const WeeklyContentFlow = () => {
-  // Define initial platforms with more intuitive names matching the image
+  // Define initial platforms including the new ones
   const initialPlatforms: Platform[] = [
-    { id: "youtube", name: "YouTube", icon: "youtube" },
-    { id: "instagram", name: "Instagram", icon: "instagram" },
+    { id: "film", name: "Film", icon: "camera" },
     { id: "edit", name: "Edit", icon: "laptop" },
     { id: "script", name: "Script", icon: "scroll" },
+    { id: "admin", name: "Admin", icon: "user-cog" },
     { id: "record", name: "Record", icon: "mic" },
-    { id: "film", name: "Film", icon: "camera" },
-    { id: "submit", name: "Submit", icon: "mail" },
-    { id: "review", name: "Review", icon: "file-text" }
+    { id: "ideation", name: "Ideation", icon: "lightbulb" },
+    { id: "planning", name: "Planning", icon: "calendar" },
+    { id: "styling", name: "Styling", icon: "dress" },
+    { id: "emails", name: "Emails", icon: "at-sign" },
+    { id: "strategy", name: "Strategy", icon: "target" },
+    { id: "financials", name: "Financials", icon: "wallet" }
   ];
 
   const [platforms, setPlatforms] = useState<Platform[]>(initialPlatforms);
@@ -37,17 +39,21 @@ const WeeklyContentFlow = () => {
     const { draggableId, destination } = result;
     
     // Extract platform ID and day from the destination droppableId
-    const [_, day] = destination.droppableId.split("-");
+    const [platformId, day] = destination.droppableId.split("-");
+    
+    // Check if there's already content for this platform on this day
+    const exists = contentItems.some(item => 
+      item.platformId === platformId && item.day === day
+    );
+    
+    if (exists) return;
     
     // Create a new content item
-    const platform = platforms.find(p => p.id === draggableId);
-    if (!platform) return;
-    
     const newItem: ContentItem = {
       id: uuidv4(),
       platformId: draggableId,
       day,
-      title: platform.name.toLowerCase(),
+      title: `New ${platforms.find(p => p.id === draggableId)?.name || 'Content'} task`,
     };
     
     setContentItems([...contentItems, newItem]);
@@ -65,27 +71,28 @@ const WeeklyContentFlow = () => {
     // Set effectAllowed to copy to indicate we're copying, not moving
     e.dataTransfer.effectAllowed = "copy";
 
-    // Create a custom drag image
+    // Optional: Create a custom drag image that looks like the platform icon
     const dragPreview = document.createElement("div");
-    dragPreview.className = "bg-white rounded p-3 flex items-center shadow-lg";
+    dragPreview.className = "bg-gray-100 rounded-full p-3 flex items-center shadow-lg";
     dragPreview.innerHTML = `
-      <div class="flex flex-col items-center">
+      <div class="flex items-center gap-2">
         <div class="icon-container"></div>
-        <span class="text-sm mt-1">${platform.name.toLowerCase()}</span>
+        <span class="font-medium">${platform.name}</span>
       </div>
     `;
     
+    // Append it to the body temporarily (needed for Firefox)
     document.body.appendChild(dragPreview);
     
-    // Position it off-screen
+    // Hide it but keep it in the DOM for the drag operation
     dragPreview.style.position = "absolute";
     dragPreview.style.top = "-1000px";
-    dragPreview.style.opacity = "0.9";
+    dragPreview.style.opacity = "0.8";
     
     // Set it as the drag image
     e.dataTransfer.setDragImage(dragPreview, 20, 20);
     
-    // Clean up after a short delay
+    // Clean up the drag preview element after a short delay
     setTimeout(() => {
       document.body.removeChild(dragPreview);
     }, 100);
@@ -121,10 +128,10 @@ const WeeklyContentFlow = () => {
                   draggable
                   onDragStart={(e) => handleDragStart(e, platform.id)}
                 >
-                  <div className="bg-white border border-gray-300 rounded-md p-3 mb-2 cursor-grab active:cursor-grabbing flex flex-col items-center">
-                    <PlatformIcon platform={platform} size={24} />
-                    <span className="text-sm mt-1">{platform.name.toLowerCase()}</span>
+                  <div className="bg-gray-100 rounded-full p-3 mb-2 cursor-grab active:cursor-grabbing">
+                    <PlatformIcon platform={platform} size={12} />
                   </div>
+                  <span className="text-center">{platform.name}</span>
                 </div>
               ))}
               
@@ -141,7 +148,11 @@ const WeeklyContentFlow = () => {
             </div>
           </div>
           
-          <div className="pt-4">
+          <div className="border-t border-gray-200 pt-8">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-semibold">Weekly Schedule</h2>
+            </div>
+            
             <ContentSchedule 
               platforms={platforms} 
               contentItems={contentItems}
