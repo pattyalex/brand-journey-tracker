@@ -450,7 +450,7 @@ export const DailyPlanner = () => {
             <Textarea
               value={globalTasks}
               onChange={handleGlobalTasksChange}
-              placeholder="Write your to dos, reminders or other notes that will stay fixed regardless of day..."
+              placeholder="Write the tasks you plan to complete later but haven't scheduled yet..."
               className="min-h-[120px] resize-none"
               onTextSelect={(selectedText) => {
                 if (selectedText) {
@@ -789,4 +789,3 @@ export const DailyPlanner = () => {
   </DragDropContext>
   );
 };
-
