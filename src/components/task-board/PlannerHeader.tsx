@@ -1,5 +1,6 @@
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useSidebar } from "@/components/ui/sidebar";
 
 interface PlannerHeaderProps {
   activePage: string;
@@ -7,8 +8,14 @@ interface PlannerHeaderProps {
 }
 
 const PlannerHeader = ({ activePage, setActivePage }: PlannerHeaderProps) => {
+  const { state } = useSidebar();
+  const sidebarWidth = state === "collapsed" ? "0px" : "240px";
+  
   return (
-    <div className="fixed top-0 left-0 right-0 z-30 bg-background pt-20 pb-4 px-6 border-b shadow-sm">
+    <div 
+      className="fixed top-0 z-30 bg-background pt-20 pb-4 px-6 border-b shadow-sm right-0"
+      style={{ left: `calc(${sidebarWidth} + 1rem)`, transition: "left 0.2s ease-linear" }}
+    >
       <div className="container mx-auto max-w-6xl">
         <div className="flex items-center justify-between mb-6">
           <div>
