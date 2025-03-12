@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { ContentItem, Platform } from "@/types/content-flow";
@@ -5,7 +6,7 @@ import AddPlatformDialog from "@/components/content/weeklyFlow/AddPlatformDialog
 import ContentSchedule from "@/components/content/weeklyFlow/ContentSchedule";
 import PlatformIcon from "@/components/content/weeklyFlow/PlatformIcon";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const WeeklyContentFlow = () => {
@@ -30,6 +31,10 @@ const WeeklyContentFlow = () => {
 
   const addPlatform = (platform: Platform) => {
     setPlatforms([...platforms, platform]);
+    toast({
+      title: "Platform added",
+      description: `${platform.name} has been added to your content tasks`
+    });
   };
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, platformId: string) => {
@@ -83,6 +88,15 @@ const WeeklyContentFlow = () => {
               <h2 className="text-2xl font-semibold">Content Tasks</h2>
               <p className="text-gray-600 mt-1">Map out your content workflow: Drag and drop tasks into the day you want to complete them</p>
             </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setIsAddPlatformOpen(true)}
+              className="gap-1.5"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Add Your Own
+            </Button>
           </div>
           
           <div className="flex flex-wrap gap-8">
@@ -106,13 +120,13 @@ const WeeklyContentFlow = () => {
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-semibold">Weekly Schedule</h2>
             <Button 
-              variant="destructive" 
-              size="sm"
+              variant="outline" 
+              size="xs"
               onClick={clearSchedule}
-              className="gap-2"
+              className="gap-1.5 text-gray-600 hover:text-gray-700"
             >
-              <Trash2 className="w-4 h-4" />
-              Clear Schedule
+              <Trash2 className="w-3.5 h-3.5" />
+              Clear
             </Button>
           </div>
           
