@@ -16,7 +16,7 @@ const WeeklyContentFlow = () => {
     { id: "script", name: "Script", icon: "scroll" }, // Changed to scroll icon for pen and paper
     { id: "admin", name: "Admin", icon: "user-cog" },
     { id: "record", name: "Record", icon: "mic" },
-    { id: "brainstorm", name: "Brainstorming", icon: "lightbulb" },
+    { id: "ideation", name: "Ideation", icon: "lightbulb" }, // Changed from "Brainstorming" to "Ideation"
     { id: "planning", name: "Planning", icon: "calendar" },
     { id: "styling", name: "Styling", icon: "dress" },
     { id: "emails", name: "Emails", icon: "at-sign" },
