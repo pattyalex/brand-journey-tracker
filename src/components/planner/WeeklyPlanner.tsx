@@ -28,6 +28,16 @@ const TIME_SLOTS_24H = [
   "19:00", "20:00", "21:00", "22:00", "23:00", "00:00"
 ];
 
+// Time segment colors for visual highlighting
+const TIME_SEGMENT_COLORS = {
+  earlyMorning: "bg-blue-50", // 1AM-7AM
+  morning: "bg-amber-50",     // 8AM-11AM
+  midday: "bg-orange-50",     // 12PM-2PM
+  afternoon: "bg-green-50",   // 3PM-5PM
+  evening: "bg-purple-50",    // 6PM-9PM
+  night: "bg-indigo-50"       // 10PM-12AM
+};
+
 export const WeeklyPlanner = ({ plannerData, onUpdatePlannerData }: WeeklyPlannerProps) => {
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -73,6 +83,16 @@ export const WeeklyPlanner = ({ plannerData, onUpdatePlannerData }: WeeklyPlanne
     if (!timeString) return 0;
     const [hours] = timeString.split(':').map(Number);
     return hours || 0;
+  };
+
+  // Get background color based on time slot index
+  const getTimeSlotBackground = (timeIndex: number): string => {
+    if (timeIndex < 7) return TIME_SEGMENT_COLORS.earlyMorning;
+    if (timeIndex < 11) return TIME_SEGMENT_COLORS.morning;
+    if (timeIndex < 15) return TIME_SEGMENT_COLORS.midday;
+    if (timeIndex < 18) return TIME_SEGMENT_COLORS.afternoon;
+    if (timeIndex < 22) return TIME_SEGMENT_COLORS.evening;
+    return TIME_SEGMENT_COLORS.night;
   };
 
   // Handle clicking on a time slot
@@ -153,7 +173,8 @@ export const WeeklyPlanner = ({ plannerData, onUpdatePlannerData }: WeeklyPlanne
           <div className="absolute left-0 top-0 w-16 h-full z-10 bg-white">
             <div className="h-12 border-b"></div> {/* Empty cell for the day headers */}
             {TIME_SLOTS.map((time, index) => (
-              <div key={`agenda-time-${index}`} className="h-[28px] relative border-b border-gray-200 text-xs text-gray-500">
+              <div key={`agenda-time-${index}`} 
+                className={`h-[28px] relative border-b border-gray-200 text-xs text-gray-500 ${getTimeSlotBackground(index)}`}>
                 <span className="absolute -top-2.5 left-2">{time}</span>
               </div>
             ))}
@@ -162,12 +183,20 @@ export const WeeklyPlanner = ({ plannerData, onUpdatePlannerData }: WeeklyPlanne
           <div className="ml-16 grid grid-cols-7 h-full">
             {/* Day headers for agenda view */}
             <div className="col-span-7 grid grid-cols-7 h-12 border-b">
-              {weekDays.map((day, index) => (
-                <div key={`header-agenda-${index}`} className="text-center p-2 font-medium">
-                  <div className="text-sm">{format(day, "EEE")}</div>
-                  <div className="text-sm text-muted-foreground">{format(day, "d")}</div>
-                </div>
-              ))}
+              {weekDays.map((day, index) => {
+                const isToday = format(day, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
+                return (
+                  <div 
+                    key={`header-agenda-${index}`} 
+                    className={`text-center p-2 font-medium ${isToday ? "bg-primary/10 rounded-t-lg" : ""}`}
+                  >
+                    <div className="text-sm">{format(day, "EEE")}</div>
+                    <div className={`text-sm ${isToday ? "text-primary font-bold" : "text-muted-foreground"}`}>
+                      {format(day, "d")}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
             
             {/* Calendar cells */}
@@ -185,11 +214,11 @@ export const WeeklyPlanner = ({ plannerData, onUpdatePlannerData }: WeeklyPlanne
                     {TIME_SLOTS.map((_, timeIndex) => (
                       <div 
                         key={`agenda-grid-${dayIndex}-${timeIndex}`} 
-                        className="h-[28px] border-b border-gray-200 relative group"
+                        className={`h-[28px] border-b border-gray-200 relative group ${getTimeSlotBackground(timeIndex)}`}
                         onClick={() => handleTimeSlotClick(day, timeIndex)}
                       >
                         {onUpdatePlannerData && (
-                          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 flex items-center justify-center hover:bg-primary/5 cursor-pointer transition-opacity">
+                          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 flex items-center justify-center hover:bg-primary/10 cursor-pointer transition-opacity">
                             <Plus className="h-4 w-4 text-gray-400" />
                           </div>
                         )}
