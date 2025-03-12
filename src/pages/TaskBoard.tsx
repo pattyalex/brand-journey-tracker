@@ -1,3 +1,4 @@
+
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,22 +16,10 @@ import { Separator } from "@/components/ui/separator";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { DailyPlanner } from "@/components/planner/DailyPlanner";
 import { ContentItem, Platform } from "@/types/content-flow";
-import { PlannerDay } from "@/types/task-board";
+import { PlannerDay, Task } from "@/types/task-board";
 import ContentSchedule from "@/components/content/weeklyFlow/ContentSchedule";
 import PlatformIcon from "@/components/content/weeklyFlow/PlatformIcon";
 import AddPlatformDialog from "@/components/content/weeklyFlow/AddPlatformDialog";
-
-// Define the Task interface locally to prevent conflict with import
-interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  status: "todo-all" | "todo-today" | "scheduled" | "completed";
-  dueDate?: string;
-  priority: "low" | "medium" | "high";
-  createdAt: string;
-  isCompleted?: boolean;
-}
 
 const TaskBoard = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -433,6 +422,7 @@ const TaskBoard = () => {
           </TabsContent>
 
           <TabsContent value="weekly-content-tasks" className="m-0">
+            {/* Weekly content tasks content */}
             <div className="container mx-auto max-w-6xl">
               <h1 className="text-2xl font-bold mb-2">Weekly Content Tasks</h1>
               <p className="text-gray-600 text-lg mb-8">
@@ -853,3 +843,19 @@ const SimplifiedTaskColumn = ({
                               </div>
                             </div>
                           </div>
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </ScrollArea>
+              )}
+            </div>
+          )}
+        </Droppable>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default TaskBoard;
