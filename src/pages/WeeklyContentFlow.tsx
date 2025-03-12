@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { ContentItem, Platform } from "@/types/content-flow";
@@ -84,7 +85,7 @@ const WeeklyContentFlow = () => {
   return (
     <Layout>
       <div className="container mx-auto py-6 max-w-6xl">
-        <h1 className="text-4xl font-bold mb-2">Content Creation Schedule</h1>
+        <h1 className="text-4xl font-bold mb-2">Y</h1>
         <p className="text-gray-600 text-lg mb-8">
           Plan your content across different platforms for the week
         </p>
