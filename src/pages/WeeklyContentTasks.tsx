@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { ContentItem, Platform } from "@/types/content-flow";
@@ -84,7 +85,7 @@ const WeeklyContentTasks = () => {
   return (
     <Layout>
       <div className="container mx-auto py-6 max-w-6xl">
-        <h1 className="text-4xl font-bold mb-2">Weekly Content Tasks</h1>
+        <h1 className="text-4xl font-bold mb-2">Z</h1>
         <p className="text-gray-600 text-lg mb-8">
           Map out your content workflow: Drag and drop tasks into the day you want to complete them
         </p>

@@ -382,7 +382,7 @@ const TaskBoard = () => {
               value="weekly-content-tasks" 
               className="px-8 py-3 text-base font-medium bg-primary/5 hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
-              Weekly Content Tasks
+              Z
             </TabsTrigger>
           </TabsList>
 
@@ -424,7 +424,7 @@ const TaskBoard = () => {
           <TabsContent value="weekly-content-tasks" className="m-0">
             {/* Weekly content tasks content */}
             <div className="container mx-auto max-w-6xl">
-              <h1 className="text-2xl font-bold mb-2">Weekly Content Tasks</h1>
+              <h1 className="text-2xl font-bold mb-2">Z</h1>
               <p className="text-gray-600 text-lg mb-8">
                 Map out your content workflow: Drag and drop tasks into the day you want to complete them
               </p>
