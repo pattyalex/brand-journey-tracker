@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   Dialog, 
@@ -25,7 +24,38 @@ import {
   Target,
   Wallet,
   PenLine,
-  Scroll
+  Scroll,
+  Instagram,
+  Youtube,
+  Mail,
+  Film,
+  Video,
+  Play,
+  Image,
+  Settings,
+  Music,
+  Headphones,
+  BookOpen,
+  Book,
+  CircleDollarSign,
+  BarChart,
+  PieChart,
+  LineChart,
+  ShoppingBag,
+  ShoppingCart,
+  Store,
+  Truck,
+  Package,
+  Pencil,
+  Edit,
+  MessageSquare,
+  MessageCircle,
+  Phone,
+  Globe,
+  Heart,
+  Star,
+  Award,
+  Trophy
 } from "lucide-react";
 
 interface AddPlatformDialogProps {
@@ -39,16 +69,46 @@ const PLATFORM_ICONS = [
   { icon: "laptop", component: Laptop },
   { icon: "file-text", component: FileText },
   { icon: "pen-line", component: PenLine },
-  { icon: "scroll", component: Scroll }, // Adding Scroll icon for script (pen and paper)
+  { icon: "scroll", component: Scroll },
   { icon: "user-cog", component: UserCog },
   { icon: "mic", component: Mic },
   { icon: "lightbulb", component: Lightbulb },
   { icon: "calendar", component: Calendar },
   { icon: "shirt", component: Shirt },
-  { icon: "dress", component: Shirt }, // Using Shirt as the closest icon for dress
   { icon: "at-sign", component: AtSign },
-  { icon: "target", component: Target }, // Target icon for strategy
+  { icon: "target", component: Target },
   { icon: "wallet", component: Wallet },
+  { icon: "instagram", component: Instagram },
+  { icon: "youtube", component: Youtube },
+  { icon: "film", component: Film },
+  { icon: "video", component: Video },
+  { icon: "play", component: Play },
+  { icon: "image", component: Image },
+  { icon: "mail", component: Mail },
+  { icon: "settings", component: Settings },
+  { icon: "music", component: Music },
+  { icon: "headphones", component: Headphones },
+  { icon: "book-open", component: BookOpen },
+  { icon: "book", component: Book },
+  { icon: "pencil", component: Pencil },
+  { icon: "edit", component: Edit },
+  { icon: "circle-dollar-sign", component: CircleDollarSign },
+  { icon: "bar-chart", component: BarChart },
+  { icon: "pie-chart", component: PieChart },
+  { icon: "line-chart", component: LineChart },
+  { icon: "shopping-bag", component: ShoppingBag },
+  { icon: "shopping-cart", component: ShoppingCart },
+  { icon: "store", component: Store },
+  { icon: "truck", component: Truck },
+  { icon: "package", component: Package },
+  { icon: "message-square", component: MessageSquare },
+  { icon: "message-circle", component: MessageCircle },
+  { icon: "phone", component: Phone },
+  { icon: "globe", component: Globe },
+  { icon: "heart", component: Heart },
+  { icon: "star", component: Star },
+  { icon: "award", component: Award },
+  { icon: "trophy", component: Trophy }
 ];
 
 const AddPlatformDialog = ({ open, onOpenChange, onAdd }: AddPlatformDialogProps) => {
@@ -74,7 +134,7 @@ const AddPlatformDialog = ({ open, onOpenChange, onAdd }: AddPlatformDialogProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add Platform</DialogTitle>
         </DialogHeader>
@@ -94,7 +154,7 @@ const AddPlatformDialog = ({ open, onOpenChange, onAdd }: AddPlatformDialogProps
             
             <div className="grid gap-2">
               <Label>Platform Icon</Label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-6 gap-2">
                 {PLATFORM_ICONS.map(({ icon, component: Icon }) => (
                   <Button
                     key={icon}
@@ -102,6 +162,7 @@ const AddPlatformDialog = ({ open, onOpenChange, onAdd }: AddPlatformDialogProps
                     variant="outline"
                     className={`aspect-square h-10 ${selectedIcon === icon ? 'ring-2 ring-purple-500 bg-purple-50' : ''}`}
                     onClick={() => setSelectedIcon(icon)}
+                    title={icon.replace(/-/g, ' ')}
                   >
                     <Icon className={`h-5 w-5 ${selectedIcon === icon ? 'text-purple-500' : 'text-gray-500'}`} />
                   </Button>
