@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { ContentItem, Platform } from "@/types/content-flow";
@@ -93,7 +92,6 @@ const WeeklyContentFlow = () => {
         <div className="mb-10">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h2 className="text-2xl font-semibold">Weekly Content Tasks</h2>
               <p className="text-gray-600 mt-1">Map out your content workflow: Drag and drop tasks into the day you want to complete them</p>
             </div>
             <Button 
