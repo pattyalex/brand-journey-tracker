@@ -427,54 +427,55 @@ export const DailyPlanner = () => {
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
       <Card className="border-none shadow-none">
-        <CardHeader className="px-0">
-          <div className="mb-8">
-            <div className="flex items-center gap-2 mb-3">
-              <ListTodo className="h-5 w-5 text-blue-500" />
-              <h3 className="text-lg font-medium">To-Dos</h3>
-            </div>
-            <div className="border rounded-lg p-1">
-              <Textarea
-                value={tasks}
-                onChange={handleTasksChange}
-                placeholder="Write your to dos, reminders or other notes for the day..."
-                className="min-h-[120px] resize-none"
-                onTextSelect={(selectedText) => {
-                  if (selectedText) {
-                    const newItem: PlannerItem = {
-                      id: Date.now().toString(),
-                      text: selectedText,
-                      section: "morning",
-                      isCompleted: false,
-                      date: dateString
-                    };
-                    
-                    const dayIndex = plannerData.findIndex(day => day.date === dateString);
-                    
-                    if (dayIndex >= 0) {
-                      const updatedPlannerData = [...plannerData];
-                      updatedPlannerData[dayIndex] = {
-                        ...updatedPlannerData[dayIndex],
-                        items: [...updatedPlannerData[dayIndex].items, newItem]
-                      };
-                      setPlannerData(updatedPlannerData);
-                      toast.success("Added as a task for today!");
-                    } else {
-                      setPlannerData([...plannerData, { 
-                        date: dateString, 
-                        items: [newItem],
-                        tasks: tasks,
-                        greatDay: greatDay,
-                        grateful: grateful
-                      }]);
-                      toast.success("Added as a task for today!");
-                    }
-                  }
-                }}
-              />
-            </div>
+        {/* To-Dos section - now separated from the Copy Template section */}
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-3">
+            <ListTodo className="h-5 w-5 text-blue-500" />
+            <h3 className="text-lg font-medium">To-Dos</h3>
           </div>
+          <div className="border rounded-lg p-1">
+            <Textarea
+              value={tasks}
+              onChange={handleTasksChange}
+              placeholder="Write your to dos, reminders or other notes for the day..."
+              className="min-h-[120px] resize-none"
+              onTextSelect={(selectedText) => {
+                if (selectedText) {
+                  const newItem: PlannerItem = {
+                    id: Date.now().toString(),
+                    text: selectedText,
+                    section: "morning",
+                    isCompleted: false,
+                    date: dateString
+                  };
+                  
+                  const dayIndex = plannerData.findIndex(day => day.date === dateString);
+                  
+                  if (dayIndex >= 0) {
+                    const updatedPlannerData = [...plannerData];
+                    updatedPlannerData[dayIndex] = {
+                      ...updatedPlannerData[dayIndex],
+                      items: [...updatedPlannerData[dayIndex].items, newItem]
+                    };
+                    setPlannerData(updatedPlannerData);
+                    toast.success("Added as a task for today!");
+                  } else {
+                    setPlannerData([...plannerData, { 
+                      date: dateString, 
+                      items: [newItem],
+                      tasks: tasks,
+                      greatDay: greatDay,
+                      grateful: grateful
+                    }]);
+                    toast.success("Added as a task for today!");
+                  }
+                }
+              }}
+            />
+          </div>
+        </div>
 
+        <CardHeader className="px-0">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center">
               <Button variant="outline" size="icon" onClick={handlePreviousDay}>
