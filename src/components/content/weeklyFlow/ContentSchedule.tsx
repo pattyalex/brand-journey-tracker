@@ -88,8 +88,11 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
                       onDrop={(e) => {
                         e.preventDefault();
                         if (!content) {
-                          // Since we're no longer using Draggable for the icons, we need another approach
-                          // This is handled by the DragDropContext in the parent component
+                          // Handle the drop event from the platform section
+                          const platformId = e.dataTransfer.getData("platformId");
+                          if (platformId) {
+                            handleDrop(platformId, day);
+                          }
                         }
                       }}
                     >

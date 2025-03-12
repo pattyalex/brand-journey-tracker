@@ -7,7 +7,7 @@ import { ContentItem, Platform } from "@/types/content-flow";
 import AddPlatformDialog from "@/components/content/weeklyFlow/AddPlatformDialog";
 import ContentSchedule from "@/components/content/weeklyFlow/ContentSchedule";
 import PlatformIcon from "@/components/content/weeklyFlow/PlatformIcon";
-import { DragDropContext, Draggable, DropResult } from "react-beautiful-dnd";
+import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { v4 as uuidv4 } from "uuid";
 
 const WeeklyContentFlow = () => {
@@ -60,6 +60,11 @@ const WeeklyContentFlow = () => {
     setContentItems([...contentItems, newItem]);
   };
 
+  // Handle the drag start event
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, platformId: string) => {
+    e.dataTransfer.setData("platformId", platformId);
+  };
+
   return (
     <Layout>
       <div className="container mx-auto py-6 max-w-6xl">
@@ -83,12 +88,14 @@ const WeeklyContentFlow = () => {
             </div>
             
             <div className="flex flex-wrap gap-8">
-              {platforms.map((platform, index) => (
+              {platforms.map((platform) => (
                 <div 
                   key={platform.id} 
                   className="flex flex-col items-center"
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, platform.id)}
                 >
-                  <div className="bg-gray-100 rounded-full p-3 mb-2">
+                  <div className="bg-gray-100 rounded-full p-3 mb-2 cursor-grab active:cursor-grabbing">
                     <PlatformIcon platform={platform} size={12} />
                   </div>
                   <span className="text-center">{platform.name}</span>
