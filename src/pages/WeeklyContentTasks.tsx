@@ -82,75 +82,62 @@ const WeeklyContentTasks = () => {
   };
 
   return (
-    <Layout>
-      <div className="container mx-auto py-6 max-w-6xl">
-        <h1 className="text-4xl font-bold mb-2">Weekly View</h1>
-        <p className="text-gray-600 text-lg mb-8">
-          Map out your content workflow: Drag and drop tasks into the day you want to complete them
-        </p>
-        
-        <div className="mb-10">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              {/* Removed the text "Map out your content workflow: Drag and drop tasks into the day you want to complete them" */}
-            </div>
-          </div>
-          
-          <div className="flex flex-wrap gap-8">
-            {platforms.map((platform) => (
-              <div 
-                key={platform.id} 
-                className="flex flex-col items-center"
-                draggable
-                onDragStart={(e) => handleDragStart(e, platform.id)}
-              >
-                <div className="p-3 mb-2 cursor-grab active:cursor-grabbing hover:scale-110 transition-transform">
-                  <PlatformIcon platform={platform} size={24} />
-                </div>
-                <span className="text-center text-sm font-medium">{platform.name}</span>
-              </div>
-            ))}
-            
+    <div className="container mx-auto py-6 max-w-6xl">
+      <div className="mb-10">
+        <div className="flex flex-wrap gap-8">
+          {platforms.map((platform) => (
             <div 
+              key={platform.id} 
               className="flex flex-col items-center"
-              onClick={() => setIsAddPlatformOpen(true)}
+              draggable
+              onDragStart={(e) => handleDragStart(e, platform.id)}
             >
-              <div className="p-3 mb-2 cursor-pointer hover:scale-110 transition-transform">
-                <AddYourOwnIcon size={24} />
+              <div className="p-3 mb-2 cursor-grab active:cursor-grabbing hover:scale-110 transition-transform">
+                <PlatformIcon platform={platform} size={24} />
               </div>
-              <span className="text-center text-sm font-medium">Add your own</span>
+              <span className="text-center text-sm font-medium">{platform.name}</span>
             </div>
-          </div>
-        </div>
-        
-        <div className="pt-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold">Weekly Schedule</h2>
-            <Button 
-              variant="outline" 
-              size="xs"
-              onClick={clearSchedule}
-              className="gap-1.5 text-gray-600 hover:text-gray-700"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              Clear All
-            </Button>
-          </div>
+          ))}
           
-          <ContentSchedule 
-            platforms={platforms} 
-            contentItems={contentItems}
-            setContentItems={setContentItems}
-          />
+          <div 
+            className="flex flex-col items-center"
+            onClick={() => setIsAddPlatformOpen(true)}
+          >
+            <div className="p-3 mb-2 cursor-pointer hover:scale-110 transition-transform">
+              <AddYourOwnIcon size={24} />
+            </div>
+            <span className="text-center text-sm font-medium">Add your own</span>
+          </div>
+        </div>
+      </div>
+      
+      <div className="pt-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-semibold">Weekly Schedule</h2>
+          <Button 
+            variant="outline" 
+            size="xs"
+            onClick={clearSchedule}
+            className="gap-1.5 text-gray-600 hover:text-gray-700"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            Clear All
+          </Button>
         </div>
         
-        <AddPlatformDialog 
-          open={isAddPlatformOpen} 
-          onOpenChange={setIsAddPlatformOpen}
-          onAdd={addPlatform}
+        <ContentSchedule 
+          platforms={platforms} 
+          contentItems={contentItems}
+          setContentItems={setContentItems}
         />
       </div>
-    </Layout>
+      
+      <AddPlatformDialog 
+        open={isAddPlatformOpen} 
+        onOpenChange={setIsAddPlatformOpen}
+        onAdd={addPlatform}
+      />
+    </div>
   );
 };
 

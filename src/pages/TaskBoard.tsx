@@ -1,9 +1,9 @@
+
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarIcon, ListChecks, KanbanSquare } from "lucide-react";
-import AllTasks from "@/components/task-board/AllTasks";
-import TodayTasks from "@/components/task-board/TodayTasks";
+import WeeklyContentTasks from "./WeeklyContentTasks";
 
 const TaskBoard = () => {
   const [activeTab, setActiveTab] = useState("all");
@@ -22,28 +22,21 @@ const TaskBoard = () => {
               <ListChecks className="h-4 w-4 mr-2" />
               All Tasks
             </TabsTrigger>
-            <TabsTrigger value="today">
-              <CalendarIcon className="h-4 w-4 mr-2" />
-              Today
-            </TabsTrigger>
-            <TabsTrigger value="weekly-content-tasks">
+            <TabsTrigger value="weekly-view">
               <KanbanSquare className="h-4 w-4 mr-2" />
               Weekly View
             </TabsTrigger>
           </TabsList>
           <TabsContent value="all" className="m-0">
-            <AllTasks />
-          </TabsContent>
-          <TabsContent value="today" className="m-0">
-            <TodayTasks />
-          </TabsContent>
-          <TabsContent value="weekly-content-tasks" className="m-0">
             <div className="container mx-auto max-w-6xl">
-              <h1 className="text-2xl font-bold mb-2">Weekly View</h1>
+              <h1 className="text-2xl font-bold mb-2">All Tasks</h1>
               <p className="text-gray-600 text-lg mb-8">
-                Map out your content workflow: Drag and drop tasks into the day you want to complete them
+                View and manage all your scheduled tasks
               </p>
             </div>
+          </TabsContent>
+          <TabsContent value="weekly-view" className="m-0">
+            <WeeklyContentTasks />
           </TabsContent>
         </Tabs>
       </div>
