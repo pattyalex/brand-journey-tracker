@@ -1,25 +1,23 @@
 
 import Layout from "@/components/Layout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, CheckSquare, Calendar, Clock, CheckCircle2, Edit, Trash2, CalendarIcon, Plus, Circle, CheckCircle, ArrowLeft, Flag } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PlusCircle, CheckSquare, Calendar, Edit, Trash2, CalendarIcon, Plus, Flag } from "lucide-react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 import { DailyPlanner } from "@/components/planner/DailyPlanner";
 import { ContentItem, Platform } from "@/types/content-flow";
 import { PlannerDay, Task } from "@/types/task-board";
 import ContentSchedule from "@/components/content/weeklyFlow/ContentSchedule";
 import PlatformIcon from "@/components/content/weeklyFlow/PlatformIcon";
 import AddPlatformDialog from "@/components/content/weeklyFlow/AddPlatformDialog";
+import { 
+  TaskDialog, 
+  TasksBoard, 
+  AddYourOwnIcon, 
+  getPriorityIcon 
+} from "@/components/task-board";
 
 const TaskBoard = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -253,38 +251,6 @@ const TaskBoard = () => {
     setIsAddDialogOpen(false);
   };
 
-  const getStatusDisplayName = (status: Task["status"]) => {
-    switch (status) {
-      case "todo-all": return "All";
-      case "todo-today": return "Today";
-      case "scheduled": return "Scheduled";
-      case "completed": return "Completed";
-      default: return status;
-    }
-  };
-
-  const getPriorityColor = (priority: Task["priority"]) => {
-    switch (priority) {
-      case "high": return "text-red-500";
-      case "medium": return "text-amber-500";
-      case "low": return "text-green-500";
-      default: return "";
-    }
-  };
-
-  const getPriorityIcon = (priority: Task["priority"]) => {
-    switch (priority) {
-      case "high": 
-        return <Flag className="h-3 w-3 text-red-500 fill-red-500" />;
-      case "medium": 
-        return <Flag className="h-3 w-3 text-amber-500 fill-amber-500" />;
-      case "low": 
-        return <Flag className="h-3 w-3 text-green-500 fill-green-500" />;
-      default: 
-        return null;
-    }
-  };
-
   const handleAddQuickTask = (title: string, status: Task["status"]) => {
     if (!title.trim()) {
       return;
@@ -346,13 +312,69 @@ const TaskBoard = () => {
     });
   };
 
-  const AddYourOwnIcon = ({ size = 24 }: { size?: number }) => {
-    return (
-      <div className="bg-gradient-to-tr from-purple-100 to-purple-200 rounded-full p-1 flex items-center justify-center">
-        <Plus size={size} className="text-purple-600" />
+  const renderWeeklyContentTasks = () => (
+    <div className="container mx-auto max-w-6xl">
+      <h1 className="text-2xl font-bold mb-2">Weekly View</h1>
+      <p className="text-gray-600 text-lg mb-8">
+        Map out your content workflow: Drag and drop tasks into the day you want to complete them
+      </p>
+      
+      <div className="mb-10">
+        <div className="flex flex-wrap gap-8">
+          {platforms.map((platform) => (
+            <div 
+              key={platform.id} 
+              className="flex flex-col items-center"
+              draggable
+              onDragStart={(e) => handleDragStart(e, platform.id)}
+            >
+              <div className="p-3 mb-2 cursor-grab active:cursor-grabbing hover:scale-110 transition-transform">
+                <PlatformIcon platform={platform} size={24} />
+              </div>
+              <span className="text-center text-sm font-medium">{platform.name}</span>
+            </div>
+          ))}
+          
+          <div 
+            className="flex flex-col items-center"
+            onClick={() => setIsAddPlatformOpen(true)}
+          >
+            <div className="p-3 mb-2 cursor-pointer hover:scale-110 transition-transform">
+              <AddYourOwnIcon size={24} />
+            </div>
+            <span className="text-center text-sm font-medium">Add your own</span>
+          </div>
+        </div>
       </div>
-    );
-  };
+      
+      <div className="pt-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-semibold">Weekly Schedule</h2>
+          <Button 
+            variant="outline" 
+            size="xs"
+            onClick={clearSchedule}
+            className="gap-1.5 text-gray-600 hover:text-gray-700"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            Clear All
+          </Button>
+        </div>
+        
+        <ContentSchedule 
+          platforms={platforms} 
+          contentItems={contentItems}
+          setContentItems={setContentItems}
+        />
+      </div>
+      
+      <AddPlatformDialog 
+        open={isAddPlatformOpen} 
+        onOpenChange={setIsAddPlatformOpen}
+        onAdd={addPlatform}
+      />
+    </div>
+  );
 
   return (
     <Layout>
@@ -387,34 +409,18 @@ const TaskBoard = () => {
           </TabsList>
 
           <TabsContent value="tasks-board" className="m-0">
-            <Card className="border-none shadow-none">
-              <CardHeader className="px-0">
-                <CardTitle className="text-xl">Tasks Board</CardTitle>
-                <CardDescription>
-                  Organize your tasks by status and track your progress
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="px-0">
-                <DragDropContext onDragEnd={handleDragEnd}>
-                  <div className="grid grid-cols-1 gap-6">
-                    <SimplifiedTaskColumn 
-                      title="All"
-                      icon={<CheckSquare size={18} />}
-                      tasks={getTasksByStatus("todo-all")}
-                      moveTask={moveTask}
-                      onEditTask={handleEditTask}
-                      onDeleteTask={handleDeleteTask}
-                      setIsAddDialogOpen={setIsAddDialogOpen}
-                      setNewTask={setNewTask}
-                      columnId="todo-all"
-                      onAddQuickTask={handleAddQuickTask}
-                      toggleTaskCompletion={toggleTaskCompletion}
-                      getPriorityIcon={getPriorityIcon}
-                    />
-                  </div>
-                </DragDropContext>
-              </CardContent>
-            </Card>
+            <TasksBoard 
+              tasks={tasks}
+              getTasksByStatus={getTasksByStatus}
+              handleDragEnd={handleDragEnd}
+              moveTask={moveTask}
+              handleEditTask={handleEditTask}
+              handleDeleteTask={handleDeleteTask}
+              setIsAddDialogOpen={setIsAddDialogOpen}
+              setNewTask={setNewTask}
+              handleAddQuickTask={handleAddQuickTask}
+              toggleTaskCompletion={toggleTaskCompletion}
+            />
           </TabsContent>
 
           <TabsContent value="daily-planner" className="m-0">
@@ -422,439 +428,21 @@ const TaskBoard = () => {
           </TabsContent>
 
           <TabsContent value="weekly-content-tasks" className="m-0">
-            {/* Weekly content tasks content */}
-            <div className="container mx-auto max-w-6xl">
-              <h1 className="text-2xl font-bold mb-2">Weekly View</h1>
-              <p className="text-gray-600 text-lg mb-8">
-                Map out your content workflow: Drag and drop tasks into the day you want to complete them
-              </p>
-              
-              <div className="mb-10">
-                <div className="flex flex-wrap gap-8">
-                  {platforms.map((platform) => (
-                    <div 
-                      key={platform.id} 
-                      className="flex flex-col items-center"
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, platform.id)}
-                    >
-                      <div className="p-3 mb-2 cursor-grab active:cursor-grabbing hover:scale-110 transition-transform">
-                        <PlatformIcon platform={platform} size={24} />
-                      </div>
-                      <span className="text-center text-sm font-medium">{platform.name}</span>
-                    </div>
-                  ))}
-                  
-                  <div 
-                    className="flex flex-col items-center"
-                    onClick={() => setIsAddPlatformOpen(true)}
-                  >
-                    <div className="p-3 mb-2 cursor-pointer hover:scale-110 transition-transform">
-                      <AddYourOwnIcon size={24} />
-                    </div>
-                    <span className="text-center text-sm font-medium">Add your own</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="pt-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-2xl font-semibold">Weekly Schedule</h2>
-                  <Button 
-                    variant="outline" 
-                    size="xs"
-                    onClick={clearSchedule}
-                    className="gap-1.5 text-gray-600 hover:text-gray-700"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    Clear All
-                  </Button>
-                </div>
-                
-                <ContentSchedule 
-                  platforms={platforms} 
-                  contentItems={contentItems}
-                  setContentItems={setContentItems}
-                />
-              </div>
-              
-              <AddPlatformDialog 
-                open={isAddPlatformOpen} 
-                onOpenChange={setIsAddPlatformOpen}
-                onAdd={addPlatform}
-              />
-            </div>
+            {renderWeeklyContentTasks()}
           </TabsContent>
         </Tabs>
       </div>
 
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>{isEditMode ? "Edit Task" : "Add New Task"}</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="title">Task Title</Label>
-              <Input
-                id="title"
-                value={newTask.title}
-                onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                placeholder="Enter task title"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="description">Description (Optional)</Label>
-              <Textarea
-                id="description"
-                value={newTask.description}
-                onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                placeholder="Add more details about this task"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="status">Status</Label>
-                <Select
-                  value={newTask.status}
-                  onValueChange={(value: string) => setNewTask({ ...newTask, status: value as Task["status"] })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todo-all">To Do</SelectItem>
-                    <SelectItem value="todo-today">Today</SelectItem>
-                    <SelectItem value="scheduled">Scheduled</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="priority">Priority</Label>
-                <Select
-                  value={newTask.priority}
-                  onValueChange={(value: string) => setNewTask({ ...newTask, priority: value as Task["priority"] })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select priority" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            {(newTask.status === "scheduled") && (
-              <div className="grid gap-2">
-                <Label htmlFor="dueDate">Due Date</Label>
-                <div className="flex items-center">
-                  <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="dueDate"
-                    type="date"
-                    value={newTask.dueDate}
-                    onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={handleDialogClose}>Cancel</Button>
-            <Button onClick={handleAddTask}>
-              {isEditMode ? "Update Task" : "Add Task"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <TaskDialog
+        isOpen={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        isEditMode={isEditMode}
+        newTask={newTask}
+        setNewTask={setNewTask}
+        handleAddTask={handleAddTask}
+        handleDialogClose={handleDialogClose}
+      />
     </Layout>
-  );
-};
-
-interface TaskColumnProps {
-  title: string;
-  icon: React.ReactNode;
-  tasks: Task[];
-  moveTask: (taskId: string, newStatus: Task["status"]) => void;
-  onEditTask: (task: Task) => void;
-  onDeleteTask: (taskId: string) => void;
-  getPriorityColor: (priority: Task["priority"]) => string;
-  columnId: Task["status"];
-}
-
-// Keep TaskColumn component for reference but it's not used in the simplified view
-const TaskColumn = ({ title, icon, tasks, moveTask, onEditTask, onDeleteTask, getPriorityColor, columnId }: TaskColumnProps) => {
-  const getStatusFromTitle = (title: string): Task["status"] => {
-    switch (title) {
-      case "All": return "todo-all";
-      case "Today": return "todo-today";
-      case "Scheduled": return "scheduled";
-      case "Completed": return "completed";
-      default: return "todo-all";
-    }
-  };
-
-  return (
-    <Card className="col-span-1 h-full">
-      <CardHeader className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {icon}
-            <CardTitle className="text-base">{title}</CardTitle>
-            <div className="text-xs rounded-full bg-gray-100 px-2 py-0.5">
-              {tasks.length}
-            </div>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="p-3">
-        <Droppable droppableId={columnId}>
-          {(provided) => (
-            <div
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              className="space-y-3 min-h-[200px]"
-            >
-              {tasks.length === 0 ? (
-                <div className="flex h-[100px] items-center justify-center rounded-md border border-dashed">
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground">No tasks in this column</p>
-                  </div>
-                </div>
-              ) : (
-                <ScrollArea className="h-[calc(100vh-350px)] pr-3">
-                  {tasks.map((task, index) => (
-                    <Draggable key={task.id} draggableId={task.id} index={index}>
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          className={`${snapshot.isDragging ? "opacity-70" : ""}`}
-                        >
-                          <Card className="group hover:shadow-md transition-shadow">
-                            <CardContent className="p-3">
-                              <div className="flex justify-between items-start gap-2">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <h3 className="font-medium">{task.title}</h3>
-                                    <span className={`text-xs font-medium ${getPriorityColor(task.priority)}`}>
-                                      {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
-                                    </span>
-                                  </div>
-                                  {task.description && (
-                                    <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{task.description}</p>
-                                  )}
-                                  {task.dueDate && (
-                                    <div className="flex items-center text-xs text-muted-foreground mt-2">
-                                      <CalendarIcon className="mr-1 h-3 w-3" />
-                                      {new Date(task.dueDate).toLocaleDateString()}
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="flex gap-1">
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-8 w-8"
-                                    onClick={() => onEditTask(task)}
-                                  >
-                                    <Edit size={14} />
-                                  </Button>
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-8 w-8 hover:text-destructive"
-                                    onClick={() => onDeleteTask(task.id)}
-                                  >
-                                    <Trash2 size={14} />
-                                  </Button>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                </ScrollArea>
-              )}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </CardContent>
-    </Card>
-  );
-};
-
-interface SimplifiedTaskColumnProps {
-  title: string;
-  icon: React.ReactNode;
-  tasks: Task[];
-  moveTask: (taskId: string, newStatus: Task["status"]) => void;
-  onEditTask: (task: Task) => void;
-  onDeleteTask: (taskId: string) => void;
-  setIsAddDialogOpen: (open: boolean) => void;
-  setNewTask: (task: Partial<Task>) => void;
-  columnId: Task["status"];
-  onAddQuickTask: (title: string, status: Task["status"]) => void;
-  toggleTaskCompletion: (taskId: string) => void;
-  getPriorityIcon: (priority: Task["priority"]) => React.ReactNode;
-}
-
-const SimplifiedTaskColumn = ({ 
-  title, 
-  icon, 
-  tasks, 
-  moveTask, 
-  onEditTask, 
-  onDeleteTask, 
-  setIsAddDialogOpen, 
-  setNewTask, 
-  columnId,
-  onAddQuickTask,
-  toggleTaskCompletion,
-  getPriorityIcon
-}: SimplifiedTaskColumnProps) => {
-  const [newTaskTitle, setNewTaskTitle] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleAddQuickTask = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newTaskTitle.trim()) {
-      onAddQuickTask(newTaskTitle, columnId);
-      setNewTaskTitle("");
-    }
-  };
-
-  return (
-    <Card className="col-span-1 h-full">
-      <CardHeader className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {icon}
-            <CardTitle className="text-base">{title}</CardTitle>
-            <div className="text-xs rounded-full bg-gray-100 px-2 py-0.5">
-              {tasks.length}
-            </div>
-          </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8"
-            onClick={() => {
-              setNewTask({ status: columnId });
-              setIsAddDialogOpen(true);
-            }}
-          >
-            <PlusCircle size={16} />
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="p-3">
-        <Droppable droppableId={columnId}>
-          {(provided) => (
-            <div
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              className="space-y-3"
-            >
-              <form onSubmit={handleAddQuickTask} className="flex gap-2 mb-3">
-                <Input
-                  ref={inputRef}
-                  placeholder="Add a quick task..."
-                  value={newTaskTitle}
-                  onChange={(e) => setNewTaskTitle(e.target.value)}
-                  className="h-9 text-sm"
-                />
-                <Button 
-                  type="submit" 
-                  size="sm" 
-                  className="h-9 px-3"
-                  disabled={!newTaskTitle.trim()}
-                >
-                  Add
-                </Button>
-              </form>
-
-              {tasks.length === 0 ? (
-                <div className="flex h-[100px] items-center justify-center rounded-md border border-dashed">
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground">No tasks in this column</p>
-                  </div>
-                </div>
-              ) : (
-                <ScrollArea className="h-[calc(100vh-350px)] pr-3">
-                  {tasks.map((task, index) => (
-                    <Draggable key={task.id} draggableId={task.id} index={index}>
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          className={`mb-3 ${snapshot.isDragging ? "opacity-70" : ""}`}
-                        >
-                          <div className="p-3 border rounded-md bg-white hover:shadow-sm transition-shadow group">
-                            <div className="flex items-start gap-2">
-                              <div 
-                                className="mt-0.5 cursor-pointer" 
-                                onClick={() => toggleTaskCompletion(task.id)}
-                              >
-                                {task.isCompleted ? (
-                                  <CheckCircle className="h-4 w-4 text-green-500" />
-                                ) : (
-                                  <Circle className="h-4 w-4 text-gray-300" />
-                                )}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                                  <span className={`${task.isCompleted ? 'line-through text-gray-400' : 'text-gray-700'} font-medium text-sm`}>
-                                    {task.title}
-                                  </span>
-                                  {getPriorityIcon(task.priority)}
-                                </div>
-                                {task.description && (
-                                  <p className={`text-xs ${task.isCompleted ? 'line-through text-gray-400' : 'text-gray-500'} line-clamp-2`}>
-                                    {task.description}
-                                  </p>
-                                )}
-                              </div>
-                              <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-7 w-7"
-                                  onClick={() => onEditTask(task)}
-                                >
-                                  <Edit size={12} />
-                                </Button>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-7 w-7 hover:text-destructive"
-                                  onClick={() => onDeleteTask(task.id)}
-                                >
-                                  <Trash2 size={12} />
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </ScrollArea>
-              )}
-            </div>
-          )}
-        </Droppable>
-      </CardContent>
-    </Card>
   );
 };
 
