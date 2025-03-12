@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { format, addDays, subDays, parseISO } from "date-fns";
 import { Copy, Trash2, Heart, AlarmClock, CalendarIcon, ChevronLeft, ChevronRight, ListChecks } from 'lucide-react';
@@ -661,7 +662,7 @@ export const DailyPlanner = () => {
         </CardHeader>
         <CardContent className="px-0">
           
-          <div className="mb-2">
+          <div className="mb-6">
             <CardDescription>
               Schedule your tasks:
             </CardDescription>
