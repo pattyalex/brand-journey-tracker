@@ -13,6 +13,7 @@ interface ContentScheduleProps {
 }
 
 const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const DAYS_SHORT = ["MON", "TUES", "WED", "THURS", "FRI", "SAT", "SUN"];
 
 const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentScheduleProps) => {
   
@@ -25,18 +26,8 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
       id: uuidv4(),
       platformId,
       day,
-      title: `New ${platform.name} task`,
+      title: platform.name.toLowerCase(),
     };
-    
-    // Check if there's already content for this platform on this day
-    const exists = contentItems.some(item => 
-      item.platformId === platformId && item.day === day
-    );
-    
-    if (exists) {
-      toast.info("There's already content scheduled for this platform on this day");
-      return;
-    }
     
     setContentItems([...contentItems, newItem]);
     toast.success("Content added to schedule");
@@ -46,73 +37,76 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
     setContentItems(contentItems.filter(item => item.id !== id));
     toast.success("Content removed from schedule");
   };
+
+  // Group content items by day
+  const getContentItemsByDay = (day: string) => {
+    return contentItems.filter(item => item.day === day);
+  };
   
   return (
-    <div className="rounded-lg border border-gray-200">
-      <div className="grid grid-cols-7 gap-0">
+    <div className="rounded-lg border border-gray-200 bg-[#f9f5f1]">
+      <div className="grid grid-cols-5 gap-0">
         {/* Header row - days only */}
-        {DAYS_OF_WEEK.map((day) => (
-          <div key={day} className="p-6 font-medium text-gray-700">
+        {DAYS_SHORT.slice(0, 5).map((day, index) => (
+          <div key={day} className="p-4 font-bold text-center text-lg">
             {day}
           </div>
         ))}
         
-        {/* Platform rows */}
-        {platforms.map((platform) => (
-          <React.Fragment key={platform.id}>
-            {/* Content cells for each day */}
-            {DAYS_OF_WEEK.map((day) => {
-              const content = contentItems.find(
-                item => item.platformId === platform.id && item.day === day
-              );
-              
-              return (
-                <Droppable 
-                  key={`${platform.id}-${day}`} 
-                  droppableId={`${platform.id}-${day}`}
+        {/* Content cells for each day */}
+        {DAYS_OF_WEEK.slice(0, 5).map((day, dayIndex) => {
+          const dayItems = getContentItemsByDay(day);
+          
+          return (
+            <Droppable 
+              key={`${day}`} 
+              droppableId={`day-${day}`}
+            >
+              {(provided) => (
+                <div 
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  className="border border-gray-300 min-h-[300px] transition-colors hover:bg-[#f5f0e8] p-2"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    // Handle the drop event from the platform section
+                    const platformId = e.dataTransfer.getData("platformId");
+                    if (platformId) {
+                      handleDrop(platformId, day);
+                    }
+                  }}
                 >
-                  {(provided) => (
-                    <div 
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                      className="p-4 border-l border-gray-200 min-h-[120px] transition-colors hover:bg-gray-50"
-                      onDragOver={(e) => e.preventDefault()}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        if (!content) {
-                          // Handle the drop event from the platform section
-                          const platformId = e.dataTransfer.getData("platformId");
-                          if (platformId) {
-                            handleDrop(platformId, day);
-                          }
-                        }
-                      }}
-                    >
-                      {content ? (
-                        <div className="bg-white p-4 rounded-md border border-gray-200 h-full shadow-sm relative group">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <PlatformIcon platform={platform} size={10} />
-                              <span className="font-medium">{platform.name}</span>
-                            </div>
-                            <button 
-                              onClick={() => handleRemoveContent(content.id)}
-                              className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              ×
-                            </button>
+                  <div className="flex flex-col gap-3">
+                    {dayItems.map((item) => {
+                      const platform = platforms.find(p => p.id === item.platformId);
+                      if (!platform) return null;
+                      
+                      return (
+                        <div 
+                          key={item.id} 
+                          className="bg-white p-3 rounded border border-gray-200 shadow-sm relative group flex flex-col items-center"
+                        >
+                          <button 
+                            onClick={() => handleRemoveContent(item.id)}
+                            className="absolute top-1 right-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            ×
+                          </button>
+                          <div className="flex flex-col items-center">
+                            <PlatformIcon platform={platform} size={24} />
+                            <span className="text-sm mt-1">{item.title}</span>
                           </div>
-                          <p className="text-sm">{content.title}</p>
                         </div>
-                      ) : null}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              );
-            })}
-          </React.Fragment>
-        ))}
+                      );
+                    })}
+                  </div>
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          );
+        })}
       </div>
     </div>
   );
