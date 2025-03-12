@@ -75,7 +75,7 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
                     <div 
                       ref={provided.innerRef}
                       {...provided.droppableProps}
-                      className="p-4 border-t border-l border-gray-200 min-h-[120px] transition-colors hover:bg-gray-50"
+                      className="p-4 border-l border-gray-200 min-h-[120px] transition-colors hover:bg-gray-50"
                       onDragOver={(e) => e.preventDefault()}
                       onDrop={(e) => {
                         e.preventDefault();
