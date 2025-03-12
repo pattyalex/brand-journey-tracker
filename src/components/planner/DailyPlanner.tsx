@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from "react";
 import { format, addDays, subDays, parseISO } from "date-fns";
-import { Copy, Trash2, Heart, AlarmClock, CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Copy, Trash2, Heart, AlarmClock, CalendarIcon, ChevronLeft, ChevronRight, ListChecks } from 'lucide-react';
 import { PlannerDay, PlannerItem, GlobalPlannerData } from "@/types/planner";
 import { PlannerSection } from "./PlannerSection";
 import { toast } from "sonner";
@@ -502,7 +503,7 @@ export const DailyPlanner = () => {
 
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-3">
-            <CheckListIcon />
+            <ListChecks className="h-5 w-5 text-amber-500" />
             <h3 className="text-lg font-medium">To Do Today</h3>
           </div>
         </div>
