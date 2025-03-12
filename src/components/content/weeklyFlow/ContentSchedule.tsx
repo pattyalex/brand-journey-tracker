@@ -28,16 +28,6 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
       title: `New ${platform.name} task`,
     };
     
-    // Check if there's already content for this platform on this day
-    const exists = contentItems.some(item => 
-      item.platformId === platformId && item.day === day
-    );
-    
-    if (exists) {
-      toast.info("There's already content scheduled for this platform on this day");
-      return;
-    }
-    
     setContentItems([...contentItems, newItem]);
     toast.success("Content added to schedule");
   };
@@ -48,71 +38,70 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
   };
   
   return (
-    <div className="rounded-lg border border-gray-200">
+    <div className="rounded-lg border border-gray-200 bg-white">
       <div className="grid grid-cols-7 gap-0">
         {/* Header row - days only */}
         {DAYS_OF_WEEK.map((day) => (
-          <div key={day} className="p-6 font-medium text-gray-700">
+          <div key={day} className="p-6 font-medium text-gray-700 text-center border-b border-gray-200">
             {day}
           </div>
         ))}
         
-        {/* Platform rows */}
-        {platforms.map((platform) => (
-          <React.Fragment key={platform.id}>
-            {/* Content cells for each day */}
-            {DAYS_OF_WEEK.map((day) => {
-              const content = contentItems.find(
-                item => item.platformId === platform.id && item.day === day
-              );
-              
-              return (
-                <Droppable 
-                  key={`${platform.id}-${day}`} 
-                  droppableId={`${platform.id}-${day}`}
-                >
-                  {(provided) => (
-                    <div 
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                      className="p-4 border-l border-gray-200 min-h-[120px] transition-colors hover:bg-gray-50"
-                      onDragOver={(e) => e.preventDefault()}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        if (!content) {
-                          // Handle the drop event from the platform section
-                          const platformId = e.dataTransfer.getData("platformId");
-                          if (platformId) {
-                            handleDrop(platformId, day);
-                          }
-                        }
-                      }}
-                    >
-                      {content ? (
-                        <div className="bg-white p-4 rounded-md border border-gray-200 h-full shadow-sm relative group">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <PlatformIcon platform={platform} size={10} />
-                              <span className="font-medium">{platform.name}</span>
-                            </div>
-                            <button 
-                              onClick={() => handleRemoveContent(content.id)}
-                              className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              ×
-                            </button>
+        {/* Content cells for each day */}
+        <div className="col-span-7 grid grid-cols-7">
+          {DAYS_OF_WEEK.map((day) => {
+            // Get all content for this day
+            const dayContent = contentItems.filter(item => item.day === day);
+            
+            return (
+              <Droppable 
+                key={`day-${day}`} 
+                droppableId={`day-${day}`}
+              >
+                {(provided) => (
+                  <div 
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className="p-4 border-l border-gray-200 min-h-[200px] transition-colors hover:bg-gray-50 flex flex-col gap-2"
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      // Handle the drop event from the platform section
+                      const platformId = e.dataTransfer.getData("platformId");
+                      if (platformId) {
+                        handleDrop(platformId, day);
+                      }
+                    }}
+                  >
+                    {dayContent.map((content) => {
+                      const platform = platforms.find(p => p.id === content.platformId);
+                      if (!platform) return null;
+                      
+                      return (
+                        <div 
+                          key={content.id}
+                          className="bg-white p-3 rounded-md border border-gray-200 shadow-sm relative group flex items-center gap-2"
+                        >
+                          <div className="bg-gray-100 rounded-full p-2">
+                            <PlatformIcon platform={platform} size={16} />
                           </div>
-                          <p className="text-sm">{content.title}</p>
+                          <span className="text-sm font-medium">{platform.name}</span>
+                          <button 
+                            onClick={() => handleRemoveContent(content.id)}
+                            className="ml-auto text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            ×
+                          </button>
                         </div>
-                      ) : null}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              );
-            })}
-          </React.Fragment>
-        ))}
+                      );
+                    })}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

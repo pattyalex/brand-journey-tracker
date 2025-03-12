@@ -34,29 +34,8 @@ const WeeklyContentFlow = () => {
   };
 
   const handleDragEnd = (result: DropResult) => {
-    if (!result.destination) return;
-    
-    const { draggableId, destination } = result;
-    
-    // Extract platform ID and day from the destination droppableId
-    const [platformId, day] = destination.droppableId.split("-");
-    
-    // Check if there's already content for this platform on this day
-    const exists = contentItems.some(item => 
-      item.platformId === platformId && item.day === day
-    );
-    
-    if (exists) return;
-    
-    // Create a new content item
-    const newItem: ContentItem = {
-      id: uuidv4(),
-      platformId: draggableId,
-      day,
-      title: `New ${platforms.find(p => p.id === draggableId)?.name || 'Content'} task`,
-    };
-    
-    setContentItems([...contentItems, newItem]);
+    // This can be used for drag and drop within the schedule
+    // Currently not implemented but can be added for rearranging items
   };
 
   // Handle the drag start event with custom drag image
@@ -148,7 +127,7 @@ const WeeklyContentFlow = () => {
             </div>
           </div>
           
-          <div className="border-t border-gray-200 pt-8">
+          <div className="pt-8">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-semibold">Weekly Schedule</h2>
             </div>
