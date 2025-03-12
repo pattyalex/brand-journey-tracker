@@ -219,7 +219,7 @@ export const PlannerSection = ({
         <CardTitle className="text-lg font-medium text-gray-800">{title}</CardTitle>
       </CardHeader>
       <CardContent className="pt-4 px-1">
-        <ScrollArea className={`${isMobile ? 'h-[calc(100vh-260px)]' : 'h-[calc(100vh-240px)]'}`}>
+        <ScrollArea className={`${isMobile ? 'h-[calc(100vh-200px)]' : 'h-[calc(100vh-180px)]'}`}>
           <div className="space-y-2 pr-2 pb-1">
             <Droppable droppableId={section}>
               {(provided) => (
