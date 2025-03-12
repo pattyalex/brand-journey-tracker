@@ -15,10 +15,10 @@ const WeeklyContentFlow = () => {
   const initialPlatforms: Platform[] = [
     { id: "film", name: "Film", icon: "camera" },
     { id: "edit", name: "Edit", icon: "laptop" },
-    { id: "script", name: "Script", icon: "scroll" }, // Changed to scroll icon for pen and paper
+    { id: "script", name: "Script", icon: "scroll" },
     { id: "admin", name: "Admin", icon: "user-cog" },
     { id: "record", name: "Record", icon: "mic" },
-    { id: "ideation", name: "Ideation", icon: "lightbulb" }, // Changed from "Brainstorming" to "Ideation"
+    { id: "ideation", name: "Ideation", icon: "lightbulb" },
     { id: "planning", name: "Planning", icon: "calendar" },
     { id: "styling", name: "Styling", icon: "dress" },
     { id: "emails", name: "Emails", icon: "at-sign" },
@@ -84,25 +84,15 @@ const WeeklyContentFlow = () => {
             
             <div className="flex flex-wrap gap-8">
               {platforms.map((platform, index) => (
-                <Draggable 
+                <div 
                   key={platform.id} 
-                  draggableId={platform.id} 
-                  index={index}
+                  className="flex flex-col items-center"
                 >
-                  {(provided) => (
-                    <div 
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                      className="flex flex-col items-center cursor-grab active:cursor-grabbing"
-                    >
-                      <div className="bg-gray-100 rounded-full p-3 mb-2">
-                        <PlatformIcon platform={platform} size={12} />
-                      </div>
-                      <span className="text-center">{platform.name}</span>
-                    </div>
-                  )}
-                </Draggable>
+                  <div className="bg-gray-100 rounded-full p-3 mb-2">
+                    <PlatformIcon platform={platform} size={12} />
+                  </div>
+                  <span className="text-center">{platform.name}</span>
+                </div>
               ))}
               
               {/* Add Your Own Platform Button */}

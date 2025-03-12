@@ -1,8 +1,8 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Platform, ContentItem } from "@/types/content-flow";
 import PlatformIcon from "./PlatformIcon";
-import { Droppable, Draggable, DroppableProvided, DraggableProvided } from "react-beautiful-dnd";
+import { Droppable } from "react-beautiful-dnd";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 
@@ -79,15 +79,17 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
                   key={`${platform.id}-${day}`} 
                   droppableId={`${platform.id}-${day}`}
                 >
-                  {(provided: DroppableProvided) => (
+                  {(provided) => (
                     <div 
                       ref={provided.innerRef}
                       {...provided.droppableProps}
                       className="p-4 border-t border-l border-gray-200 min-h-[120px] transition-colors hover:bg-gray-50"
                       onDragOver={(e) => e.preventDefault()}
-                      onDrop={() => {
+                      onDrop={(e) => {
+                        e.preventDefault();
                         if (!content) {
-                          handleDrop(platform.id, day);
+                          // Since we're no longer using Draggable for the icons, we need another approach
+                          // This is handled by the DragDropContext in the parent component
                         }
                       }}
                     >
