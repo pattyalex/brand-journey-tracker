@@ -12,7 +12,19 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Platform } from "@/types/content-flow";
 import { v4 as uuidv4 } from "uuid";
-import { Camera, Laptop, PenLine, UserCog, Mic } from "lucide-react";
+import { 
+  Camera, 
+  Laptop, 
+  PenLine, 
+  UserCog, 
+  Mic,
+  Lightbulb,
+  Calendar,
+  Shirt,
+  AtSign,
+  Megaphone,
+  Wallet
+} from "lucide-react";
 
 interface AddPlatformDialogProps {
   open: boolean;
@@ -26,6 +38,12 @@ const PLATFORM_ICONS = [
   { icon: "pen-line", component: PenLine },
   { icon: "user-cog", component: UserCog },
   { icon: "mic", component: Mic },
+  { icon: "lightbulb", component: Lightbulb },
+  { icon: "calendar", component: Calendar },
+  { icon: "shirt", component: Shirt },
+  { icon: "at-sign", component: AtSign },
+  { icon: "megaphone", component: Megaphone },
+  { icon: "wallet", component: Wallet },
 ];
 
 const AddPlatformDialog = ({ open, onOpenChange, onAdd }: AddPlatformDialogProps) => {

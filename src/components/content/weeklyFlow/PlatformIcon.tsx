@@ -10,7 +10,13 @@ import {
   Laptop, 
   PenLine, 
   UserCog, 
-  Mic 
+  Mic,
+  Lightbulb,
+  Calendar,
+  Shirt,
+  AtSign,
+  Megaphone,
+  Wallet
 } from "lucide-react";
 
 interface PlatformIconProps {
@@ -40,6 +46,18 @@ const PlatformIcon = ({ platform, size = 24, className = "" }: PlatformIconProps
         return <UserCog size={size} className={className} />;
       case "mic":
         return <Mic size={size} className={className} />;
+      case "lightbulb":
+        return <Lightbulb size={size} className={className} />;
+      case "calendar":
+        return <Calendar size={size} className={className} />;
+      case "shirt":
+        return <Shirt size={size} className={className} />;
+      case "at-sign":
+        return <AtSign size={size} className={className} />;
+      case "megaphone":
+        return <Megaphone size={size} className={className} />;
+      case "wallet":
+        return <Wallet size={size} className={className} />;
       default:
         return null;
     }
