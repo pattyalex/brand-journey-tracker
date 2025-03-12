@@ -1,14 +1,14 @@
-
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { ContentItem, Platform } from "@/types/content-flow";
 import AddPlatformDialog from "@/components/content/weeklyFlow/AddPlatformDialog";
 import ContentSchedule from "@/components/content/weeklyFlow/ContentSchedule";
 import PlatformIcon from "@/components/content/weeklyFlow/PlatformIcon";
-import { v4 as uuidv4 } from "uuid";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const WeeklyContentFlow = () => {
-  // Define initial platforms
   const initialPlatforms: Platform[] = [
     { id: "film", name: "Film", icon: "camera" },
     { id: "edit", name: "Edit", icon: "laptop" },
@@ -26,24 +26,20 @@ const WeeklyContentFlow = () => {
   const [platforms, setPlatforms] = useState<Platform[]>(initialPlatforms);
   const [contentItems, setContentItems] = useState<ContentItem[]>([]);
   const [isAddPlatformOpen, setIsAddPlatformOpen] = useState(false);
+  const { toast } = useToast();
 
   const addPlatform = (platform: Platform) => {
     setPlatforms([...platforms, platform]);
   };
 
-  // Handle the drag start event with custom drag image
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, platformId: string) => {
-    // Store the platform ID in the dataTransfer object
     e.dataTransfer.setData("platformId", platformId);
     
-    // Get the platform
     const platform = platforms.find(p => p.id === platformId);
     if (!platform) return;
     
-    // Set effectAllowed to copy to indicate we're copying, not moving
     e.dataTransfer.effectAllowed = "copy";
-
-    // Create a custom drag image
+    
     const dragPreview = document.createElement("div");
     dragPreview.className = "bg-white rounded-lg p-3 flex items-center shadow-lg";
     dragPreview.innerHTML = `
@@ -63,6 +59,14 @@ const WeeklyContentFlow = () => {
     setTimeout(() => {
       document.body.removeChild(dragPreview);
     }, 100);
+  };
+
+  const clearSchedule = () => {
+    setContentItems([]);
+    toast({
+      title: "Schedule cleared",
+      description: "All tasks have been removed from the schedule",
+    });
   };
 
   return (
@@ -101,6 +105,15 @@ const WeeklyContentFlow = () => {
         <div className="pt-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-semibold">Weekly Schedule</h2>
+            <Button 
+              variant="destructive" 
+              size="sm"
+              onClick={clearSchedule}
+              className="gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              Clear Schedule
+            </Button>
           </div>
           
           <ContentSchedule 
