@@ -241,19 +241,11 @@ export const DailyPlanner = () => {
       if (currentDay.tasks) {
         updatedPlannerData[targetDayIndex].tasks = currentDay.tasks;
       }
-      if (currentDay.greatDay) {
-        updatedPlannerData[targetDayIndex].greatDay = currentDay.greatDay;
-      }
-      if (currentDay.grateful) {
-        updatedPlannerData[targetDayIndex].grateful = currentDay.grateful;
-      }
     } else {
       updatedPlannerData = [...updatedPlannerData, {
         date: toDateString,
         items: newItems,
         tasks: currentDay.tasks || "",
-        greatDay: currentDay.greatDay || "",
-        grateful: currentDay.grateful || ""
       }];
     }
     
