@@ -11,9 +11,11 @@ import PlatformIcon from "@/components/content/weeklyFlow/PlatformIcon";
 const WeeklyContentFlow = () => {
   // Define initial platforms
   const initialPlatforms: Platform[] = [
-    { id: "instagram", name: "Instagram", icon: "instagram" },
-    { id: "youtube", name: "YouTube", icon: "youtube" },
-    { id: "newsletter", name: "Newsletter", icon: "mail" }
+    { id: "film", name: "Film", icon: "film" },
+    { id: "edit", name: "Edit", icon: "pen-line" },
+    { id: "script", name: "Script", icon: "scroll-text" },
+    { id: "admin", name: "Admin", icon: "user-cog" },
+    { id: "record", name: "Record", icon: "mic" }
   ];
 
   const [platforms, setPlatforms] = useState<Platform[]>(initialPlatforms);

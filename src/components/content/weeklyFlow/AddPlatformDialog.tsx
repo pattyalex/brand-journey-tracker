@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Platform } from "@/types/content-flow";
 import { v4 as uuidv4 } from "uuid";
-import { Instagram, Youtube, FileText, Mail } from "lucide-react";
+import { Film, PenLine, ScrollText, UserCog, Mic } from "lucide-react";
 
 interface AddPlatformDialogProps {
   open: boolean;
@@ -21,10 +21,11 @@ interface AddPlatformDialogProps {
 }
 
 const PLATFORM_ICONS = [
-  { icon: "instagram", component: Instagram },
-  { icon: "youtube", component: Youtube },
-  { icon: "file-text", component: FileText },
-  { icon: "mail", component: Mail },
+  { icon: "film", component: Film },
+  { icon: "pen-line", component: PenLine },
+  { icon: "scroll-text", component: ScrollText },
+  { icon: "user-cog", component: UserCog },
+  { icon: "mic", component: Mic },
 ];
 
 const AddPlatformDialog = ({ open, onOpenChange, onAdd }: AddPlatformDialogProps) => {
@@ -63,7 +64,7 @@ const AddPlatformDialog = ({ open, onOpenChange, onAdd }: AddPlatformDialogProps
                 id="platform-name"
                 value={platformName}
                 onChange={(e) => setPlatformName(e.target.value)}
-                placeholder="e.g., Instagram, YouTube, Blog"
+                placeholder="e.g., Film, Edit, Script"
                 required
               />
             </div>
