@@ -7,43 +7,6 @@ import { ContentItem, Platform } from "@/types/content-flow";
 import AddPlatformDialog from "@/components/content/weeklyFlow/AddPlatformDialog";
 import ContentSchedule from "@/components/content/weeklyFlow/ContentSchedule";
 import PlatformIcon from "@/components/content/weeklyFlow/PlatformIcon";
-import AddContentDialog from "@/components/content/weeklyFlow/AddContentDialog";
-
-// Sample content items
-const initialContentItems: ContentItem[] = [
-  {
-    id: "1",
-    platformId: "instagram",
-    day: "Monday",
-    title: "Instagram Story: Behind the scenes",
-    description: "",
-    time: ""
-  },
-  {
-    id: "2",
-    platformId: "newsletter",
-    day: "Tuesday",
-    title: "Newsletter post: Industry trends",
-    description: "",
-    time: ""
-  },
-  {
-    id: "3",
-    platformId: "youtube",
-    day: "Wednesday",
-    title: "Tutorial video on new feature",
-    description: "",
-    time: ""
-  },
-  {
-    id: "4",
-    platformId: "instagram",
-    day: "Friday",
-    title: "Carousel post: Top 5 tips",
-    description: "",
-    time: ""
-  }
-];
 
 const WeeklyContentFlow = () => {
   // Define initial platforms
@@ -54,16 +17,11 @@ const WeeklyContentFlow = () => {
   ];
 
   const [platforms, setPlatforms] = useState<Platform[]>(initialPlatforms);
-  const [contentItems, setContentItems] = useState<ContentItem[]>(initialContentItems);
+  const [contentItems, setContentItems] = useState<ContentItem[]>([]);
   const [isAddPlatformOpen, setIsAddPlatformOpen] = useState(false);
-  const [isAddContentOpen, setIsAddContentOpen] = useState(false);
 
   const addPlatform = (platform: Platform) => {
     setPlatforms([...platforms, platform]);
-  };
-
-  const addContentItem = (item: ContentItem) => {
-    setContentItems([...contentItems, item]);
   };
 
   return (
@@ -102,13 +60,6 @@ const WeeklyContentFlow = () => {
         <div className="border-t border-gray-200 pt-8">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-semibold">Weekly Schedule</h2>
-            <Button 
-              onClick={() => setIsAddContentOpen(true)}
-              className="flex items-center gap-2 bg-[#8B6B4E] hover:bg-[#75593e]"
-            >
-              <Plus className="h-5 w-5" />
-              Add Content
-            </Button>
           </div>
           
           <ContentSchedule 
@@ -121,13 +72,6 @@ const WeeklyContentFlow = () => {
           open={isAddPlatformOpen} 
           onOpenChange={setIsAddPlatformOpen}
           onAdd={addPlatform}
-        />
-        
-        <AddContentDialog
-          open={isAddContentOpen}
-          onOpenChange={setIsAddContentOpen}
-          onAdd={addContentItem}
-          platforms={platforms}
         />
       </div>
     </Layout>
