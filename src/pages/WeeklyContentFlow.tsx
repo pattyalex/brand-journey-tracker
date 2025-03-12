@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Plus } from "lucide-react";
@@ -75,7 +76,10 @@ const WeeklyContentFlow = () => {
         
         <div className="mb-10">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-semibold">Platforms</h2>
+            <div>
+              <h2 className="text-2xl font-semibold">Content Tasks</h2>
+              <p className="text-gray-600 mt-1">Map out your content workflow: Drag and drop tasks into the day you want to complete them</p>
+            </div>
           </div>
           
           <div className="flex flex-wrap gap-8">
