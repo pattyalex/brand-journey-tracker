@@ -1,16 +1,49 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Platform, ContentItem } from "@/types/content-flow";
 import PlatformIcon from "./PlatformIcon";
+import { Droppable, Draggable, DroppableProvided, DraggableProvided } from "react-beautiful-dnd";
+import { v4 as uuidv4 } from "uuid";
+import { toast } from "sonner";
 
 interface ContentScheduleProps {
   platforms: Platform[];
   contentItems: ContentItem[];
+  setContentItems: (items: ContentItem[]) => void;
 }
 
 const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-const ContentSchedule = ({ platforms, contentItems }: ContentScheduleProps) => {
+const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentScheduleProps) => {
+  
+  const handleDrop = (platformId: string, day: string) => {
+    // Create a new content item when a platform is dropped into a cell
+    const newItem: ContentItem = {
+      id: uuidv4(),
+      platformId,
+      day,
+      title: `New ${platforms.find(p => p.id === platformId)?.name || 'Content'} task`,
+    };
+    
+    // Check if there's already content for this platform on this day
+    const exists = contentItems.some(item => 
+      item.platformId === platformId && item.day === day
+    );
+    
+    if (exists) {
+      toast.info("There's already content scheduled for this platform on this day");
+      return;
+    }
+    
+    setContentItems([...contentItems, newItem]);
+    toast.success("Content added to schedule");
+  };
+
+  const handleRemoveContent = (id: string) => {
+    setContentItems(contentItems.filter(item => item.id !== id));
+    toast.success("Content removed from schedule");
+  };
+  
   return (
     <div className="rounded-lg border border-gray-200">
       <div className="grid grid-cols-8 gap-0">
@@ -42,20 +75,43 @@ const ContentSchedule = ({ platforms, contentItems }: ContentScheduleProps) => {
               );
               
               return (
-                <div 
-                  key={`${platform.id}-${day}`}
-                  className="p-4 border-t border-l border-gray-200 min-h-[120px]"
+                <Droppable 
+                  key={`${platform.id}-${day}`} 
+                  droppableId={`${platform.id}-${day}`}
                 >
-                  {content && (
-                    <div className="bg-white p-4 rounded-md border border-gray-200 h-full shadow-sm">
-                      <div className="flex items-center gap-2 mb-2">
-                        <PlatformIcon platform={platform} size={10} />
-                        <span className="font-medium">{platform.name}</span>
-                      </div>
-                      <p className="text-sm">{content.title}</p>
+                  {(provided: DroppableProvided) => (
+                    <div 
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      className="p-4 border-t border-l border-gray-200 min-h-[120px] transition-colors hover:bg-gray-50"
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={() => {
+                        if (!content) {
+                          handleDrop(platform.id, day);
+                        }
+                      }}
+                    >
+                      {content ? (
+                        <div className="bg-white p-4 rounded-md border border-gray-200 h-full shadow-sm relative group">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <PlatformIcon platform={platform} size={10} />
+                              <span className="font-medium">{platform.name}</span>
+                            </div>
+                            <button 
+                              onClick={() => handleRemoveContent(content.id)}
+                              className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              ×
+                            </button>
+                          </div>
+                          <p className="text-sm">{content.title}</p>
+                        </div>
+                      ) : null}
+                      {provided.placeholder}
                     </div>
                   )}
-                </div>
+                </Droppable>
               );
             })}
           </React.Fragment>
