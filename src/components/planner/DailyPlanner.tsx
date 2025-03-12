@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { format, addDays, subDays, parseISO } from "date-fns";
 import { Copy, Trash2, Heart, AlarmClock, CalendarIcon, ChevronLeft, ChevronRight, ListChecks } from 'lucide-react';
@@ -372,7 +371,7 @@ export const DailyPlanner = () => {
         items: [],
         tasks: tasks,
         greatDay: greatDay,
-        grateful: newGrateful
+        grateful: grateful
       });
     }
     
@@ -508,7 +507,7 @@ export const DailyPlanner = () => {
           </div>
         </div>
 
-        <CardHeader className="px-0 pt-0">
+        <CardHeader className="px-0 pt-0 pb-1">
           <div className="flex flex-col space-y-4">            
             <div className="flex items-center justify-between">
               <Button variant="outline" size="icon" onClick={handlePreviousDay} className="mr-2">
@@ -550,124 +549,123 @@ export const DailyPlanner = () => {
               </Button>
             </div>
             
-            <div className="flex items-center justify-end gap-2 flex-wrap">
-              <TooltipProvider delayDuration={0}>
-                <Dialog open={isCopyDialogOpen} onOpenChange={setIsCopyDialogOpen}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <DialogTrigger asChild>
-                        <Button 
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8"
-                          disabled={!hasItems}
-                        >
-                          <Copy className="h-3.5 w-3.5" />
-                        </Button>
-                      </DialogTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" sideOffset={5}>
-                      <p>Copy Template</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>Copy template to another day</DialogTitle>
-                      <DialogDescription>
-                        Select the date you want to copy this day's template to.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="py-4">
-                      <Calendar
-                        mode="single"
-                        selected={copyToDate}
-                        onSelect={setCopyToDate}
-                        initialFocus
-                      />
-                    </div>
-                    <div className="flex items-center space-x-2 py-2">
-                      <Checkbox 
-                        id="delete-after-copy" 
-                        checked={deleteAfterCopy}
-                        onCheckedChange={(checked) => setDeleteAfterCopy(checked === true)}
-                      />
-                      <label
-                        htmlFor="delete-after-copy"
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                      >
-                        Delete template from current day after copying
-                      </label>
-                    </div>
-                    <DialogFooter>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={() => {
-                          setIsCopyDialogOpen(false);
-                          setDeleteAfterCopy(false);
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                      <Button 
-                        type="button" 
-                        onClick={copyTemplate}
-                        disabled={!copyToDate}
-                      >
-                        Copy template
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </TooltipProvider>
+            <div className="flex items-center justify-between">
+              <CardDescription className="mt-0">
+                Schedule your tasks:
+              </CardDescription>
               
-              <TooltipProvider delayDuration={0}>
-                <AlertDialog>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AlertDialogTrigger asChild>
-                        <Button 
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8"
-                          disabled={!hasItems}
+              <div className="flex items-center gap-2 flex-wrap">
+                <TooltipProvider delayDuration={0}>
+                  <Dialog open={isCopyDialogOpen} onOpenChange={setIsCopyDialogOpen}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <DialogTrigger asChild>
+                          <Button 
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            disabled={!hasItems}
+                          >
+                            <Copy className="h-3.5 w-3.5" />
+                          </Button>
+                        </DialogTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" sideOffset={5}>
+                        <p>Copy Template</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle>Copy template to another day</DialogTitle>
+                        <DialogDescription>
+                          Select the date you want to copy this day's template to.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="py-4">
+                        <Calendar
+                          mode="single"
+                          selected={copyToDate}
+                          onSelect={setCopyToDate}
+                          initialFocus
+                        />
+                      </div>
+                      <div className="flex items-center space-x-2 py-2">
+                        <Checkbox 
+                          id="delete-after-copy" 
+                          checked={deleteAfterCopy}
+                          onCheckedChange={(checked) => setDeleteAfterCopy(checked === true)}
+                        />
+                        <label
+                          htmlFor="delete-after-copy"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          Delete template from current day after copying
+                        </label>
+                      </div>
+                      <DialogFooter>
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={() => {
+                            setIsCopyDialogOpen(false);
+                            setDeleteAfterCopy(false);
+                          }}
+                        >
+                          Cancel
                         </Button>
-                      </AlertDialogTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" sideOffset={5}>
-                      <p>Delete All</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete all items for this day?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete all planner items 
-                        for {format(selectedDate, "MMMM do, yyyy")}.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDeleteAllItems}>
-                        Delete All
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </TooltipProvider>
+                        <Button 
+                          type="button" 
+                          onClick={copyTemplate}
+                          disabled={!copyToDate}
+                        >
+                          Copy template
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </TooltipProvider>
+                
+                <TooltipProvider delayDuration={0}>
+                  <AlertDialog>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <AlertDialogTrigger asChild>
+                          <Button 
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            disabled={!hasItems}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </AlertDialogTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" sideOffset={5}>
+                        <p>Delete All</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete all items for this day?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete all planner items 
+                          for {format(selectedDate, "MMMM do, yyyy")}.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteAllItems}>
+                          Delete All
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </TooltipProvider>
+              </div>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="px-0">
-          
-          <div className="mb-6">
-            <CardDescription>
-              Schedule your tasks:
-            </CardDescription>
-          </div>
-          
+        <CardContent className="px-0 pt-2">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <PlannerSection
               title="Morning Routine"
