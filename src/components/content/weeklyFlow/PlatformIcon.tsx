@@ -6,9 +6,9 @@ import {
   Youtube, 
   FileText, 
   Mail, 
-  Film, 
+  Camera, 
+  Laptop, 
   PenLine, 
-  ScrollText, 
   UserCog, 
   Mic 
 } from "lucide-react";
@@ -30,12 +30,12 @@ const PlatformIcon = ({ platform, size = 24, className = "" }: PlatformIconProps
         return <FileText size={size} className={className} />;
       case "mail":
         return <Mail size={size} className={className} />;
-      case "film":
-        return <Film size={size} className={className} />;
+      case "camera":
+        return <Camera size={size} className={className} />;
+      case "laptop":
+        return <Laptop size={size} className={className} />;
       case "pen-line":
         return <PenLine size={size} className={className} />;
-      case "scroll-text":
-        return <ScrollText size={size} className={className} />;
       case "user-cog":
         return <UserCog size={size} className={className} />;
       case "mic":
