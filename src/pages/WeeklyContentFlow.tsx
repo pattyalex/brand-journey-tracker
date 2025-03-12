@@ -74,6 +74,14 @@ const WeeklyContentFlow = () => {
     });
   };
 
+  const AddYourOwnIcon = ({ size = 24 }: { size?: number }) => {
+    return (
+      <div className="bg-gradient-to-tr from-purple-100 to-purple-200 rounded-full p-1 flex items-center justify-center">
+        <Plus size={size} className="text-purple-600" />
+      </div>
+    );
+  };
+
   return (
     <Layout>
       <div className="container mx-auto py-6 max-w-6xl">
@@ -81,6 +89,50 @@ const WeeklyContentFlow = () => {
         <p className="text-gray-600 text-lg mb-8">
           Map out your content workflow: Drag and drop tasks into the day you want to complete them
         </p>
+        
+        <div className="mb-10">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className="text-2xl font-semibold">Weekly Content Tasks</h2>
+              <p className="text-gray-600 mt-1">Map out your content workflow: Drag and drop tasks into the day you want to complete them</p>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setIsAddPlatformOpen(true)}
+              className="gap-1.5"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Add Your Own
+            </Button>
+          </div>
+          
+          <div className="flex flex-wrap gap-8">
+            {platforms.map((platform) => (
+              <div 
+                key={platform.id} 
+                className="flex flex-col items-center"
+                draggable
+                onDragStart={(e) => handleDragStart(e, platform.id)}
+              >
+                <div className="p-3 mb-2 cursor-grab active:cursor-grabbing hover:scale-110 transition-transform">
+                  <PlatformIcon platform={platform} size={24} />
+                </div>
+                <span className="text-center text-sm font-medium">{platform.name}</span>
+              </div>
+            ))}
+            
+            <div 
+              className="flex flex-col items-center"
+              onClick={() => setIsAddPlatformOpen(true)}
+            >
+              <div className="p-3 mb-2 cursor-pointer hover:scale-110 transition-transform">
+                <AddYourOwnIcon size={24} />
+              </div>
+              <span className="text-center text-sm font-medium">Add your own</span>
+            </div>
+          </div>
+        </div>
         
         <div className="pt-6">
           <div className="flex justify-between items-center mb-4">
