@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Platform, ContentItem } from "@/types/content-flow";
 import PlatformIcon from "./PlatformIcon";
@@ -66,9 +67,9 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
                   return (
                     <div 
                       key={content.id}
-                      className="bg-white p-2 rounded-md border border-gray-200 shadow-sm flex items-center gap-2 group"
+                      className="bg-white p-2 rounded-md border border-gray-200 shadow-sm flex items-center gap-2 group hover:shadow-md transition-shadow"
                     >
-                      <div className="bg-gray-100 rounded-full p-2 flex-shrink-0">
+                      <div className="flex-shrink-0">
                         <PlatformIcon platform={platform} size={16} />
                       </div>
                       <span className="text-sm font-medium truncate">{platform.name}</span>

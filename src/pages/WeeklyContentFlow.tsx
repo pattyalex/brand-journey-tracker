@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import Layout from "@/components/Layout";
-import { Plus } from "lucide-react";
 import { ContentItem, Platform } from "@/types/content-flow";
 import AddPlatformDialog from "@/components/content/weeklyFlow/AddPlatformDialog";
 import ContentSchedule from "@/components/content/weeklyFlow/ContentSchedule";
@@ -46,7 +45,7 @@ const WeeklyContentFlow = () => {
 
     // Create a custom drag image
     const dragPreview = document.createElement("div");
-    dragPreview.className = "bg-gray-100 rounded-full p-3 flex items-center shadow-lg";
+    dragPreview.className = "bg-white rounded-lg p-3 flex items-center shadow-lg";
     dragPreview.innerHTML = `
       <div class="flex items-center gap-2">
         <div class="icon-container"></div>
@@ -90,23 +89,12 @@ const WeeklyContentFlow = () => {
                 draggable
                 onDragStart={(e) => handleDragStart(e, platform.id)}
               >
-                <div className="bg-gray-100 rounded-full p-3 mb-2 cursor-grab active:cursor-grabbing">
+                <div className="p-3 mb-2 cursor-grab active:cursor-grabbing hover:scale-110 transition-transform">
                   <PlatformIcon platform={platform} size={24} />
                 </div>
-                <span className="text-center text-sm">{platform.name}</span>
+                <span className="text-center text-sm font-medium">{platform.name}</span>
               </div>
             ))}
-            
-            {/* Add Your Own Platform Button */}
-            <div className="flex flex-col items-center">
-              <button 
-                onClick={() => setIsAddPlatformOpen(true)}
-                className="bg-purple-100 rounded-full p-3 mb-2 hover:bg-purple-200 transition-colors"
-              >
-                <Plus className="h-6 w-6 text-purple-600" />
-              </button>
-              <span className="text-center text-sm">Add your own</span>
-            </div>
           </div>
         </div>
         
