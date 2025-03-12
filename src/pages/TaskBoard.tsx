@@ -1,3 +1,4 @@
+
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -846,3 +847,460 @@ const TaskColumn = ({ title, icon, tasks, moveTask, onEditTask, onDeleteTask, ge
       case "All": return "todo-all";
       case "Today": return "todo-today";
       case "Scheduled": return "scheduled";
+      case "Completed": return "completed";
+      default: return "todo-all";
+    }
+  };
+
+  return (
+    <Card className="col-span-1 h-full">
+      <CardHeader className="p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {icon}
+            <CardTitle className="text-base">{title}</CardTitle>
+            <div className="text-xs rounded-full bg-gray-100 px-2 py-0.5">
+              {tasks.length}
+            </div>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="p-3">
+        <Droppable droppableId={columnId}>
+          {(provided) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className="space-y-3 min-h-[200px]"
+            >
+              {tasks.length === 0 ? (
+                <div className="flex h-[100px] items-center justify-center rounded-md border border-dashed">
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">No tasks in this column</p>
+                  </div>
+                </div>
+              ) : (
+                <ScrollArea className="h-[calc(100vh-350px)] pr-3">
+                  {tasks.map((task, index) => (
+                    <Draggable key={task.id} draggableId={task.id} index={index}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          className={`mb-3 ${snapshot.isDragging ? "opacity-70" : ""}`}
+                        >
+                          <Card className="group hover:shadow-md transition-shadow">
+                            <CardContent className="p-3">
+                              <div className="flex justify-between items-start gap-2">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h3 className="font-medium">{task.title}</h3>
+                                    <span className={`text-xs font-medium ${getPriorityColor(task.priority)}`}>
+                                      {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                                    </span>
+                                  </div>
+                                  {task.description && (
+                                    <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{task.description}</p>
+                                  )}
+                                  {task.dueDate && (
+                                    <div className="flex items-center text-xs text-muted-foreground mt-2">
+                                      <CalendarIcon className="mr-1 h-3 w-3" />
+                                      {new Date(task.dueDate).toLocaleDateString()}
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="flex gap-1">
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-8 w-8"
+                                    onClick={() => onEditTask(task)}
+                                  >
+                                    <Edit size={14} />
+                                  </Button>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-8 w-8 hover:text-destructive"
+                                    onClick={() => onDeleteTask(task.id)}
+                                  >
+                                    <Trash2 size={14} />
+                                  </Button>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                </ScrollArea>
+              )}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </CardContent>
+    </Card>
+  );
+};
+
+interface SimplifiedTaskColumnProps {
+  title: string;
+  icon: React.ReactNode;
+  tasks: Task[];
+  moveTask: (taskId: string, newStatus: Task["status"]) => void;
+  onEditTask: (task: Task) => void;
+  onDeleteTask: (taskId: string) => void;
+  setIsAddDialogOpen: (open: boolean) => void;
+  setNewTask: (task: Partial<Task>) => void;
+  columnId: Task["status"];
+  onAddQuickTask: (title: string, status: Task["status"]) => void;
+  toggleTaskCompletion: (taskId: string) => void;
+  getPriorityIcon: (priority: Task["priority"]) => React.ReactNode;
+}
+
+const SimplifiedTaskColumn = ({ 
+  title, 
+  icon, 
+  tasks, 
+  moveTask, 
+  onEditTask, 
+  onDeleteTask, 
+  setIsAddDialogOpen, 
+  setNewTask, 
+  columnId,
+  onAddQuickTask,
+  toggleTaskCompletion,
+  getPriorityIcon
+}: SimplifiedTaskColumnProps) => {
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleAddQuickTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newTaskTitle.trim()) {
+      onAddQuickTask(newTaskTitle, columnId);
+      setNewTaskTitle("");
+    }
+  };
+
+  return (
+    <Card className="col-span-1 h-full">
+      <CardHeader className="p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {icon}
+            <CardTitle className="text-base">{title}</CardTitle>
+            <div className="text-xs rounded-full bg-gray-100 px-2 py-0.5">
+              {tasks.length}
+            </div>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8"
+            onClick={() => {
+              setNewTask({ status: columnId });
+              setIsAddDialogOpen(true);
+            }}
+          >
+            <PlusCircle size={16} />
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="p-3">
+        <Droppable droppableId={columnId}>
+          {(provided) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className="space-y-3"
+            >
+              <form onSubmit={handleAddQuickTask} className="flex gap-2 mb-3">
+                <Input
+                  ref={inputRef}
+                  placeholder="Add a quick task..."
+                  value={newTaskTitle}
+                  onChange={(e) => setNewTaskTitle(e.target.value)}
+                  className="h-9 text-sm"
+                />
+                <Button 
+                  type="submit" 
+                  size="sm" 
+                  className="h-9 px-3"
+                  disabled={!newTaskTitle.trim()}
+                >
+                  Add
+                </Button>
+              </form>
+
+              {tasks.length === 0 ? (
+                <div className="flex h-[100px] items-center justify-center rounded-md border border-dashed">
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">No tasks in this column</p>
+                  </div>
+                </div>
+              ) : (
+                <ScrollArea className="h-[calc(100vh-350px)] pr-3">
+                  {tasks.map((task, index) => (
+                    <Draggable key={task.id} draggableId={task.id} index={index}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          className={`mb-3 ${snapshot.isDragging ? "opacity-70" : ""}`}
+                        >
+                          <div className="p-3 border rounded-md bg-white hover:shadow-sm transition-shadow group">
+                            <div className="flex items-start gap-2">
+                              <div 
+                                className="mt-0.5 cursor-pointer" 
+                                onClick={() => toggleTaskCompletion(task.id)}
+                              >
+                                {task.isCompleted ? (
+                                  <CheckCircle className="h-4 w-4 text-green-500" />
+                                ) : (
+                                  <Circle className="h-4 w-4 text-gray-300" />
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                                  <span className={`${task.isCompleted ? 'line-through text-gray-400' : 'text-gray-700'} font-medium text-sm`}>
+                                    {task.title}
+                                  </span>
+                                  {getPriorityIcon(task.priority)}
+                                </div>
+                                {task.description && (
+                                  <p className={`text-xs ${task.isCompleted ? 'line-through text-gray-400' : 'text-gray-500'} line-clamp-2`}>
+                                    {task.description}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-7 w-7"
+                                  onClick={() => onEditTask(task)}
+                                >
+                                  <Edit size={12} />
+                                </Button>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-7 w-7 hover:text-destructive"
+                                  onClick={() => onDeleteTask(task.id)}
+                                >
+                                  <Trash2 size={12} />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                </ScrollArea>
+              )}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </CardContent>
+    </Card>
+  );
+};
+
+interface SimplifiedTaskListProps {
+  tasks: Task[];
+  status: Task["status"];
+  moveTask: (taskId: string, newStatus: Task["status"]) => void;
+  onEditTask: (task: Task) => void;
+  onDeleteTask: (taskId: string) => void;
+  setIsAddDialogOpen: (open: boolean) => void;
+  setNewTask: (task: Partial<Task>) => void;
+  onAddQuickTask: (title: string, status: Task["status"]) => void;
+  toggleTaskCompletion: (taskId: string) => void;
+  getPriorityIcon: (priority: Task["priority"]) => React.ReactNode;
+}
+
+const SimplifiedTaskList = ({
+  tasks,
+  status,
+  moveTask,
+  onEditTask,
+  onDeleteTask,
+  setIsAddDialogOpen,
+  setNewTask,
+  onAddQuickTask,
+  toggleTaskCompletion,
+  getPriorityIcon
+}: SimplifiedTaskListProps) => {
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleAddQuickTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newTaskTitle.trim()) {
+      onAddQuickTask(newTaskTitle, status);
+      setNewTaskTitle("");
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <form onSubmit={handleAddQuickTask} className="flex gap-2">
+        <Input
+          ref={inputRef}
+          placeholder="Add a quick task..."
+          value={newTaskTitle}
+          onChange={(e) => setNewTaskTitle(e.target.value)}
+          className="h-10"
+        />
+        <Button 
+          type="submit" 
+          className="h-10"
+          disabled={!newTaskTitle.trim()}
+        >
+          Add
+        </Button>
+      </form>
+
+      {tasks.length === 0 ? (
+        <div className="flex h-[150px] items-center justify-center rounded-md border border-dashed">
+          <div className="text-center">
+            <p className="text-muted-foreground mb-2">No tasks in this section</p>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setNewTask({ status });
+                setIsAddDialogOpen(true);
+              }}
+            >
+              <PlusCircle size={16} className="mr-2" />
+              Add a task
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {tasks.map((task) => (
+            <div key={task.id} className="p-4 border rounded-md bg-white hover:shadow-sm transition-shadow group">
+              <div className="flex items-start gap-3">
+                <div 
+                  className="mt-0.5 cursor-pointer" 
+                  onClick={() => toggleTaskCompletion(task.id)}
+                >
+                  {task.isCompleted ? (
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                  ) : (
+                    <Circle className="h-5 w-5 text-gray-300" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <span className={`${task.isCompleted ? 'line-through text-gray-400' : 'text-gray-800'} font-medium`}>
+                      {task.title}
+                    </span>
+                    {getPriorityIcon(task.priority)}
+                  </div>
+                  {task.description && (
+                    <p className={`text-sm ${task.isCompleted ? 'line-through text-gray-400' : 'text-gray-500'}`}>
+                      {task.description}
+                    </p>
+                  )}
+                  {task.dueDate && (
+                    <div className="flex items-center text-xs text-muted-foreground mt-2">
+                      <CalendarIcon className="mr-1 h-3 w-3" />
+                      {new Date(task.dueDate).toLocaleDateString()}
+                    </div>
+                  )}
+
+                  <div className="flex gap-2 mt-3 flex-wrap">
+                    {status !== "todo-today" && (
+                      <Button 
+                        size="xs" 
+                        variant="outline" 
+                        className="text-xs"
+                        onClick={() => moveTask(task.id, "todo-today")}
+                      >
+                        <Clock size={12} className="mr-1" />
+                        Move to Today
+                      </Button>
+                    )}
+                    {status !== "todo-all" && (
+                      <Button 
+                        size="xs" 
+                        variant="outline" 
+                        className="text-xs"
+                        onClick={() => moveTask(task.id, "todo-all")}
+                      >
+                        <CheckSquare size={12} className="mr-1" />
+                        Move to All
+                      </Button>
+                    )}
+                    {status !== "scheduled" && (
+                      <Button 
+                        size="xs" 
+                        variant="outline" 
+                        className="text-xs"
+                        onClick={() => {
+                          const updatedTasks = tasks.map((t) => {
+                            if (t.id === task.id) {
+                              return { 
+                                ...t, 
+                                status: "scheduled" as Task["status"], 
+                                dueDate: t.dueDate || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                              };
+                            }
+                            return t;
+                          });
+                        }}
+                      >
+                        <Calendar size={12} className="mr-1" />
+                        Schedule
+                      </Button>
+                    )}
+                    {status !== "completed" && (
+                      <Button 
+                        size="xs" 
+                        variant="outline" 
+                        className="text-xs text-green-600"
+                        onClick={() => moveTask(task.id, "completed")}
+                      >
+                        <CheckCircle2 size={12} className="mr-1" />
+                        Complete
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <div className="flex gap-1">
+                  <Button 
+                    size="icon" 
+                    variant="ghost" 
+                    className="h-8 w-8" 
+                    onClick={() => onEditTask(task)}
+                  >
+                    <Edit size={14} />
+                  </Button>
+                  <Button 
+                    size="icon" 
+                    variant="ghost" 
+                    className="h-8 w-8 hover:text-destructive" 
+                    onClick={() => onDeleteTask(task.id)}
+                  >
+                    <Trash2 size={14} />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default TaskBoard;
