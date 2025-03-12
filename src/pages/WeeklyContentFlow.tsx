@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -60,9 +59,43 @@ const WeeklyContentFlow = () => {
     setContentItems([...contentItems, newItem]);
   };
 
-  // Handle the drag start event
+  // Handle the drag start event with custom drag image
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, platformId: string) => {
+    // Store the platform ID in the dataTransfer object
     e.dataTransfer.setData("platformId", platformId);
+    
+    // Get the platform
+    const platform = platforms.find(p => p.id === platformId);
+    if (!platform) return;
+    
+    // Set effectAllowed to copy to indicate we're copying, not moving
+    e.dataTransfer.effectAllowed = "copy";
+
+    // Optional: Create a custom drag image that looks like the platform icon
+    const dragPreview = document.createElement("div");
+    dragPreview.className = "bg-gray-100 rounded-full p-3 flex items-center shadow-lg";
+    dragPreview.innerHTML = `
+      <div class="flex items-center gap-2">
+        <div class="icon-container"></div>
+        <span class="font-medium">${platform.name}</span>
+      </div>
+    `;
+    
+    // Append it to the body temporarily (needed for Firefox)
+    document.body.appendChild(dragPreview);
+    
+    // Hide it but keep it in the DOM for the drag operation
+    dragPreview.style.position = "absolute";
+    dragPreview.style.top = "-1000px";
+    dragPreview.style.opacity = "0.8";
+    
+    // Set it as the drag image
+    e.dataTransfer.setDragImage(dragPreview, 20, 20);
+    
+    // Clean up the drag preview element after a short delay
+    setTimeout(() => {
+      document.body.removeChild(dragPreview);
+    }, 100);
   };
 
   return (

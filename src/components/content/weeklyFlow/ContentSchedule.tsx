@@ -18,11 +18,14 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
   
   const handleDrop = (platformId: string, day: string) => {
     // Create a new content item when a platform is dropped into a cell
+    const platform = platforms.find(p => p.id === platformId);
+    if (!platform) return;
+    
     const newItem: ContentItem = {
       id: uuidv4(),
       platformId,
       day,
-      title: `New ${platforms.find(p => p.id === platformId)?.name || 'Content'} task`,
+      title: `New ${platform.name} task`,
     };
     
     // Check if there's already content for this platform on this day
