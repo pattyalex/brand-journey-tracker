@@ -15,8 +15,9 @@ import {
   Calendar,
   Shirt,
   AtSign,
-  Megaphone,
-  Wallet
+  Target,
+  Wallet,
+  Scroll
 } from "lucide-react";
 
 interface PlatformIconProps {
@@ -52,10 +53,12 @@ const PlatformIcon = ({ platform, size = 24, className = "" }: PlatformIconProps
         return <Calendar size={size} className={className} />;
       case "shirt":
         return <Shirt size={size} className={className} />;
+      case "dress":
+        return <Shirt size={size} className={className} />; // Using Shirt as the closest icon for dress
       case "at-sign":
         return <AtSign size={size} className={className} />;
-      case "megaphone":
-        return <Megaphone size={size} className={className} />;
+      case "target":
+        return <Target size={size} className={className} />; // Target icon for strategy
       case "wallet":
         return <Wallet size={size} className={className} />;
       default:

@@ -13,14 +13,14 @@ const WeeklyContentFlow = () => {
   const initialPlatforms: Platform[] = [
     { id: "film", name: "Film", icon: "camera" },
     { id: "edit", name: "Edit", icon: "laptop" },
-    { id: "script", name: "Script", icon: "pen-line" },
+    { id: "script", name: "Script", icon: "file-text" },
     { id: "admin", name: "Admin", icon: "user-cog" },
     { id: "record", name: "Record", icon: "mic" },
     { id: "brainstorm", name: "Brainstorming", icon: "lightbulb" },
     { id: "planning", name: "Planning", icon: "calendar" },
-    { id: "styling", name: "Styling", icon: "shirt" },
+    { id: "styling", name: "Styling", icon: "dress" },
     { id: "emails", name: "Emails", icon: "at-sign" },
-    { id: "marketing", name: "Marketing", icon: "megaphone" },
+    { id: "strategy", name: "Strategy", icon: "target" },
     { id: "financials", name: "Financials", icon: "wallet" }
   ];
 

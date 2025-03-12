@@ -15,14 +15,14 @@ import { v4 as uuidv4 } from "uuid";
 import { 
   Camera, 
   Laptop, 
-  PenLine, 
+  FileText, 
   UserCog, 
   Mic,
   Lightbulb,
   Calendar,
   Shirt,
   AtSign,
-  Megaphone,
+  Target,
   Wallet
 } from "lucide-react";
 
@@ -35,14 +35,15 @@ interface AddPlatformDialogProps {
 const PLATFORM_ICONS = [
   { icon: "camera", component: Camera },
   { icon: "laptop", component: Laptop },
-  { icon: "pen-line", component: PenLine },
+  { icon: "file-text", component: FileText },
   { icon: "user-cog", component: UserCog },
   { icon: "mic", component: Mic },
   { icon: "lightbulb", component: Lightbulb },
   { icon: "calendar", component: Calendar },
   { icon: "shirt", component: Shirt },
+  { icon: "dress", component: Shirt }, // Using Shirt as the closest icon for dress
   { icon: "at-sign", component: AtSign },
-  { icon: "megaphone", component: Megaphone },
+  { icon: "target", component: Target }, // Target icon for strategy
   { icon: "wallet", component: Wallet },
 ];
 
