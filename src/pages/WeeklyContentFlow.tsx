@@ -1,7 +1,5 @@
-
 import { useState } from "react";
 import Layout from "@/components/Layout";
-import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { ContentItem, Platform } from "@/types/content-flow";
 import AddPlatformDialog from "@/components/content/weeklyFlow/AddPlatformDialog";
@@ -78,14 +76,6 @@ const WeeklyContentFlow = () => {
         <div className="mb-10">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-semibold">Platforms</h2>
-            <Button 
-              onClick={() => setIsAddPlatformOpen(true)} 
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <Plus className="h-5 w-5" />
-              Add Platform
-            </Button>
           </div>
           
           <div className="flex flex-wrap gap-8">
