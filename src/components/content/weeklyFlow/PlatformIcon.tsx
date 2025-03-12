@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Platform } from "@/types/content-flow";
 import { 
@@ -26,7 +25,7 @@ interface PlatformIconProps {
   className?: string;
 }
 
-const PlatformIcon = ({ platform, size = 24, className = "" }: PlatformIconProps) => {
+const PlatformIcon = ({ platform, size = 12, className = "" }: PlatformIconProps) => {
   const getIcon = () => {
     switch (platform.icon) {
       case "instagram":

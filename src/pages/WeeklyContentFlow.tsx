@@ -56,8 +56,8 @@ const WeeklyContentFlow = () => {
           <div className="flex flex-wrap gap-8">
             {platforms.map((platform) => (
               <div key={platform.id} className="flex flex-col items-center">
-                <div className="bg-gray-100 rounded-full p-6 mb-2">
-                  <PlatformIcon platform={platform} size={24} />
+                <div className="bg-gray-100 rounded-full p-3 mb-2">
+                  <PlatformIcon platform={platform} size={12} />
                 </div>
                 <span className="text-center">{platform.name}</span>
               </div>
@@ -67,9 +67,9 @@ const WeeklyContentFlow = () => {
             <div className="flex flex-col items-center">
               <button 
                 onClick={() => setIsAddPlatformOpen(true)}
-                className="bg-purple-100 rounded-full p-6 mb-2 hover:bg-purple-200 transition-colors"
+                className="bg-purple-100 rounded-full p-3 mb-2 hover:bg-purple-200 transition-colors"
               >
-                <Plus className="h-6 w-6 text-purple-600" />
+                <Plus className="h-3 w-3 text-purple-600" />
               </button>
               <span className="text-center">Add your own</span>
             </div>
