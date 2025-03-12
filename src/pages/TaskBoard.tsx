@@ -99,7 +99,7 @@ const TaskBoard = () => {
     <div className="container mx-auto max-w-6xl">
       <h1 className="text-2xl font-bold mb-2">Weekly View</h1>
       <p className="text-gray-600 text-lg mb-8">
-        Map out your content workflow: Drag and drop tasks into the day you want to complete them
+        Plan your content workflow: Drag and drop tasks into the day you want to complete them
       </p>
       
       <div className="mb-10">
