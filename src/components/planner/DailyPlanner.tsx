@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { format, addDays, subDays, parseISO } from "date-fns";
 import { Copy, Trash2, Heart, AlarmClock, CalendarIcon, ChevronLeft, ChevronRight, ListChecks } from 'lucide-react';
@@ -453,7 +454,7 @@ export const DailyPlanner = () => {
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
       <Card className="border-none shadow-none">
-        <div className="mb-3">
+        <div className="mb-6">
           <div className="flex items-center gap-2 mb-3">
             <AlarmClock className="h-5 w-5 text-blue-500" />
             <h3 className="text-lg font-medium">To Do Later</h3>
@@ -500,14 +501,14 @@ export const DailyPlanner = () => {
           </div>
         </div>
 
-        <div className="mb-3">
+        <div className="mb-6">
           <div className="flex items-center gap-2 mb-3">
             <ListChecks className="h-5 w-5 text-amber-500" />
             <h3 className="text-lg font-medium">To Do Today</h3>
           </div>
         </div>
 
-        <CardHeader className="px-0 pt-0 pb-2">
+        <CardHeader className="px-0 pt-0">
           <div className="flex flex-col space-y-4">            
             <div className="flex items-center justify-between">
               <Button variant="outline" size="icon" onClick={handlePreviousDay} className="mr-2">
@@ -659,9 +660,9 @@ export const DailyPlanner = () => {
             </div>
           </div>
         </CardHeader>
-        
-        <CardContent className="px-0 pt-0">
-          <div className="mb-2">
+        <CardContent className="px-0">
+          
+          <div className="mb-6">
             <CardDescription>
               Schedule your tasks:
             </CardDescription>
