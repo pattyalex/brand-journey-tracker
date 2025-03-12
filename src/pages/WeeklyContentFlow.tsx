@@ -74,6 +74,15 @@ const WeeklyContentFlow = () => {
     });
   };
 
+  // Custom add icon that matches the style of PlatformIcon
+  const AddYourOwnIcon = ({ size = 24 }: { size?: number }) => {
+    return (
+      <div className="bg-gradient-to-tr from-purple-100 to-purple-200 rounded-full p-1 flex items-center justify-center">
+        <Plus size={size} className="text-purple-600" />
+      </div>
+    );
+  };
+
   return (
     <Layout>
       <div className="container mx-auto py-6 max-w-6xl">
@@ -120,9 +129,7 @@ const WeeklyContentFlow = () => {
               onClick={() => setIsAddPlatformOpen(true)}
             >
               <div className="p-3 mb-2 cursor-pointer hover:scale-110 transition-transform">
-                <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
-                  <Plus className="w-6 h-6 text-purple-600" />
-                </div>
+                <AddYourOwnIcon size={24} />
               </div>
               <span className="text-center text-sm font-medium">Add your own</span>
             </div>
