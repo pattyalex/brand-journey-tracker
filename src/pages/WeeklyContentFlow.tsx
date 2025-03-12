@@ -126,7 +126,7 @@ const WeeklyContentFlow = () => {
               className="gap-1.5 text-gray-600 hover:text-gray-700"
             >
               <Trash2 className="w-3.5 h-3.5" />
-              Clear
+              Clear All
             </Button>
           </div>
           
