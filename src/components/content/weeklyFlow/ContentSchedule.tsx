@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Platform, ContentItem } from "@/types/content-flow";
 import PlatformIcon from "./PlatformIcon";
@@ -15,7 +14,6 @@ const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "S
 const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentScheduleProps) => {
   
   const handleDrop = (platformId: string, day: string) => {
-    // Create a new content item when a platform is dropped into a cell
     const platform = platforms.find(p => p.id === platformId);
     if (!platform) return;
     
@@ -27,40 +25,34 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
     };
     
     setContentItems([...contentItems, newItem]);
-    // Toast notification removed
   };
 
   const handleRemoveContent = (id: string) => {
     setContentItems(contentItems.filter(item => item.id !== id));
-    // Toast notification removed
   };
   
   return (
     <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
       <div className="grid grid-cols-7 gap-0">
-        {/* Header row - days only */}
         {DAYS_OF_WEEK.map((day) => (
           <div key={day} className="p-4 font-medium text-gray-700 text-center border-b border-gray-200">
             {day}
           </div>
         ))}
         
-        {/* Content cells for each day */}
         <div className="col-span-7 grid grid-cols-7">
           {DAYS_OF_WEEK.map((day) => {
-            // Get all content for this day
             const dayContent = contentItems.filter(item => item.day === day);
             
             return (
               <div 
                 key={`day-${day}`}
-                className="p-3 border border-gray-200 min-h-[200px] flex flex-col gap-2"
+                className="p-3 border border-gray-200 min-h-[300px] flex flex-col gap-2"
                 onDragOver={(e) => {
                   e.preventDefault();
                 }}
                 onDrop={(e) => {
                   e.preventDefault();
-                  // Handle the drop event from the platform section
                   const platformId = e.dataTransfer.getData("platformId");
                   if (platformId) {
                     handleDrop(platformId, day);
