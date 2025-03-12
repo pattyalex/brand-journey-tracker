@@ -24,3 +24,8 @@ export interface VisionBoardData {
   content: string; // Either image URL or external link URL or PDF data URL
   title?: string; // Optional title for the vision board
 }
+
+// New interface for global planner data
+export interface GlobalPlannerData {
+  globalTasks: string; // Global tasks that remain the same across all days
+}

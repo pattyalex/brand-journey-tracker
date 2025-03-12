@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { format, addDays, subDays, parseISO } from "date-fns";
 import { Copy, Trash2, Sun, Heart, ListTodo, CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
-import { PlannerDay, PlannerItem } from "@/types/planner";
+import { PlannerDay, PlannerItem, GlobalPlannerData } from "@/types/planner";
 import { PlannerSection } from "./PlannerSection";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,6 +44,9 @@ export const DailyPlanner = () => {
   const [copyToDate, setCopyToDate] = useState<Date | undefined>(undefined);
   const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
   const [deleteAfterCopy, setDeleteAfterCopy] = useState(false);
+  
+  const [globalTasks, setGlobalTasks] = useState<string>("");
+  
   const [tasks, setTasks] = useState<string>("");
   const [greatDay, setGreatDay] = useState<string>("");
   const [grateful, setGrateful] = useState<string>("");
@@ -56,11 +59,22 @@ export const DailyPlanner = () => {
     if (savedData) {
       setPlannerData(JSON.parse(savedData));
     }
+    
+    const savedGlobalData = localStorage.getItem("globalPlannerData");
+    if (savedGlobalData) {
+      const globalData: GlobalPlannerData = JSON.parse(savedGlobalData);
+      setGlobalTasks(globalData.globalTasks || "");
+    }
   }, []);
 
   useEffect(() => {
     localStorage.setItem("plannerData", JSON.stringify(plannerData));
   }, [plannerData]);
+  
+  useEffect(() => {
+    const globalData: GlobalPlannerData = { globalTasks };
+    localStorage.setItem("globalPlannerData", JSON.stringify(globalData));
+  }, [globalTasks]);
 
   useEffect(() => {
     const currentDay = plannerData.find(day => day.date === dateString);
@@ -272,6 +286,11 @@ export const DailyPlanner = () => {
     }
   };
 
+  const handleGlobalTasksChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newGlobalTasks = e.target.value;
+    setGlobalTasks(newGlobalTasks);
+  };
+
   const handleTasksChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newTasks = e.target.value;
     setTasks(newTasks);
@@ -340,7 +359,7 @@ export const DailyPlanner = () => {
         items: [],
         tasks: tasks,
         greatDay: greatDay,
-        grateful: grateful
+        grateful: newGrateful
       });
     }
     
@@ -382,26 +401,21 @@ export const DailyPlanner = () => {
       ? sourceItems 
       : getSectionItems(destSection);
     
-    // Find the actual item to move
     const itemToMove = sourceItems[source.index];
     
     if (!itemToMove) return;
     
-    // Create a new array without the moved item
     const newSourceItems = updatedPlannerData[dayIndex].items.filter(
       item => !(item.id === itemToMove.id && item.section === sourceSection)
     );
     
-    // Create the updated item with new section
     const updatedItem = {
       ...itemToMove,
       section: destSection
     };
     
-    // Insert the item at the correct position
     const newItems = [...newSourceItems];
     
-    // Find the insertion index in the destination
     const insertIndex = newItems.filter(i => i.section === destSection).length <= destination.index
       ? newItems.length
       : newItems.findIndex((item, idx) => {
@@ -427,7 +441,6 @@ export const DailyPlanner = () => {
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
       <Card className="border-none shadow-none">
-        {/* To-Dos section - now separated from the Copy Template section */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <ListTodo className="h-5 w-5 text-blue-500" />
@@ -435,9 +448,9 @@ export const DailyPlanner = () => {
           </div>
           <div className="border rounded-lg p-1">
             <Textarea
-              value={tasks}
-              onChange={handleTasksChange}
-              placeholder="Write your to dos, reminders or other notes for the day..."
+              value={globalTasks}
+              onChange={handleGlobalTasksChange}
+              placeholder="Write your to dos, reminders or other notes that will stay fixed regardless of day..."
               className="min-h-[120px] resize-none"
               onTextSelect={(selectedText) => {
                 if (selectedText) {
