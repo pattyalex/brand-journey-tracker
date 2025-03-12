@@ -1,4 +1,3 @@
-
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { DailyPlanner } from "@/components/planner/DailyPlanner";
 import { ContentItem, Platform } from "@/types/content-flow";
+import { PlannerDay, Task } from "@/types/task-board";
 import ContentSchedule from "@/components/content/weeklyFlow/ContentSchedule";
 import PlatformIcon from "@/components/content/weeklyFlow/PlatformIcon";
 import AddPlatformDialog from "@/components/content/weeklyFlow/AddPlatformDialog";
@@ -46,7 +46,6 @@ const TaskBoard = () => {
   const [activePage, setActivePage] = useState<string>("tasks-board");
   const [plannerData, setPlannerData] = useState<PlannerDay[]>([]);
 
-  // ContentTask states
   const initialPlatforms: Platform[] = [
     { id: "film", name: "Film", icon: "camera" },
     { id: "edit", name: "Edit", icon: "laptop" },
@@ -122,7 +121,6 @@ const TaskBoard = () => {
       setPlannerData(JSON.parse(savedPlannerData));
     }
 
-    // Load content items
     const savedContentItems = localStorage.getItem("contentItems");
     if (savedContentItems) {
       setContentItems(JSON.parse(savedContentItems));
@@ -315,7 +313,6 @@ const TaskBoard = () => {
     toast.success("Task added successfully");
   };
 
-  // Content Tasks Functions
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, platformId: string) => {
     e.dataTransfer.setData("platformId", platformId);
     
@@ -347,16 +344,14 @@ const TaskBoard = () => {
 
   const clearSchedule = () => {
     setContentItems([]);
-    toast({
-      title: "Schedule cleared",
+    toast.success("Schedule cleared", {
       description: "All tasks have been removed from the schedule",
     });
   };
 
   const addPlatform = (platform: Platform) => {
     setPlatforms([...platforms, platform]);
-    toast({
-      title: "Platform added",
+    toast.success("Platform added", {
       description: `${platform.name} has been added to your content tasks`
     });
   };
@@ -888,7 +883,7 @@ const TaskColumn = ({ title, icon, tasks, moveTask, onEditTask, onDeleteTask, ge
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className={`mb-3 ${snapshot.isDragging ? "opacity-70" : ""}`}
+                          className={`${snapshot.isDragging ? "opacity-70" : ""}`}
                         >
                           <Card className="group hover:shadow-md transition-shadow">
                             <CardContent className="p-3">
