@@ -62,6 +62,17 @@ const WeeklyContentFlow = () => {
                 <span className="text-center">{platform.name}</span>
               </div>
             ))}
+            
+            {/* Add Your Own Platform Button */}
+            <div className="flex flex-col items-center">
+              <button 
+                onClick={() => setIsAddPlatformOpen(true)}
+                className="bg-purple-100 rounded-full p-6 mb-2 hover:bg-purple-200 transition-colors"
+              >
+                <Plus className="h-6 w-6 text-purple-600" />
+              </button>
+              <span className="text-center">Add your own</span>
+            </div>
           </div>
         </div>
         
