@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { format, addDays, subDays, parseISO } from "date-fns";
 import { Copy, Trash2, Heart, AlarmClock, CalendarIcon, ChevronLeft, ChevronRight, ListChecks } from 'lucide-react';
@@ -460,7 +461,7 @@ export const DailyPlanner = () => {
               value={globalTasks}
               onChange={handleGlobalTasksChange}
               placeholder="Write the tasks you plan to complete later but haven't scheduled yet..."
-              className="min-h-[80px] resize-none"
+              className="min-h-[180px] resize-none"
               onTextSelect={(selectedText) => {
                 if (selectedText) {
                   const newItem: PlannerItem = {
