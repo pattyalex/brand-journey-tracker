@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -6,11 +7,11 @@ import { ContentItem, Platform } from "@/types/content-flow";
 import AddPlatformDialog from "@/components/content/weeklyFlow/AddPlatformDialog";
 import ContentSchedule from "@/components/content/weeklyFlow/ContentSchedule";
 import PlatformIcon from "@/components/content/weeklyFlow/PlatformIcon";
-import { DragDropContext, DropResult } from "react-beautiful-dnd";
+import { DragDropContext } from "react-beautiful-dnd";
 import { v4 as uuidv4 } from "uuid";
 
 const WeeklyContentFlow = () => {
-  // Define initial platforms including the new ones
+  // Define initial platforms
   const initialPlatforms: Platform[] = [
     { id: "film", name: "Film", icon: "camera" },
     { id: "edit", name: "Edit", icon: "laptop" },
@@ -33,11 +34,6 @@ const WeeklyContentFlow = () => {
     setPlatforms([...platforms, platform]);
   };
 
-  const handleDragEnd = (result: DropResult) => {
-    // This can be used for drag and drop within the schedule
-    // Currently not implemented but can be added for rearranging items
-  };
-
   // Handle the drag start event with custom drag image
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, platformId: string) => {
     // Store the platform ID in the dataTransfer object
@@ -50,7 +46,7 @@ const WeeklyContentFlow = () => {
     // Set effectAllowed to copy to indicate we're copying, not moving
     e.dataTransfer.effectAllowed = "copy";
 
-    // Optional: Create a custom drag image that looks like the platform icon
+    // Create a custom drag image
     const dragPreview = document.createElement("div");
     dragPreview.className = "bg-gray-100 rounded-full p-3 flex items-center shadow-lg";
     dragPreview.innerHTML = `
@@ -60,18 +56,13 @@ const WeeklyContentFlow = () => {
       </div>
     `;
     
-    // Append it to the body temporarily (needed for Firefox)
     document.body.appendChild(dragPreview);
-    
-    // Hide it but keep it in the DOM for the drag operation
     dragPreview.style.position = "absolute";
     dragPreview.style.top = "-1000px";
     dragPreview.style.opacity = "0.8";
     
-    // Set it as the drag image
     e.dataTransfer.setDragImage(dragPreview, 20, 20);
     
-    // Clean up the drag preview element after a short delay
     setTimeout(() => {
       document.body.removeChild(dragPreview);
     }, 100);
@@ -85,7 +76,7 @@ const WeeklyContentFlow = () => {
           Plan your content across different platforms for the week
         </p>
         
-        <DragDropContext onDragEnd={handleDragEnd}>
+        <DragDropContext onDragEnd={() => {}}>
           <div className="mb-10">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-semibold">Platforms</h2>
@@ -108,9 +99,9 @@ const WeeklyContentFlow = () => {
                   onDragStart={(e) => handleDragStart(e, platform.id)}
                 >
                   <div className="bg-gray-100 rounded-full p-3 mb-2 cursor-grab active:cursor-grabbing">
-                    <PlatformIcon platform={platform} size={12} />
+                    <PlatformIcon platform={platform} size={24} />
                   </div>
-                  <span className="text-center">{platform.name}</span>
+                  <span className="text-center text-sm">{platform.name}</span>
                 </div>
               ))}
               
@@ -120,15 +111,15 @@ const WeeklyContentFlow = () => {
                   onClick={() => setIsAddPlatformOpen(true)}
                   className="bg-purple-100 rounded-full p-3 mb-2 hover:bg-purple-200 transition-colors"
                 >
-                  <Plus className="h-3 w-3 text-purple-600" />
+                  <Plus className="h-6 w-6 text-purple-600" />
                 </button>
-                <span className="text-center">Add your own</span>
+                <span className="text-center text-sm">Add your own</span>
               </div>
             </div>
           </div>
           
-          <div className="pt-8">
-            <div className="flex justify-between items-center mb-6">
+          <div className="pt-6">
+            <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-semibold">Weekly Schedule</h2>
             </div>
             

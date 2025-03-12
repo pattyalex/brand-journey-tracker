@@ -38,11 +38,11 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
   };
   
   return (
-    <div className="rounded-lg border border-gray-200 bg-white">
+    <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
       <div className="grid grid-cols-7 gap-0">
         {/* Header row - days only */}
         {DAYS_OF_WEEK.map((day) => (
-          <div key={day} className="p-6 font-medium text-gray-700 text-center border-b border-gray-200">
+          <div key={day} className="p-4 font-medium text-gray-700 text-center border-b border-gray-200">
             {day}
           </div>
         ))}
@@ -57,13 +57,18 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
               <Droppable 
                 key={`day-${day}`} 
                 droppableId={`day-${day}`}
+                isDropDisabled={false}
               >
-                {(provided) => (
+                {(provided, snapshot) => (
                   <div 
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className="p-4 border-l border-gray-200 min-h-[200px] transition-colors hover:bg-gray-50 flex flex-col gap-2"
-                    onDragOver={(e) => e.preventDefault()}
+                    className={`p-3 border border-gray-200 min-h-[200px] flex flex-col gap-2 ${
+                      snapshot.isDraggingOver ? 'bg-blue-50' : 'bg-white'
+                    }`}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                    }}
                     onDrop={(e) => {
                       e.preventDefault();
                       // Handle the drop event from the platform section
@@ -80,15 +85,16 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
                       return (
                         <div 
                           key={content.id}
-                          className="bg-white p-3 rounded-md border border-gray-200 shadow-sm relative group flex items-center gap-2"
+                          className="bg-white p-2 rounded-md border border-gray-200 shadow-sm flex items-center gap-2 group"
                         >
-                          <div className="bg-gray-100 rounded-full p-2">
+                          <div className="bg-gray-100 rounded-full p-2 flex-shrink-0">
                             <PlatformIcon platform={platform} size={16} />
                           </div>
-                          <span className="text-sm font-medium">{platform.name}</span>
+                          <span className="text-sm font-medium truncate">{platform.name}</span>
                           <button 
                             onClick={() => handleRemoveContent(content.id)}
                             className="ml-auto text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                            aria-label="Remove item"
                           >
                             ×
                           </button>
