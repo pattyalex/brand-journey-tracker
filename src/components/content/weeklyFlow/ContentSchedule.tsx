@@ -49,11 +49,8 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
   
   return (
     <div className="rounded-lg border border-gray-200">
-      <div className="grid grid-cols-8 gap-0">
-        {/* Header row */}
-        <div className="p-6 font-medium text-gray-700">
-          Platforms
-        </div>
+      <div className="grid grid-cols-7 gap-0">
+        {/* Header row - days only */}
         {DAYS_OF_WEEK.map((day) => (
           <div key={day} className="p-6 font-medium text-gray-700">
             {day}
@@ -63,14 +60,6 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
         {/* Platform rows */}
         {platforms.map((platform) => (
           <React.Fragment key={platform.id}>
-            {/* Platform column */}
-            <div className="p-6 border-t border-gray-200 flex items-center">
-              <div className="flex items-center gap-2">
-                <PlatformIcon platform={platform} size={12} />
-                <span className="font-medium">{platform.name}</span>
-              </div>
-            </div>
-            
             {/* Content cells for each day */}
             {DAYS_OF_WEEK.map((day) => {
               const content = contentItems.find(
