@@ -87,7 +87,7 @@ const WeeklyContentFlow = () => {
       <div className="container mx-auto py-6 max-w-6xl">
         <h1 className="text-4xl font-bold mb-2">Y</h1>
         <p className="text-gray-600 text-lg mb-8">
-          Plan your content across different platforms for the week
+          Map out your content workflow: Drag and drop tasks into the day you want to complete them
         </p>
         
         <div className="mb-10">
