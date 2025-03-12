@@ -450,8 +450,8 @@ export const DailyPlanner = () => {
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
       <Card className="border-none shadow-none">
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-3">
+        <div className="mb-4">
+          <div className="flex items-center gap-2 mb-2">
             <AlarmClock className="h-5 w-5 text-blue-500" />
             <h3 className="text-lg font-medium">To Do Later</h3>
           </div>
@@ -460,7 +460,7 @@ export const DailyPlanner = () => {
               value={globalTasks}
               onChange={handleGlobalTasksChange}
               placeholder="Write the tasks you plan to complete later but haven't scheduled yet..."
-              className="min-h-[120px] resize-none"
+              className="min-h-[80px] resize-none"
               onTextSelect={(selectedText) => {
                 if (selectedText) {
                   const newItem: PlannerItem = {
@@ -497,8 +497,8 @@ export const DailyPlanner = () => {
           </div>
         </div>
 
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-3">
+        <div className="mb-4">
+          <div className="flex items-center gap-2 mb-2">
             <ListChecks className="h-5 w-5 text-amber-500" />
             <h3 className="text-lg font-medium">To Do Today</h3>
           </div>
@@ -658,7 +658,7 @@ export const DailyPlanner = () => {
         </CardHeader>
         <CardContent className="px-0">
           
-          <div className="mb-6">
+          <div className="mb-4">
             <CardDescription>
               Schedule your tasks:
             </CardDescription>
@@ -707,7 +707,7 @@ export const DailyPlanner = () => {
           </div>
           
           <div className="mt-8">
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2 mb-2">
               <Heart className="h-5 w-5 text-amber-500" />
               <h3 className="text-lg font-medium">What would make today great?</h3>
             </div>
@@ -716,7 +716,7 @@ export const DailyPlanner = () => {
                 value={greatDay}
                 onChange={handleGreatDayChange}
                 placeholder="List 1-3 things that would make today wonderful..."
-                className="min-h-[120px] resize-none"
+                className="min-h-[80px] resize-none"
                 onTextSelect={(selectedText) => {
                   if (selectedText) {
                     const newItem: PlannerItem = {
@@ -753,8 +753,8 @@ export const DailyPlanner = () => {
             </div>
           </div>
           
-          <div className="mt-8">
-            <div className="flex items-center gap-2 mb-3">
+          <div className="mt-6">
+            <div className="flex items-center gap-2 mb-2">
               <Heart className="h-4 w-4 text-rose-500" />
               <h3 className="text-lg font-medium">Things I'm grateful for today</h3>
             </div>
@@ -763,7 +763,7 @@ export const DailyPlanner = () => {
                 value={grateful}
                 onChange={handleGratefulChange}
                 placeholder="List 1-3 things you're grateful for today..."
-                className="min-h-[120px] resize-none"
+                className="min-h-[80px] resize-none"
                 onTextSelect={(selectedText) => {
                   if (selectedText) {
                     const newItem: PlannerItem = {
