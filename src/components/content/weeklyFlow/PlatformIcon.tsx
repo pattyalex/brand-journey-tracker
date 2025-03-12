@@ -43,6 +43,8 @@ const PlatformIcon = ({ platform, size = 24, className = "" }: PlatformIconProps
         return <Laptop size={size} className={className} />;
       case "pen-line":
         return <PenLine size={size} className={className} />;
+      case "scroll":
+        return <Scroll size={size} className={className} />; // Adding Scroll icon for script (pen and paper)
       case "user-cog":
         return <UserCog size={size} className={className} />;
       case "mic":

@@ -13,7 +13,7 @@ const WeeklyContentFlow = () => {
   const initialPlatforms: Platform[] = [
     { id: "film", name: "Film", icon: "camera" },
     { id: "edit", name: "Edit", icon: "laptop" },
-    { id: "script", name: "Script", icon: "file-text" },
+    { id: "script", name: "Script", icon: "scroll" }, // Changed to scroll icon for pen and paper
     { id: "admin", name: "Admin", icon: "user-cog" },
     { id: "record", name: "Record", icon: "mic" },
     { id: "brainstorm", name: "Brainstorming", icon: "lightbulb" },

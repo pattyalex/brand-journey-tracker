@@ -23,7 +23,9 @@ import {
   Shirt,
   AtSign,
   Target,
-  Wallet
+  Wallet,
+  PenLine,
+  Scroll
 } from "lucide-react";
 
 interface AddPlatformDialogProps {
@@ -36,6 +38,8 @@ const PLATFORM_ICONS = [
   { icon: "camera", component: Camera },
   { icon: "laptop", component: Laptop },
   { icon: "file-text", component: FileText },
+  { icon: "pen-line", component: PenLine },
+  { icon: "scroll", component: Scroll }, // Adding Scroll icon for script (pen and paper)
   { icon: "user-cog", component: UserCog },
   { icon: "mic", component: Mic },
   { icon: "lightbulb", component: Lightbulb },
