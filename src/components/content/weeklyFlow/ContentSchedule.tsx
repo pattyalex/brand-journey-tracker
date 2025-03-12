@@ -54,57 +54,45 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
             const dayContent = contentItems.filter(item => item.day === day);
             
             return (
-              <Droppable 
-                key={`day-${day}`} 
-                droppableId={`day-${day}`}
-                isDropDisabled={false}
+              <div 
+                key={`day-${day}`}
+                className="p-3 border border-gray-200 min-h-[200px] flex flex-col gap-2"
+                onDragOver={(e) => {
+                  e.preventDefault();
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  // Handle the drop event from the platform section
+                  const platformId = e.dataTransfer.getData("platformId");
+                  if (platformId) {
+                    handleDrop(platformId, day);
+                  }
+                }}
               >
-                {(provided, snapshot) => (
-                  <div 
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                    className={`p-3 border border-gray-200 min-h-[200px] flex flex-col gap-2 ${
-                      snapshot.isDraggingOver ? 'bg-blue-50' : 'bg-white'
-                    }`}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                    }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      // Handle the drop event from the platform section
-                      const platformId = e.dataTransfer.getData("platformId");
-                      if (platformId) {
-                        handleDrop(platformId, day);
-                      }
-                    }}
-                  >
-                    {dayContent.map((content) => {
-                      const platform = platforms.find(p => p.id === content.platformId);
-                      if (!platform) return null;
-                      
-                      return (
-                        <div 
-                          key={content.id}
-                          className="bg-white p-2 rounded-md border border-gray-200 shadow-sm flex items-center gap-2 group"
-                        >
-                          <div className="bg-gray-100 rounded-full p-2 flex-shrink-0">
-                            <PlatformIcon platform={platform} size={16} />
-                          </div>
-                          <span className="text-sm font-medium truncate">{platform.name}</span>
-                          <button 
-                            onClick={() => handleRemoveContent(content.id)}
-                            className="ml-auto text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                            aria-label="Remove item"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      );
-                    })}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
+                {dayContent.map((content) => {
+                  const platform = platforms.find(p => p.id === content.platformId);
+                  if (!platform) return null;
+                  
+                  return (
+                    <div 
+                      key={content.id}
+                      className="bg-white p-2 rounded-md border border-gray-200 shadow-sm flex items-center gap-2 group"
+                    >
+                      <div className="bg-gray-100 rounded-full p-2 flex-shrink-0">
+                        <PlatformIcon platform={platform} size={16} />
+                      </div>
+                      <span className="text-sm font-medium truncate">{platform.name}</span>
+                      <button 
+                        onClick={() => handleRemoveContent(content.id)}
+                        className="ml-auto text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-label="Remove item"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
             );
           })}
         </div>

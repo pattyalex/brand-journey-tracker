@@ -7,7 +7,6 @@ import { ContentItem, Platform } from "@/types/content-flow";
 import AddPlatformDialog from "@/components/content/weeklyFlow/AddPlatformDialog";
 import ContentSchedule from "@/components/content/weeklyFlow/ContentSchedule";
 import PlatformIcon from "@/components/content/weeklyFlow/PlatformIcon";
-import { DragDropContext } from "react-beautiful-dnd";
 import { v4 as uuidv4 } from "uuid";
 
 const WeeklyContentFlow = () => {
@@ -76,60 +75,58 @@ const WeeklyContentFlow = () => {
           Plan your content across different platforms for the week
         </p>
         
-        <DragDropContext onDragEnd={() => {}}>
-          <div className="mb-10">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold">Platforms</h2>
-              <Button 
-                onClick={() => setIsAddPlatformOpen(true)} 
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <Plus className="h-5 w-5" />
-                Add Platform
-              </Button>
-            </div>
-            
-            <div className="flex flex-wrap gap-8">
-              {platforms.map((platform) => (
-                <div 
-                  key={platform.id} 
-                  className="flex flex-col items-center"
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, platform.id)}
-                >
-                  <div className="bg-gray-100 rounded-full p-3 mb-2 cursor-grab active:cursor-grabbing">
-                    <PlatformIcon platform={platform} size={24} />
-                  </div>
-                  <span className="text-center text-sm">{platform.name}</span>
-                </div>
-              ))}
-              
-              {/* Add Your Own Platform Button */}
-              <div className="flex flex-col items-center">
-                <button 
-                  onClick={() => setIsAddPlatformOpen(true)}
-                  className="bg-purple-100 rounded-full p-3 mb-2 hover:bg-purple-200 transition-colors"
-                >
-                  <Plus className="h-6 w-6 text-purple-600" />
-                </button>
-                <span className="text-center text-sm">Add your own</span>
-              </div>
-            </div>
+        <div className="mb-10">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-semibold">Platforms</h2>
+            <Button 
+              onClick={() => setIsAddPlatformOpen(true)} 
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-5 w-5" />
+              Add Platform
+            </Button>
           </div>
           
-          <div className="pt-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-semibold">Weekly Schedule</h2>
-            </div>
+          <div className="flex flex-wrap gap-8">
+            {platforms.map((platform) => (
+              <div 
+                key={platform.id} 
+                className="flex flex-col items-center"
+                draggable
+                onDragStart={(e) => handleDragStart(e, platform.id)}
+              >
+                <div className="bg-gray-100 rounded-full p-3 mb-2 cursor-grab active:cursor-grabbing">
+                  <PlatformIcon platform={platform} size={24} />
+                </div>
+                <span className="text-center text-sm">{platform.name}</span>
+              </div>
+            ))}
             
-            <ContentSchedule 
-              platforms={platforms} 
-              contentItems={contentItems}
-              setContentItems={setContentItems}
-            />
+            {/* Add Your Own Platform Button */}
+            <div className="flex flex-col items-center">
+              <button 
+                onClick={() => setIsAddPlatformOpen(true)}
+                className="bg-purple-100 rounded-full p-3 mb-2 hover:bg-purple-200 transition-colors"
+              >
+                <Plus className="h-6 w-6 text-purple-600" />
+              </button>
+              <span className="text-center text-sm">Add your own</span>
+            </div>
           </div>
-        </DragDropContext>
+        </div>
+        
+        <div className="pt-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-semibold">Weekly Schedule</h2>
+          </div>
+          
+          <ContentSchedule 
+            platforms={platforms} 
+            contentItems={contentItems}
+            setContentItems={setContentItems}
+          />
+        </div>
         
         <AddPlatformDialog 
           open={isAddPlatformOpen} 
