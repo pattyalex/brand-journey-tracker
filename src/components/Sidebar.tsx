@@ -46,7 +46,7 @@ const Sidebar = () => {
     toast.success(`"${itemTitle}" removed from sidebar`);
   };
 
-  // Add a fixed position toggle button that's always visible
+  // Floating toggle button that's always visible
   const ToggleButton = () => (
     <TooltipProvider>
       <Tooltip>
