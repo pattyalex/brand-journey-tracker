@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { ContentItem, Platform } from "@/types/content-flow";
@@ -73,6 +74,7 @@ const WeeklyContentFlow = () => {
     });
   };
 
+  // Custom add icon that matches the style of PlatformIcon
   const AddYourOwnIcon = ({ size = 24 }: { size?: number }) => {
     return (
       <div className="bg-gradient-to-tr from-purple-100 to-purple-200 rounded-full p-1 flex items-center justify-center">
@@ -92,7 +94,7 @@ const WeeklyContentFlow = () => {
         <div className="mb-10">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h2 className="text-2xl font-semibold">Weekly Content Tasks</h2>
+              <h2 className="text-2xl font-semibold">Content Tasks</h2>
               <p className="text-gray-600 mt-1">Map out your content workflow: Drag and drop tasks into the day you want to complete them</p>
             </div>
             <Button 
@@ -121,6 +123,7 @@ const WeeklyContentFlow = () => {
               </div>
             ))}
             
+            {/* Add your own button - matching the style of other icons */}
             <div 
               className="flex flex-col items-center"
               onClick={() => setIsAddPlatformOpen(true)}
