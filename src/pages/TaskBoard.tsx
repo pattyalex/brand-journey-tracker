@@ -4,7 +4,7 @@ import Layout from "@/components/Layout";
 import { DailyPlanner } from "@/components/planner/DailyPlanner";
 import { ContentItem, Platform } from "@/types/content-flow";
 import { PlannerDay } from "@/types/task-board";
-import { TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import PlannerHeader from "@/components/task-board/PlannerHeader";
 import WeeklyContentView from "@/components/task-board/WeeklyContentView";
 
@@ -52,18 +52,20 @@ const TaskBoard = () => {
         <PlannerHeader activePage={activePage} setActivePage={setActivePage} />
         
         <div className="mt-28">
-          <TabsContent value="daily-planner" className="m-0">
-            <DailyPlanner />
-          </TabsContent>
+          <Tabs value={activePage} onValueChange={setActivePage}>
+            <TabsContent value="daily-planner" className="m-0">
+              <DailyPlanner />
+            </TabsContent>
 
-          <TabsContent value="weekly-content-tasks" className="m-0">
-            <WeeklyContentView 
-              contentItems={contentItems}
-              setContentItems={setContentItems}
-              platforms={platforms}
-              setPlatforms={setPlatforms}
-            />
-          </TabsContent>
+            <TabsContent value="weekly-content-tasks" className="m-0">
+              <WeeklyContentView 
+                contentItems={contentItems}
+                setContentItems={setContentItems}
+                platforms={platforms}
+                setPlatforms={setPlatforms}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </Layout>
