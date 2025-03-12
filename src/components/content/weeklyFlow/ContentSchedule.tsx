@@ -2,9 +2,7 @@
 import React from "react";
 import { Platform, ContentItem } from "@/types/content-flow";
 import PlatformIcon from "./PlatformIcon";
-import { Droppable } from "react-beautiful-dnd";
 import { v4 as uuidv4 } from "uuid";
-import { toast } from "sonner";
 
 interface ContentScheduleProps {
   platforms: Platform[];
@@ -29,12 +27,12 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
     };
     
     setContentItems([...contentItems, newItem]);
-    toast.success("Content added to schedule");
+    // Toast notification removed
   };
 
   const handleRemoveContent = (id: string) => {
     setContentItems(contentItems.filter(item => item.id !== id));
-    toast.success("Content removed from schedule");
+    // Toast notification removed
   };
   
   return (
