@@ -94,15 +94,6 @@ const WeeklyContentFlow = () => {
             <div>
               <p className="text-gray-600 mt-1">Map out your content workflow: Drag and drop tasks into the day you want to complete them</p>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => setIsAddPlatformOpen(true)}
-              className="gap-1.5"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Add Your Own
-            </Button>
           </div>
           
           <div className="flex flex-wrap gap-8">
