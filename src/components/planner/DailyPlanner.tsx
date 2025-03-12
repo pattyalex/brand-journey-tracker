@@ -444,7 +444,7 @@ export const DailyPlanner = () => {
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <ListTodo className="h-5 w-5 text-blue-500" />
-            <h3 className="text-lg font-medium">To-Dos</h3>
+            <h3 className="text-lg font-medium">To Do Later</h3>
           </div>
           <div className="border rounded-lg p-1">
             <Textarea
@@ -789,3 +789,4 @@ export const DailyPlanner = () => {
   </DragDropContext>
   );
 };
+
