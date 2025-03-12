@@ -1,5 +1,5 @@
 
-import { Plus } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import {
   Sidebar as SidebarContainer,
@@ -32,7 +32,7 @@ const Sidebar = () => {
 
   const [menuItems, setMenuItems] = useState<MenuItem[]>(getSavedMenuItems);
   const [showAddForm, setShowAddForm] = useState(false);
-  const { state } = useSidebar();
+  const { state, toggleSidebar } = useSidebar();
 
   // Save sidebar state to localStorage
   useEffect(() => {
@@ -48,8 +48,29 @@ const Sidebar = () => {
 
   return (
     <SidebarContainer>
-      <div className="p-4">
+      <div className="p-4 flex items-center justify-between">
         <h2 className="text-2xl font-playfair font-bold text-primary">HeyMegan</h2>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="rounded-full bg-white/90 shadow-md hover:bg-white"
+                onClick={toggleSidebar}
+              >
+                {state === "expanded" ? (
+                  <ChevronLeft className="h-5 w-5" />
+                ) : (
+                  <ChevronRight className="h-5 w-5" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              {state === "expanded" ? "Collapse sidebar" : "Expand sidebar"}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
       <SidebarContent>
         <SidebarGroup>
