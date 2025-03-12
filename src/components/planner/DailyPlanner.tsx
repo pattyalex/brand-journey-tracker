@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { format, addDays, subDays, parseISO } from "date-fns";
-import { Copy, Trash2, Sun, Heart, AlarmClock, CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Copy, Trash2, Heart, AlarmClock, CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PlannerDay, PlannerItem, GlobalPlannerData } from "@/types/planner";
 import { PlannerSection } from "./PlannerSection";
 import { toast } from "sonner";
@@ -34,6 +33,26 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { DragDropContext, DropResult } from 'react-beautiful-dnd';
+
+const CheckListIcon = () => (
+  <svg 
+    width="24" 
+    height="24" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className="h-5 w-5 text-blue-500"
+  >
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" className="text-blue-500" />
+    <line x1="9" y1="9" x2="19" y2="9" className="text-blue-500" />
+    <line x1="9" y1="15" x2="19" y2="15" className="text-blue-500" />
+    <polyline points="5,9 6,10 8,7" className="text-blue-500" />
+    <polyline points="5,15 6,16 8,13" className="text-blue-500" />
+  </svg>
+);
 
 const getDateString = (date: Date): string => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -483,7 +502,7 @@ export const DailyPlanner = () => {
 
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-3">
-            <Sun className="h-5 w-5 text-amber-500" />
+            <CheckListIcon />
             <h3 className="text-lg font-medium">To Do Today</h3>
           </div>
         </div>
@@ -789,3 +808,4 @@ export const DailyPlanner = () => {
     </DragDropContext>
   );
 };
+
