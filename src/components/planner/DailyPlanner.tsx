@@ -351,7 +351,7 @@ export const DailyPlanner = () => {
         items: [],
         tasks: tasks,
         greatDay: greatDay,
-        grateful: newGrateful
+        grateful: grateful
       });
     }
     
@@ -487,35 +487,38 @@ export const DailyPlanner = () => {
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               
-              <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="mx-2 min-w-[200px] justify-start text-left font-medium"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {format(selectedDate, "EEEE, MMMM d, yyyy")}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={handleDateSelect}
-                  className="rounded-md border"
-                  modifiers={{
-                    booked: daysWithItems,
-                  }}
-                  modifiersStyles={{
-                    booked: {
-                      backgroundColor: "hsl(var(--primary) / 0.1)",
-                      fontWeight: "bold",
-                      borderRadius: "0",
-                    },
-                  }}
-                />
-              </PopoverContent>
-            </Popover>
+              <div className="flex flex-col">
+                <h3 className="text-lg font-medium mb-2">To Do Today</h3>
+                <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="mx-2 min-w-[200px] justify-start text-left font-medium"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {format(selectedDate, "EEEE, MMMM d, yyyy")}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={handleDateSelect}
+                      className="rounded-md border"
+                      modifiers={{
+                        booked: daysWithItems,
+                      }}
+                      modifiersStyles={{
+                        booked: {
+                          backgroundColor: "hsl(var(--primary) / 0.1)",
+                          fontWeight: "bold",
+                          borderRadius: "0",
+                        },
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
               
               <Button variant="outline" size="icon" onClick={handleNextDay}>
                 <ChevronRight className="h-4 w-4" />
