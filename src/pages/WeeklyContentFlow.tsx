@@ -113,6 +113,17 @@ const WeeklyContentFlow = () => {
                 <span className="text-center text-sm font-medium">{platform.name}</span>
               </div>
             ))}
+            
+            {/* Add your own button - circle style like the image */}
+            <div className="flex flex-col items-center">
+              <button 
+                onClick={() => setIsAddPlatformOpen(true)}
+                className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mb-2 hover:bg-purple-200 transition-colors"
+              >
+                <Plus className="w-6 h-6 text-purple-600" />
+              </button>
+              <span className="text-center text-sm font-medium">Add your own</span>
+            </div>
           </div>
         </div>
         
