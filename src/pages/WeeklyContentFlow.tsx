@@ -9,13 +9,19 @@ import ContentSchedule from "@/components/content/weeklyFlow/ContentSchedule";
 import PlatformIcon from "@/components/content/weeklyFlow/PlatformIcon";
 
 const WeeklyContentFlow = () => {
-  // Define initial platforms
+  // Define initial platforms including the new ones
   const initialPlatforms: Platform[] = [
     { id: "film", name: "Film", icon: "camera" },
     { id: "edit", name: "Edit", icon: "laptop" },
     { id: "script", name: "Script", icon: "pen-line" },
     { id: "admin", name: "Admin", icon: "user-cog" },
-    { id: "record", name: "Record", icon: "mic" }
+    { id: "record", name: "Record", icon: "mic" },
+    { id: "brainstorm", name: "Brainstorming", icon: "lightbulb" },
+    { id: "planning", name: "Planning", icon: "calendar" },
+    { id: "styling", name: "Styling", icon: "shirt" },
+    { id: "emails", name: "Emails", icon: "at-sign" },
+    { id: "marketing", name: "Marketing", icon: "megaphone" },
+    { id: "financials", name: "Financials", icon: "wallet" }
   ];
 
   const [platforms, setPlatforms] = useState<Platform[]>(initialPlatforms);
