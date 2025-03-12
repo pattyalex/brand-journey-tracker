@@ -1,37 +1,21 @@
 
 import Layout from "@/components/Layout";
-import { Button } from "@/components/ui/button";
-import { PlusCircle, CheckSquare, Calendar, Edit, Trash2, CalendarIcon, Plus, Flag } from "lucide-react";
+import { DailyPlanner } from "@/components/planner/DailyPlanner";
+import { ContentItem, Platform } from "@/types/content-flow";
+import { PlannerDay } from "@/types/task-board";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DragDropContext, DropResult } from 'react-beautiful-dnd';
-import { DailyPlanner } from "@/components/planner/DailyPlanner";
-import { ContentItem, Platform } from "@/types/content-flow";
-import { PlannerDay, Task } from "@/types/task-board";
+import { Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import ContentSchedule from "@/components/content/weeklyFlow/ContentSchedule";
 import PlatformIcon from "@/components/content/weeklyFlow/PlatformIcon";
 import AddPlatformDialog from "@/components/content/weeklyFlow/AddPlatformDialog";
-import { 
-  TaskDialog, 
-  TasksBoard, 
-  AddYourOwnIcon, 
-  getPriorityIcon 
-} from "@/components/task-board";
+import { AddYourOwnIcon } from "@/components/task-board";
 
 const TaskBoard = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [newTask, setNewTask] = useState<Partial<Task>>({
-    title: "",
-    description: "",
-    status: "todo-all",
-    priority: "medium"
-  });
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [editTaskId, setEditTaskId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<string>("all");
-  const [activePage, setActivePage] = useState<string>("tasks-board");
+  const [activeTab, setActiveTab] = useState<string>("daily-planner");
+  const [activePage, setActivePage] = useState<string>("daily-planner");
   const [plannerData, setPlannerData] = useState<PlannerDay[]>([]);
 
   const initialPlatforms: Platform[] = [
@@ -53,57 +37,6 @@ const TaskBoard = () => {
   const [isAddPlatformOpen, setIsAddPlatformOpen] = useState(false);
 
   useEffect(() => {
-    const savedTasks = localStorage.getItem("taskBoardTasks");
-    if (savedTasks) {
-      setTasks(JSON.parse(savedTasks));
-    } else {
-      const exampleTasks: Task[] = [
-        { 
-          id: "1", 
-          title: "Create content calendar", 
-          description: "Plan out content for the next month", 
-          status: "todo-all", 
-          priority: "high",
-          createdAt: new Date().toISOString()
-        },
-        { 
-          id: "2", 
-          title: "Write blog post", 
-          description: "Complete draft for review", 
-          status: "todo-today", 
-          priority: "medium",
-          createdAt: new Date().toISOString()
-        },
-        { 
-          id: "3", 
-          title: "Record Instagram Reel", 
-          description: "Film short tutorial clip", 
-          status: "todo-all", 
-          priority: "low",
-          createdAt: new Date().toISOString()
-        },
-        { 
-          id: "4", 
-          title: "Edit YouTube video", 
-          description: "Final edits and add transitions", 
-          status: "scheduled", 
-          dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          priority: "medium",
-          createdAt: new Date().toISOString()
-        },
-        { 
-          id: "5", 
-          title: "Schedule social posts", 
-          description: "Queue up content for next week", 
-          status: "completed", 
-          priority: "medium",
-          createdAt: new Date().toISOString()
-        },
-      ];
-      setTasks(exampleTasks);
-      localStorage.setItem("taskBoardTasks", JSON.stringify(exampleTasks));
-    }
-
     const savedPlannerData = localStorage.getItem("plannerData");
     if (savedPlannerData) {
       setPlannerData(JSON.parse(savedPlannerData));
@@ -116,158 +49,8 @@ const TaskBoard = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("taskBoardTasks", JSON.stringify(tasks));
-  }, [tasks]);
-
-  useEffect(() => {
     localStorage.setItem("contentItems", JSON.stringify(contentItems));
   }, [contentItems]);
-
-  const toggleTaskCompletion = (taskId: string) => {
-    const updatedTasks = tasks.map((task) => 
-      task.id === taskId ? { ...task, isCompleted: !task.isCompleted } : task
-    );
-    setTasks(updatedTasks);
-  };
-
-  const getTasksByStatus = (status: Task["status"]) => {
-    return tasks.filter((task) => task.status === status);
-  };
-
-  const moveTask = (taskId: string, newStatus: Task["status"]) => {
-    const updatedTasks = tasks.map((task) => 
-      task.id === taskId ? { ...task, status: newStatus, isCompleted: newStatus === "completed" ? true : false } : task
-    );
-    setTasks(updatedTasks);
-  };
-
-  const handleDragEnd = (result: DropResult) => {
-    const { destination, source, draggableId } = result;
-
-    if (!destination || 
-        (destination.droppableId === source.droppableId && 
-         destination.index === source.index)) {
-      return;
-    }
-
-    const task = tasks.find(t => t.id === draggableId);
-    if (!task) return;
-
-    const newTasks = tasks.filter(t => t.id !== draggableId);
-    
-    const updatedTask = { ...task, status: destination.droppableId as Task["status"] };
-    
-    const sourceColumnTasks = getTasksByStatus(source.droppableId as Task["status"]);
-    const destinationColumnTasks = source.droppableId === destination.droppableId ? 
-      sourceColumnTasks : getTasksByStatus(destination.droppableId as Task["status"]);
-    
-    const remainingTasks = newTasks.filter(t => 
-      t.status !== source.droppableId && t.status !== destination.droppableId
-    );
-
-    const updatedSourceTasks = sourceColumnTasks.filter(t => t.id !== updatedTask.id);
-    
-    let updatedDestinationTasks = [...destinationColumnTasks];
-    if (source.droppableId === destination.droppableId) {
-      updatedDestinationTasks = updatedSourceTasks;
-    }
-    
-    updatedDestinationTasks.splice(destination.index, 0, updatedTask);
-    
-    const finalTasks = [
-      ...remainingTasks,
-      ...updatedSourceTasks.filter(t => t.id !== updatedTask.id),
-      ...updatedDestinationTasks
-    ];
-    
-    setTasks(finalTasks);
-  };
-
-  const handleAddTask = () => {
-    if (!newTask.title?.trim()) {
-      toast.error("Please enter a task title");
-      return;
-    }
-
-    const task: Task = {
-      id: isEditMode && editTaskId ? editTaskId : Date.now().toString(),
-      title: newTask.title,
-      description: newTask.description || "",
-      status: newTask.status as Task["status"] || "todo-all",
-      dueDate: newTask.dueDate,
-      priority: newTask.priority as Task["priority"] || "medium",
-      createdAt: isEditMode && editTaskId ? 
-        tasks.find(t => t.id === editTaskId)?.createdAt || new Date().toISOString() : 
-        new Date().toISOString()
-    };
-
-    if (isEditMode && editTaskId) {
-      const updatedTasks = tasks.map((t) => t.id === editTaskId ? task : t);
-      setTasks(updatedTasks);
-      toast.success("Task updated successfully");
-    } else {
-      setTasks([task, ...tasks]);
-      toast.success("Task added successfully");
-    }
-
-    setNewTask({
-      title: "",
-      description: "",
-      status: "todo-all",
-      priority: "medium"
-    });
-    setIsAddDialogOpen(false);
-    setIsEditMode(false);
-    setEditTaskId(null);
-  };
-
-  const handleEditTask = (task: Task) => {
-    setNewTask({
-      title: task.title,
-      description: task.description,
-      status: task.status,
-      dueDate: task.dueDate,
-      priority: task.priority
-    });
-    setIsEditMode(true);
-    setEditTaskId(task.id);
-    setIsAddDialogOpen(true);
-  };
-
-  const handleDeleteTask = (taskId: string) => {
-    setTasks(tasks.filter((task) => task.id !== taskId));
-    toast.success("Task deleted successfully");
-  };
-
-  const handleDialogClose = () => {
-    setNewTask({
-      title: "",
-      description: "",
-      status: "todo-all",
-      priority: "medium"
-    });
-    setIsEditMode(false);
-    setEditTaskId(null);
-    setIsAddDialogOpen(false);
-  };
-
-  const handleAddQuickTask = (title: string, status: Task["status"]) => {
-    if (!title.trim()) {
-      return;
-    }
-    
-    const task: Task = {
-      id: Date.now().toString(),
-      title: title,
-      description: "",
-      status: status,
-      priority: "medium",
-      createdAt: new Date().toISOString()
-    };
-    
-    setTasks([task, ...tasks]);
-    toast.success("Task added successfully");
-  };
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, platformId: string) => {
     e.dataTransfer.setData("platformId", platformId);
@@ -386,14 +169,8 @@ const TaskBoard = () => {
           </div>
         </div>
         
-        <Tabs defaultValue="tasks-board" value={activePage} onValueChange={setActivePage} className="mb-8">
+        <Tabs defaultValue="daily-planner" value={activePage} onValueChange={setActivePage} className="mb-8">
           <TabsList className="mb-6 w-full justify-start">
-            <TabsTrigger 
-              value="tasks-board" 
-              className="px-8 py-3 text-base font-medium bg-primary/5 hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              Tasks Board
-            </TabsTrigger>
             <TabsTrigger 
               value="daily-planner" 
               className="px-8 py-3 text-base font-medium bg-primary/5 hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
@@ -408,21 +185,6 @@ const TaskBoard = () => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="tasks-board" className="m-0">
-            <TasksBoard 
-              tasks={tasks}
-              getTasksByStatus={getTasksByStatus}
-              handleDragEnd={handleDragEnd}
-              moveTask={moveTask}
-              handleEditTask={handleEditTask}
-              handleDeleteTask={handleDeleteTask}
-              setIsAddDialogOpen={setIsAddDialogOpen}
-              setNewTask={setNewTask}
-              handleAddQuickTask={handleAddQuickTask}
-              toggleTaskCompletion={toggleTaskCompletion}
-            />
-          </TabsContent>
-
           <TabsContent value="daily-planner" className="m-0">
             <DailyPlanner />
           </TabsContent>
@@ -432,16 +194,6 @@ const TaskBoard = () => {
           </TabsContent>
         </Tabs>
       </div>
-
-      <TaskDialog
-        isOpen={isAddDialogOpen}
-        onOpenChange={setIsAddDialogOpen}
-        isEditMode={isEditMode}
-        newTask={newTask}
-        setNewTask={setNewTask}
-        handleAddTask={handleAddTask}
-        handleDialogClose={handleDialogClose}
-      />
     </Layout>
   );
 };
