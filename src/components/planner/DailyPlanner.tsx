@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { format, addDays, subDays, parseISO } from "date-fns";
 import { Copy, Trash2, Heart, AlarmClock, CalendarIcon, ChevronLeft, ChevronRight, ListChecks } from 'lucide-react';
@@ -717,7 +716,7 @@ export const DailyPlanner = () => {
                 value={greatDay}
                 onChange={handleGreatDayChange}
                 placeholder="List 1-3 things that would make today wonderful..."
-                className="min-h-[80px] resize-none"
+                className="min-h-[180px] resize-none"
                 onTextSelect={(selectedText) => {
                   if (selectedText) {
                     const newItem: PlannerItem = {
@@ -764,7 +763,7 @@ export const DailyPlanner = () => {
                 value={grateful}
                 onChange={handleGratefulChange}
                 placeholder="List 1-3 things you're grateful for today..."
-                className="min-h-[80px] resize-none"
+                className="min-h-[180px] resize-none"
                 onTextSelect={(selectedText) => {
                   if (selectedText) {
                     const newItem: PlannerItem = {
