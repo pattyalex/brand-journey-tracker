@@ -711,7 +711,7 @@ export const DailyPlanner = () => {
           
           <div className="mt-8">
             <div className="flex items-center gap-2 mb-3">
-              <Sun className="h-5 w-5 text-amber-500" />
+              <Heart className="h-5 w-5 text-amber-500" />
               <h3 className="text-lg font-medium">What would make today great?</h3>
             </div>
             <div className="border rounded-lg p-1">
@@ -808,4 +808,3 @@ export const DailyPlanner = () => {
     </DragDropContext>
   );
 };
-
