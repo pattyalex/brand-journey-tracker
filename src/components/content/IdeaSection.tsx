@@ -1,9 +1,11 @@
 
 import { useState } from "react";
-import { Lightbulb } from "lucide-react";
+import { Lightbulb, FileText, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
 import ContentPillar from "./ContentPillar";
+import ContentUploader from "./ContentUploader";
 
 interface IdeaSectionProps {
   pillar: Pillar;
