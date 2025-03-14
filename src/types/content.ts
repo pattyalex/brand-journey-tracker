@@ -9,4 +9,8 @@ export interface ContentItem {
   tags?: string[];
   platforms?: string[];
   scheduledDate?: Date;
+  status?: string;
+  shootDetails?: string;
+  caption?: string;
+  createdAt?: Date;
 }

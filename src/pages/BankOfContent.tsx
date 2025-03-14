@@ -259,11 +259,15 @@ const BankOfContent = () => {
       title: newIdeaTitle,
       description: developScriptText || selectedText,
       format: selectedFormat,
-      shootDetails: shootDetails,
-      caption: captionText,
-      platforms: selectedPlatforms,
+      url: JSON.stringify({
+        script: developScriptText || selectedText,
+        shootDetails: shootDetails,
+        caption: captionText,
+        platforms: selectedPlatforms
+      }),
+      dateCreated: new Date(),
       tags: newIdeaTags,
-      createdAt: new Date(),
+      platforms: selectedPlatforms,
       scheduledDate: scheduledDate,
       status: newBucketType || "draft",
     };
@@ -402,4 +406,3 @@ const BankOfContent = () => {
 };
 
 export default BankOfContent;
-
