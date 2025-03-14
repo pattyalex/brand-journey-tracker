@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, FileVideo, ImageIcon, Link, List, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ContentItem } from "@/types/content";
 import { 
@@ -15,7 +15,6 @@ import { useToast } from "@/hooks/use-toast";
 type ContentType = {
   id: string;
   name: string;
-  icon: React.ElementType;
   description: string;
   items: ContentItem[];
 };
@@ -28,10 +27,10 @@ interface ContentTypeBucketsProps {
 const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) => {
   const { toast } = useToast();
   const [contentTypes, setContentTypes] = useState<ContentType[]>([
-    { id: "blog", name: "Blog Posts", icon: FileText, description: "Long-form written content", items: [] },
-    { id: "video", name: "Video Content", icon: FileVideo, description: "Video-based content", items: [] },
-    { id: "social", name: "Social Media", icon: List, description: "Short-form posts", items: [] },
-    { id: "image", name: "Image Content", icon: ImageIcon, description: "Visual content", items: [] },
+    { id: "blog", name: "Blog Posts", description: "Long-form written content", items: [] },
+    { id: "video", name: "Video Content", description: "Video-based content", items: [] },
+    { id: "social", name: "Social Media", description: "Short-form posts", items: [] },
+    { id: "image", name: "Image Content", description: "Visual content", items: [] },
   ]);
   
   const [newBucketName, setNewBucketName] = useState("");
@@ -50,22 +49,13 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
       const savedBuckets = localStorage.getItem(`content-buckets-${pillarId}`);
       if (savedBuckets) {
         const parsedBuckets = JSON.parse(savedBuckets);
-        const bucketsWithIcons = parsedBuckets.map((bucket: any) => {
-          let icon;
-          switch (bucket.iconType) {
-            case 'FileText': icon = FileText; break;
-            case 'FileVideo': icon = FileVideo; break;
-            case 'List': icon = List; break;
-            case 'ImageIcon': icon = ImageIcon; break;
-            default: icon = Link; break;
-          }
+        const buckets = parsedBuckets.map((bucket: any) => {
           return { 
             ...bucket, 
-            icon,
             description: bucket.description || "" // Ensure description exists
           };
         });
-        setContentTypes(bucketsWithIcons);
+        setContentTypes(buckets);
       }
     } catch (error) {
       console.error("Failed to load content buckets:", error);
@@ -75,16 +65,8 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
   useEffect(() => {
     try {
       const bucketsToSave = contentTypes.map(bucket => {
-        let iconType = 'Link';
-        if (bucket.icon === FileText) iconType = 'FileText';
-        if (bucket.icon === FileVideo) iconType = 'FileVideo';
-        if (bucket.icon === List) iconType = 'List';
-        if (bucket.icon === ImageIcon) iconType = 'ImageIcon';
-        
         return {
-          ...bucket,
-          iconType,
-          icon: undefined
+          ...bucket
         };
       });
       
@@ -114,7 +96,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
       { 
         id: `custom-${Date.now()}`, 
         name: newBucketName, 
-        icon: Link, 
         description: newDescription,
         items: [] 
       }
@@ -253,7 +234,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                 }}
                 title="Double-click to edit"
               >
-                <type.icon className="h-4 w-4 flex-shrink-0 text-gray-700" />
                 {editingBucketId === type.id && !isEditingDescription ? (
                   <Input
                     ref={editInputRef}
