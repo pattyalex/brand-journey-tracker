@@ -1,9 +1,10 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Plus, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ContentItem } from "@/types/content";
-import { Plus, Trash2 } from "lucide-react";
 import { 
   Tooltip, 
   TooltipContent, 
@@ -170,8 +171,10 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
   };
 
   return (
-    <div className="content-formats-container mb-6">
-      <h2 className="section-title mb-4">Content Formats</h2>
+    <div className="mt-4 mb-6">
+      <div className="flex justify-between items-center mb-3">
+        <h2 className="text-xl font-semibold">Content Formats</h2>
+      </div>
       
       {isAddingFormat && (
         <div className="mb-3 flex flex-col gap-2">
@@ -205,11 +208,11 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         </div>
       )}
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="flex flex-wrap gap-3">
         {contentTypes.map((type) => (
-          <div 
+          <Card 
             key={type.id} 
-            className="format-card cursor-pointer hover:border-purple-300 transition-all relative group"
+            className="w-[200px] border rounded-lg shadow-sm cursor-pointer hover:border-purple-300 transition-all relative group"
             onClick={() => handleCardClick(type.id)}
           >
             <Button
@@ -223,63 +226,72 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               <Trash2 className="h-3.5 w-3.5 text-gray-500" />
             </Button>
             
-            <div
-              onDoubleClick={(e) => {
-                e.stopPropagation();
-                handleDoubleClick(type.id, type.name, type.description || "");
-              }}
-              title="Double-click to edit"
-            >
-              {editingFormatId === type.id && !isEditingDescription ? (
-                <Input
-                  ref={editInputRef}
-                  value={editingName}
-                  onChange={(e) => setEditingName(e.target.value)}
-                  onKeyDown={handleKeyPress}
-                  onBlur={handleBlur}
-                  className="h-7 py-1 px-2 text-sm font-medium"
-                  autoFocus
-                  onClick={(e) => e.stopPropagation()}
-                />
-              ) : (
-                <h3 className="format-title">{type.name}</h3>
-              )}
+            <div className="p-3">
+              <div 
+                className="flex items-center gap-2 mb-1"
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                  handleDoubleClick(type.id, type.name, type.description || "");
+                }}
+                title="Double-click to edit"
+              >
+                {editingFormatId === type.id && !isEditingDescription ? (
+                  <Input
+                    ref={editInputRef}
+                    value={editingName}
+                    onChange={(e) => setEditingName(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    onBlur={handleBlur}
+                    className="h-7 py-1 px-2 min-w-0 text-sm font-medium"
+                    autoFocus
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <span className="text-sm font-medium text-gray-900 truncate">
+                    {type.name}
+                  </span>
+                )}
+              </div>
+              
+              <div
+                className="mt-1 h-8 overflow-hidden"
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                  handleDescriptionDoubleClick(type.id, type.description || "");
+                }}
+                title="Double-click to edit description"
+              >
+                {editingFormatId === type.id && isEditingDescription ? (
+                  <Input
+                    ref={descInputRef}
+                    value={editingDescription}
+                    onChange={(e) => setEditingDescription(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    onBlur={handleBlur}
+                    className="h-7 py-1 px-2 min-w-0 text-xs"
+                    placeholder="Short description"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <p className="text-xs text-gray-500 line-clamp-2">
+                    {type.description}
+                  </p>
+                )}
+              </div>
             </div>
-            
-            <div
-              onDoubleClick={(e) => {
-                e.stopPropagation();
-                handleDescriptionDoubleClick(type.id, type.description || "");
-              }}
-              title="Double-click to edit description"
-            >
-              {editingFormatId === type.id && isEditingDescription ? (
-                <Input
-                  ref={descInputRef}
-                  value={editingDescription}
-                  onChange={(e) => setEditingDescription(e.target.value)}
-                  onKeyDown={handleKeyPress}
-                  onBlur={handleBlur}
-                  className="h-7 py-1 px-2 text-xs"
-                  placeholder="Short description"
-                  onClick={(e) => e.stopPropagation()}
-                />
-              ) : (
-                <p className="format-description">{type.description}</p>
-              )}
-            </div>
-          </div>
+          </Card>
         ))}
         
         <TooltipProvider delayDuration={0}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <button 
+              <Button 
+                variant="ghost" 
                 onClick={() => setIsAddingFormat(!isAddingFormat)}
-                className="add-format-button"
+                className="w-[200px] h-[80px] flex items-center justify-center p-0"
               >
                 <Plus className="h-5 w-5 text-purple-500" />
-              </button>
+              </Button>
             </TooltipTrigger>
             <TooltipContent>
               <p>Add format</p>

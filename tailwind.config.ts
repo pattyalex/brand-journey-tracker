@@ -61,11 +61,6 @@ export default {
           800: '#5b21b6',
           900: '#4c1d95',
           950: '#2e1065',
-        },
-        brown: {
-          DEFAULT: '#8B6B4E',
-          light: '#A68B73',
-          dark: '#705540',
         }
       },
       borderRadius: {

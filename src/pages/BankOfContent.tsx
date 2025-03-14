@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { ContentItem } from "@/types/content";
@@ -9,8 +9,6 @@ import WritingSpace from "@/components/content/WritingSpace";
 import IdeaSection from "@/components/content/IdeaSection";
 import IdeaCreationDialog from "@/components/content/IdeaCreationDialog";
 import ContentTypeBuckets from "@/components/content/ContentTypeBuckets";
-import { Filter, FileText, Sparkles, PencilLine } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 export type Pillar = {
   id: string;
@@ -268,96 +266,84 @@ const BankOfContent = () => {
     setSelectedBucketId(bucketId);
   };
 
+  const getPillarColor = (pillarId: string) => {
+    const colors = {
+      "1": "#8B6B4E", // Brown
+      "2": "#6E59A5", // Purple
+      "3": "#0EA5E9", // Blue
+    };
+    
+    return colors[pillarId as keyof typeof colors] || "#8B6B4E";
+  };
+  
+  const activePillarColor = getPillarColor(activeTab);
+
   return (
     <Layout>
       <div className="container mx-auto py-6 space-y-6 fade-in">
-        <h1 className="page-title">Idea Development</h1>
+        <div className="relative z-10">
+          <h1 className="text-3xl font-bold mb-2">
+            Idea Development
+          </h1>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <PillarTabs 
-            pillars={pillars}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            onAddPillar={addPillar}
-            onRenamePillar={renamePillar}
-            onDeletePillar={deletePillar}
-          />
-          
-          <ContentTypeBuckets 
-            onAddIdea={handleAddToBucket} 
-            pillarId={activeTab}
-          />
-          
-          {pillars.map((pillar) => (
-            <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
-              <div className="brainstorm-section">
-                <div className="writing-section">
-                  <div className="flex items-center gap-2 px-4 py-3 border-b">
-                    <PencilLine className="h-5 w-5 text-muted-foreground" />
-                    <h3 className="font-medium">Brainstorm</h3>
-                  </div>
-                  
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <div className="flex items-center justify-between">
+              <PillarTabs 
+                pillars={pillars}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                onAddPillar={addPillar}
+                onRenamePillar={renamePillar}
+                onDeletePillar={deletePillar}
+              />
+            </div>
+            
+            <div className="border border-gray-200 rounded-lg shadow-md p-4 mb-6 mt-0">
+              <ContentTypeBuckets 
+                onAddIdea={handleAddToBucket} 
+                pillarId={activeTab}
+              />
+            </div>
+            
+            {pillars.map((pillar) => (
+              <TabsContent 
+                key={pillar.id} 
+                value={pillar.id} 
+                className="space-y-4"
+                style={{
+                  opacity: pillar.id === activeTab ? 1 : 0,
+                  transition: 'opacity 0.3s ease-in-out',
+                }}
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <WritingSpace 
                     writingText={writingText}
                     onTextChange={updateWritingSpace}
                     onTextSelection={handleTextSelection}
                     onFormatText={handleFormatText}
                   />
-                </div>
-                
-                <div className="ideas-section">
-                  <div className="ideas-header">
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="h-5 w-5 text-muted-foreground" />
-                      <h3 className="font-medium">Pillar {activeTab} Ideas</h3>
-                    </div>
-                    
-                    <div className="filter-section">
-                      <div className="format-filter-button">
-                        <span>Format</span>
-                        <Filter className="h-4 w-4" />
-                      </div>
-                      
-                      <div className="dropdown-container">
-                        <span className="text-sm">All Formats</span>
-                      </div>
-                    </div>
-                  </div>
                   
-                  {pillar.content.length === 0 ? (
-                    <div className="ideas-content">
-                      <p className="text-center mb-2">No ideas yet. Create a new idea to get started.</p>
-                      <Button 
-                        onClick={openNewIdeaDialog}
-                        className="develop-idea-button"
-                      >
-                        <FileText className="h-4 w-4" />
-                        Develop an Idea
-                      </Button>
-                    </div>
-                  ) : (
-                    <IdeaSection 
-                      pillar={pillar}
-                      pillars={pillars}
-                      searchQuery={searchQuery}
-                      onNewIdeaClick={openNewIdeaDialog}
-                      onDeleteContent={(contentId) => deleteContent(pillar.id, contentId)}
-                      onMoveContent={(toPillarId, contentId) => moveContent(pillar.id, toPillarId, contentId)}
-                      onEditContent={(contentId) => editContent(pillar.id, contentId)}
-                      onReorderContent={(newItems) => handleReorderContent(pillar.id, newItems)}
-                      editingContent={editingContent}
-                      isEditing={isEditing}
-                      onContentUpdated={updateContent}
-                      onCancelEdit={cancelEditing}
-                      onContentAdded={addContentToPillar}
-                      onAddToBucket={handleAddToBucket}
-                    />
-                  )}
+                  <IdeaSection 
+                    pillar={pillar}
+                    pillars={pillars}
+                    searchQuery={searchQuery}
+                    onNewIdeaClick={openNewIdeaDialog}
+                    onDeleteContent={(contentId) => deleteContent(pillar.id, contentId)}
+                    onMoveContent={(toPillarId, contentId) => moveContent(pillar.id, toPillarId, contentId)}
+                    onEditContent={(contentId) => editContent(pillar.id, contentId)}
+                    onReorderContent={(newItems) => handleReorderContent(pillar.id, newItems)}
+                    editingContent={editingContent}
+                    isEditing={isEditing}
+                    onContentUpdated={updateContent}
+                    onCancelEdit={cancelEditing}
+                    onContentAdded={addContentToPillar}
+                    onAddToBucket={handleAddToBucket}
+                  />
                 </div>
-              </div>
-            </TabsContent>
-          ))}
-        </Tabs>
+              </TabsContent>
+            ))}
+          </Tabs>
+        </div>
 
         <ContentSearchModal
           isOpen={isSearchModalOpen}
