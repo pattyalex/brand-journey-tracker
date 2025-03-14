@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -236,11 +235,11 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         </div>
       )}
       
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-3">
         {contentTypes.map((type) => (
           <Card 
             key={type.id} 
-            className={`w-[200px] h-[120px] hover:border-purple-300 transition-all cursor-pointer group ${
+            className={`w-[160px] h-[100px] hover:border-purple-300 transition-all cursor-pointer group ${
               expandedCardId === type.id ? 
                 'scale-125 border-purple-300 shadow-lg z-20 bg-white' : 
                 'hover:scale-[1.02]'
@@ -251,25 +250,25 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               type="button"
               variant="ghost"
               size="xs"
-              className={`absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-30 text-gray-500 hover:text-gray-700 hover:bg-gray-100 ${
+              className={`absolute top-1 right-1 h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-30 text-gray-500 hover:text-gray-700 hover:bg-gray-100 ${
                 ["blog", "video", "social", "image"].includes(type.id) ? "cursor-not-allowed" : ""
               }`}
               onClick={(e) => handleDeleteBucket(e, type.id)}
               title={["blog", "video", "social", "image"].includes(type.id) ? "Cannot delete default bucket" : "Delete bucket"}
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <Trash2 className="h-3 w-3" />
             </Button>
             
-            <CardHeader className={`p-3 pb-0 ${expandedCardId === type.id ? 'pt-4' : ''}`}>
+            <CardHeader className={`p-2 pb-0 ${expandedCardId === type.id ? 'pt-3' : ''}`}>
               <CardTitle 
-                className="text-sm flex items-center gap-2"
+                className="text-xs flex items-center gap-1.5"
                 onDoubleClick={(e) => {
                   e.stopPropagation();
                   handleDoubleClick(type.id, type.name, type.description || "");
                 }}
                 title="Double-click to edit"
               >
-                <type.icon className="h-3 w-3 flex-shrink-0" />
+                <type.icon className="h-2.5 w-2.5 flex-shrink-0" />
                 {editingBucketId === type.id && !isEditingDescription ? (
                   <Input
                     ref={editInputRef}
@@ -277,7 +276,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                     onChange={(e) => setEditingName(e.target.value)}
                     onKeyDown={handleKeyPress}
                     onBlur={handleBlur}
-                    className="h-6 py-0 px-1 min-w-0 text-xs"
+                    className="h-5 py-0 px-1 min-w-0 text-xs"
                     autoFocus
                     onClick={(e) => e.stopPropagation()}
                   />
@@ -288,9 +287,9 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                 )}
               </CardTitle>
             </CardHeader>
-            <CardContent className={`p-3 pt-1 ${expandedCardId === type.id ? 'pb-4' : ''}`}>
+            <CardContent className={`p-2 pt-1 ${expandedCardId === type.id ? 'pb-3' : ''}`}>
               <div
-                className="h-12 overflow-hidden"
+                className="h-10 overflow-hidden"
                 onDoubleClick={(e) => {
                   e.stopPropagation();
                   handleDescriptionDoubleClick(type.id, type.description || "");
@@ -304,7 +303,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                     onChange={(e) => setEditingDescription(e.target.value)}
                     onKeyDown={handleKeyPress}
                     onBlur={handleBlur}
-                    className="h-6 py-0 px-1 min-w-0 text-xs mt-1"
+                    className="h-5 py-0 px-1 min-w-0 text-xs mt-1"
                     placeholder="Short description"
                     onClick={(e) => e.stopPropagation()}
                   />
@@ -324,9 +323,9 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               <Button 
                 variant="ghost" 
                 onClick={() => setIsAddingBucket(!isAddingBucket)}
-                className="w-[200px] h-[120px] flex items-center justify-center p-0"
+                className="w-[160px] h-[100px] flex items-center justify-center p-0"
               >
-                <Plus className="h-6 w-6 text-purple-500" />
+                <Plus className="h-5 w-5 text-purple-500" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
