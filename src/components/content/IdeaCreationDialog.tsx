@@ -44,6 +44,14 @@ interface IdeaCreationDialogProps {
   dialogTitle?: string;
   xOption?: string;
   onXOptionChange?: (value: string) => void;
+  inspirationText?: string;
+  onInspirationTextChange?: (value: string) => void;
+  inspirationLinks?: string[];
+  onAddInspirationLink?: (link: string) => void;
+  onRemoveInspirationLink?: (index: number) => void;
+  inspirationImages?: string[];
+  onAddInspirationImage?: (image: string) => void;
+  onRemoveInspirationImage?: (index: number) => void;
 }
 
 const IdeaCreationDialog = ({
@@ -78,6 +86,14 @@ const IdeaCreationDialog = ({
   onCancel,
   isEditMode,
   dialogTitle = "Create New Idea",
+  inspirationText = "",
+  onInspirationTextChange = () => {},
+  inspirationLinks = [],
+  onAddInspirationLink = () => {},
+  onRemoveInspirationLink = () => {},
+  inspirationImages = [],
+  onAddInspirationImage = () => {},
+  onRemoveInspirationImage = () => {},
 }: IdeaCreationDialogProps) => {
   const [isMeganOpen, setIsMeganOpen] = useState(false);
   
@@ -124,6 +140,14 @@ const IdeaCreationDialog = ({
               onRemoveTag={onRemoveTag}
               scheduledDate={scheduledDate}
               onScheduledDateChange={onScheduledDateChange}
+              inspirationText={inspirationText}
+              onInspirationTextChange={onInspirationTextChange}
+              inspirationLinks={inspirationLinks}
+              onAddInspirationLink={onAddInspirationLink}
+              onRemoveInspirationLink={onRemoveInspirationLink}
+              inspirationImages={inspirationImages}
+              onAddInspirationImage={onAddInspirationImage}
+              onRemoveInspirationImage={onRemoveInspirationImage}
             />
           </div>
           

@@ -39,6 +39,11 @@ const ContentUploader = ({
   const [platformsList, setPlatformsList] = useState<string[]>([]);
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
   
+  // New state for inspiration section
+  const [inspirationText, setInspirationText] = useState("");
+  const [inspirationLinks, setInspirationLinks] = useState<string[]>([]);
+  const [inspirationImages, setInspirationImages] = useState<string[]>([]);
+  
   useEffect(() => {
     if (contentToEdit && isEditMode) {
       setIsOpen(true);
@@ -52,6 +57,17 @@ const ContentUploader = ({
             setShootDetails(parsedContent.shootDetails || '');
             setCaptionText(parsedContent.caption || '');
             setBucketId(parsedContent.bucketId || '');
+            
+            // Load inspiration data if available
+            if (parsedContent.inspirationText) {
+              setInspirationText(parsedContent.inspirationText);
+            }
+            if (parsedContent.inspirationLinks && Array.isArray(parsedContent.inspirationLinks)) {
+              setInspirationLinks(parsedContent.inspirationLinks);
+            }
+            if (parsedContent.inspirationImages && Array.isArray(parsedContent.inspirationImages)) {
+              setInspirationImages(parsedContent.inspirationImages);
+            }
             
             if (parsedContent.platforms && Array.isArray(parsedContent.platforms)) {
               setPlatformsList(parsedContent.platforms);
@@ -101,6 +117,23 @@ const ContentUploader = ({
   const handleRemovePlatform = (platformToRemove: string) => {
     setPlatformsList(platformsList.filter(platform => platform !== platformToRemove));
   };
+  
+  // Handlers for inspiration section
+  const handleAddInspirationLink = (link: string) => {
+    setInspirationLinks([...inspirationLinks, link]);
+  };
+
+  const handleRemoveInspirationLink = (index: number) => {
+    setInspirationLinks(inspirationLinks.filter((_, i) => i !== index));
+  };
+
+  const handleAddInspirationImage = (image: string) => {
+    setInspirationImages([...inspirationImages, image]);
+  };
+
+  const handleRemoveInspirationImage = (index: number) => {
+    setInspirationImages(inspirationImages.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = () => {
     if (!title.trim()) {
@@ -118,7 +151,10 @@ const ContentUploader = ({
         shootDetails: shootDetails,
         caption: captionText,
         platforms: platformsList,
-        bucketId: bucketId
+        bucketId: bucketId,
+        inspirationText: inspirationText,
+        inspirationLinks: inspirationLinks,
+        inspirationImages: inspirationImages
       }),
       dateCreated: contentToEdit ? contentToEdit.dateCreated : new Date(),
       tags: tagsList,
@@ -176,6 +212,9 @@ const ContentUploader = ({
     setPlatformsList([]);
     setCurrentPlatform("");
     setScheduledDate(undefined);
+    setInspirationText("");
+    setInspirationLinks([]);
+    setInspirationImages([]);
   };
 
   const handleClose = () => {
@@ -219,6 +258,14 @@ const ContentUploader = ({
         onRemoveTag={handleRemoveTag}
         scheduledDate={scheduledDate}
         onScheduledDateChange={setScheduledDate}
+        inspirationText={inspirationText}
+        onInspirationTextChange={setInspirationText}
+        inspirationLinks={inspirationLinks}
+        onAddInspirationLink={handleAddInspirationLink}
+        onRemoveInspirationLink={handleRemoveInspirationLink}
+        inspirationImages={inspirationImages}
+        onAddInspirationImage={handleAddInspirationImage}
+        onRemoveInspirationImage={handleRemoveInspirationImage}
         onSave={handleSubmit}
         onCancel={handleClose}
         isEditMode={isEditMode}

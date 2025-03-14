@@ -9,6 +9,7 @@ import CaptionInputSection from "./CaptionInputSection";
 import PlatformsSection from "./PlatformsSection";
 import TagsSection from "./TagsSection";
 import SchedulingSection from "./SchedulingSection";
+import InspirationSection from "./InspirationSection";
 
 interface DialogContentProps {
   title: string;
@@ -36,6 +37,14 @@ interface DialogContentProps {
   onRemoveTag: (tag: string) => void;
   scheduledDate?: Date;
   onScheduledDateChange?: (date: Date | undefined) => void;
+  inspirationText?: string;
+  onInspirationTextChange?: (value: string) => void;
+  inspirationLinks?: string[];
+  onAddInspirationLink?: (link: string) => void;
+  onRemoveInspirationLink?: (index: number) => void;
+  inspirationImages?: string[];
+  onAddInspirationImage?: (image: string) => void;
+  onRemoveInspirationImage?: (index: number) => void;
   children?: ReactNode;
 }
 
@@ -65,6 +74,14 @@ const DialogContent = ({
   onRemoveTag,
   scheduledDate,
   onScheduledDateChange,
+  inspirationText = "",
+  onInspirationTextChange = () => {},
+  inspirationLinks = [],
+  onAddInspirationLink = () => {},
+  onRemoveInspirationLink = () => {},
+  inspirationImages = [],
+  onAddInspirationImage = () => {},
+  onRemoveInspirationImage = () => {},
   children,
 }: DialogContentProps) => {
   return (
@@ -76,6 +93,17 @@ const DialogContent = ({
           bucketId={bucketId} 
           onBucketChange={onBucketChange} 
           pillarId={pillarId} 
+        />
+        
+        <InspirationSection
+          inspirationText={inspirationText}
+          onInspirationTextChange={onInspirationTextChange}
+          inspirationLinks={inspirationLinks}
+          onAddInspirationLink={onAddInspirationLink}
+          onRemoveInspirationLink={onRemoveInspirationLink}
+          inspirationImages={inspirationImages}
+          onAddInspirationImage={onAddInspirationImage}
+          onRemoveInspirationImage={onRemoveInspirationImage}
         />
         
         <div className="h-4"></div>
