@@ -9,8 +9,6 @@ import WritingSpace from "@/components/content/WritingSpace";
 import IdeaSection from "@/components/content/IdeaSection";
 import IdeaCreationDialog from "@/components/content/IdeaCreationDialog";
 import ContentTypeBuckets from "@/components/content/ContentTypeBuckets";
-import { Button } from "@/components/ui/button";
-import { FileText } from "lucide-react";
 
 export type Pillar = {
   id: string;
@@ -287,16 +285,6 @@ const BankOfContent = () => {
               onRenamePillar={renamePillar}
               onDeletePillar={deletePillar}
             />
-            
-            <Button 
-              variant="default" 
-              size="default"
-              className="bg-[#8B6B4E] hover:bg-[#7A5C3F]"
-              onClick={openNewIdeaDialog}
-            >
-              <FileText className="h-4 w-4 mr-2" />
-              Add New Idea
-            </Button>
           </div>
           
           <ContentTypeBuckets 
