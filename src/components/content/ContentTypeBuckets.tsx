@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, FileVideo, ImageIcon, Link, List, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ContentItem } from "@/types/content";
+import { toast } from "sonner";
 
 type ContentType = {
   id: string;
@@ -15,9 +16,10 @@ type ContentType = {
 
 interface ContentTypeBucketsProps {
   onAddIdea: (bucketId: string) => void;
+  pillarId: string;
 }
 
-const ContentTypeBuckets = ({ onAddIdea }: ContentTypeBucketsProps) => {
+const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) => {
   const [contentTypes, setContentTypes] = useState<ContentType[]>([
     { id: "blog", name: "Blog Posts", icon: FileText, items: [] },
     { id: "video", name: "Video Content", icon: FileVideo, items: [] },
@@ -30,6 +32,57 @@ const ContentTypeBuckets = ({ onAddIdea }: ContentTypeBucketsProps) => {
   const [editingBucketId, setEditingBucketId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
   const editInputRef = useRef<HTMLInputElement>(null);
+
+  // Load pillar-specific buckets from localStorage on mount and when pillarId changes
+  useEffect(() => {
+    try {
+      const savedBuckets = localStorage.getItem(`content-buckets-${pillarId}`);
+      if (savedBuckets) {
+        const parsedBuckets = JSON.parse(savedBuckets);
+        // Make sure icons are properly set since they can't be serialized
+        const bucketsWithIcons = parsedBuckets.map((bucket: any) => {
+          let icon;
+          switch (bucket.iconType) {
+            case 'FileText': icon = FileText; break;
+            case 'FileVideo': icon = FileVideo; break;
+            case 'List': icon = List; break;
+            case 'ImageIcon': icon = ImageIcon; break;
+            default: icon = Link; break;
+          }
+          return { ...bucket, icon };
+        });
+        setContentTypes(bucketsWithIcons);
+      }
+    } catch (error) {
+      console.error("Failed to load content buckets:", error);
+      toast.error("Failed to load content buckets");
+    }
+  }, [pillarId]);
+
+  // Save to localStorage whenever contentTypes changes
+  useEffect(() => {
+    try {
+      // Store icon type as string since functions can't be serialized
+      const bucketsToSave = contentTypes.map(bucket => {
+        let iconType = 'Link';
+        if (bucket.icon === FileText) iconType = 'FileText';
+        if (bucket.icon === FileVideo) iconType = 'FileVideo';
+        if (bucket.icon === List) iconType = 'List';
+        if (bucket.icon === ImageIcon) iconType = 'ImageIcon';
+        
+        return {
+          ...bucket,
+          iconType,
+          // Don't include the actual icon function in storage
+          icon: undefined
+        };
+      });
+      
+      localStorage.setItem(`content-buckets-${pillarId}`, JSON.stringify(bucketsToSave));
+    } catch (error) {
+      console.error("Failed to save content buckets:", error);
+    }
+  }, [contentTypes, pillarId]);
 
   // Focus the edit input when it appears
   useEffect(() => {
@@ -53,6 +106,7 @@ const ContentTypeBuckets = ({ onAddIdea }: ContentTypeBucketsProps) => {
     
     setNewBucketName("");
     setIsAddingBucket(false);
+    toast.success(`Added "${newBucketName}" bucket`);
   };
 
   const handleDoubleClick = (bucketId: string, currentName: string) => {
@@ -71,6 +125,7 @@ const ContentTypeBuckets = ({ onAddIdea }: ContentTypeBucketsProps) => {
     ));
     
     setEditingBucketId(null);
+    toast.success(`Renamed bucket to "${editingName}"`);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

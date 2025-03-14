@@ -615,8 +615,6 @@ const BankOfContent = () => {
             onDeletePillar={deletePillar}
           />
 
-          <ContentTypeBuckets onAddIdea={handleAddToBucket} />
-
           {pillars.map((pillar) => (
             <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -641,6 +639,7 @@ const BankOfContent = () => {
                   onContentUpdated={updateContent}
                   onCancelEdit={cancelEditing}
                   onContentAdded={addContentToPillar}
+                  onAddToBucket={handleAddToBucket}
                 />
               </div>
             </TabsContent>
@@ -699,4 +698,3 @@ const BankOfContent = () => {
 };
 
 export default BankOfContent;
-

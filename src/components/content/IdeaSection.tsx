@@ -6,6 +6,7 @@ import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
 import ContentPillar from "./ContentPillar";
 import ContentUploader from "./ContentUploader";
+import ContentTypeBuckets from "./ContentTypeBuckets";
 
 interface IdeaSectionProps {
   pillar: Pillar;
@@ -21,6 +22,7 @@ interface IdeaSectionProps {
   onContentUpdated: (pillarId: string, content: ContentItem) => void;
   onCancelEdit: () => void;
   onContentAdded: (pillarId: string, content: ContentItem) => void;
+  onAddToBucket: (bucketId: string) => void;
 }
 
 const IdeaSection = ({
@@ -36,7 +38,8 @@ const IdeaSection = ({
   isEditing,
   onContentUpdated,
   onCancelEdit,
-  onContentAdded
+  onContentAdded,
+  onAddToBucket
 }: IdeaSectionProps) => {
   return (
     <div className="space-y-3 pl-2 pr-3">
@@ -69,6 +72,12 @@ const IdeaSection = ({
           )}
         </div>
       </div>
+      
+      <ContentTypeBuckets 
+        pillarId={pillar.id} 
+        onAddIdea={onAddToBucket} 
+      />
+      
       <ContentPillar
         pillar={pillar}
         pillars={pillars}
