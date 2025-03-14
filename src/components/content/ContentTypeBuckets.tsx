@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -317,14 +318,14 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
           </Card>
         ))}
         
-        <div className="flex items-center justify-center h-full">
+        <Card className="flex items-center justify-center border-dashed hover:border-purple-300 transition-all cursor-pointer">
           <TooltipProvider delayDuration={0}>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button 
                   variant="ghost" 
                   onClick={() => setIsAddingBucket(!isAddingBucket)}
-                  className="h-12 w-12"
+                  className="h-full w-full"
                 >
                   <Plus className="h-6 w-6 text-purple-500" />
                 </Button>
@@ -334,7 +335,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-        </div>
+        </Card>
       </div>
     </div>
   );
