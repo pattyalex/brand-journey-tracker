@@ -83,7 +83,7 @@ const BucketSelectionSection = ({
         </SelectContent>
       </Select>
       {bucketId && (
-        <div className="text-xs text-gray-500 mt-2 bg-white p-2 rounded border border-gray-200 shadow-sm rotate-[-0.5deg]">
+        <div className="text-xs text-gray-500 mt-2 bg-white p-2 rounded border border-gray-200 shadow-sm">
           {contentFormats.find(f => f.id === bucketId)?.description || ""}
         </div>
       )}

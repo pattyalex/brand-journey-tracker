@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, Star, Heart, Tag, Bookmark } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ContentItem } from "@/types/content";
 import { 
@@ -31,68 +31,32 @@ const getPillarStickerDesigns = (pillarId: string) => {
     { 
       bg: "bg-purple-100", 
       border: "border-purple-300", 
-      shadow: "shadow-purple-200",
-      icons: [
-        { icon: Star, iconColor: "text-purple-500" },
-        { icon: Heart, iconColor: "text-purple-500" },
-        { icon: Tag, iconColor: "text-purple-500" },
-        { icon: Bookmark, iconColor: "text-purple-500" }
-      ]
+      shadow: "shadow-purple-200"
     },
     { 
       bg: "bg-orange-100", 
       border: "border-orange-300", 
-      shadow: "shadow-orange-200",
-      icons: [
-        { icon: Star, iconColor: "text-orange-500" },
-        { icon: Heart, iconColor: "text-orange-500" },
-        { icon: Tag, iconColor: "text-orange-500" },
-        { icon: Bookmark, iconColor: "text-orange-500" }
-      ]
+      shadow: "shadow-orange-200"
     },
     { 
       bg: "bg-teal-100", 
       border: "border-teal-300", 
-      shadow: "shadow-teal-200",
-      icons: [
-        { icon: Star, iconColor: "text-teal-500" },
-        { icon: Heart, iconColor: "text-teal-500" },
-        { icon: Tag, iconColor: "text-teal-500" },
-        { icon: Bookmark, iconColor: "text-teal-500" }
-      ]
+      shadow: "shadow-teal-200"
     },
     { 
       bg: "bg-pink-100", 
       border: "border-pink-300", 
-      shadow: "shadow-pink-200",
-      icons: [
-        { icon: Star, iconColor: "text-pink-500" },
-        { icon: Heart, iconColor: "text-pink-500" },
-        { icon: Tag, iconColor: "text-pink-500" },
-        { icon: Bookmark, iconColor: "text-pink-500" }
-      ]
+      shadow: "shadow-pink-200"
     },
     { 
       bg: "bg-blue-100", 
       border: "border-blue-300", 
-      shadow: "shadow-blue-200",
-      icons: [
-        { icon: Star, iconColor: "text-blue-500" },
-        { icon: Heart, iconColor: "text-blue-500" },
-        { icon: Tag, iconColor: "text-blue-500" },
-        { icon: Bookmark, iconColor: "text-blue-500" }
-      ]
+      shadow: "shadow-blue-200"
     },
     { 
       bg: "bg-green-100", 
       border: "border-green-300", 
-      shadow: "shadow-green-200",
-      icons: [
-        { icon: Star, iconColor: "text-green-500" },
-        { icon: Heart, iconColor: "text-green-500" },
-        { icon: Tag, iconColor: "text-green-500" },
-        { icon: Bookmark, iconColor: "text-green-500" }
-      ]
+      shadow: "shadow-green-200"
     }
   ];
   
@@ -100,16 +64,7 @@ const getPillarStickerDesigns = (pillarId: string) => {
     ? pillarIndex 
     : 0;
   
-  return pillarColorSchemes[colorIndex].icons.map((iconConfig, i) => {
-    return {
-      bg: pillarColorSchemes[colorIndex].bg,
-      border: pillarColorSchemes[colorIndex].border,
-      shadow: pillarColorSchemes[colorIndex].shadow,
-      icon: iconConfig.icon,
-      iconColor: iconConfig.iconColor,
-      rotate: i % 2 === 0 ? `rotate-[-${i+1}deg]` : `rotate-[${i+1}deg]`
-    };
-  });
+  return pillarColorSchemes[colorIndex];
 };
 
 const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) => {
@@ -121,7 +76,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     { id: "image", name: "Image Content", description: "Visual content", items: [] },
   ]);
   
-  const stickerDesigns = getPillarStickerDesigns(pillarId);
+  const stickerDesign = getPillarStickerDesigns(pillarId);
   
   const getPillarAddButtonStyles = () => {
     const pillarIndex = parseInt(pillarId) - 1;
@@ -313,94 +268,82 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
       )}
       
       <div className="flex flex-wrap gap-4">
-        {contentTypes.map((type, index) => {
-          const designIndex = index % stickerDesigns.length;
-          const design = stickerDesigns[designIndex];
-          const Icon = design.icon;
-          
-          return (
-            <Card 
-              key={type.id} 
-              className={`w-[200px] relative ${design.bg} ${design.border} ${design.rotate} ${design.shadow} rounded-lg border-2 hover:shadow-md transition-all cursor-pointer group`}
-              style={{ 
-                boxShadow: '0 3px 6px rgba(0,0,0,0.1)', 
-                transform: `${design.rotate} scale(0.98)`,
-                transformOrigin: 'center',
-                transition: 'all 0.2s ease'
-              }}
-              onClick={() => handleCardClick(type.id)}
+        {contentTypes.map((type, index) => (
+          <Card 
+            key={type.id} 
+            className={`w-[200px] relative ${stickerDesign.bg} ${stickerDesign.border} ${stickerDesign.shadow} rounded-lg border-2 hover:shadow-md transition-all cursor-pointer group`}
+            style={{ 
+              boxShadow: '0 3px 6px rgba(0,0,0,0.1)', 
+              transition: 'all 0.2s ease'
+            }}
+            onClick={() => handleCardClick(type.id)}
+          >
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              className="absolute top-1 left-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-30 hover:bg-white/50 rounded-full"
+              onClick={(e) => handleDeleteFormat(e, type.id)}
+              title="Delete format"
             >
-              <div className="absolute -top-2 -right-2 w-8 h-8 flex items-center justify-center rounded-full bg-white border-2 border-gray-200 shadow-sm">
-                <Icon className={`h-4 w-4 ${design.iconColor}`} />
-              </div>
-              
-              <Button
-                type="button"
-                variant="ghost"
-                size="xs"
-                className="absolute top-1 left-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-30 hover:bg-white/50 rounded-full"
-                onClick={(e) => handleDeleteFormat(e, type.id)}
-                title="Delete format"
+              <Trash2 className="h-3.5 w-3.5 text-gray-500" />
+            </Button>
+            
+            <div className="p-3">
+              <div 
+                className="flex items-center gap-2 mb-1"
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                  handleDoubleClick(type.id, type.name, type.description || "");
+                }}
+                title="Double-click to edit"
               >
-                <Trash2 className="h-3.5 w-3.5 text-gray-500" />
-              </Button>
-              
-              <div className="p-3">
-                <div 
-                  className="flex items-center gap-2 mb-1"
-                  onDoubleClick={(e) => {
-                    e.stopPropagation();
-                    handleDoubleClick(type.id, type.name, type.description || "");
-                  }}
-                  title="Double-click to edit"
-                >
-                  {editingFormatId === type.id && !isEditingDescription ? (
-                    <Input
-                      ref={editInputRef}
-                      value={editingName}
-                      onChange={(e) => setEditingName(e.target.value)}
-                      onKeyDown={handleKeyPress}
-                      onBlur={handleBlur}
-                      className="h-7 py-1 px-2 min-w-0 text-sm font-medium"
-                      autoFocus
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  ) : (
-                    <span className="text-sm font-medium text-gray-900 truncate">
-                      {type.name}
-                    </span>
-                  )}
-                </div>
-                
-                <div
-                  className="mt-1 h-8 overflow-hidden"
-                  onDoubleClick={(e) => {
-                    e.stopPropagation();
-                    handleDescriptionDoubleClick(type.id, type.description || "");
-                  }}
-                  title="Double-click to edit description"
-                >
-                  {editingFormatId === type.id && isEditingDescription ? (
-                    <Input
-                      ref={descInputRef}
-                      value={editingDescription}
-                      onChange={(e) => setEditingDescription(e.target.value)}
-                      onKeyDown={handleKeyPress}
-                      onBlur={handleBlur}
-                      className="h-7 py-1 px-2 min-w-0 text-xs"
-                      placeholder="Short description"
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  ) : (
-                    <p className="text-xs text-gray-500 line-clamp-2">
-                      {type.description}
-                    </p>
-                  )}
-                </div>
+                {editingFormatId === type.id && !isEditingDescription ? (
+                  <Input
+                    ref={editInputRef}
+                    value={editingName}
+                    onChange={(e) => setEditingName(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    onBlur={handleBlur}
+                    className="h-7 py-1 px-2 min-w-0 text-sm font-medium"
+                    autoFocus
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <span className="text-sm font-medium text-gray-900 truncate">
+                    {type.name}
+                  </span>
+                )}
               </div>
-            </Card>
-          );
-        })}
+              
+              <div
+                className="mt-1 h-8 overflow-hidden"
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                  handleDescriptionDoubleClick(type.id, type.description || "");
+                }}
+                title="Double-click to edit description"
+              >
+                {editingFormatId === type.id && isEditingDescription ? (
+                  <Input
+                    ref={descInputRef}
+                    value={editingDescription}
+                    onChange={(e) => setEditingDescription(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    onBlur={handleBlur}
+                    className="h-7 py-1 px-2 min-w-0 text-xs"
+                    placeholder="Short description"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <p className="text-xs text-gray-500 line-clamp-2">
+                    {type.description}
+                  </p>
+                )}
+              </div>
+            </div>
+          </Card>
+        ))}
         
         <TooltipProvider delayDuration={0}>
           <Tooltip>
