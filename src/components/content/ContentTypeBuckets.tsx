@@ -262,14 +262,14 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
             
             <CardHeader className={`p-1 pb-0 ${expandedCardId === type.id ? 'pt-2' : ''}`}>
               <CardTitle 
-                className="text-xs flex items-center gap-1.5"
+                className="text-sm flex items-center gap-1.5"
                 onDoubleClick={(e) => {
                   e.stopPropagation();
                   handleDoubleClick(type.id, type.name, type.description || "");
                 }}
                 title="Double-click to edit"
               >
-                <type.icon className="h-2.5 w-2.5 flex-shrink-0" />
+                <type.icon className="h-3 w-3 flex-shrink-0" />
                 {editingBucketId === type.id && !isEditingDescription ? (
                   <Input
                     ref={editInputRef}
@@ -277,7 +277,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                     onChange={(e) => setEditingName(e.target.value)}
                     onKeyDown={handleKeyPress}
                     onBlur={handleBlur}
-                    className="h-5 py-0 px-1 min-w-0 text-xs"
+                    className="h-6 py-0 px-1 min-w-0 text-sm"
                     autoFocus
                     onClick={(e) => e.stopPropagation()}
                   />
@@ -304,12 +304,12 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                     onChange={(e) => setEditingDescription(e.target.value)}
                     onKeyDown={handleKeyPress}
                     onBlur={handleBlur}
-                    className="h-5 py-0 px-1 min-w-0 text-xs mt-1"
+                    className="h-6 py-0 px-1 min-w-0 text-sm mt-1"
                     placeholder="Short description"
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                  <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                     {type.description}
                   </p>
                 )}
