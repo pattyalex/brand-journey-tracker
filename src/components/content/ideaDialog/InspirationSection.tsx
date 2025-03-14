@@ -62,17 +62,15 @@ const InspirationSection = ({
       onOpenChange={setIsOpen}
       className="rounded-md border p-0 shadow-sm"
     >
-      <div className="flex items-center justify-between px-4 py-2">
-        <div className="flex items-center gap-2">
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="sm" className="w-full justify-start p-0 hover:bg-transparent">
-              <h4 className="text-sm font-medium">
-                Inspiration {hasInspiration && <Badge variant="outline" className="ml-2 bg-amber-50 text-amber-600">{inspirationLinks.length + inspirationImages.length}</Badge>}
-              </h4>
-            </Button>
-          </CollapsibleTrigger>
+      <CollapsibleTrigger asChild>
+        <div className="flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-slate-50">
+          <div className="flex items-center gap-2">
+            <h4 className="text-sm font-medium">
+              Inspiration {hasInspiration && <Badge variant="outline" className="ml-2 bg-amber-50 text-amber-600">{inspirationLinks.length + inspirationImages.length}</Badge>}
+            </h4>
+          </div>
         </div>
-      </div>
+      </CollapsibleTrigger>
 
       <CollapsibleContent className="px-4 pb-3">
         <div className="grid gap-2 text-sm">
