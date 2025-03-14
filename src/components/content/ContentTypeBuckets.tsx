@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { FileText, FileVideo, ImageIcon, Link, List, Plus, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ContentItem } from "@/types/content";
@@ -198,13 +198,22 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
   };
 
   return (
-    <div className="mt-4 mb-6">
-      <div className="flex justify-between items-center mb-3">
-        <h2 className="text-xl font-semibold">Content Buckets</h2>
+    <div className="mt-4 mb-8">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Content Buckets</h2>
+        
+        <Button 
+          variant="outline" 
+          onClick={() => setIsAddingBucket(!isAddingBucket)}
+          className="flex items-center gap-2 h-10 px-4 py-2 rounded-xl border-2"
+        >
+          <Plus className="h-5 w-5" />
+          Add Bucket
+        </Button>
       </div>
       
       {isAddingBucket && (
-        <div className="mb-3 flex flex-col gap-2">
+        <div className="mb-6 flex flex-col gap-2">
           <Input
             value={newBucketName}
             onChange={(e) => setNewBucketName(e.target.value)}
@@ -235,99 +244,26 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         </div>
       )}
       
-      <div className="flex flex-wrap gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4">
         {contentTypes.map((type) => (
           <Card 
             key={type.id} 
-            className="w-[160px] border rounded-lg shadow-sm cursor-pointer hover:border-purple-300 transition-all"
-            onClick={() => handleCardClick(type.id)}
+            className="border rounded-xl p-4 hover:border-gray-300 transition-all cursor-pointer"
+            onClick={() => onAddIdea(type.id)}
           >
-            <Button
-              type="button"
-              variant="ghost"
-              size="xs"
-              className={`absolute top-1 right-1 h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-30 text-gray-500 hover:text-gray-700 hover:bg-gray-100 ${
-                ["blog", "video", "social", "image"].includes(type.id) ? "cursor-not-allowed" : ""
-              }`}
-              onClick={(e) => handleDeleteBucket(e, type.id)}
-              title={["blog", "video", "social", "image"].includes(type.id) ? "Cannot delete default bucket" : "Delete bucket"}
-            >
-              <Trash2 className="h-3 w-3" />
-            </Button>
-            
-            <div className="p-3">
-              <div 
-                className="flex items-center gap-2 mb-1"
-                onDoubleClick={(e) => {
-                  e.stopPropagation();
-                  handleDoubleClick(type.id, type.name, type.description || "");
-                }}
-                title="Double-click to edit"
-              >
-                <type.icon className="h-4 w-4 flex-shrink-0 text-gray-700" />
-                {editingBucketId === type.id && !isEditingDescription ? (
-                  <Input
-                    ref={editInputRef}
-                    value={editingName}
-                    onChange={(e) => setEditingName(e.target.value)}
-                    onKeyDown={handleKeyPress}
-                    onBlur={handleBlur}
-                    className="h-7 py-1 px-2 min-w-0 text-sm font-medium"
-                    autoFocus
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                ) : (
-                  <span className="text-sm font-medium text-gray-900 truncate">
-                    {type.name}
-                  </span>
-                )}
-              </div>
-              
-              <div
-                className="mt-1 h-8 overflow-hidden"
-                onDoubleClick={(e) => {
-                  e.stopPropagation();
-                  handleDescriptionDoubleClick(type.id, type.description || "");
-                }}
-                title="Double-click to edit description"
-              >
-                {editingBucketId === type.id && isEditingDescription ? (
-                  <Input
-                    ref={descInputRef}
-                    value={editingDescription}
-                    onChange={(e) => setEditingDescription(e.target.value)}
-                    onKeyDown={handleKeyPress}
-                    onBlur={handleBlur}
-                    className="h-7 py-1 px-2 min-w-0 text-xs"
-                    placeholder="Short description"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                ) : (
-                  <p className="text-xs text-gray-500 line-clamp-2">
-                    {type.description}
-                  </p>
-                )}
+            <div className="flex items-center gap-3 mb-2">
+              <type.icon className="h-5 w-5 flex-shrink-0 text-gray-700" />
+              <div className="flex items-center gap-1">
+                <span className="text-md font-medium">👤</span>
+                <span className="text-md font-medium">{type.name}</span>
               </div>
             </div>
+            
+            <p className="text-gray-500 text-sm mt-1">
+              {type.description}
+            </p>
           </Card>
         ))}
-        
-        <TooltipProvider delayDuration={0}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                onClick={() => setIsAddingBucket(!isAddingBucket)}
-                className="w-[160px] h-[80px] flex items-center justify-center p-0 border border-dashed border-gray-300 hover:border-purple-300"
-              >
-                <Plus className="h-5 w-5 text-purple-500" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Add bucket</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
       </div>
     </div>
   );
