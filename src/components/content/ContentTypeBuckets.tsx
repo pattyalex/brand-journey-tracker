@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,7 +32,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
   const [editingName, setEditingName] = useState("");
   const editInputRef = useRef<HTMLInputElement>(null);
 
-  // Load pillar-specific buckets
   useEffect(() => {
     try {
       const savedBuckets = localStorage.getItem(`content-buckets-${pillarId}`);
@@ -58,7 +56,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     }
   }, [pillarId]);
 
-  // Save pillar-specific buckets
   useEffect(() => {
     try {
       const bucketsToSave = contentTypes.map(bucket => {
@@ -81,7 +78,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     }
   }, [contentTypes, pillarId]);
 
-  // Focus on edit input when it appears
   useEffect(() => {
     if (editingBucketId && editInputRef.current) {
       editInputRef.current.focus();
@@ -122,7 +118,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     ));
     
     setEditingBucketId(null);
-    toast.success(`Renamed bucket to "${editingName}"`);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
