@@ -283,7 +283,7 @@ const BankOfContent = () => {
             />
           </div>
           
-          <div className="border border-gray-300 rounded-b-md pt-4 pb-6 px-4 mb-6 border-t-0">
+          <div className="pillar-container pt-4 pb-6 px-4 mb-6">
             <ContentTypeBuckets 
               onAddIdea={handleAddToBucket} 
               pillarId={activeTab}
