@@ -1,5 +1,4 @@
-
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { ContentItem } from "@/types/content";
