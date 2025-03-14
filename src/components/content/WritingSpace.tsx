@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useState } from "react";
 import { Pencil, Sparkles } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -27,7 +26,6 @@ const WritingSpace = ({
   const [expandedClass, setExpandedClass] = useState("");
   const [isMeganOpen, setIsMeganOpen] = useState(false);
   
-  // Adjust layout when sidebar state changes
   useEffect(() => {
     setExpandedClass(state === "collapsed" ? "writing-expanded" : "");
   }, [state]);
@@ -44,14 +42,11 @@ const WritingSpace = ({
 
   const handleFormatClick = (formatType: string, formatValue?: string) => {
     if (textareaRef.current) {
-      // Get current selection range
       const start = textareaRef.current.selectionStart;
       const end = textareaRef.current.selectionEnd;
       
-      // Pass both format info and selection range to parent component
       onFormatText(formatType, formatValue);
       
-      // Keep focus on textarea after formatting
       setTimeout(() => {
         if (textareaRef.current) {
           textareaRef.current.focus();
@@ -74,7 +69,6 @@ const WritingSpace = ({
             size="sm"
             className="cursor-pointer transition-all duration-150 hover:bg-[#FDE1D3] active:scale-95 rounded-md text-primary shadow-sm px-3"
             onClick={() => {
-              // Function to open the hook suggestions
               const sparklesButton = document.querySelector('[aria-label="Show title hook suggestions"]') as HTMLButtonElement;
               if (sparklesButton) {
                 sparklesButton.click();
@@ -88,7 +82,7 @@ const WritingSpace = ({
           <Button
             variant="ghost"
             size="sm"
-            className="cursor-pointer transition-all duration-150 hover:bg-accent/80 active:bg-accent active:scale-95 rounded-md"
+            className="cursor-pointer transition-all duration-150 hover:bg-[#FDE1D3] active:scale-95 rounded-md shadow-sm"
             onClick={() => setIsMeganOpen(!isMeganOpen)}
             aria-label={isMeganOpen ? "Hide Megan" : "Ask Megan"}
           >
@@ -106,17 +100,14 @@ const WritingSpace = ({
         </div>
       </div>
       
-      {/* Keep the TitleHookSuggestions component hidden but functional */}
       <div className="hidden">
         <TitleHookSuggestions onSelectHook={(hook) => {
-          // Insert the hook at cursor position or append to existing text
           if (textareaRef.current) {
             const cursorPos = textareaRef.current.selectionStart;
             const textBefore = writingText.substring(0, cursorPos);
             const textAfter = writingText.substring(cursorPos);
             onTextChange(textBefore + hook + textAfter);
             
-            // Set focus back to textarea
             setTimeout(() => {
               if (textareaRef.current) {
                 textareaRef.current.focus();
