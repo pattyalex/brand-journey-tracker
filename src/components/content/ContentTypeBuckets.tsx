@@ -256,7 +256,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               <Trash2 className="h-3 w-3" />
             </Button>
             
-            <div className="p-3">
+            <div className="p-3 pb-2">
               <div 
                 className="flex items-center gap-2 mb-1"
                 onDoubleClick={(e) => {
@@ -285,7 +285,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               </div>
               
               <div
-                className="mt-1 h-8 overflow-hidden"
+                className="mt-1 h-6 overflow-hidden"
                 onDoubleClick={(e) => {
                   e.stopPropagation();
                   handleDescriptionDoubleClick(type.id, type.description || "");
