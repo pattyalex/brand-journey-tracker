@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -613,6 +614,12 @@ const BankOfContent = () => {
             onAddPillar={addPillar}
             onRenamePillar={renamePillar}
             onDeletePillar={deletePillar}
+          />
+          
+          {/* Content buckets moved here - directly under pillar tabs */}
+          <ContentTypeBuckets 
+            onAddIdea={handleAddToBucket} 
+            pillarId={activeTab}
           />
 
           {pillars.map((pillar) => (
