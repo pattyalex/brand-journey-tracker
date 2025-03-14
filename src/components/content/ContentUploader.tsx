@@ -190,7 +190,7 @@ const ContentUploader = ({
     <>
       <Button onClick={() => setIsOpen(true)}>
         <FileText className="mr-2 h-4 w-4" /> 
-        Add New Idea
+        Develop an Idea
       </Button>
       
       <IdeaCreationDialog

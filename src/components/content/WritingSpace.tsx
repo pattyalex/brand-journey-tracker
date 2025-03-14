@@ -1,3 +1,4 @@
+
 import { useRef, useEffect, useState } from "react";
 import { Pencil } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -60,7 +61,7 @@ const WritingSpace = ({
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold flex items-center">
           <Pencil className="h-5 w-5 mr-2" />
-          Drafts
+          Brainstorm
         </h2>
       </div>
       <div className="h-[calc(100vh-140px)]">
