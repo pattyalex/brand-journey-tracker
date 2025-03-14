@@ -4,7 +4,7 @@ import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pillar } from "@/pages/BankOfContent";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Check, X, Edit, Trash2, Plus, MoreVertical, Circle } from "lucide-react";
+import { Check, X, Edit, Trash2, Plus, MoreVertical } from "lucide-react";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -48,7 +48,6 @@ const PillarTabs = ({
 }: PillarTabsProps) => {
   const [editingPillarId, setEditingPillarId] = useState<string | null>(null);
   const [editingPillarName, setEditingPillarName] = useState("");
-  const [prevActiveTab, setPrevActiveTab] = useState(activeTab);
 
   const startEditingPillar = (pillarId: string, currentName: string) => {
     setEditingPillarId(pillarId);
@@ -76,11 +75,6 @@ const PillarTabs = ({
       e.preventDefault();
       cancelEditingPillar();
     }
-  };
-
-  const handleTabChange = (tabId: string) => {
-    setPrevActiveTab(activeTab);
-    onTabChange(tabId);
   };
 
   return (
@@ -119,26 +113,18 @@ const PillarTabs = ({
                 </div>
               ) : (
                 <div className="flex items-center">
-                  <div className="relative">
-                    <TabsTrigger 
-                      value={pillar.id}
-                      className={`flex items-center gap-2 px-5 py-2 text-base transition-all duration-300 ${
-                        pillar.id === activeTab ? "font-semibold" : "font-normal"
-                      }`}
-                      onClick={() => handleTabChange(pillar.id)}
-                    >
-                      {pillar.id === activeTab && (
-                        <Circle 
-                          className="h-2 w-2 animate-pulse transition-opacity duration-300" 
-                          fill="currentColor" 
-                        />
-                      )}
-                      {pillar.name}
-                      {pillar.id === activeTab && (
-                        <div className="absolute -bottom-[1px] left-0 w-full h-[3px] bg-background shadow-[0_-1px_2px_rgba(0,0,0,0.1)] animate-fade-in"></div>
-                      )}
-                    </TabsTrigger>
-                  </div>
+                  <TabsTrigger 
+                    value={pillar.id}
+                    className={`relative data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white px-5 py-2 text-base transition-all duration-300 ${
+                      pillar.id === activeTab ? "font-semibold" : "font-normal"
+                    }`}
+                    onClick={() => onTabChange(pillar.id)}
+                  >
+                    {pillar.name}
+                    {pillar.id === activeTab && (
+                      <div className="absolute -bottom-[1px] left-0 w-full h-[2px] bg-white animate-fade-in"></div>
+                    )}
+                  </TabsTrigger>
                   
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
