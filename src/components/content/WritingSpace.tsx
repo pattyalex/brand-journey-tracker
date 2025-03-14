@@ -62,33 +62,31 @@ const WritingSpace = ({
   return (
     <div className={`space-y-4 pr-2 transition-all duration-300 ${expandedClass}`}>
       <div className="flex items-center justify-between">
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           <h2 className="text-xl font-semibold flex items-center">
             <Pencil className="h-5 w-5 mr-2" />
             Brainstorm
           </h2>
-          <div className="ml-2">
-            <TitleHookSuggestions onSelectHook={(hook) => {
-              // Insert the hook at cursor position or append to existing text
-              if (textareaRef.current) {
-                const cursorPos = textareaRef.current.selectionStart;
-                const textBefore = writingText.substring(0, cursorPos);
-                const textAfter = writingText.substring(cursorPos);
-                onTextChange(textBefore + hook + textAfter);
-                
-                // Set focus back to textarea
-                setTimeout(() => {
-                  if (textareaRef.current) {
-                    textareaRef.current.focus();
-                    const newCursorPos = cursorPos + hook.length;
-                    textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
-                  }
-                }, 10);
-              } else {
-                onTextChange(writingText + hook);
-              }
-            }} />
-          </div>
+          <TitleHookSuggestions onSelectHook={(hook) => {
+            // Insert the hook at cursor position or append to existing text
+            if (textareaRef.current) {
+              const cursorPos = textareaRef.current.selectionStart;
+              const textBefore = writingText.substring(0, cursorPos);
+              const textAfter = writingText.substring(cursorPos);
+              onTextChange(textBefore + hook + textAfter);
+              
+              // Set focus back to textarea
+              setTimeout(() => {
+                if (textareaRef.current) {
+                  textareaRef.current.focus();
+                  const newCursorPos = cursorPos + hook.length;
+                  textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
+                }
+              }, 10);
+            } else {
+              onTextChange(writingText + hook);
+            }
+          }} />
         </div>
         <Button
           variant="ghost"
