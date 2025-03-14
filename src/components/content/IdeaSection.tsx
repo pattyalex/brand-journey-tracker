@@ -118,7 +118,10 @@ const IdeaSection = ({
           <Lightbulb className="h-5 w-5 mr-2" /> 
           {pillar.name} Ideas
         </h2>
-        
+      </div>
+      
+      {/* Add New Idea button moved above the filter */}
+      <div className="flex justify-end mb-2">
         <ContentUploader 
           pillarId={pillar.id}
           onContentAdded={onContentAdded}
