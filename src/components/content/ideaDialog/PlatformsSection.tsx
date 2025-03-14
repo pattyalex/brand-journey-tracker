@@ -27,6 +27,9 @@ const PlatformsSection = ({
         onAddPlatform={onAddPlatform}
         onRemovePlatform={onRemovePlatform}
       />
+      <p className="text-xs text-muted-foreground mt-1">
+        Add platforms where this content will be published (e.g., Instagram, YouTube, Blog, etc.)
+      </p>
     </div>
   );
 };

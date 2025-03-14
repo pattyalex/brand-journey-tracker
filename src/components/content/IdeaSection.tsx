@@ -69,12 +69,16 @@ const IdeaSection = ({
 
   // Extract unique platforms from all content items
   useEffect(() => {
+    console.log("Extracting platforms from content items...");
     const platforms = new Set<string>();
     
     pillar.content.forEach(item => {
       // Check direct platforms array
       if (item.platforms && Array.isArray(item.platforms)) {
-        item.platforms.forEach(platform => platforms.add(platform));
+        item.platforms.forEach(platform => {
+          platforms.add(platform);
+          console.log("Found platform:", platform);
+        });
       }
       
       // Check platforms in URL JSON
@@ -82,7 +86,10 @@ const IdeaSection = ({
         if (item.url) {
           const urlData = JSON.parse(item.url);
           if (urlData.platforms && Array.isArray(urlData.platforms)) {
-            urlData.platforms.forEach((platform: string) => platforms.add(platform));
+            urlData.platforms.forEach((platform: string) => {
+              platforms.add(platform);
+              console.log("Found platform in URL:", platform);
+            });
           }
         }
       } catch (e) {
@@ -90,7 +97,9 @@ const IdeaSection = ({
       }
     });
     
-    setAvailablePlatforms(Array.from(platforms).sort());
+    const platformArray = Array.from(platforms).sort();
+    console.log("Available platforms:", platformArray);
+    setAvailablePlatforms(platformArray);
   }, [pillar.content]);
 
   // Filter content by bucket and platform
@@ -214,20 +223,20 @@ const IdeaSection = ({
       </div>
       
       {/* Pillar Ideas heading and filter on the same line */}
-      <div className="flex items-center justify-between mt-4">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mt-4">
         <h2 className="text-xl font-semibold flex items-center">
           <Lightbulb className="h-5 w-5 mr-2" /> 
           {pillar.name} Ideas
         </h2>
         
         {/* Filters container */}
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full md:w-auto">
           {/* Bucket filter dropdown */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full md:w-auto">
             <Filter className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">Filter by bucket:</span>
+            <span className="text-sm text-muted-foreground whitespace-nowrap">Filter by bucket:</span>
             <Select value={bucketFilter} onValueChange={setBucketFilter}>
-              <SelectTrigger className="h-8 w-[180px]">
+              <SelectTrigger className="h-8 w-full md:w-[180px]">
                 <SelectValue placeholder="All Buckets" />
               </SelectTrigger>
               <SelectContent>
@@ -241,26 +250,24 @@ const IdeaSection = ({
             </Select>
           </div>
           
-          {/* Platform filter dropdown */}
-          {availablePlatforms.length > 0 && (
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">Filter by platform:</span>
-              <Select value={platformFilter} onValueChange={setPlatformFilter}>
-                <SelectTrigger className="h-8 w-[180px]">
-                  <SelectValue placeholder="All Platforms" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Platforms</SelectItem>
-                  {availablePlatforms.map(platform => (
-                    <SelectItem key={platform} value={platform}>
-                      {platform} ({countByPlatform(platform)})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          {/* Platform filter dropdown - always show regardless of available platforms */}
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground whitespace-nowrap">Filter by platform:</span>
+            <Select value={platformFilter} onValueChange={setPlatformFilter}>
+              <SelectTrigger className="h-8 w-full md:w-[180px]">
+                <SelectValue placeholder="All Platforms" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Platforms</SelectItem>
+                {availablePlatforms.map(platform => (
+                  <SelectItem key={platform} value={platform}>
+                    {platform} ({countByPlatform(platform)})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
       
