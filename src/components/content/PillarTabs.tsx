@@ -80,9 +80,9 @@ const PillarTabs = ({
 
   return (
     <div className="flex flex-col mb-6 relative">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center">
-          <TabsList className="bg-background border overflow-x-auto flex items-center h-12 relative z-10">
+      <div className="flex items-center justify-between relative">
+        <div className="flex items-center relative z-10">
+          <TabsList className="bg-transparent border-0 overflow-x-auto flex items-center h-12 relative">
             {pillars.map((pillar) => (
               <div key={pillar.id} className="relative flex items-center">
                 {editingPillarId === pillar.id ? (
@@ -117,11 +117,11 @@ const PillarTabs = ({
                   <div className="flex items-center">
                     <TabsTrigger 
                       value={pillar.id}
-                      className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white px-5 py-2 text-base ${
-                        pillar.id === activeTab ? 
-                          "border-b-0 border-2 border-[#0EA5E9] border-b-transparent rounded-t-md" : 
-                          "border-b border-[#0EA5E9]"
-                      }`}
+                      className={`relative px-5 py-2 text-base transition-colors
+                        ${pillar.id === activeTab 
+                          ? "bg-[#8B6B4E] text-white rounded-t-md shadow-sm" 
+                          : "bg-transparent text-foreground hover:bg-muted/30"
+                        }`}
                       onClick={() => onTabChange(pillar.id)}
                     >
                       {pillar.name}
@@ -198,8 +198,45 @@ const PillarTabs = ({
           </TooltipProvider>
         </div>
       </div>
-      {/* Continuous bottom line that extends the full width */}
-      <div className="h-[3px] bg-[#0EA5E9] w-full -mt-[2px] relative z-0 shadow-md"></div>
+
+      {/* Organic line that wraps the active pillar */}
+      <div className="relative w-full h-[4px] mt-0">
+        {/* Background line */}
+        <div className="absolute top-0 left-0 w-full h-full bg-[#0EA5E9] opacity-70"></div>
+
+        {/* The organic line effect */}
+        {pillars.length > 0 && (
+          <svg 
+            className="absolute top-[-12px] left-0 w-full h-[16px] overflow-visible"
+            preserveAspectRatio="none"
+          >
+            <defs>
+              <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="1" stdDeviation="1" floodColor="#0EA5E9" floodOpacity="0.5" />
+              </filter>
+            </defs>
+            
+            <path 
+              d={`
+                M0,12 
+                ${pillars.findIndex(p => p.id === activeTab) > 0 ? 'C20,10 40,9 60,12' : 'L60,12'} 
+                L${pillars.findIndex(p => p.id === activeTab) * 120 + 30},12 
+                C${pillars.findIndex(p => p.id === activeTab) * 120 + 40},2 
+                ${pillars.findIndex(p => p.id === activeTab) * 120 + 80},0 
+                ${pillars.findIndex(p => p.id === activeTab) * 120 + 100},4 
+                L${pillars.findIndex(p => p.id === activeTab) * 120 + 120},12 
+                ${pillars.findIndex(p => p.id === activeTab) < pillars.length - 1 ? 'C' + ((pillars.findIndex(p => p.id === activeTab) + 1) * 120 + 30) + ',10 ' + ((pillars.findIndex(p => p.id === activeTab) + 1) * 120 + 60) + ',9 ' + ((pillars.findIndex(p => p.id === activeTab) + 1) * 120 + 90) + ',12' : ''} 
+                L100%,12
+              `}
+              fill="none"
+              stroke="#0EA5E9"
+              strokeWidth="4"
+              filter="url(#shadow)"
+              className="transition-all duration-300 ease-in-out"
+            />
+          </svg>
+        )}
+      </div>
     </div>
   );
 };
