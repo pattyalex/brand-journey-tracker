@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, FileVideo, ImageIcon, Link, List, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ContentItem } from "@/types/content";
-import { toast } from "sonner";
 
 type ContentType = {
   id: string;
@@ -34,7 +33,9 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
   const [editingBucketId, setEditingBucketId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
   const [editingDescription, setEditingDescription] = useState("");
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
   const editInputRef = useRef<HTMLInputElement>(null);
+  const descInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     try {
@@ -60,7 +61,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
       }
     } catch (error) {
       console.error("Failed to load content buckets:", error);
-      toast.error("Failed to load content buckets");
     }
   }, [pillarId]);
 
@@ -92,6 +92,12 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     }
   }, [editingBucketId]);
 
+  useEffect(() => {
+    if (isEditingDescription && descInputRef.current) {
+      descInputRef.current.focus();
+    }
+  }, [isEditingDescription]);
+
   const handleAddBucket = () => {
     if (!newBucketName.trim()) return;
     
@@ -109,7 +115,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     setNewBucketName("");
     setNewDescription("");
     setIsAddingBucket(false);
-    toast.success(`Added "${newBucketName}" bucket`);
   };
 
   const handleDoubleClick = (bucketId: string, currentName: string, currentDesc: string) => {
@@ -118,17 +123,27 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     setEditingDescription(currentDesc);
   };
 
+  const handleDescriptionDoubleClick = (bucketId: string, description: string) => {
+    setEditingBucketId(bucketId);
+    setIsEditingDescription(true);
+    setEditingDescription(description);
+  };
+
   const handleEditSubmit = () => {
-    if (!editingBucketId || !editingName.trim()) {
-      setEditingBucketId(null);
+    if (!editingBucketId) {
       return;
     }
 
     setContentTypes(contentTypes.map(type => 
-      type.id === editingBucketId ? { ...type, name: editingName, description: editingDescription } : type
+      type.id === editingBucketId ? 
+        { ...type, 
+          name: editingName.trim() ? editingName : type.name, 
+          description: editingDescription 
+        } : type
     ));
     
     setEditingBucketId(null);
+    setIsEditingDescription(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -136,6 +151,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
       handleEditSubmit();
     } else if (e.key === 'Escape') {
       setEditingBucketId(null);
+      setIsEditingDescription(false);
     }
   };
 
@@ -202,7 +218,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                 title="Double-click to edit"
               >
                 <type.icon className="h-3 w-3 flex-shrink-0" />
-                {editingBucketId === type.id ? (
+                {editingBucketId === type.id && !isEditingDescription ? (
                   <Input
                     ref={editInputRef}
                     value={editingName}
@@ -218,17 +234,25 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-3 pt-1">
-              {editingBucketId === type.id ? (
-                <Input
-                  value={editingDescription}
-                  onChange={(e) => setEditingDescription(e.target.value)}
-                  onKeyDown={handleKeyPress}
-                  className="h-6 py-0 px-1 min-w-0 text-xs mt-1"
-                  placeholder="Short description"
-                />
-              ) : (
-                <p className="text-xs text-muted-foreground truncate mt-1">{type.description}</p>
-              )}
+              <div
+                className="cursor-pointer"
+                onDoubleClick={() => handleDescriptionDoubleClick(type.id, type.description || "")}
+                title="Double-click to edit description"
+              >
+                {editingBucketId === type.id && isEditingDescription ? (
+                  <Input
+                    ref={descInputRef}
+                    value={editingDescription}
+                    onChange={(e) => setEditingDescription(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    onBlur={handleBlur}
+                    className="h-6 py-0 px-1 min-w-0 text-xs mt-1"
+                    placeholder="Short description"
+                  />
+                ) : (
+                  <p className="text-xs text-muted-foreground truncate mt-1">{type.description}</p>
+                )}
+              </div>
             </CardContent>
           </Card>
         ))}
