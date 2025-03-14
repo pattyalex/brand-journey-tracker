@@ -13,13 +13,15 @@ interface WritingSpaceProps {
   onTextChange: (text: string) => void;
   onTextSelection: (selectedText: string) => void;
   onFormatText: (formatType: string, formatValue?: string) => void;
+  className?: string;
 }
 
 const WritingSpace = ({
   writingText,
   onTextChange,
   onTextSelection,
-  onFormatText
+  onFormatText,
+  className
 }: WritingSpaceProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { state } = useSidebar();
@@ -56,7 +58,7 @@ const WritingSpace = ({
   };
 
   return (
-    <div className={`space-y-4 pr-2 transition-all duration-300 ${expandedClass}`}>
+    <div className={`space-y-4 pr-2 transition-all duration-300 ${expandedClass} ${className || ''}`}>
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold flex items-center">
           <Pencil className="h-5 w-5 mr-2" />

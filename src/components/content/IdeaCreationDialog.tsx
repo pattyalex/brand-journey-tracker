@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,6 +48,7 @@ interface IdeaCreationDialogProps {
   inspirationImages?: string[];
   onAddInspirationImage?: (image: string) => void;
   onRemoveInspirationImage?: (index: number) => void;
+  shadowClass?: string;
 }
 
 const IdeaCreationDialog = ({
@@ -89,11 +89,12 @@ const IdeaCreationDialog = ({
   inspirationImages = [],
   onAddInspirationImage = () => {},
   onRemoveInspirationImage = () => {},
+  shadowClass
 }: IdeaCreationDialogProps) => {
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] sm:max-w-[650px] md:max-w-[750px]">
+      <DialogContent className={`max-h-[90vh] sm:max-w-[650px] md:max-w-[750px] ${shadowClass || ''}`}>
         <div className="h-full flex flex-col">
           <DialogHeader 
             title={dialogTitle} 

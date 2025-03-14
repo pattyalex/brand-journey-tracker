@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,9 +22,10 @@ type ContentType = {
 interface ContentTypeBucketsProps {
   onAddIdea: (formatId: string) => void;
   pillarId: string;
+  className?: string;
 }
 
-const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) => {
+const ContentTypeBuckets = ({ onAddIdea, pillarId, className }: ContentTypeBucketsProps) => {
   const { toast } = useToast();
   const [contentTypes, setContentTypes] = useState<ContentType[]>([
     { id: "blog", name: "Blog Posts", description: "Long-form written content", items: [] },
@@ -171,7 +171,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
   };
 
   return (
-    <div className="mt-4 mb-6">
+    <div className={`mt-4 mb-6 ${className || ''}`}>
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-xl font-semibold">Content Formats</h2>
       </div>
