@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -167,10 +166,8 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
   };
 
   const handleCardClick = (bucketId: string) => {
-    // If we're currently editing, don't toggle the expanded state
     if (editingBucketId === bucketId) return;
     
-    // Toggle the expanded state
     setExpandedCardId(prev => prev === bucketId ? null : bucketId);
   };
 
@@ -226,12 +223,12 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
             key={type.id} 
             className={`hover:border-purple-300 transition-all cursor-pointer ${
               expandedCardId === type.id ? 
-                'scale-105 border-purple-300 shadow-md z-10' : 
+                'scale-125 border-purple-300 shadow-lg z-20 bg-white' : 
                 'hover:scale-[1.02]'
             }`}
             onClick={() => handleCardClick(type.id)}
           >
-            <CardHeader className="p-3 pb-0">
+            <CardHeader className={`p-3 pb-0 ${expandedCardId === type.id ? 'pt-4' : ''}`}>
               <CardTitle 
                 className="text-sm flex items-center gap-2"
                 onDoubleClick={(e) => {
@@ -253,13 +250,13 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <span className={expandedCardId === type.id ? "" : "truncate"}>
+                  <span className={expandedCardId === type.id ? "font-medium" : "truncate"}>
                     {type.name}
                   </span>
                 )}
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-3 pt-1">
+            <CardContent className={`p-3 pt-1 ${expandedCardId === type.id ? 'pb-4' : ''}`}>
               <div
                 className=""
                 onDoubleClick={(e) => {
@@ -280,7 +277,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <p className={`text-xs text-muted-foreground mt-1 ${expandedCardId === type.id ? "" : "truncate"}`}>
+                  <p className={`text-xs text-muted-foreground mt-1 ${expandedCardId === type.id ? "leading-relaxed" : "truncate"}`}>
                     {type.description}
                   </p>
                 )}
