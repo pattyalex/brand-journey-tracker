@@ -95,6 +95,8 @@ const DialogContent = ({
           pillarId={pillarId} 
         />
         
+        <div className="h-8"></div>
+        
         <InspirationSection
           inspirationText={inspirationText}
           onInspirationTextChange={onInspirationTextChange}
@@ -106,7 +108,7 @@ const DialogContent = ({
           onRemoveInspirationImage={onRemoveInspirationImage}
         />
         
-        <div className="h-4"></div>
+        <div className="h-8"></div>
         
         <ScriptInputSection scriptText={scriptText} onScriptTextChange={onScriptTextChange} />
         
