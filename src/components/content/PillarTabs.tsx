@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pillar } from "@/pages/BankOfContent";
@@ -37,6 +36,39 @@ interface PillarTabsProps {
   onRenamePillar: (pillarId: string, newName: string) => void;
   onDeletePillar: (pillarId: string) => void;
 }
+
+// Define the pillar color classes
+export const getPillarColorClass = (pillarId: string): string => {
+  switch (pillarId) {
+    case "1":
+      return "pillar-pink"; // Pastel Pink for Pillar 1
+    case "2":
+      return "pillar-green"; // Pastel Green for Pillar 2 
+    case "3":
+      return "pillar-yellow"; // Pastel Yellow for Pillar 3
+    default:
+      const id = parseInt(pillarId);
+      if (id % 3 === 1) return "pillar-pink";
+      if (id % 3 === 2) return "pillar-green";
+      return "pillar-yellow";
+  }
+};
+
+export const getPillarBgColor = (pillarId: string): string => {
+  switch (pillarId) {
+    case "1":
+      return "#FFB6C1"; // Pastel Pink for Pillar 1
+    case "2":
+      return "#98FB98"; // Pastel Green for Pillar 2
+    case "3":
+      return "#FFFF99"; // Pastel Yellow for Pillar 3
+    default:
+      const id = parseInt(pillarId);
+      if (id % 3 === 1) return "#FFB6C1";
+      if (id % 3 === 2) return "#98FB98";
+      return "#FFFF99";
+  }
+};
 
 const PillarTabs = ({ 
   pillars, 
@@ -77,6 +109,14 @@ const PillarTabs = ({
     }
   };
 
+  // Get the active pillar tab color
+  const getTabBgColor = (pillarId: string): string => {
+    if (pillarId === activeTab) {
+      return getPillarBgColor(pillarId);
+    }
+    return "";
+  };
+
   return (
     <div className="flex items-center justify-between mb-6">
       <div className="flex items-center">
@@ -115,10 +155,12 @@ const PillarTabs = ({
                 <div className="flex items-center">
                   <TabsTrigger 
                     value={pillar.id}
-                    className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white px-5 py-2 text-base ${
-                      pillar.id === "1" && activeTab === "1" ? "bg-[#8B6B4E] text-white" : ""
-                    }`}
+                    className={`px-5 py-2 text-base text-foreground`}
                     onClick={() => onTabChange(pillar.id)}
+                    style={{
+                      backgroundColor: getTabBgColor(pillar.id),
+                      color: pillar.id === activeTab ? 'white' : ''
+                    }}
                   >
                     {pillar.name}
                   </TabsTrigger>
