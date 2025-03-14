@@ -240,20 +240,21 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         {contentTypes.map((type) => (
           <Card 
             key={type.id} 
-            className="w-[200px] border rounded-lg shadow-sm cursor-pointer hover:border-purple-300 transition-all"
+            className="w-[200px] border rounded-lg shadow-sm cursor-pointer hover:border-purple-300 transition-all relative group"
             onClick={() => handleCardClick(type.id)}
           >
+            {/* Trash Icon for Deletion - Positioned absolute on the top right */}
             <Button
               type="button"
               variant="ghost"
               size="xs"
-              className={`absolute top-1 right-1 h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-30 text-gray-500 hover:text-gray-700 hover:bg-gray-100 ${
+              className={`absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-30 hover:bg-gray-100 ${
                 ["blog", "video", "social", "image"].includes(type.id) ? "cursor-not-allowed" : ""
               }`}
               onClick={(e) => handleDeleteBucket(e, type.id)}
               title={["blog", "video", "social", "image"].includes(type.id) ? "Cannot delete default bucket" : "Delete bucket"}
             >
-              <Trash2 className="h-3 w-3" />
+              <Trash2 className="h-3.5 w-3.5 text-gray-500" />
             </Button>
             
             <div className="p-3">
@@ -319,7 +320,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               <Button 
                 variant="ghost" 
                 onClick={() => setIsAddingBucket(!isAddingBucket)}
-                className="w-[200px] h-[80px] flex items-center justify-center p-0 border border-dashed border-gray-300 hover:border-purple-300"
+                className="w-[200px] h-[80px] flex items-center justify-center p-0"
               >
                 <Plus className="h-5 w-5 text-purple-500" />
               </Button>
