@@ -80,12 +80,14 @@ const PillarTabs = ({
     <div className="flex items-center justify-between mb-0">
       <div className="flex items-center w-full">
         <div className="tab-list-container w-full">
-          <div className="flex items-center h-12 w-full">
-            {pillars.map((pillar) => (
+          <div className="flex items-center h-12 w-full pillar-tabs-container">
+            {pillars.map((pillar, index) => (
               <div 
                 key={pillar.id} 
                 className={`relative flex items-center ${
-                  pillar.id === activeTab ? 'active-pillar-tab' : 'inactive-pillar-tab'
+                  pillar.id === activeTab 
+                    ? 'active-pillar-tab' 
+                    : `inactive-pillar-tab${index === 0 ? ' first-inactive-tab' : ''}`
                 }`}
               >
                 {editingPillarId === pillar.id ? (
