@@ -79,10 +79,10 @@ const PillarTabs = ({
   };
 
   return (
-    <div className="flex flex-col mb-6">
+    <div className="flex flex-col mb-6 relative">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
-          <TabsList className="bg-background border overflow-x-auto flex items-center h-12">
+          <TabsList className="bg-background border overflow-x-auto flex items-center h-12 relative z-10">
             {pillars.map((pillar) => (
               <div key={pillar.id} className="relative flex items-center">
                 {editingPillarId === pillar.id ? (
@@ -118,7 +118,9 @@ const PillarTabs = ({
                     <TabsTrigger 
                       value={pillar.id}
                       className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white px-5 py-2 text-base ${
-                        pillar.id === "1" && activeTab === "1" ? "bg-[#8B6B4E] text-white" : ""
+                        pillar.id === activeTab ? 
+                          "border-b-0 border-2 border-[#9b87f5] border-b-transparent rounded-t-md" : 
+                          "border-b border-[#9b87f5]"
                       }`}
                       onClick={() => onTabChange(pillar.id)}
                     >
@@ -196,7 +198,8 @@ const PillarTabs = ({
           </TooltipProvider>
         </div>
       </div>
-      <Separator className="mt-0 bg-gray-300" />
+      {/* Continuous bottom line that extends the full width */}
+      <div className="h-[2px] bg-[#9b87f5] w-full -mt-[2px] relative z-0"></div>
     </div>
   );
 };
