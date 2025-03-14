@@ -8,6 +8,7 @@ import PillarTabs from "@/components/content/PillarTabs";
 import WritingSpace from "@/components/content/WritingSpace";
 import IdeaSection from "@/components/content/IdeaSection";
 import IdeaCreationDialog from "@/components/content/IdeaCreationDialog";
+import ContentTypeBuckets from "@/components/content/ContentTypeBuckets";
 
 export type Pillar = {
   id: string;
@@ -44,6 +45,7 @@ const BankOfContent = () => {
   const [editingContent, setEditingContent] = useState<ContentItem | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
+  const [newBucketType, setNewBucketType] = useState("");
 
   useEffect(() => {
     try {
@@ -361,6 +363,11 @@ const BankOfContent = () => {
     }, 10);
   };
 
+  const handleAddToBucket = (bucketId: string) => {
+    setNewBucketType(bucketId);
+    openNewIdeaDialog();
+  };
+
   const createNewIdeaFromSelection = () => {
     if (!newIdeaTitle.trim()) {
       toast.error("Title is required");
@@ -382,7 +389,8 @@ const BankOfContent = () => {
         script: scriptContent,
         shootDetails: shootDetails,
         caption: captionText,
-        platforms: selectedPlatforms
+        platforms: selectedPlatforms,
+        bucketType: newBucketType,
       }),
       format: selectedFormat,
       dateCreated: new Date(),
@@ -427,6 +435,7 @@ const BankOfContent = () => {
     setNewIdeaTitle("");
     setNewIdeaTags([]);
     setScheduledDate(undefined);
+    setNewBucketType("");
     toast.success("Idea saved successfully");
   };
 
@@ -606,6 +615,8 @@ const BankOfContent = () => {
             onDeletePillar={deletePillar}
           />
 
+          <ContentTypeBuckets onAddIdea={handleAddToBucket} />
+
           {pillars.map((pillar) => (
             <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -675,9 +686,12 @@ const BankOfContent = () => {
             setShowNewIdeaDialog(false);
             setDevelopIdeaMode(false);
             setScheduledDate(undefined);
+            setNewBucketType("");
           }}
           isEditMode={developIdeaMode}
-          dialogTitle={developIdeaMode ? "Develop Selected Idea" : "Create New Idea"}
+          dialogTitle={developIdeaMode ? "Develop Selected Idea" : (newBucketType ? 
+            `Add to ${newBucketType.charAt(0).toUpperCase() + newBucketType.slice(1)} Bucket` : 
+            "Create New Idea")}
         />
       </div>
     </Layout>
@@ -685,3 +699,4 @@ const BankOfContent = () => {
 };
 
 export default BankOfContent;
+
