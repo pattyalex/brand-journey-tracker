@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, FileVideo, ImageIcon, Link, List, Plus } from "lucide-react";
@@ -27,6 +27,16 @@ const ContentTypeBuckets = ({ onAddIdea }: ContentTypeBucketsProps) => {
   
   const [newBucketName, setNewBucketName] = useState("");
   const [isAddingBucket, setIsAddingBucket] = useState(false);
+  const [editingBucketId, setEditingBucketId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState("");
+  const editInputRef = useRef<HTMLInputElement>(null);
+
+  // Focus the edit input when it appears
+  useEffect(() => {
+    if (editingBucketId && editInputRef.current) {
+      editInputRef.current.focus();
+    }
+  }, [editingBucketId]);
 
   const handleAddBucket = () => {
     if (!newBucketName.trim()) return;
@@ -43,6 +53,36 @@ const ContentTypeBuckets = ({ onAddIdea }: ContentTypeBucketsProps) => {
     
     setNewBucketName("");
     setIsAddingBucket(false);
+  };
+
+  const handleDoubleClick = (bucketId: string, currentName: string) => {
+    setEditingBucketId(bucketId);
+    setEditingName(currentName);
+  };
+
+  const handleEditSubmit = () => {
+    if (!editingBucketId || !editingName.trim()) {
+      setEditingBucketId(null);
+      return;
+    }
+
+    setContentTypes(contentTypes.map(type => 
+      type.id === editingBucketId ? { ...type, name: editingName } : type
+    ));
+    
+    setEditingBucketId(null);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleEditSubmit();
+    } else if (e.key === 'Escape') {
+      setEditingBucketId(null);
+    }
+  };
+
+  const handleBlur = () => {
+    handleEditSubmit();
   };
 
   return (
@@ -86,9 +126,24 @@ const ContentTypeBuckets = ({ onAddIdea }: ContentTypeBucketsProps) => {
         {contentTypes.map((type) => (
           <Card key={type.id} className="hover:border-purple-300 transition-colors">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle 
+                className="text-base flex items-center gap-2"
+                onDoubleClick={() => handleDoubleClick(type.id, type.name)}
+              >
                 <type.icon className="h-4 w-4" />
-                {type.name}
+                {editingBucketId === type.id ? (
+                  <Input
+                    ref={editInputRef}
+                    value={editingName}
+                    onChange={(e) => setEditingName(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    onBlur={handleBlur}
+                    className="h-6 py-0 px-1 min-w-0"
+                    autoFocus
+                  />
+                ) : (
+                  <span className="cursor-pointer" title="Double-click to edit">{type.name}</span>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
