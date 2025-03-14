@@ -298,16 +298,16 @@ const BankOfContent = () => {
         <h1 className="text-3xl font-bold">Idea Development</h1>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <PillarTabs 
-            pillars={pillars}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            onAddPillar={addPillar}
-            onRenamePillar={renamePillar}
-            onDeletePillar={deletePillar}
-          />
-          
-          <div className="flex justify-end mt-4 mb-2">
+          <div className="flex items-center justify-between">
+            <PillarTabs 
+              pillars={pillars}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              onAddPillar={addPillar}
+              onRenamePillar={renamePillar}
+              onDeletePillar={deletePillar}
+            />
+            
             <Button 
               variant="default" 
               size="default"
