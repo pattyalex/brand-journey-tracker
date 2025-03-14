@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pillar } from "@/pages/BankOfContent";
@@ -42,32 +41,32 @@ interface PillarTabsProps {
 export const getPillarColorClass = (pillarId: string): string => {
   switch (pillarId) {
     case "1":
-      return "pillar-brown"; // Brown for Pillar 1
+      return "pillar-pink"; // Pastel Pink for Pillar 1
     case "2":
-      return "pillar-burgundy"; // Burgundy for Pillar 2 
+      return "pillar-green"; // Pastel Green for Pillar 2 
     case "3":
-      return "pillar-bronze"; // Bronze for Pillar 3
+      return "pillar-yellow"; // Pastel Yellow for Pillar 3
     default:
       const id = parseInt(pillarId);
-      if (id % 3 === 1) return "pillar-brown";
-      if (id % 3 === 2) return "pillar-burgundy";
-      return "pillar-bronze";
+      if (id % 3 === 1) return "pillar-pink";
+      if (id % 3 === 2) return "pillar-green";
+      return "pillar-yellow";
   }
 };
 
 export const getPillarBgColor = (pillarId: string): string => {
   switch (pillarId) {
     case "1":
-      return "#8B6B4E"; // Brown for Pillar 1
+      return "#FFB6C1"; // Pastel Pink for Pillar 1
     case "2":
-      return "#7D3C3C"; // Burgundy for Pillar 2
+      return "#98FB98"; // Pastel Green for Pillar 2
     case "3":
-      return "#9E7E45"; // Bronze for Pillar 3
+      return "#FFFF99"; // Pastel Yellow for Pillar 3
     default:
       const id = parseInt(pillarId);
-      if (id % 3 === 1) return "#8B6B4E";
-      if (id % 3 === 2) return "#7D3C3C";
-      return "#9E7E45";
+      if (id % 3 === 1) return "#FFB6C1";
+      if (id % 3 === 2) return "#98FB98";
+      return "#FFFF99";
   }
 };
 

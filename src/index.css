@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -25,10 +26,10 @@
     --ring: 215 20.2% 65.1%;
     --radius: 0.5rem;
 
-    /* Pillar colors */
-    --pillar-brown: rgba(139, 107, 78, 0.15);
-    --pillar-burgundy: rgba(125, 60, 60, 0.15);
-    --pillar-bronze: rgba(158, 126, 69, 0.15);
+    /* Pillar colors - Updated to pastel shades */
+    --pillar-pink: rgba(255, 182, 193, 0.3);
+    --pillar-green: rgba(152, 251, 152, 0.3);
+    --pillar-yellow: rgba(255, 255, 153, 0.3);
   }
 
   .dark {
@@ -53,10 +54,10 @@
     --ring: 216 34% 17%;
     --radius: 0.5rem;
 
-    /* Pillar colors */
-    --pillar-brown: rgba(139, 107, 78, 0.25);
-    --pillar-burgundy: rgba(125, 60, 60, 0.25);
-    --pillar-bronze: rgba(158, 126, 69, 0.25);
+    /* Pillar colors - Updated to pastel shades for dark mode */
+    --pillar-pink: rgba(255, 182, 193, 0.4);
+    --pillar-green: rgba(152, 251, 152, 0.4);
+    --pillar-yellow: rgba(255, 255, 153, 0.4);
   }
 
   * {
@@ -88,16 +89,16 @@
   }
 
   /* Pillar color utilities */
-  .pillar-brown {
-    box-shadow: 0 4px 16px var(--pillar-brown);
+  .pillar-pink {
+    box-shadow: 0 6px 20px var(--pillar-pink);
   }
 
-  .pillar-burgundy {
-    box-shadow: 0 4px 16px var(--pillar-burgundy);
+  .pillar-green {
+    box-shadow: 0 6px 20px var(--pillar-green);
   }
 
-  .pillar-bronze {
-    box-shadow: 0 4px 16px var(--pillar-bronze);
+  .pillar-yellow {
+    box-shadow: 0 6px 20px var(--pillar-yellow);
   }
 }
 
