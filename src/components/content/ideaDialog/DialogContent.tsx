@@ -97,7 +97,7 @@ const DialogContent = ({
           pillarId={pillarId} 
         />
         
-        <div className="h-8"></div>
+        <div className="h-4"></div>
         
         <InspirationSection
           inspirationText={inspirationText}
