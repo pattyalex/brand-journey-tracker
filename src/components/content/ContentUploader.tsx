@@ -188,7 +188,7 @@ const ContentUploader = ({
 
   return (
     <>
-      <Button onClick={() => setIsOpen(true)} className="w-full justify-center">
+      <Button onClick={() => setIsOpen(true)}>
         <FileText className="mr-2 h-4 w-4" /> 
         Add New Idea
       </Button>

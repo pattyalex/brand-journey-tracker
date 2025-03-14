@@ -113,8 +113,8 @@ const IdeaSection = ({
 
   return (
     <div className="space-y-3 pl-2 pr-3">
-      {/* Add New Idea button first - full width */}
-      <div className="w-full">
+      {/* Add New Idea button first */}
+      <div className="flex justify-end">
         <ContentUploader 
           pillarId={pillar.id}
           onContentAdded={onContentAdded}
@@ -122,7 +122,6 @@ const IdeaSection = ({
           contentToEdit={editingContent}
           isEditMode={isEditing}
           onCancelEdit={onCancelEdit}
-          alwaysShowAddNewIdea={true}
         />
       </div>
       
