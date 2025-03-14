@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -171,15 +170,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
   const handleDeleteBucket = (e: React.MouseEvent, bucketId: string) => {
     e.stopPropagation();
     
-    if (["blog", "video", "social", "image"].includes(bucketId)) {
-      toast({
-        title: "Cannot delete default bucket",
-        description: "Default content buckets cannot be removed",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     setContentTypes(contentTypes.filter(type => type.id !== bucketId));
     
     if (expandedCardId === bucketId) {
@@ -243,16 +233,13 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
             className="w-[200px] border rounded-lg shadow-sm cursor-pointer hover:border-purple-300 transition-all relative group"
             onClick={() => handleCardClick(type.id)}
           >
-            {/* Trash Icon for Deletion - Positioned absolute on the top right */}
             <Button
               type="button"
               variant="ghost"
               size="xs"
-              className={`absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-30 hover:bg-gray-100 ${
-                ["blog", "video", "social", "image"].includes(type.id) ? "cursor-not-allowed" : ""
-              }`}
+              className="absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-30 hover:bg-gray-100"
               onClick={(e) => handleDeleteBucket(e, type.id)}
-              title={["blog", "video", "social", "image"].includes(type.id) ? "Cannot delete default bucket" : "Delete bucket"}
+              title="Delete bucket"
             >
               <Trash2 className="h-3.5 w-3.5 text-gray-500" />
             </Button>
