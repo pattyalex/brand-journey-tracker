@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pillar } from "@/pages/BankOfContent";
@@ -138,7 +139,8 @@ const PillarTabs = ({
                       borderTop: pillar.id === activeTab ? `4px solid ${getPillarColor(pillar.id)}` : '',
                       zIndex: pillar.id === activeTab ? 10 : 1,
                       transition: 'all 0.3s ease-in-out',
-                      transform: pillar.id === activeTab ? 'translateY(-4px)' : 'none'
+                      transform: pillar.id === activeTab ? 'translateY(-4px)' : 'none',
+                      color: pillar.id === activeTab ? '#ffffff' : ''
                     } as React.CSSProperties}
                   >
                     {pillar.id === activeTab && (
