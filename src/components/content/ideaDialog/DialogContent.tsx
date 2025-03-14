@@ -86,8 +86,10 @@ const DialogContent = ({
 }: DialogContentProps) => {
   return (
     <ScrollArea className="h-[calc(90vh-140px)] pr-4" style={{ overflowY: 'auto', touchAction: 'pan-y' }}>
-      <div className="grid gap-4 py-4 pr-2">
+      <div className="grid gap-6 py-4 pr-2">
         <TitleInputSection title={title} onTitleChange={onTitleChange} />
+        
+        <div className="h-2"></div>
         
         <BucketSelectionSection 
           bucketId={bucketId} 

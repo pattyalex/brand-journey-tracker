@@ -43,7 +43,7 @@ const BucketSelectionSection = ({
   }, [pillarId]);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
       <Label htmlFor="bucket-select" className="text-sm font-medium">
         Content Bucket
       </Label>
@@ -63,7 +63,7 @@ const BucketSelectionSection = ({
         </SelectContent>
       </Select>
       {bucketId && (
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-gray-500 mt-2">
           {contentBuckets.find(b => b.id === bucketId)?.description || ""}
         </p>
       )}

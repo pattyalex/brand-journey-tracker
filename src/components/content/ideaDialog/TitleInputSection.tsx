@@ -13,8 +13,8 @@ const TitleInputSection = ({
   onTitleChange,
 }: TitleInputSectionProps) => {
   return (
-    <div className="grid gap-2">
-      <Label htmlFor="idea-title">Title</Label>
+    <div className="grid gap-4">
+      <Label htmlFor="idea-title" className="text-sm font-medium">Title</Label>
       <div className="relative flex items-center">
         <Input
           id="idea-title"
