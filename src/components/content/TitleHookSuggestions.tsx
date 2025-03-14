@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,12 +8,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle
-} from "@/components/ui/sheet";
 import { Sparkles, ArrowRight, Plus, Trash2 } from "lucide-react";
 
 interface TitleHookSuggestionsProps {
@@ -411,7 +404,7 @@ const HOOK_DATA = {
 
 const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [hookSelectionDialogOpen, setHookSelectionDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [customHook, setCustomHook] = useState("");
   const [customHooks, setCustomHooks] = useState<string[]>([]);
@@ -429,12 +422,13 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
 
   const handleSelectCategory = (category: string) => {
     setSelectedCategory(category);
-    setSheetOpen(true);
+    setDialogOpen(false);
+    setHookSelectionDialogOpen(true);
   };
 
   const handleSelectHook = (hook: string) => {
     onSelectHook(hook);
-    setSheetOpen(false);
+    setHookSelectionDialogOpen(false);
     setDialogOpen(false);
   };
 
@@ -451,7 +445,8 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
 
   const handleViewCustomHooks = () => {
     setSelectedCategory("Create your own");
-    setSheetOpen(true);
+    setDialogOpen(false);
+    setHookSelectionDialogOpen(true);
   };
 
   const handleDeleteCustomHook = (hookToDelete: string) => {
@@ -504,13 +499,13 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
         </DialogContent>
       </Dialog>
 
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent side="right" className="w-[500px] max-w-[80vw] p-0 overflow-y-auto">
-          <SheetHeader className="p-4 border-b">
-            <SheetTitle>{selectedCategory}</SheetTitle>
-          </SheetHeader>
+      <Dialog open={hookSelectionDialogOpen} onOpenChange={setHookSelectionDialogOpen}>
+        <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{selectedCategory}</DialogTitle>
+          </DialogHeader>
           
-          <div className="p-4">
+          <div className="py-4">
             {selectedCategory && selectedCategory !== "Create your own" && 
               HOOK_DATA[selectedCategory as keyof typeof HOOK_DATA]?.subcategories.map((subcat, scIndex) => (
                 <div key={scIndex} className="mb-8">
@@ -602,8 +597,8 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
               </div>
             )}
           </div>
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
