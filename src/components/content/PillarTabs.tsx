@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pillar } from "@/pages/BankOfContent";
