@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
@@ -187,9 +188,9 @@ const ContentUploader = ({
 
   return (
     <>
-      <Button onClick={() => setIsOpen(true)} className="w-full justify-center">
+      <Button onClick={() => setIsOpen(true)}>
         <FileText className="mr-2 h-4 w-4" /> 
-        Develop an Idea
+        Add New Idea
       </Button>
       
       <IdeaCreationDialog
