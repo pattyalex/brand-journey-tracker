@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -201,14 +202,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     <div className="mt-4 mb-6">
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-xl font-semibold">Content Buckets</h2>
-        <Button 
-          variant="outline" 
-          size="icon" 
-          onClick={() => setIsAddingBucket(!isAddingBucket)}
-          className="h-8 w-8 rounded-full"
-        >
-          <Plus className="h-4 w-4" />
-        </Button>
       </div>
       
       {isAddingBucket && (
@@ -324,6 +317,18 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
             </CardContent>
           </Card>
         ))}
+        
+        {/* Add Bucket Button as a card in the grid */}
+        <div className="flex items-center justify-center h-full">
+          <Button 
+            variant="outline" 
+            size="icon" 
+            onClick={() => setIsAddingBucket(!isAddingBucket)}
+            className="h-12 w-12 rounded-full"
+          >
+            <Plus className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
     </div>
   );
