@@ -199,40 +199,57 @@ const PillarTabs = ({
         </div>
       </div>
 
-      {/* Organic line that wraps the active pillar */}
+      {/* Enhanced organic line that wraps the active pillar */}
       <div className="relative w-full h-[4px] mt-0">
         {/* Background line */}
-        <div className="absolute top-0 left-0 w-full h-full bg-[#0EA5E9] opacity-70"></div>
+        <div className="absolute top-0 left-0 w-full h-full bg-[#0EA5E9] opacity-40"></div>
 
-        {/* The organic line effect */}
+        {/* The organic line effect with improved aesthetics */}
         {pillars.length > 0 && (
           <svg 
-            className="absolute top-[-12px] left-0 w-full h-[16px] overflow-visible"
+            className="absolute top-[-15px] left-0 w-full h-[24px] overflow-visible"
             preserveAspectRatio="none"
           >
             <defs>
-              <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="1" stdDeviation="1" floodColor="#0EA5E9" floodOpacity="0.5" />
+              <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#0EA5E9" stopOpacity="0.8" />
+                <stop offset="50%" stopColor="#0EA5E9" stopOpacity="1" />
+                <stop offset="100%" stopColor="#0EA5E9" stopOpacity="0.8" />
+              </linearGradient>
+              <filter id="glowShadow" x="-20%" y="-40%" width="140%" height="180%">
+                <feGaussianBlur stdDeviation="2" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodColor="#0EA5E9" floodOpacity="0.5" />
               </filter>
             </defs>
             
             <path 
               d={`
-                M0,12 
-                ${pillars.findIndex(p => p.id === activeTab) > 0 ? 'C20,10 40,9 60,12' : 'L60,12'} 
-                L${pillars.findIndex(p => p.id === activeTab) * 120 + 30},12 
-                C${pillars.findIndex(p => p.id === activeTab) * 120 + 40},2 
-                ${pillars.findIndex(p => p.id === activeTab) * 120 + 80},0 
-                ${pillars.findIndex(p => p.id === activeTab) * 120 + 100},4 
-                L${pillars.findIndex(p => p.id === activeTab) * 120 + 120},12 
-                ${pillars.findIndex(p => p.id === activeTab) < pillars.length - 1 ? 'C' + ((pillars.findIndex(p => p.id === activeTab) + 1) * 120 + 30) + ',10 ' + ((pillars.findIndex(p => p.id === activeTab) + 1) * 120 + 60) + ',9 ' + ((pillars.findIndex(p => p.id === activeTab) + 1) * 120 + 90) + ',12' : ''} 
-                L100%,12
+                M0,16 
+                ${pillars.findIndex(p => p.id === activeTab) > 0 ? 
+                  `C${Math.max(30, pillars.findIndex(p => p.id === activeTab) * 120 - 60)},14 
+                   ${Math.max(60, pillars.findIndex(p => p.id === activeTab) * 120 - 40)},13 
+                   ${Math.max(90, pillars.findIndex(p => p.id === activeTab) * 120 - 20)},16` : 
+                  'L60,16'} 
+                L${pillars.findIndex(p => p.id === activeTab) * 120 + 30},16 
+                C${pillars.findIndex(p => p.id === activeTab) * 120 + 40},4 
+                ${pillars.findIndex(p => p.id === activeTab) * 120 + 60},1 
+                ${pillars.findIndex(p => p.id === activeTab) * 120 + 80},1 
+                C${pillars.findIndex(p => p.id === activeTab) * 120 + 100},1 
+                ${pillars.findIndex(p => p.id === activeTab) * 120 + 120},4 
+                ${pillars.findIndex(p => p.id === activeTab) * 120 + 140},16 
+                ${pillars.findIndex(p => p.id === activeTab) < pillars.length - 1 ? 
+                  `C${((pillars.findIndex(p => p.id === activeTab) + 1) * 120 + 30)},14 
+                   ${((pillars.findIndex(p => p.id === activeTab) + 1) * 120 + 60)},13 
+                   ${((pillars.findIndex(p => p.id === activeTab) + 1) * 120 + 90)},16` : 
+                  ''} 
+                L100%,16
               `}
               fill="none"
-              stroke="#0EA5E9"
-              strokeWidth="4"
-              filter="url(#shadow)"
-              className="transition-all duration-300 ease-in-out"
+              stroke="url(#lineGradient)"
+              strokeWidth="3"
+              filter="url(#glowShadow)"
+              className="transition-all duration-500 ease-in-out"
             />
           </svg>
         )}
