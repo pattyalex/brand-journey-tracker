@@ -37,7 +37,6 @@ const ContentUploader = ({
   const [tagsList, setTagsList] = useState<string[]>([]);
   const [currentPlatform, setCurrentPlatform] = useState("");
   const [platformsList, setPlatformsList] = useState<string[]>([]);
-  const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
   
   // New state for inspiration section
   const [inspirationText, setInspirationText] = useState("");
@@ -81,10 +80,6 @@ const ContentUploader = ({
         setTagsList(contentToEdit.tags || []);
         if (contentToEdit.platforms && Array.isArray(contentToEdit.platforms)) {
           setPlatformsList(contentToEdit.platforms);
-        }
-        
-        if (contentToEdit.scheduledDate) {
-          setScheduledDate(new Date(contentToEdit.scheduledDate));
         }
       } catch (error) {
         console.error("Error loading content data for editing:", error);
@@ -159,7 +154,6 @@ const ContentUploader = ({
       dateCreated: contentToEdit ? contentToEdit.dateCreated : new Date(),
       tags: tagsList,
       platforms: platformsList.length > 0 ? platformsList : undefined,
-      scheduledDate: scheduledDate,
       bucketId: bucketId || undefined,
     };
 
@@ -167,29 +161,6 @@ const ContentUploader = ({
       onContentUpdated(pillarId, contentItem);
     } else {
       onContentAdded(pillarId, contentItem);
-
-      if (scheduledDate) {
-        try {
-          const existingScheduledContents = localStorage.getItem('scheduledContents');
-          let scheduledContents: any[] = [];
-          
-          if (existingScheduledContents) {
-            scheduledContents = JSON.parse(existingScheduledContents);
-          }
-          
-          scheduledContents.push({
-            ...contentItem,
-            dateCreated: contentItem.dateCreated.toISOString(),
-            scheduledDate: scheduledDate.toISOString(),
-            pillarId: pillarId,
-            pillarName: document.querySelector(`button[value="${pillarId}"]`)?.textContent || "Unknown"
-          });
-          
-          localStorage.setItem('scheduledContents', JSON.stringify(scheduledContents));
-        } catch (error) {
-          console.error("Error saving scheduled content:", error);
-        }
-      }
     }
     
     resetForm();
@@ -211,7 +182,6 @@ const ContentUploader = ({
     setCurrentTag("");
     setPlatformsList([]);
     setCurrentPlatform("");
-    setScheduledDate(undefined);
     setInspirationText("");
     setInspirationLinks([]);
     setInspirationImages([]);
@@ -256,8 +226,6 @@ const ContentUploader = ({
         onCurrentTagChange={setCurrentTag}
         onAddTag={handleAddTag}
         onRemoveTag={handleRemoveTag}
-        scheduledDate={scheduledDate}
-        onScheduledDateChange={setScheduledDate}
         inspirationText={inspirationText}
         onInspirationTextChange={setInspirationText}
         inspirationLinks={inspirationLinks}

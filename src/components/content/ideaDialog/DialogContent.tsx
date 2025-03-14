@@ -8,7 +8,6 @@ import ShootDetailsSection from "./ShootDetailsSection";
 import CaptionInputSection from "./CaptionInputSection";
 import PlatformsSection from "./PlatformsSection";
 import TagsSection from "./TagsSection";
-import SchedulingSection from "./SchedulingSection";
 import InspirationSection from "./InspirationSection";
 
 interface DialogContentProps {
@@ -35,8 +34,6 @@ interface DialogContentProps {
   onCurrentTagChange: (value: string) => void;
   onAddTag: () => void;
   onRemoveTag: (tag: string) => void;
-  scheduledDate?: Date;
-  onScheduledDateChange?: (date: Date | undefined) => void;
   inspirationText?: string;
   onInspirationTextChange?: (value: string) => void;
   inspirationLinks?: string[];
@@ -72,8 +69,6 @@ const DialogContent = ({
   onCurrentTagChange,
   onAddTag,
   onRemoveTag,
-  scheduledDate,
-  onScheduledDateChange,
   inspirationText = "",
   onInspirationTextChange = () => {},
   inspirationLinks = [],
@@ -135,8 +130,6 @@ const DialogContent = ({
           onAddTag={onAddTag}
           onRemoveTag={onRemoveTag}
         />
-        
-        <SchedulingSection scheduledDate={scheduledDate} onScheduledDateChange={onScheduledDateChange} />
         
         {children}
       </div>

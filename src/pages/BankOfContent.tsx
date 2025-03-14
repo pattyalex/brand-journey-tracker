@@ -44,7 +44,6 @@ const BankOfContent = () => {
   const [developIdeaMode, setDevelopIdeaMode] = useState(false);
   const [editingContent, setEditingContent] = useState<ContentItem | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
   const [newBucketType, setNewBucketType] = useState("");
   const [selectedBucketId, setSelectedBucketId] = useState("");
 
@@ -106,7 +105,6 @@ const BankOfContent = () => {
     setCaptionText("");
     setSelectedPlatforms([]);
     setNewIdeaTags([]);
-    setScheduledDate(undefined);
     setNewBucketType("");
   };
 
@@ -242,7 +240,6 @@ const BankOfContent = () => {
       dateCreated: new Date(),
       tags: newIdeaTags,
       platforms: selectedPlatforms,
-      scheduledDate: scheduledDate,
       status: newBucketType || "draft",
       bucketId: selectedBucketId,
     };
@@ -259,7 +256,6 @@ const BankOfContent = () => {
     setCurrentPlatform("");
     setNewIdeaTags([]);
     setCurrentTag("");
-    setScheduledDate(undefined);
     setShowNewIdeaDialog(false);
     setDevelopIdeaMode(false);
     setNewBucketType("");
@@ -358,13 +354,10 @@ const BankOfContent = () => {
           onCurrentTagChange={setCurrentTag}
           onAddTag={addTag}
           onRemoveTag={removeTag}
-          scheduledDate={scheduledDate}
-          onScheduledDateChange={setScheduledDate}
           onSave={createNewIdeaFromSelection}
           onCancel={() => {
             setShowNewIdeaDialog(false);
             setDevelopIdeaMode(false);
-            setScheduledDate(undefined);
             setNewBucketType("");
             setSelectedBucketId("");
           }}
@@ -372,6 +365,14 @@ const BankOfContent = () => {
           dialogTitle={developIdeaMode ? "Develop Selected Idea" : (newBucketType ? 
             `Add to ${newBucketType.charAt(0).toUpperCase() + newBucketType.slice(1)} Format` : 
             "Create New Idea")}
+          inspirationText=""
+          onInspirationTextChange={() => {}}
+          inspirationLinks={[]}
+          onAddInspirationLink={() => {}}
+          onRemoveInspirationLink={() => {}}
+          inspirationImages={[]}
+          onAddInspirationImage={() => {}}
+          onRemoveInspirationImage={() => {}}
         />
       </div>
     </Layout>
@@ -379,4 +380,3 @@ const BankOfContent = () => {
 };
 
 export default BankOfContent;
-

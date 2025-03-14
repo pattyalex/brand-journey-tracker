@@ -35,8 +35,6 @@ interface IdeaCreationDialogProps {
   onCurrentTagChange: (value: string) => void;
   onAddTag: () => void;
   onRemoveTag: (tag: string) => void;
-  scheduledDate?: Date;
-  onScheduledDateChange?: (date: Date | undefined) => void;
   onSave: () => void;
   onCancel: () => void;
   isEditMode: boolean;
@@ -79,8 +77,6 @@ const IdeaCreationDialog = ({
   onCurrentTagChange,
   onAddTag,
   onRemoveTag,
-  scheduledDate,
-  onScheduledDateChange,
   onSave,
   onCancel,
   isEditMode,
@@ -130,8 +126,6 @@ const IdeaCreationDialog = ({
               onCurrentTagChange={onCurrentTagChange}
               onAddTag={onAddTag}
               onRemoveTag={onRemoveTag}
-              scheduledDate={scheduledDate}
-              onScheduledDateChange={onScheduledDateChange}
               inspirationText={inspirationText}
               onInspirationTextChange={onInspirationTextChange}
               inspirationLinks={inspirationLinks}
