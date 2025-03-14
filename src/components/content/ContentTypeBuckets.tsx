@@ -1,10 +1,10 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, FileVideo, ImageIcon, Link, List, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ContentItem } from "@/types/content";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type ContentType = {
   id: string;
@@ -250,7 +250,18 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                     placeholder="Short description"
                   />
                 ) : (
-                  <p className="text-xs text-muted-foreground truncate mt-1">{type.description}</p>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <p className="text-xs text-muted-foreground truncate mt-1">
+                          {type.description}
+                        </p>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-[200px] break-words">
+                        {type.description || "No description"}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
               </div>
             </CardContent>
