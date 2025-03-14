@@ -9,6 +9,8 @@ import WritingSpace from "@/components/content/WritingSpace";
 import IdeaSection from "@/components/content/IdeaSection";
 import IdeaCreationDialog from "@/components/content/IdeaCreationDialog";
 import ContentTypeBuckets from "@/components/content/ContentTypeBuckets";
+import Button from "@/components/ui/button";
+import FileText from "@/components/ui/file-text";
 
 export type Pillar = {
   id: string;
@@ -603,6 +605,15 @@ const BankOfContent = () => {
       <div className="container mx-auto py-6 space-y-6 fade-in">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Idea Development</h1>
+          <Button 
+            variant="default" 
+            size="default"
+            className="bg-[#8B6B4E] hover:bg-[#7A5C3F]"
+            onClick={openNewIdeaDialog}
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Add New Idea
+          </Button>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

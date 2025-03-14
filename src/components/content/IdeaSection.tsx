@@ -47,29 +47,6 @@ const IdeaSection = ({
           <Lightbulb className="h-5 w-5 mr-2" /> 
           Ideas for {pillar.name}
         </h2>
-        <div className="flex items-center gap-2">
-          {isEditing ? (
-            <ContentUploader
-              pillarId={pillar.id}
-              onContentAdded={onContentAdded}
-              onContentUpdated={onContentUpdated}
-              contentToEdit={editingContent}
-              isEditMode={true}
-              onCancelEdit={onCancelEdit}
-              alwaysShowAddNewIdea={true}
-            />
-          ) : (
-            <Button 
-              variant="default" 
-              size="sm"
-              className="bg-[#8B6B4E] hover:bg-[#7A5C3F]"
-              onClick={onNewIdeaClick}
-            >
-              <FileText className="h-4 w-4 mr-2" />
-              Add New Idea
-            </Button>
-          )}
-        </div>
       </div>
       
       <ContentPillar
