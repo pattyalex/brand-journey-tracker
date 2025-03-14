@@ -235,7 +235,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         </div>
       )}
       
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3">
+      <div className="flex flex-wrap gap-3">
         {contentTypes.map((type) => (
           <Card 
             key={type.id} 
@@ -317,24 +317,22 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
           </Card>
         ))}
         
-        <div className="flex items-center justify-center h-full">
-          <TooltipProvider delayDuration={0}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  onClick={() => setIsAddingBucket(!isAddingBucket)}
-                  className="h-12 w-12"
-                >
-                  <Plus className="h-6 w-6 text-purple-500" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Add bucket</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
+        <TooltipProvider delayDuration={0}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                onClick={() => setIsAddingBucket(!isAddingBucket)}
+                className="flex items-center justify-center p-0 h-auto aspect-square border border-dashed border-purple-300 hover:bg-purple-50"
+              >
+                <Plus className="h-6 w-6 text-purple-500" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Add bucket</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </div>
   );
