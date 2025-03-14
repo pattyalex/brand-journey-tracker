@@ -266,18 +266,6 @@ const BankOfContent = () => {
     setSelectedBucketId(bucketId);
   };
 
-  const getPillarColor = (pillarId: string) => {
-    const colors = {
-      "1": "#8B6B4E", // Brown
-      "2": "#6E59A5", // Purple
-      "3": "#0EA5E9", // Blue
-    };
-    
-    return colors[pillarId as keyof typeof colors] || "#8B6B4E";
-  };
-  
-  const activePillarColor = getPillarColor(activeTab);
-
   return (
     <Layout>
       <div 
@@ -288,13 +276,7 @@ const BankOfContent = () => {
         }}
       >
         <div className="relative z-10">
-          <h1 
-            className="text-3xl font-bold mb-2"
-            style={{
-              color: activePillarColor,
-              textShadow: "0 1px 2px rgba(0,0,0,0.1)"
-            }}
-          >
+          <h1 className="text-3xl font-bold mb-2">
             Idea Development
           </h1>
 
@@ -311,14 +293,14 @@ const BankOfContent = () => {
             </div>
             
             <div 
-              className="relative border border-border rounded-xl shadow-sm p-4 mb-6 bg-white"
+              className="relative border border-border rounded-b-lg shadow-sm p-4 mb-6 bg-white"
               style={{
-                borderTopLeftRadius: "0",
-                borderTopWidth: "1px",
-                borderTopColor: "#e2e8f0",
+                borderTopRightRadius: "0.5rem",
+                borderTopWidth: "0px",
                 marginTop: "-1px",
                 zIndex: 5,
-                position: "relative"
+                position: "relative",
+                borderTop: "none"
               }}
             >
               <ContentTypeBuckets 
