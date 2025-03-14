@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +18,8 @@ import { Sparkles, ArrowRight, Plus, Trash2 } from "lucide-react";
 
 interface TitleHookSuggestionsProps {
   onSelectHook: (hook: string) => void;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const HOOK_DATA = {
@@ -409,12 +410,28 @@ const HOOK_DATA = {
   }
 };
 
-const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
+const TitleHookSuggestions = ({ 
+  onSelectHook,
+  isOpen,
+  onOpenChange 
+}: TitleHookSuggestionsProps) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [customHook, setCustomHook] = useState("");
   const [customHooks, setCustomHooks] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (isOpen !== undefined) {
+      setDialogOpen(isOpen);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (onOpenChange && dialogOpen !== isOpen) {
+      onOpenChange(dialogOpen);
+    }
+  }, [dialogOpen, isOpen, onOpenChange]);
 
   useEffect(() => {
     const savedHooks = localStorage.getItem("customHooks");
@@ -436,6 +453,9 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
     onSelectHook(hook);
     setSheetOpen(false);
     setDialogOpen(false);
+    if (onOpenChange) {
+      onOpenChange(false);
+    }
   };
 
   const handleCustomHookSubmit = () => {
@@ -446,6 +466,9 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
       }
       setCustomHook("");
       setDialogOpen(false);
+      if (onOpenChange) {
+        onOpenChange(false);
+      }
     }
   };
 
@@ -458,19 +481,16 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
     setCustomHooks(prev => prev.filter(hook => hook !== hookToDelete));
   };
 
+  const handleDialogOpenChange = (open: boolean) => {
+    setDialogOpen(open);
+    if (onOpenChange) {
+      onOpenChange(open);
+    }
+  };
+
   return (
     <>
-      <Button 
-        variant="ghost" 
-        size="xs"
-        className="absolute right-[23px] hover:bg-transparent active:scale-95 transition-all duration-150 p-1.5 h-auto"
-        onClick={() => setDialogOpen(true)}
-        aria-label="Show title hook suggestions"
-      >
-        <Sparkles className="h-5 w-5 text-primary" />
-      </Button>
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Catchy Hook Ideas</DialogTitle>

@@ -39,7 +39,7 @@ const ContentUploader = ({
   const [platformsList, setPlatformsList] = useState<string[]>([]);
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
   
-  // New state for inspiration section
+  // State for inspiration section
   const [inspirationText, setInspirationText] = useState("");
   const [inspirationLinks, setInspirationLinks] = useState<string[]>([]);
   const [inspirationImages, setInspirationImages] = useState<string[]>([]);

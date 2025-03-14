@@ -26,6 +26,7 @@ const WritingSpace = ({
   const { state } = useSidebar();
   const [expandedClass, setExpandedClass] = useState("");
   const [isMeganOpen, setIsMeganOpen] = useState(false);
+  const [isHookDialogOpen, setIsHookDialogOpen] = useState(false);
   
   // Adjust layout when sidebar state changes
   useEffect(() => {
@@ -95,14 +96,13 @@ const WritingSpace = ({
             variant="ghost"
             size="sm"
             className="cursor-pointer transition-all duration-150 hover:bg-accent/80 active:bg-accent active:scale-95 rounded-md flex items-center"
-            onClick={() => {}}
+            onClick={() => setIsHookDialogOpen(true)}
             aria-label="Get hook ideas"
           >
             <span className="flex items-center gap-2 px-3 py-1.5">
               <span className="text-primary hover:text-primary/90 font-medium">Hook Ideas</span>
               <Sparkles className="h-4 w-4 text-primary" />
             </span>
-            <TitleHookSuggestions onSelectHook={handleSelectHook} />
           </Button>
           
           <Button
@@ -154,6 +154,13 @@ const WritingSpace = ({
           )}
         </div>
       </div>
+
+      {/* TitleHookSuggestions component outside the button to avoid DOM nesting issues */}
+      <TitleHookSuggestions 
+        onSelectHook={handleSelectHook} 
+        isOpen={isHookDialogOpen}
+        onOpenChange={setIsHookDialogOpen}
+      />
     </div>
   );
 };
