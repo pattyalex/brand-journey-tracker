@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pillar } from "@/pages/BankOfContent";
@@ -77,7 +76,6 @@ const PillarTabs = ({
     }
   };
 
-  // Get colors for different pillars
   const getPillarColor = (pillarId: string) => {
     const colors = {
       "1": "#8B6B4E", // Brown
@@ -129,7 +127,7 @@ const PillarTabs = ({
                     className={`px-6 py-3 text-lg font-medium relative ${
                       pillar.id === activeTab 
                         ? "bg-[var(--pillar-color)] text-white shadow-md z-10" 
-                        : "bg-background text-white"
+                        : "bg-background text-foreground"
                     }`}
                     onClick={() => onTabChange(pillar.id)}
                     style={{
