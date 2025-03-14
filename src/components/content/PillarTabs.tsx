@@ -196,7 +196,7 @@ const PillarTabs = ({
           </TooltipProvider>
         </div>
       </div>
-      <Separator className="mt-2 bg-gray-300" />
+      <Separator className="mt-0 bg-gray-300" />
     </div>
   );
 };
