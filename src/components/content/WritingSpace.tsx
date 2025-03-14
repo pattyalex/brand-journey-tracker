@@ -1,3 +1,4 @@
+
 import { useRef, useEffect, useState } from "react";
 import { Pencil, Sparkles } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -69,9 +70,9 @@ const WritingSpace = ({
         
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="cursor-pointer transition-all duration-150 hover:bg-accent/80 active:bg-accent active:scale-95 flex items-center gap-1.5"
+            className="cursor-pointer transition-all duration-150 hover:bg-purple-100 active:bg-purple-200 active:scale-95 rounded-md bg-purple-50 shadow-sm text-purple-700 px-3"
             onClick={() => {
               // Function to open the hook suggestions
               const sparklesButton = document.querySelector('[aria-label="Show title hook suggestions"]') as HTMLButtonElement;
@@ -80,8 +81,8 @@ const WritingSpace = ({
               }
             }}
           >
-            <Sparkles className="h-4 w-4 text-primary" />
-            <span className="text-sm">Hook Ideas</span>
+            <Sparkles className="h-4 w-4 mr-1.5 text-purple-500" />
+            <span className="text-sm font-medium">Hook Ideas</span>
           </Button>
           
           <Button
