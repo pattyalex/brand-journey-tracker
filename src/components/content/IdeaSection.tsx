@@ -125,31 +125,31 @@ const IdeaSection = ({
         />
       </div>
       
-      {/* Pillar Ideas heading below the Add New Idea button */}
+      {/* Pillar Ideas heading and filter on the same line */}
       <div className="flex items-center justify-between mt-4">
         <h2 className="text-xl font-semibold flex items-center">
           <Lightbulb className="h-5 w-5 mr-2" /> 
           {pillar.name} Ideas
         </h2>
-      </div>
-      
-      {/* Bucket filter dropdown */}
-      <div className="flex items-center gap-2">
-        <Filter className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm text-muted-foreground">Filter by bucket:</span>
-        <Select value={bucketFilter} onValueChange={setBucketFilter}>
-          <SelectTrigger className="h-8 w-[180px]">
-            <SelectValue placeholder="All Buckets" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Buckets</SelectItem>
-            {contentBuckets.map(bucket => (
-              <SelectItem key={bucket.id} value={bucket.id}>
-                {bucket.name} ({countByBucket(bucket.id)})
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        
+        {/* Bucket filter dropdown placed inline with the heading */}
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm text-muted-foreground">Filter by bucket:</span>
+          <Select value={bucketFilter} onValueChange={setBucketFilter}>
+            <SelectTrigger className="h-8 w-[180px]">
+              <SelectValue placeholder="All Buckets" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Buckets</SelectItem>
+              {contentBuckets.map(bucket => (
+                <SelectItem key={bucket.id} value={bucket.id}>
+                  {bucket.name} ({countByBucket(bucket.id)})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       
       <ContentPillar
