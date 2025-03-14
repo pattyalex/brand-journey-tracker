@@ -318,17 +318,15 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
           </Card>
         ))}
         
-        <Card className="flex items-center justify-center border-dashed border-purple-200 hover:border-purple-300 hover:bg-purple-50/30 transition-all cursor-pointer h-[120px]">
+        <Card className="flex items-center justify-center h-full border-dashed border-gray-300 hover:border-purple-300 transition-all cursor-pointer" onClick={() => setIsAddingBucket(!isAddingBucket)}>
           <TooltipProvider delayDuration={0}>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button 
                   variant="ghost" 
-                  onClick={() => setIsAddingBucket(!isAddingBucket)}
-                  className="h-full w-full flex flex-col gap-1"
+                  className="h-12 w-12"
                 >
-                  <Plus className="h-8 w-8 text-purple-500" />
-                  <span className="text-xs text-purple-500">Add bucket</span>
+                  <Plus className="h-6 w-6 text-purple-500" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
