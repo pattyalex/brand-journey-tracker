@@ -129,7 +129,7 @@ const PillarTabs = ({
                     className={`px-6 py-3 text-lg font-medium relative ${
                       pillar.id === activeTab 
                         ? "bg-[var(--pillar-color)] text-white shadow-md z-10" 
-                        : "bg-background text-foreground"
+                        : "bg-background text-white"
                     }`}
                     onClick={() => onTabChange(pillar.id)}
                     style={{
