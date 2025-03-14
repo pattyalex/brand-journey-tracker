@@ -21,6 +21,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from "@/components/ui/tooltip";
 
 interface PillarTabsProps {
   pillars: Pillar[];
@@ -167,14 +173,22 @@ const PillarTabs = ({
           </div>
         ))}
         
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={onAddPillar} 
-          className="h-8 w-8 rounded-full hover:bg-accent mx-2"
-        >
-          <Plus className="h-4 w-4" />
-        </Button>
+        <TooltipProvider delayDuration={0}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                onClick={onAddPillar} 
+                className="h-12 w-12"
+              >
+                <Plus className="h-6 w-6 text-purple-500" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Add pillar</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </TabsList>
     </div>
   );
