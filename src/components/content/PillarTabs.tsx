@@ -78,44 +78,44 @@ const PillarTabs = ({
   };
 
   return (
-    <div className="flex items-center justify-between mb-4">
+    <div className="flex items-center justify-between mb-6">
       <div className="flex items-center">
-        <TabsList className="bg-background border overflow-x-auto flex items-center">
+        <TabsList className="bg-background border overflow-x-auto flex items-center h-12">
           {pillars.map((pillar) => (
             <div key={pillar.id} className="relative flex items-center">
               {editingPillarId === pillar.id ? (
-                <div className="px-3 py-1.5 flex items-center bg-primary text-primary-foreground rounded-sm">
+                <div className="px-4 py-2 flex items-center bg-primary text-primary-foreground rounded-sm">
                   <Input
                     value={editingPillarName}
                     onChange={(e) => setEditingPillarName(e.target.value)}
                     onKeyDown={handlePillarNameKeyDown}
                     onBlur={saveEditingPillar}
                     autoFocus
-                    className="h-6 px-1 py-0 text-sm w-32 bg-transparent border-0 focus-visible:ring-0 text-primary-foreground"
+                    className="h-7 px-1 py-0 text-base w-40 bg-transparent border-0 focus-visible:ring-0 text-primary-foreground"
                     data-testid="edit-pillar-name-input"
                   />
                   <Button
                     size="xs"
                     variant="ghost"
                     onClick={saveEditingPillar}
-                    className="ml-1 text-primary-foreground hover:text-primary-foreground/90 hover:bg-transparent p-0 h-5 w-5"
+                    className="ml-1 text-primary-foreground hover:text-primary-foreground/90 hover:bg-transparent p-0 h-6 w-6"
                   >
-                    <Check className="h-3.5 w-3.5" />
+                    <Check className="h-4 w-4" />
                   </Button>
                   <Button
                     size="xs"
                     variant="ghost"
                     onClick={cancelEditingPillar}
-                    className="text-primary-foreground hover:text-primary-foreground/90 hover:bg-transparent p-0 h-5 w-5"
+                    className="text-primary-foreground hover:text-primary-foreground/90 hover:bg-transparent p-0 h-6 w-6"
                   >
-                    <X className="h-3.5 w-3.5" />
+                    <X className="h-4 w-4" />
                   </Button>
                 </div>
               ) : (
                 <div className="flex items-center">
                   <TabsTrigger 
                     value={pillar.id}
-                    className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white ${
+                    className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white px-5 py-2 text-base ${
                       pillar.id === "1" && activeTab === "1" ? "bg-[#8B6B4E] text-white" : ""
                     }`}
                     onClick={() => onTabChange(pillar.id)}
@@ -128,9 +128,9 @@ const PillarTabs = ({
                       <Button
                         variant="ghost"
                         size="xs"
-                        className="ml-1 px-1 h-6 text-muted-foreground hover:text-foreground"
+                        className="ml-1 px-1 h-7 text-muted-foreground hover:text-foreground"
                       >
-                        <MoreVertical className="h-3.5 w-3.5" />
+                        <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="w-40">
@@ -182,9 +182,9 @@ const PillarTabs = ({
               <Button 
                 variant="ghost" 
                 onClick={onAddPillar} 
-                className="h-8 w-8 p-0 ml-6"
+                className="h-10 w-10 p-0 ml-6 bg-transparent"
               >
-                <Plus className="h-5 w-5 text-purple-500" />
+                <Plus className="h-6 w-6 text-purple-500" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
