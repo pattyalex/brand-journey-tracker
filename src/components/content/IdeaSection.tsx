@@ -42,7 +42,9 @@ const IdeaSection = ({
   onAddToBucket
 }: IdeaSectionProps) => {
   const [bucketFilter, setBucketFilter] = useState<string>("all");
+  const [platformFilter, setPlatformFilter] = useState<string>("all");
   const [contentBuckets, setContentBuckets] = useState<{id: string, name: string}[]>([]);
+  const [availablePlatforms, setAvailablePlatforms] = useState<string[]>([]);
   
   // Load content buckets from localStorage
   useEffect(() => {
@@ -65,29 +67,89 @@ const IdeaSection = ({
     }
   }, [pillar.id]);
 
-  // Filter content by bucket
-  const getFilteredContent = () => {
-    if (bucketFilter === "all") {
-      return pillar.content;
-    }
+  // Extract unique platforms from all content items
+  useEffect(() => {
+    const platforms = new Set<string>();
     
-    return pillar.content.filter(item => {
-      // Check if item has a bucketId directly or in the URL JSON
-      if (item.bucketId === bucketFilter) {
-        return true;
+    pillar.content.forEach(item => {
+      // Check direct platforms array
+      if (item.platforms && Array.isArray(item.platforms)) {
+        item.platforms.forEach(platform => platforms.add(platform));
       }
       
-      // Check in URL JSON for older format
+      // Check platforms in URL JSON
       try {
         if (item.url) {
           const urlData = JSON.parse(item.url);
-          return urlData.bucketId === bucketFilter;
+          if (urlData.platforms && Array.isArray(urlData.platforms)) {
+            urlData.platforms.forEach((platform: string) => platforms.add(platform));
+          }
         }
       } catch (e) {
-        // If parsing fails, it's not JSON, so this item doesn't have a bucket
+        // If parsing fails, ignore
+      }
+    });
+    
+    setAvailablePlatforms(Array.from(platforms).sort());
+  }, [pillar.content]);
+
+  // Filter content by bucket and platform
+  const getFilteredContent = () => {
+    return pillar.content.filter(item => {
+      let matchesBucketFilter = true;
+      let matchesPlatformFilter = true;
+      
+      // Apply bucket filter
+      if (bucketFilter !== "all") {
+        matchesBucketFilter = false;
+        
+        // Check direct bucketId
+        if (item.bucketId === bucketFilter) {
+          matchesBucketFilter = true;
+        } else {
+          // Check in URL JSON
+          try {
+            if (item.url) {
+              const urlData = JSON.parse(item.url);
+              if (urlData.bucketId === bucketFilter) {
+                matchesBucketFilter = true;
+              }
+            }
+          } catch (e) {
+            // If parsing fails, it's not JSON
+          }
+        }
       }
       
-      return false;
+      // Apply platform filter
+      if (platformFilter !== "all") {
+        matchesPlatformFilter = false;
+        
+        // Check direct platforms array
+        if (item.platforms && Array.isArray(item.platforms)) {
+          if (item.platforms.includes(platformFilter)) {
+            matchesPlatformFilter = true;
+          }
+        }
+        
+        // Check platforms in URL JSON
+        if (!matchesPlatformFilter) {
+          try {
+            if (item.url) {
+              const urlData = JSON.parse(item.url);
+              if (urlData.platforms && Array.isArray(urlData.platforms)) {
+                if (urlData.platforms.includes(platformFilter)) {
+                  matchesPlatformFilter = true;
+                }
+              }
+            }
+          } catch (e) {
+            // If parsing fails, ignore
+          }
+        }
+      }
+      
+      return matchesBucketFilter && matchesPlatformFilter;
     });
   };
 
@@ -105,6 +167,32 @@ const IdeaSection = ({
         }
       } catch (e) {
         // Not JSON format
+      }
+      
+      return false;
+    }).length;
+  };
+
+  // Count items by platform
+  const countByPlatform = (platform: string): number => {
+    return pillar.content.filter(item => {
+      // Check direct platforms array
+      if (item.platforms && Array.isArray(item.platforms)) {
+        if (item.platforms.includes(platform)) {
+          return true;
+        }
+      }
+      
+      // Check platforms in URL JSON
+      try {
+        if (item.url) {
+          const urlData = JSON.parse(item.url);
+          if (urlData.platforms && Array.isArray(urlData.platforms)) {
+            return urlData.platforms.includes(platform);
+          }
+        }
+      } catch (e) {
+        // If parsing fails, ignore
       }
       
       return false;
@@ -132,23 +220,47 @@ const IdeaSection = ({
           {pillar.name} Ideas
         </h2>
         
-        {/* Bucket filter dropdown placed inline with the heading */}
-        <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">Filter by bucket:</span>
-          <Select value={bucketFilter} onValueChange={setBucketFilter}>
-            <SelectTrigger className="h-8 w-[180px]">
-              <SelectValue placeholder="All Buckets" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Buckets</SelectItem>
-              {contentBuckets.map(bucket => (
-                <SelectItem key={bucket.id} value={bucket.id}>
-                  {bucket.name} ({countByBucket(bucket.id)})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {/* Filters container */}
+        <div className="flex items-center gap-4">
+          {/* Bucket filter dropdown */}
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Filter by bucket:</span>
+            <Select value={bucketFilter} onValueChange={setBucketFilter}>
+              <SelectTrigger className="h-8 w-[180px]">
+                <SelectValue placeholder="All Buckets" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Buckets</SelectItem>
+                {contentBuckets.map(bucket => (
+                  <SelectItem key={bucket.id} value={bucket.id}>
+                    {bucket.name} ({countByBucket(bucket.id)})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* Platform filter dropdown */}
+          {availablePlatforms.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">Filter by platform:</span>
+              <Select value={platformFilter} onValueChange={setPlatformFilter}>
+                <SelectTrigger className="h-8 w-[180px]">
+                  <SelectValue placeholder="All Platforms" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Platforms</SelectItem>
+                  {availablePlatforms.map(platform => (
+                    <SelectItem key={platform} value={platform}>
+                      {platform} ({countByPlatform(platform)})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
       </div>
       
