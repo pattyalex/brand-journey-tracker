@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
@@ -14,7 +15,6 @@ interface ContentPillarProps {
   onEditContent: (contentId: string) => void;
   searchQuery: string;
   onReorderContent?: (items: ContentItem[]) => void;
-  shadowClass?: string;
 }
 
 const ContentPillar = ({
@@ -24,8 +24,7 @@ const ContentPillar = ({
   onMoveContent,
   onEditContent,
   searchQuery,
-  onReorderContent,
-  shadowClass
+  onReorderContent
 }: ContentPillarProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
@@ -105,7 +104,7 @@ const ContentPillar = ({
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className={`space-y-2 relative ${shadowClass || ''}`}>
+      <div className="space-y-2 relative">
         {filteredContent.length === 0 ? (
           <div className="text-center p-8 border border-dashed rounded-lg bg-muted/30">
             <p className="text-muted-foreground">
