@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -258,7 +259,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               type="button"
               variant="ghost"
               size="xs"
-              className={`absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-30 text-gray-400 hover:text-red-500 hover:bg-red-50 ${
+              className={`absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-30 text-gray-500 hover:text-gray-700 hover:bg-gray-100 ${
                 ["blog", "video", "social", "image"].includes(type.id) ? "cursor-not-allowed" : ""
               }`}
               onClick={(e) => handleDeleteBucket(e, type.id)}
