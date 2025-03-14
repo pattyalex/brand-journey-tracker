@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Lightbulb, FileText, Filter, FilterX } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -47,11 +46,13 @@ const IdeaSection = ({
   onContentAdded,
   onAddToBucket
 }: IdeaSectionProps) => {
-  const [filterType, setFilterType] = useState<"bucket" | "platform">("bucket");
+  const [filterType, setFilterType] = useState<"bucket" | "platform" | "status">("bucket");
   const [bucketFilter, setBucketFilter] = useState<string>("all");
   const [platformFilter, setPlatformFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [contentBuckets, setContentBuckets] = useState<{id: string, name: string}[]>([]);
   const [availablePlatforms, setAvailablePlatforms] = useState<string[]>([]);
+  const [availableStatuses, setAvailableStatuses] = useState<string[]>([]);
   
   useEffect(() => {
     try {
@@ -104,6 +105,24 @@ const IdeaSection = ({
     setAvailablePlatforms(platformArray);
   }, [pillar.content]);
 
+  useEffect(() => {
+    console.log("Extracting status tags from content items...");
+    const statuses = new Set<string>();
+    
+    pillar.content.forEach(item => {
+      if (item.tags && Array.isArray(item.tags)) {
+        item.tags.forEach(tag => {
+          statuses.add(tag);
+          console.log("Found status tag:", tag);
+        });
+      }
+    });
+    
+    const statusArray = Array.from(statuses).sort();
+    console.log("Available status tags:", statusArray);
+    setAvailableStatuses(statusArray);
+  }, [pillar.content]);
+
   const getFilteredContent = () => {
     return pillar.content.filter(item => {
       let matchesFilter = true;
@@ -146,6 +165,14 @@ const IdeaSection = ({
             }
           } catch (e) {
             // If parsing fails, ignore
+          }
+        }
+      } else if (filterType === "status" && statusFilter !== "all") {
+        matchesFilter = false;
+        
+        if (item.tags && Array.isArray(item.tags)) {
+          if (item.tags.includes(statusFilter)) {
+            matchesFilter = true;
           }
         }
       }
@@ -196,11 +223,20 @@ const IdeaSection = ({
     }).length;
   };
 
-  const handleFilterTypeChange = (type: "bucket" | "platform") => {
+  const countByStatus = (status: string): number => {
+    return pillar.content.filter(item => {
+      if (item.tags && Array.isArray(item.tags)) {
+        return item.tags.includes(status);
+      }
+      return false;
+    }).length;
+  };
+
+  const handleFilterTypeChange = (type: "bucket" | "platform" | "status") => {
     setFilterType(type);
-    // Reset both filters when switching filter type
     setBucketFilter("all");
     setPlatformFilter("all");
+    setStatusFilter("all");
   };
 
   return (
@@ -230,7 +266,7 @@ const IdeaSection = ({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="h-8 px-3">
-                  {filterType === "bucket" ? "Bucket" : "Platform"}
+                  {filterType === "bucket" ? "Bucket" : filterType === "platform" ? "Platform" : "Status"}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-[150px] bg-white">
@@ -239,6 +275,9 @@ const IdeaSection = ({
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleFilterTypeChange("platform")}>
                   Platform
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleFilterTypeChange("status")}>
+                  Status
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -257,7 +296,7 @@ const IdeaSection = ({
                   ))}
                 </SelectContent>
               </Select>
-            ) : (
+            ) : filterType === "platform" ? (
               <Select value={platformFilter} onValueChange={setPlatformFilter}>
                 <SelectTrigger className="h-8 w-full md:w-[180px]">
                   <SelectValue placeholder="All Platforms" />
@@ -267,6 +306,20 @@ const IdeaSection = ({
                   {availablePlatforms.map(platform => (
                     <SelectItem key={platform} value={platform}>
                       {platform} ({countByPlatform(platform)})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="h-8 w-full md:w-[180px]">
+                  <SelectValue placeholder="All Statuses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  {availableStatuses.map(status => (
+                    <SelectItem key={status} value={status}>
+                      {status} ({countByStatus(status)})
                     </SelectItem>
                   ))}
                 </SelectContent>
