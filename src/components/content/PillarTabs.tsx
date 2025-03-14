@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pillar } from "@/pages/BankOfContent";
@@ -79,12 +78,18 @@ const PillarTabs = ({
 
   const getPillarColor = (pillarId: string) => {
     const colors = {
-      "1": "#8B6B4E", // Brown
-      "2": "#6E59A5", // Purple
-      "3": "#0EA5E9", // Blue
+      "1": "#8B6B4E", // Rich brown
+      "2": "#A67C52", // Medium warm brown
+      "3": "#7D5A44", // Dark chocolate brown
+      "4": "#C19A6B", // Light caramel brown
+      "5": "#654321", // Deep brown
+      "6": "#964B00", // Classic brown
+      "7": "#9C7A54", // Sandy brown
+      "8": "#6B4226", // Cocoa brown
+      "9": "#B38867", // Tan brown
     };
     
-    return colors[pillarId as keyof typeof colors] || "#8B6B4E";
+    return colors[pillarId as keyof typeof colors] || "#8B6B4E"; // Default to rich brown
   };
 
   return (
@@ -127,7 +132,7 @@ const PillarTabs = ({
                     value={pillar.id}
                     className={`px-6 py-3 text-lg font-medium relative ${
                       pillar.id === activeTab 
-                        ? "bg-[var(--pillar-color)] text-white shadow-md z-10" 
+                        ? "bg-[var(--pillar-color)] shadow-md z-10" 
                         : "bg-background text-foreground"
                     }`}
                     onClick={() => onTabChange(pillar.id)}
@@ -154,7 +159,7 @@ const PillarTabs = ({
                     
                     {pillar.id === activeTab && (
                       <div 
-                        className="absolute bottom-0 left-0 right-0 h-1 bg-white"
+                        className="absolute bottom-0 left-0 right-0 h-1"
                         style={{ 
                           backgroundColor: getPillarColor(pillar.id),
                           boxShadow: `0 4px 6px -1px ${getPillarColor(pillar.id)}40`
