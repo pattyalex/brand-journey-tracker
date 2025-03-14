@@ -4,7 +4,7 @@ import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pillar } from "@/pages/BankOfContent";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Check, X, Edit, Trash2, Plus, MoreVertical } from "lucide-react";
+import { Check, X, Edit, Trash2, Plus, MoreVertical, Bookmark } from "lucide-react";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -44,37 +44,43 @@ const pillarColors = [
     tabBg: "bg-purple-600", 
     tabBgActive: "bg-purple-700",
     textColor: "text-white",
-    borderColor: "border-purple-800"
+    borderColor: "border-purple-800",
+    tabHighlight: "after:bg-purple-300"
   },
   {
     tabBg: "bg-orange-500", 
     tabBgActive: "bg-orange-600",
     textColor: "text-white",
-    borderColor: "border-orange-700"
+    borderColor: "border-orange-700",
+    tabHighlight: "after:bg-orange-300"
   },
   {
     tabBg: "bg-teal-500", 
     tabBgActive: "bg-teal-600",
     textColor: "text-white",
-    borderColor: "border-teal-700"
+    borderColor: "border-teal-700",
+    tabHighlight: "after:bg-teal-300"
   },
   {
     tabBg: "bg-pink-500", 
     tabBgActive: "bg-pink-600",
     textColor: "text-white",
-    borderColor: "border-pink-700"
+    borderColor: "border-pink-700",
+    tabHighlight: "after:bg-pink-300"
   },
   {
     tabBg: "bg-blue-500", 
     tabBgActive: "bg-blue-600",
     textColor: "text-white",
-    borderColor: "border-blue-700"
+    borderColor: "border-blue-700",
+    tabHighlight: "after:bg-blue-300"
   },
   {
     tabBg: "bg-green-500", 
     tabBgActive: "bg-green-600",
     textColor: "text-white",
-    borderColor: "border-green-700"
+    borderColor: "border-green-700",
+    tabHighlight: "after:bg-green-300"
   },
 ];
 
@@ -165,11 +171,14 @@ const PillarTabs = ({
                       value={pillar.id}
                       className={`relative transition-all duration-200 ${colorScheme.textColor} ${
                         pillar.id === activeTab 
-                          ? `${colorScheme.tabBgActive} border-t-2 border-l-2 border-r-2 ${colorScheme.borderColor} rounded-t-lg rounded-b-none z-10` 
+                          ? `${colorScheme.tabBgActive} border-t-2 border-l-2 border-r-2 ${colorScheme.borderColor} rounded-t-lg rounded-b-none z-10 after:content-[''] after:absolute after:bottom-[-1px] after:left-0 after:w-full after:h-1 ${colorScheme.tabHighlight}` 
                           : `${colorScheme.tabBg} hover:brightness-110`
                       }`}
                       onClick={() => onTabChange(pillar.id)}
                     >
+                      {pillar.id === activeTab && (
+                        <Bookmark className="h-3 w-3 absolute -left-1 -top-1 text-white opacity-70" />
+                      )}
                       {pillar.name}
                       {pillar.id === activeTab && (
                         <div className={`absolute bottom-0 left-0 w-full h-1 ${colorScheme.tabBgActive}`}></div>
@@ -238,11 +247,11 @@ const PillarTabs = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button 
-                variant="ghost" 
+                variant="outline"
                 onClick={onAddPillar} 
-                className="h-8 w-8 p-0 ml-6"
+                className="h-8 w-8 p-0 ml-6 border-dashed border-2 border-purple-300 hover:border-purple-500 text-purple-500 bg-purple-50/50"
               >
-                <Plus className="h-5 w-5 text-purple-500" />
+                <Plus className="h-5 w-5" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>

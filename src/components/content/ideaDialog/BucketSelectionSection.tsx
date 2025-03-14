@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tag } from "lucide-react";
 
 interface BucketSelectionSectionProps {
   bucketId: string;
@@ -44,14 +45,17 @@ const BucketSelectionSection = ({
 
   return (
     <div className="space-y-4">
-      <Label htmlFor="format-select" className="text-sm font-medium">
-        Content Format
-      </Label>
+      <div className="flex items-center gap-2">
+        <Tag className="h-4 w-4 text-purple-500" />
+        <Label htmlFor="format-select" className="text-sm font-medium">
+          Content Format
+        </Label>
+      </div>
       <Select 
         value={bucketId} 
         onValueChange={onBucketChange}
       >
-        <SelectTrigger id="format-select" className="w-full">
+        <SelectTrigger id="format-select" className="w-full border-dashed border-purple-200 bg-purple-50/50">
           <SelectValue placeholder="Select a content format" />
         </SelectTrigger>
         <SelectContent>
@@ -63,9 +67,9 @@ const BucketSelectionSection = ({
         </SelectContent>
       </Select>
       {bucketId && (
-        <p className="text-xs text-gray-500 mt-2">
+        <div className="text-xs text-gray-500 mt-2 bg-white p-2 rounded border border-gray-200 shadow-sm rotate-[-0.5deg]">
           {contentFormats.find(f => f.id === bucketId)?.description || ""}
-        </p>
+        </div>
       )}
     </div>
   );
