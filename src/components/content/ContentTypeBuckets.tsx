@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -235,11 +236,11 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         </div>
       )}
       
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-4">
         {contentTypes.map((type) => (
           <Card 
             key={type.id} 
-            className={`hover:border-purple-300 transition-all cursor-pointer group ${
+            className={`w-[200px] h-[120px] hover:border-purple-300 transition-all cursor-pointer group ${
               expandedCardId === type.id ? 
                 'scale-125 border-purple-300 shadow-lg z-20 bg-white' : 
                 'hover:scale-[1.02]'
@@ -281,7 +282,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <span className={expandedCardId === type.id ? "" : "truncate"}>
+                  <span className="truncate">
                     {type.name}
                   </span>
                 )}
@@ -289,7 +290,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
             </CardHeader>
             <CardContent className={`p-3 pt-1 ${expandedCardId === type.id ? 'pb-4' : ''}`}>
               <div
-                className=""
+                className="h-12 overflow-hidden"
                 onDoubleClick={(e) => {
                   e.stopPropagation();
                   handleDescriptionDoubleClick(type.id, type.description || "");
@@ -308,7 +309,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <p className={`text-xs text-muted-foreground mt-1 ${expandedCardId === type.id ? "" : "truncate"}`}>
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                     {type.description}
                   </p>
                 )}
@@ -323,7 +324,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               <Button 
                 variant="ghost" 
                 onClick={() => setIsAddingBucket(!isAddingBucket)}
-                className="flex items-center justify-center p-0 h-[100px] w-[100px] ml-0"
+                className="w-[200px] h-[120px] flex items-center justify-center p-0"
               >
                 <Plus className="h-6 w-6 text-purple-500" />
               </Button>
