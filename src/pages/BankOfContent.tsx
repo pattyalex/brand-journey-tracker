@@ -295,18 +295,7 @@ const BankOfContent = () => {
   return (
     <Layout>
       <div className="container mx-auto py-6 space-y-6 fade-in">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Idea Development</h1>
-          <Button 
-            variant="default" 
-            size="default"
-            className="bg-[#8B6B4E] hover:bg-[#7A5C3F]"
-            onClick={openNewIdeaDialog}
-          >
-            <FileText className="h-4 w-4 mr-2" />
-            Add New Idea
-          </Button>
-        </div>
+        <h1 className="text-3xl font-bold">Idea Development</h1>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <PillarTabs 
@@ -317,6 +306,18 @@ const BankOfContent = () => {
             onRenamePillar={renamePillar}
             onDeletePillar={deletePillar}
           />
+          
+          <div className="flex justify-end mt-4 mb-2">
+            <Button 
+              variant="default" 
+              size="default"
+              className="bg-[#8B6B4E] hover:bg-[#7A5C3F]"
+              onClick={openNewIdeaDialog}
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Add New Idea
+            </Button>
+          </div>
           
           <ContentTypeBuckets 
             onAddIdea={handleAddToBucket} 
