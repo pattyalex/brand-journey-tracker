@@ -19,14 +19,14 @@ const TagsSection = ({
 }: TagsSectionProps) => {
   return (
     <div className="grid gap-2">
-      <Label htmlFor="tags">Tags</Label>
+      <Label htmlFor="tags">Work Status</Label>
       <TagsInput
         tags={tags}
         currentTag={currentTag}
         onTagChange={onCurrentTagChange}
         onAddTag={onAddTag}
         onRemoveTag={onRemoveTag}
-        placeholder="Add tags (e.g., To Finalize Script, To Film, To Edit, To Post)"
+        placeholder="Add status tags (e.g., To Finalize Script, To Film, To Edit, To Post)"
       />
     </div>
   );

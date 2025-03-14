@@ -29,7 +29,7 @@ const PlatformsSection = ({
       />
       <p className="text-xs text-muted-foreground mt-1">
         Add platforms where this content will be published (e.g., Instagram, YouTube, Blog, etc.). 
-        You can later filter content by platform in the Ideas section. This helps you organize content for specific channels.
+        You can filter content by platform in the Ideas section.
       </p>
     </div>
   );
