@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -291,7 +292,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                   className="w-full text-xs bg-white hover:bg-purple-50 border-purple-200 text-purple-700 hover:text-purple-800"
                 >
                   <PlusCircle className="h-3 w-3 mr-1" />
-                  Add Idea
+                  Develop an Idea
                 </Button>
               </div>
             </div>
