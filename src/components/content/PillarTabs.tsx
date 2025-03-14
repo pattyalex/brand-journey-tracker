@@ -78,9 +78,9 @@ const PillarTabs = ({
   };
 
   return (
-    <div className="flex items-center justify-between mb-6">
-      <div className="flex items-center">
-        <TabsList className="bg-background border overflow-x-auto flex items-center h-12">
+    <div className="flex items-center justify-between mb-0">
+      <div className="flex items-center w-full">
+        <TabsList className="bg-background border-t border-x border-gray-300 overflow-x-auto flex items-center h-12 rounded-t-md rounded-b-none w-full">
           {pillars.map((pillar) => (
             <div key={pillar.id} className="relative flex items-center">
               {editingPillarId === pillar.id ? (

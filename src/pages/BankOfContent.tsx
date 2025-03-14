@@ -283,40 +283,42 @@ const BankOfContent = () => {
             />
           </div>
           
-          <ContentTypeBuckets 
-            onAddIdea={handleAddToBucket} 
-            pillarId={activeTab}
-          />
-          
-          {pillars.map((pillar) => (
-            <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <WritingSpace 
-                  writingText={writingText}
-                  onTextChange={updateWritingSpace}
-                  onTextSelection={handleTextSelection}
-                  onFormatText={handleFormatText}
-                />
-                
-                <IdeaSection 
-                  pillar={pillar}
-                  pillars={pillars}
-                  searchQuery={searchQuery}
-                  onNewIdeaClick={openNewIdeaDialog}
-                  onDeleteContent={(contentId) => deleteContent(pillar.id, contentId)}
-                  onMoveContent={(toPillarId, contentId) => moveContent(pillar.id, toPillarId, contentId)}
-                  onEditContent={(contentId) => editContent(pillar.id, contentId)}
-                  onReorderContent={(newItems) => handleReorderContent(pillar.id, newItems)}
-                  editingContent={editingContent}
-                  isEditing={isEditing}
-                  onContentUpdated={updateContent}
-                  onCancelEdit={cancelEditing}
-                  onContentAdded={addContentToPillar}
-                  onAddToBucket={handleAddToBucket}
-                />
-              </div>
-            </TabsContent>
-          ))}
+          <div className="border border-gray-300 rounded-b-md pt-4 pb-6 px-4 mb-6 border-t-0">
+            <ContentTypeBuckets 
+              onAddIdea={handleAddToBucket} 
+              pillarId={activeTab}
+            />
+            
+            {pillars.map((pillar) => (
+              <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <WritingSpace 
+                    writingText={writingText}
+                    onTextChange={updateWritingSpace}
+                    onTextSelection={handleTextSelection}
+                    onFormatText={handleFormatText}
+                  />
+                  
+                  <IdeaSection 
+                    pillar={pillar}
+                    pillars={pillars}
+                    searchQuery={searchQuery}
+                    onNewIdeaClick={openNewIdeaDialog}
+                    onDeleteContent={(contentId) => deleteContent(pillar.id, contentId)}
+                    onMoveContent={(toPillarId, contentId) => moveContent(pillar.id, toPillarId, contentId)}
+                    onEditContent={(contentId) => editContent(pillar.id, contentId)}
+                    onReorderContent={(newItems) => handleReorderContent(pillar.id, newItems)}
+                    editingContent={editingContent}
+                    isEditing={isEditing}
+                    onContentUpdated={updateContent}
+                    onCancelEdit={cancelEditing}
+                    onContentAdded={addContentToPillar}
+                    onAddToBucket={handleAddToBucket}
+                  />
+                </div>
+              </TabsContent>
+            ))}
+          </div>
         </Tabs>
 
         <ContentSearchModal
