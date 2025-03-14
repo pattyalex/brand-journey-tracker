@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -204,11 +203,11 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         <h2 className="text-xl font-semibold">Content Buckets</h2>
         <Button 
           variant="outline" 
-          size="sm" 
+          size="icon" 
           onClick={() => setIsAddingBucket(!isAddingBucket)}
+          className="h-8 w-8 rounded-full"
         >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Bucket
+          <Plus className="h-4 w-4" />
         </Button>
       </div>
       
