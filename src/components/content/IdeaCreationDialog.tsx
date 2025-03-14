@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/dialog";
 import DialogHeader from "./ideaDialog/DialogHeader";
 import DialogContentBody from "./ideaDialog/DialogContent";
-import MeganAIChat from "./MeganAIChat";
 
 interface IdeaCreationDialogProps {
   open: boolean;
@@ -95,22 +94,15 @@ const IdeaCreationDialog = ({
   onAddInspirationImage = () => {},
   onRemoveInspirationImage = () => {},
 }: IdeaCreationDialogProps) => {
-  const [isMeganOpen, setIsMeganOpen] = useState(false);
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent 
-        className={`max-h-[90vh] transition-all duration-300 ${
-          isMeganOpen 
-            ? "sm:max-w-[900px] md:max-w-[1100px] grid grid-cols-[1fr,320px]" 
-            : "sm:max-w-[650px] md:max-w-[750px]"
-        }`}
-      >
+      <DialogContent className="max-h-[90vh] sm:max-w-[650px] md:max-w-[750px]">
         <div className="h-full flex flex-col">
           <DialogHeader 
             title={dialogTitle} 
-            isMeganOpen={isMeganOpen} 
-            toggleMegan={() => setIsMeganOpen(!isMeganOpen)} 
+            isMeganOpen={false} 
+            toggleMegan={() => {}} 
           />
           
           <div className="flex-1">
@@ -160,19 +152,6 @@ const IdeaCreationDialog = ({
             </Button>
           </DialogFooter>
         </div>
-        
-        {isMeganOpen && (
-          <div className="h-full border-l border-gray-200">
-            <MeganAIChat 
-              onClose={() => setIsMeganOpen(false)} 
-              contextData={{
-                title,
-                script: scriptText,
-                shootDetails
-              }}
-            />
-          </div>
-        )}
       </DialogContent>
     </Dialog>
   );
