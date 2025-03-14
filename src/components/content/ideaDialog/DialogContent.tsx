@@ -89,7 +89,7 @@ const DialogContent = ({
       <div className="grid gap-6 py-4 pr-2">
         <TitleInputSection title={title} onTitleChange={onTitleChange} />
         
-        <div className="h-2"></div>
+        <div className="h-1"></div>
         
         <BucketSelectionSection 
           bucketId={bucketId} 
