@@ -235,13 +235,13 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         </div>
       )}
       
-      <div className="flex flex-wrap gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {contentTypes.map((type) => (
           <Card 
             key={type.id} 
-            className={`w-[160px] h-[100px] hover:border-purple-300 transition-all cursor-pointer group ${
+            className={`hover:border-purple-300 transition-all cursor-pointer group ${
               expandedCardId === type.id ? 
-                'scale-125 border-purple-300 shadow-lg z-20 bg-white' : 
+                'scale-105 border-purple-300 shadow-lg z-20 bg-white' : 
                 'hover:scale-[1.02]'
             }`}
             onClick={() => handleCardClick(type.id)}
@@ -259,16 +259,16 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               <Trash2 className="h-3 w-3" />
             </Button>
             
-            <CardHeader className={`p-2 pb-0 ${expandedCardId === type.id ? 'pt-3' : ''}`}>
+            <CardHeader className="p-3 pb-0">
               <CardTitle 
-                className="text-xs flex items-center gap-1.5"
+                className="text-sm flex items-center gap-1.5"
                 onDoubleClick={(e) => {
                   e.stopPropagation();
                   handleDoubleClick(type.id, type.name, type.description || "");
                 }}
                 title="Double-click to edit"
               >
-                <type.icon className="h-2.5 w-2.5 flex-shrink-0" />
+                <type.icon className="h-4 w-4 flex-shrink-0" />
                 {editingBucketId === type.id && !isEditingDescription ? (
                   <Input
                     ref={editInputRef}
@@ -287,9 +287,9 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                 )}
               </CardTitle>
             </CardHeader>
-            <CardContent className={`p-2 pt-1 ${expandedCardId === type.id ? 'pb-3' : ''}`}>
+            <CardContent className="p-3 pt-1">
               <div
-                className="h-10 overflow-hidden"
+                className="text-xs text-muted-foreground mt-1"
                 onDoubleClick={(e) => {
                   e.stopPropagation();
                   handleDescriptionDoubleClick(type.id, type.description || "");
@@ -308,7 +308,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                  <p className="line-clamp-2">
                     {type.description}
                   </p>
                 )}
@@ -323,7 +323,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               <Button 
                 variant="ghost" 
                 onClick={() => setIsAddingBucket(!isAddingBucket)}
-                className="w-[160px] h-[100px] flex items-center justify-center p-0"
+                className="flex items-center justify-center p-0 h-full border border-dashed border-gray-300 hover:border-purple-300"
               >
                 <Plus className="h-5 w-5 text-purple-500" />
               </Button>
