@@ -2,7 +2,6 @@
 import { ReactNode } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import TitleInputSection from "./TitleInputSection";
-import FormatSelectionSection from "./FormatSelectionSection";
 import ScriptInputSection from "./ScriptInputSection";
 import ShootDetailsSection from "./ShootDetailsSection";
 import CaptionInputSection from "./CaptionInputSection";
@@ -65,8 +64,6 @@ const DialogContent = ({
     <ScrollArea className="h-[calc(90vh-140px)] pr-4" style={{ overflowY: 'auto', touchAction: 'pan-y' }}>
       <div className="grid gap-4 py-4 pr-2">
         <TitleInputSection title={title} onTitleChange={onTitleChange} />
-        
-        <FormatSelectionSection format={format} onFormatChange={onFormatChange} />
         
         <div className="h-4"></div>
         
