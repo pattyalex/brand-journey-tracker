@@ -1,8 +1,7 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, PlusCircle } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ContentItem } from "@/types/content";
 import { 
@@ -170,11 +169,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     setExpandedCardId(prev => prev === bucketId ? null : bucketId);
   };
 
-  const handleAddIdeaClick = (e: React.MouseEvent, bucketId: string) => {
-    e.stopPropagation();
-    onAddIdea(bucketId);
-  };
-
   return (
     <div className="mt-4 mb-6">
       <div className="flex justify-between items-center mb-3">
@@ -217,7 +211,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         {contentTypes.map((type) => (
           <Card 
             key={type.id} 
-            className="w-[200px] border rounded-lg shadow-sm cursor-pointer hover:border-gray-300 transition-all relative group"
+            className="w-[200px] border rounded-lg shadow-sm cursor-pointer hover:border-purple-300 transition-all relative group"
             onClick={() => handleCardClick(type.id)}
           >
             <Button
@@ -283,18 +277,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                   </p>
                 )}
               </div>
-              
-              <div className="mt-3 flex justify-center">
-                <Button 
-                  variant="outline" 
-                  size="xs" 
-                  onClick={(e) => handleAddIdeaClick(e, type.id)}
-                  className="w-full text-xs bg-white hover:bg-gray-50 border-gray-200 text-gray-700 hover:text-gray-800"
-                >
-                  <PlusCircle className="h-3 w-3 mr-1" />
-                  Develop an Idea
-                </Button>
-              </div>
             </div>
           </Card>
         ))}
@@ -307,7 +289,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                 onClick={() => setIsAddingBucket(!isAddingBucket)}
                 className="w-[200px] h-[80px] flex items-center justify-center p-0"
               >
-                <Plus className="h-5 w-5 text-gray-500" />
+                <Plus className="h-5 w-5 text-purple-500" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>

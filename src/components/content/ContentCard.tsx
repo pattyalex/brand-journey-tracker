@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
@@ -106,27 +105,26 @@ const ContentCard = ({
   };
 
   return (
-    <Card className="overflow-hidden relative h-full border-0 shadow-md hover:shadow-lg transition-all duration-300 w-full bg-gradient-to-br from-white to-gray-50 rounded-lg">
-      <div className="absolute top-0 left-0 w-full h-1 bg-purple-200"></div>
+    <Card className="overflow-hidden relative h-full border-2 w-full">
       <CardHeader className="p-4 pb-2">
-        <CardTitle className="text-base font-bold mb-1 line-clamp-2 text-gray-800">
+        <CardTitle className="text-base font-bold mb-1 line-clamp-2">
           {content.title}
           {date && (
-            <Badge variant="outline" className="ml-2 text-xs bg-purple-50 text-purple-700 border-purple-200">
+            <Badge variant="outline" className="ml-2 text-xs">
               <CalendarIcon className="h-2 w-2 mr-1" />
               {format(date, "MMM d")}
             </Badge>
           )}
         </CardTitle>
-        <CardDescription className="line-clamp-2 text-xs text-gray-600">
+        <CardDescription className="line-clamp-2 text-xs">
           {content.description}
         </CardDescription>
       </CardHeader>
       
-      <CardContent className="p-4 pt-2">
-        <div className="flex flex-wrap gap-1.5 mb-2">
+      <CardContent className="p-4 pt-0">
+        <div className="flex flex-wrap gap-1 mb-2">
           {contentFormat && (
-            <span className="bg-blue-50 text-blue-700 text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1 font-medium border border-blue-100">
+            <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
               <FileText className="h-3 w-3 mr-0.5" />
               {contentFormat}
             </span>
@@ -135,7 +133,7 @@ const ContentCard = ({
           {platforms.length > 0 && platforms.slice(0, 2).map((platform, index) => (
             <span 
               key={`platform-${index}`} 
-              className="bg-purple-50 text-purple-700 text-xs px-2.5 py-0.5 rounded-full border border-purple-100 font-medium"
+              className="bg-purple-100 text-purple-800 text-xs px-2 py-0.5 rounded-full"
             >
               {platform}
             </span>
@@ -145,14 +143,14 @@ const ContentCard = ({
             content.tags.slice(0, 2).map((tag, index) => (
               <span 
                 key={`tag-${index}`} 
-                className={`text-xs px-2.5 py-0.5 rounded-full font-medium border ${getTagColorClasses(tag)}`}
+                className={`text-xs px-2 py-0.5 rounded-full ${getTagColorClasses(tag)}`}
               >
                 {tag}
               </span>
             ))
           ) : null}
         </div>
-        <div className="flex items-center text-xs text-gray-500 mt-2">
+        <div className="flex items-center text-xs text-muted-foreground mt-2">
           <Calendar className="h-3 w-3 mr-1" />
           <span>
             {content.dateCreated ? formatDistanceToNow(new Date(content.dateCreated), { addSuffix: true }) : 'Unknown date'}
@@ -160,27 +158,26 @@ const ContentCard = ({
         </div>
       </CardContent>
       
-      <CardFooter className="p-4 pt-0 flex justify-between items-center bg-gradient-to-b from-transparent to-gray-50">
+      <CardFooter className="p-4 pt-0 flex justify-between">
         <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
           <PopoverTrigger asChild>
             <Button
-              variant="ghost" 
+              variant="outline" 
               size="sm"
               aria-label="Schedule"
-              className="h-8 w-8 p-0 text-gray-600 hover:text-purple-700 hover:bg-purple-50"
+              className="h-8 w-8 p-0"
             >
               <CalendarIcon className="h-4 w-4" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 bg-white border border-gray-100 shadow-lg rounded-lg" align="start">
-            <div className="p-3">
-              <h3 className="text-sm font-medium mb-2 text-gray-800">Schedule Post</h3>
+          <PopoverContent className="w-auto p-0 bg-white" align="start">
+            <div className="p-2">
+              <h3 className="text-sm font-medium mb-2">Schedule Post</h3>
               <CalendarComponent
                 mode="single"
                 selected={date}
                 onSelect={handleDateSelect}
                 initialFocus
-                className="border border-gray-100 rounded-md"
               />
             </div>
           </PopoverContent>
@@ -192,16 +189,16 @@ const ContentCard = ({
             size="sm"
             onClick={() => onDeleteContent(content.id)}
             aria-label="Delete"
-            className="h-8 w-8 p-0 text-gray-500 hover:text-red-500 hover:bg-red-50"
+            className="h-8 w-8 p-0"
           >
             <Trash2 className="h-4 w-4" />
           </Button>
           <Button 
-            variant="ghost" 
+            variant="outline" 
             size="sm"
             onClick={() => onEditContent(content.id)}
             aria-label="Edit"
-            className="h-8 w-8 p-0 text-gray-500 hover:text-blue-500 hover:bg-blue-50"
+            className="h-8 w-8 p-0"
           >
             <Pencil className="h-4 w-4" />
           </Button>
