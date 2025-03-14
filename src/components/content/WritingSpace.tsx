@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useState } from "react";
 import { Pencil, Sparkles } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -120,7 +119,7 @@ const WritingSpace = ({
                 ref={textareaRef}
                 value={writingText}
                 onChange={handleTextChange}
-                onTextSelection={handleTextSelection}
+                onTextSelect={handleTextSelection}
                 placeholder="Start writing your content ideas here..."
                 className="min-h-full w-full h-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-sm p-4"
               />
