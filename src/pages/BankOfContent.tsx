@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -281,30 +280,9 @@ const BankOfContent = () => {
 
   return (
     <Layout>
-      <div 
-        className="relative container mx-auto py-6 space-y-6 fade-in"
-        style={{
-          borderRadius: "12px",
-          overflow: "hidden",
-          transition: "all 0.3s ease-in-out"
-        }}
-      >
-        <div
-          className="absolute inset-0 opacity-10 pointer-events-none z-0"
-          style={{
-            background: `linear-gradient(135deg, ${activePillarColor}30 0%, transparent 100%)`,
-            borderLeft: `8px solid ${activePillarColor}`,
-          }}
-        />
-        
+      <div className="container mx-auto py-6 space-y-6 fade-in">
         <div className="relative z-10">
-          <h1 
-            className="text-3xl font-bold mb-2"
-            style={{
-              color: activePillarColor,
-              textShadow: "0 1px 2px rgba(0,0,0,0.1)"
-            }}
-          >
+          <h1 className="text-3xl font-bold mb-2">
             Idea Development
           </h1>
 
@@ -320,15 +298,7 @@ const BankOfContent = () => {
               />
             </div>
             
-            <div 
-              className="relative border border-border rounded-xl shadow-lg p-4 mb-6"
-              style={{
-                borderTopLeftRadius: "0",
-                borderTopWidth: "3px",
-                borderTopColor: activePillarColor,
-                boxShadow: `0 4px 20px -5px ${activePillarColor}40`
-              }}
-            >
+            <div className="border border-gray-200 rounded-lg shadow-md p-4 mb-6 mt-0">
               <ContentTypeBuckets 
                 onAddIdea={handleAddToBucket} 
                 pillarId={activeTab}
