@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -284,19 +283,10 @@ const BankOfContent = () => {
       <div 
         className="relative container mx-auto py-6 space-y-6 fade-in"
         style={{
-          borderRadius: "12px",
           overflow: "hidden",
           transition: "all 0.3s ease-in-out"
         }}
       >
-        <div
-          className="absolute inset-0 opacity-10 pointer-events-none z-0"
-          style={{
-            background: `linear-gradient(135deg, ${activePillarColor}30 0%, transparent 100%)`,
-            borderLeft: `8px solid ${activePillarColor}`,
-          }}
-        />
-        
         <div className="relative z-10">
           <h1 
             className="text-3xl font-bold mb-2"
@@ -321,12 +311,14 @@ const BankOfContent = () => {
             </div>
             
             <div 
-              className="relative border border-border rounded-xl shadow-lg p-4 mb-6"
+              className="relative border border-border rounded-xl shadow-sm p-4 mb-6 bg-white"
               style={{
                 borderTopLeftRadius: "0",
-                borderTopWidth: "3px",
-                borderTopColor: activePillarColor,
-                boxShadow: `0 4px 20px -5px ${activePillarColor}40`
+                borderTopWidth: "1px",
+                borderTopColor: "#e2e8f0",
+                marginTop: "-1px",
+                zIndex: 5,
+                position: "relative"
               }}
             >
               <ContentTypeBuckets 

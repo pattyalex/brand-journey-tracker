@@ -89,9 +89,9 @@ const PillarTabs = ({
   };
 
   return (
-    <div className="flex items-center justify-between mb-8">
-      <div className="flex items-center">
-        <TabsList className="bg-background border overflow-x-auto flex items-center h-14 relative">
+    <div className="relative">
+      <div className="flex items-center mb-0 relative">
+        <TabsList className="bg-background border-b-0 overflow-x-auto flex items-center h-auto relative z-10">
           {pillars.map((pillar) => (
             <div key={pillar.id} className="relative flex items-center">
               {editingPillarId === pillar.id ? (
@@ -126,40 +126,33 @@ const PillarTabs = ({
                 <div className="flex items-center">
                   <TabsTrigger 
                     value={pillar.id}
-                    className={`px-6 py-3 text-lg font-medium relative ${
+                    className={`px-6 py-3 font-medium text-center relative ${
                       pillar.id === activeTab 
-                        ? "bg-[var(--pillar-color)] text-white shadow-md z-10" 
-                        : "bg-background text-foreground"
+                        ? "bg-[var(--pillar-color)] text-black font-bold h-14 z-10" 
+                        : "bg-white text-foreground h-12 z-0"
                     }`}
                     onClick={() => onTabChange(pillar.id)}
                     style={{
                       '--pillar-color': getPillarColor(pillar.id),
-                      backgroundColor: pillar.id === activeTab ? getPillarColor(pillar.id) : '',
+                      backgroundColor: pillar.id === activeTab ? getPillarColor(pillar.id) : 'white',
+                      fontSize: pillar.id === activeTab ? '1.25rem' : '1rem',
+                      border: '1px solid #e2e8f0',
+                      borderBottom: 'none',
                       borderTopLeftRadius: '8px',
                       borderTopRightRadius: '8px',
-                      borderTop: pillar.id === activeTab ? `4px solid ${getPillarColor(pillar.id)}` : '',
-                      zIndex: pillar.id === activeTab ? 10 : 1,
-                      transition: 'all 0.3s ease-in-out',
-                      transform: pillar.id === activeTab ? 'translateY(-4px)' : 'none'
+                      minWidth: '120px',
+                      transition: 'all 0.2s ease-in-out',
                     } as React.CSSProperties}
                   >
-                    {pillar.id === activeTab && (
-                      <div className="absolute -top-2 left-3 w-3 h-3 bg-white rounded-full animate-pulse" 
-                        style={{ 
-                          boxShadow: `0 0 0 2px ${getPillarColor(pillar.id)}` 
-                        }}
-                      />
-                    )}
-                    <span>{pillar.name}</span>
+                    {pillar.name}
                     
+                    {/* Red line for active tab */}
                     {pillar.id === activeTab && (
-                      <div 
-                        className="absolute bottom-0 left-0 right-0 h-1 bg-white"
-                        style={{ 
-                          backgroundColor: getPillarColor(pillar.id),
-                          boxShadow: `0 4px 6px -1px ${getPillarColor(pillar.id)}40`
-                        }}
-                      />
+                      <>
+                        <div className="absolute top-0 bottom-0 left-0 w-[3px] bg-red-500"></div>
+                        <div className="absolute top-0 left-0 h-[3px] w-full bg-red-500"></div>
+                        <div className="absolute top-[14px] -right-[3000px] h-[3px] w-[3000px] bg-red-500 z-0"></div>
+                      </>
                     )}
                   </TabsTrigger>
                   
@@ -233,6 +226,11 @@ const PillarTabs = ({
           </Tooltip>
         </TooltipProvider>
       </div>
+      
+      {/* Red line extension */}
+      <div className="absolute top-[14px] left-0 h-[3px] w-full bg-red-500 z-0" style={{ 
+        display: activeTab ? 'block' : 'none',
+      }}></div>
     </div>
   );
 };
