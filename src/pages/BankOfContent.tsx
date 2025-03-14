@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -9,7 +8,6 @@ import PillarTabs from "@/components/content/PillarTabs";
 import WritingSpace from "@/components/content/WritingSpace";
 import IdeaSection from "@/components/content/IdeaSection";
 import IdeaCreationDialog from "@/components/content/IdeaCreationDialog";
-import ContentTypeBuckets from "@/components/content/ContentTypeBuckets";
 
 export type Pillar = {
   id: string;
@@ -616,12 +614,6 @@ const BankOfContent = () => {
             onDeletePillar={deletePillar}
           />
           
-          {/* Content buckets moved here - directly under pillar tabs */}
-          <ContentTypeBuckets 
-            onAddIdea={handleAddToBucket} 
-            pillarId={activeTab}
-          />
-
           {pillars.map((pillar) => (
             <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
