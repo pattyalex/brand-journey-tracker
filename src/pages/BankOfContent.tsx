@@ -8,6 +8,7 @@ import PillarTabs from "@/components/content/PillarTabs";
 import WritingSpace from "@/components/content/WritingSpace";
 import IdeaSection from "@/components/content/IdeaSection";
 import IdeaCreationDialog from "@/components/content/IdeaCreationDialog";
+import ContentTypeBuckets from "@/components/content/ContentTypeBuckets";
 
 export type Pillar = {
   id: string;
@@ -612,6 +613,11 @@ const BankOfContent = () => {
             onAddPillar={addPillar}
             onRenamePillar={renamePillar}
             onDeletePillar={deletePillar}
+          />
+          
+          <ContentTypeBuckets 
+            onAddIdea={handleAddToBucket} 
+            pillarId={activeTab}
           />
           
           {pillars.map((pillar) => (

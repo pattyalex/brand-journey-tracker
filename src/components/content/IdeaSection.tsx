@@ -6,7 +6,6 @@ import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
 import ContentPillar from "./ContentPillar";
 import ContentUploader from "./ContentUploader";
-import ContentTypeBuckets from "./ContentTypeBuckets";
 
 interface IdeaSectionProps {
   pillar: Pillar;
@@ -72,11 +71,6 @@ const IdeaSection = ({
           )}
         </div>
       </div>
-      
-      <ContentTypeBuckets 
-        pillarId={pillar.id} 
-        onAddIdea={onAddToBucket} 
-      />
       
       <ContentPillar
         pillar={pillar}
