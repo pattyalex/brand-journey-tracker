@@ -5,6 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, FileVideo, ImageIcon, Link, List, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ContentItem } from "@/types/content";
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from "@/components/ui/tooltip";
 
 type ContentType = {
   id: string;
@@ -34,6 +40,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
   const [editingName, setEditingName] = useState("");
   const [editingDescription, setEditingDescription] = useState("");
   const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
   const descInputRef = useRef<HTMLInputElement>(null);
 
@@ -159,6 +166,14 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     handleEditSubmit();
   };
 
+  const handleCardClick = (bucketId: string) => {
+    // If we're currently editing, don't toggle the expanded state
+    if (editingBucketId === bucketId) return;
+    
+    // Toggle the expanded state
+    setExpandedCardId(prev => prev === bucketId ? null : bucketId);
+  };
+
   return (
     <div className="mt-4 mb-6">
       <div className="flex justify-between items-center mb-3">
@@ -209,12 +224,20 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         {contentTypes.map((type) => (
           <Card 
             key={type.id} 
-            className="hover:border-purple-300 transition-colors"
+            className={`hover:border-purple-300 transition-all cursor-pointer ${
+              expandedCardId === type.id ? 
+                'scale-105 border-purple-300 shadow-md z-10' : 
+                'hover:scale-[1.02]'
+            }`}
+            onClick={() => handleCardClick(type.id)}
           >
             <CardHeader className="p-3 pb-0">
               <CardTitle 
-                className="text-sm flex items-center gap-2 cursor-pointer"
-                onDoubleClick={() => handleDoubleClick(type.id, type.name, type.description || "")}
+                className="text-sm flex items-center gap-2"
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                  handleDoubleClick(type.id, type.name, type.description || "");
+                }}
                 title="Double-click to edit"
               >
                 <type.icon className="h-3 w-3 flex-shrink-0" />
@@ -227,16 +250,22 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                     onBlur={handleBlur}
                     className="h-6 py-0 px-1 min-w-0 text-xs"
                     autoFocus
+                    onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <span className="truncate">{type.name}</span>
+                  <span className={expandedCardId === type.id ? "" : "truncate"}>
+                    {type.name}
+                  </span>
                 )}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-3 pt-1">
               <div
-                className="cursor-pointer"
-                onDoubleClick={() => handleDescriptionDoubleClick(type.id, type.description || "")}
+                className=""
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                  handleDescriptionDoubleClick(type.id, type.description || "");
+                }}
                 title="Double-click to edit description"
               >
                 {editingBucketId === type.id && isEditingDescription ? (
@@ -248,9 +277,12 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                     onBlur={handleBlur}
                     className="h-6 py-0 px-1 min-w-0 text-xs mt-1"
                     placeholder="Short description"
+                    onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <p className="text-xs text-muted-foreground truncate mt-1">{type.description}</p>
+                  <p className={`text-xs text-muted-foreground mt-1 ${expandedCardId === type.id ? "" : "truncate"}`}>
+                    {type.description}
+                  </p>
                 )}
               </div>
             </CardContent>
