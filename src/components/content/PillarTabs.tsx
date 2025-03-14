@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pillar } from "@/pages/BankOfContent";
@@ -213,14 +214,6 @@ const PillarTabs = ({
               )}
             </div>
           ))}
-          
-          <div
-            className="absolute bottom-0 left-0 right-0 h-1"
-            style={{
-              backgroundColor: getPillarColor(activeTab),
-              boxShadow: `0 4px 6px -1px ${getPillarColor(activeTab)}40`
-            }}
-          />
         </TabsList>
         
         <TooltipProvider delayDuration={0}>
