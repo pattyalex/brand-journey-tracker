@@ -268,86 +268,56 @@ const BankOfContent = () => {
 
   return (
     <Layout>
-      <div 
-        className="relative container mx-auto py-6 space-y-6 fade-in"
-        style={{
-          overflow: "hidden",
-          transition: "all 0.3s ease-in-out"
-        }}
-      >
-        <div className="relative z-10">
-          <h1 className="text-3xl font-bold mb-2">
-            Idea Development
-          </h1>
+      <div className="container mx-auto py-6 space-y-6 fade-in">
+        <h1 className="text-3xl font-bold">Idea Development</h1>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="flex items-center justify-between">
-              <PillarTabs 
-                pillars={pillars}
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-                onAddPillar={addPillar}
-                onRenamePillar={renamePillar}
-                onDeletePillar={deletePillar}
-              />
-            </div>
-            
-            <div 
-              className="relative border border-border rounded-b-lg shadow-sm p-4 mb-6 bg-white"
-              style={{
-                borderTopRightRadius: "0.5rem",
-                borderTopWidth: "0px",
-                marginTop: "-1px",
-                zIndex: 5,
-                position: "relative",
-                borderTop: "none"
-              }}
-            >
-              <ContentTypeBuckets 
-                onAddIdea={handleAddToBucket} 
-                pillarId={activeTab}
-              />
-            </div>
-            
-            {pillars.map((pillar) => (
-              <TabsContent 
-                key={pillar.id} 
-                value={pillar.id} 
-                className="space-y-4"
-                style={{
-                  opacity: pillar.id === activeTab ? 1 : 0,
-                  transition: 'opacity 0.3s ease-in-out',
-                }}
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <WritingSpace 
-                    writingText={writingText}
-                    onTextChange={updateWritingSpace}
-                    onTextSelection={handleTextSelection}
-                    onFormatText={handleFormatText}
-                  />
-                  
-                  <IdeaSection 
-                    pillar={pillar}
-                    pillars={pillars}
-                    searchQuery={searchQuery}
-                    onNewIdeaClick={openNewIdeaDialog}
-                    onDeleteContent={(contentId) => deleteContent(pillar.id, contentId)}
-                    onMoveContent={(toPillarId, contentId) => moveContent(pillar.id, toPillarId, contentId)}
-                    onEditContent={(contentId) => editContent(pillar.id, contentId)}
-                    onReorderContent={(newItems) => handleReorderContent(pillar.id, newItems)}
-                    editingContent={editingContent}
-                    isEditing={isEditing}
-                    onContentUpdated={updateContent}
-                    onCancelEdit={cancelEditing}
-                    onContentAdded={addContentToPillar}
-                    onAddToBucket={handleAddToBucket}
-                  />
-                </div>
-              </TabsContent>
-            ))}
-          </Tabs>
-        </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="flex items-center justify-between">
+            <PillarTabs 
+              pillars={pillars}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              onAddPillar={addPillar}
+              onRenamePillar={renamePillar}
+              onDeletePillar={deletePillar}
+            />
+          </div>
+          
+          <ContentTypeBuckets 
+            onAddIdea={handleAddToBucket} 
+            pillarId={activeTab}
+          />
+          
+          {pillars.map((pillar) => (
+            <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <WritingSpace 
+                  writingText={writingText}
+                  onTextChange={updateWritingSpace}
+                  onTextSelection={handleTextSelection}
+                  onFormatText={handleFormatText}
+                />
+                
+                <IdeaSection 
+                  pillar={pillar}
+                  pillars={pillars}
+                  searchQuery={searchQuery}
+                  onNewIdeaClick={openNewIdeaDialog}
+                  onDeleteContent={(contentId) => deleteContent(pillar.id, contentId)}
+                  onMoveContent={(toPillarId, contentId) => moveContent(pillar.id, toPillarId, contentId)}
+                  onEditContent={(contentId) => editContent(pillar.id, contentId)}
+                  onReorderContent={(newItems) => handleReorderContent(pillar.id, newItems)}
+                  editingContent={editingContent}
+                  isEditing={isEditing}
+                  onContentUpdated={updateContent}
+                  onCancelEdit={cancelEditing}
+                  onContentAdded={addContentToPillar}
+                  onAddToBucket={handleAddToBucket}
+                />
+              </div>
+            </TabsContent>
+          ))}
+        </Tabs>
 
         <ContentSearchModal
           isOpen={isSearchModalOpen}

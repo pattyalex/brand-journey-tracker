@@ -77,32 +77,21 @@ const PillarTabs = ({
     }
   };
 
-  // Get colors for different pillars
-  const getPillarColor = (pillarId: string) => {
-    const colors = {
-      "1": "#F5F5F5", // Light gray for inactive
-      "2": "#F5F5F5", 
-      "3": "#F5F5F5",
-    };
-    
-    return colors[pillarId as keyof typeof colors] || "#F5F5F5";
-  };
-
   return (
-    <div className="relative">
-      <div className="flex items-center mb-0 relative">
-        <TabsList className="bg-transparent border-b-0 overflow-x-auto flex items-center h-auto relative z-10">
+    <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center">
+        <TabsList className="bg-background border overflow-x-auto flex items-center h-12">
           {pillars.map((pillar) => (
             <div key={pillar.id} className="relative flex items-center">
               {editingPillarId === pillar.id ? (
-                <div className="px-5 py-3 flex items-center bg-primary text-primary-foreground rounded-sm">
+                <div className="px-4 py-2 flex items-center bg-primary text-primary-foreground rounded-sm">
                   <Input
                     value={editingPillarName}
                     onChange={(e) => setEditingPillarName(e.target.value)}
                     onKeyDown={handlePillarNameKeyDown}
                     onBlur={saveEditingPillar}
                     autoFocus
-                    className="h-8 px-2 py-0 text-base w-48 bg-transparent border-0 focus-visible:ring-0 text-primary-foreground"
+                    className="h-7 px-1 py-0 text-base w-40 bg-transparent border-0 focus-visible:ring-0 text-primary-foreground"
                     data-testid="edit-pillar-name-input"
                   />
                   <Button
@@ -126,27 +115,12 @@ const PillarTabs = ({
                 <div className="flex items-center">
                   <TabsTrigger 
                     value={pillar.id}
-                    className={`px-6 py-2 font-medium text-center relative rounded-t-lg transition-all duration-200 ease-in-out
-                      ${pillar.id === activeTab ? "bg-white text-black font-bold h-14 z-20" : "bg-gray-100 text-foreground h-12 z-10"}`}
+                    className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white px-5 py-2 text-base ${
+                      pillar.id === "1" && activeTab === "1" ? "bg-[#8B6B4E] text-white" : ""
+                    }`}
                     onClick={() => onTabChange(pillar.id)}
-                    style={{
-                      border: '1px solid #e2e8f0',
-                      borderBottom: pillar.id === activeTab ? 'none' : '1px solid #e2e8f0',
-                      minWidth: '120px',
-                      fontSize: pillar.id === activeTab ? '1.1rem' : '1rem',
-                      marginRight: '2px',
-                    }}
                   >
                     {pillar.name}
-                    
-                    {/* Red line for active tab */}
-                    {pillar.id === activeTab && (
-                      <>
-                        <div className="absolute top-0 left-0 right-0 h-[3px] bg-red-500 rounded-t-sm"></div>
-                        <div className="absolute top-0 left-0 w-[3px] h-full bg-red-500"></div>
-                        <div className="absolute top-0 right-0 w-[3px] h-full bg-red-500"></div>
-                      </>
-                    )}
                   </TabsTrigger>
                   
                   <DropdownMenu>
@@ -154,7 +128,7 @@ const PillarTabs = ({
                       <Button
                         variant="ghost"
                         size="xs"
-                        className="ml-1 px-1 h-8 text-muted-foreground hover:text-foreground"
+                        className="ml-1 px-1 h-7 text-muted-foreground hover:text-foreground"
                       >
                         <MoreVertical className="h-4 w-4" />
                       </Button>
@@ -208,9 +182,9 @@ const PillarTabs = ({
               <Button 
                 variant="ghost" 
                 onClick={onAddPillar} 
-                className="h-12 w-12 p-0 ml-6 bg-transparent"
+                className="h-10 w-10 p-0 ml-6 bg-transparent"
               >
-                <Plus className="h-7 w-7 text-purple-500" />
+                <Plus className="h-6 w-6 text-purple-500" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -218,14 +192,6 @@ const PillarTabs = ({
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-      </div>
-      
-      {/* Red line extension for content container */}
-      <div className="absolute top-0 left-0 right-0 h-[3px] bg-red-500" 
-        style={{ 
-          display: activeTab ? 'block' : 'none',
-          zIndex: 30
-        }}>
       </div>
     </div>
   );
