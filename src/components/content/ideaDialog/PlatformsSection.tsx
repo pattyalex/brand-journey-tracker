@@ -26,6 +26,7 @@ const PlatformsSection = ({
         onPlatformChange={onCurrentPlatformChange}
         onAddPlatform={onAddPlatform}
         onRemovePlatform={onRemovePlatform}
+        placeholder="Add platforms where this content will be published (e.g., Instagram, YouTube, Newsletter, etc.)"
       />
       <p className="text-xs text-muted-foreground mt-1">
         Add platforms where this content will be published (e.g., Instagram, YouTube, Newsletter, etc.). 
