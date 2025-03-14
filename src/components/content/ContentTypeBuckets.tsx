@@ -1,8 +1,7 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, FileVideo, ImageIcon, Link, List, Plus } from "lucide-react";
+import { FileText, FileVideo, ImageIcon, Link, List, Plus, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ContentItem } from "@/types/content";
 import { 
@@ -11,6 +10,7 @@ import {
   TooltipProvider, 
   TooltipTrigger 
 } from "@/components/ui/tooltip";
+import { useToast } from "@/hooks/use-toast";
 
 type ContentType = {
   id: string;
@@ -26,6 +26,7 @@ interface ContentTypeBucketsProps {
 }
 
 const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) => {
+  const { toast } = useToast();
   const [contentTypes, setContentTypes] = useState<ContentType[]>([
     { id: "blog", name: "Blog Posts", icon: FileText, description: "Long-form written content", items: [] },
     { id: "video", name: "Video Content", icon: FileVideo, description: "Video-based content", items: [] },
@@ -166,6 +167,30 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     handleEditSubmit();
   };
 
+  const handleDeleteBucket = (e: React.MouseEvent, bucketId: string) => {
+    e.stopPropagation();
+    
+    if (["blog", "video", "social", "image"].includes(bucketId)) {
+      toast({
+        title: "Cannot delete default bucket",
+        description: "Default content buckets cannot be removed",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setContentTypes(contentTypes.filter(type => type.id !== bucketId));
+    
+    if (expandedCardId === bucketId) {
+      setExpandedCardId(null);
+    }
+    
+    toast({
+      title: "Bucket deleted",
+      description: "The content bucket has been removed",
+    });
+  };
+
   const handleCardClick = (bucketId: string) => {
     if (editingBucketId === bucketId) return;
     
@@ -222,13 +247,26 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         {contentTypes.map((type) => (
           <Card 
             key={type.id} 
-            className={`hover:border-purple-300 transition-all cursor-pointer ${
+            className={`hover:border-purple-300 transition-all cursor-pointer group ${
               expandedCardId === type.id ? 
                 'scale-125 border-purple-300 shadow-lg z-20 bg-white' : 
                 'hover:scale-[1.02]'
             }`}
             onClick={() => handleCardClick(type.id)}
           >
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              className={`absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-30 text-gray-400 hover:text-red-500 hover:bg-red-50 ${
+                ["blog", "video", "social", "image"].includes(type.id) ? "cursor-not-allowed" : ""
+              }`}
+              onClick={(e) => handleDeleteBucket(e, type.id)}
+              title={["blog", "video", "social", "image"].includes(type.id) ? "Cannot delete default bucket" : "Delete bucket"}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+            
             <CardHeader className={`p-3 pb-0 ${expandedCardId === type.id ? 'pt-4' : ''}`}>
               <CardTitle 
                 className="text-sm flex items-center gap-2"
