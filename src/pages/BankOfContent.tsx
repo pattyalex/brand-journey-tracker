@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -11,7 +10,7 @@ import IdeaSection from "@/components/content/IdeaSection";
 import IdeaCreationDialog from "@/components/content/IdeaCreationDialog";
 import ContentTypeBuckets from "@/components/content/ContentTypeBuckets";
 import { Button } from "@/components/ui/button";
-import { FileText } from "lucide-react";
+import { FileText, PlusCircle } from "lucide-react";
 
 export type Pillar = {
   id: string;
@@ -50,10 +49,8 @@ const BankOfContent = () => {
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
   const [newBucketType, setNewBucketType] = useState("");
 
-  // Get all content across all pillars
   const allContent = pillars.flatMap(pillar => pillar.content);
 
-  // Function to add a new pillar
   const addPillar = () => {
     const newPillarId = String(pillars.length + 1);
     const newPillar: Pillar = {
@@ -66,14 +63,12 @@ const BankOfContent = () => {
     setActiveTab(newPillarId);
   };
 
-  // Function to rename a pillar
   const renamePillar = (pillarId: string, newName: string) => {
     setPillars(pillars.map(pillar => 
       pillar.id === pillarId ? { ...pillar, name: newName } : pillar
     ));
   };
 
-  // Function to delete a pillar
   const deletePillar = (pillarId: string) => {
     if (pillars.length <= 1) {
       toast.error("Cannot delete the last pillar");
@@ -87,28 +82,21 @@ const BankOfContent = () => {
     }
   };
 
-  // Function to update the writing space text
   const updateWritingSpace = (text: string) => {
     setWritingText(text);
-    // Also update the pillar's writing space
     setPillars(pillars.map(pillar => 
       pillar.id === activeTab ? { ...pillar, writingSpace: text } : pillar
     ));
   };
 
-  // Function to handle text selection
   const handleTextSelection = (text: string) => {
     setSelectedText(text);
   };
 
-  // Function to handle formatting text in writing space
   const handleFormatText = (formatType: string, formatValue?: string) => {
-    // Implement text formatting logic here
-    // This is a placeholder for actual formatting functionality
     console.log(`Format text: ${formatType}, value: ${formatValue}`);
   };
 
-  // Function to open the new idea dialog
   const openNewIdeaDialog = () => {
     setShowNewIdeaDialog(true);
     setDevelopIdeaMode(false);
@@ -123,13 +111,11 @@ const BankOfContent = () => {
     setNewBucketType("");
   };
 
-  // Function to add content to a bucket
   const handleAddToBucket = (bucketType: string) => {
     setNewBucketType(bucketType);
     openNewIdeaDialog();
   };
 
-  // Function to delete content
   const deleteContent = (pillarId: string, contentId: string) => {
     setPillars(pillars.map(pillar => 
       pillar.id === pillarId 
@@ -139,16 +125,13 @@ const BankOfContent = () => {
     toast.success("Content deleted successfully");
   };
 
-  // Function to move content to another pillar
   const moveContent = (fromPillarId: string, toPillarId: string, contentId: string) => {
-    // Find the content item in the source pillar
     const sourcePillar = pillars.find(p => p.id === fromPillarId);
     if (!sourcePillar) return;
     
     const contentItem = sourcePillar.content.find(item => item.id === contentId);
     if (!contentItem) return;
     
-    // Remove from source pillar and add to target pillar
     setPillars(pillars.map(pillar => {
       if (pillar.id === fromPillarId) {
         return {
@@ -167,7 +150,6 @@ const BankOfContent = () => {
     toast.success(`Moved to ${pillars.find(p => p.id === toPillarId)?.name}`);
   };
 
-  // Function to edit content
   const editContent = (pillarId: string, contentId: string) => {
     const pillar = pillars.find(p => p.id === pillarId);
     if (!pillar) return;
@@ -179,7 +161,6 @@ const BankOfContent = () => {
     setIsEditing(true);
   };
 
-  // Function to update content
   const updateContent = (pillarId: string, updatedContent: ContentItem) => {
     setPillars(pillars.map(pillar => 
       pillar.id === pillarId 
@@ -196,13 +177,11 @@ const BankOfContent = () => {
     toast.success("Content updated successfully");
   };
 
-  // Function to cancel editing
   const cancelEditing = () => {
     setIsEditing(false);
     setEditingContent(null);
   };
 
-  // Function to handle reordering content
   const handleReorderContent = (pillarId: string, reorderedItems: ContentItem[]) => {
     setPillars(pillars.map(pillar => 
       pillar.id === pillarId 
@@ -211,7 +190,6 @@ const BankOfContent = () => {
     ));
   };
 
-  // Function to add content to a pillar
   const addContentToPillar = (pillarId: string, content: ContentItem) => {
     setPillars(pillars.map(pillar => 
       pillar.id === pillarId 
@@ -221,7 +199,6 @@ const BankOfContent = () => {
     toast.success("New idea added successfully");
   };
 
-  // Function to add a platform to the list
   const addPlatform = () => {
     if (currentPlatform && !selectedPlatforms.includes(currentPlatform)) {
       setSelectedPlatforms([...selectedPlatforms, currentPlatform]);
@@ -229,12 +206,10 @@ const BankOfContent = () => {
     }
   };
 
-  // Function to remove a platform from the list
   const removePlatform = (platform: string) => {
     setSelectedPlatforms(selectedPlatforms.filter(p => p !== platform));
   };
 
-  // Function to add a tag to the list
   const addTag = () => {
     if (currentTag && !newIdeaTags.includes(currentTag)) {
       setNewIdeaTags([...newIdeaTags, currentTag]);
@@ -242,12 +217,10 @@ const BankOfContent = () => {
     }
   };
 
-  // Function to remove a tag from the list
   const removeTag = (tag: string) => {
     setNewIdeaTags(newIdeaTags.filter(t => t !== tag));
   };
 
-  // Function to create a new idea from selected text
   const createNewIdeaFromSelection = () => {
     if (!newIdeaTitle.trim()) {
       toast.error("Please enter a title for your idea");
@@ -272,10 +245,8 @@ const BankOfContent = () => {
       status: newBucketType || "draft",
     };
 
-    // Add to the current active pillar
     addContentToPillar(activeTab, newContent);
 
-    // Reset form fields
     setNewIdeaTitle("");
     setDevelopScriptText("");
     setSelectedText("");
@@ -295,7 +266,19 @@ const BankOfContent = () => {
   return (
     <Layout>
       <div className="container mx-auto py-6 space-y-6 fade-in">
-        <h1 className="text-3xl font-bold">Idea Development</h1>
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Idea Development</h1>
+          
+          <Button 
+            variant="default" 
+            size="lg"
+            className="bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-2"
+            onClick={openNewIdeaDialog}
+          >
+            <PlusCircle className="h-5 w-5" />
+            <span>Add New Idea</span>
+          </Button>
+        </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex items-center justify-between">
@@ -307,16 +290,6 @@ const BankOfContent = () => {
               onRenamePillar={renamePillar}
               onDeletePillar={deletePillar}
             />
-            
-            <Button 
-              variant="default" 
-              size="default"
-              className="bg-[#8B6B4E] hover:bg-[#7A5C3F]"
-              onClick={openNewIdeaDialog}
-            >
-              <FileText className="h-4 w-4 mr-2" />
-              Add New Idea
-            </Button>
           </div>
           
           <ContentTypeBuckets 
