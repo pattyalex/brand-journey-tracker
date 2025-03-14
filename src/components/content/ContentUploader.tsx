@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
@@ -38,10 +39,11 @@ const ContentUploader = ({
   const [platformsList, setPlatformsList] = useState<string[]>([]);
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
   
+  // New state for inspiration section
   const [inspirationText, setInspirationText] = useState("");
   const [inspirationLinks, setInspirationLinks] = useState<string[]>([]);
   const [inspirationImages, setInspirationImages] = useState<string[]>([]);
-
+  
   useEffect(() => {
     if (contentToEdit && isEditMode) {
       setIsOpen(true);
@@ -56,6 +58,7 @@ const ContentUploader = ({
             setCaptionText(parsedContent.caption || '');
             setBucketId(parsedContent.bucketId || '');
             
+            // Load inspiration data if available
             if (parsedContent.inspirationText) {
               setInspirationText(parsedContent.inspirationText);
             }
@@ -115,6 +118,7 @@ const ContentUploader = ({
     setPlatformsList(platformsList.filter(platform => platform !== platformToRemove));
   };
   
+  // Handlers for inspiration section
   const handleAddInspirationLink = (link: string) => {
     setInspirationLinks([...inspirationLinks, link]);
   };
