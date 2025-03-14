@@ -80,7 +80,7 @@ const PillarTabs = ({
   return (
     <div className="flex items-center justify-between mb-0">
       <div className="flex items-center w-full">
-        <TabsList className="bg-background border-t border-x border-gray-300 overflow-x-auto flex items-center h-12 rounded-t-md rounded-b-none w-full">
+        <TabsList className="bg-background border-x border-gray-300 overflow-x-auto flex items-center h-12 rounded-t-md rounded-b-none w-full">
           {pillars.map((pillar) => (
             <div key={pillar.id} className="relative flex items-center">
               {editingPillarId === pillar.id ? (
@@ -112,7 +112,7 @@ const PillarTabs = ({
                   </Button>
                 </div>
               ) : (
-                <div className="flex items-center">
+                <div className={`flex items-center ${pillar.id === activeTab ? 'active-pillar-tab border-t border-l border-r border-gray-300' : ''}`}>
                   <TabsTrigger 
                     value={pillar.id}
                     className={`relative data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white px-5 py-2 text-base transition-all duration-300 ${
@@ -201,3 +201,4 @@ const PillarTabs = ({
 };
 
 export default PillarTabs;
+
