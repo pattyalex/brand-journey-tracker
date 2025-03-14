@@ -2,6 +2,7 @@
 import { ReactNode } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import TitleInputSection from "./TitleInputSection";
+import BucketSelectionSection from "./BucketSelectionSection";
 import ScriptInputSection from "./ScriptInputSection";
 import ShootDetailsSection from "./ShootDetailsSection";
 import CaptionInputSection from "./CaptionInputSection";
@@ -12,6 +13,9 @@ import SchedulingSection from "./SchedulingSection";
 interface DialogContentProps {
   title: string;
   onTitleChange: (value: string) => void;
+  bucketId: string;
+  onBucketChange: (value: string) => void;
+  pillarId: string;
   format: string;
   onFormatChange: (value: string) => void;
   scriptText: string;
@@ -38,6 +42,9 @@ interface DialogContentProps {
 const DialogContent = ({
   title,
   onTitleChange,
+  bucketId,
+  onBucketChange,
+  pillarId,
   format,
   onFormatChange,
   scriptText,
@@ -64,6 +71,12 @@ const DialogContent = ({
     <ScrollArea className="h-[calc(90vh-140px)] pr-4" style={{ overflowY: 'auto', touchAction: 'pan-y' }}>
       <div className="grid gap-4 py-4 pr-2">
         <TitleInputSection title={title} onTitleChange={onTitleChange} />
+        
+        <BucketSelectionSection 
+          bucketId={bucketId} 
+          onBucketChange={onBucketChange} 
+          pillarId={pillarId} 
+        />
         
         <div className="h-4"></div>
         

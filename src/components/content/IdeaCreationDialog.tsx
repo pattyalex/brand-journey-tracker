@@ -15,6 +15,9 @@ interface IdeaCreationDialogProps {
   onOpenChange: (open: boolean) => void;
   title: string;
   onTitleChange: (value: string) => void;
+  bucketId: string;
+  onBucketChange: (value: string) => void;
+  pillarId: string;
   scriptText: string;
   onScriptTextChange: (value: string) => void;
   format?: string;
@@ -48,6 +51,9 @@ const IdeaCreationDialog = ({
   onOpenChange,
   title,
   onTitleChange,
+  bucketId,
+  onBucketChange,
+  pillarId,
   scriptText,
   onScriptTextChange,
   format = "text",
@@ -95,6 +101,9 @@ const IdeaCreationDialog = ({
             <DialogContentBody
               title={title}
               onTitleChange={onTitleChange}
+              bucketId={bucketId}
+              onBucketChange={onBucketChange}
+              pillarId={pillarId}
               format={format}
               onFormatChange={onFormatChange}
               scriptText={scriptText}

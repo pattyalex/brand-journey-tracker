@@ -13,4 +13,5 @@ export interface ContentItem {
   shootDetails?: string;
   caption?: string;
   createdAt?: Date;
+  bucketId?: string;
 }

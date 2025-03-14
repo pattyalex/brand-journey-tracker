@@ -47,6 +47,15 @@ const IdeaSection = ({
           <Lightbulb className="h-5 w-5 mr-2" /> 
           {pillar.name} Ideas
         </h2>
+        
+        <ContentUploader 
+          pillarId={pillar.id}
+          onContentAdded={onContentAdded}
+          onContentUpdated={onContentUpdated}
+          contentToEdit={editingContent}
+          isEditMode={isEditing}
+          onCancelEdit={onCancelEdit}
+        />
       </div>
       
       <ContentPillar

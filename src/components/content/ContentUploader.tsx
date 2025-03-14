@@ -13,6 +13,7 @@ interface ContentUploaderProps {
   isEditMode?: boolean;
   onCancelEdit?: () => void;
   alwaysShowAddNewIdea?: boolean;
+  bucketId?: string;
 }
 
 const ContentUploader = ({ 
@@ -22,10 +23,12 @@ const ContentUploader = ({
   contentToEdit = null,
   isEditMode = false,
   onCancelEdit,
-  alwaysShowAddNewIdea = false
+  alwaysShowAddNewIdea = false,
+  bucketId: initialBucketId = ""
 }: ContentUploaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState("");
+  const [bucketId, setBucketId] = useState(initialBucketId);
   const [textContent, setTextContent] = useState("");
   const [contentFormat, setContentFormat] = useState("text");
   const [shootDetails, setShootDetails] = useState("");
@@ -48,6 +51,7 @@ const ContentUploader = ({
             setTextContent(parsedContent.script || '');
             setShootDetails(parsedContent.shootDetails || '');
             setCaptionText(parsedContent.caption || '');
+            setBucketId(parsedContent.bucketId || '');
             
             if (parsedContent.platforms && Array.isArray(parsedContent.platforms)) {
               setPlatformsList(parsedContent.platforms);
@@ -71,6 +75,10 @@ const ContentUploader = ({
       }
     }
   }, [contentToEdit, isEditMode]);
+
+  useEffect(() => {
+    setBucketId(initialBucketId);
+  }, [initialBucketId]);
 
   const handleAddTag = () => {
     if (currentTag.trim() && !tagsList.includes(currentTag.trim())) {
@@ -109,12 +117,14 @@ const ContentUploader = ({
         script: textContent,
         shootDetails: shootDetails,
         caption: captionText,
-        platforms: platformsList
+        platforms: platformsList,
+        bucketId: bucketId
       }),
       dateCreated: contentToEdit ? contentToEdit.dateCreated : new Date(),
       tags: tagsList,
       platforms: platformsList.length > 0 ? platformsList : undefined,
       scheduledDate: scheduledDate,
+      bucketId: bucketId || undefined,
     };
 
     if (isEditMode && onContentUpdated && contentToEdit) {
@@ -156,6 +166,7 @@ const ContentUploader = ({
 
   const resetForm = () => {
     setTitle("");
+    setBucketId(initialBucketId);
     setTextContent("");
     setContentFormat("text");
     setShootDetails("");
@@ -187,6 +198,9 @@ const ContentUploader = ({
         onOpenChange={setIsOpen}
         title={title}
         onTitleChange={setTitle}
+        bucketId={bucketId}
+        onBucketChange={setBucketId}
+        pillarId={pillarId}
         scriptText={textContent}
         onScriptTextChange={setTextContent}
         shootDetails={shootDetails}
