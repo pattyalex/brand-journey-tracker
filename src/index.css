@@ -80,13 +80,18 @@
   
   .pillar-container {
     @apply border-x border-b border-gray-300 rounded-b-md;
+    border-top: none;
   }
   
   .active-pillar-tab {
-    @apply rounded-t-md;
-    margin-bottom: -1px;
+    @apply bg-[#8B6B4E] rounded-t-md;
     position: relative;
-    z-index: 10;
+    margin-bottom: -1px;
+    border-left: 1px solid #D1D5DB;
+    border-right: 1px solid #D1D5DB;
+    border-top: 1px solid #D1D5DB;
+    border-bottom: none;
+    z-index: 20;
   }
 }
 
