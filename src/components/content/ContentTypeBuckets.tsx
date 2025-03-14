@@ -217,7 +217,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         {contentTypes.map((type) => (
           <Card 
             key={type.id} 
-            className="w-[200px] border rounded-lg shadow-sm cursor-pointer hover:border-purple-300 transition-all relative group"
+            className="w-[200px] border rounded-lg shadow-sm cursor-pointer hover:border-gray-300 transition-all relative group"
             onClick={() => handleCardClick(type.id)}
           >
             <Button
@@ -289,7 +289,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                   variant="outline" 
                   size="xs" 
                   onClick={(e) => handleAddIdeaClick(e, type.id)}
-                  className="w-full text-xs bg-white hover:bg-purple-50 border-purple-200 text-purple-700 hover:text-purple-800"
+                  className="w-full text-xs bg-white hover:bg-gray-50 border-gray-200 text-gray-700 hover:text-gray-800"
                 >
                   <PlusCircle className="h-3 w-3 mr-1" />
                   Develop an Idea
@@ -307,7 +307,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                 onClick={() => setIsAddingBucket(!isAddingBucket)}
                 className="w-[200px] h-[80px] flex items-center justify-center p-0"
               >
-                <Plus className="h-5 w-5 text-purple-500" />
+                <Plus className="h-5 w-5 text-gray-500" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
