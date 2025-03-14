@@ -239,7 +239,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         {contentTypes.map((type) => (
           <Card 
             key={type.id} 
-            className="w-[240px] border rounded-lg shadow-sm cursor-pointer hover:border-purple-300 transition-all"
+            className="w-[160px] border rounded-lg shadow-sm cursor-pointer hover:border-purple-300 transition-all"
             onClick={() => handleCardClick(type.id)}
           >
             <Button
@@ -255,16 +255,16 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               <Trash2 className="h-3 w-3" />
             </Button>
             
-            <div className="p-4">
+            <div className="p-3">
               <div 
-                className="flex items-center gap-2 mb-2"
+                className="flex items-center gap-2 mb-1"
                 onDoubleClick={(e) => {
                   e.stopPropagation();
                   handleDoubleClick(type.id, type.name, type.description || "");
                 }}
                 title="Double-click to edit"
               >
-                <type.icon className="h-5 w-5 flex-shrink-0 text-gray-700" />
+                <type.icon className="h-4 w-4 flex-shrink-0 text-gray-700" />
                 {editingBucketId === type.id && !isEditingDescription ? (
                   <Input
                     ref={editInputRef}
@@ -272,19 +272,19 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                     onChange={(e) => setEditingName(e.target.value)}
                     onKeyDown={handleKeyPress}
                     onBlur={handleBlur}
-                    className="h-8 py-1 px-2 min-w-0 text-base font-medium"
+                    className="h-7 py-1 px-2 min-w-0 text-sm font-medium"
                     autoFocus
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <span className="text-base font-medium text-gray-900">
+                  <span className="text-sm font-medium text-gray-900 truncate">
                     {type.name}
                   </span>
                 )}
               </div>
               
               <div
-                className="mt-1"
+                className="mt-1 h-8 overflow-hidden"
                 onDoubleClick={(e) => {
                   e.stopPropagation();
                   handleDescriptionDoubleClick(type.id, type.description || "");
@@ -298,12 +298,12 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                     onChange={(e) => setEditingDescription(e.target.value)}
                     onKeyDown={handleKeyPress}
                     onBlur={handleBlur}
-                    className="h-8 py-1 px-2 min-w-0 text-sm"
+                    className="h-7 py-1 px-2 min-w-0 text-xs"
                     placeholder="Short description"
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <p className="text-sm text-gray-500">
+                  <p className="text-xs text-gray-500 line-clamp-2">
                     {type.description}
                   </p>
                 )}
@@ -318,7 +318,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               <Button 
                 variant="ghost" 
                 onClick={() => setIsAddingBucket(!isAddingBucket)}
-                className="w-[240px] h-[100px] flex items-center justify-center p-0 border border-dashed border-gray-300 hover:border-purple-300"
+                className="w-[160px] h-[80px] flex items-center justify-center p-0 border border-dashed border-gray-300 hover:border-purple-300"
               >
                 <Plus className="h-5 w-5 text-purple-500" />
               </Button>
