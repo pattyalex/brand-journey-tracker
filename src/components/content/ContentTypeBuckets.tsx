@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, PlusCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ContentItem } from "@/types/content";
 import { 
@@ -169,6 +169,11 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     setExpandedCardId(prev => prev === bucketId ? null : bucketId);
   };
 
+  const handleAddIdeaClick = (e: React.MouseEvent, bucketId: string) => {
+    e.stopPropagation();
+    onAddIdea(bucketId);
+  };
+
   return (
     <div className="mt-4 mb-6">
       <div className="flex justify-between items-center mb-3">
@@ -276,6 +281,18 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                     {type.description}
                   </p>
                 )}
+              </div>
+              
+              <div className="mt-3 flex justify-center">
+                <Button 
+                  variant="outline" 
+                  size="xs" 
+                  onClick={(e) => handleAddIdeaClick(e, type.id)}
+                  className="w-full text-xs bg-white hover:bg-purple-50 border-purple-200 text-purple-700 hover:text-purple-800"
+                >
+                  <PlusCircle className="h-3 w-3 mr-1" />
+                  Add Idea
+                </Button>
               </div>
             </div>
           </Card>
