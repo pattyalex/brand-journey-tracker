@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,34 +29,40 @@ const getPillarStickerDesigns = (pillarId: string) => {
   
   const pillarColorSchemes = [
     { 
-      bg: "bg-purple-100", 
+      bg: "bg-white", 
       border: "border-purple-300", 
-      shadow: "shadow-purple-200"
+      shadow: "shadow-purple-200",
+      hover: "hover:bg-purple-50/30"
     },
     { 
-      bg: "bg-orange-100", 
+      bg: "bg-white", 
       border: "border-orange-300", 
-      shadow: "shadow-orange-200"
+      shadow: "shadow-orange-200",
+      hover: "hover:bg-orange-50/30"
     },
     { 
-      bg: "bg-teal-100", 
+      bg: "bg-white", 
       border: "border-teal-300", 
-      shadow: "shadow-teal-200"
+      shadow: "shadow-teal-200",
+      hover: "hover:bg-teal-50/30"
     },
     { 
-      bg: "bg-pink-100", 
+      bg: "bg-white", 
       border: "border-pink-300", 
-      shadow: "shadow-pink-200"
+      shadow: "shadow-pink-200",
+      hover: "hover:bg-pink-50/30"
     },
     { 
-      bg: "bg-blue-100", 
+      bg: "bg-white", 
       border: "border-blue-300", 
-      shadow: "shadow-blue-200"
+      shadow: "shadow-blue-200",
+      hover: "hover:bg-blue-50/30"
     },
     { 
-      bg: "bg-green-100", 
+      bg: "bg-white", 
       border: "border-green-300", 
-      shadow: "shadow-green-200"
+      shadow: "shadow-green-200",
+      hover: "hover:bg-green-50/30"
     }
   ];
   
@@ -82,12 +87,12 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
   const getPillarAddButtonStyles = () => {
     const pillarIndex = parseInt(pillarId) - 1;
     const colors = [
-      "border-purple-300 hover:border-purple-500 text-purple-500 bg-purple-50/50",
-      "border-orange-300 hover:border-orange-500 text-orange-500 bg-orange-50/50",
-      "border-teal-300 hover:border-teal-500 text-teal-500 bg-teal-50/50",
-      "border-pink-300 hover:border-pink-500 text-pink-500 bg-pink-50/50",
-      "border-blue-300 hover:border-blue-500 text-blue-500 bg-blue-50/50",
-      "border-green-300 hover:border-green-500 text-green-500 bg-green-50/50"
+      "border-purple-300 hover:border-purple-500 text-purple-500 bg-white",
+      "border-orange-300 hover:border-orange-500 text-orange-500 bg-white",
+      "border-teal-300 hover:border-teal-500 text-teal-500 bg-white",
+      "border-pink-300 hover:border-pink-500 text-pink-500 bg-white",
+      "border-blue-300 hover:border-blue-500 text-blue-500 bg-white",
+      "border-green-300 hover:border-green-500 text-green-500 bg-white"
     ];
     return colors[pillarIndex >= 0 && pillarIndex < colors.length ? pillarIndex : 0];
   };
@@ -272,7 +277,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         {contentTypes.map((type, index) => (
           <Card 
             key={type.id} 
-            className={`w-[200px] relative ${stickerDesign.bg} ${stickerDesign.border} ${stickerDesign.shadow} rounded-lg border-2 hover:shadow-md transition-all cursor-pointer group`}
+            className={`w-[200px] relative ${stickerDesign.bg} ${stickerDesign.border} ${stickerDesign.shadow} rounded-lg border-2 hover:shadow-md transition-all cursor-pointer group ${stickerDesign.hover}`}
             style={{ 
               boxShadow: '0 3px 6px rgba(0,0,0,0.1)', 
               transition: 'all 0.2s ease'

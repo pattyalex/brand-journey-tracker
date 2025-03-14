@@ -20,12 +20,12 @@ type ContentFormat = {
 const getPillarStyles = (pillarId: string) => {
   const pillarIndex = parseInt(pillarId) - 1;
   const styles = [
-    { bg: "bg-purple-50/50", border: "border-purple-200", text: "text-purple-500" },
-    { bg: "bg-orange-50/50", border: "border-orange-200", text: "text-orange-500" },
-    { bg: "bg-teal-50/50", border: "border-teal-200", text: "text-teal-500" },
-    { bg: "bg-pink-50/50", border: "border-pink-200", text: "text-pink-500" },
-    { bg: "bg-blue-50/50", border: "border-blue-200", text: "text-blue-500" },
-    { bg: "bg-green-50/50", border: "border-green-200", text: "text-green-500" }
+    { bg: "bg-white", border: "border-purple-200", text: "text-purple-500" },
+    { bg: "bg-white", border: "border-orange-200", text: "text-orange-500" },
+    { bg: "bg-white", border: "border-teal-200", text: "text-teal-500" },
+    { bg: "bg-white", border: "border-pink-200", text: "text-pink-500" },
+    { bg: "bg-white", border: "border-blue-200", text: "text-blue-500" },
+    { bg: "bg-white", border: "border-green-200", text: "text-green-500" }
   ];
   
   return styles[pillarIndex >= 0 && pillarIndex < styles.length ? pillarIndex : 0];
