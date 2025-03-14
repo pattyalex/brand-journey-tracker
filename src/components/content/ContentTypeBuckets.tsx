@@ -318,15 +318,15 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
           </Card>
         ))}
         
-        {/* Add Bucket Button as a card in the grid */}
+        {/* Add Bucket Button in the grid */}
         <div className="flex items-center justify-center h-full">
           <Button 
-            variant="outline" 
-            size="icon" 
+            variant="ghost" 
             onClick={() => setIsAddingBucket(!isAddingBucket)}
-            className="h-12 w-12 rounded-full"
+            className="h-12 w-12"
+            title="Add new bucket"
           >
-            <Plus className="h-5 w-5" />
+            <Plus className="h-6 w-6 text-purple-500" />
           </Button>
         </div>
       </div>
