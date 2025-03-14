@@ -1,12 +1,13 @@
 
 import { useRef, useEffect, useState } from "react";
-import { Pencil } from "lucide-react";
+import { Pencil, Sparkles } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import SimpleTextFormattingToolbar from "@/components/SimpleTextFormattingToolbar";
 import { useSidebar } from "@/components/ui/sidebar";
 import MeganAIChat from "./MeganAIChat";
+import TitleHookSuggestions from "./TitleHookSuggestions";
 
 interface WritingSpaceProps {
   writingText: string;
@@ -66,24 +67,48 @@ const WritingSpace = ({
           <Pencil className="h-5 w-5 mr-2" />
           Brainstorm
         </h2>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="cursor-pointer transition-all duration-150 hover:bg-accent/80 active:bg-accent active:scale-95 rounded-md"
-          onClick={() => setIsMeganOpen(!isMeganOpen)}
-          aria-label={isMeganOpen ? "Hide Megan" : "Ask Megan"}
-        >
-          {isMeganOpen ? (
-            <span className="px-3 py-1.5 text-primary hover:text-primary/90 font-medium">Hide Megan</span>
-          ) : (
-            <div className="flex items-center gap-2 px-3 py-1.5 w-full">
-              <span className="text-primary hover:text-primary/90 font-medium">Ask Megan</span>
-              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs">
-                M
+        <div className="flex items-center gap-2">
+          <div className="mr-2">
+            <TitleHookSuggestions onSelectHook={(hook) => {
+              // Insert the hook at cursor position or append to existing text
+              if (textareaRef.current) {
+                const cursorPos = textareaRef.current.selectionStart;
+                const textBefore = writingText.substring(0, cursorPos);
+                const textAfter = writingText.substring(cursorPos);
+                onTextChange(textBefore + hook + textAfter);
+                
+                // Set focus back to textarea
+                setTimeout(() => {
+                  if (textareaRef.current) {
+                    textareaRef.current.focus();
+                    const newCursorPos = cursorPos + hook.length;
+                    textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
+                  }
+                }, 10);
+              } else {
+                onTextChange(writingText + hook);
+              }
+            }} />
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="cursor-pointer transition-all duration-150 hover:bg-accent/80 active:bg-accent active:scale-95 rounded-md"
+            onClick={() => setIsMeganOpen(!isMeganOpen)}
+            aria-label={isMeganOpen ? "Hide Megan" : "Ask Megan"}
+          >
+            {isMeganOpen ? (
+              <span className="px-3 py-1.5 text-primary hover:text-primary/90 font-medium">Hide Megan</span>
+            ) : (
+              <div className="flex items-center gap-2 px-3 py-1.5 w-full">
+                <span className="text-primary hover:text-primary/90 font-medium">Ask Megan</span>
+                <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs">
+                  M
+                </div>
               </div>
-            </div>
-          )}
-        </Button>
+            )}
+          </Button>
+        </div>
       </div>
       <div className="h-[calc(100vh-140px)]">
         <div className={`rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full relative bg-[#F6F6F7] ${isMeganOpen ? "flex flex-row" : "flex flex-col"}`}>

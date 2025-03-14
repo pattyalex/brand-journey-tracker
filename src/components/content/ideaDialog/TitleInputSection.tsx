@@ -1,7 +1,6 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import TitleHookSuggestions from "../TitleHookSuggestions";
 
 interface TitleInputSectionProps {
   title: string;
@@ -21,9 +20,8 @@ const TitleInputSection = ({
           value={title}
           onChange={(e) => onTitleChange(e.target.value)}
           placeholder="Enter a catchy hook for your idea..."
-          className="pr-16"
+          className="w-full"
         />
-        <TitleHookSuggestions onSelectHook={(hook) => onTitleChange(hook)} />
       </div>
     </div>
   );
