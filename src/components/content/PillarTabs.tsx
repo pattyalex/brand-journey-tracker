@@ -119,8 +119,8 @@ const PillarTabs = ({
                       value={pillar.id}
                       className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white px-5 py-2 text-base ${
                         pillar.id === activeTab ? 
-                          "border-b-0 border-2 border-[#9b87f5] border-b-transparent rounded-t-md" : 
-                          "border-b border-[#9b87f5]"
+                          "border-b-0 border-2 border-[#0EA5E9] border-b-transparent rounded-t-md" : 
+                          "border-b border-[#0EA5E9]"
                       }`}
                       onClick={() => onTabChange(pillar.id)}
                     >
@@ -199,7 +199,7 @@ const PillarTabs = ({
         </div>
       </div>
       {/* Continuous bottom line that extends the full width */}
-      <div className="h-[2px] bg-[#9b87f5] w-full -mt-[2px] relative z-0"></div>
+      <div className="h-[3px] bg-[#0EA5E9] w-full -mt-[2px] relative z-0 shadow-md"></div>
     </div>
   );
 };
