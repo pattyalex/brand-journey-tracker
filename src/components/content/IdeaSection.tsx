@@ -113,15 +113,8 @@ const IdeaSection = ({
 
   return (
     <div className="space-y-3 pl-2 pr-3">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold flex items-center">
-          <Lightbulb className="h-5 w-5 mr-2" /> 
-          {pillar.name} Ideas
-        </h2>
-      </div>
-      
-      {/* Add New Idea button moved above the filter */}
-      <div className="flex justify-end mb-2">
+      {/* Add New Idea button first */}
+      <div className="flex justify-end">
         <ContentUploader 
           pillarId={pillar.id}
           onContentAdded={onContentAdded}
@@ -130,6 +123,14 @@ const IdeaSection = ({
           isEditMode={isEditing}
           onCancelEdit={onCancelEdit}
         />
+      </div>
+      
+      {/* Pillar Ideas heading below the Add New Idea button */}
+      <div className="flex items-center justify-between mt-4">
+        <h2 className="text-xl font-semibold flex items-center">
+          <Lightbulb className="h-5 w-5 mr-2" /> 
+          {pillar.name} Ideas
+        </h2>
       </div>
       
       {/* Bucket filter dropdown */}
