@@ -323,7 +323,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               <Button 
                 variant="ghost" 
                 onClick={() => setIsAddingBucket(!isAddingBucket)}
-                className="flex items-center justify-center p-0 h-auto aspect-square border border-dashed border-purple-300 hover:bg-purple-50"
+                className="flex items-center justify-center p-0 h-[100px] w-[100px] ml-0"
               >
                 <Plus className="h-6 w-6 text-purple-500" />
               </Button>
