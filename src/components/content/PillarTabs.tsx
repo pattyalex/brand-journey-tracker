@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pillar } from "@/pages/BankOfContent";
@@ -76,37 +77,21 @@ const PillarTabs = ({
     }
   };
 
-  const getPillarColor = (pillarId: string) => {
-    const colors = {
-      "1": "#8B6B4E", // Rich brown
-      "2": "#A67C52", // Medium warm brown
-      "3": "#7D5A44", // Dark chocolate brown
-      "4": "#C19A6B", // Light caramel brown
-      "5": "#654321", // Deep brown
-      "6": "#964B00", // Classic brown
-      "7": "#9C7A54", // Sandy brown
-      "8": "#6B4226", // Cocoa brown
-      "9": "#B38867", // Tan brown
-    };
-    
-    return colors[pillarId as keyof typeof colors] || "#8B6B4E"; // Default to rich brown
-  };
-
   return (
-    <div className="flex items-center justify-between mb-8">
+    <div className="flex items-center justify-between mb-6">
       <div className="flex items-center">
-        <TabsList className="bg-background border overflow-x-auto flex items-center h-14 relative">
+        <TabsList className="bg-background border overflow-x-auto flex items-center h-12">
           {pillars.map((pillar) => (
             <div key={pillar.id} className="relative flex items-center">
               {editingPillarId === pillar.id ? (
-                <div className="px-5 py-3 flex items-center bg-primary text-primary-foreground rounded-sm">
+                <div className="px-4 py-2 flex items-center bg-primary text-primary-foreground rounded-sm">
                   <Input
                     value={editingPillarName}
                     onChange={(e) => setEditingPillarName(e.target.value)}
                     onKeyDown={handlePillarNameKeyDown}
                     onBlur={saveEditingPillar}
                     autoFocus
-                    className="h-8 px-2 py-0 text-base w-48 bg-transparent border-0 focus-visible:ring-0 text-primary-foreground"
+                    className="h-7 px-1 py-0 text-base w-40 bg-transparent border-0 focus-visible:ring-0 text-primary-foreground"
                     data-testid="edit-pillar-name-input"
                   />
                   <Button
@@ -130,42 +115,12 @@ const PillarTabs = ({
                 <div className="flex items-center">
                   <TabsTrigger 
                     value={pillar.id}
-                    className={`px-6 py-3 text-lg font-medium relative ${
-                      pillar.id === activeTab 
-                        ? "bg-[var(--pillar-color)] shadow-md z-10" 
-                        : "bg-background text-foreground"
+                    className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white px-5 py-2 text-base ${
+                      pillar.id === "1" && activeTab === "1" ? "bg-[#8B6B4E] text-white" : ""
                     }`}
                     onClick={() => onTabChange(pillar.id)}
-                    style={{
-                      '--pillar-color': getPillarColor(pillar.id),
-                      backgroundColor: pillar.id === activeTab ? getPillarColor(pillar.id) : '',
-                      borderTopLeftRadius: '8px',
-                      borderTopRightRadius: '8px',
-                      borderTop: pillar.id === activeTab ? `4px solid ${getPillarColor(pillar.id)}` : '',
-                      zIndex: pillar.id === activeTab ? 10 : 1,
-                      transition: 'all 0.3s ease-in-out',
-                      transform: pillar.id === activeTab ? 'translateY(-4px)' : 'none',
-                      color: pillar.id === activeTab ? '#ffffff' : ''
-                    } as React.CSSProperties}
                   >
-                    {pillar.id === activeTab && (
-                      <div className="absolute -top-2 left-3 w-3 h-3 bg-white rounded-full animate-pulse" 
-                        style={{ 
-                          boxShadow: `0 0 0 2px ${getPillarColor(pillar.id)}` 
-                        }}
-                      />
-                    )}
-                    <span>{pillar.name}</span>
-                    
-                    {pillar.id === activeTab && (
-                      <div 
-                        className="absolute bottom-0 left-0 right-0 h-1"
-                        style={{ 
-                          backgroundColor: getPillarColor(pillar.id),
-                          boxShadow: `0 4px 6px -1px ${getPillarColor(pillar.id)}40`
-                        }}
-                      />
-                    )}
+                    {pillar.name}
                   </TabsTrigger>
                   
                   <DropdownMenu>
@@ -173,7 +128,7 @@ const PillarTabs = ({
                       <Button
                         variant="ghost"
                         size="xs"
-                        className="ml-1 px-1 h-8 text-muted-foreground hover:text-foreground"
+                        className="ml-1 px-1 h-7 text-muted-foreground hover:text-foreground"
                       >
                         <MoreVertical className="h-4 w-4" />
                       </Button>
@@ -227,9 +182,9 @@ const PillarTabs = ({
               <Button 
                 variant="ghost" 
                 onClick={onAddPillar} 
-                className="h-12 w-12 p-0 ml-6 bg-transparent"
+                className="h-10 w-10 p-0 ml-6 bg-transparent"
               >
-                <Plus className="h-7 w-7 text-purple-500" />
+                <Plus className="h-6 w-6 text-purple-500" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>

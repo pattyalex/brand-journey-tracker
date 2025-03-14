@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -267,113 +266,58 @@ const BankOfContent = () => {
     setSelectedBucketId(bucketId);
   };
 
-  const getPillarColor = (pillarId: string) => {
-    const colors = {
-      "1": "#8B6B4E", // Brown
-      "2": "#6E59A5", // Purple
-      "3": "#0EA5E9", // Blue
-    };
-    
-    return colors[pillarId as keyof typeof colors] || "#8B6B4E";
-  };
-  
-  const activePillarColor = getPillarColor(activeTab);
-
   return (
     <Layout>
-      <div 
-        className="relative container mx-auto py-6 space-y-6 fade-in"
-        style={{
-          borderRadius: "12px",
-          overflow: "hidden",
-          transition: "all 0.3s ease-in-out"
-        }}
-      >
-        <div
-          className="absolute inset-0 opacity-10 pointer-events-none z-0"
-          style={{
-            background: `linear-gradient(135deg, ${activePillarColor}30 0%, transparent 100%)`,
-            borderLeft: `8px solid ${activePillarColor}`,
-          }}
-        />
-        
-        <div className="relative z-10">
-          <h1 
-            className="text-3xl font-bold mb-2"
-            style={{
-              color: activePillarColor,
-              textShadow: "0 1px 2px rgba(0,0,0,0.1)"
-            }}
-          >
-            Idea Development
-          </h1>
+      <div className="container mx-auto py-6 space-y-6 fade-in">
+        <h1 className="text-3xl font-bold">Idea Development</h1>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="flex items-center justify-between">
-              <PillarTabs 
-                pillars={pillars}
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-                onAddPillar={addPillar}
-                onRenamePillar={renamePillar}
-                onDeletePillar={deletePillar}
-              />
-            </div>
-            
-            <div 
-              className="relative border border-border rounded-xl shadow-lg p-4 mb-6"
-              style={{
-                borderTopLeftRadius: "0",
-                borderTopWidth: "3px",
-                borderTopColor: activePillarColor,
-                boxShadow: `0 4px 20px -5px ${activePillarColor}40`
-              }}
-            >
-              <ContentTypeBuckets 
-                onAddIdea={handleAddToBucket} 
-                pillarId={activeTab}
-              />
-            </div>
-            
-            {pillars.map((pillar) => (
-              <TabsContent 
-                key={pillar.id} 
-                value={pillar.id} 
-                className="space-y-4"
-                style={{
-                  opacity: pillar.id === activeTab ? 1 : 0,
-                  transition: 'opacity 0.3s ease-in-out',
-                }}
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <WritingSpace 
-                    writingText={writingText}
-                    onTextChange={updateWritingSpace}
-                    onTextSelection={handleTextSelection}
-                    onFormatText={handleFormatText}
-                  />
-                  
-                  <IdeaSection 
-                    pillar={pillar}
-                    pillars={pillars}
-                    searchQuery={searchQuery}
-                    onNewIdeaClick={openNewIdeaDialog}
-                    onDeleteContent={(contentId) => deleteContent(pillar.id, contentId)}
-                    onMoveContent={(toPillarId, contentId) => moveContent(pillar.id, toPillarId, contentId)}
-                    onEditContent={(contentId) => editContent(pillar.id, contentId)}
-                    onReorderContent={(newItems) => handleReorderContent(pillar.id, newItems)}
-                    editingContent={editingContent}
-                    isEditing={isEditing}
-                    onContentUpdated={updateContent}
-                    onCancelEdit={cancelEditing}
-                    onContentAdded={addContentToPillar}
-                    onAddToBucket={handleAddToBucket}
-                  />
-                </div>
-              </TabsContent>
-            ))}
-          </Tabs>
-        </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="flex items-center justify-between">
+            <PillarTabs 
+              pillars={pillars}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              onAddPillar={addPillar}
+              onRenamePillar={renamePillar}
+              onDeletePillar={deletePillar}
+            />
+          </div>
+          
+          <ContentTypeBuckets 
+            onAddIdea={handleAddToBucket} 
+            pillarId={activeTab}
+          />
+          
+          {pillars.map((pillar) => (
+            <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <WritingSpace 
+                  writingText={writingText}
+                  onTextChange={updateWritingSpace}
+                  onTextSelection={handleTextSelection}
+                  onFormatText={handleFormatText}
+                />
+                
+                <IdeaSection 
+                  pillar={pillar}
+                  pillars={pillars}
+                  searchQuery={searchQuery}
+                  onNewIdeaClick={openNewIdeaDialog}
+                  onDeleteContent={(contentId) => deleteContent(pillar.id, contentId)}
+                  onMoveContent={(toPillarId, contentId) => moveContent(pillar.id, toPillarId, contentId)}
+                  onEditContent={(contentId) => editContent(pillar.id, contentId)}
+                  onReorderContent={(newItems) => handleReorderContent(pillar.id, newItems)}
+                  editingContent={editingContent}
+                  isEditing={isEditing}
+                  onContentUpdated={updateContent}
+                  onCancelEdit={cancelEditing}
+                  onContentAdded={addContentToPillar}
+                  onAddToBucket={handleAddToBucket}
+                />
+              </div>
+            </TabsContent>
+          ))}
+        </Tabs>
 
         <ContentSearchModal
           isOpen={isSearchModalOpen}
