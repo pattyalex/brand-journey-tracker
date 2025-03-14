@@ -72,7 +72,7 @@ const WritingSpace = ({
           <Button
             variant="ghost"
             size="sm"
-            className="cursor-pointer transition-all duration-150 hover:bg-purple-100 active:bg-purple-200 active:scale-95 rounded-md bg-purple-50 shadow-sm text-purple-700 px-3"
+            className="cursor-pointer transition-all duration-150 hover:bg-[#FDE1D3] active:scale-95 rounded-md text-primary shadow-sm px-3"
             onClick={() => {
               // Function to open the hook suggestions
               const sparklesButton = document.querySelector('[aria-label="Show title hook suggestions"]') as HTMLButtonElement;
@@ -81,7 +81,7 @@ const WritingSpace = ({
               }
             }}
           >
-            <Sparkles className="h-4 w-4 mr-1.5 text-purple-500" />
+            <Sparkles className="h-4 w-4 mr-1.5 text-primary" />
             <span className="text-sm font-medium">Hook Ideas</span>
           </Button>
           
