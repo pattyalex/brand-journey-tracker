@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Lightbulb, FileText, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ContentItem } from "@/types/content";
@@ -45,7 +45,7 @@ const IdeaSection = ({
   const [contentBuckets, setContentBuckets] = useState<{id: string, name: string}[]>([]);
   
   // Load content buckets from localStorage
-  useState(() => {
+  useEffect(() => {
     try {
       const savedBuckets = localStorage.getItem(`content-buckets-${pillar.id}`);
       if (savedBuckets) {
