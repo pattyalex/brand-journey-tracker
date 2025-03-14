@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -49,7 +50,243 @@ const BankOfContent = () => {
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
   const [newBucketType, setNewBucketType] = useState("");
 
-  // ... keep existing code (remaining component implementation)
+  // Get all content across all pillars
+  const allContent = pillars.flatMap(pillar => pillar.content);
+
+  // Function to add a new pillar
+  const addPillar = () => {
+    const newPillarId = String(pillars.length + 1);
+    const newPillar: Pillar = {
+      id: newPillarId,
+      name: `Pillar ${newPillarId}`,
+      content: [],
+      writingSpace: "",
+    };
+    setPillars([...pillars, newPillar]);
+    setActiveTab(newPillarId);
+  };
+
+  // Function to rename a pillar
+  const renamePillar = (pillarId: string, newName: string) => {
+    setPillars(pillars.map(pillar => 
+      pillar.id === pillarId ? { ...pillar, name: newName } : pillar
+    ));
+  };
+
+  // Function to delete a pillar
+  const deletePillar = (pillarId: string) => {
+    if (pillars.length <= 1) {
+      toast.error("Cannot delete the last pillar");
+      return;
+    }
+    
+    setPillars(pillars.filter(pillar => pillar.id !== pillarId));
+    
+    if (activeTab === pillarId) {
+      setActiveTab(pillars[0].id === pillarId ? pillars[1].id : pillars[0].id);
+    }
+  };
+
+  // Function to update the writing space text
+  const updateWritingSpace = (text: string) => {
+    setWritingText(text);
+    // Also update the pillar's writing space
+    setPillars(pillars.map(pillar => 
+      pillar.id === activeTab ? { ...pillar, writingSpace: text } : pillar
+    ));
+  };
+
+  // Function to handle text selection
+  const handleTextSelection = (text: string) => {
+    setSelectedText(text);
+  };
+
+  // Function to handle formatting text in writing space
+  const handleFormatText = (formatType: string, formatValue?: string) => {
+    // Implement text formatting logic here
+    // This is a placeholder for actual formatting functionality
+    console.log(`Format text: ${formatType}, value: ${formatValue}`);
+  };
+
+  // Function to open the new idea dialog
+  const openNewIdeaDialog = () => {
+    setShowNewIdeaDialog(true);
+    setDevelopIdeaMode(false);
+    setNewIdeaTitle("");
+    setDevelopScriptText("");
+    setSelectedFormat("text");
+    setShootDetails("");
+    setCaptionText("");
+    setSelectedPlatforms([]);
+    setNewIdeaTags([]);
+    setScheduledDate(undefined);
+    setNewBucketType("");
+  };
+
+  // Function to add content to a bucket
+  const handleAddToBucket = (bucketType: string) => {
+    setNewBucketType(bucketType);
+    openNewIdeaDialog();
+  };
+
+  // Function to delete content
+  const deleteContent = (pillarId: string, contentId: string) => {
+    setPillars(pillars.map(pillar => 
+      pillar.id === pillarId 
+        ? { ...pillar, content: pillar.content.filter(item => item.id !== contentId) } 
+        : pillar
+    ));
+    toast.success("Content deleted successfully");
+  };
+
+  // Function to move content to another pillar
+  const moveContent = (fromPillarId: string, toPillarId: string, contentId: string) => {
+    // Find the content item in the source pillar
+    const sourcePillar = pillars.find(p => p.id === fromPillarId);
+    if (!sourcePillar) return;
+    
+    const contentItem = sourcePillar.content.find(item => item.id === contentId);
+    if (!contentItem) return;
+    
+    // Remove from source pillar and add to target pillar
+    setPillars(pillars.map(pillar => {
+      if (pillar.id === fromPillarId) {
+        return {
+          ...pillar,
+          content: pillar.content.filter(item => item.id !== contentId)
+        };
+      } else if (pillar.id === toPillarId) {
+        return {
+          ...pillar,
+          content: [...pillar.content, contentItem]
+        };
+      }
+      return pillar;
+    }));
+    
+    toast.success(`Moved to ${pillars.find(p => p.id === toPillarId)?.name}`);
+  };
+
+  // Function to edit content
+  const editContent = (pillarId: string, contentId: string) => {
+    const pillar = pillars.find(p => p.id === pillarId);
+    if (!pillar) return;
+    
+    const content = pillar.content.find(item => item.id === contentId);
+    if (!content) return;
+    
+    setEditingContent(content);
+    setIsEditing(true);
+  };
+
+  // Function to update content
+  const updateContent = (pillarId: string, updatedContent: ContentItem) => {
+    setPillars(pillars.map(pillar => 
+      pillar.id === pillarId 
+        ? { 
+            ...pillar, 
+            content: pillar.content.map(item => 
+              item.id === updatedContent.id ? updatedContent : item
+            ) 
+          } 
+        : pillar
+    ));
+    setIsEditing(false);
+    setEditingContent(null);
+    toast.success("Content updated successfully");
+  };
+
+  // Function to cancel editing
+  const cancelEditing = () => {
+    setIsEditing(false);
+    setEditingContent(null);
+  };
+
+  // Function to handle reordering content
+  const handleReorderContent = (pillarId: string, reorderedItems: ContentItem[]) => {
+    setPillars(pillars.map(pillar => 
+      pillar.id === pillarId 
+        ? { ...pillar, content: reorderedItems } 
+        : pillar
+    ));
+  };
+
+  // Function to add content to a pillar
+  const addContentToPillar = (pillarId: string, content: ContentItem) => {
+    setPillars(pillars.map(pillar => 
+      pillar.id === pillarId 
+        ? { ...pillar, content: [...pillar.content, content] } 
+        : pillar
+    ));
+    toast.success("New idea added successfully");
+  };
+
+  // Function to add a platform to the list
+  const addPlatform = () => {
+    if (currentPlatform && !selectedPlatforms.includes(currentPlatform)) {
+      setSelectedPlatforms([...selectedPlatforms, currentPlatform]);
+      setCurrentPlatform("");
+    }
+  };
+
+  // Function to remove a platform from the list
+  const removePlatform = (platform: string) => {
+    setSelectedPlatforms(selectedPlatforms.filter(p => p !== platform));
+  };
+
+  // Function to add a tag to the list
+  const addTag = () => {
+    if (currentTag && !newIdeaTags.includes(currentTag)) {
+      setNewIdeaTags([...newIdeaTags, currentTag]);
+      setCurrentTag("");
+    }
+  };
+
+  // Function to remove a tag from the list
+  const removeTag = (tag: string) => {
+    setNewIdeaTags(newIdeaTags.filter(t => t !== tag));
+  };
+
+  // Function to create a new idea from selected text
+  const createNewIdeaFromSelection = () => {
+    if (!newIdeaTitle.trim()) {
+      toast.error("Please enter a title for your idea");
+      return;
+    }
+
+    const newContent: ContentItem = {
+      id: `content-${Date.now()}`,
+      title: newIdeaTitle,
+      description: developScriptText || selectedText,
+      format: selectedFormat,
+      shootDetails: shootDetails,
+      caption: captionText,
+      platforms: selectedPlatforms,
+      tags: newIdeaTags,
+      createdAt: new Date(),
+      scheduledDate: scheduledDate,
+      status: newBucketType || "draft",
+    };
+
+    // Add to the current active pillar
+    addContentToPillar(activeTab, newContent);
+
+    // Reset form fields
+    setNewIdeaTitle("");
+    setDevelopScriptText("");
+    setSelectedText("");
+    setSelectedFormat("text");
+    setShootDetails("");
+    setCaptionText("");
+    setSelectedPlatforms([]);
+    setCurrentPlatform("");
+    setNewIdeaTags([]);
+    setCurrentTag("");
+    setScheduledDate(undefined);
+    setShowNewIdeaDialog(false);
+    setDevelopIdeaMode(false);
+    setNewBucketType("");
+  };
 
   return (
     <Layout>
@@ -165,3 +402,4 @@ const BankOfContent = () => {
 };
 
 export default BankOfContent;
+
