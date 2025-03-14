@@ -18,7 +18,7 @@ const PlatformsInput = ({
   onPlatformChange,
   onAddPlatform,
   onRemovePlatform,
-  placeholder = "Add platforms where this content will be published (e.g., Instagram, YouTube, Newsletter, etc.)"
+  placeholder = "Add platforms where this content will be published (e.g., Instagram, TikTok, Newsletter, etc.)"
 }: PlatformsInputProps) => {
   return (
     <div className="grid gap-2">

@@ -26,10 +26,10 @@ const PlatformsSection = ({
         onPlatformChange={onCurrentPlatformChange}
         onAddPlatform={onAddPlatform}
         onRemovePlatform={onRemovePlatform}
-        placeholder="Add platforms where this content will be published (e.g., Instagram, YouTube, Newsletter, etc.)"
+        placeholder="Add platforms where this content will be published (e.g., Instagram, TikTok, Newsletter, etc.)"
       />
       <p className="text-xs text-muted-foreground mt-1">
-        Add platforms where this content will be published (e.g., Instagram, YouTube, Newsletter, etc.). 
+        Add platforms where this content will be published (e.g., Instagram, TikTok, Newsletter, etc.). 
         You can filter content by platform in the Ideas section.
       </p>
     </div>
