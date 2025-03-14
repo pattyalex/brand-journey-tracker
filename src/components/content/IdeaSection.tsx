@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Lightbulb, FileText, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -46,14 +45,12 @@ const IdeaSection = ({
   const [contentBuckets, setContentBuckets] = useState<{id: string, name: string}[]>([]);
   const [availablePlatforms, setAvailablePlatforms] = useState<string[]>([]);
   
-  // Load content buckets from localStorage
   useEffect(() => {
     try {
       const savedBuckets = localStorage.getItem(`content-buckets-${pillar.id}`);
       if (savedBuckets) {
         setContentBuckets(JSON.parse(savedBuckets));
       } else {
-        // Default buckets if none found
         const defaultBuckets = [
           { id: "blog", name: "Blog Posts" },
           { id: "video", name: "Video Content" },
@@ -67,13 +64,11 @@ const IdeaSection = ({
     }
   }, [pillar.id]);
 
-  // Extract unique platforms from all content items
   useEffect(() => {
     console.log("Extracting platforms from content items...");
     const platforms = new Set<string>();
     
     pillar.content.forEach(item => {
-      // Check direct platforms array
       if (item.platforms && Array.isArray(item.platforms)) {
         item.platforms.forEach(platform => {
           platforms.add(platform);
@@ -81,7 +76,6 @@ const IdeaSection = ({
         });
       }
       
-      // Check platforms in URL JSON
       try {
         if (item.url) {
           const urlData = JSON.parse(item.url);
@@ -102,21 +96,17 @@ const IdeaSection = ({
     setAvailablePlatforms(platformArray);
   }, [pillar.content]);
 
-  // Filter content by bucket and platform
   const getFilteredContent = () => {
     return pillar.content.filter(item => {
       let matchesBucketFilter = true;
       let matchesPlatformFilter = true;
       
-      // Apply bucket filter
       if (bucketFilter !== "all") {
         matchesBucketFilter = false;
         
-        // Check direct bucketId
         if (item.bucketId === bucketFilter) {
           matchesBucketFilter = true;
         } else {
-          // Check in URL JSON
           try {
             if (item.url) {
               const urlData = JSON.parse(item.url);
@@ -130,18 +120,15 @@ const IdeaSection = ({
         }
       }
       
-      // Apply platform filter
       if (platformFilter !== "all") {
         matchesPlatformFilter = false;
         
-        // Check direct platforms array
         if (item.platforms && Array.isArray(item.platforms)) {
           if (item.platforms.includes(platformFilter)) {
             matchesPlatformFilter = true;
           }
         }
         
-        // Check platforms in URL JSON
         if (!matchesPlatformFilter) {
           try {
             if (item.url) {
@@ -162,7 +149,6 @@ const IdeaSection = ({
     });
   };
 
-  // Count items by bucket
   const countByBucket = (bucketId: string): number => {
     return pillar.content.filter(item => {
       if (item.bucketId === bucketId) {
@@ -182,17 +168,14 @@ const IdeaSection = ({
     }).length;
   };
 
-  // Count items by platform
   const countByPlatform = (platform: string): number => {
     return pillar.content.filter(item => {
-      // Check direct platforms array
       if (item.platforms && Array.isArray(item.platforms)) {
         if (item.platforms.includes(platform)) {
           return true;
         }
       }
       
-      // Check platforms in URL JSON
       try {
         if (item.url) {
           const urlData = JSON.parse(item.url);
@@ -210,7 +193,6 @@ const IdeaSection = ({
 
   return (
     <div className="space-y-3 pl-2 pr-3">
-      {/* Add New Idea button first */}
       <div className="flex justify-end">
         <ContentUploader 
           pillarId={pillar.id}
@@ -222,16 +204,13 @@ const IdeaSection = ({
         />
       </div>
       
-      {/* Pillar Ideas heading and filter on the same line */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mt-4">
         <h2 className="text-xl font-semibold flex items-center">
           <Lightbulb className="h-5 w-5 mr-2" /> 
           {pillar.name} Ideas
         </h2>
         
-        {/* Filters container */}
         <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full md:w-auto">
-          {/* Bucket filter dropdown */}
           <div className="flex items-center gap-2 w-full md:w-auto">
             <Filter className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground whitespace-nowrap">Filter by bucket:</span>
@@ -250,7 +229,6 @@ const IdeaSection = ({
             </Select>
           </div>
           
-          {/* Platform filter dropdown - always show regardless of available platforms */}
           <div className="flex items-center gap-2 w-full md:w-auto">
             <Filter className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground whitespace-nowrap">Filter by platform:</span>
