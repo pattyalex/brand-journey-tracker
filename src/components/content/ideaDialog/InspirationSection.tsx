@@ -1,10 +1,12 @@
 
 import { useState } from "react";
+import { PlusCircle, Link as LinkIcon, ImageIcon, X } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Link, Image, Trash2 } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Badge } from "@/components/ui/badge";
 
 interface InspirationSectionProps {
   inspirationText: string;
@@ -27,134 +29,146 @@ const InspirationSection = ({
   onAddInspirationImage,
   onRemoveInspirationImage
 }: InspirationSectionProps) => {
+  const [isOpen, setIsOpen] = useState(false);
   const [currentLink, setCurrentLink] = useState("");
-  
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+
   const handleAddLink = () => {
     if (currentLink.trim()) {
       onAddInspirationLink(currentLink.trim());
       setCurrentLink("");
     }
   };
-  
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      const file = files[0];
+    const file = e.target.files?.[0];
+    if (file) {
       const reader = new FileReader();
       reader.onload = () => {
-        if (typeof reader.result === 'string') {
-          onAddInspirationImage(reader.result);
-        }
+        const dataUrl = reader.result as string;
+        onAddInspirationImage(dataUrl);
+        setUploadedImage(null);
+        e.target.value = "";
       };
       reader.readAsDataURL(file);
     }
   };
-  
+
+  const hasInspiration = inspirationText.trim() !== '' || inspirationLinks.length > 0 || inspirationImages.length > 0;
+
   return (
-    <div className="space-y-4">
-      <div>
-        <Label htmlFor="inspirationText" className="text-base font-medium">Inspiration</Label>
-        <p className="text-sm text-muted-foreground mb-2">
-          Add links, images, or notes that inspired this idea
-        </p>
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="inspirationText" className="text-sm">Notes</Label>
-        <Textarea
-          id="inspirationText"
-          value={inspirationText}
-          onChange={(e) => onInspirationTextChange(e.target.value)}
-          placeholder="Write what inspired this idea..."
-          className="resize-y min-h-[80px]"
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="inspirationLink" className="text-sm">Add Links</Label>
-        <div className="flex items-center space-x-2">
-          <Input
-            id="inspirationLink"
-            value={currentLink}
-            onChange={(e) => setCurrentLink(e.target.value)}
-            placeholder="https://example.com"
-            className="flex-1"
-            onKeyDown={(e) => e.key === 'Enter' && handleAddLink()}
-          />
-          <Button 
-            type="button" 
-            size="sm" 
-            onClick={handleAddLink}
-            disabled={!currentLink.trim()}
-          >
-            <PlusCircle className="h-4 w-4 mr-1" />
-            Add
-          </Button>
+    <Collapsible
+      open={isOpen}
+      onOpenChange={setIsOpen}
+      className="rounded-md border p-0 shadow-sm"
+    >
+      <div className="flex items-center justify-between px-4 py-2">
+        <div className="flex items-center gap-2">
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm" className="w-full justify-start p-0 hover:bg-transparent">
+              <h4 className="text-sm font-medium">
+                Inspiration {hasInspiration && <Badge variant="outline" className="ml-2 bg-amber-50 text-amber-600">{inspirationLinks.length + inspirationImages.length}</Badge>}
+              </h4>
+            </Button>
+          </CollapsibleTrigger>
         </div>
-        
-        {inspirationLinks.length > 0 && (
-          <div className="space-y-2 mt-2">
-            {inspirationLinks.map((link, index) => (
-              <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                <Link className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                <a 
-                  href={link} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="text-sm truncate flex-1 hover:underline"
-                >
-                  {link}
-                </a>
-                <Button
-                  type="button"
-                  size="xs"
-                  variant="ghost"
-                  onClick={() => onRemoveInspirationLink(index)}
-                >
-                  <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="inspirationImage" className="text-sm">Upload Images</Label>
-        <div className="flex items-center space-x-2">
-          <Input
-            id="inspirationImage"
-            type="file"
-            accept="image/*"
-            className="flex-1"
-            onChange={handleImageUpload}
+
+      <CollapsibleContent className="px-4 pb-3">
+        <div className="grid gap-2 text-sm">
+          <Textarea
+            placeholder="Add some inspiration or notes..."
+            className="min-h-[60px] resize-y text-sm"
+            value={inspirationText}
+            onChange={(e) => onInspirationTextChange(e.target.value)}
           />
-        </div>
-        
-        {inspirationImages.length > 0 && (
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            {inspirationImages.map((image, index) => (
-              <div key={index} className="relative group">
-                <img 
-                  src={image} 
-                  alt={`Inspiration ${index + 1}`}
-                  className="w-full h-auto rounded-md object-cover aspect-video"
-                />
-                <Button
-                  type="button"
-                  size="xs"
-                  variant="destructive"
-                  className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => onRemoveInspirationImage(index)}
+
+          <div className="flex flex-col space-y-2">
+            <div className="flex items-center gap-2">
+              <Input
+                placeholder="Add a link..."
+                value={currentLink}
+                onChange={(e) => setCurrentLink(e.target.value)}
+                className="h-8 text-xs"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddLink();
+                  }
+                }}
+              />
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                onClick={handleAddLink}
+                className="h-8 w-8 p-0"
+              >
+                <PlusCircle className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {inspirationLinks.map((link, index) => (
+                <Badge 
+                  key={index} 
+                  variant="outline" 
+                  className="flex items-center gap-1 bg-blue-50 text-blue-600 hover:bg-blue-100"
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            ))}
+                  <LinkIcon className="h-3 w-3" />
+                  <span className="max-w-[200px] truncate">{link}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onRemoveInspirationLink(index)}
+                    className="h-4 w-4 p-0 hover:bg-transparent"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </Badge>
+              ))}
+            </div>
           </div>
-        )}
-      </div>
-    </div>
+
+          <div className="flex flex-col space-y-2">
+            <div className="flex items-center">
+              <Label htmlFor="image-upload" className="cursor-pointer bg-slate-50 flex items-center gap-1 px-2 py-1 rounded border text-xs hover:bg-slate-100">
+                <ImageIcon className="h-3 w-3" />
+                <span>Upload image</span>
+              </Label>
+              <Input
+                id="image-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageUpload}
+              />
+            </div>
+
+            {inspirationImages.length > 0 && (
+              <div className="grid grid-cols-3 gap-2 mt-2">
+                {inspirationImages.map((image, index) => (
+                  <div key={index} className="relative group aspect-square bg-gray-100 rounded overflow-hidden">
+                    <img
+                      src={image}
+                      alt={`Inspiration ${index + 1}`}
+                      className="h-full w-full object-cover"
+                    />
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => onRemoveInspirationImage(index)}
+                      className="absolute top-1 right-1 h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 };
 
