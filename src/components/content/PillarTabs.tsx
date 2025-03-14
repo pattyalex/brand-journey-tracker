@@ -77,10 +77,21 @@ const PillarTabs = ({
     }
   };
 
+  // Get colors for different pillars
+  const getPillarColor = (pillarId: string) => {
+    const colors = {
+      "1": "#8B6B4E", // Brown
+      "2": "#6E59A5", // Purple
+      "3": "#0EA5E9", // Blue
+    };
+    
+    return colors[pillarId as keyof typeof colors] || "#8B6B4E";
+  };
+
   return (
     <div className="flex items-center justify-between mb-6">
       <div className="flex items-center">
-        <TabsList className="bg-background border overflow-x-auto flex items-center h-12">
+        <TabsList className="bg-background border overflow-x-auto flex items-center h-12 relative">
           {pillars.map((pillar) => (
             <div key={pillar.id} className="relative flex items-center">
               {editingPillarId === pillar.id ? (
@@ -115,11 +126,27 @@ const PillarTabs = ({
                 <div className="flex items-center">
                   <TabsTrigger 
                     value={pillar.id}
-                    className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white px-5 py-2 text-base ${
-                      pillar.id === "1" && activeTab === "1" ? "bg-[#8B6B4E] text-white" : ""
+                    className={`px-5 py-2 text-base relative ${
+                      pillar.id === activeTab 
+                        ? `bg-${pillar.id === activeTab ? `[${getPillarColor(pillar.id)}]` : 'background'} text-white shadow-md scale-105 z-10` 
+                        : "bg-background text-foreground"
                     }`}
                     onClick={() => onTabChange(pillar.id)}
+                    style={{
+                      backgroundColor: pillar.id === activeTab ? getPillarColor(pillar.id) : '',
+                      borderTop: pillar.id === activeTab ? `3px solid ${getPillarColor(pillar.id)}` : '',
+                      transform: pillar.id === activeTab ? 'scale(1.05)' : 'scale(1)',
+                      zIndex: pillar.id === activeTab ? 10 : 1,
+                      transition: 'all 0.2s ease-in-out'
+                    }}
                   >
+                    {pillar.id === activeTab && (
+                      <div className="absolute -top-3 -left-1 w-2 h-2 bg-white rounded-full animate-pulse" 
+                        style={{ 
+                          boxShadow: `0 0 0 2px ${getPillarColor(pillar.id)}` 
+                        }}
+                      />
+                    )}
                     {pillar.name}
                   </TabsTrigger>
                   

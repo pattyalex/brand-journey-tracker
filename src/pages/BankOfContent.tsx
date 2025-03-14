@@ -266,9 +266,30 @@ const BankOfContent = () => {
     setSelectedBucketId(bucketId);
   };
 
+  const getPillarColor = (pillarId: string) => {
+    const colors = {
+      "1": "#8B6B4E", // Brown
+      "2": "#6E59A5", // Purple
+      "3": "#0EA5E9", // Blue
+    };
+    
+    return colors[pillarId as keyof typeof colors] || "#8B6B4E";
+  };
+  
+  const activePillarColor = getPillarColor(activeTab);
+
   return (
     <Layout>
-      <div className="container mx-auto py-6 space-y-6 fade-in">
+      <div
+        className="container mx-auto py-6 space-y-6 fade-in"
+        style={{
+          borderLeft: `4px solid ${activePillarColor}`,
+          paddingLeft: '20px',
+          background: `linear-gradient(to right, ${activePillarColor}05, transparent 20%)`,
+          borderRadius: '8px',
+          transition: 'all 0.3s ease-in-out'
+        }}
+      >
         <h1 className="text-3xl font-bold">Idea Development</h1>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -289,7 +310,15 @@ const BankOfContent = () => {
           />
           
           {pillars.map((pillar) => (
-            <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
+            <TabsContent 
+              key={pillar.id} 
+              value={pillar.id} 
+              className="space-y-4"
+              style={{
+                opacity: pillar.id === activeTab ? 1 : 0,
+                transition: 'opacity 0.3s ease-in-out',
+              }}
+            >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <WritingSpace 
                   writingText={writingText}
