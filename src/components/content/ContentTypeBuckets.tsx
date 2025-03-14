@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -250,7 +251,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <span className={expandedCardId === type.id ? "font-medium" : "truncate"}>
+                  <span className={expandedCardId === type.id ? "" : "truncate"}>
                     {type.name}
                   </span>
                 )}
@@ -277,7 +278,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <p className={`text-xs text-muted-foreground mt-1 ${expandedCardId === type.id ? "leading-relaxed" : "truncate"}`}>
+                  <p className={`text-xs text-muted-foreground mt-1 ${expandedCardId === type.id ? "" : "truncate"}`}>
                     {type.description}
                   </p>
                 )}
