@@ -1,11 +1,18 @@
+
 import { useState, useEffect } from "react";
-import { Lightbulb, FileText, Filter } from "lucide-react";
+import { Lightbulb, FileText, Filter, FilterX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
 import ContentPillar from "./ContentPillar";
 import ContentUploader from "./ContentUploader";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface IdeaSectionProps {
   pillar: Pillar;
@@ -40,6 +47,7 @@ const IdeaSection = ({
   onContentAdded,
   onAddToBucket
 }: IdeaSectionProps) => {
+  const [filterType, setFilterType] = useState<"bucket" | "platform">("bucket");
   const [bucketFilter, setBucketFilter] = useState<string>("all");
   const [platformFilter, setPlatformFilter] = useState<string>("all");
   const [contentBuckets, setContentBuckets] = useState<{id: string, name: string}[]>([]);
@@ -98,44 +106,41 @@ const IdeaSection = ({
 
   const getFilteredContent = () => {
     return pillar.content.filter(item => {
-      let matchesBucketFilter = true;
-      let matchesPlatformFilter = true;
+      let matchesFilter = true;
       
-      if (bucketFilter !== "all") {
-        matchesBucketFilter = false;
+      if (filterType === "bucket" && bucketFilter !== "all") {
+        matchesFilter = false;
         
         if (item.bucketId === bucketFilter) {
-          matchesBucketFilter = true;
+          matchesFilter = true;
         } else {
           try {
             if (item.url) {
               const urlData = JSON.parse(item.url);
               if (urlData.bucketId === bucketFilter) {
-                matchesBucketFilter = true;
+                matchesFilter = true;
               }
             }
           } catch (e) {
             // If parsing fails, it's not JSON
           }
         }
-      }
-      
-      if (platformFilter !== "all") {
-        matchesPlatformFilter = false;
+      } else if (filterType === "platform" && platformFilter !== "all") {
+        matchesFilter = false;
         
         if (item.platforms && Array.isArray(item.platforms)) {
           if (item.platforms.includes(platformFilter)) {
-            matchesPlatformFilter = true;
+            matchesFilter = true;
           }
         }
         
-        if (!matchesPlatformFilter) {
+        if (!matchesFilter) {
           try {
             if (item.url) {
               const urlData = JSON.parse(item.url);
               if (urlData.platforms && Array.isArray(urlData.platforms)) {
                 if (urlData.platforms.includes(platformFilter)) {
-                  matchesPlatformFilter = true;
+                  matchesFilter = true;
                 }
               }
             }
@@ -145,7 +150,7 @@ const IdeaSection = ({
         }
       }
       
-      return matchesBucketFilter && matchesPlatformFilter;
+      return matchesFilter;
     });
   };
 
@@ -191,6 +196,13 @@ const IdeaSection = ({
     }).length;
   };
 
+  const handleFilterTypeChange = (type: "bucket" | "platform") => {
+    setFilterType(type);
+    // Reset both filters when switching filter type
+    setBucketFilter("all");
+    setPlatformFilter("all");
+  };
+
   return (
     <div className="space-y-3 pl-2 pr-3">
       <div className="flex justify-end">
@@ -213,38 +225,53 @@ const IdeaSection = ({
         <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full md:w-auto">
           <div className="flex items-center gap-2 w-full md:w-auto">
             <Filter className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground whitespace-nowrap">Filter by bucket:</span>
-            <Select value={bucketFilter} onValueChange={setBucketFilter}>
-              <SelectTrigger className="h-8 w-full md:w-[180px]">
-                <SelectValue placeholder="All Buckets" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Buckets</SelectItem>
-                {contentBuckets.map(bucket => (
-                  <SelectItem key={bucket.id} value={bucket.id}>
-                    {bucket.name} ({countByBucket(bucket.id)})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="flex items-center gap-2 w-full md:w-auto">
-            <Filter className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground whitespace-nowrap">Filter by platform:</span>
-            <Select value={platformFilter} onValueChange={setPlatformFilter}>
-              <SelectTrigger className="h-8 w-full md:w-[180px]">
-                <SelectValue placeholder="All Platforms" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Platforms</SelectItem>
-                {availablePlatforms.map(platform => (
-                  <SelectItem key={platform} value={platform}>
-                    {platform} ({countByPlatform(platform)})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <span className="text-sm text-muted-foreground whitespace-nowrap">Filter by:</span>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 px-3">
+                  {filterType === "bucket" ? "Bucket" : "Platform"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-[150px] bg-white">
+                <DropdownMenuItem onClick={() => handleFilterTypeChange("bucket")}>
+                  Bucket
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleFilterTypeChange("platform")}>
+                  Platform
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            {filterType === "bucket" ? (
+              <Select value={bucketFilter} onValueChange={setBucketFilter}>
+                <SelectTrigger className="h-8 w-full md:w-[180px]">
+                  <SelectValue placeholder="All Buckets" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Buckets</SelectItem>
+                  {contentBuckets.map(bucket => (
+                    <SelectItem key={bucket.id} value={bucket.id}>
+                      {bucket.name} ({countByBucket(bucket.id)})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Select value={platformFilter} onValueChange={setPlatformFilter}>
+                <SelectTrigger className="h-8 w-full md:w-[180px]">
+                  <SelectValue placeholder="All Platforms" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Platforms</SelectItem>
+                  {availablePlatforms.map(platform => (
+                    <SelectItem key={platform} value={platform}>
+                      {platform} ({countByPlatform(platform)})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
         </div>
       </div>
