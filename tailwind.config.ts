@@ -61,12 +61,6 @@ export default {
           800: '#5b21b6',
           900: '#4c1d95',
           950: '#2e1065',
-        },
-        // Add pastel colors to the theme
-        pastel: {
-          pink: '#FFB6C1',
-          green: '#98FB98',
-          yellow: '#FFFF99'
         }
       },
       borderRadius: {

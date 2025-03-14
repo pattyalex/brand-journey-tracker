@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -25,11 +24,6 @@
     --destructive-foreground: 210 40% 98%;
     --ring: 215 20.2% 65.1%;
     --radius: 0.5rem;
-
-    /* Pillar colors - Updated to pastel shades */
-    --pillar-pink: rgba(255, 182, 193, 0.3);
-    --pillar-green: rgba(152, 251, 152, 0.3);
-    --pillar-yellow: rgba(255, 255, 153, 0.3);
   }
 
   .dark {
@@ -53,11 +47,6 @@
     --destructive-foreground: 210 40% 98%;
     --ring: 216 34% 17%;
     --radius: 0.5rem;
-
-    /* Pillar colors - Updated to pastel shades for dark mode */
-    --pillar-pink: rgba(255, 182, 193, 0.4);
-    --pillar-green: rgba(152, 251, 152, 0.4);
-    --pillar-yellow: rgba(255, 255, 153, 0.4);
   }
 
   * {
@@ -86,19 +75,6 @@
     overflow-y: auto;
     touch-action: pan-y;
     overscroll-behavior: contain;
-  }
-
-  /* Pillar color utilities */
-  .pillar-pink {
-    box-shadow: 0 6px 20px var(--pillar-pink);
-  }
-
-  .pillar-green {
-    box-shadow: 0 6px 20px var(--pillar-green);
-  }
-
-  .pillar-yellow {
-    box-shadow: 0 6px 20px var(--pillar-yellow);
   }
 }
 
