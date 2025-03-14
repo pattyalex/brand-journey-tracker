@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tag } from "lucide-react";
+import { Tag, MapPin } from "lucide-react";
 
 interface BucketSelectionSectionProps {
   bucketId: string;
@@ -62,7 +62,7 @@ const BucketSelectionSection = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <Tag className={`h-4 w-4 ${pillarStyles.text}`} />
+        <MapPin className={`h-4 w-4 ${pillarStyles.text}`} />
         <Label htmlFor="format-select" className="text-sm font-medium">
           Content Format
         </Label>

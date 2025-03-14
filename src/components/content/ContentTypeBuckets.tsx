@@ -1,8 +1,7 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ContentItem } from "@/types/content";
 import { 
@@ -94,6 +93,19 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
       "hover:border-pink-500 text-pink-500 bg-white",
       "hover:border-blue-500 text-blue-500 bg-white",
       "hover:border-green-500 text-green-500 bg-white"
+    ];
+    return colors[pillarIndex >= 0 && pillarIndex < colors.length ? pillarIndex : 0];
+  };
+  
+  const getPillarPinColor = (pillarId: string) => {
+    const pillarIndex = parseInt(pillarId) - 1;
+    const colors = [
+      "text-purple-500",
+      "text-orange-500",
+      "text-teal-500",
+      "text-pink-500",
+      "text-blue-500",
+      "text-green-500"
     ];
     return colors[pillarIndex >= 0 && pillarIndex < colors.length ? pillarIndex : 0];
   };
@@ -235,6 +247,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
   };
 
   const addButtonStyles = getPillarAddButtonStyles();
+  const pinColor = getPillarPinColor(pillarId);
 
   return (
     <div className="mt-4 mb-6">
@@ -285,6 +298,10 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
             }}
             onClick={() => handleCardClick(type.id)}
           >
+            <div className="absolute -top-2 -left-2 z-10">
+              <MapPin className={`h-5 w-5 ${pinColor}`} strokeWidth={2.5} />
+            </div>
+
             <Button
               type="button"
               variant="ghost"
