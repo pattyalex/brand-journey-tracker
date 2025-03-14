@@ -25,6 +25,55 @@ interface ContentTypeBucketsProps {
   pillarId: string;
 }
 
+const getPillarStickerDesigns = (pillarId: string) => {
+  const pillarIndex = parseInt(pillarId) - 1;
+  
+  const pillarColorSchemes = [
+    { 
+      bg: "bg-white", 
+      border: "border-purple-300", 
+      shadow: "shadow-purple-200",
+      hover: "hover:bg-purple-50/30"
+    },
+    { 
+      bg: "bg-white", 
+      border: "border-orange-300", 
+      shadow: "shadow-orange-200",
+      hover: "hover:bg-orange-50/30"
+    },
+    { 
+      bg: "bg-white", 
+      border: "border-teal-300", 
+      shadow: "shadow-teal-200",
+      hover: "hover:bg-teal-50/30"
+    },
+    { 
+      bg: "bg-white", 
+      border: "border-pink-300", 
+      shadow: "shadow-pink-200",
+      hover: "hover:bg-pink-50/30"
+    },
+    { 
+      bg: "bg-white", 
+      border: "border-blue-300", 
+      shadow: "shadow-blue-200",
+      hover: "hover:bg-blue-50/30"
+    },
+    { 
+      bg: "bg-white", 
+      border: "border-green-300", 
+      shadow: "shadow-green-200",
+      hover: "hover:bg-green-50/30"
+    }
+  ];
+  
+  const colorIndex = pillarIndex >= 0 && pillarIndex < pillarColorSchemes.length 
+    ? pillarIndex 
+    : 0;
+  
+  return pillarColorSchemes[colorIndex];
+};
+
 const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) => {
   const { toast } = useToast();
   const [contentTypes, setContentTypes] = useState<ContentType[]>([
@@ -33,6 +82,21 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     { id: "social", name: "Social Media", description: "Short-form posts", items: [] },
     { id: "image", name: "Image Content", description: "Visual content", items: [] },
   ]);
+  
+  const stickerDesign = getPillarStickerDesigns(pillarId);
+  
+  const getPillarAddButtonStyles = () => {
+    const pillarIndex = parseInt(pillarId) - 1;
+    const colors = [
+      "hover:border-purple-500 text-purple-500 bg-white",
+      "hover:border-orange-500 text-orange-500 bg-white",
+      "hover:border-teal-500 text-teal-500 bg-white",
+      "hover:border-pink-500 text-pink-500 bg-white",
+      "hover:border-blue-500 text-blue-500 bg-white",
+      "hover:border-green-500 text-green-500 bg-white"
+    ];
+    return colors[pillarIndex >= 0 && pillarIndex < colors.length ? pillarIndex : 0];
+  };
   
   const [newFormatName, setNewFormatName] = useState("");
   const [newDescription, setNewDescription] = useState("");
@@ -53,7 +117,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         const formats = parsedFormats.map((format: any) => {
           return { 
             ...format, 
-            description: format.description || "" // Ensure description exists
+            description: format.description || "" 
           };
         });
         setContentTypes(formats);
@@ -170,6 +234,8 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     setExpandedCardId(prev => prev === formatId ? null : formatId);
   };
 
+  const addButtonStyles = getPillarAddButtonStyles();
+
   return (
     <div className="mt-4 mb-6">
       <div className="flex justify-between items-center mb-3">
@@ -208,18 +274,22 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         </div>
       )}
       
-      <div className="flex flex-wrap gap-3">
-        {contentTypes.map((type) => (
+      <div className="flex flex-wrap gap-4">
+        {contentTypes.map((type, index) => (
           <Card 
             key={type.id} 
-            className="w-[200px] border rounded-lg shadow-sm cursor-pointer hover:border-purple-300 transition-all relative group"
+            className={`w-[200px] relative ${stickerDesign.bg} ${stickerDesign.border} ${stickerDesign.shadow} rounded-lg border-2 hover:shadow-md transition-all cursor-pointer group ${stickerDesign.hover}`}
+            style={{ 
+              boxShadow: '0 3px 6px rgba(0,0,0,0.1)', 
+              transition: 'all 0.2s ease'
+            }}
             onClick={() => handleCardClick(type.id)}
           >
             <Button
               type="button"
               variant="ghost"
               size="xs"
-              className="absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-30 hover:bg-gray-100"
+              className="absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-30 hover:bg-white/50 rounded-full"
               onClick={(e) => handleDeleteFormat(e, type.id)}
               title="Delete format"
             >
@@ -286,11 +356,11 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button 
-                variant="ghost" 
+                variant="outline" 
                 onClick={() => setIsAddingFormat(!isAddingFormat)}
-                className="w-[200px] h-[80px] flex items-center justify-center p-0"
+                className={`w-[200px] h-[84px] flex items-center justify-center p-0 ${addButtonStyles}`}
               >
-                <Plus className="h-5 w-5 text-purple-500" />
+                <Plus className="h-5 w-5" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
