@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pillar } from "@/pages/BankOfContent";
@@ -73,7 +72,7 @@ const PillarTabs = ({
 
   return (
     <div className="flex items-center justify-between mb-4">
-      <TabsList className="bg-background border overflow-x-auto flex items-end">
+      <TabsList className="bg-background border overflow-x-auto flex items-center">
         {pillars.map((pillar) => (
           <div key={pillar.id} className="relative flex items-center">
             {editingPillarId === pillar.id ? (
@@ -168,21 +167,15 @@ const PillarTabs = ({
           </div>
         ))}
         
-        {/* Add Pillar Button - now more compact and right after the tabs */}
-        <div className="flex flex-col items-center mx-2 mb-1">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={onAddPillar} 
-            className="h-8 w-8 rounded-full hover:bg-accent"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
-          <span className="text-[10px] text-muted-foreground -mt-1">Add Pillar</span>
-        </div>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={onAddPillar} 
+          className="h-8 w-8 rounded-full hover:bg-accent mx-2"
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
       </TabsList>
-      
-      {/* Removed the original Add Pillar button that was here */}
     </div>
   );
 };
