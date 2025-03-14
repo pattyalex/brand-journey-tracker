@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,13 +32,11 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
   const [editingName, setEditingName] = useState("");
   const editInputRef = useRef<HTMLInputElement>(null);
 
-  // Load pillar-specific buckets from localStorage on mount and when pillarId changes
   useEffect(() => {
     try {
       const savedBuckets = localStorage.getItem(`content-buckets-${pillarId}`);
       if (savedBuckets) {
         const parsedBuckets = JSON.parse(savedBuckets);
-        // Make sure icons are properly set since they can't be serialized
         const bucketsWithIcons = parsedBuckets.map((bucket: any) => {
           let icon;
           switch (bucket.iconType) {
@@ -59,10 +56,8 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     }
   }, [pillarId]);
 
-  // Save to localStorage whenever contentTypes changes
   useEffect(() => {
     try {
-      // Store icon type as string since functions can't be serialized
       const bucketsToSave = contentTypes.map(bucket => {
         let iconType = 'Link';
         if (bucket.icon === FileText) iconType = 'FileText';
@@ -73,7 +68,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         return {
           ...bucket,
           iconType,
-          // Don't include the actual icon function in storage
           icon: undefined
         };
       });
@@ -84,7 +78,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     }
   }, [contentTypes, pillarId]);
 
-  // Focus the edit input when it appears
   useEffect(() => {
     if (editingBucketId && editInputRef.current) {
       editInputRef.current.focus();
@@ -99,7 +92,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
       { 
         id: `custom-${Date.now()}`, 
         name: newBucketName, 
-        icon: Link,  // default icon
+        icon: Link, 
         items: [] 
       }
     ]);
