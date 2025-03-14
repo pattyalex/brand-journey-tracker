@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Sparkles, ArrowRight, Plus, Trash2 } from "lucide-react";
+import { Sparkles, ArrowRight, Plus, Trash2, ChevronLeft } from "lucide-react";
 
 interface TitleHookSuggestionsProps {
   onSelectHook: (hook: string) => void;
@@ -453,6 +453,11 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
     setCustomHooks(prev => prev.filter(hook => hook !== hookToDelete));
   };
 
+  const handleBackToCategories = () => {
+    setHookSelectionDialogOpen(false);
+    setDialogOpen(true);
+  };
+
   return (
     <>
       <Button 
@@ -501,7 +506,16 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
 
       <Dialog open={hookSelectionDialogOpen} onOpenChange={setHookSelectionDialogOpen}>
         <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
+          <DialogHeader className="flex flex-row items-center">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleBackToCategories}
+              className="mr-2 h-8 w-8"
+              aria-label="Back to categories"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
             <DialogTitle>{selectedCategory}</DialogTitle>
           </DialogHeader>
           
