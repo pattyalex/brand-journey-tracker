@@ -81,9 +81,14 @@ const PillarTabs = ({
     <div className="flex items-center justify-between mb-0">
       <div className="flex items-center w-full">
         <div className="tab-list-container w-full">
-          <TabsList className="bg-background overflow-x-auto flex items-center h-12 rounded-t-md rounded-b-none w-full">
+          <div className="flex items-center h-12 w-full">
             {pillars.map((pillar) => (
-              <div key={pillar.id} className="relative flex items-center">
+              <div 
+                key={pillar.id} 
+                className={`relative flex items-center ${
+                  pillar.id === activeTab ? 'active-pillar-tab' : 'inactive-pillar-tab'
+                }`}
+              >
                 {editingPillarId === pillar.id ? (
                   <div className="px-4 py-2 flex items-center bg-primary text-primary-foreground rounded-sm">
                     <Input
@@ -113,16 +118,17 @@ const PillarTabs = ({
                     </Button>
                   </div>
                 ) : (
-                  <div className={`flex items-center ${pillar.id === activeTab ? 'active-pillar-tab' : ''}`}>
-                    <TabsTrigger 
-                      value={pillar.id}
-                      className={`relative data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white px-5 py-2 text-base transition-all duration-300 ${
-                        pillar.id === activeTab ? "font-semibold" : "font-normal"
+                  <div className="flex items-center">
+                    <button
+                      className={`relative px-5 py-2 text-base transition-all duration-300 ${
+                        pillar.id === activeTab 
+                          ? "font-semibold" 
+                          : "font-normal hover:bg-gray-100"
                       }`}
                       onClick={() => onTabChange(pillar.id)}
                     >
                       {pillar.name}
-                    </TabsTrigger>
+                    </button>
                     
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -175,7 +181,7 @@ const PillarTabs = ({
                 )}
               </div>
             ))}
-          </TabsList>
+          </div>
         </div>
         
         <TooltipProvider delayDuration={0}>

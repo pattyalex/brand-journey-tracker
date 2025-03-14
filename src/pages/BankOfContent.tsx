@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -283,7 +284,7 @@ const BankOfContent = () => {
             />
           </div>
           
-          <div className="pillar-container pt-4 pb-6 px-4 mb-6">
+          <div className="pillar-content-container pt-4 pb-6 px-4 mb-6">
             <ContentTypeBuckets 
               onAddIdea={handleAddToBucket} 
               pillarId={activeTab}

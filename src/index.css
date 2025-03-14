@@ -80,21 +80,41 @@
   .pillar-container {
     @apply border-x border-b border-gray-300 rounded-b-md;
     border-top: none;
+    margin-top: -1px;
   }
   
   .active-pillar-tab {
-    @apply bg-[#8B6B4E] rounded-t-md;
+    @apply bg-[#8B6B4E] rounded-t-md text-white;
     position: relative;
-    border-left: 1px solid #D1D5DB;
-    border-right: 1px solid #D1D5DB;
-    border-top: 1px solid #D1D5DB;
+    border: 1px solid #D1D5DB;
     border-bottom: none;
-    z-index: 20;
+    z-index: 10;
+    margin-bottom: 1px;
+  }
+
+  .inactive-pillar-tab {
+    @apply bg-transparent text-gray-500;
+    position: relative;
+    border: none;
+    z-index: 5;
   }
 
   .tab-list-container {
     position: relative;
-    margin-bottom: -1px;
+    display: flex;
+    border-bottom: 1px solid #D1D5DB;
+  }
+  
+  .pillar-content-container {
+    position: relative;
+    border-left: 1px solid #D1D5DB;
+    border-right: 1px solid #D1D5DB;
+    border-bottom: 1px solid #D1D5DB;
+    border-top: none;
+    border-bottom-left-radius: 0.375rem;
+    border-bottom-right-radius: 0.375rem;
+    margin-top: -1px;
+    z-index: 5;
   }
 }
 
