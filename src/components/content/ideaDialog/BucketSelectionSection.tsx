@@ -16,12 +16,28 @@ type ContentFormat = {
   description: string;
 };
 
+// Function to get pillar-specific styling
+const getPillarStyles = (pillarId: string) => {
+  const pillarIndex = parseInt(pillarId) - 1;
+  const styles = [
+    { bg: "bg-purple-50/50", border: "border-purple-200", text: "text-purple-500" },
+    { bg: "bg-orange-50/50", border: "border-orange-200", text: "text-orange-500" },
+    { bg: "bg-teal-50/50", border: "border-teal-200", text: "text-teal-500" },
+    { bg: "bg-pink-50/50", border: "border-pink-200", text: "text-pink-500" },
+    { bg: "bg-blue-50/50", border: "border-blue-200", text: "text-blue-500" },
+    { bg: "bg-green-50/50", border: "border-green-200", text: "text-green-500" }
+  ];
+  
+  return styles[pillarIndex >= 0 && pillarIndex < styles.length ? pillarIndex : 0];
+};
+
 const BucketSelectionSection = ({
   bucketId,
   onBucketChange,
   pillarId
 }: BucketSelectionSectionProps) => {
   const [contentFormats, setContentFormats] = useState<ContentFormat[]>([]);
+  const pillarStyles = getPillarStyles(pillarId);
   
   useEffect(() => {
     try {
@@ -46,7 +62,7 @@ const BucketSelectionSection = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <Tag className="h-4 w-4 text-purple-500" />
+        <Tag className={`h-4 w-4 ${pillarStyles.text}`} />
         <Label htmlFor="format-select" className="text-sm font-medium">
           Content Format
         </Label>
@@ -55,7 +71,7 @@ const BucketSelectionSection = ({
         value={bucketId} 
         onValueChange={onBucketChange}
       >
-        <SelectTrigger id="format-select" className="w-full border-dashed border-purple-200 bg-purple-50/50">
+        <SelectTrigger id="format-select" className={`w-full border-dashed ${pillarStyles.border} ${pillarStyles.bg}`}>
           <SelectValue placeholder="Select a content format" />
         </SelectTrigger>
         <SelectContent>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,41 +24,93 @@ interface ContentTypeBucketsProps {
   pillarId: string;
 }
 
-// Array of sticker-like designs
-const stickerDesigns = [
-  { 
-    bg: "bg-purple-100", 
-    border: "border-purple-300", 
-    shadow: "shadow-purple-200", 
-    icon: Star, 
-    iconColor: "text-purple-500",
-    rotate: "rotate-[-2deg]" 
-  },
-  { 
-    bg: "bg-orange-100", 
-    border: "border-orange-300", 
-    shadow: "shadow-orange-200", 
-    icon: Heart, 
-    iconColor: "text-orange-500",
-    rotate: "rotate-[1deg]" 
-  },
-  { 
-    bg: "bg-teal-100", 
-    border: "border-teal-300", 
-    shadow: "shadow-teal-200", 
-    icon: Tag, 
-    iconColor: "text-teal-500",
-    rotate: "rotate-[-1deg]" 
-  },
-  { 
-    bg: "bg-pink-100", 
-    border: "border-pink-300", 
-    shadow: "shadow-pink-200", 
-    icon: Bookmark, 
-    iconColor: "text-pink-500",
-    rotate: "rotate-[2deg]" 
-  },
-];
+const getPillarStickerDesigns = (pillarId: string) => {
+  const pillarIndex = parseInt(pillarId) - 1;
+  
+  const pillarColorSchemes = [
+    { 
+      bg: "bg-purple-100", 
+      border: "border-purple-300", 
+      shadow: "shadow-purple-200",
+      icons: [
+        { icon: Star, iconColor: "text-purple-500" },
+        { icon: Heart, iconColor: "text-purple-500" },
+        { icon: Tag, iconColor: "text-purple-500" },
+        { icon: Bookmark, iconColor: "text-purple-500" }
+      ]
+    },
+    { 
+      bg: "bg-orange-100", 
+      border: "border-orange-300", 
+      shadow: "shadow-orange-200",
+      icons: [
+        { icon: Star, iconColor: "text-orange-500" },
+        { icon: Heart, iconColor: "text-orange-500" },
+        { icon: Tag, iconColor: "text-orange-500" },
+        { icon: Bookmark, iconColor: "text-orange-500" }
+      ]
+    },
+    { 
+      bg: "bg-teal-100", 
+      border: "border-teal-300", 
+      shadow: "shadow-teal-200",
+      icons: [
+        { icon: Star, iconColor: "text-teal-500" },
+        { icon: Heart, iconColor: "text-teal-500" },
+        { icon: Tag, iconColor: "text-teal-500" },
+        { icon: Bookmark, iconColor: "text-teal-500" }
+      ]
+    },
+    { 
+      bg: "bg-pink-100", 
+      border: "border-pink-300", 
+      shadow: "shadow-pink-200",
+      icons: [
+        { icon: Star, iconColor: "text-pink-500" },
+        { icon: Heart, iconColor: "text-pink-500" },
+        { icon: Tag, iconColor: "text-pink-500" },
+        { icon: Bookmark, iconColor: "text-pink-500" }
+      ]
+    },
+    { 
+      bg: "bg-blue-100", 
+      border: "border-blue-300", 
+      shadow: "shadow-blue-200",
+      icons: [
+        { icon: Star, iconColor: "text-blue-500" },
+        { icon: Heart, iconColor: "text-blue-500" },
+        { icon: Tag, iconColor: "text-blue-500" },
+        { icon: Bookmark, iconColor: "text-blue-500" }
+      ]
+    },
+    { 
+      bg: "bg-green-100", 
+      border: "border-green-300", 
+      shadow: "shadow-green-200",
+      icons: [
+        { icon: Star, iconColor: "text-green-500" },
+        { icon: Heart, iconColor: "text-green-500" },
+        { icon: Tag, iconColor: "text-green-500" },
+        { icon: Bookmark, iconColor: "text-green-500" }
+      ]
+    }
+  ];
+  
+  const colorIndex = pillarIndex >= 0 && pillarIndex < pillarColorSchemes.length 
+    ? pillarIndex 
+    : 0;
+  
+  return pillarColorSchemes[colorIndex].icons.map((iconConfig, i) => {
+    return {
+      bg: pillarColorSchemes[colorIndex].bg,
+      border: pillarColorSchemes[colorIndex].border,
+      shadow: pillarColorSchemes[colorIndex].shadow,
+      icon: iconConfig.icon,
+      iconColor: iconConfig.iconColor,
+      rotate: i % 2 === 0 ? `rotate-[-${i+1}deg]` : `rotate-[${i+1}deg]`
+    };
+  });
+};
 
 const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) => {
   const { toast } = useToast();
@@ -69,6 +120,21 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     { id: "social", name: "Social Media", description: "Short-form posts", items: [] },
     { id: "image", name: "Image Content", description: "Visual content", items: [] },
   ]);
+  
+  const stickerDesigns = getPillarStickerDesigns(pillarId);
+  
+  const getPillarAddButtonStyles = () => {
+    const pillarIndex = parseInt(pillarId) - 1;
+    const colors = [
+      "border-purple-300 hover:border-purple-500 text-purple-500 bg-purple-50/50",
+      "border-orange-300 hover:border-orange-500 text-orange-500 bg-orange-50/50",
+      "border-teal-300 hover:border-teal-500 text-teal-500 bg-teal-50/50",
+      "border-pink-300 hover:border-pink-500 text-pink-500 bg-pink-50/50",
+      "border-blue-300 hover:border-blue-500 text-blue-500 bg-blue-50/50",
+      "border-green-300 hover:border-green-500 text-green-500 bg-green-50/50"
+    ];
+    return colors[pillarIndex >= 0 && pillarIndex < colors.length ? pillarIndex : 0];
+  };
   
   const [newFormatName, setNewFormatName] = useState("");
   const [newDescription, setNewDescription] = useState("");
@@ -89,7 +155,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         const formats = parsedFormats.map((format: any) => {
           return { 
             ...format, 
-            description: format.description || "" // Ensure description exists
+            description: format.description || "" 
           };
         });
         setContentTypes(formats);
@@ -206,6 +272,8 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     setExpandedCardId(prev => prev === formatId ? null : formatId);
   };
 
+  const addButtonStyles = getPillarAddButtonStyles();
+
   return (
     <div className="mt-4 mb-6">
       <div className="flex justify-between items-center mb-3">
@@ -246,7 +314,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
       
       <div className="flex flex-wrap gap-4">
         {contentTypes.map((type, index) => {
-          // Choose a sticker design based on the index
           const designIndex = index % stickerDesigns.length;
           const design = stickerDesigns[designIndex];
           const Icon = design.icon;
@@ -263,7 +330,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               }}
               onClick={() => handleCardClick(type.id)}
             >
-              {/* Sticker design element */}
               <div className="absolute -top-2 -right-2 w-8 h-8 flex items-center justify-center rounded-full bg-white border-2 border-gray-200 shadow-sm">
                 <Icon className={`h-4 w-4 ${design.iconColor}`} />
               </div>
@@ -342,9 +408,9 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               <Button 
                 variant="outline" 
                 onClick={() => setIsAddingFormat(!isAddingFormat)}
-                className="w-[200px] h-[84px] flex items-center justify-center p-0 border-dashed border-2 border-purple-300 hover:border-purple-500 bg-purple-50/50"
+                className={`w-[200px] h-[84px] flex items-center justify-center p-0 border-dashed border-2 ${addButtonStyles}`}
               >
-                <Plus className="h-5 w-5 text-purple-500" />
+                <Plus className="h-5 w-5" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
