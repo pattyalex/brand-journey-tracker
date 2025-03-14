@@ -18,15 +18,6 @@ export type Pillar = {
   onUpdateWritingSpace?: (pillarId: string, text: string) => void;
 };
 
-const pillarColors = [
-  { bgColor: "bg-purple-50", borderColor: "border-purple-200" },
-  { bgColor: "bg-orange-50", borderColor: "border-orange-200" },
-  { bgColor: "bg-teal-50", borderColor: "border-teal-200" },
-  { bgColor: "bg-pink-50", borderColor: "border-pink-200" },
-  { bgColor: "bg-blue-50", borderColor: "border-blue-200" },
-  { bgColor: "bg-green-50", borderColor: "border-green-200" },
-];
-
 const BankOfContent = () => {
   const [pillars, setPillars] = useState<Pillar[]>([
     { id: "1", name: "Pillar 1", content: [], writingSpace: "" },
@@ -57,12 +48,6 @@ const BankOfContent = () => {
   const [selectedBucketId, setSelectedBucketId] = useState("");
 
   const allContent = pillars.flatMap(pillar => pillar.content);
-
-  const getActivePillarStyle = () => {
-    const activeIndex = pillars.findIndex(pillar => pillar.id === activeTab);
-    const colorIndex = activeIndex === -1 ? 0 : activeIndex % pillarColors.length;
-    return pillarColors[colorIndex];
-  };
 
   const addPillar = () => {
     const newPillarId = String(pillars.length + 1);
@@ -281,8 +266,6 @@ const BankOfContent = () => {
     setSelectedBucketId(bucketId);
   };
 
-  const activeStyle = getActivePillarStyle();
-
   return (
     <Layout>
       <div className="container mx-auto py-6 space-y-6 fade-in">
@@ -305,47 +288,35 @@ const BankOfContent = () => {
             pillarId={activeTab}
           />
           
-          {pillars.map((pillar) => {
-            const pillarIndex = pillars.findIndex(p => p.id === pillar.id);
-            const colorIndex = pillarIndex % pillarColors.length;
-            const pillarStyle = pillarColors[colorIndex];
-            
-            return (
-              <TabsContent 
-                key={pillar.id} 
-                value={pillar.id} 
-                className={`space-y-4 rounded-lg ${
-                  pillar.id === activeTab ? `${pillarStyle.bgColor} p-5 border ${pillarStyle.borderColor} shadow-sm` : ''
-                }`}
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <WritingSpace 
-                    writingText={writingText}
-                    onTextChange={updateWritingSpace}
-                    onTextSelection={handleTextSelection}
-                    onFormatText={handleFormatText}
-                  />
-                  
-                  <IdeaSection 
-                    pillar={pillar}
-                    pillars={pillars}
-                    searchQuery={searchQuery}
-                    onNewIdeaClick={openNewIdeaDialog}
-                    onDeleteContent={(contentId) => deleteContent(pillar.id, contentId)}
-                    onMoveContent={(toPillarId, contentId) => moveContent(pillar.id, toPillarId, contentId)}
-                    onEditContent={(contentId) => editContent(pillar.id, contentId)}
-                    onReorderContent={(newItems) => handleReorderContent(pillar.id, newItems)}
-                    editingContent={editingContent}
-                    isEditing={isEditing}
-                    onContentUpdated={updateContent}
-                    onCancelEdit={cancelEditing}
-                    onContentAdded={addContentToPillar}
-                    onAddToBucket={handleAddToBucket}
-                  />
-                </div>
-              </TabsContent>
-            );
-          })}
+          {pillars.map((pillar) => (
+            <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <WritingSpace 
+                  writingText={writingText}
+                  onTextChange={updateWritingSpace}
+                  onTextSelection={handleTextSelection}
+                  onFormatText={handleFormatText}
+                />
+                
+                <IdeaSection 
+                  pillar={pillar}
+                  pillars={pillars}
+                  searchQuery={searchQuery}
+                  onNewIdeaClick={openNewIdeaDialog}
+                  onDeleteContent={(contentId) => deleteContent(pillar.id, contentId)}
+                  onMoveContent={(toPillarId, contentId) => moveContent(pillar.id, toPillarId, contentId)}
+                  onEditContent={(contentId) => editContent(pillar.id, contentId)}
+                  onReorderContent={(newItems) => handleReorderContent(pillar.id, newItems)}
+                  editingContent={editingContent}
+                  isEditing={isEditing}
+                  onContentUpdated={updateContent}
+                  onCancelEdit={cancelEditing}
+                  onContentAdded={addContentToPillar}
+                  onAddToBucket={handleAddToBucket}
+                />
+              </div>
+            </TabsContent>
+          ))}
         </Tabs>
 
         <ContentSearchModal
