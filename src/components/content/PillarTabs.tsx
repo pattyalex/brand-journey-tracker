@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pillar } from "@/pages/BankOfContent";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,113 +78,103 @@ const PillarTabs = ({
   };
 
   return (
-    <div className="flex items-center justify-between mb-0">
-      <div className="flex items-center w-full">
-        <div className="tab-list-container w-full">
-          <div className="flex items-center h-12 w-full pillar-tabs-container">
-            {pillars.map((pillar, index) => (
-              <div 
-                key={pillar.id} 
-                className={`relative flex items-center ${
-                  pillar.id === activeTab 
-                    ? 'active-pillar-tab' 
-                    : `inactive-pillar-tab${index === 0 ? ' first-inactive-tab' : ''}`
-                }`}
-              >
-                {editingPillarId === pillar.id ? (
-                  <div className="px-4 py-2 flex items-center bg-primary text-primary-foreground rounded-sm">
-                    <Input
-                      value={editingPillarName}
-                      onChange={(e) => setEditingPillarName(e.target.value)}
-                      onKeyDown={handlePillarNameKeyDown}
-                      onBlur={saveEditingPillar}
-                      autoFocus
-                      className="h-7 px-1 py-0 text-base w-40 bg-transparent border-0 focus-visible:ring-0 text-primary-foreground"
-                      data-testid="edit-pillar-name-input"
-                    />
-                    <Button
-                      size="xs"
-                      variant="ghost"
-                      onClick={saveEditingPillar}
-                      className="ml-1 text-primary-foreground hover:text-primary-foreground/90 hover:bg-transparent p-0 h-6 w-6"
-                    >
-                      <Check className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="xs"
-                      variant="ghost"
-                      onClick={cancelEditingPillar}
-                      className="text-primary-foreground hover:text-primary-foreground/90 hover:bg-transparent p-0 h-6 w-6"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex items-center">
-                    <button
-                      className={`relative px-5 py-2 text-base transition-all duration-300 ${
-                        pillar.id === activeTab 
-                          ? "font-semibold" 
-                          : "font-normal hover:bg-gray-100"
-                      }`}
-                      onClick={() => onTabChange(pillar.id)}
-                    >
-                      {pillar.name}
-                    </button>
-                    
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          className="ml-1 px-1 h-7 text-muted-foreground hover:text-foreground"
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-40">
-                        <DropdownMenuItem onClick={() => startEditingPillar(pillar.id, pillar.name)}>
-                          <Edit className="h-4 w-4 mr-2" />
-                          Rename
-                        </DropdownMenuItem>
-                        
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <DropdownMenuItem
-                              className="text-destructive focus:text-destructive"
-                              onSelect={(e) => e.preventDefault()}
+    <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center">
+        <TabsList className="bg-background border overflow-x-auto flex items-center h-12">
+          {pillars.map((pillar) => (
+            <div key={pillar.id} className="relative flex items-center">
+              {editingPillarId === pillar.id ? (
+                <div className="px-4 py-2 flex items-center bg-primary text-primary-foreground rounded-sm">
+                  <Input
+                    value={editingPillarName}
+                    onChange={(e) => setEditingPillarName(e.target.value)}
+                    onKeyDown={handlePillarNameKeyDown}
+                    onBlur={saveEditingPillar}
+                    autoFocus
+                    className="h-7 px-1 py-0 text-base w-40 bg-transparent border-0 focus-visible:ring-0 text-primary-foreground"
+                    data-testid="edit-pillar-name-input"
+                  />
+                  <Button
+                    size="xs"
+                    variant="ghost"
+                    onClick={saveEditingPillar}
+                    className="ml-1 text-primary-foreground hover:text-primary-foreground/90 hover:bg-transparent p-0 h-6 w-6"
+                  >
+                    <Check className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="xs"
+                    variant="ghost"
+                    onClick={cancelEditingPillar}
+                    className="text-primary-foreground hover:text-primary-foreground/90 hover:bg-transparent p-0 h-6 w-6"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  <TabsTrigger 
+                    value={pillar.id}
+                    className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white px-5 py-2 text-base ${
+                      pillar.id === "1" && activeTab === "1" ? "bg-[#8B6B4E] text-white" : ""
+                    }`}
+                    onClick={() => onTabChange(pillar.id)}
+                  >
+                    {pillar.name}
+                  </TabsTrigger>
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        className="ml-1 px-1 h-7 text-muted-foreground hover:text-foreground"
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-40">
+                      <DropdownMenuItem onClick={() => startEditingPillar(pillar.id, pillar.name)}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Rename
+                      </DropdownMenuItem>
+                      
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onSelect={(e) => e.preventDefault()}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete {pillar.name} Pillar</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will permanently delete the "{pillar.name}" pillar and all its content. 
+                              This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => onDeletePillar(pillar.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                             >
-                              <Trash2 className="h-4 w-4 mr-2" />
                               Delete
-                            </DropdownMenuItem>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete {pillar.name} Pillar</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This will permanently delete the "{pillar.name}" pillar and all its content. 
-                                This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction 
-                                onClick={() => onDeletePillar(pillar.id)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              )}
+            </div>
+          ))}
+        </TabsList>
         
         <TooltipProvider delayDuration={0}>
           <Tooltip>

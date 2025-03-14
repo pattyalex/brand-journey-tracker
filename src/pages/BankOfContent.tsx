@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { ContentItem } from "@/types/content";
@@ -283,42 +283,40 @@ const BankOfContent = () => {
             />
           </div>
           
-          <div className="pillar-content-container pt-4 pb-6 px-4 mb-6">
-            <ContentTypeBuckets 
-              onAddIdea={handleAddToBucket} 
-              pillarId={activeTab}
-            />
-            
-            {pillars.map((pillar) => (
-              <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <WritingSpace 
-                    writingText={writingText}
-                    onTextChange={updateWritingSpace}
-                    onTextSelection={handleTextSelection}
-                    onFormatText={handleFormatText}
-                  />
-                  
-                  <IdeaSection 
-                    pillar={pillar}
-                    pillars={pillars}
-                    searchQuery={searchQuery}
-                    onNewIdeaClick={openNewIdeaDialog}
-                    onDeleteContent={(contentId) => deleteContent(pillar.id, contentId)}
-                    onMoveContent={(toPillarId, contentId) => moveContent(pillar.id, toPillarId, contentId)}
-                    onEditContent={(contentId) => editContent(pillar.id, contentId)}
-                    onReorderContent={(newItems) => handleReorderContent(pillar.id, newItems)}
-                    editingContent={editingContent}
-                    isEditing={isEditing}
-                    onContentUpdated={updateContent}
-                    onCancelEdit={cancelEditing}
-                    onContentAdded={addContentToPillar}
-                    onAddToBucket={handleAddToBucket}
-                  />
-                </div>
-              </TabsContent>
-            ))}
-          </div>
+          <ContentTypeBuckets 
+            onAddIdea={handleAddToBucket} 
+            pillarId={activeTab}
+          />
+          
+          {pillars.map((pillar) => (
+            <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <WritingSpace 
+                  writingText={writingText}
+                  onTextChange={updateWritingSpace}
+                  onTextSelection={handleTextSelection}
+                  onFormatText={handleFormatText}
+                />
+                
+                <IdeaSection 
+                  pillar={pillar}
+                  pillars={pillars}
+                  searchQuery={searchQuery}
+                  onNewIdeaClick={openNewIdeaDialog}
+                  onDeleteContent={(contentId) => deleteContent(pillar.id, contentId)}
+                  onMoveContent={(toPillarId, contentId) => moveContent(pillar.id, toPillarId, contentId)}
+                  onEditContent={(contentId) => editContent(pillar.id, contentId)}
+                  onReorderContent={(newItems) => handleReorderContent(pillar.id, newItems)}
+                  editingContent={editingContent}
+                  isEditing={isEditing}
+                  onContentUpdated={updateContent}
+                  onCancelEdit={cancelEditing}
+                  onContentAdded={addContentToPillar}
+                  onAddToBucket={handleAddToBucket}
+                />
+              </div>
+            </TabsContent>
+          ))}
         </Tabs>
 
         <ContentSearchModal
