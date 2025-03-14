@@ -9,7 +9,7 @@ interface BucketSelectionSectionProps {
   pillarId: string;
 }
 
-type ContentBucket = {
+type ContentFormat = {
   id: string;
   name: string;
   description: string;
@@ -20,17 +20,17 @@ const BucketSelectionSection = ({
   onBucketChange,
   pillarId
 }: BucketSelectionSectionProps) => {
-  const [contentBuckets, setContentBuckets] = useState<ContentBucket[]>([]);
+  const [contentFormats, setContentFormats] = useState<ContentFormat[]>([]);
   
   useEffect(() => {
     try {
-      const savedBuckets = localStorage.getItem(`content-buckets-${pillarId}`);
-      if (savedBuckets) {
-        const parsedBuckets = JSON.parse(savedBuckets);
-        setContentBuckets(parsedBuckets);
+      const savedFormats = localStorage.getItem(`content-formats-${pillarId}`);
+      if (savedFormats) {
+        const parsedFormats = JSON.parse(savedFormats);
+        setContentFormats(parsedFormats);
       } else {
-        // Default buckets if none found in localStorage
-        setContentBuckets([
+        // Default formats if none found in localStorage
+        setContentFormats([
           { id: "blog", name: "Blog Posts", description: "Long-form written content" },
           { id: "video", name: "Video Content", description: "Video-based content" },
           { id: "social", name: "Social Media", description: "Short-form posts" },
@@ -38,33 +38,33 @@ const BucketSelectionSection = ({
         ]);
       }
     } catch (error) {
-      console.error("Failed to load content buckets:", error);
+      console.error("Failed to load content formats:", error);
     }
   }, [pillarId]);
 
   return (
     <div className="space-y-4">
-      <Label htmlFor="bucket-select" className="text-sm font-medium">
-        Content Bucket
+      <Label htmlFor="format-select" className="text-sm font-medium">
+        Content Format
       </Label>
       <Select 
         value={bucketId} 
         onValueChange={onBucketChange}
       >
-        <SelectTrigger id="bucket-select" className="w-full">
-          <SelectValue placeholder="Select a content bucket" />
+        <SelectTrigger id="format-select" className="w-full">
+          <SelectValue placeholder="Select a content format" />
         </SelectTrigger>
         <SelectContent>
-          {contentBuckets.map((bucket) => (
-            <SelectItem key={bucket.id} value={bucket.id}>
-              {bucket.name}
+          {contentFormats.map((format) => (
+            <SelectItem key={format.id} value={format.id}>
+              {format.name}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
       {bucketId && (
         <p className="text-xs text-gray-500 mt-2">
-          {contentBuckets.find(b => b.id === bucketId)?.description || ""}
+          {contentFormats.find(f => f.id === bucketId)?.description || ""}
         </p>
       )}
     </div>

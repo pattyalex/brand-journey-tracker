@@ -110,9 +110,9 @@ const BankOfContent = () => {
     setNewBucketType("");
   };
 
-  const handleAddToBucket = (bucketType: string) => {
-    setNewBucketType(bucketType);
-    setSelectedBucketId(bucketType);
+  const handleAddToBucket = (formatType: string) => {
+    setNewBucketType(formatType);
+    setSelectedBucketId(formatType);
     openNewIdeaDialog();
   };
 
@@ -370,7 +370,7 @@ const BankOfContent = () => {
           }}
           isEditMode={developIdeaMode}
           dialogTitle={developIdeaMode ? "Develop Selected Idea" : (newBucketType ? 
-            `Add to ${newBucketType.charAt(0).toUpperCase() + newBucketType.slice(1)} Bucket` : 
+            `Add to ${newBucketType.charAt(0).toUpperCase() + newBucketType.slice(1)} Format` : 
             "Create New Idea")}
         />
       </div>
@@ -379,3 +379,4 @@ const BankOfContent = () => {
 };
 
 export default BankOfContent;
+

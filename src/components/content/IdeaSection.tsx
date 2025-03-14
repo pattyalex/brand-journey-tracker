@@ -27,7 +27,7 @@ interface IdeaSectionProps {
   onContentUpdated: (pillarId: string, content: ContentItem) => void;
   onCancelEdit: () => void;
   onContentAdded: (pillarId: string, content: ContentItem) => void;
-  onAddToBucket: (bucketId: string) => void;
+  onAddToBucket: (formatId: string) => void;
 }
 
 const IdeaSection = ({
@@ -46,30 +46,30 @@ const IdeaSection = ({
   onContentAdded,
   onAddToBucket
 }: IdeaSectionProps) => {
-  const [filterType, setFilterType] = useState<"bucket" | "platform" | "status">("bucket");
-  const [bucketFilter, setBucketFilter] = useState<string>("all");
+  const [filterType, setFilterType] = useState<"format" | "platform" | "status">("format");
+  const [formatFilter, setFormatFilter] = useState<string>("all");
   const [platformFilter, setPlatformFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [contentBuckets, setContentBuckets] = useState<{id: string, name: string}[]>([]);
+  const [contentFormats, setContentFormats] = useState<{id: string, name: string}[]>([]);
   const [availablePlatforms, setAvailablePlatforms] = useState<string[]>([]);
   const [availableStatuses, setAvailableStatuses] = useState<string[]>([]);
   
   useEffect(() => {
     try {
-      const savedBuckets = localStorage.getItem(`content-buckets-${pillar.id}`);
-      if (savedBuckets) {
-        setContentBuckets(JSON.parse(savedBuckets));
+      const savedFormats = localStorage.getItem(`content-formats-${pillar.id}`);
+      if (savedFormats) {
+        setContentFormats(JSON.parse(savedFormats));
       } else {
-        const defaultBuckets = [
+        const defaultFormats = [
           { id: "blog", name: "Blog Posts" },
           { id: "video", name: "Video Content" },
           { id: "social", name: "Social Media" },
           { id: "image", name: "Image Content" },
         ];
-        setContentBuckets(defaultBuckets);
+        setContentFormats(defaultFormats);
       }
     } catch (error) {
-      console.error("Failed to load content buckets:", error);
+      console.error("Failed to load content formats:", error);
     }
   }, [pillar.id]);
 
@@ -127,16 +127,16 @@ const IdeaSection = ({
     return pillar.content.filter(item => {
       let matchesFilter = true;
       
-      if (filterType === "bucket" && bucketFilter !== "all") {
+      if (filterType === "format" && formatFilter !== "all") {
         matchesFilter = false;
         
-        if (item.bucketId === bucketFilter) {
+        if (item.bucketId === formatFilter) {
           matchesFilter = true;
         } else {
           try {
             if (item.url) {
               const urlData = JSON.parse(item.url);
-              if (urlData.bucketId === bucketFilter) {
+              if (urlData.bucketId === formatFilter) {
                 matchesFilter = true;
               }
             }
@@ -181,16 +181,16 @@ const IdeaSection = ({
     });
   };
 
-  const countByBucket = (bucketId: string): number => {
+  const countByFormat = (formatId: string): number => {
     return pillar.content.filter(item => {
-      if (item.bucketId === bucketId) {
+      if (item.bucketId === formatId) {
         return true;
       }
       
       try {
         if (item.url) {
           const urlData = JSON.parse(item.url);
-          return urlData.bucketId === bucketId;
+          return urlData.bucketId === formatId;
         }
       } catch (e) {
         // Not JSON format
@@ -232,9 +232,9 @@ const IdeaSection = ({
     }).length;
   };
 
-  const handleFilterTypeChange = (type: "bucket" | "platform" | "status") => {
+  const handleFilterTypeChange = (type: "format" | "platform" | "status") => {
     setFilterType(type);
-    setBucketFilter("all");
+    setFormatFilter("all");
     setPlatformFilter("all");
     setStatusFilter("all");
   };
@@ -266,12 +266,12 @@ const IdeaSection = ({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="h-8 px-3">
-                  {filterType === "bucket" ? "Bucket" : filterType === "platform" ? "Platform" : "Status"}
+                  {filterType === "format" ? "Format" : filterType === "platform" ? "Platform" : "Status"}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-[150px] bg-white">
-                <DropdownMenuItem onClick={() => handleFilterTypeChange("bucket")}>
-                  Bucket
+                <DropdownMenuItem onClick={() => handleFilterTypeChange("format")}>
+                  Format
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleFilterTypeChange("platform")}>
                   Platform
@@ -282,16 +282,16 @@ const IdeaSection = ({
               </DropdownMenuContent>
             </DropdownMenu>
             
-            {filterType === "bucket" ? (
-              <Select value={bucketFilter} onValueChange={setBucketFilter}>
+            {filterType === "format" ? (
+              <Select value={formatFilter} onValueChange={setFormatFilter}>
                 <SelectTrigger className="h-8 w-full md:w-[180px]">
-                  <SelectValue placeholder="All Buckets" />
+                  <SelectValue placeholder="All Formats" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Buckets</SelectItem>
-                  {contentBuckets.map(bucket => (
-                    <SelectItem key={bucket.id} value={bucket.id}>
-                      {bucket.name} ({countByBucket(bucket.id)})
+                  <SelectItem value="all">All Formats</SelectItem>
+                  {contentFormats.map(format => (
+                    <SelectItem key={format.id} value={format.id}>
+                      {format.name} ({countByFormat(format.id)})
                     </SelectItem>
                   ))}
                 </SelectContent>
