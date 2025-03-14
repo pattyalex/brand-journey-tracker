@@ -21,6 +21,7 @@ import TaskBoard from "./pages/TaskBoard";
 import Help from "./pages/Help";
 import QuickNotes from "./pages/QuickNotes";
 import WeeklyContentTasks from "./pages/WeeklyContentTasks";
+import VisualDevelopment from "./pages/VisualDevelopment";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ const App = () => (
           <Route path="/quick-notes" element={<QuickNotes />} />
           <Route path="/weekly-content-tasks" element={<WeeklyContentTasks />} />
           <Route path="/weekly-content-flow" element={<WeeklyContentTasks />} /> {/* Keeping old route for backward compatibility */}
+          <Route path="/visual-development" element={<VisualDevelopment />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

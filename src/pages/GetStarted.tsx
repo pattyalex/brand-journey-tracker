@@ -1,7 +1,7 @@
 
 import Layout from "@/components/Layout";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { PenLine, Database, Calendar, TrendingUp, Handshake, BarChart } from "lucide-react";
+import { PenLine, Database, Calendar, TrendingUp, Handshake, BarChart, Image } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const services = [
@@ -14,6 +14,16 @@ const services = [
     ),
     icon: Database,
     path: "/bank-of-content"
+  },
+  {
+    title: (
+      <div className="flex flex-col">
+        <span>Visual</span>
+        <span>Development</span>
+      </div>
+    ),
+    icon: Image,
+    path: "/visual-development"
   },
   {
     title: (
