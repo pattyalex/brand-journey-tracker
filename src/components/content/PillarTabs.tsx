@@ -249,7 +249,7 @@ const PillarTabs = ({
               <Button 
                 variant="outline"
                 onClick={onAddPillar} 
-                className="h-8 w-8 p-0 ml-6 border-dashed border-2 border-purple-300 hover:border-purple-500 text-purple-500 bg-purple-50/50"
+                className="h-8 w-8 p-0 ml-6 hover:border-purple-500 text-purple-500 bg-purple-50/50"
               >
                 <Plus className="h-5 w-5" />
               </Button>

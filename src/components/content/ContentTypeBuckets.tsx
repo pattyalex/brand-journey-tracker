@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -87,12 +88,12 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
   const getPillarAddButtonStyles = () => {
     const pillarIndex = parseInt(pillarId) - 1;
     const colors = [
-      "border-purple-300 hover:border-purple-500 text-purple-500 bg-white",
-      "border-orange-300 hover:border-orange-500 text-orange-500 bg-white",
-      "border-teal-300 hover:border-teal-500 text-teal-500 bg-white",
-      "border-pink-300 hover:border-pink-500 text-pink-500 bg-white",
-      "border-blue-300 hover:border-blue-500 text-blue-500 bg-white",
-      "border-green-300 hover:border-green-500 text-green-500 bg-white"
+      "hover:border-purple-500 text-purple-500 bg-white",
+      "hover:border-orange-500 text-orange-500 bg-white",
+      "hover:border-teal-500 text-teal-500 bg-white",
+      "hover:border-pink-500 text-pink-500 bg-white",
+      "hover:border-blue-500 text-blue-500 bg-white",
+      "hover:border-green-500 text-green-500 bg-white"
     ];
     return colors[pillarIndex >= 0 && pillarIndex < colors.length ? pillarIndex : 0];
   };
@@ -357,7 +358,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               <Button 
                 variant="outline" 
                 onClick={() => setIsAddingFormat(!isAddingFormat)}
-                className={`w-[200px] h-[84px] flex items-center justify-center p-0 border-dashed border-2 ${addButtonStyles}`}
+                className={`w-[200px] h-[84px] flex items-center justify-center p-0 ${addButtonStyles}`}
               >
                 <Plus className="h-5 w-5" />
               </Button>
