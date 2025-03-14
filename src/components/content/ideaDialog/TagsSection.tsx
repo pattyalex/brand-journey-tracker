@@ -19,7 +19,7 @@ const TagsSection = ({
 }: TagsSectionProps) => {
   return (
     <div className="grid gap-2">
-      <Label htmlFor="tags">Work Status</Label>
+      <Label htmlFor="tags">Status</Label>
       <TagsInput
         tags={tags}
         currentTag={currentTag}
