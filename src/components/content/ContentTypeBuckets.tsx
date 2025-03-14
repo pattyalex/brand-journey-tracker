@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -240,11 +239,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         {contentTypes.map((type) => (
           <Card 
             key={type.id} 
-            className={`w-[160px] h-[80px] hover:border-purple-300 transition-all cursor-pointer group ${
-              expandedCardId === type.id ? 
-                'scale-125 border-purple-300 shadow-lg z-20 bg-white' : 
-                'hover:scale-[1.02]'
-            }`}
+            className="w-[240px] border rounded-lg shadow-sm cursor-pointer hover:border-purple-300 transition-all"
             onClick={() => handleCardClick(type.id)}
           >
             <Button
@@ -260,16 +255,16 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               <Trash2 className="h-3 w-3" />
             </Button>
             
-            <CardHeader className={`p-1 pb-0 ${expandedCardId === type.id ? 'pt-2' : ''}`}>
-              <CardTitle 
-                className="text-sm flex items-center gap-1.5"
+            <div className="p-4">
+              <div 
+                className="flex items-center gap-2 mb-2"
                 onDoubleClick={(e) => {
                   e.stopPropagation();
                   handleDoubleClick(type.id, type.name, type.description || "");
                 }}
                 title="Double-click to edit"
               >
-                <type.icon className="h-3 w-3 flex-shrink-0" />
+                <type.icon className="h-5 w-5 flex-shrink-0 text-gray-700" />
                 {editingBucketId === type.id && !isEditingDescription ? (
                   <Input
                     ref={editInputRef}
@@ -277,20 +272,19 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                     onChange={(e) => setEditingName(e.target.value)}
                     onKeyDown={handleKeyPress}
                     onBlur={handleBlur}
-                    className="h-6 py-0 px-1 min-w-0 text-sm"
+                    className="h-8 py-1 px-2 min-w-0 text-base font-medium"
                     autoFocus
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <span className="truncate">
+                  <span className="text-base font-medium text-gray-900">
                     {type.name}
                   </span>
                 )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className={`p-1 pt-0 ${expandedCardId === type.id ? 'pb-2' : ''}`}>
+              </div>
+              
               <div
-                className="h-8 overflow-hidden"
+                className="mt-1"
                 onDoubleClick={(e) => {
                   e.stopPropagation();
                   handleDescriptionDoubleClick(type.id, type.description || "");
@@ -304,17 +298,17 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                     onChange={(e) => setEditingDescription(e.target.value)}
                     onKeyDown={handleKeyPress}
                     onBlur={handleBlur}
-                    className="h-6 py-0 px-1 min-w-0 text-sm mt-1"
+                    className="h-8 py-1 px-2 min-w-0 text-sm"
                     placeholder="Short description"
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                  <p className="text-sm text-gray-500">
                     {type.description}
                   </p>
                 )}
               </div>
-            </CardContent>
+            </div>
           </Card>
         ))}
         
@@ -324,7 +318,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               <Button 
                 variant="ghost" 
                 onClick={() => setIsAddingBucket(!isAddingBucket)}
-                className="w-[160px] h-[80px] flex items-center justify-center p-0"
+                className="w-[240px] h-[100px] flex items-center justify-center p-0 border border-dashed border-gray-300 hover:border-purple-300"
               >
                 <Plus className="h-5 w-5 text-purple-500" />
               </Button>
