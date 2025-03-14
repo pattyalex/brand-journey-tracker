@@ -1,10 +1,11 @@
+
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { ContentItem } from "@/types/content";
 import { toast } from "sonner";
 import ContentSearchModal from "@/components/content/ContentSearchModal";
-import PillarTabs from "@/components/content/PillarTabs";
+import PillarTabs, { getPillarColorClass } from "@/components/content/PillarTabs";
 import WritingSpace from "@/components/content/WritingSpace";
 import IdeaSection from "@/components/content/IdeaSection";
 import IdeaCreationDialog from "@/components/content/IdeaCreationDialog";
@@ -286,6 +287,7 @@ const BankOfContent = () => {
           <ContentTypeBuckets 
             onAddIdea={handleAddToBucket} 
             pillarId={activeTab}
+            className={getPillarColorClass(activeTab)}
           />
           
           {pillars.map((pillar) => (
@@ -296,6 +298,7 @@ const BankOfContent = () => {
                   onTextChange={updateWritingSpace}
                   onTextSelection={handleTextSelection}
                   onFormatText={handleFormatText}
+                  className={getPillarColorClass(pillar.id)}
                 />
                 
                 <IdeaSection 
@@ -313,6 +316,7 @@ const BankOfContent = () => {
                   onCancelEdit={cancelEditing}
                   onContentAdded={addContentToPillar}
                   onAddToBucket={handleAddToBucket}
+                  shadowClass={getPillarColorClass(pillar.id)}
                 />
               </div>
             </TabsContent>
@@ -373,6 +377,7 @@ const BankOfContent = () => {
           inspirationImages={[]}
           onAddInspirationImage={() => {}}
           onRemoveInspirationImage={() => {}}
+          shadowClass={getPillarColorClass(activeTab)}
         />
       </div>
     </Layout>

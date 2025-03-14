@@ -38,6 +38,39 @@ interface PillarTabsProps {
   onDeletePillar: (pillarId: string) => void;
 }
 
+// Define the pillar color classes
+export const getPillarColorClass = (pillarId: string): string => {
+  switch (pillarId) {
+    case "1":
+      return "pillar-brown"; // Brown for Pillar 1
+    case "2":
+      return "pillar-burgundy"; // Burgundy for Pillar 2 
+    case "3":
+      return "pillar-bronze"; // Bronze for Pillar 3
+    default:
+      const id = parseInt(pillarId);
+      if (id % 3 === 1) return "pillar-brown";
+      if (id % 3 === 2) return "pillar-burgundy";
+      return "pillar-bronze";
+  }
+};
+
+export const getPillarBgColor = (pillarId: string): string => {
+  switch (pillarId) {
+    case "1":
+      return "#8B6B4E"; // Brown for Pillar 1
+    case "2":
+      return "#7D3C3C"; // Burgundy for Pillar 2
+    case "3":
+      return "#9E7E45"; // Bronze for Pillar 3
+    default:
+      const id = parseInt(pillarId);
+      if (id % 3 === 1) return "#8B6B4E";
+      if (id % 3 === 2) return "#7D3C3C";
+      return "#9E7E45";
+  }
+};
+
 const PillarTabs = ({ 
   pillars, 
   activeTab, 
@@ -75,6 +108,14 @@ const PillarTabs = ({
       e.preventDefault();
       cancelEditingPillar();
     }
+  };
+
+  // Get the active pillar tab color
+  const getTabBgColor = (pillarId: string): string => {
+    if (pillarId === activeTab) {
+      return getPillarBgColor(pillarId);
+    }
+    return "";
   };
 
   return (
@@ -115,10 +156,12 @@ const PillarTabs = ({
                 <div className="flex items-center">
                   <TabsTrigger 
                     value={pillar.id}
-                    className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white px-5 py-2 text-base ${
-                      pillar.id === "1" && activeTab === "1" ? "bg-[#8B6B4E] text-white" : ""
-                    }`}
+                    className={`px-5 py-2 text-base text-foreground`}
                     onClick={() => onTabChange(pillar.id)}
+                    style={{
+                      backgroundColor: getTabBgColor(pillar.id),
+                      color: pillar.id === activeTab ? 'white' : ''
+                    }}
                   >
                     {pillar.name}
                   </TabsTrigger>

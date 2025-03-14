@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Lightbulb, FileText, Filter, FilterX } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ interface IdeaSectionProps {
   onCancelEdit: () => void;
   onContentAdded: (pillarId: string, content: ContentItem) => void;
   onAddToBucket: (formatId: string) => void;
+  shadowClass?: string;
 }
 
 const IdeaSection = ({
@@ -44,7 +46,8 @@ const IdeaSection = ({
   onContentUpdated,
   onCancelEdit,
   onContentAdded,
-  onAddToBucket
+  onAddToBucket,
+  shadowClass
 }: IdeaSectionProps) => {
   const [filterType, setFilterType] = useState<"format" | "platform" | "status">("format");
   const [formatFilter, setFormatFilter] = useState<string>("all");
@@ -240,7 +243,7 @@ const IdeaSection = ({
   };
 
   return (
-    <div className="space-y-3 pl-2 pr-3">
+    <div className={`space-y-3 pl-2 pr-3 ${shadowClass || ''}`}>
       <div className="flex justify-end">
         <ContentUploader 
           pillarId={pillar.id}
@@ -340,6 +343,7 @@ const IdeaSection = ({
         onEditContent={onEditContent}
         searchQuery={searchQuery}
         onReorderContent={onReorderContent}
+        shadowClass={shadowClass}
       />
     </div>
   );

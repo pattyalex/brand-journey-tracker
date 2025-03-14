@@ -24,6 +24,11 @@
     --destructive-foreground: 210 40% 98%;
     --ring: 215 20.2% 65.1%;
     --radius: 0.5rem;
+
+    /* Pillar colors */
+    --pillar-brown: rgba(139, 107, 78, 0.15);
+    --pillar-burgundy: rgba(125, 60, 60, 0.15);
+    --pillar-bronze: rgba(158, 126, 69, 0.15);
   }
 
   .dark {
@@ -47,6 +52,11 @@
     --destructive-foreground: 210 40% 98%;
     --ring: 216 34% 17%;
     --radius: 0.5rem;
+
+    /* Pillar colors */
+    --pillar-brown: rgba(139, 107, 78, 0.25);
+    --pillar-burgundy: rgba(125, 60, 60, 0.25);
+    --pillar-bronze: rgba(158, 126, 69, 0.25);
   }
 
   * {
@@ -75,6 +85,19 @@
     overflow-y: auto;
     touch-action: pan-y;
     overscroll-behavior: contain;
+  }
+
+  /* Pillar color utilities */
+  .pillar-brown {
+    box-shadow: 0 4px 16px var(--pillar-brown);
+  }
+
+  .pillar-burgundy {
+    box-shadow: 0 4px 16px var(--pillar-burgundy);
+  }
+
+  .pillar-bronze {
+    box-shadow: 0 4px 16px var(--pillar-bronze);
   }
 }
 
