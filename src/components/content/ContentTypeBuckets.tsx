@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -239,7 +240,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         {contentTypes.map((type) => (
           <Card 
             key={type.id} 
-            className={`w-[160px] h-[100px] hover:border-purple-300 transition-all cursor-pointer group ${
+            className={`w-[160px] h-[80px] hover:border-purple-300 transition-all cursor-pointer group ${
               expandedCardId === type.id ? 
                 'scale-125 border-purple-300 shadow-lg z-20 bg-white' : 
                 'hover:scale-[1.02]'
@@ -259,7 +260,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               <Trash2 className="h-3 w-3" />
             </Button>
             
-            <CardHeader className={`p-2 pb-0 ${expandedCardId === type.id ? 'pt-3' : ''}`}>
+            <CardHeader className={`p-1 pb-0 ${expandedCardId === type.id ? 'pt-2' : ''}`}>
               <CardTitle 
                 className="text-xs flex items-center gap-1.5"
                 onDoubleClick={(e) => {
@@ -287,9 +288,9 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                 )}
               </CardTitle>
             </CardHeader>
-            <CardContent className={`p-2 pt-1 ${expandedCardId === type.id ? 'pb-3' : ''}`}>
+            <CardContent className={`p-1 pt-0 ${expandedCardId === type.id ? 'pb-2' : ''}`}>
               <div
-                className="h-10 overflow-hidden"
+                className="h-8 overflow-hidden"
                 onDoubleClick={(e) => {
                   e.stopPropagation();
                   handleDescriptionDoubleClick(type.id, type.description || "");
@@ -323,7 +324,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               <Button 
                 variant="ghost" 
                 onClick={() => setIsAddingBucket(!isAddingBucket)}
-                className="w-[160px] h-[100px] flex items-center justify-center p-0"
+                className="w-[160px] h-[80px] flex items-center justify-center p-0"
               >
                 <Plus className="h-5 w-5 text-purple-500" />
               </Button>
