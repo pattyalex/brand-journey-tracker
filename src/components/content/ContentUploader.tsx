@@ -31,6 +31,7 @@ const ContentUploader = ({
   const [bucketId, setBucketId] = useState(initialBucketId);
   const [textContent, setTextContent] = useState("");
   const [contentFormat, setContentFormat] = useState("text");
+  const [visualNotes, setVisualNotes] = useState("");
   const [shootDetails, setShootDetails] = useState("");
   const [captionText, setCaptionText] = useState("");
   const [currentTag, setCurrentTag] = useState("");
@@ -53,6 +54,7 @@ const ContentUploader = ({
           try {
             const parsedContent = JSON.parse(contentToEdit.url);
             setTextContent(parsedContent.script || '');
+            setVisualNotes(parsedContent.visualNotes || '');
             setShootDetails(parsedContent.shootDetails || '');
             setCaptionText(parsedContent.caption || '');
             setBucketId(parsedContent.bucketId || '');
@@ -143,6 +145,7 @@ const ContentUploader = ({
       format: contentFormat,
       url: JSON.stringify({
         script: textContent,
+        visualNotes: visualNotes,
         shootDetails: shootDetails,
         caption: captionText,
         platforms: platformsList,
@@ -176,6 +179,7 @@ const ContentUploader = ({
     setBucketId(initialBucketId);
     setTextContent("");
     setContentFormat("text");
+    setVisualNotes("");
     setShootDetails("");
     setCaptionText("");
     setTagsList([]);
@@ -212,6 +216,8 @@ const ContentUploader = ({
         pillarId={pillarId}
         scriptText={textContent}
         onScriptTextChange={setTextContent}
+        visualNotes={visualNotes}
+        onVisualNotesChange={setVisualNotes}
         shootDetails={shootDetails}
         onShootDetailsChange={setShootDetails}
         captionText={captionText}

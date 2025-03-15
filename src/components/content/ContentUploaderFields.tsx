@@ -13,6 +13,8 @@ interface ContentUploaderFieldsProps {
   setTextContent: (value: string) => void;
   formatText: string;
   setFormatText: (value: string) => void;
+  visualNotes: string;
+  setVisualNotes: (value: string) => void;
   shootDetails: string;
   setShootDetails: (value: string) => void;
   captionText: string;
@@ -38,6 +40,8 @@ const ContentUploaderFields = ({
   setTextContent,
   formatText,
   setFormatText,
+  visualNotes,
+  setVisualNotes,
   shootDetails,
   setShootDetails,
   captionText,
@@ -76,6 +80,17 @@ const ContentUploaderFields = ({
           placeholder="Develop your script here..."
           rows={8}
           className="resize-none"
+        />
+      </div>
+      
+      <div className="grid gap-2">
+        <Label htmlFor="visualNotes">Visual Notes</Label>
+        <Textarea
+          id="visualNotes"
+          value={visualNotes}
+          onChange={(e) => setVisualNotes(e.target.value)}
+          placeholder="Describe different shots and angles you want to capture to convey your ideas..."
+          className="resize-y h-20"
         />
       </div>
       

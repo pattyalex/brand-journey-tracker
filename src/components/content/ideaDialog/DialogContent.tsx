@@ -4,6 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import TitleInputSection from "./TitleInputSection";
 import BucketSelectionSection from "./BucketSelectionSection";
 import ScriptInputSection from "./ScriptInputSection";
+import VisualNotesSection from "./VisualNotesSection";
 import ShootDetailsSection from "./ShootDetailsSection";
 import CaptionInputSection from "./CaptionInputSection";
 import PlatformsSection from "./PlatformsSection";
@@ -20,6 +21,8 @@ interface DialogContentProps {
   onFormatChange: (value: string) => void;
   scriptText: string;
   onScriptTextChange: (value: string) => void;
+  visualNotes: string;
+  onVisualNotesChange: (value: string) => void;
   shootDetails: string;
   onShootDetailsChange: (value: string) => void;
   captionText: string;
@@ -55,6 +58,8 @@ const DialogContent = ({
   onFormatChange,
   scriptText,
   onScriptTextChange,
+  visualNotes,
+  onVisualNotesChange,
   shootDetails,
   onShootDetailsChange,
   captionText,
@@ -108,6 +113,10 @@ const DialogContent = ({
         <div className="h-8"></div>
         
         <ScriptInputSection scriptText={scriptText} onScriptTextChange={onScriptTextChange} />
+        
+        <div className="h-4"></div>
+        
+        <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
         
         <div className="h-4"></div>
         
