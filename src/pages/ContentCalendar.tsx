@@ -60,7 +60,7 @@ const ContentCalendar = () => {
   const [readyToScheduleContent, setReadyToScheduleContent] = useState<ContentItem[]>([]);
   const [scheduledContent, setScheduledContent] = useState<ContentItem[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [showReadyContent, setShowReadyContent] = useState(false);
+  const [showReadyContent, setShowReadyContent] = useState(true);
   const [newContentDialogOpen, setNewContentDialogOpen] = useState(false);
   const [newContentTitle, setNewContentTitle] = useState("");
   const [newContentDescription, setNewContentDescription] = useState("");
@@ -253,6 +253,89 @@ const ContentCalendar = () => {
           </div>
         </div>
         
+        {/* Ready to Schedule Content Section - Always visible */}
+        <Card className="overflow-hidden">
+          <CardHeader>
+            <CardTitle>Content Ready to be Scheduled</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {readyToScheduleContent.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                {readyToScheduleContent.map((content) => (
+                  <Card key={content.id} className="overflow-hidden h-fit">
+                    <CardHeader className="p-3 pb-1">
+                      <CardTitle className="text-base">{content.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-3 pt-0">
+                      <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{content.description}</p>
+                      
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {content.tags && content.tags.slice(0, 2).map((tag, idx) => (
+                          <Badge key={idx} variant="outline" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                        {content.tags && content.tags.length > 2 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{content.tags.length - 2}
+                          </Badge>
+                        )}
+                        
+                        {content.format && (
+                          <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                            <FileText className="h-3 w-3" />
+                            {content.format}
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      <div className="flex justify-between items-center mt-3">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button size="sm" className="h-8 text-xs px-2">
+                              <CalendarIcon className="mr-1 h-3 w-3" />
+                              Schedule
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={undefined}
+                              onSelect={(date) => {
+                                if (date) {
+                                  scheduleContent(content.id, date);
+                                }
+                              }}
+                              initialFocus
+                              className="p-3 pointer-events-auto"
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        
+                        <Button 
+                          size="icon"
+                          variant="ghost" 
+                          className="h-8 w-8"
+                          onClick={() => deleteContent(content.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-gray-500" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">No content ready to be scheduled.</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Create content ideas in the Content Ideation section and mark them as ready for scheduling.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        
         <div className="text-center text-2xl font-semibold mb-4">
           {format(currentMonth, 'MMMM yyyy')}
         </div>
@@ -347,91 +430,6 @@ const ContentCalendar = () => {
             })}
           </div>
         </div>
-        
-        {/* Ready to Schedule Content Side Panel */}
-        {showReadyContent && (
-          <Card className="mt-4 overflow-hidden">
-            <CardHeader>
-              <CardTitle>Content Ready to be Scheduled</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {readyToScheduleContent.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  {readyToScheduleContent.map((content) => (
-                    <Card key={content.id} className="overflow-hidden h-fit">
-                      <CardHeader className="p-3 pb-1">
-                        <CardTitle className="text-base">{content.title}</CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-3 pt-0">
-                        <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{content.description}</p>
-                        
-                        <div className="flex flex-wrap gap-1 mb-3">
-                          {content.tags && content.tags.slice(0, 2).map((tag, idx) => (
-                            <Badge key={idx} variant="outline" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                          {content.tags && content.tags.length > 2 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{content.tags.length - 2}
-                            </Badge>
-                          )}
-                          
-                          {content.format && (
-                            <Badge variant="secondary" className="text-xs flex items-center gap-1">
-                              <FileText className="h-3 w-3" />
-                              {content.format}
-                            </Badge>
-                          )}
-                        </div>
-                        
-                        <div className="flex justify-between items-center mt-3">
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button size="sm" className="h-8 text-xs px-2">
-                                <CalendarIcon className="mr-1 h-3 w-3" />
-                                Schedule
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={undefined}
-                                onSelect={(date) => {
-                                  if (date) {
-                                    scheduleContent(content.id, date);
-                                  }
-                                }}
-                                initialFocus
-                                className="p-3 pointer-events-auto"
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          
-                          <Button 
-                            size="icon"
-                            variant="ghost" 
-                            className="h-8 w-8"
-                            onClick={() => deleteContent(content.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-gray-500" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">No content ready to be scheduled.</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Create content ideas in the Content Ideation section and mark them as ready for scheduling.
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
         
         {/* New Content Dialog */}
         <Dialog open={newContentDialogOpen} onOpenChange={setNewContentDialogOpen}>
