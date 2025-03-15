@@ -1,10 +1,21 @@
+
 import React, { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
+import { 
+  format, 
+  startOfMonth, 
+  endOfMonth, 
+  eachDayOfInterval, 
+  isSameMonth, 
+  isToday,
+  addMonths,
+  subMonths,
+  parseISO,
+  getDay
+} from "date-fns";
 import {
   Dialog,
   DialogContent,
@@ -14,12 +25,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { CalendarIcon, FileText, ClipboardCheck, Trash2 } from "lucide-react";
+import { CalendarIcon, FileText, ChevronLeft, ChevronRight, PlusCircle, Trash2 } from "lucide-react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // Define the content item type
 interface ContentItem {
@@ -32,11 +45,26 @@ interface ContentItem {
   scheduledDate?: Date | null;
 }
 
+const formatColors: Record<string, string> = {
+  "Video": "bg-purple-100 text-purple-800",
+  "Blog Post": "bg-blue-100 text-blue-800",
+  "Reel": "bg-pink-100 text-pink-800",
+  "Story": "bg-amber-100 text-amber-800",
+  "Podcast": "bg-emerald-100 text-emerald-800",
+  "Newsletter": "bg-indigo-100 text-indigo-800",
+  "Post": "bg-cyan-100 text-cyan-800"
+};
+
 const ContentCalendar = () => {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [readyToScheduleContent, setReadyToScheduleContent] = useState<ContentItem[]>([]);
   const [scheduledContent, setScheduledContent] = useState<ContentItem[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [schedulingContentId, setSchedulingContentId] = useState<string | null>(null);
+  const [showReadyContent, setShowReadyContent] = useState(false);
+  const [newContentDialogOpen, setNewContentDialogOpen] = useState(false);
+  const [newContentTitle, setNewContentTitle] = useState("");
+  const [newContentDescription, setNewContentDescription] = useState("");
+  const [newContentFormat, setNewContentFormat] = useState("Post");
 
   // Load content from localStorage on component mount
   useEffect(() => {
@@ -95,9 +123,25 @@ const ContentCalendar = () => {
     
     // Add to scheduled content
     setScheduledContent(prev => [...prev, scheduledItem]);
+  };
+
+  const createNewContent = () => {
+    if (!newContentTitle.trim()) return;
     
-    // Reset the scheduling content ID
-    setSchedulingContentId(null);
+    const newItem: ContentItem = {
+      id: Math.random().toString(36).substring(2, 9),
+      title: newContentTitle,
+      description: newContentDescription,
+      format: newContentFormat,
+      tags: [],
+      scheduledDate: selectedDate
+    };
+    
+    setScheduledContent(prev => [...prev, newItem]);
+    setNewContentDialogOpen(false);
+    setNewContentTitle("");
+    setNewContentDescription("");
+    setNewContentFormat("Post");
   };
 
   const deleteContent = (contentId: string) => {
@@ -123,145 +167,215 @@ const ContentCalendar = () => {
     });
   };
 
-  // Get content for currently selected date
-  const selectedDateContent = selectedDate ? getContentForDate(selectedDate) : [];
+  // Navigation functions
+  const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
+  const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+  const goToToday = () => setCurrentMonth(new Date());
+
+  // Generate days for the current month view
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(currentMonth);
+  const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
+
+  // Calculate days needed to complete the calendar grid
+  const startDay = getDay(monthStart); // 0 for Sunday, 1 for Monday, etc.
+  
+  // Get days from previous month to fill the first row
+  const daysFromPrevMonth = startDay;
+  const prevMonthDays = daysFromPrevMonth > 0 
+    ? eachDayOfInterval({ 
+        start: subMonths(monthStart, 1), 
+        end: subMonths(monthStart, 1) 
+      }).slice(-daysFromPrevMonth) 
+    : [];
+    
+  // Get days from next month to fill the last row
+  const totalDaysInGrid = Math.ceil((monthDays.length + daysFromPrevMonth) / 7) * 7;
+  const daysFromNextMonth = totalDaysInGrid - (monthDays.length + daysFromPrevMonth);
+  const nextMonthDays = daysFromNextMonth > 0 
+    ? eachDayOfInterval({ 
+        start: addMonths(monthEnd, 0), 
+        end: addMonths(monthEnd, 0) 
+      }).slice(1, daysFromNextMonth + 1) 
+    : [];
+  
+  // Combine all days
+  const calendarDays = [...prevMonthDays, ...monthDays, ...nextMonthDays];
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Content Calendar</h1>
             <p className="text-muted-foreground">
               Schedule and organize your content publishing plan.
             </p>
           </div>
+          <div className="flex items-center space-x-2">
+            <Button 
+              variant="outline" 
+              onClick={prevMonth}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={goToToday}
+              className="h-8"
+            >
+              Today
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={nextMonth}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    onClick={() => setShowReadyContent(!showReadyContent)}
+                    variant={showReadyContent ? "default" : "outline"}
+                    className="h-8"
+                  >
+                    Ready Content
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>View content ready to be scheduled</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
         
-        <Card className="overflow-hidden">
-          <CardHeader>
-            <CardTitle>Content Ready to be Scheduled</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {readyToScheduleContent.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {readyToScheduleContent.map((content) => (
-                  <Card key={content.id} className="overflow-hidden h-fit">
-                    <CardHeader className="p-3 pb-1">
-                      <CardTitle className="text-base">{content.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-3 pt-0">
-                      <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{content.description}</p>
-                      
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {content.tags && content.tags.slice(0, 2).map((tag, idx) => (
-                          <Badge key={idx} variant="outline" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                        {content.tags && content.tags.length > 2 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{content.tags.length - 2}
-                          </Badge>
-                        )}
-                        
-                        {content.format && (
-                          <Badge variant="secondary" className="text-xs flex items-center gap-1">
-                            <FileText className="h-3 w-3" />
-                            {content.format}
-                          </Badge>
-                        )}
-                      </div>
-                      
-                      <div className="flex justify-between items-center mt-3">
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button size="sm" className="h-8 text-xs px-2">
-                              <CalendarIcon className="mr-1 h-3 w-3" />
-                              Schedule
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={undefined}
-                              onSelect={(date) => {
-                                if (date) {
-                                  scheduleContent(content.id, date);
-                                }
-                              }}
-                              initialFocus
-                              className="p-3 pointer-events-auto"
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        
-                        <Button 
-                          size="icon"
-                          variant="ghost" 
-                          className="h-8 w-8"
-                          onClick={() => deleteContent(content.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-gray-500" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">No content ready to be scheduled.</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Create content ideas in the Content Ideation section and mark them as ready for scheduling.
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <div className="text-center text-2xl font-semibold mb-4">
+          {format(currentMonth, 'MMMM yyyy')}
+        </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-          {/* Calendar Column */}
-          <Card className="md:col-span-3 overflow-hidden">
-            <CardHeader>
-              <CardTitle>Content Publishing Calendar</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={setSelectedDate}
-                className="rounded-md border"
-              />
-            </CardContent>
-          </Card>
+        {/* Main Calendar View */}
+        <div className="border rounded-md bg-white overflow-hidden">
+          {/* Calendar Header - Days of week */}
+          <div className="grid grid-cols-7 border-b">
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+              <div key={day} className="p-2 text-center font-medium text-gray-500">
+                {day}
+              </div>
+            ))}
+          </div>
           
-          {/* Scheduled Content for Selected Date Column */}
-          <Card className="md:col-span-2 overflow-hidden">
+          {/* Calendar Grid */}
+          <div className="grid grid-cols-7 min-h-[70vh]">
+            {calendarDays.map((day, i) => {
+              const isCurrentMonth = isSameMonth(day, currentMonth);
+              const isCurrentDay = isToday(day);
+              const dayContent = getContentForDate(day);
+              
+              return (
+                <div 
+                  key={i} 
+                  className={`border-t border-l min-h-[120px] p-1 ${
+                    !isCurrentMonth ? "bg-gray-50 text-gray-400" : ""
+                  } ${isCurrentDay ? "bg-blue-50" : ""}`}
+                  onClick={() => {
+                    setSelectedDate(day);
+                    if (isCurrentMonth && dayContent.length === 0) {
+                      setNewContentDialogOpen(true);
+                    }
+                  }}
+                >
+                  <div className="flex justify-between items-start p-1">
+                    <div className={`text-sm font-medium ${
+                      isCurrentDay ? "bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center" : ""
+                    }`}>
+                      {format(day, 'd')}
+                    </div>
+                    {isCurrentMonth && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-5 w-5"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedDate(day);
+                          setNewContentDialogOpen(true);
+                        }}
+                      >
+                        <PlusCircle className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                  
+                  {/* Content items for the day */}
+                  <div className="space-y-1 mt-1 max-h-[90px] overflow-y-auto">
+                    {dayContent.map((content) => (
+                      <div 
+                        key={content.id} 
+                        className={`text-xs p-1 rounded cursor-pointer ${
+                          content.format && formatColors[content.format] 
+                            ? formatColors[content.format] 
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Open a dialog with details here if needed
+                        }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="truncate">{content.title}</span>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-4 w-4 opacity-0 group-hover:opacity-100"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteScheduledContent(content.id);
+                            }}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        
+        {/* Ready to Schedule Content Side Panel */}
+        {showReadyContent && (
+          <Card className="mt-4 overflow-hidden">
             <CardHeader>
-              <CardTitle>
-                {selectedDate 
-                  ? `Content for ${format(selectedDate, 'MMMM d, yyyy')}`
-                  : 'Select a date to view content'}
-              </CardTitle>
+              <CardTitle>Content Ready to be Scheduled</CardTitle>
             </CardHeader>
-            <CardContent>
-              {selectedDateContent.length > 0 ? (
-                <div className="space-y-3">
-                  {selectedDateContent.map((content) => (
-                    <Card key={content.id} className="overflow-hidden">
+            <CardContent className="space-y-4">
+              {readyToScheduleContent.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {readyToScheduleContent.map((content) => (
+                    <Card key={content.id} className="overflow-hidden h-fit">
                       <CardHeader className="p-3 pb-1">
                         <CardTitle className="text-base">{content.title}</CardTitle>
                       </CardHeader>
                       <CardContent className="p-3 pt-0">
-                        <p className="text-xs text-muted-foreground">{content.description}</p>
+                        <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{content.description}</p>
                         
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {content.tags && content.tags.map((tag, idx) => (
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {content.tags && content.tags.slice(0, 2).map((tag, idx) => (
                             <Badge key={idx} variant="outline" className="text-xs">
                               {tag}
                             </Badge>
                           ))}
+                          {content.tags && content.tags.length > 2 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{content.tags.length - 2}
+                            </Badge>
+                          )}
                           
                           {content.format && (
                             <Badge variant="secondary" className="text-xs flex items-center gap-1">
@@ -271,12 +385,34 @@ const ContentCalendar = () => {
                           )}
                         </div>
                         
-                        <div className="flex justify-end mt-2">
+                        <div className="flex justify-between items-center mt-3">
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button size="sm" className="h-8 text-xs px-2">
+                                <CalendarIcon className="mr-1 h-3 w-3" />
+                                Schedule
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={undefined}
+                                onSelect={(date) => {
+                                  if (date) {
+                                    scheduleContent(content.id, date);
+                                  }
+                                }}
+                                initialFocus
+                                className="p-3 pointer-events-auto"
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          
                           <Button 
                             size="icon"
                             variant="ghost" 
                             className="h-8 w-8"
-                            onClick={() => deleteScheduledContent(content.id)}
+                            onClick={() => deleteContent(content.id)}
                           >
                             <Trash2 className="h-4 w-4 text-gray-500" />
                           </Button>
@@ -287,16 +423,74 @@ const ContentCalendar = () => {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-muted-foreground">
-                    {selectedDate 
-                      ? 'No content scheduled for this date.' 
-                      : 'Select a date to view scheduled content.'}
+                  <p className="text-muted-foreground">No content ready to be scheduled.</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Create content ideas in the Content Ideation section and mark them as ready for scheduling.
                   </p>
                 </div>
               )}
             </CardContent>
           </Card>
-        </div>
+        )}
+        
+        {/* New Content Dialog */}
+        <Dialog open={newContentDialogOpen} onOpenChange={setNewContentDialogOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Add New Content</DialogTitle>
+              <DialogDescription>
+                Create a new content item for {selectedDate ? format(selectedDate, 'MMMM d, yyyy') : 'selected date'}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <label htmlFor="title" className="text-sm font-medium">Title</label>
+                <input
+                  id="title"
+                  value={newContentTitle}
+                  onChange={(e) => setNewContentTitle(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  placeholder="Content title"
+                />
+              </div>
+              <div className="grid gap-2">
+                <label htmlFor="description" className="text-sm font-medium">Description</label>
+                <textarea
+                  id="description"
+                  value={newContentDescription}
+                  onChange={(e) => setNewContentDescription(e.target.value)}
+                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  placeholder="Content description"
+                />
+              </div>
+              <div className="grid gap-2">
+                <label htmlFor="format" className="text-sm font-medium">Format</label>
+                <select
+                  id="format"
+                  value={newContentFormat}
+                  onChange={(e) => setNewContentFormat(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="Post">Post</option>
+                  <option value="Video">Video</option>
+                  <option value="Blog Post">Blog Post</option>
+                  <option value="Reel">Reel</option>
+                  <option value="Story">Story</option>
+                  <option value="Podcast">Podcast</option>
+                  <option value="Newsletter">Newsletter</option>
+                </select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setNewContentDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={createNewContent}>
+                Save
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
