@@ -227,7 +227,7 @@ const ContentIdeation = () => {
     <Layout>
       <div className="space-y-6 fade-in">
         <div className="flex flex-col space-y-2">
-          <h1 className="text-3xl font-bold">Content Ideation & Planning</h1>
+          <h1 className="text-3xl font-bold">X</h1>
           <p className="text-muted-foreground">
             Develop and organize your content ideas in one place
           </p>

@@ -16,13 +16,7 @@ const services = [
     path: "/bank-of-content"
   },
   {
-    title: (
-      <div className="flex flex-col">
-        <span>Content</span>
-        <span>Ideation And</span>
-        <span>Planning</span>
-      </div>
-    ),
+    title: "X",
     icon: PenLine,
     path: "/content-ideation"
   },
