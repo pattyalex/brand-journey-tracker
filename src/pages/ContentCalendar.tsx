@@ -195,12 +195,13 @@ const ContentCalendar = () => {
           </p>
         </div>
         
-        {readyToScheduleContent.length > 0 && (
-          <Card className="overflow-hidden">
-            <CardHeader>
-              <CardTitle>Content Ready to be Scheduled</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+        {/* Content Ready to be Scheduled section - displayed always, not conditionally */}
+        <Card className="overflow-hidden">
+          <CardHeader>
+            <CardTitle>Content Ready to be Scheduled</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {readyToScheduleContent.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {readyToScheduleContent.map((content) => (
                   <Card key={content.id} className="overflow-hidden">
@@ -261,9 +262,19 @@ const ContentCalendar = () => {
                   </Card>
                 ))}
               </div>
-            </CardContent>
-          </Card>
-        )}
+            ) : (
+              <div className="p-6 text-center border border-dashed rounded-lg">
+                <div className="flex flex-col items-center justify-center text-muted-foreground">
+                  <ClipboardCheck className="h-8 w-8 mb-2" />
+                  <p>No content ready for scheduling</p>
+                  <p className="text-sm mt-1">
+                    Send content from the Bank of Content to see it here
+                  </p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card className="lg:col-span-1">
