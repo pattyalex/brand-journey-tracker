@@ -4,22 +4,22 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  Trash2, Pencil, Calendar, FileText
+  Trash2, Pencil, Send, FileText
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
 import { getTagColorClasses } from "@/utils/tagColors";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ContentCardProps {
   content: ContentItem;
@@ -41,7 +41,7 @@ const ContentCard = ({
   onScheduleContent
 }: ContentCardProps) => {
   const [date, setDate] = useState<Date | undefined>(content.scheduledDate);
-  const [calendarOpen, setCalendarOpen] = useState(false);
+  const navigate = useNavigate();
   
   const getContentFormat = () => {
     if (content.format === 'text' && content.url) {
@@ -77,31 +77,20 @@ const ContentCard = ({
 
   const platforms = getPlatforms();
 
-  const handleDateSelect = (selectedDate: Date | undefined) => {
-    if (!selectedDate) return;
+  const handleSendToCalendar = () => {
+    const readyToScheduleContent = JSON.parse(localStorage.getItem('readyToScheduleContent') || '[]');
     
-    setDate(selectedDate);
+    const existingIndex = readyToScheduleContent.findIndex((item: ContentItem) => item.id === content.id);
     
-    if (onScheduleContent) {
-      onScheduleContent(content.id, selectedDate);
-      toast.success(`Scheduled "${content.title}" for ${format(selectedDate, "PPP")}`);
+    if (existingIndex >= 0) {
+      toast.info(`"${content.title}" is already in your calendar`);
     } else {
-      const scheduledContents = JSON.parse(localStorage.getItem('scheduledContents') || '[]');
-      const updatedContent = { ...content, scheduledDate: selectedDate };
-      
-      const existingIndex = scheduledContents.findIndex((item: ContentItem) => item.id === content.id);
-      
-      if (existingIndex >= 0) {
-        scheduledContents[existingIndex] = updatedContent;
-      } else {
-        scheduledContents.push(updatedContent);
-      }
-      
-      localStorage.setItem('scheduledContents', JSON.stringify(scheduledContents));
-      toast.success(`Scheduled "${content.title}" for ${format(selectedDate, "PPP")}`);
+      readyToScheduleContent.push(content);
+      localStorage.setItem('readyToScheduleContent', JSON.stringify(readyToScheduleContent));
+      toast.success(`"${content.title}" sent to Content Calendar`);
     }
     
-    setCalendarOpen(false);
+    navigate('/content-calendar');
   };
 
   return (
@@ -111,7 +100,6 @@ const ContentCard = ({
           {content.title}
           {date && (
             <Badge variant="outline" className="ml-2 text-xs">
-              <CalendarIcon className="h-2 w-2 mr-1" />
               {format(date, "MMM d")}
             </Badge>
           )}
@@ -151,7 +139,6 @@ const ContentCard = ({
           ) : null}
         </div>
         <div className="flex items-center text-xs text-muted-foreground mt-2">
-          <Calendar className="h-3 w-3 mr-1" />
           <span>
             {content.dateCreated ? formatDistanceToNow(new Date(content.dateCreated), { addSuffix: true }) : 'Unknown date'}
           </span>
@@ -159,29 +146,26 @@ const ContentCard = ({
       </CardContent>
       
       <CardFooter className="p-4 pt-0 flex justify-between">
-        <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline" 
-              size="sm"
-              aria-label="Schedule"
-              className="h-8 w-8 p-0"
-            >
-              <CalendarIcon className="h-4 w-4" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 bg-white" align="start">
-            <div className="p-2">
-              <h3 className="text-sm font-medium mb-2">Schedule Post</h3>
-              <CalendarComponent
-                mode="single"
-                selected={date}
-                onSelect={handleDateSelect}
-                initialFocus
-              />
-            </div>
-          </PopoverContent>
-        </Popover>
+        <div className="flex gap-2">
+          <TooltipProvider delayDuration={200}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  aria-label="Send to Content Calendar"
+                  className="h-8 w-8 p-0"
+                  onClick={handleSendToCalendar}
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="bg-white text-black border shadow-md">
+                <p>Send to content calendar</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
         
         <div className="flex gap-2">
           <Button 
