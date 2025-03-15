@@ -1,61 +1,48 @@
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { ThemeProvider } from "@/components/theme-provider"
+import Dashboard from './pages/Dashboard';
+import BankOfContent from './pages/BankOfContent';
+import ContentIdeation from './pages/ContentIdeation';
+import ContentCalendar from './pages/ContentCalendar';
+import StrategyGrowth from './pages/StrategyGrowth';
+import IncomeTracker from './pages/IncomeTracker';
+import Analytics from './pages/Analytics';
+import QuickNotes from './pages/QuickNotes';
+import GetStarted from './pages/GetStarted';
+import TaskBoard from './pages/TaskBoard';
+import Settings from './pages/Settings';
+import MyAccount from './pages/MyAccount';
+import Help from './pages/Help';
+import NotFound from './pages/NotFound';
+import WeeklyContentTasks from './pages/WeeklyContentTasks';
+import ContentPlanning from './pages/ContentPlanning';
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
-import Settings from "./pages/Settings";
-import NotFound from "./pages/NotFound";
-import GetStarted from "./pages/GetStarted";
-import ContentIdeation from "./pages/ContentIdeation";
-import MyAccount from "./pages/MyAccount";
-import Analytics from "./pages/Analytics";
-import BankOfContent from "./pages/BankOfContent";
-import ContentCalendar from "./pages/ContentCalendar";
-import StrategyGrowth from "./pages/StrategyGrowth";
-import IncomeTracker from "./pages/IncomeTracker";
-import TaskBoard from "./pages/TaskBoard";
-import Help from "./pages/Help";
-import QuickNotes from "./pages/QuickNotes";
-import WeeklyContentTasks from "./pages/WeeklyContentTasks";
-
-const queryClient = new QueryClient();
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
+function App() {
+  return (
+    <ThemeProvider defaultTheme="system" storageKey="vite-react-theme">
+      <Router>
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/get-started" element={<GetStarted />} />
-          <Route path="/workflow" element={<GetStarted />} />
-          <Route path="/projects" element={<GetStarted />} />
-          <Route path="/content-ideation" element={<ContentIdeation />} />
-          <Route path="/my-account" element={<MyAccount />} />
-          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/" element={<Dashboard />} />
           <Route path="/bank-of-content" element={<BankOfContent />} />
-          <Route path="/ideas-bank" element={<BankOfContent />} />
+          <Route path="/content-ideation" element={<ContentIdeation />} />
+          <Route path="/content-planning" element={<ContentPlanning />} />
           <Route path="/content-calendar" element={<ContentCalendar />} />
           <Route path="/strategy-growth" element={<StrategyGrowth />} />
           <Route path="/income-tracker" element={<IncomeTracker />} />
-          <Route path="/task-board" element={<TaskBoard />} />
-          <Route path="/help" element={<Help />} />
+          <Route path="/analytics" element={<Analytics />} />
           <Route path="/quick-notes" element={<QuickNotes />} />
-          <Route path="/weekly-content-tasks" element={<WeeklyContentTasks />} />
-          <Route path="/weekly-content-flow" element={<WeeklyContentTasks />} /> {/* Keeping old route for backward compatibility */}
+          <Route path="/get-started" element={<GetStarted />} />
+          <Route path="/task-board" element={<TaskBoard />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/my-account" element={<MyAccount />} />
+          <Route path="/help" element={<Help />} />
+          <Route path="/weekly-content" element={<WeeklyContentTasks />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+      </Router>
+    </ThemeProvider>
+  );
+}
 
 export default App;
