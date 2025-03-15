@@ -129,7 +129,6 @@ const ContentCard = ({
           {content.title}
           {date && (
             <Badge variant="outline" className="ml-2 text-xs">
-              {/* <CalendarIcon className="h-2 w-2 mr-1" /> */}
               {format(date, "MMM d")}
             </Badge>
           )}
@@ -169,7 +168,6 @@ const ContentCard = ({
           ) : null}
         </div>
         <div className="flex items-center text-xs text-muted-foreground mt-2">
-          <CalendarIcon className="h-3 w-3 mr-1" />
           <span>
             {content.dateCreated ? formatDistanceToNow(new Date(content.dateCreated), { addSuffix: true }) : 'Unknown date'}
           </span>
