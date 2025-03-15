@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,7 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { CalendarIcon, FileText, ClipboardCheck } from "lucide-react";
+import { CalendarIcon, FileText, ClipboardCheck, Trash2 } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -195,28 +194,32 @@ const ContentCalendar = () => {
           </p>
         </div>
         
-        {/* Content Ready to be Scheduled section - displayed always, not conditionally */}
         <Card className="overflow-hidden">
           <CardHeader>
             <CardTitle>Content Ready to be Scheduled</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {readyToScheduleContent.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {readyToScheduleContent.map((content) => (
-                  <Card key={content.id} className="overflow-hidden">
-                    <CardHeader className="p-4 pb-2">
-                      <CardTitle className="text-lg">{content.title}</CardTitle>
+                  <Card key={content.id} className="overflow-hidden h-fit">
+                    <CardHeader className="p-3 pb-1">
+                      <CardTitle className="text-base">{content.title}</CardTitle>
                     </CardHeader>
-                    <CardContent className="p-4 pt-0">
-                      <p className="text-sm text-muted-foreground mb-2">{content.description}</p>
+                    <CardContent className="p-3 pt-0">
+                      <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{content.description}</p>
                       
                       <div className="flex flex-wrap gap-1 mb-3">
-                        {content.tags && content.tags.map((tag, idx) => (
+                        {content.tags && content.tags.slice(0, 2).map((tag, idx) => (
                           <Badge key={idx} variant="outline" className="text-xs">
                             {tag}
                           </Badge>
                         ))}
+                        {content.tags && content.tags.length > 2 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{content.tags.length - 2}
+                          </Badge>
+                        )}
                         
                         {content.format && (
                           <Badge variant="secondary" className="text-xs flex items-center gap-1">
@@ -226,11 +229,11 @@ const ContentCalendar = () => {
                         )}
                       </div>
                       
-                      <div className="flex justify-between mt-4">
+                      <div className="flex justify-between items-center mt-3">
                         <Popover>
                           <PopoverTrigger asChild>
-                            <Button size="sm">
-                              <CalendarIcon className="mr-2 h-4 w-4" />
+                            <Button size="sm" className="h-8 text-xs px-2">
+                              <CalendarIcon className="mr-1 h-3 w-3" />
                               Schedule
                             </Button>
                           </PopoverTrigger>
@@ -251,11 +254,12 @@ const ContentCalendar = () => {
                         </Popover>
                         
                         <Button 
-                          size="sm" 
-                          variant="destructive"
+                          size="icon"
+                          variant="ghost" 
+                          className="h-8 w-8"
                           onClick={() => deleteContent(content.id)}
                         >
-                          Delete
+                          <Trash2 className="h-4 w-4 text-gray-500" />
                         </Button>
                       </div>
                     </CardContent>
