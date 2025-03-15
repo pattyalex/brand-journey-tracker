@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -73,12 +72,7 @@ const ContentCalendar = () => {
     if (readyContent) {
       try {
         const parsedReady = JSON.parse(readyContent);
-        const withProperDates = parsedReady.map((item: any) => ({
-          ...item,
-          dateCreated: item.dateCreated ? new Date(item.dateCreated) : new Date(),
-          scheduledDate: item.scheduledDate ? new Date(item.scheduledDate) : undefined
-        }));
-        setReadyToScheduleContent(withProperDates);
+        setReadyToScheduleContent(parsedReady);
       } catch (error) {
         console.error("Error parsing ready to schedule content:", error);
         setReadyToScheduleContent([]);
@@ -195,13 +189,12 @@ const ContentCalendar = () => {
           </p>
         </div>
         
-        {/* Content Ready to be Scheduled section - displayed always, not conditionally */}
-        <Card className="overflow-hidden">
-          <CardHeader>
-            <CardTitle>Content Ready to be Scheduled</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {readyToScheduleContent.length > 0 ? (
+        {readyToScheduleContent.length > 0 && (
+          <Card className="overflow-hidden">
+            <CardHeader>
+              <CardTitle>Content Ready to be Scheduled</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {readyToScheduleContent.map((content) => (
                   <Card key={content.id} className="overflow-hidden">
@@ -262,19 +255,9 @@ const ContentCalendar = () => {
                   </Card>
                 ))}
               </div>
-            ) : (
-              <div className="p-6 text-center border border-dashed rounded-lg">
-                <div className="flex flex-col items-center justify-center text-muted-foreground">
-                  <ClipboardCheck className="h-8 w-8 mb-2" />
-                  <p>No content ready for scheduling</p>
-                  <p className="text-sm mt-1">
-                    Send content from the Bank of Content to see it here
-                  </p>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card className="lg:col-span-1">
