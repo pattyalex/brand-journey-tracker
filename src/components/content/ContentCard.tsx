@@ -1,11 +1,10 @@
-
 import { useState } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  Trash2, Pencil, FileText, Send
+  Trash2, Pencil, Send, FileText
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ContentItem } from "@/types/content";
@@ -15,6 +14,12 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ContentCardProps {
   content: ContentItem;
@@ -142,16 +147,24 @@ const ContentCard = ({
       
       <CardFooter className="p-4 pt-0 flex justify-between">
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            aria-label="Send to Calendar"
-            className="h-8 flex items-center gap-1 px-2"
-            onClick={handleSendToCalendar}
-          >
-            <Send className="h-4 w-4" />
-            <span className="hidden sm:inline text-xs">Calendar</span>
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  aria-label="Send to Content Calendar"
+                  className="h-8 w-8 p-0"
+                  onClick={handleSendToCalendar}
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Send to content calendar</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         
         <div className="flex gap-2">
