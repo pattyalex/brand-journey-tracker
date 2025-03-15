@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
@@ -44,15 +45,22 @@ const ContentCard = ({
   const navigate = useNavigate();
   
   const getContentFormat = () => {
+    // First check if the format is directly available
+    if (content.format && content.format !== 'text') {
+      return content.format;
+    }
+    
+    // If format is text, try to extract from url
     if (content.format === 'text' && content.url) {
       try {
         const parsedContent = JSON.parse(content.url);
-        return parsedContent.format;
+        return parsedContent.format || "Post";
       } catch {
-        return null;
+        return "Post"; // Default to Post if parsing fails
       }
     }
-    return null;
+    
+    return "Post"; // Default format
   };
 
   const contentFormat = getContentFormat();
@@ -85,7 +93,13 @@ const ContentCard = ({
     if (existingIndex >= 0) {
       toast.info(`"${content.title}" is already in your calendar`);
     } else {
-      readyToScheduleContent.push(content);
+      // Make sure to include the proper format when sending to calendar
+      const contentToSchedule = {
+        ...content,
+        format: contentFormat // Use the determined format
+      };
+      
+      readyToScheduleContent.push(contentToSchedule);
       localStorage.setItem('readyToScheduleContent', JSON.stringify(readyToScheduleContent));
       toast.success(`"${content.title}" sent to Content Calendar`);
     }

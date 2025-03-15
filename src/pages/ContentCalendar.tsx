@@ -171,6 +171,15 @@ const ContentCalendar = () => {
     setScheduledContent(prev => prev.filter(item => item.id !== contentId));
   };
 
+  // Helper function to get the correct format display
+  const getContentFormat = (content: ContentItem) => {
+    if (content.format && content.format !== 'text') {
+      return content.format;
+    }
+    
+    return "Post"; // Default format
+  };
+
   const getContentForDate = (date: Date) => {
     return scheduledContent.filter(content => {
       if (!content.scheduledDate) return false;
@@ -287,11 +296,11 @@ const ContentCalendar = () => {
                           <Badge 
                             variant="secondary" 
                             className={`text-xs flex items-center gap-1 ${
-                              formatColors[content.format] ? formatColors[content.format] : "bg-gray-100 text-gray-800"
+                              formatColors[getContentFormat(content)] ? formatColors[getContentFormat(content)] : "bg-gray-100 text-gray-800"
                             }`}
                           >
                             <FileText className="h-3 w-3" />
-                            {content.format}
+                            {getContentFormat(content)}
                           </Badge>
                         )}
                       </div>
@@ -409,8 +418,8 @@ const ContentCalendar = () => {
                       <div 
                         key={content.id} 
                         className={`text-xs p-1 rounded cursor-pointer ${
-                          content.format && formatColors[content.format] 
-                            ? formatColors[content.format] 
+                          content.format && formatColors[getContentFormat(content)] 
+                            ? formatColors[getContentFormat(content)] 
                             : "bg-gray-100 text-gray-800"
                         }`}
                         onClick={(e) => {
