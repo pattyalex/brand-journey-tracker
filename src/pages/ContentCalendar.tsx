@@ -18,7 +18,9 @@ import {
   setDefaultOptions,
   setYear,
   setMonth,
-  setDate
+  setDate,
+  startOfWeek,
+  endOfWeek
 } from "date-fns";
 import {
   Dialog,
@@ -67,8 +69,8 @@ const isWeekend = (date: Date) => {
 const ContentCalendar = () => {
   // Set today as March 14, 2025 (Friday)
   const getToday = () => {
-    const today = new Date();
-    return setYear(setMonth(setDate(today, 14), 2), 2025); // Note: months are 0-indexed, so 2 = March
+    const today = new Date(2025, 2, 14); // Note: months are 0-indexed, so 2 = March
+    return today;
   };
 
   const [currentMonth, setCurrentMonth] = useState(getToday());
@@ -192,30 +194,15 @@ const ContentCalendar = () => {
   const monthEnd = endOfMonth(currentMonth);
   const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-  // Calculate days needed to complete the calendar grid
-  const startDay = getDay(monthStart); // 0 for Sunday, 1 for Monday, etc.
+  // Calculate start and end of the calendar grid (Sunday to Saturday)
+  const calendarStart = startOfWeek(monthStart);
+  const calendarEnd = endOfWeek(monthEnd);
   
-  // Get days from previous month to fill the first row
-  const daysFromPrevMonth = startDay;
-  const prevMonthDays = daysFromPrevMonth > 0 
-    ? eachDayOfInterval({ 
-        start: subMonths(monthStart, 1), 
-        end: subMonths(monthStart, 1) 
-      }).slice(-daysFromPrevMonth) 
-    : [];
-    
-  // Get days from next month to fill the last row
-  const totalDaysInGrid = Math.ceil((monthDays.length + daysFromPrevMonth) / 7) * 7;
-  const daysFromNextMonth = totalDaysInGrid - (monthDays.length + daysFromPrevMonth);
-  const nextMonthDays = daysFromNextMonth > 0 
-    ? eachDayOfInterval({ 
-        start: addMonths(monthEnd, 0), 
-        end: addMonths(monthEnd, 0) 
-      }).slice(1, daysFromNextMonth + 1) 
-    : [];
-  
-  // Combine all days
-  const calendarDays = [...prevMonthDays, ...monthDays, ...nextMonthDays];
+  // Generate all calendar days
+  const calendarDays = eachDayOfInterval({ 
+    start: calendarStart, 
+    end: calendarEnd 
+  });
 
   return (
     <Layout>
@@ -513,4 +500,3 @@ const ContentCalendar = () => {
 };
 
 export default ContentCalendar;
-
