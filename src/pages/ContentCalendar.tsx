@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -202,6 +201,12 @@ const ContentCalendar = () => {
   // Combine all days
   const calendarDays = [...prevMonthDays, ...monthDays, ...nextMonthDays];
 
+  // Function to check if a date is a weekend (Saturday or Sunday)
+  const isWeekend = (date: Date) => {
+    const day = getDay(date);
+    return day === 0 || day === 6; // 0 is Sunday, 6 is Saturday
+  };
+
   return (
     <Layout>
       <div className="space-y-4">
@@ -344,8 +349,13 @@ const ContentCalendar = () => {
         <div className="border rounded-md bg-white overflow-hidden">
           {/* Calendar Header - Days of week */}
           <div className="grid grid-cols-7 border-b">
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-              <div key={day} className="p-2 text-center font-medium text-gray-500">
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
+              <div 
+                key={day} 
+                className={`p-2 text-center font-medium ${
+                  index === 0 || index === 6 ? "text-indigo-500" : "text-gray-500"
+                }`}
+              >
                 {day}
               </div>
             ))}
@@ -357,13 +367,16 @@ const ContentCalendar = () => {
               const isCurrentMonth = isSameMonth(day, currentMonth);
               const isCurrentDay = isToday(day);
               const dayContent = getContentForDate(day);
+              const isWeekendDay = isWeekend(day);
               
               return (
                 <div 
                   key={i} 
                   className={`border-t border-l min-h-[120px] p-1 ${
                     !isCurrentMonth ? "bg-gray-50 text-gray-400" : ""
-                  } ${isCurrentDay ? "bg-blue-50" : ""}`}
+                  } ${isCurrentDay ? "bg-blue-50" : ""} ${
+                    isCurrentMonth && isWeekendDay ? "bg-indigo-50" : ""
+                  }`}
                   onClick={() => {
                     setSelectedDate(day);
                     if (isCurrentMonth && dayContent.length === 0) {
@@ -373,7 +386,8 @@ const ContentCalendar = () => {
                 >
                   <div className="flex justify-between items-start p-1">
                     <div className={`text-sm font-medium ${
-                      isCurrentDay ? "bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center" : ""
+                      isCurrentDay ? "bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center" : 
+                      isWeekendDay && isCurrentMonth ? "text-indigo-600" : ""
                     }`}>
                       {format(day, 'd')}
                     </div>
