@@ -367,7 +367,7 @@ const ContentCalendar = () => {
                   className={`border-t border-l min-h-[120px] p-1 ${
                     !isCurrentMonth ? "bg-gray-50 text-gray-400" : ""
                   } ${isCurrentDay ? "bg-blue-50" : ""} ${
-                    isWeekendDay && isCurrentMonth ? "bg-indigo-50 text-indigo-800" : ""
+                    isWeekendDay && isCurrentMonth ? "bg-gray-100" : ""
                   }`}
                   onClick={() => {
                     setSelectedDate(day);
