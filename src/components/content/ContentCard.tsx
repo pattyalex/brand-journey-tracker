@@ -4,7 +4,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  Trash2, Pencil, FileText, Send
+  Trash2, Pencil, Calendar, FileText
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ContentItem } from "@/types/content";
@@ -20,7 +20,6 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { useNavigate } from "react-router-dom";
 
 interface ContentCardProps {
   content: ContentItem;
@@ -43,7 +42,6 @@ const ContentCard = ({
 }: ContentCardProps) => {
   const [date, setDate] = useState<Date | undefined>(content.scheduledDate);
   const [calendarOpen, setCalendarOpen] = useState(false);
-  const navigate = useNavigate();
   
   const getContentFormat = () => {
     if (content.format === 'text' && content.url) {
@@ -106,22 +104,6 @@ const ContentCard = ({
     setCalendarOpen(false);
   };
 
-  const handleSendToCalendar = () => {
-    const scheduledContents = JSON.parse(localStorage.getItem('scheduledContents') || '[]');
-    
-    const existingIndex = scheduledContents.findIndex((item: ContentItem) => item.id === content.id);
-    
-    if (existingIndex >= 0) {
-      toast.info(`"${content.title}" is already in your calendar`);
-    } else {
-      scheduledContents.push(content);
-      localStorage.setItem('scheduledContents', JSON.stringify(scheduledContents));
-      toast.success(`"${content.title}" sent to Content Calendar`);
-    }
-    
-    navigate('/content-calendar');
-  };
-
   return (
     <Card className="overflow-hidden relative h-full border-2 w-full">
       <CardHeader className="p-4 pb-2">
@@ -129,6 +111,7 @@ const ContentCard = ({
           {content.title}
           {date && (
             <Badge variant="outline" className="ml-2 text-xs">
+              <CalendarIcon className="h-2 w-2 mr-1" />
               {format(date, "MMM d")}
             </Badge>
           )}
@@ -168,6 +151,7 @@ const ContentCard = ({
           ) : null}
         </div>
         <div className="flex items-center text-xs text-muted-foreground mt-2">
+          <Calendar className="h-3 w-3 mr-1" />
           <span>
             {content.dateCreated ? formatDistanceToNow(new Date(content.dateCreated), { addSuffix: true }) : 'Unknown date'}
           </span>
@@ -175,42 +159,29 @@ const ContentCard = ({
       </CardContent>
       
       <CardFooter className="p-4 pt-0 flex justify-between">
-        <div className="flex gap-2">
-          <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline" 
-                size="sm"
-                aria-label="Schedule"
-                className="h-8 w-8 p-0"
-              >
-                <CalendarIcon className="h-4 w-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-white" align="start">
-              <div className="p-2">
-                <h3 className="text-sm font-medium mb-2">Schedule Post</h3>
-                <CalendarComponent
-                  mode="single"
-                  selected={date}
-                  onSelect={handleDateSelect}
-                  initialFocus
-                />
-              </div>
-            </PopoverContent>
-          </Popover>
-
-          <Button
-            variant="outline"
-            size="sm"
-            aria-label="Send to Calendar"
-            className="h-8 flex items-center gap-1 px-2"
-            onClick={handleSendToCalendar}
-          >
-            <Send className="h-4 w-4" />
-            <span className="hidden sm:inline text-xs">Calendar</span>
-          </Button>
-        </div>
+        <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline" 
+              size="sm"
+              aria-label="Schedule"
+              className="h-8 w-8 p-0"
+            >
+              <CalendarIcon className="h-4 w-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0 bg-white" align="start">
+            <div className="p-2">
+              <h3 className="text-sm font-medium mb-2">Schedule Post</h3>
+              <CalendarComponent
+                mode="single"
+                selected={date}
+                onSelect={handleDateSelect}
+                initialFocus
+              />
+            </div>
+          </PopoverContent>
+        </Popover>
         
         <div className="flex gap-2">
           <Button 
