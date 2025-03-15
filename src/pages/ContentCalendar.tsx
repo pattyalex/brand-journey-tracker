@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,7 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { CalendarIcon, FileText } from "lucide-react";
+import { CalendarIcon, FileText, ClipboardCheck } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -35,9 +34,10 @@ const ContentCalendar = () => {
   const [scheduledContents, setScheduledContents] = useState<ContentItem[]>([]);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [unscheduledContent, setUnscheduledContent] = useState<ContentItem[]>([]);
+  const [readyToScheduleContent, setReadyToScheduleContent] = useState<ContentItem[]>([]);
   const location = useLocation();
   
-  // Load scheduled and unscheduled content
+  // Load scheduled, unscheduled and ready to schedule content
   useEffect(() => {
     // Load scheduled content from localStorage
     const storedContent = localStorage.getItem('scheduledContents');
@@ -68,6 +68,18 @@ const ContentCalendar = () => {
         console.error("Error parsing scheduled content:", error);
         setScheduledContents([]);
         setUnscheduledContent([]);
+      }
+    }
+    
+    // Load ready to schedule content
+    const readyContent = localStorage.getItem('readyToScheduleContent');
+    if (readyContent) {
+      try {
+        const parsedReady = JSON.parse(readyContent);
+        setReadyToScheduleContent(parsedReady);
+      } catch (error) {
+        console.error("Error parsing ready to schedule content:", error);
+        setReadyToScheduleContent([]);
       }
     }
   }, []);
@@ -105,8 +117,9 @@ const ContentCalendar = () => {
 
   // Handle scheduling unscheduled content 
   const scheduleContent = (contentId: string, scheduleDate: Date) => {
-    // Find content in unscheduled items
-    const contentToSchedule = unscheduledContent.find(item => item.id === contentId);
+    // Find content in unscheduled items or ready to schedule items
+    const contentToSchedule = unscheduledContent.find(item => item.id === contentId) || 
+                              readyToScheduleContent.find(item => item.id === contentId);
     
     if (!contentToSchedule) return;
     
@@ -116,11 +129,20 @@ const ContentCalendar = () => {
       scheduledDate: scheduleDate
     };
     
-    // Remove from unscheduled and add to scheduled
-    setUnscheduledContent(unscheduledContent.filter(item => item.id !== contentId));
+    // Remove from appropriate list and add to scheduled
+    if (unscheduledContent.find(item => item.id === contentId)) {
+      setUnscheduledContent(unscheduledContent.filter(item => item.id !== contentId));
+    } else {
+      setReadyToScheduleContent(readyToScheduleContent.filter(item => item.id !== contentId));
+      
+      // Update readyToScheduleContent in localStorage
+      const filteredReadyContent = readyToScheduleContent.filter(item => item.id !== contentId);
+      localStorage.setItem('readyToScheduleContent', JSON.stringify(filteredReadyContent));
+    }
+    
     setScheduledContents([...scheduledContents, updatedContent]);
     
-    // Update localStorage (combine both lists)
+    // Update scheduledContents in localStorage
     const allContent = [
       ...scheduledContents, 
       updatedContent,
@@ -161,16 +183,19 @@ const ContentCalendar = () => {
 
   // Delete content completely
   const deleteContent = (contentId: string) => {
-    // Remove from both lists
+    // Remove from all lists
     const newScheduled = scheduledContents.filter(content => content.id !== contentId);
     const newUnscheduled = unscheduledContent.filter(content => content.id !== contentId);
+    const newReadyToSchedule = readyToScheduleContent.filter(content => content.id !== contentId);
     
     setScheduledContents(newScheduled);
     setUnscheduledContent(newUnscheduled);
+    setReadyToScheduleContent(newReadyToSchedule);
     
     // Update localStorage
     const allContent = [...newScheduled, ...newUnscheduled];
     localStorage.setItem('scheduledContents', JSON.stringify(allContent));
+    localStorage.setItem('readyToScheduleContent', JSON.stringify(newReadyToSchedule));
     
     toast.success("Content deleted");
   };
@@ -258,6 +283,7 @@ const ContentCalendar = () => {
                 <TabsList className="mb-4">
                   <TabsTrigger value="scheduled">Scheduled Content</TabsTrigger>
                   <TabsTrigger value="unscheduled">Unscheduled Content</TabsTrigger>
+                  <TabsTrigger value="readyToSchedule">Ready to Schedule</TabsTrigger>
                   <TabsTrigger value="add">Add Event</TabsTrigger>
                 </TabsList>
                 
@@ -375,12 +401,90 @@ const ContentCalendar = () => {
                     </div>
                   ) : (
                     <div className="p-6 text-center border border-dashed rounded-lg">
-                      <p className="text-muted-foreground">
-                        No unscheduled content available.
-                      </p>
-                      <p className="text-muted-foreground text-sm mt-1">
-                        Send content from Idea Development to schedule it here.
-                      </p>
+                      <div className="flex flex-col items-center justify-center text-muted-foreground">
+                        <ClipboardCheck className="h-8 w-8 mb-2" />
+                        <p>No content ready for scheduling</p>
+                        <p className="text-sm mt-1">
+                          Send content from the Bank of Content to see it here
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="readyToSchedule" className="space-y-4">
+                  {readyToScheduleContent.length > 0 ? (
+                    <div className="space-y-4">
+                      <h3 className="font-medium text-sm">Content ready to be scheduled</h3>
+                      
+                      {readyToScheduleContent.map((content) => (
+                        <Card key={content.id} className="overflow-hidden">
+                          <CardHeader className="p-4 pb-2">
+                            <CardTitle className="text-lg">{content.title}</CardTitle>
+                          </CardHeader>
+                          <CardContent className="p-4 pt-0">
+                            <p className="text-sm text-muted-foreground mb-2">{content.description}</p>
+                            
+                            <div className="flex flex-wrap gap-1 mb-3">
+                              {content.tags && content.tags.map((tag, idx) => (
+                                <Badge key={idx} variant="outline" className="text-xs">
+                                  {tag}
+                                </Badge>
+                              ))}
+                              
+                              {content.format && (
+                                <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                                  <FileText className="h-3 w-3" />
+                                  {content.format}
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            <div className="flex justify-between mt-4">
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button size="sm">
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    Schedule
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0 bg-white" align="start">
+                                  <div className="p-2">
+                                    <h3 className="text-sm font-medium mb-2">Schedule Content</h3>
+                                    <Calendar
+                                      mode="single"
+                                      initialFocus
+                                      onSelect={(selectedDate) => {
+                                        if (selectedDate) {
+                                          scheduleContent(content.id, selectedDate);
+                                        }
+                                      }}
+                                    />
+                                  </div>
+                                </PopoverContent>
+                              </Popover>
+                              
+                              <Button 
+                                size="sm" 
+                                variant="destructive"
+                                onClick={() => deleteContent(content.id)}
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-6 text-center border border-dashed rounded-lg">
+                      <div className="flex flex-col items-center justify-center text-muted-foreground">
+                        <ClipboardCheck className="h-8 w-8 mb-2" />
+                        <p>No content ready for scheduling</p>
+                        <p className="text-sm mt-1">
+                          Send content from the Bank of Content to see it here
+                        </p>
+                      </div>
                     </div>
                   )}
                 </TabsContent>

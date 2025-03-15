@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
@@ -79,15 +78,15 @@ const ContentCard = ({
   const platforms = getPlatforms();
 
   const handleSendToCalendar = () => {
-    const scheduledContents = JSON.parse(localStorage.getItem('scheduledContents') || '[]');
+    const readyToScheduleContent = JSON.parse(localStorage.getItem('readyToScheduleContent') || '[]');
     
-    const existingIndex = scheduledContents.findIndex((item: ContentItem) => item.id === content.id);
+    const existingIndex = readyToScheduleContent.findIndex((item: ContentItem) => item.id === content.id);
     
     if (existingIndex >= 0) {
       toast.info(`"${content.title}" is already in your calendar`);
     } else {
-      scheduledContents.push(content);
-      localStorage.setItem('scheduledContents', JSON.stringify(scheduledContents));
+      readyToScheduleContent.push(content);
+      localStorage.setItem('readyToScheduleContent', JSON.stringify(readyToScheduleContent));
       toast.success(`"${content.title}" sent to Content Calendar`);
     }
     
