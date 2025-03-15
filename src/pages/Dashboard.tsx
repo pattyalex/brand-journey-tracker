@@ -18,50 +18,43 @@ const sections = [
     title: "Content Ideation & Planning",
     description: "Brainstorm and plan your content",
     icon: BrainCircuit,
-    gradient: "from-[#D2B48C]/20 to-[#8B6B4E]/20",
     path: "/content-ideation"
   },
   { 
     title: "Task Manager",
     description: "Track your content creation tasks",
     icon: ListTodo,
-    gradient: "from-[#E6CCB2]/20 to-[#B38B6D]/20",
-    path: "/task-manager"
+    path: "/task-board"
   },
   { 
     title: "Content Calendar",
     description: "Schedule and organize your content",
     icon: Calendar,
-    gradient: "from-[#DEB887]/20 to-[#A67B5B]/20",
     path: "/content-calendar"
   },
   { 
     title: "Brand Deal Tracker",
     description: "Manage brand partnerships",
     icon: Handshake,
-    gradient: "from-[#C4A484]/20 to-[#8B735F]/20",
-    path: "/brand-deals"
+    path: "/income-tracker"
   },
   { 
     title: "Strategy & Growth",
     description: "Analyze and improve your strategy",
     icon: TrendingUp,
-    gradient: "from-[#BC8F8F]/20 to-[#8B6969]/20",
-    path: "/strategy"
+    path: "/strategy-growth"
   },
   { 
     title: "Analytics",
     description: "Track your performance metrics",
     icon: BarChart,
-    gradient: "from-[#D2B48C]/20 to-[#96744E]/20",
     path: "/analytics"
   },
   { 
     title: "File & Contract Storage",
     description: "Store important documents",
     icon: FolderArchive,
-    gradient: "from-[#E6CCB2]/20 to-[#8B7355]/20",
-    path: "/storage"
+    path: "/bank-of-content"
   }
 ];
 
@@ -84,19 +77,18 @@ const Dashboard = () => {
         </div>
         
         <ScrollArea className="w-full px-1">
-          <div className="flex gap-6 pb-6 min-w-max">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-6">
             {sections.map((section, index) => (
               <Card 
                 key={index} 
-                className={`w-80 hover-scale glass-morphism cursor-pointer relative overflow-hidden transition-all duration-300 hover:shadow-lg`}
+                className="cursor-pointer transition-all duration-300 hover:shadow-lg hover:translate-y-[-5px]"
                 onClick={() => handleCardClick(section.path)}
               >
-                <div className={`absolute inset-0 bg-gradient-to-br ${section.gradient} opacity-50`} />
-                <CardHeader className="relative">
+                <CardHeader className="pb-2">
                   <section.icon className="w-8 h-8 mb-3 text-primary" />
                   <CardTitle className="text-xl">{section.title}</CardTitle>
                 </CardHeader>
-                <CardContent className="relative">
+                <CardContent>
                   <p className="text-muted-foreground">{section.description}</p>
                 </CardContent>
               </Card>
