@@ -83,7 +83,16 @@ const ContentCard = ({
     return [];
   };
 
+  // Deduplicate tags if they exist
+  const getUniqueTags = () => {
+    if (!content.tags || !Array.isArray(content.tags)) return [];
+    
+    // Use Set to remove duplicates
+    return [...new Set(content.tags)];
+  };
+
   const platforms = getPlatforms();
+  const uniqueTags = getUniqueTags();
 
   const handleSendToCalendar = () => {
     const readyToScheduleContent = JSON.parse(localStorage.getItem('readyToScheduleContent') || '[]');
@@ -93,10 +102,12 @@ const ContentCard = ({
     if (existingIndex >= 0) {
       toast.info(`"${content.title}" is already in your calendar`);
     } else {
-      // Make sure to include the proper format when sending to calendar
+      // Make sure to include the proper format and platforms when sending to calendar
       const contentToSchedule = {
         ...content,
-        format: contentFormat // Use the determined format
+        format: contentFormat, // Use the determined format
+        platforms: platforms,   // Include platforms
+        tags: uniqueTags        // Include deduplicated tags
       };
       
       readyToScheduleContent.push(contentToSchedule);
@@ -141,8 +152,8 @@ const ContentCard = ({
             </span>
           ))}
           
-          {content.tags && content.tags.length > 0 ? (
-            content.tags.slice(0, 2).map((tag, index) => (
+          {uniqueTags.length > 0 ? (
+            uniqueTags.slice(0, 2).map((tag, index) => (
               <span 
                 key={`tag-${index}`} 
                 className={`text-xs px-2 py-0.5 rounded-full ${getTagColorClasses(tag)}`}
