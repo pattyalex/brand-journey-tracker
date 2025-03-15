@@ -1,103 +1,71 @@
 
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import Layout from "@/components/Layout";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { 
-  BrainCircuit, 
-  ListTodo, 
-  Calendar, 
-  Handshake, 
-  TrendingUp, 
-  FolderArchive,
-  BarChart 
-} from "lucide-react";
-
-const sections = [
-  { 
-    title: "Content Ideation & Planning",
-    description: "Brainstorm and plan your content",
-    icon: BrainCircuit,
-    path: "/content-ideation"
-  },
-  { 
-    title: "Task Manager",
-    description: "Track your content creation tasks",
-    icon: ListTodo,
-    path: "/task-board"
-  },
-  { 
-    title: "Content Calendar",
-    description: "Schedule and organize your content",
-    icon: Calendar,
-    path: "/content-calendar"
-  },
-  { 
-    title: "Brand Deal Tracker",
-    description: "Manage brand partnerships",
-    icon: Handshake,
-    path: "/income-tracker"
-  },
-  { 
-    title: "Strategy & Growth",
-    description: "Analyze and improve your strategy",
-    icon: TrendingUp,
-    path: "/strategy-growth"
-  },
-  { 
-    title: "Analytics",
-    description: "Track your performance metrics",
-    icon: BarChart,
-    path: "/analytics"
-  },
-  { 
-    title: "File & Contract Storage",
-    description: "Store important documents",
-    icon: FolderArchive,
-    path: "/bank-of-content"
-  }
-];
+import { FolderOpen, Handshake, TrendingUp } from "lucide-react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
 
-  const handleCardClick = (path: string) => {
-    console.log("Navigating to:", path);
-    navigate(path);
-  };
-
   return (
     <Layout>
-      <div className="space-y-8 fade-in">
-        <div className="flex flex-col space-y-2">
-          <h1 className="text-4xl font-bold">Welcome back!</h1>
-          <p className="text-muted-foreground">
-            Pick a section below to start managing your content
+      <div className="max-w-6xl mx-auto px-6 py-16 space-y-16 fade-in">
+        {/* Hero Section */}
+        <section className="text-center space-y-6">
+          <h1 className="text-5xl md:text-6xl font-bold mb-4 leading-tight">
+            Simplify Your Content <br />Creation Journey
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            All-in-one platform for content creators to manage projects, track income, and grow their business
           </p>
-        </div>
-        
-        <ScrollArea className="w-full px-1">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-6">
-            {sections.map((section, index) => (
-              <Card 
-                key={index} 
-                className="cursor-pointer transition-all duration-300 hover:shadow-lg hover:translate-y-[-5px]"
-                onClick={() => handleCardClick(section.path)}
-              >
-                <CardHeader className="pb-2">
-                  <section.icon className="w-8 h-8 mb-3 text-primary" />
-                  <CardTitle className="text-xl">{section.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">{section.description}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </ScrollArea>
+          <Button 
+            size="lg" 
+            className="bg-primary hover:bg-primary/90 text-white text-lg px-8 py-6"
+            onClick={() => navigate("/get-started")}
+          >
+            Get Started
+          </Button>
+        </section>
+
+        {/* Features Section */}
+        <section className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          {features.map((feature, index) => (
+            <Card 
+              key={index} 
+              className="p-6 hover:shadow-lg transition-all duration-300 border border-gray-100"
+              onClick={() => navigate(feature.path)}
+            >
+              <feature.icon className="w-10 h-10 mb-4 text-primary" />
+              <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+              <p className="text-muted-foreground">{feature.description}</p>
+            </Card>
+          ))}
+        </section>
       </div>
     </Layout>
   );
 };
+
+const features = [
+  {
+    title: "Content Management",
+    description: "Plan, organize, and track your content creation workflow in one place",
+    icon: FolderOpen,
+    path: "/get-started"
+  },
+  {
+    title: "Revenue Growth",
+    description: "Track income from brand deals, sponsorships, and other revenue streams",
+    icon: Handshake,
+    path: "/income-tracker"
+  },
+  {
+    title: "Performance Analytics",
+    description: "Monitor your growth and make data-driven content decisions",
+    icon: TrendingUp,
+    path: "/analytics"
+  },
+];
 
 export default Dashboard;
