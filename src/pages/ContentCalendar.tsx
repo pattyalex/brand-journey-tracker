@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -72,7 +73,12 @@ const ContentCalendar = () => {
     if (readyContent) {
       try {
         const parsedReady = JSON.parse(readyContent);
-        setReadyToScheduleContent(parsedReady);
+        const withProperDates = parsedReady.map((item: any) => ({
+          ...item,
+          dateCreated: item.dateCreated ? new Date(item.dateCreated) : new Date(),
+          scheduledDate: item.scheduledDate ? new Date(item.scheduledDate) : undefined
+        }));
+        setReadyToScheduleContent(withProperDates);
       } catch (error) {
         console.error("Error parsing ready to schedule content:", error);
         setReadyToScheduleContent([]);
