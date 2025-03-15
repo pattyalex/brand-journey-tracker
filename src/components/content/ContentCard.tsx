@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
@@ -148,7 +147,7 @@ const ContentCard = ({
       
       <CardFooter className="p-4 pt-0 flex justify-between">
         <div className="flex gap-2">
-          <TooltipProvider delayDuration={200}>
+          <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -161,7 +160,7 @@ const ContentCard = ({
                   <Send className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent className="bg-white text-black border shadow-md">
+              <TooltipContent>
                 <p>Send to content calendar</p>
               </TooltipContent>
             </Tooltip>
