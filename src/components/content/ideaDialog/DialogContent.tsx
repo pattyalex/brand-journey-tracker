@@ -85,7 +85,7 @@ const DialogContent = ({
   children,
 }: DialogContentProps) => {
   return (
-    <ScrollArea className="h-[calc(90vh-140px)] pr-4" style={{ overflowY: 'auto', touchAction: 'pan-y' }}>
+    <ScrollArea className="h-[calc(95vh-140px)] pr-4" style={{ overflowY: 'auto', touchAction: 'pan-y' }}>
       <div className="grid gap-6 py-4 pr-2">
         <TitleInputSection title={title} onTitleChange={onTitleChange} />
         

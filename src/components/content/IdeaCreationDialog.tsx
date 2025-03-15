@@ -97,7 +97,7 @@ const IdeaCreationDialog = ({
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] sm:max-w-[650px] md:max-w-[750px]">
+      <DialogContent className="max-h-[95vh] sm:max-w-[800px] md:max-w-[900px] lg:max-w-[1000px] w-[90vw]">
         <div className="h-full flex flex-col">
           <DialogHeader 
             title={dialogTitle} 

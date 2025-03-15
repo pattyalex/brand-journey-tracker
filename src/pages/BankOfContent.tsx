@@ -32,6 +32,7 @@ const BankOfContent = () => {
   
   const [selectedText, setSelectedText] = useState("");
   const [developScriptText, setDevelopScriptText] = useState("");
+  const [visualNotes, setVisualNotes] = useState("");  // Added visualNotes state
   const [shootDetails, setShootDetails] = useState("");
   const [captionText, setCaptionText] = useState("");
   const [selectedFormat, setSelectedFormat] = useState("text");
@@ -100,6 +101,7 @@ const BankOfContent = () => {
     setDevelopIdeaMode(false);
     setNewIdeaTitle("");
     setDevelopScriptText("");
+    setVisualNotes("");  // Reset visualNotes when opening dialog
     setSelectedFormat("text");
     setShootDetails("");
     setCaptionText("");
@@ -232,6 +234,7 @@ const BankOfContent = () => {
       format: selectedFormat,
       url: JSON.stringify({
         script: developScriptText || selectedText,
+        visualNotes: visualNotes,  // Include visualNotes in the saved content
         shootDetails: shootDetails,
         caption: captionText,
         platforms: selectedPlatforms,
@@ -249,6 +252,7 @@ const BankOfContent = () => {
     setNewIdeaTitle("");
     setDevelopScriptText("");
     setSelectedText("");
+    setVisualNotes("");  // Reset visualNotes after saving
     setSelectedFormat("text");
     setShootDetails("");
     setCaptionText("");
@@ -338,6 +342,8 @@ const BankOfContent = () => {
           pillarId={activeTab}
           scriptText={developScriptText || selectedText}
           onScriptTextChange={setDevelopScriptText}
+          visualNotes={visualNotes}
+          onVisualNotesChange={setVisualNotes}
           format={selectedFormat}
           onFormatChange={setSelectedFormat}
           shootDetails={shootDetails}

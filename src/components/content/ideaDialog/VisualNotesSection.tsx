@@ -19,7 +19,7 @@ const VisualNotesSection = ({
         value={visualNotes}
         onChange={(e) => onVisualNotesChange(e.target.value)}
         placeholder="Describe different shots and angles you want to capture to convey your ideas..."
-        className="min-h-[120px] resize-y"
+        className="min-h-[150px] resize-y"
       />
     </div>
   );
