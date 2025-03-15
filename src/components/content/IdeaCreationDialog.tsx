@@ -68,7 +68,7 @@ const IdeaCreationDialog = ({
   onScriptTextChange,
   visualNotes = "",
   onVisualNotesChange = () => {},
-  format = "text",
+  format = "Post",
   onFormatChange = () => {},
   shootDetails,
   onShootDetailsChange,
@@ -110,7 +110,7 @@ const IdeaCreationDialog = ({
       id: Date.now().toString(),
       title,
       description: scriptText || inspirationText || "",
-      format,
+      format, // Use the current format value from props
       dateCreated: new Date(),
       tags: tags || [],
       platforms: platforms || [],

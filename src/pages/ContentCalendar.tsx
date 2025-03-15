@@ -284,7 +284,12 @@ const ContentCalendar = () => {
                         )}
                         
                         {content.format && (
-                          <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                          <Badge 
+                            variant="secondary" 
+                            className={`text-xs flex items-center gap-1 ${
+                              formatColors[content.format] ? formatColors[content.format] : "bg-gray-100 text-gray-800"
+                            }`}
+                          >
                             <FileText className="h-3 w-3" />
                             {content.format}
                           </Badge>
