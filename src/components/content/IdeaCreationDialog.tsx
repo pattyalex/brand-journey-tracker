@@ -8,9 +8,6 @@ import {
 } from "@/components/ui/dialog";
 import DialogHeader from "./ideaDialog/DialogHeader";
 import DialogContentBody from "./ideaDialog/DialogContent";
-import { Send } from "lucide-react";
-import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
 
 interface IdeaCreationDialogProps {
   open: boolean;
@@ -97,50 +94,6 @@ const IdeaCreationDialog = ({
   onAddInspirationImage = () => {},
   onRemoveInspirationImage = () => {},
 }: IdeaCreationDialogProps) => {
-  const navigate = useNavigate();
-  
-  const handleSendToSchedule = () => {
-    if (!title.trim()) {
-      toast.error("Please add a title before sending to schedule");
-      return;
-    }
-    
-    // Create content item to be scheduled
-    const contentToSchedule = {
-      id: Date.now().toString(),
-      title,
-      description: scriptText || inspirationText || "",
-      format,
-      dateCreated: new Date(),
-      tags: tags || [],
-      platforms: platforms || [],
-      shootDetails: shootDetails || "",
-      caption: captionText || "",
-      bucketId: bucketId || "",
-      createdAt: new Date(),
-      url: "",
-      status: "ready"
-    };
-    
-    // Get existing content or initialize empty array
-    const existingContent = localStorage.getItem('readyToScheduleContent');
-    const readyToScheduleContent = existingContent ? JSON.parse(existingContent) : [];
-    
-    // Add new content to the array
-    readyToScheduleContent.push(contentToSchedule);
-    
-    // Save back to localStorage
-    localStorage.setItem('readyToScheduleContent', JSON.stringify(readyToScheduleContent));
-    
-    // Close dialog
-    onOpenChange(false);
-    
-    // Show success toast
-    toast.success("Content sent to scheduling");
-    
-    // Navigate to Content Calendar
-    navigate("/content-calendar", { state: { fromIdeaDevelopment: true } });
-  };
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -190,20 +143,12 @@ const IdeaCreationDialog = ({
             />
           </div>
           
-          <DialogFooter className="mt-4 flex flex-wrap items-center gap-2">
+          <DialogFooter className="mt-4">
             <Button variant="outline" onClick={onCancel}>
               Cancel
             </Button>
             <Button onClick={onSave}>
               {isEditMode ? "Update" : "Create"}
-            </Button>
-            <Button 
-              variant="secondary" 
-              className="flex items-center gap-1"
-              onClick={handleSendToSchedule}
-            >
-              <Send className="h-4 w-4" />
-              <span>Send to Schedule</span>
             </Button>
           </DialogFooter>
         </div>
