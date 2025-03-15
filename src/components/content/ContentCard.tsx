@@ -4,7 +4,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  Trash2, Pencil, Calendar, FileText, Send
+  Trash2, Pencil, FileText, Send
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ContentItem } from "@/types/content";
@@ -129,7 +129,7 @@ const ContentCard = ({
           {content.title}
           {date && (
             <Badge variant="outline" className="ml-2 text-xs">
-              <CalendarIcon className="h-2 w-2 mr-1" />
+              {/* <CalendarIcon className="h-2 w-2 mr-1" /> */}
               {format(date, "MMM d")}
             </Badge>
           )}
@@ -169,7 +169,7 @@ const ContentCard = ({
           ) : null}
         </div>
         <div className="flex items-center text-xs text-muted-foreground mt-2">
-          <Calendar className="h-3 w-3 mr-1" />
+          <CalendarIcon className="h-3 w-3 mr-1" />
           <span>
             {content.dateCreated ? formatDistanceToNow(new Date(content.dateCreated), { addSuffix: true }) : 'Unknown date'}
           </span>
