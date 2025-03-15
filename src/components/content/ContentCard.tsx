@@ -15,7 +15,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -184,7 +183,7 @@ const ContentCard = ({
                 aria-label="Schedule"
                 className="h-8 w-8 p-0"
               >
-                <CalendarIcon className="h-4 w-4" />
+                <span className="sr-only">Schedule</span>
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0 bg-white" align="start">
