@@ -14,7 +14,11 @@ import {
   addMonths,
   subMonths,
   parseISO,
-  getDay
+  getDay,
+  setDefaultOptions,
+  setYear,
+  setMonth,
+  setDate
 } from "date-fns";
 import {
   Dialog,
@@ -55,11 +59,22 @@ const formatColors: Record<string, string> = {
   "Post": "bg-cyan-100 text-cyan-800"
 };
 
+const isWeekend = (date: Date) => {
+  const day = getDay(date);
+  return day === 0 || day === 6; // 0 is Sunday, 6 is Saturday
+};
+
 const ContentCalendar = () => {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  // Set today as March 14, 2025 (Friday)
+  const getToday = () => {
+    const today = new Date();
+    return setYear(setMonth(setDate(today, 14), 2), 2025); // Note: months are 0-indexed, so 2 = March
+  };
+
+  const [currentMonth, setCurrentMonth] = useState(getToday());
   const [readyToScheduleContent, setReadyToScheduleContent] = useState<ContentItem[]>([]);
   const [scheduledContent, setScheduledContent] = useState<ContentItem[]>([]);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(getToday());
   const [showReadyContent, setShowReadyContent] = useState(true);
   const [newContentDialogOpen, setNewContentDialogOpen] = useState(false);
   const [newContentTitle, setNewContentTitle] = useState("");
@@ -170,7 +185,7 @@ const ContentCalendar = () => {
   // Navigation functions
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
-  const goToToday = () => setCurrentMonth(new Date());
+  const goToToday = () => setCurrentMonth(getToday());
 
   // Generate days for the current month view
   const monthStart = startOfMonth(currentMonth);
@@ -253,7 +268,7 @@ const ContentCalendar = () => {
           </div>
         </div>
         
-        {/* Ready to Schedule Content Section - Always visible */}
+        {/* Content Ready to Schedule Section - Always visible */}
         <Card className="overflow-hidden">
           <CardHeader>
             <CardTitle>Content Ready to be Scheduled</CardTitle>
@@ -357,13 +372,16 @@ const ContentCalendar = () => {
               const isCurrentMonth = isSameMonth(day, currentMonth);
               const isCurrentDay = isToday(day);
               const dayContent = getContentForDate(day);
+              const isWeekendDay = isWeekend(day);
               
               return (
                 <div 
                   key={i} 
                   className={`border-t border-l min-h-[120px] p-1 ${
                     !isCurrentMonth ? "bg-gray-50 text-gray-400" : ""
-                  } ${isCurrentDay ? "bg-blue-50" : ""}`}
+                  } ${isCurrentDay ? "bg-blue-50" : ""} ${
+                    isWeekendDay && isCurrentMonth ? "bg-indigo-50 text-indigo-800" : ""
+                  }`}
                   onClick={() => {
                     setSelectedDate(day);
                     if (isCurrentMonth && dayContent.length === 0) {
@@ -495,3 +513,4 @@ const ContentCalendar = () => {
 };
 
 export default ContentCalendar;
+
