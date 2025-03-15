@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
@@ -11,6 +10,13 @@ import { formatDistanceToNow } from "date-fns";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
 import { getTagColorClasses } from "@/utils/tagColors";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +42,7 @@ const ContentCard = ({
   onScheduleContent
 }: ContentCardProps) => {
   const [date, setDate] = useState<Date | undefined>(content.scheduledDate);
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const navigate = useNavigate();
   
   const getContentFormat = () => {
@@ -71,6 +78,33 @@ const ContentCard = ({
   };
 
   const platforms = getPlatforms();
+
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    if (!selectedDate) return;
+    
+    setDate(selectedDate);
+    
+    if (onScheduleContent) {
+      onScheduleContent(content.id, selectedDate);
+      toast.success(`Scheduled "${content.title}" for ${format(selectedDate, "PPP")}`);
+    } else {
+      const scheduledContents = JSON.parse(localStorage.getItem('scheduledContents') || '[]');
+      const updatedContent = { ...content, scheduledDate: selectedDate };
+      
+      const existingIndex = scheduledContents.findIndex((item: ContentItem) => item.id === content.id);
+      
+      if (existingIndex >= 0) {
+        scheduledContents[existingIndex] = updatedContent;
+      } else {
+        scheduledContents.push(updatedContent);
+      }
+      
+      localStorage.setItem('scheduledContents', JSON.stringify(scheduledContents));
+      toast.success(`Scheduled "${content.title}" for ${format(selectedDate, "PPP")}`);
+    }
+    
+    setCalendarOpen(false);
+  };
 
   const handleSendToCalendar = () => {
     const scheduledContents = JSON.parse(localStorage.getItem('scheduledContents') || '[]');
@@ -142,6 +176,30 @@ const ContentCard = ({
       
       <CardFooter className="p-4 pt-0 flex justify-between">
         <div className="flex gap-2">
+          <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline" 
+                size="sm"
+                aria-label="Schedule"
+                className="h-8 w-8 p-0"
+              >
+                <CalendarIcon className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 bg-white" align="start">
+              <div className="p-2">
+                <h3 className="text-sm font-medium mb-2">Schedule Post</h3>
+                <CalendarComponent
+                  mode="single"
+                  selected={date}
+                  onSelect={handleDateSelect}
+                  initialFocus
+                />
+              </div>
+            </PopoverContent>
+          </Popover>
+
           <Button
             variant="outline"
             size="sm"
