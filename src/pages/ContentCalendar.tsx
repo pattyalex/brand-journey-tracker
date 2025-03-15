@@ -1,23 +1,10 @@
-
 import React, { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import {
-  Calendar as CalendarComponent,
-  CalendarCell,
-  CalendarGrid,
-  CalendarHeader,
-  CalendarHeading,
-  CalendarMonthSelectTrigger,
-  CalendarMonthSelectContent,
-  CalendarNextButton,
-  CalendarPrevButton,
-  CalendarViewTrigger,
-  CalendarViewContent,
-} from "@/components/ui/calendar";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -33,7 +20,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 
 // Define the content item type
 interface ContentItem {
@@ -205,6 +191,7 @@ const ContentCalendar = () => {
                                 }
                               }}
                               initialFocus
+                              className="p-3 pointer-events-auto"
                             />
                           </PopoverContent>
                         </Popover>
