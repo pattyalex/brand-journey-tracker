@@ -12,4 +12,5 @@ export interface ContentItem {
   title: string;
   description?: string;
   time?: string;
+  notes?: string; // Add notes field for task details
 }

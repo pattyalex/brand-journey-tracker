@@ -1,8 +1,10 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Platform, ContentItem } from "@/types/content-flow";
 import PlatformIcon from "./PlatformIcon";
 import { v4 as uuidv4 } from "uuid";
+import TaskNotesDialog from "./TaskNotesDialog";
+import { MessageSquare } from "lucide-react";
 
 interface ContentScheduleProps {
   platforms: Platform[];
@@ -13,6 +15,8 @@ interface ContentScheduleProps {
 const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentScheduleProps) => {
+  const [selectedTask, setSelectedTask] = useState<ContentItem | null>(null);
+  const [isNotesDialogOpen, setIsNotesDialogOpen] = useState(false);
   
   const handleDrop = (platformId: string, day: string) => {
     const platform = platforms.find(p => p.id === platformId);
@@ -30,6 +34,23 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
 
   const handleRemoveContent = (id: string) => {
     setContentItems(contentItems.filter(item => item.id !== id));
+  };
+  
+  const handleTaskClick = (task: ContentItem) => {
+    setSelectedTask(task);
+    setIsNotesDialogOpen(true);
+  };
+  
+  const handleSaveNotes = (taskId: string, notes: string) => {
+    const updatedItems = contentItems.map(item => 
+      item.id === taskId ? { ...item, notes } : item
+    );
+    setContentItems(updatedItems);
+  };
+  
+  const getSelectedTaskPlatform = () => {
+    if (!selectedTask) return null;
+    return platforms.find(p => p.id === selectedTask.platformId) || null;
   };
   
   return (
@@ -67,15 +88,24 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
                   return (
                     <div 
                       key={content.id}
-                      className="bg-white p-2 rounded-md border border-gray-200 shadow-sm flex items-center gap-2 group hover:shadow-md transition-shadow"
+                      className="bg-white p-2 rounded-md border border-gray-200 shadow-sm flex items-center gap-2 group hover:shadow-md transition-shadow cursor-pointer"
+                      onClick={() => handleTaskClick(content)}
                     >
                       <div className="flex-shrink-0">
                         <PlatformIcon platform={platform} size={16} />
                       </div>
-                      <span className="text-sm font-medium truncate">{platform.name}</span>
+                      <span className="text-sm font-medium truncate flex-grow">{platform.name}</span>
+                      
+                      {content.notes && (
+                        <MessageSquare className="h-3.5 w-3.5 text-blue-500 mr-1 flex-shrink-0" />
+                      )}
+                      
                       <button 
-                        onClick={() => handleRemoveContent(content.id)}
-                        className="ml-auto text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveContent(content.id);
+                        }}
+                        className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                         aria-label="Remove item"
                       >
                         ×
@@ -88,6 +118,14 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
           })}
         </div>
       </div>
+      
+      <TaskNotesDialog
+        open={isNotesDialogOpen}
+        onOpenChange={setIsNotesDialogOpen}
+        task={selectedTask}
+        platform={getSelectedTaskPlatform()}
+        onSave={handleSaveNotes}
+      />
     </div>
   );
 };
