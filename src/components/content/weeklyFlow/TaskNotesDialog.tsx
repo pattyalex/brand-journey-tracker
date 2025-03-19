@@ -52,11 +52,6 @@ const TaskNotesDialog = ({
         </DialogHeader>
         
         <div className="py-4">
-          <div className="mb-4">
-            <h3 className="font-medium text-sm mb-1">Task</h3>
-            <p>{task.title}</p>
-          </div>
-          
           <div className="space-y-2">
             <Label htmlFor="notes">Notes</Label>
             <Textarea
