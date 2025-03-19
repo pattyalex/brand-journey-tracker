@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Platform, ContentItem } from "@/types/content-flow";
 import PlatformIcon from "./PlatformIcon";
@@ -14,7 +13,6 @@ interface ContentScheduleProps {
 
 const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-// Define time slots for consistent horizontal alignment
 const TIME_SLOTS = [
   { id: "morning", label: "Morning", start: 0, end: 100 },
   { id: "midday", label: "Midday", start: 100, end: 200 },
@@ -29,20 +27,17 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
   const [dropTargetCell, setDropTargetCell] = useState<string | null>(null);
   const dayColumnRefs = useRef<{[key: string]: HTMLDivElement | null}>({});
   
-  // Calculate which time slot a position falls into
   const getTimeSlotForPosition = (position: number) => {
     const slot = TIME_SLOTS.find(slot => position >= slot.start && position < slot.end);
-    return slot ? slot.id : TIME_SLOTS[TIME_SLOTS.length - 1].id; // Default to last slot if not found
+    return slot ? slot.id : TIME_SLOTS[TIME_SLOTS.length - 1].id;
   };
   
-  // Function to calculate position based on drop event's Y coordinate
   const calculateDropPosition = (e: React.DragEvent<HTMLDivElement>, dayColumnEl: HTMLDivElement) => {
     const rect = dayColumnEl.getBoundingClientRect();
     const offsetY = e.clientY - rect.top;
     return offsetY;
   };
   
-  // Convert position to a time slot
   const getTimeSlotFromPosition = (position: number | undefined) => {
     if (position === undefined) return TIME_SLOTS[0].id;
     return getTimeSlotForPosition(position);
@@ -53,7 +48,6 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
     const platform = platforms.find(p => p.id === platformId);
     if (!platform) return;
     
-    // Find which time slot this position belongs to
     const timeSlot = getTimeSlotForPosition(position);
     
     const newItem: ContentItem = {
@@ -66,7 +60,7 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
     };
     
     setContentItems([...contentItems, newItem]);
-    setDropTargetCell(null); // Reset highlight
+    setDropTargetCell(null);
   };
 
   const handleRemoveContent = (id: string) => {
@@ -100,7 +94,6 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>, cellId: string) => {
     e.preventDefault();
     
-    // Check if we have a platformId or taskId being dragged
     const isPlatformDrag = e.dataTransfer.types.includes("platformId");
     const isTaskDrag = e.dataTransfer.types.includes("taskId");
     
@@ -118,24 +111,19 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
     e.preventDefault();
     setDropTargetCell(null);
     
-    // Get the day column element
     const dayColumnEl = dayColumnRefs.current[targetDay];
     if (!dayColumnEl) return;
     
-    // Calculate the position within the day column
     const dropPosition = calculateDropPosition(e, dayColumnEl);
     
-    // Check if we're dropping a platform or moving an existing task
     const platformId = e.dataTransfer.getData("platformId");
     const taskId = e.dataTransfer.getData("taskId");
     
     console.log("Drop detected:", { platformId, taskId, targetDay, timeSlotId, dropPosition });
     
     if (platformId) {
-      // This is a new task from the platform section
       handleDrop(platformId, targetDay, dropPosition);
     } else if (taskId && draggedTaskId) {
-      // This is an existing task being moved
       const updatedItems = contentItems.map(item => 
         item.id === taskId ? { ...item, day: targetDay, position: dropPosition, timeSlot: timeSlotId } : item
       );
@@ -144,11 +132,9 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
     }
   };
   
-  // Group content items by time slot
   const getTasksByTimeSlot = () => {
     const tasksBySlot: Record<string, Record<string, ContentItem[]>> = {};
     
-    // Initialize structure
     TIME_SLOTS.forEach(slot => {
       tasksBySlot[slot.id] = {};
       DAYS_OF_WEEK.forEach(day => {
@@ -156,7 +142,6 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
       });
     });
     
-    // Group all content items
     contentItems.forEach(item => {
       const timeSlot = item.timeSlot || getTimeSlotFromPosition(item.position);
       if (!tasksBySlot[timeSlot]) {
@@ -176,7 +161,6 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
     return tasksBySlot;
   };
   
-  // Update existing content items with time slots based on position
   useEffect(() => {
     const updatedItems = contentItems.map(item => {
       if (!item.timeSlot && item.position !== undefined) {
@@ -213,12 +197,11 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
                   <div 
                     key={cellId}
                     ref={el => {
-                      // Store the first slot of each day as the column reference
                       if (timeSlot.id === TIME_SLOTS[0].id) {
                         dayColumnRefs.current[day] = el;
                       }
                     }}
-                    className={`p-3 border-r border-gray-400 last:border-r-0 min-h-[80px] transition-colors ${
+                    className={`p-3 border-r border-gray-300 last:border-r-0 min-h-[80px] transition-colors ${
                       isHighlighted ? 'bg-blue-50' : ''
                     }`}
                     onDragOver={(e) => handleDragOver(e, cellId)}
