@@ -17,6 +17,7 @@ const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "S
 const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentScheduleProps) => {
   const [selectedTask, setSelectedTask] = useState<ContentItem | null>(null);
   const [isNotesDialogOpen, setIsNotesDialogOpen] = useState(false);
+  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   
   const handleDrop = (platformId: string, day: string) => {
     const platform = platforms.find(p => p.id === platformId);
@@ -53,6 +54,38 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
     return platforms.find(p => p.id === selectedTask.platformId) || null;
   };
   
+  const handleTaskDragStart = (e: React.DragEvent<HTMLDivElement>, taskId: string) => {
+    e.stopPropagation();
+    setDraggedTaskId(taskId);
+    e.dataTransfer.setData("taskId", taskId);
+    e.dataTransfer.effectAllowed = "move";
+  };
+  
+  const handleTaskDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+  
+  const handleTaskDrop = (e: React.DragEvent<HTMLDivElement>, targetDay: string) => {
+    e.preventDefault();
+    
+    // Check if we're dropping a platform or moving an existing task
+    const platformId = e.dataTransfer.getData("platformId");
+    const taskId = e.dataTransfer.getData("taskId");
+    
+    if (platformId) {
+      // This is a new task from the platform section
+      handleDrop(platformId, targetDay);
+    } else if (taskId && draggedTaskId) {
+      // This is an existing task being moved
+      const updatedItems = contentItems.map(item => 
+        item.id === taskId ? { ...item, day: targetDay } : item
+      );
+      setContentItems(updatedItems);
+      setDraggedTaskId(null);
+    }
+  };
+  
   return (
     <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
       <div className="grid grid-cols-7 gap-0">
@@ -70,16 +103,8 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
               <div 
                 key={`day-${day}`}
                 className="p-3 border border-gray-200 min-h-[300px] flex flex-col gap-2"
-                onDragOver={(e) => {
-                  e.preventDefault();
-                }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  const platformId = e.dataTransfer.getData("platformId");
-                  if (platformId) {
-                    handleDrop(platformId, day);
-                  }
-                }}
+                onDragOver={handleTaskDragOver}
+                onDrop={(e) => handleTaskDrop(e, day)}
               >
                 {dayContent.map((content) => {
                   const platform = platforms.find(p => p.id === content.platformId);
@@ -88,7 +113,9 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
                   return (
                     <div 
                       key={content.id}
-                      className="bg-white p-2 rounded-md border border-gray-200 shadow-sm flex items-center gap-2 group hover:shadow-md transition-shadow cursor-pointer"
+                      className="bg-white p-2 rounded-md border border-gray-200 shadow-sm flex items-center gap-2 group hover:shadow-md transition-shadow cursor-move"
+                      draggable
+                      onDragStart={(e) => handleTaskDragStart(e, content.id)}
                       onClick={() => handleTaskClick(content)}
                     >
                       <div className="flex-shrink-0">
