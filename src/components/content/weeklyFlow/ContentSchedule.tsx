@@ -26,6 +26,7 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
   const [selectedTask, setSelectedTask] = useState<ContentItem | null>(null);
   const [isNotesDialogOpen, setIsNotesDialogOpen] = useState(false);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
+  const [dropTargetCell, setDropTargetCell] = useState<string | null>(null);
   const dayColumnRefs = useRef<{[key: string]: HTMLDivElement | null}>({});
   
   // Calculate which time slot a position falls into
@@ -48,6 +49,7 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
   };
   
   const handleDrop = (platformId: string, day: string, position: number) => {
+    console.log("Handling drop with platformId:", platformId, "day:", day, "position:", position);
     const platform = platforms.find(p => p.id === platformId);
     if (!platform) return;
     
@@ -64,6 +66,7 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
     };
     
     setContentItems([...contentItems, newItem]);
+    setDropTargetCell(null); // Reset highlight
   };
 
   const handleRemoveContent = (id: string) => {
@@ -94,13 +97,26 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
     e.dataTransfer.effectAllowed = "move";
   };
   
-  const handleTaskDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>, cellId: string) => {
     e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
+    
+    // Check if we have a platformId or taskId being dragged
+    const isPlatformDrag = e.dataTransfer.types.includes("platformId");
+    const isTaskDrag = e.dataTransfer.types.includes("taskId");
+    
+    if (isPlatformDrag || isTaskDrag) {
+      e.dataTransfer.dropEffect = isPlatformDrag ? "copy" : "move";
+      setDropTargetCell(cellId);
+    }
   };
   
-  const handleTaskDrop = (e: React.DragEvent<HTMLDivElement>, targetDay: string) => {
+  const handleDragLeave = () => {
+    setDropTargetCell(null);
+  };
+  
+  const handleTaskDrop = (e: React.DragEvent<HTMLDivElement>, targetDay: string, timeSlotId: string) => {
     e.preventDefault();
+    setDropTargetCell(null);
     
     // Get the day column element
     const dayColumnEl = dayColumnRefs.current[targetDay];
@@ -113,16 +129,15 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
     const platformId = e.dataTransfer.getData("platformId");
     const taskId = e.dataTransfer.getData("taskId");
     
+    console.log("Drop detected:", { platformId, taskId, targetDay, timeSlotId, dropPosition });
+    
     if (platformId) {
       // This is a new task from the platform section
       handleDrop(platformId, targetDay, dropPosition);
     } else if (taskId && draggedTaskId) {
       // This is an existing task being moved
-      // Find which time slot this position belongs to
-      const timeSlot = getTimeSlotForPosition(dropPosition);
-      
       const updatedItems = contentItems.map(item => 
-        item.id === taskId ? { ...item, day: targetDay, position: dropPosition, timeSlot } : item
+        item.id === taskId ? { ...item, day: targetDay, position: dropPosition, timeSlot: timeSlotId } : item
       );
       setContentItems(updatedItems);
       setDraggedTaskId(null);
@@ -189,22 +204,31 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
         <div className="col-span-7">
           {TIME_SLOTS.map((timeSlot) => (
             <div key={timeSlot.id} className="grid grid-cols-7 border-b border-gray-100 last:border-b-0">
+              <div className="absolute -left-20 font-medium text-xs text-gray-500 top-1/2 transform -translate-y-1/2">
+                {timeSlot.label}
+              </div>
+              
               {DAYS_OF_WEEK.map((day) => {
                 const dayTasks = tasksByTimeSlot[timeSlot.id][day] || [];
+                const cellId = `${timeSlot.id}-${day}`;
+                const isHighlighted = dropTargetCell === cellId;
                 
                 return (
                   <div 
-                    key={`${timeSlot.id}-${day}`}
+                    key={cellId}
                     ref={el => {
                       // Store the first slot of each day as the column reference
                       if (timeSlot.id === TIME_SLOTS[0].id) {
                         dayColumnRefs.current[day] = el;
                       }
                     }}
-                    className="p-3 border-r border-gray-200 last:border-r-0 min-h-[80px]"
-                    onDragOver={handleTaskDragOver}
-                    onDrop={(e) => handleTaskDrop(e, day)}
-                    style={{ height: '100%' }}
+                    className={`p-3 border-r border-gray-200 last:border-r-0 min-h-[80px] transition-colors ${
+                      isHighlighted ? 'bg-blue-50' : ''
+                    }`}
+                    onDragOver={(e) => handleDragOver(e, cellId)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleTaskDrop(e, day, timeSlot.id)}
+                    style={{ height: '100%', position: 'relative' }}
                   >
                     {dayTasks.map((content) => {
                       const platform = platforms.find(p => p.id === content.platformId);

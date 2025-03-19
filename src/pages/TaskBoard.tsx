@@ -46,6 +46,11 @@ const TaskBoard = () => {
     if (savedContentItems) {
       setContentItems(JSON.parse(savedContentItems));
     }
+    
+    const savedPlatforms = localStorage.getItem("platforms");
+    if (savedPlatforms) {
+      setPlatforms(JSON.parse(savedPlatforms));
+    }
 
     // Add a global drop event listener to fix Safari compatibility issues
     const handleGlobalDragOver = (e: DragEvent) => {
@@ -61,11 +66,16 @@ const TaskBoard = () => {
   useEffect(() => {
     localStorage.setItem("contentItems", JSON.stringify(contentItems));
   }, [contentItems]);
+  
+  useEffect(() => {
+    localStorage.setItem("platforms", JSON.stringify(platforms));
+  }, [platforms]);
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, platformId: string) => {
     e.dataTransfer.setData("platformId", platformId);
     e.dataTransfer.effectAllowed = "copy";
     
+    // Create a custom drag image
     const platform = platforms.find(p => p.id === platformId);
     if (!platform) return;
     
@@ -91,6 +101,8 @@ const TaskBoard = () => {
     setTimeout(() => {
       document.body.removeChild(dragPreview);
     }, 100);
+    
+    console.log(`Drag started for platform: ${platformId}`);
   };
 
   const clearSchedule = () => {
@@ -142,7 +154,7 @@ const TaskBoard = () => {
         </div>
       </div>
       
-      <div className="pt-6">
+      <div className="pt-6 relative">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-semibold">Weekly Schedule</h2>
           <Button 
@@ -156,11 +168,13 @@ const TaskBoard = () => {
           </Button>
         </div>
         
-        <ContentSchedule 
-          platforms={platforms} 
-          contentItems={contentItems}
-          setContentItems={setContentItems}
-        />
+        <div className="ml-20 relative">
+          <ContentSchedule 
+            platforms={platforms} 
+            contentItems={contentItems}
+            setContentItems={setContentItems}
+          />
+        </div>
       </div>
       
       <AddPlatformDialog 
