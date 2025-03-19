@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { Platform, ContentItem } from "@/types/content-flow";
 import PlatformIcon from "./PlatformIcon";
@@ -202,7 +203,7 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
         
         <div className="col-span-7">
           {TIME_SLOTS.map((timeSlot) => (
-            <div key={timeSlot.id} className="grid grid-cols-7 border-b border-gray-100 last:border-b-0">
+            <div key={timeSlot.id} className="grid grid-cols-7 last:border-b-0">
               {DAYS_OF_WEEK.map((day) => {
                 const dayTasks = tasksByTimeSlot[timeSlot.id][day] || [];
                 const cellId = `${timeSlot.id}-${day}`;
@@ -217,7 +218,7 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
                         dayColumnRefs.current[day] = el;
                       }
                     }}
-                    className={`p-3 border-r border-gray-200 last:border-r-0 min-h-[80px] transition-colors ${
+                    className={`p-3 border-r-0 last:border-r-0 min-h-[80px] transition-colors ${
                       isHighlighted ? 'bg-blue-50' : ''
                     }`}
                     onDragOver={(e) => handleDragOver(e, cellId)}
