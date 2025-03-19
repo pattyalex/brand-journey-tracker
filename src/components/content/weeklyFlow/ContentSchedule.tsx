@@ -218,7 +218,7 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
                         dayColumnRefs.current[day] = el;
                       }
                     }}
-                    className={`p-3 border-r-0 last:border-r-0 min-h-[80px] transition-colors ${
+                    className={`p-3 border-r border-gray-200 last:border-r-0 min-h-[80px] transition-colors ${
                       isHighlighted ? 'bg-blue-50' : ''
                     }`}
                     onDragOver={(e) => handleDragOver(e, cellId)}
