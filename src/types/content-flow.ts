@@ -13,5 +13,6 @@ export interface ContentItem {
   description?: string;
   time?: string;
   notes?: string;
-  position?: number; // Add position field to store vertical position
+  position?: number; // Vertical position in pixels
+  timeSlot?: string; // Added timeSlot for horizontal alignment
 }

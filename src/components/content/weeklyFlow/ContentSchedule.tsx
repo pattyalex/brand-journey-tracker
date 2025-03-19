@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Platform, ContentItem } from "@/types/content-flow";
 import PlatformIcon from "./PlatformIcon";
 import { v4 as uuidv4 } from "uuid";
@@ -14,11 +14,25 @@ interface ContentScheduleProps {
 
 const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
+// Define time slots for consistent horizontal alignment
+const TIME_SLOTS = [
+  { id: "morning", label: "Morning", start: 0, end: 100 },
+  { id: "midday", label: "Midday", start: 100, end: 200 },
+  { id: "afternoon", label: "Afternoon", start: 200, end: 300 },
+  { id: "evening", label: "Evening", start: 300, end: 400 },
+];
+
 const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentScheduleProps) => {
   const [selectedTask, setSelectedTask] = useState<ContentItem | null>(null);
   const [isNotesDialogOpen, setIsNotesDialogOpen] = useState(false);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const dayColumnRefs = useRef<{[key: string]: HTMLDivElement | null}>({});
+  
+  // Calculate which time slot a position falls into
+  const getTimeSlotForPosition = (position: number) => {
+    const slot = TIME_SLOTS.find(slot => position >= slot.start && position < slot.end);
+    return slot ? slot.id : TIME_SLOTS[TIME_SLOTS.length - 1].id; // Default to last slot if not found
+  };
   
   // Function to calculate position based on drop event's Y coordinate
   const calculateDropPosition = (e: React.DragEvent<HTMLDivElement>, dayColumnEl: HTMLDivElement) => {
@@ -27,9 +41,18 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
     return offsetY;
   };
   
+  // Convert position to a time slot
+  const getTimeSlotFromPosition = (position: number | undefined) => {
+    if (position === undefined) return TIME_SLOTS[0].id;
+    return getTimeSlotForPosition(position);
+  };
+  
   const handleDrop = (platformId: string, day: string, position: number) => {
     const platform = platforms.find(p => p.id === platformId);
     if (!platform) return;
+    
+    // Find which time slot this position belongs to
+    const timeSlot = getTimeSlotForPosition(position);
     
     const newItem: ContentItem = {
       id: uuidv4(),
@@ -37,6 +60,7 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
       day,
       title: `New ${platform.name} task`,
       position,
+      timeSlot,
     };
     
     setContentItems([...contentItems, newItem]);
@@ -94,24 +118,64 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
       handleDrop(platformId, targetDay, dropPosition);
     } else if (taskId && draggedTaskId) {
       // This is an existing task being moved
+      // Find which time slot this position belongs to
+      const timeSlot = getTimeSlotForPosition(dropPosition);
+      
       const updatedItems = contentItems.map(item => 
-        item.id === taskId ? { ...item, day: targetDay, position: dropPosition } : item
+        item.id === taskId ? { ...item, day: targetDay, position: dropPosition, timeSlot } : item
       );
       setContentItems(updatedItems);
       setDraggedTaskId(null);
     }
   };
   
-  // Sort content items based on position for each day
-  const getSortedContentItems = (day: string) => {
-    const dayItems = contentItems.filter(item => item.day === day);
-    return dayItems.sort((a, b) => {
-      // If position is undefined, default to 0
-      const posA = a.position ?? 0;
-      const posB = b.position ?? 0;
-      return posA - posB;
+  // Group content items by time slot
+  const getTasksByTimeSlot = () => {
+    const tasksBySlot: Record<string, Record<string, ContentItem[]>> = {};
+    
+    // Initialize structure
+    TIME_SLOTS.forEach(slot => {
+      tasksBySlot[slot.id] = {};
+      DAYS_OF_WEEK.forEach(day => {
+        tasksBySlot[slot.id][day] = [];
+      });
     });
+    
+    // Group all content items
+    contentItems.forEach(item => {
+      const timeSlot = item.timeSlot || getTimeSlotFromPosition(item.position);
+      if (!tasksBySlot[timeSlot]) {
+        tasksBySlot[timeSlot] = {};
+        DAYS_OF_WEEK.forEach(day => {
+          tasksBySlot[timeSlot][day] = [];
+        });
+      }
+      
+      if (!tasksBySlot[timeSlot][item.day]) {
+        tasksBySlot[timeSlot][item.day] = [];
+      }
+      
+      tasksBySlot[timeSlot][item.day].push(item);
+    });
+    
+    return tasksBySlot;
   };
+  
+  // Update existing content items with time slots based on position
+  useEffect(() => {
+    const updatedItems = contentItems.map(item => {
+      if (!item.timeSlot && item.position !== undefined) {
+        return { ...item, timeSlot: getTimeSlotFromPosition(item.position) };
+      }
+      return item;
+    });
+    
+    if (JSON.stringify(updatedItems) !== JSON.stringify(contentItems)) {
+      setContentItems(updatedItems);
+    }
+  }, []);
+  
+  const tasksByTimeSlot = getTasksByTimeSlot();
   
   return (
     <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
@@ -122,62 +186,65 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
           </div>
         ))}
         
-        <div className="col-span-7 grid grid-cols-7">
-          {DAYS_OF_WEEK.map((day) => {
-            const dayContent = getSortedContentItems(day);
-            
-            return (
-              <div 
-                key={`day-${day}`}
-                ref={el => dayColumnRefs.current[day] = el}
-                className="p-3 border border-gray-200 min-h-[300px] relative"
-                onDragOver={handleTaskDragOver}
-                onDrop={(e) => handleTaskDrop(e, day)}
-              >
-                {dayContent.map((content) => {
-                  const platform = platforms.find(p => p.id === content.platformId);
-                  if (!platform) return null;
-                  
-                  return (
-                    <div 
-                      key={content.id}
-                      className="bg-white p-2 rounded-md border border-gray-200 shadow-sm flex items-center gap-2 group hover:shadow-md transition-shadow cursor-grab mb-2"
-                      draggable
-                      onDragStart={(e) => handleTaskDragStart(e, content.id)}
-                      onClick={() => handleTaskClick(content)}
-                      style={{ 
-                        position: 'absolute',
-                        top: `${content.position}px`,
-                        left: '12px',
-                        right: '12px',
-                        zIndex: 10
-                      }}
-                    >
-                      <div className="flex-shrink-0">
-                        <PlatformIcon platform={platform} size={16} />
-                      </div>
-                      <span className="text-sm font-medium truncate flex-grow">{platform.name}</span>
+        <div className="col-span-7">
+          {TIME_SLOTS.map((timeSlot) => (
+            <div key={timeSlot.id} className="grid grid-cols-7 border-b border-gray-100 last:border-b-0">
+              {DAYS_OF_WEEK.map((day) => {
+                const dayTasks = tasksByTimeSlot[timeSlot.id][day] || [];
+                
+                return (
+                  <div 
+                    key={`${timeSlot.id}-${day}`}
+                    ref={el => {
+                      // Store the first slot of each day as the column reference
+                      if (timeSlot.id === TIME_SLOTS[0].id) {
+                        dayColumnRefs.current[day] = el;
+                      }
+                    }}
+                    className="p-3 border-r border-gray-200 last:border-r-0 min-h-[80px]"
+                    onDragOver={handleTaskDragOver}
+                    onDrop={(e) => handleTaskDrop(e, day)}
+                    style={{ height: '100%' }}
+                  >
+                    {dayTasks.map((content) => {
+                      const platform = platforms.find(p => p.id === content.platformId);
+                      if (!platform) return null;
                       
-                      {content.notes && (
-                        <MessageSquare className="h-3.5 w-3.5 text-blue-500 mr-1 flex-shrink-0" />
-                      )}
-                      
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemoveContent(content.id);
-                        }}
-                        className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                        aria-label="Remove item"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })}
+                      return (
+                        <div 
+                          key={content.id}
+                          className="bg-white p-2 rounded-md border border-gray-200 shadow-sm flex items-center gap-2 group hover:shadow-md transition-shadow cursor-grab mb-2"
+                          draggable
+                          onDragStart={(e) => handleTaskDragStart(e, content.id)}
+                          onClick={() => handleTaskClick(content)}
+                        >
+                          <div className="flex-shrink-0">
+                            <PlatformIcon platform={platform} size={16} />
+                          </div>
+                          <span className="text-sm font-medium truncate flex-grow">{platform.name}</span>
+                          
+                          {content.notes && (
+                            <MessageSquare className="h-3.5 w-3.5 text-blue-500 mr-1 flex-shrink-0" />
+                          )}
+                          
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveContent(content.id);
+                            }}
+                            className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                            aria-label="Remove item"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
         </div>
       </div>
       
