@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Platform, ContentItem } from "@/types/content-flow";
 import PlatformIcon from "./PlatformIcon";
 import { v4 as uuidv4 } from "uuid";
@@ -18,8 +18,16 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
   const [selectedTask, setSelectedTask] = useState<ContentItem | null>(null);
   const [isNotesDialogOpen, setIsNotesDialogOpen] = useState(false);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
+  const dayColumnRefs = useRef<{[key: string]: HTMLDivElement | null}>({});
   
-  const handleDrop = (platformId: string, day: string) => {
+  // Function to calculate position based on drop event's Y coordinate
+  const calculateDropPosition = (e: React.DragEvent<HTMLDivElement>, dayColumnEl: HTMLDivElement) => {
+    const rect = dayColumnEl.getBoundingClientRect();
+    const offsetY = e.clientY - rect.top;
+    return offsetY;
+  };
+  
+  const handleDrop = (platformId: string, day: string, position: number) => {
     const platform = platforms.find(p => p.id === platformId);
     if (!platform) return;
     
@@ -28,6 +36,7 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
       platformId,
       day,
       title: `New ${platform.name} task`,
+      position,
     };
     
     setContentItems([...contentItems, newItem]);
@@ -69,21 +78,39 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
   const handleTaskDrop = (e: React.DragEvent<HTMLDivElement>, targetDay: string) => {
     e.preventDefault();
     
+    // Get the day column element
+    const dayColumnEl = dayColumnRefs.current[targetDay];
+    if (!dayColumnEl) return;
+    
+    // Calculate the position within the day column
+    const dropPosition = calculateDropPosition(e, dayColumnEl);
+    
     // Check if we're dropping a platform or moving an existing task
     const platformId = e.dataTransfer.getData("platformId");
     const taskId = e.dataTransfer.getData("taskId");
     
     if (platformId) {
       // This is a new task from the platform section
-      handleDrop(platformId, targetDay);
+      handleDrop(platformId, targetDay, dropPosition);
     } else if (taskId && draggedTaskId) {
       // This is an existing task being moved
       const updatedItems = contentItems.map(item => 
-        item.id === taskId ? { ...item, day: targetDay } : item
+        item.id === taskId ? { ...item, day: targetDay, position: dropPosition } : item
       );
       setContentItems(updatedItems);
       setDraggedTaskId(null);
     }
+  };
+  
+  // Sort content items based on position for each day
+  const getSortedContentItems = (day: string) => {
+    const dayItems = contentItems.filter(item => item.day === day);
+    return dayItems.sort((a, b) => {
+      // If position is undefined, default to 0
+      const posA = a.position ?? 0;
+      const posB = b.position ?? 0;
+      return posA - posB;
+    });
   };
   
   return (
@@ -97,11 +124,12 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
         
         <div className="col-span-7 grid grid-cols-7">
           {DAYS_OF_WEEK.map((day) => {
-            const dayContent = contentItems.filter(item => item.day === day);
+            const dayContent = getSortedContentItems(day);
             
             return (
               <div 
                 key={`day-${day}`}
+                ref={el => dayColumnRefs.current[day] = el}
                 className="p-3 border border-gray-200 min-h-[300px] flex flex-col gap-2"
                 onDragOver={handleTaskDragOver}
                 onDrop={(e) => handleTaskDrop(e, day)}
@@ -117,6 +145,7 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
                       draggable
                       onDragStart={(e) => handleTaskDragStart(e, content.id)}
                       onClick={() => handleTaskClick(content)}
+                      style={{ position: 'absolute', top: `${content.position}px`, width: 'calc(100% - 1.5rem)', marginLeft: '0' }}
                     >
                       <div className="flex-shrink-0">
                         <PlatformIcon platform={platform} size={16} />

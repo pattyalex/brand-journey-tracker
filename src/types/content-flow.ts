@@ -12,5 +12,6 @@ export interface ContentItem {
   title: string;
   description?: string;
   time?: string;
-  notes?: string; // Add notes field for task details
+  notes?: string;
+  position?: number; // Add position field to store vertical position
 }
