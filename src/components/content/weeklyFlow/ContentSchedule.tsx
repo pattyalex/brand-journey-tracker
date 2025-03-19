@@ -113,7 +113,7 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
                   return (
                     <div 
                       key={content.id}
-                      className="bg-white p-2 rounded-md border border-gray-200 shadow-sm flex items-center gap-2 group hover:shadow-md transition-shadow cursor-move"
+                      className="bg-white p-2 rounded-md border border-gray-200 shadow-sm flex items-center gap-2 group hover:shadow-md transition-shadow cursor-grab"
                       draggable
                       onDragStart={(e) => handleTaskDragStart(e, content.id)}
                       onClick={() => handleTaskClick(content)}
