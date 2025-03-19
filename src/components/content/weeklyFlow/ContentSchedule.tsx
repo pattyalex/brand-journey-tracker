@@ -130,7 +130,7 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
               <div 
                 key={`day-${day}`}
                 ref={el => dayColumnRefs.current[day] = el}
-                className="p-3 border border-gray-200 min-h-[300px] flex flex-col gap-2"
+                className="p-3 border border-gray-200 min-h-[300px] relative"
                 onDragOver={handleTaskDragOver}
                 onDrop={(e) => handleTaskDrop(e, day)}
               >
@@ -141,11 +141,17 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
                   return (
                     <div 
                       key={content.id}
-                      className="bg-white p-2 rounded-md border border-gray-200 shadow-sm flex items-center gap-2 group hover:shadow-md transition-shadow cursor-grab"
+                      className="bg-white p-2 rounded-md border border-gray-200 shadow-sm flex items-center gap-2 group hover:shadow-md transition-shadow cursor-grab mb-2"
                       draggable
                       onDragStart={(e) => handleTaskDragStart(e, content.id)}
                       onClick={() => handleTaskClick(content)}
-                      style={{ position: 'absolute', top: `${content.position}px`, width: 'calc(100% - 1.5rem)', marginLeft: '0' }}
+                      style={{ 
+                        position: 'absolute',
+                        top: `${content.position}px`,
+                        left: '12px',
+                        right: '12px',
+                        zIndex: 10
+                      }}
                     >
                       <div className="flex-shrink-0">
                         <PlatformIcon platform={platform} size={16} />
