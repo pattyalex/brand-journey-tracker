@@ -1,4 +1,3 @@
-
 import Layout from "@/components/Layout";
 import { DailyPlanner } from "@/components/planner/DailyPlanner";
 import { ContentItem, Platform } from "@/types/content-flow";
@@ -52,7 +51,6 @@ const TaskBoard = () => {
       setPlatforms(JSON.parse(savedPlatforms));
     }
 
-    // Add a global drop event listener to fix Safari compatibility issues
     const handleGlobalDragOver = (e: DragEvent) => {
       e.preventDefault();
     };
@@ -75,11 +73,9 @@ const TaskBoard = () => {
     e.dataTransfer.setData("platformId", platformId);
     e.dataTransfer.effectAllowed = "copy";
     
-    // Create a custom drag image
     const platform = platforms.find(p => p.id === platformId);
     if (!platform) return;
     
-    // Create a custom drag image
     const dragPreview = document.createElement("div");
     dragPreview.className = "bg-white rounded-lg p-3 flex items-center shadow-lg";
     dragPreview.innerHTML = `
@@ -94,10 +90,8 @@ const TaskBoard = () => {
     dragPreview.style.top = "-1000px";
     dragPreview.style.opacity = "0.8";
     
-    // Set the drag image
     e.dataTransfer.setDragImage(dragPreview, 20, 20);
     
-    // Remove the temporary element after a short delay
     setTimeout(() => {
       document.body.removeChild(dragPreview);
     }, 100);
@@ -168,13 +162,11 @@ const TaskBoard = () => {
           </Button>
         </div>
         
-        <div className="ml-20 relative">
-          <ContentSchedule 
-            platforms={platforms} 
-            contentItems={contentItems}
-            setContentItems={setContentItems}
-          />
-        </div>
+        <ContentSchedule 
+          platforms={platforms} 
+          contentItems={contentItems}
+          setContentItems={setContentItems}
+        />
       </div>
       
       <AddPlatformDialog 
