@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Platform, ContentItem } from "@/types/content-flow";
 import PlatformIcon from "./PlatformIcon";
@@ -204,10 +203,6 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
         <div className="col-span-7">
           {TIME_SLOTS.map((timeSlot) => (
             <div key={timeSlot.id} className="grid grid-cols-7 border-b border-gray-100 last:border-b-0">
-              <div className="absolute -left-20 font-medium text-xs text-gray-500 top-1/2 transform -translate-y-1/2">
-                {timeSlot.label}
-              </div>
-              
               {DAYS_OF_WEEK.map((day) => {
                 const dayTasks = tasksByTimeSlot[timeSlot.id][day] || [];
                 const cellId = `${timeSlot.id}-${day}`;
