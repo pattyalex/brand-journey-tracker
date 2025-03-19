@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { Platform, ContentItem } from "@/types/content-flow";
 import PlatformIcon from "./PlatformIcon";
@@ -177,10 +178,17 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
   const tasksByTimeSlot = getTasksByTimeSlot();
   
   return (
-    <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+    <div className="rounded-lg border border-gray-300 bg-white shadow-sm">
       <div className="grid grid-cols-7 gap-0">
-        {DAYS_OF_WEEK.map((day) => (
-          <div key={day} className="p-4 font-medium text-gray-700 text-center border-b border-gray-200">
+        {DAYS_OF_WEEK.map((day, index) => (
+          <div 
+            key={day} 
+            className={`p-4 font-medium text-gray-700 text-center border-b border-gray-300 ${
+              index === 0 ? 'border-l border-gray-300' : ''
+            } ${
+              index === DAYS_OF_WEEK.length - 1 ? 'border-r border-gray-300' : ''
+            }`}
+          >
             {day}
           </div>
         ))}
@@ -188,7 +196,7 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
         <div className="col-span-7">
           {TIME_SLOTS.map((timeSlot) => (
             <div key={timeSlot.id} className="grid grid-cols-7 last:border-b-0">
-              {DAYS_OF_WEEK.map((day) => {
+              {DAYS_OF_WEEK.map((day, dayIndex) => {
                 const dayTasks = tasksByTimeSlot[timeSlot.id][day] || [];
                 const cellId = `${timeSlot.id}-${day}`;
                 const isHighlighted = dropTargetCell === cellId;
@@ -201,8 +209,12 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
                         dayColumnRefs.current[day] = el;
                       }
                     }}
-                    className={`p-3 border-r border-gray-300 last:border-r-0 min-h-[80px] transition-colors ${
+                    className={`p-3 border-r border-gray-300 min-h-[80px] transition-colors ${
                       isHighlighted ? 'bg-blue-50' : ''
+                    } ${
+                      dayIndex === 0 ? 'border-l border-gray-300' : ''
+                    } ${
+                      dayIndex === DAYS_OF_WEEK.length - 1 ? 'border-r border-gray-300' : ''
                     }`}
                     onDragOver={(e) => handleDragOver(e, cellId)}
                     onDragLeave={handleDragLeave}
