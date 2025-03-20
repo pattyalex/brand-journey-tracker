@@ -9,6 +9,7 @@ import WritingSpace from "@/components/content/WritingSpace";
 import IdeaSection from "@/components/content/IdeaSection";
 import IdeaCreationDialog from "@/components/content/IdeaCreationDialog";
 import ContentTypeBuckets from "@/components/content/ContentTypeBuckets";
+import { getRestoredIdeas } from "@/utils/contentRestoreUtils";
 
 export type Pillar = {
   id: string;
@@ -32,7 +33,7 @@ const BankOfContent = () => {
   
   const [selectedText, setSelectedText] = useState("");
   const [developScriptText, setDevelopScriptText] = useState("");
-  const [visualNotes, setVisualNotes] = useState("");  // Added visualNotes state
+  const [visualNotes, setVisualNotes] = useState("");
   const [shootDetails, setShootDetails] = useState("");
   const [captionText, setCaptionText] = useState("");
   const [selectedFormat, setSelectedFormat] = useState("text");
@@ -49,6 +50,24 @@ const BankOfContent = () => {
   const [selectedBucketId, setSelectedBucketId] = useState("");
 
   const allContent = pillars.flatMap(pillar => pillar.content);
+
+  useEffect(() => {
+    const restoredIdeas = getRestoredIdeas();
+    
+    if (restoredIdeas.length > 0) {
+      const updatedPillars = [...pillars];
+      const firstPillar = updatedPillars[0];
+      
+      updatedPillars[0] = {
+        ...firstPillar,
+        content: [...firstPillar.content, ...restoredIdeas]
+      };
+      
+      setPillars(updatedPillars);
+      
+      toast.success(`${restoredIdeas.length} item(s) restored to Idea Development`);
+    }
+  }, []);
 
   const addPillar = () => {
     const newPillarId = String(pillars.length + 1);
@@ -101,7 +120,7 @@ const BankOfContent = () => {
     setDevelopIdeaMode(false);
     setNewIdeaTitle("");
     setDevelopScriptText("");
-    setVisualNotes("");  // Reset visualNotes when opening dialog
+    setVisualNotes("");
     setSelectedFormat("text");
     setShootDetails("");
     setCaptionText("");
@@ -234,7 +253,7 @@ const BankOfContent = () => {
       format: selectedFormat,
       url: JSON.stringify({
         script: developScriptText || selectedText,
-        visualNotes: visualNotes,  // Include visualNotes in the saved content
+        visualNotes: visualNotes,
         shootDetails: shootDetails,
         caption: captionText,
         platforms: selectedPlatforms,
@@ -252,7 +271,7 @@ const BankOfContent = () => {
     setNewIdeaTitle("");
     setDevelopScriptText("");
     setSelectedText("");
-    setVisualNotes("");  // Reset visualNotes after saving
+    setVisualNotes("");
     setSelectedFormat("text");
     setShootDetails("");
     setCaptionText("");
