@@ -357,8 +357,7 @@ const ContentCard = ({
                     className="h-8 p-2"
                     onClick={handleSendToCalendar}
                   >
-                    <Send className="h-4 w-4 mr-1" />
-                    Calendar
+                    <Send className="h-4 w-4" />
                   </Button>
                 )}
               </TooltipTrigger>
