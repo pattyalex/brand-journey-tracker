@@ -1,8 +1,7 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Info } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ContentItem } from "@/types/content";
 import { 
@@ -12,6 +11,11 @@ import {
   TooltipTrigger 
 } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 type ContentType = {
   id: string;
@@ -44,6 +48,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
   const descInputRef = useRef<HTMLInputElement>(null);
+  const [showFullDescription, setShowFullDescription] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -170,6 +175,11 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     setExpandedCardId(prev => prev === formatId ? null : formatId);
   };
 
+  const toggleFullDescription = (e: React.MouseEvent, typeId: string) => {
+    e.stopPropagation();
+    setShowFullDescription(prev => prev === typeId ? null : typeId);
+  };
+
   return (
     <div className="mt-4 mb-6">
       <div className="flex justify-between items-center mb-3">
@@ -254,7 +264,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               </div>
               
               <div
-                className="mt-1 h-8 overflow-hidden"
+                className="mt-1 h-8 overflow-hidden relative"
                 onDoubleClick={(e) => {
                   e.stopPropagation();
                   handleDescriptionDoubleClick(type.id, type.description || "");
@@ -273,9 +283,37 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <p className="text-xs text-gray-500 line-clamp-2">
-                    {type.description}
-                  </p>
+                  <div className="flex items-start">
+                    <Popover>
+                      <PopoverTrigger asChild onClick={(e) => e.stopPropagation()}>
+                        <div className="flex w-full">
+                          <p className="text-xs text-gray-500 line-clamp-2 flex-1">
+                            {type.description}
+                          </p>
+                          {type.description && type.description.length > 60 && (
+                            <button
+                              onClick={(e) => e.stopPropagation()}
+                              className="ml-1 text-purple-500 hover:text-purple-700 transition-colors focus:outline-none"
+                              title="View full description"
+                            >
+                              <Info className="h-3 w-3" />
+                            </button>
+                          )}
+                        </div>
+                      </PopoverTrigger>
+                      <PopoverContent 
+                        className="w-[250px] p-4" 
+                        side="right" 
+                        align="start"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="space-y-2">
+                          <h4 className="font-medium">{type.name}</h4>
+                          <p className="text-xs text-gray-700">{type.description}</p>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                 )}
               </div>
             </div>
