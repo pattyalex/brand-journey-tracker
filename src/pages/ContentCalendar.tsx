@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,7 +30,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { CalendarIcon, FileText, ChevronLeft, ChevronRight, PlusCircle, Trash2, Instagram, Youtube, AtSign } from "lucide-react";
+import { CalendarIcon, FileText, ChevronLeft, ChevronRight, PlusCircle, Trash2, Instagram, Youtube, AtSign, Pencil } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -39,6 +38,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import IdeaCreationDialog from "@/components/content/IdeaCreationDialog";
 
 // Define the content item type
 interface ContentItem {
@@ -50,6 +50,7 @@ interface ContentItem {
   buckets?: string[];
   platforms?: string[];
   scheduledDate?: Date | null;
+  url?: string;
 }
 
 const formatColors: Record<string, string> = {
@@ -101,6 +102,26 @@ const ContentCalendar = () => {
   const [newContentTitle, setNewContentTitle] = useState("");
   const [newContentDescription, setNewContentDescription] = useState("");
   const [newContentFormat, setNewContentFormat] = useState("Post");
+  
+  // New state variables for editing content
+  const [editContentDialogOpen, setEditContentDialogOpen] = useState(false);
+  const [currentEditingContent, setCurrentEditingContent] = useState<ContentItem | null>(null);
+
+  // New state variables for dialog content
+  const [title, setTitle] = useState("");
+  const [bucketId, setBucketId] = useState("");
+  const [textContent, setTextContent] = useState("");
+  const [visualNotes, setVisualNotes] = useState("");
+  const [format, setFormat] = useState("Post");
+  const [shootDetails, setShootDetails] = useState("");
+  const [captionText, setCaptionText] = useState("");
+  const [currentTag, setCurrentTag] = useState("");
+  const [tagsList, setTagsList] = useState<string[]>([]);
+  const [currentPlatform, setCurrentPlatform] = useState("");
+  const [platformsList, setPlatformsList] = useState<string[]>([]);
+  const [inspirationText, setInspirationText] = useState("");
+  const [inspirationLinks, setInspirationLinks] = useState<string[]>([]);
+  const [inspirationImages, setInspirationImages] = useState<string[]>([]);
 
   // Load content from localStorage on component mount
   useEffect(() => {
@@ -141,6 +162,146 @@ const ContentCalendar = () => {
   useEffect(() => {
     localStorage.setItem('scheduledContent', JSON.stringify(scheduledContent));
   }, [scheduledContent]);
+
+  // Function to handle editing content
+  const handleEditContent = (content: ContentItem) => {
+    setCurrentEditingContent(content);
+    
+    // Set all the form values based on the content
+    setTitle(content.title || "");
+    setTagsList(content.tags || []);
+    setPlatformsList(content.platforms || []);
+    
+    // Parse the URL JSON if it exists
+    if (content.url) {
+      try {
+        const parsedContent = JSON.parse(content.url);
+        setTextContent(parsedContent.script || "");
+        setVisualNotes(parsedContent.visualNotes || "");
+        setShootDetails(parsedContent.shootDetails || "");
+        setCaptionText(parsedContent.caption || "");
+        setBucketId(parsedContent.bucketId || "");
+        setFormat(parsedContent.format || "Post");
+        setInspirationText(parsedContent.inspirationText || "");
+        setInspirationLinks(parsedContent.inspirationLinks || []);
+        setInspirationImages(parsedContent.inspirationImages || []);
+      } catch (error) {
+        console.error("Error parsing content URL:", error);
+      }
+    }
+    
+    setEditContentDialogOpen(true);
+  };
+
+  // Function to handle updating content after edit
+  const handleUpdateContent = () => {
+    if (!currentEditingContent) return;
+    
+    // Create updated content object
+    const updatedContent: ContentItem = {
+      ...currentEditingContent,
+      title,
+      tags: tagsList,
+      platforms: platformsList,
+      format,
+      url: JSON.stringify({
+        script: textContent,
+        visualNotes,
+        shootDetails,
+        caption: captionText,
+        platforms: platformsList,
+        bucketId,
+        format,
+        inspirationText,
+        inspirationLinks,
+        inspirationImages
+      })
+    };
+    
+    // Update in ready to schedule list
+    if (currentEditingContent.scheduledDate === null) {
+      setReadyToScheduleContent(prev => 
+        prev.map(item => item.id === currentEditingContent.id ? updatedContent : item)
+      );
+    } 
+    // Update in scheduled content list
+    else {
+      setScheduledContent(prev => 
+        prev.map(item => item.id === currentEditingContent.id ? updatedContent : item)
+      );
+    }
+    
+    setEditContentDialogOpen(false);
+    resetEditForm();
+  };
+
+  const resetEditForm = () => {
+    setCurrentEditingContent(null);
+    setTitle("");
+    setBucketId("");
+    setTextContent("");
+    setVisualNotes("");
+    setFormat("Post");
+    setShootDetails("");
+    setCaptionText("");
+    setCurrentTag("");
+    setTagsList([]);
+    setCurrentPlatform("");
+    setPlatformsList([]);
+    setInspirationText("");
+    setInspirationLinks([]);
+    setInspirationImages([]);
+  };
+
+  const handleCancelEdit = () => {
+    setEditContentDialogOpen(false);
+    resetEditForm();
+  };
+
+  // Functions for tag management
+  const handleAddTag = () => {
+    if (currentTag.trim() && !tagsList.includes(currentTag.trim())) {
+      setTagsList([...tagsList, currentTag.trim()]);
+      setCurrentTag("");
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTagsList(tagsList.filter(tag => tag !== tagToRemove));
+  };
+
+  // Functions for platform management
+  const handleAddPlatform = () => {
+    if (currentPlatform.trim() && !platformsList.includes(currentPlatform.trim())) {
+      setPlatformsList([...platformsList, currentPlatform.trim()]);
+      setCurrentPlatform("");
+    }
+  };
+
+  const handleRemovePlatform = (platformToRemove: string) => {
+    setPlatformsList(platformsList.filter(platform => platform !== platformToRemove));
+  };
+
+  // Functions for inspiration management
+  const handleAddInspirationLink = (link: string) => {
+    if (link.trim()) {
+      setInspirationLinks([...inspirationLinks, link.trim()]);
+    }
+  };
+
+  const handleRemoveInspirationLink = (index: number) => {
+    setInspirationLinks(inspirationLinks.filter((_, i) => i !== index));
+  };
+
+  const handleAddInspirationImage = (image: string) => {
+    if (image.trim()) {
+      setInspirationImages([...inspirationImages, image.trim()]);
+    }
+  };
+
+  const handleRemoveInspirationImage = (index: number) => {
+    setInspirationImages(inspirationImages.filter((_, i) => i !== index));
+  };
 
   const scheduleContent = (contentId: string, date: Date) => {
     // Find the content item
@@ -366,14 +527,25 @@ const ContentCalendar = () => {
                           </PopoverContent>
                         </Popover>
                         
-                        <Button 
-                          size="icon"
-                          variant="ghost" 
-                          className="h-8 w-8"
-                          onClick={() => deleteContent(content.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-gray-500" />
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button 
+                            size="icon"
+                            variant="ghost" 
+                            className="h-8 w-8"
+                            onClick={() => handleEditContent(content)}
+                          >
+                            <Pencil className="h-4 w-4 text-gray-500" />
+                          </Button>
+                          
+                          <Button 
+                            size="icon"
+                            variant="ghost" 
+                            className="h-8 w-8"
+                            onClick={() => deleteContent(content.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-gray-500" />
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -470,17 +642,30 @@ const ContentCalendar = () => {
                         >
                           <div className="flex items-center justify-between">
                             <span className="truncate">{content.title}</span>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-4 w-4 opacity-0 group-hover:opacity-100"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                deleteScheduledContent(content.id);
-                              }}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
+                            <div className="flex">
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-4 w-4 opacity-0 group-hover:opacity-100"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditContent(content);
+                                }}
+                              >
+                                <Pencil className="h-3 w-3" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-4 w-4 opacity-0 group-hover:opacity-100"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteScheduledContent(content.id);
+                                }}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                         
@@ -571,6 +756,49 @@ const ContentCalendar = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Edit Content Dialog */}
+        <IdeaCreationDialog
+          open={editContentDialogOpen}
+          onOpenChange={setEditContentDialogOpen}
+          title={title}
+          onTitleChange={setTitle}
+          bucketId={bucketId}
+          onBucketChange={setBucketId}
+          pillarId=""
+          scriptText={textContent}
+          onScriptTextChange={setTextContent}
+          visualNotes={visualNotes}
+          onVisualNotesChange={setVisualNotes}
+          format={format}
+          onFormatChange={setFormat}
+          shootDetails={shootDetails}
+          onShootDetailsChange={setShootDetails}
+          captionText={captionText}
+          onCaptionTextChange={setCaptionText}
+          platforms={platformsList}
+          currentPlatform={currentPlatform}
+          onCurrentPlatformChange={setCurrentPlatform}
+          onAddPlatform={handleAddPlatform}
+          onRemovePlatform={handleRemovePlatform}
+          tags={tagsList}
+          currentTag={currentTag}
+          onCurrentTagChange={setCurrentTag}
+          onAddTag={handleAddTag}
+          onRemoveTag={handleRemoveTag}
+          onSave={handleUpdateContent}
+          onCancel={handleCancelEdit}
+          isEditMode={true}
+          dialogTitle="Edit Content"
+          inspirationText={inspirationText}
+          onInspirationTextChange={setInspirationText}
+          inspirationLinks={inspirationLinks}
+          onAddInspirationLink={handleAddInspirationLink}
+          onRemoveInspirationLink={handleRemoveInspirationLink}
+          inspirationImages={inspirationImages}
+          onAddInspirationImage={handleAddInspirationImage}
+          onRemoveInspirationImage={handleRemoveInspirationImage}
+        />
       </div>
     </Layout>
   );
