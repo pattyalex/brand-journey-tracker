@@ -48,7 +48,7 @@ const DateSchedulePicker = ({
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0 z-[200]" align="start">
+        <PopoverContent className="w-auto p-0 z-[9999]" align="start">
           <Calendar
             mode="single"
             selected={date}

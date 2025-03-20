@@ -251,7 +251,6 @@ const ContentCard = ({
       e.nativeEvent.stopImmediatePropagation();
     }
     
-    // Log for debugging
     console.log("Schedule button clicked, toggling date picker:", !isDatePickerOpen);
     setIsDatePickerOpen(!isDatePickerOpen);
   };
@@ -510,9 +509,12 @@ const ContentCard = ({
           
           {isDatePickerOpen && isInCalendarView && (
             <div 
-              className="absolute top-10 -left-4 z-[100] bg-white border rounded-md shadow-lg p-2 min-w-[250px] block"
+              className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9999] bg-white border rounded-md shadow-xl p-2 min-w-[280px]"
               onClick={(e) => e.stopPropagation()}
-              style={{ display: 'block' }}
+              style={{ 
+                display: 'block',
+                boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)'
+              }}
             >
               <DateSchedulePicker
                 date={date}
