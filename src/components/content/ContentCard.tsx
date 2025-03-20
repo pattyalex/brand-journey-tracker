@@ -342,13 +342,12 @@ const ContentCard = ({
                 {isInCalendarView ? (
                   <Button
                     variant={date ? "default" : "outline"}
-                    size="sm"
+                    size="icon"
                     aria-label="Schedule Content"
-                    className={`h-8 p-2 ${date ? 'bg-green-500 hover:bg-green-600' : ''}`}
+                    className={`h-8 w-8 ${date ? 'bg-green-500 hover:bg-green-600' : ''}`}
                     onClick={handleScheduleButtonClick}
                   >
-                    <CalendarClock className="h-4 w-4 mr-1" />
-                    Schedule
+                    <CalendarClock className="h-4 w-4" />
                   </Button>
                 ) : (
                   <Button
