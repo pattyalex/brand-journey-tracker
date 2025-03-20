@@ -52,6 +52,7 @@ const ContentCard = ({
   const [date, setDate] = useState<Date | undefined>(content.scheduledDate);
   const [formatName, setFormatName] = useState<string>("Post");
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   
   const determinePillarToRestoreTo = () => {
     console.log(`[ContentCard] Determining pillar to restore to for "${content.title}" (ID: ${content.id}):`);
@@ -163,8 +164,8 @@ const ContentCard = ({
     e.preventDefault();
     e.stopPropagation();
     
-    if (e.isPropagationStopped && !e.isPropagationStopped()) {
-      e.stopPropagation();
+    if (typeof e.nativeEvent.stopImmediatePropagation === 'function') {
+      e.nativeEvent.stopImmediatePropagation();
     }
     
     try {
@@ -242,8 +243,8 @@ const ContentCard = ({
     e.preventDefault();
     e.stopPropagation();
     
-    if (e.isPropagationStopped && !e.isPropagationStopped()) {
-      e.stopPropagation();
+    if (typeof e.nativeEvent.stopImmediatePropagation === 'function') {
+      e.nativeEvent.stopImmediatePropagation();
     }
     
     setIsDatePickerOpen(!isDatePickerOpen);
@@ -253,8 +254,8 @@ const ContentCard = ({
     e.preventDefault();
     e.stopPropagation();
     
-    if (e.isPropagationStopped && !e.isPropagationStopped()) {
-      e.stopPropagation();
+    if (typeof e.nativeEvent.stopImmediatePropagation === 'function') {
+      e.nativeEvent.stopImmediatePropagation();
     }
     
     if (onRestoreToIdeas) {
@@ -290,8 +291,8 @@ const ContentCard = ({
     e.preventDefault();
     e.stopPropagation();
     
-    if (e.isPropagationStopped && !e.isPropagationStopped()) {
-      e.stopPropagation();
+    if (typeof e.nativeEvent.stopImmediatePropagation === 'function') {
+      e.nativeEvent.stopImmediatePropagation();
     }
     
     onDeleteContent(content.id);
@@ -301,28 +302,58 @@ const ContentCard = ({
     e.preventDefault();
     e.stopPropagation();
     
-    if (e.isPropagationStopped && !e.isPropagationStopped()) {
-      e.stopPropagation();
+    if (typeof e.nativeEvent.stopImmediatePropagation === 'function') {
+      e.nativeEvent.stopImmediatePropagation();
     }
     
     onEditContent(content.id);
   };
 
   const preventDragOnButtons = (e: React.DragEvent) => {
-    if ((e.target as HTMLElement).tagName === 'BUTTON' || 
-        (e.target as HTMLElement).closest('button')) {
+    if (
+      (e.target as HTMLElement).tagName === 'BUTTON' || 
+      (e.target as HTMLElement).closest('button') ||
+      (e.target as HTMLElement).tagName === 'svg' ||
+      (e.target as HTMLElement).tagName === 'path' ||
+      (e.target as HTMLElement).closest('svg')
+    ) {
       e.stopPropagation();
       e.preventDefault();
+      return false;
     }
+  };
+  
+  const handleDragStart = (e: React.DragEvent) => {
+    if (
+      (e.target as HTMLElement).tagName === 'BUTTON' || 
+      (e.target as HTMLElement).closest('button') ||
+      (e.target as HTMLElement).tagName === 'svg' ||
+      (e.target as HTMLElement).tagName === 'path' ||
+      (e.target as HTMLElement).closest('svg')
+    ) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+    
+    setIsDragging(true);
+  };
+  
+  const handleDragEnd = () => {
+    setIsDragging(false);
   };
 
   return (
     <Card 
       className={cn(
         "overflow-hidden relative h-full border-2 w-full",
-        isDraggable && "cursor-grab hover:shadow-md transition-shadow"
+        isDraggable && !isDragging && "cursor-grab hover:shadow-md transition-shadow",
+        isDraggable && isDragging && "cursor-grabbing"
       )}
-      onDragStart={preventDragOnButtons}
+      draggable={isDraggable}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragOver={preventDragOnButtons}
     >
       {isDraggable && (
         <div className="absolute top-0 left-0 w-full h-full opacity-0 z-10 group-hover:opacity-100 transition-opacity">
@@ -421,6 +452,7 @@ const ContentCard = ({
                     onClick={handleScheduleButtonClick}
                     type="button"
                     draggable={false}
+                    style={{ cursor: 'pointer' }}
                   >
                     <CalendarClock className="h-4 w-4" />
                   </Button>
@@ -429,10 +461,11 @@ const ContentCard = ({
                     variant="outline"
                     size="sm"
                     aria-label="Send to Content Calendar"
-                    className="h-8 p-2"
+                    className="h-8 p-2 cursor-pointer"
                     onClick={handleSendToCalendar}
                     type="button"
                     draggable={false}
+                    style={{ cursor: 'pointer' }}
                   >
                     <Send className="h-4 w-4" />
                   </Button>
@@ -464,9 +497,10 @@ const ContentCard = ({
             size="sm"
             onClick={handleDeleteClick}
             aria-label="Delete"
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 cursor-pointer"
             type="button"
             draggable={false}
+            style={{ cursor: 'pointer' }}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -475,9 +509,10 @@ const ContentCard = ({
             size="sm"
             onClick={handleEditClick}
             aria-label="Edit"
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 cursor-pointer"
             type="button"
             draggable={false}
+            style={{ cursor: 'pointer' }}
           >
             <Pencil className="h-4 w-4" />
           </Button>
