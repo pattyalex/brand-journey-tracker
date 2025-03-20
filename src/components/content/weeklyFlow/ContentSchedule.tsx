@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Platform, ContentItem } from "@/types/content-flow";
 import PlatformIcon from "./PlatformIcon";
@@ -64,10 +63,6 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
     setDropTargetCell(null);
   };
 
-  const handleRemoveContent = (id: string) => {
-    setContentItems(contentItems.filter(item => item.id !== id));
-  };
-  
   const handleTaskClick = (task: ContentItem) => {
     setSelectedTask(task);
     setIsNotesDialogOpen(true);
@@ -241,8 +236,6 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
                           {content.notes && (
                             <MessageSquare className="h-3.5 w-3.5 text-blue-500 mr-1 flex-shrink-0" />
                           )}
-                          
-                          {/* Removed the cross/delete button */}
                         </div>
                       );
                     })}
