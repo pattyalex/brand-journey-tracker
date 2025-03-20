@@ -242,16 +242,7 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
                             <MessageSquare className="h-3.5 w-3.5 text-blue-500 mr-1 flex-shrink-0" />
                           )}
                           
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRemoveContent(content.id);
-                            }}
-                            className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                            aria-label="Remove item"
-                          >
-                            ×
-                          </button>
+                          {/* Removed the cross/delete button */}
                         </div>
                       );
                     })}
