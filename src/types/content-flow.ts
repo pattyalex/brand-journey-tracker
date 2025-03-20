@@ -15,5 +15,4 @@ export interface ContentItem {
   notes?: string;
   position?: number; // Vertical position in pixels
   timeSlot?: string; // Added timeSlot for horizontal alignment
-  dateCreated?: string; // Added dateCreated field to match the type in content.ts
 }

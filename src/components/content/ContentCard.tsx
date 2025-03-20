@@ -4,7 +4,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  Trash2, Pencil, Send, FileText, CornerUpLeft
+  Trash2, Pencil, Send, FileText
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ContentItem } from "@/types/content";
@@ -28,8 +28,6 @@ interface ContentCardProps {
   onDeleteContent: (contentId: string) => void;
   onEditContent: (contentId: string) => void;
   onScheduleContent?: (contentId: string, scheduledDate: Date) => void;
-  onMoveBackToIdeas?: (content: ContentItem) => void;
-  isCalendarView?: boolean;
 }
 
 const ContentCard = ({
@@ -39,9 +37,7 @@ const ContentCard = ({
   pillars,
   onDeleteContent,
   onEditContent,
-  onScheduleContent,
-  onMoveBackToIdeas,
-  isCalendarView = false
+  onScheduleContent
 }: ContentCardProps) => {
   const [date, setDate] = useState<Date | undefined>(content.scheduledDate);
   const [formatName, setFormatName] = useState<string>("Post");
@@ -143,12 +139,6 @@ const ContentCard = ({
     }
   };
 
-  const handleMoveBackToIdeas = () => {
-    if (onMoveBackToIdeas) {
-      onMoveBackToIdeas(content);
-    }
-  };
-
   return (
     <Card className="overflow-hidden relative h-full border-2 w-full">
       <CardHeader className="p-4 pb-2">
@@ -203,47 +193,24 @@ const ContentCard = ({
       
       <CardFooter className="p-4 pt-0 flex justify-between">
         <div className="flex gap-2">
-          {!isCalendarView && (
-            <TooltipProvider delayDuration={200}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    aria-label="Send to Content Calendar"
-                    className="h-8 w-8 p-0"
-                    onClick={handleSendToCalendar}
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent className="bg-white text-black border shadow-md">
-                  <p>Send to content calendar</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-          
-          {isCalendarView && onMoveBackToIdeas && (
-            <TooltipProvider delayDuration={200}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    aria-label="Move back to idea development"
-                    className="h-8 w-8 p-0"
-                    onClick={handleMoveBackToIdeas}
-                  >
-                    <CornerUpLeft className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent className="bg-white text-black border shadow-md">
-                  <p>Move back to idea development</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
+          <TooltipProvider delayDuration={200}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  aria-label="Send to Content Calendar"
+                  className="h-8 w-8 p-0"
+                  onClick={handleSendToCalendar}
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="bg-white text-black border shadow-md">
+                <p>Send to content calendar</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         
         <div className="flex gap-2">
