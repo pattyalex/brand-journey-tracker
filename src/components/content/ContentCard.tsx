@@ -196,7 +196,11 @@ const ContentCard = ({
   const handleDateChange = (newDate: Date | undefined) => {
     setDate(newDate);
     
-    if (newDate) {
+    if (newDate && onScheduleContent) {
+      onScheduleContent(content.id, newDate);
+      setIsDatePickerOpen(false);
+    } else if (newDate) {
+      // Original date change handling as fallback
       try {
         const updatedContent = {
           ...content,

@@ -52,7 +52,9 @@ const DateSchedulePicker = ({
           <Calendar
             mode="single"
             selected={date}
-            onSelect={onDateChange}
+            onSelect={(selectedDate) => {
+              onDateChange(selectedDate);
+            }}
             initialFocus
             className="p-3 pointer-events-auto"
           />

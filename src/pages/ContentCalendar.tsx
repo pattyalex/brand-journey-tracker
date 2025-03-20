@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -131,6 +130,9 @@ const ContentCalendar = () => {
     { id: "2", name: "Pillar 2", content: [] },
     { id: "3", name: "Pillar 3", content: [] }
   ]);
+
+  const [animatingContent, setAnimatingContent] = useState<string | null>(null);
+  const [animationTarget, setAnimationTarget] = useState<{x: number, y: number} | null>(null);
 
   useEffect(() => {
     try {
@@ -298,6 +300,46 @@ const ContentCalendar = () => {
     setInspirationImages(inspirationImages.filter((_, i) => i !== index));
   };
 
+  const handleDateChange = (contentId: string, newDate: Date | undefined) => {
+    if (!newDate) return;
+    
+    const contentItem = readyToScheduleContent.find(item => item.id === contentId);
+    if (!contentItem) return;
+    
+    const targetDay = document.querySelector(`[data-date="${format(newDate, 'yyyy-MM-dd')}"]`);
+    
+    if (targetDay) {
+      const contentRect = document.getElementById(`content-card-${contentId}`)?.getBoundingClientRect();
+      const targetRect = targetDay.getBoundingClientRect();
+      
+      if (contentRect) {
+        setAnimatingContent(contentId);
+        setAnimationTarget({
+          x: targetRect.left - contentRect.left,
+          y: targetRect.top - contentRect.top
+        });
+        
+        setTimeout(() => {
+          const scheduledItem = {
+            ...contentItem,
+            scheduledDate: newDate
+          };
+          
+          setReadyToScheduleContent(prev => prev.filter(item => item.id !== contentId));
+          setScheduledContent(prev => [...prev, scheduledItem]);
+          setAnimatingContent(null);
+          setAnimationTarget(null);
+          
+          toast.success(`"${contentItem.title}" scheduled for ${format(newDate, "PPP")}`);
+        }, 500);
+      } else {
+        scheduleContent(contentId, newDate);
+      }
+    } else {
+      scheduleContent(contentId, newDate);
+    }
+  };
+
   const scheduleContent = (contentId: string, date: Date) => {
     const contentItem = readyToScheduleContent.find(item => item.id === contentId);
     
@@ -309,8 +351,9 @@ const ContentCalendar = () => {
     };
     
     setReadyToScheduleContent(prev => prev.filter(item => item.id !== contentId));
-    
     setScheduledContent(prev => [...prev, scheduledItem]);
+    
+    toast.success(`"${contentItem.title}" scheduled for ${format(date, "PPP")}`);
   };
 
   const createNewContent = () => {
@@ -380,18 +423,12 @@ const ContentCalendar = () => {
 
   const handleRestoreToIdeas = (content: ContentItemType, originalPillarId?: string) => {
     try {
-      // Remove from current lists
       if (content.scheduledDate) {
         setScheduledContent(prev => prev.filter(item => item.id !== content.id));
       } else {
         setReadyToScheduleContent(prev => prev.filter(item => item.id !== content.id));
       }
 
-      // Determine which pillar to restore to:
-      // 1. Use the passed originalPillarId (highest priority)
-      // 2. Use content's existing originalPillarId 
-      // 3. Use content's bucketId if available
-      // 4. Default to "1" only as last resort
       const pillarToRestoreTo = originalPillarId || 
                                content.originalPillarId || 
                                content.bucketId || 
@@ -399,7 +436,6 @@ const ContentCalendar = () => {
       
       console.log(`ContentCalendar: Restoring content "${content.title}" to pillar: ${pillarToRestoreTo}`, content);
 
-      // Use the utility function to store the content for restoration
       restoreContentToIdeas(content, pillarToRestoreTo);
       
       const targetPillar = pillars.find(p => p.id === pillarToRestoreTo)?.name || 
@@ -494,23 +530,43 @@ const ContentCalendar = () => {
                     description: content.description || "",
                   };
                   
+                  const isAnimating = animatingContent === content.id;
+                  
                   return (
-                    <ContentCard
+                    <div 
+                      id={`content-card-${content.id}`}
                       key={content.id}
-                      content={contentItem}
-                      index={index}
-                      pillar={{ id: content.pillarId || "default", name: "Default Pillar", content: [] }}
-                      pillars={[
-                        { id: "1", name: "Pillar 1", content: [] },
-                        { id: "2", name: "Pillar 2", content: [] },
-                        { id: "3", name: "Pillar 3", content: [] }
-                      ]}
-                      onDeleteContent={deleteContent}
-                      onEditContent={() => handleEditContent(content)}
-                      onRestoreToIdeas={handleRestoreToIdeas}
-                      originalPillarId={content.pillarId}
-                      isInCalendarView={true}
-                    />
+                      className={cn(
+                        "transition-all duration-500",
+                        isAnimating && "fixed z-50"
+                      )}
+                      style={
+                        isAnimating && animationTarget
+                          ? { 
+                              transform: `translate(${animationTarget.x}px, ${animationTarget.y}px) scale(0.5)`,
+                              opacity: 0.8
+                            }
+                          : {}
+                      }
+                    >
+                      <ContentCard
+                        key={content.id}
+                        content={contentItem}
+                        index={index}
+                        pillar={{ id: content.pillarId || "default", name: "Default Pillar", content: [] }}
+                        pillars={[
+                          { id: "1", name: "Pillar 1", content: [] },
+                          { id: "2", name: "Pillar 2", content: [] },
+                          { id: "3", name: "Pillar 3", content: [] }
+                        ]}
+                        onDeleteContent={deleteContent}
+                        onEditContent={() => handleEditContent(content)}
+                        onRestoreToIdeas={handleRestoreToIdeas}
+                        originalPillarId={content.pillarId}
+                        isInCalendarView={true}
+                        onScheduleContent={(contentId, date) => handleDateChange(contentId, date)}
+                      />
+                    </div>
                   );
                 })}
               </div>
@@ -544,10 +600,12 @@ const ContentCalendar = () => {
               const isCurrentDay = isToday(day);
               const dayContent = getContentForDate(day);
               const isWeekendDay = isWeekend(day);
+              const dateStr = format(day, 'yyyy-MM-dd');
               
               return (
                 <div 
                   key={i} 
+                  data-date={dateStr}
                   className={`border-t border-l min-h-[120px] p-1 ${
                     !isCurrentMonth ? "bg-gray-50 text-gray-400" : ""
                   } ${isCurrentDay ? "bg-blue-50" : ""} ${
