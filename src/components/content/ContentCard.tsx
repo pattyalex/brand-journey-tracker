@@ -47,39 +47,43 @@ const ContentCard = ({
   const [formatName, setFormatName] = useState<string>("Post");
   
   const determinePillarToRestoreTo = () => {
-    console.log(`Determining pillar to restore to for "${content.title}" (ID: ${content.id}):`);
+    console.log(`[ContentCard] Determining pillar to restore to for "${content.title}" (ID: ${content.id}):`);
     console.log(`- originalPillarId prop: ${originalPillarId || "undefined"}`);
     console.log(`- content.originalPillarId: ${content.originalPillarId || "undefined"}`);
     console.log(`- content.bucketId: ${content.bucketId || "undefined"}`);
-    console.log(`- current pillar: ${pillar.id || "1"}`);
+    console.log(`- current pillar: ${pillar.id || "undefined"}`);
     
     if (originalPillarId) {
-      console.log(`Using provided originalPillarId: ${originalPillarId}`);
+      console.log(`[ContentCard] Using provided originalPillarId: ${originalPillarId}`);
       return originalPillarId;
     } 
     
     if (content.originalPillarId) {
-      console.log(`Using content's originalPillarId: ${content.originalPillarId}`);
+      console.log(`[ContentCard] Using content's originalPillarId: ${content.originalPillarId}`);
       return content.originalPillarId;
     }
     
-    const currentPillarId = pillar.id || "1";
-    console.log(`Defaulting to current pillar: ${currentPillarId}`);
-    return currentPillarId;
+    if (content.bucketId) {
+      console.log(`[ContentCard] Using content's bucketId: ${content.bucketId}`);
+      return content.bucketId;
+    }
+    
+    console.log(`[ContentCard] No pillar ID found, card won't be properly restored`);
+    return undefined;
   };
   
   const pillarToRestoreTo = determinePillarToRestoreTo();
   
   const getTargetPillarName = () => {
+    if (!pillarToRestoreTo) {
+      return "Unknown Pillar";
+    }
+    
     const targetPillar = pillars.find(p => p.id === pillarToRestoreTo);
     
     if (targetPillar) {
       return targetPillar.name;
     }
-    
-    if (pillarToRestoreTo === "1") return "Pillar 1";
-    if (pillarToRestoreTo === "2") return "Pillar 2";  
-    if (pillarToRestoreTo === "3") return "Pillar 3";
     
     return `Pillar ${pillarToRestoreTo}`;
   };
@@ -169,7 +173,7 @@ const ContentCard = ({
         format: contentFormat,
         platforms: platforms,
         tags: uniqueTags,
-        originalPillarId: pillar.id || content.originalPillarId || "1"
+        originalPillarId: content.originalPillarId || pillar.id
       };
       
       readyToScheduleContent.push(contentToSchedule);
@@ -186,29 +190,31 @@ const ContentCard = ({
 
   const handleRestoreToIdeas = () => {
     if (onRestoreToIdeas) {
-      try {
-        console.log(`ContentCard: Restoring content "${content.title}" to pillar ID: ${pillarToRestoreTo}`);
-        
-        onRestoreToIdeas(content, pillarToRestoreTo);
-        
-        toast.success(`"${content.title}" will be restored to Idea Development`, {
-          description: `Navigate to Idea Development to see this content in ${targetPillarName}`,
+      if (!pillarToRestoreTo) {
+        toast.warning(`"${content.title}" has no original pillar information`, {
+          description: "Will try to restore based on available information",
           duration: 5000
         });
-        
-        setTimeout(() => {
-          toast.info("To see your restored content, go to Idea Development page", {
-            duration: 8000,
-            action: {
-              label: "Got it",
-              onClick: () => {}
-            }
-          });
-        }, 500);
-      } catch (error) {
-        console.error("Error restoring to ideas:", error);
-        toast.error("Failed to restore to Idea Development");
       }
+      
+      console.log(`[ContentCard] Restoring content "${content.title}" to pillar ID: ${pillarToRestoreTo || "undefined"}`);
+      
+      onRestoreToIdeas(content, pillarToRestoreTo);
+      
+      toast.success(`"${content.title}" will be restored to Idea Development`, {
+        description: `Navigate to Idea Development to see this content in ${targetPillarName}`,
+        duration: 5000
+      });
+      
+      setTimeout(() => {
+        toast.info("To see your restored content, go to Idea Development page", {
+          duration: 8000,
+          action: {
+            label: "Got it",
+            onClick: () => {}
+          }
+        });
+      }, 500);
     }
   };
 

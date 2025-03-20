@@ -1,6 +1,7 @@
+
 import { ContentItem } from "@/types/content";
 
-export const restoreContentToIdeas = (content: ContentItem, originalPillarId: string = "1") => {
+export const restoreContentToIdeas = (content: ContentItem, originalPillarId: string | undefined = undefined) => {
   try {
     // Get existing restored content from localStorage
     const restoredIdeasKey = 'restoredToIdeasContent';
@@ -11,13 +12,23 @@ export const restoreContentToIdeas = (content: ContentItem, originalPillarId: st
       restoredIdeas = JSON.parse(storedContent);
     }
     
-    console.log(`ContentRestoreUtils: Restoring content "${content.title}" (ID: ${content.id}) to pillar ID: ${originalPillarId}`);
+    console.log(`ContentRestoreUtils: Restoring content "${content.title}" (ID: ${content.id})`);
     console.log(`- Content's existing originalPillarId: ${content.originalPillarId || "undefined"}`);
     console.log(`- Content's bucketId: ${content.bucketId || "undefined"}`);
+    console.log(`- Explicitly provided originalPillarId: ${originalPillarId || "undefined"}`);
     
-    // Preserve the existing originalPillarId if available and no new one is specified
-    const finalPillarId = originalPillarId || content.originalPillarId || "1";
-    console.log(`- Final pillar ID for restoration: ${finalPillarId}`);
+    // Prioritize in this order:
+    // 1. Explicitly provided originalPillarId parameter
+    // 2. Content's own originalPillarId property
+    // 3. Content's bucketId property (if it represents a pillar)
+    // We no longer default to "1"
+    const finalPillarId = originalPillarId || content.originalPillarId || content.bucketId;
+    
+    if (!finalPillarId) {
+      console.error(`No pillar ID found for content "${content.title}" (ID: ${content.id}). Cannot restore properly.`);
+    }
+    
+    console.log(`- Final pillar ID for restoration: ${finalPillarId || "undefined"}`);
     
     // Add current content to restored ideas with a timestamp and original pillar ID
     restoredIdeas.push({
@@ -25,7 +36,7 @@ export const restoreContentToIdeas = (content: ContentItem, originalPillarId: st
       restoredAt: new Date().toISOString(),
       // Adding a flag to make it easier to identify restored items
       isRestored: true,
-      // Use the explicit originalPillarId from the parameter or preserve the one it already has
+      // Use the determined pillar ID, but NEVER default to "1"
       originalPillarId: finalPillarId
     });
     
@@ -50,7 +61,7 @@ export const restoreContentToIdeas = (content: ContentItem, originalPillarId: st
     
     localStorage.setItem(logKey, JSON.stringify(restorationLog));
     
-    console.log(`Content "${content.title}" (ID: ${content.id}) has been marked for restoration to Ideas Pillar ${finalPillarId}`);
+    console.log(`Content "${content.title}" (ID: ${content.id}) has been marked for restoration to Ideas Pillar ${finalPillarId || "unknown"}`);
     return true;
   } catch (error) {
     console.error("Error restoring content to ideas:", error);
@@ -67,14 +78,13 @@ export const getRestoredIdeas = (): ContentItem[] => {
       const restoredIdeas = JSON.parse(storedContent);
       console.log(`Retrieved ${restoredIdeas.length} items that were restored to Ideas`);
       
-      // Map through each item to ensure originalPillarId is preserved
+      // Only process items where originalPillarId isn't set
+      // We no longer set default of "1"
       const processedIdeas = restoredIdeas.map((item: ContentItem) => {
-        // Only set default if originalPillarId is completely missing
         if (!item.originalPillarId) {
-          console.log(`Setting default originalPillarId for item: ${item.id}`);
-          return { ...item, originalPillarId: "1" };
+          console.log(`Warning: No originalPillarId for restored item: ${item.id}`);
         }
-        return item; // Keep the originalPillarId that was set during restore
+        return item;
       });
       
       // Clear the restored ideas from localStorage after retrieving them
