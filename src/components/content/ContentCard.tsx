@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
@@ -362,7 +361,7 @@ const ContentCard = ({
     // Small delay to prevent immediate drag activation when moving quickly between buttons
     setTimeout(() => {
       setIsInteractingWithButton(false);
-    }, 100);
+    }, 200);
   };
 
   return (
@@ -394,7 +393,7 @@ const ContentCard = ({
                   variant="outline"
                   size="icon"
                   aria-label="Restore to Ideas"
-                  className="h-8 w-8 p-0 bg-white hover:bg-blue-50 hover:text-blue-600 !cursor-pointer"
+                  className="h-8 w-8 p-0 bg-white hover:bg-blue-50 hover:text-blue-600 cursor-pointer"
                   onClick={handleRestoreToIdeas}
                   type="button"
                   draggable={false}
@@ -472,7 +471,7 @@ const ContentCard = ({
                     variant={date ? "default" : "outline"}
                     size="icon"
                     aria-label="Schedule Content"
-                    className={`h-8 w-8 ${date ? 'bg-green-500 hover:bg-green-600' : ''} !cursor-pointer`}
+                    className={`h-8 w-8 ${date ? 'bg-green-500 hover:bg-green-600' : ''} cursor-pointer`}
                     onClick={handleScheduleButtonClick}
                     type="button"
                     draggable={false}
@@ -486,7 +485,7 @@ const ContentCard = ({
                     variant="outline"
                     size="sm"
                     aria-label="Send to Content Calendar"
-                    className="h-8 p-2 !cursor-pointer"
+                    className="h-8 p-2 cursor-pointer"
                     onClick={handleSendToCalendar}
                     type="button"
                     draggable={false}
@@ -526,7 +525,7 @@ const ContentCard = ({
             size="sm"
             onClick={handleDeleteClick}
             aria-label="Delete"
-            className="h-8 w-8 p-0 !cursor-pointer"
+            className="h-8 w-8 p-0 cursor-pointer"
             type="button"
             draggable={false}
             onMouseEnter={handleButtonMouseEnter}
@@ -539,7 +538,7 @@ const ContentCard = ({
             size="sm"
             onClick={handleEditClick}
             aria-label="Edit"
-            className="h-8 w-8 p-0 !cursor-pointer"
+            className="h-8 w-8 p-0 cursor-pointer"
             type="button"
             draggable={false}
             onMouseEnter={handleButtonMouseEnter}
