@@ -159,7 +159,10 @@ const ContentCard = ({
   const uniqueTags = getUniqueTags();
   const contentFormat = getContentFormat();
 
-  const handleSendToCalendar = () => {
+  const handleSendToCalendar = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     try {
       let readyToScheduleContent = [];
       const storedContent = localStorage.getItem('readyToScheduleContent');
@@ -374,6 +377,7 @@ const ContentCard = ({
                     aria-label="Send to Content Calendar"
                     className="h-8 p-2"
                     onClick={handleSendToCalendar}
+                    type="button"
                   >
                     <Send className="h-4 w-4" />
                   </Button>
