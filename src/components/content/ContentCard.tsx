@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
@@ -387,7 +386,7 @@ const ContentCard = ({
       )}
       
       {onRestoreToIdeas && (
-        <div className="absolute top-2 right-2 z-50">
+        <div className="absolute top-2 right-2 z-20">
           <TooltipProvider delayDuration={200}>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -464,7 +463,7 @@ const ContentCard = ({
       </CardContent>
       
       <CardFooter className="p-4 pt-0 flex justify-between">
-        <div className="flex gap-2 z-50 relative">
+        <div className="flex gap-2 z-20 relative">
           <TooltipProvider delayDuration={200}>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -513,7 +512,8 @@ const ContentCard = ({
               onClick={(e) => e.stopPropagation()}
               style={{ 
                 display: 'block',
-                boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)'
+                boxShadow: '0 0 20px rgba(0, 0, 0, 0.3)',
+                filter: 'drop-shadow(0 0 10px rgba(0, 0, 0, 0.3))'
               }}
             >
               <DateSchedulePicker
@@ -525,7 +525,7 @@ const ContentCard = ({
           )}
         </div>
         
-        <div className="flex gap-2 z-50 relative">
+        <div className="flex gap-2 z-20 relative">
           <Button 
             variant="ghost" 
             size="sm"
@@ -554,6 +554,13 @@ const ContentCard = ({
           </Button>
         </div>
       </CardFooter>
+      
+      {isDatePickerOpen && isInCalendarView && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-5 z-[9000]"
+          onClick={() => setIsDatePickerOpen(false)}
+        />
+      )}
     </Card>
   );
 };
