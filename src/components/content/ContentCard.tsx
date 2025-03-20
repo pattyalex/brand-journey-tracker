@@ -4,7 +4,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  Trash2, Pencil, Send, FileText
+  Trash2, Pencil, Send, FileText, CornerUpLeft
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ContentItem } from "@/types/content";
@@ -28,6 +28,7 @@ interface ContentCardProps {
   onDeleteContent: (contentId: string) => void;
   onEditContent: (contentId: string) => void;
   onScheduleContent?: (contentId: string, scheduledDate: Date) => void;
+  onRestoreToIdeas?: (content: ContentItem) => void;
 }
 
 const ContentCard = ({
@@ -37,7 +38,8 @@ const ContentCard = ({
   pillars,
   onDeleteContent,
   onEditContent,
-  onScheduleContent
+  onScheduleContent,
+  onRestoreToIdeas
 }: ContentCardProps) => {
   const [date, setDate] = useState<Date | undefined>(content.scheduledDate);
   const [formatName, setFormatName] = useState<string>("Post");
@@ -139,8 +141,43 @@ const ContentCard = ({
     }
   };
 
+  const handleRestoreToIdeas = () => {
+    if (onRestoreToIdeas) {
+      try {
+        onRestoreToIdeas(content);
+        toast.success(`"${content.title}" restored to Idea Development`);
+      } catch (error) {
+        console.error("Error restoring to ideas:", error);
+        toast.error("Failed to restore to Idea Development");
+      }
+    }
+  };
+
   return (
     <Card className="overflow-hidden relative h-full border-2 w-full">
+      {onRestoreToIdeas && (
+        <div className="absolute top-2 right-2 z-10">
+          <TooltipProvider delayDuration={200}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Restore to Ideas"
+                  className="h-8 w-8 p-0"
+                  onClick={handleRestoreToIdeas}
+                >
+                  <CornerUpLeft className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="bg-white text-black border shadow-md">
+                <p>Restore to Idea Development</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      )}
+      
       <CardHeader className="p-4 pb-2">
         <CardTitle className="text-base font-bold mb-1 line-clamp-2">
           {content.title}

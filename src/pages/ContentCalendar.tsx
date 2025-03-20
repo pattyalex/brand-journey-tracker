@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
-  format as formatDate, 
+  formatDate, 
   startOfMonth, 
   endOfMonth, 
   eachDayOfInterval, 
@@ -30,7 +30,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { CalendarIcon, FileText, ChevronLeft, ChevronRight, PlusCircle, Trash2, Instagram, Youtube, AtSign, Pencil } from "lucide-react";
+import { CalendarIcon, FileText, ChevronLeft, ChevronRight, PlusCircle, Trash2, Instagram, Youtube, AtSign, Pencil, CornerUpLeft } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -39,6 +39,9 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import IdeaCreationDialog from "@/components/content/IdeaCreationDialog";
+import ContentCard from "@/components/content/ContentCard";
+import { ContentItem } from "@/types/content";
+import { toast } from "sonner";
 
 interface ContentItem {
   id: string;
@@ -50,6 +53,8 @@ interface ContentItem {
   platforms?: string[];
   scheduledDate?: Date | null;
   url?: string;
+  pillarId?: string;
+  dateCreated?: string;
 }
 
 const formatColors: Record<string, string> = {
@@ -125,7 +130,8 @@ const ContentCalendar = () => {
         const parsedData = JSON.parse(readyToScheduleData);
         const contentWithDates = parsedData.map((item: any) => ({
           ...item,
-          scheduledDate: item.scheduledDate ? new Date(item.scheduledDate) : null
+          scheduledDate: item.scheduledDate ? new Date(item.scheduledDate) : null,
+          dateCreated: item.dateCreated || new Date().toISOString()
         }));
         setReadyToScheduleContent(contentWithDates);
       }
@@ -135,7 +141,8 @@ const ContentCalendar = () => {
         const parsedData = JSON.parse(scheduledData);
         const contentWithDates = parsedData.map((item: any) => ({
           ...item,
-          scheduledDate: item.scheduledDate ? new Date(item.scheduledDate) : null
+          scheduledDate: item.scheduledDate ? new Date(item.scheduledDate) : null,
+          dateCreated: item.dateCreated || new Date().toISOString()
         }));
         setScheduledContent(contentWithDates);
       }
@@ -362,6 +369,52 @@ const ContentCalendar = () => {
     end: calendarEnd 
   });
 
+  const handleRestoreToIdeas = (content: ContentItem) => {
+    try {
+      // Remove from current lists
+      if (content.scheduledDate) {
+        setScheduledContent(prev => prev.filter(item => item.id !== content.id));
+      } else {
+        setReadyToScheduleContent(prev => prev.filter(item => item.id !== content.id));
+      }
+
+      // Add to the original content pillars
+      let allPillars = [];
+      const allPillarsStr = localStorage.getItem("contentPillars");
+      
+      if (allPillarsStr) {
+        allPillars = JSON.parse(allPillarsStr);
+        
+        // Find the right pillar to add content back to (or add to first pillar if none found)
+        let foundPillar = false;
+        allPillars = allPillars.map((pillar: any) => {
+          if (content.pillarId && pillar.id === content.pillarId) {
+            foundPillar = true;
+            return {
+              ...pillar,
+              content: [...(pillar.content || []), content]
+            };
+          }
+          return pillar;
+        });
+
+        // If no matching pillar was found, add to the first pillar
+        if (!foundPillar && allPillars.length > 0) {
+          allPillars[0] = {
+            ...allPillars[0],
+            content: [...(allPillars[0].content || []), content]
+          };
+        }
+
+        localStorage.setItem("contentPillars", JSON.stringify(allPillars));
+        toast.success(`"${content.title}" moved back to Idea Development`);
+      }
+    } catch (error) {
+      console.error("Error restoring content to ideas:", error);
+      toast.error("Failed to restore content to Idea Development");
+    }
+  };
+
   return (
     <Layout>
       <div className="space-y-4">
@@ -420,101 +473,17 @@ const ContentCalendar = () => {
           <CardContent className="space-y-4">
             {readyToScheduleContent.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {readyToScheduleContent.map((content) => (
-                  <Card key={content.id} className="overflow-hidden h-fit max-w-[250px]">
-                    <CardHeader className="p-3 pb-1">
-                      <CardTitle className="text-base">{content.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-3 pt-0">
-                      <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{content.description}</p>
-                      
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {content.tags && content.tags.slice(0, 2).map((tag, idx) => (
-                          <Badge key={idx} variant="outline" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                        {content.tags && content.tags.length > 2 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{content.tags.length - 2}
-                          </Badge>
-                        )}
-                        
-                        {content.format && (
-                          <Badge 
-                            variant="secondary" 
-                            className={`text-xs flex items-center gap-1 ${
-                              formatColors[getContentFormat(content)] ? formatColors[getContentFormat(content)] : "bg-gray-100 text-gray-800"
-                            }`}
-                          >
-                            <FileText className="h-3 w-3" />
-                            {getContentFormat(content)}
-                          </Badge>
-                        )}
-                        
-                        {content.platforms && content.platforms.length > 0 && 
-                          content.platforms.slice(0, 2).map((platform, idx) => (
-                            <Badge 
-                              key={`platform-${idx}`} 
-                              className="bg-purple-100 text-purple-800 text-xs px-2 py-0.5 rounded-full flex items-center gap-1"
-                            >
-                              {getPlatformIcon(platform)}
-                              <span>{platform}</span>
-                            </Badge>
-                          ))
-                        }
-                        {content.platforms && content.platforms.length > 2 && (
-                          <Badge className="bg-purple-100 text-purple-800 text-xs">
-                            +{content.platforms.length - 2}
-                          </Badge>
-                        )}
-                      </div>
-                      
-                      <div className="flex justify-between items-center mt-3">
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button size="sm" className="h-8 text-xs px-2">
-                              <CalendarIcon className="mr-1 h-3 w-3" />
-                              Schedule
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={undefined}
-                              onSelect={(date) => {
-                                if (date) {
-                                  scheduleContent(content.id, date);
-                                }
-                              }}
-                              initialFocus
-                              className="p-3 pointer-events-auto"
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        
-                        <div className="flex gap-2">
-                          <Button 
-                            size="icon"
-                            variant="ghost" 
-                            className="h-8 w-8"
-                            onClick={() => handleEditContent(content)}
-                          >
-                            <Pencil className="h-4 w-4 text-gray-500" />
-                          </Button>
-                          
-                          <Button 
-                            size="icon"
-                            variant="ghost" 
-                            className="h-8 w-8"
-                            onClick={() => deleteContent(content.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-gray-500" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                {readyToScheduleContent.map((content, index) => (
+                  <ContentCard
+                    key={content.id}
+                    content={content}
+                    index={index}
+                    pillar={{ id: content.pillarId || "default", name: "Default Pillar" }}
+                    pillars={[]}
+                    onDeleteContent={deleteContent}
+                    onEditContent={() => handleEditContent(content)}
+                    onRestoreToIdeas={handleRestoreToIdeas}
+                  />
                 ))}
               </div>
             ) : (
