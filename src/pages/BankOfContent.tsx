@@ -32,7 +32,7 @@ const BankOfContent = () => {
   
   const [selectedText, setSelectedText] = useState("");
   const [developScriptText, setDevelopScriptText] = useState("");
-  const [visualNotes, setVisualNotes] = useState("");  // Added visualNotes state
+  const [visualNotes, setVisualNotes] = useState("");
   const [shootDetails, setShootDetails] = useState("");
   const [captionText, setCaptionText] = useState("");
   const [selectedFormat, setSelectedFormat] = useState("text");
@@ -101,7 +101,7 @@ const BankOfContent = () => {
     setDevelopIdeaMode(false);
     setNewIdeaTitle("");
     setDevelopScriptText("");
-    setVisualNotes("");  // Reset visualNotes when opening dialog
+    setVisualNotes("");
     setSelectedFormat("text");
     setShootDetails("");
     setCaptionText("");
@@ -234,7 +234,7 @@ const BankOfContent = () => {
       format: selectedFormat,
       url: JSON.stringify({
         script: developScriptText || selectedText,
-        visualNotes: visualNotes,  // Include visualNotes in the saved content
+        visualNotes: visualNotes,
         shootDetails: shootDetails,
         caption: captionText,
         platforms: selectedPlatforms,
@@ -252,7 +252,7 @@ const BankOfContent = () => {
     setNewIdeaTitle("");
     setDevelopScriptText("");
     setSelectedText("");
-    setVisualNotes("");  // Reset visualNotes after saving
+    setVisualNotes("");
     setSelectedFormat("text");
     setShootDetails("");
     setCaptionText("");
@@ -269,6 +269,40 @@ const BankOfContent = () => {
   const handleBucketChange = (bucketId: string) => {
     setSelectedBucketId(bucketId);
   };
+
+  useEffect(() => {
+    try {
+      const storedBankContent = localStorage.getItem('bankOfContentItems');
+      if (storedBankContent) {
+        const parsedContent = JSON.parse(storedBankContent);
+        
+        if (parsedContent.length > 0) {
+          setPillars(prev => {
+            const newPillars = [...prev];
+            const activePillar = newPillars.find(p => p.id === activeTab);
+            
+            if (activePillar) {
+              const newItems = parsedContent.filter(
+                (item: ContentItem) => !activePillar.content.some(
+                  existing => existing.id === item.id
+                )
+              );
+              
+              if (newItems.length > 0) {
+                activePillar.content = [...activePillar.content, ...newItems];
+                localStorage.removeItem('bankOfContentItems');
+                toast.success(`${newItems.length} item(s) restored from Content Calendar`);
+              }
+            }
+            
+            return newPillars;
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error loading content from calendar:", error);
+    }
+  }, [activeTab]);
 
   return (
     <Layout>
