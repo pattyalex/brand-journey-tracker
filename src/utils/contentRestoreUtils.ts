@@ -12,15 +12,35 @@ export const restoreContentToIdeas = (content: ContentItem) => {
       restoredIdeas = JSON.parse(storedContent);
     }
     
-    // Add current content to restored ideas
+    // Add current content to restored ideas with a timestamp
     restoredIdeas.push({
       ...content,
-      restoredAt: new Date().toISOString()
+      restoredAt: new Date().toISOString(),
+      // Adding a flag to make it easier to identify restored items
+      isRestored: true
     });
     
     // Save back to localStorage
     localStorage.setItem(restoredIdeasKey, JSON.stringify(restoredIdeas));
     
+    // Also add a log entry to track the restoration
+    let restorationLog = [];
+    const logKey = 'contentRestorationLog';
+    const existingLog = localStorage.getItem(logKey);
+    
+    if (existingLog) {
+      restorationLog = JSON.parse(existingLog);
+    }
+    
+    restorationLog.push({
+      contentId: content.id,
+      title: content.title,
+      restoredAt: new Date().toISOString()
+    });
+    
+    localStorage.setItem(logKey, JSON.stringify(restorationLog));
+    
+    console.log(`Content "${content.title}" (ID: ${content.id}) has been marked for restoration to Ideas`);
     return true;
   } catch (error) {
     console.error("Error restoring content to ideas:", error);
@@ -35,6 +55,7 @@ export const getRestoredIdeas = (): ContentItem[] => {
     
     if (storedContent) {
       const restoredIdeas = JSON.parse(storedContent);
+      console.log(`Retrieved ${restoredIdeas.length} items that were restored to Ideas`);
       
       // Clear the restored ideas from localStorage after retrieving them
       localStorage.removeItem(restoredIdeasKey);
@@ -47,4 +68,24 @@ export const getRestoredIdeas = (): ContentItem[] => {
     console.error("Error getting restored ideas:", error);
     return [];
   }
+};
+
+export const getRestorationLog = () => {
+  try {
+    const logKey = 'contentRestorationLog';
+    const existingLog = localStorage.getItem(logKey);
+    
+    if (existingLog) {
+      return JSON.parse(existingLog);
+    }
+    
+    return [];
+  } catch (error) {
+    console.error("Error getting restoration log:", error);
+    return [];
+  }
+};
+
+export const clearRestorationLog = () => {
+  localStorage.removeItem('contentRestorationLog');
 };

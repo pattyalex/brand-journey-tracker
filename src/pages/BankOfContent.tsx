@@ -65,7 +65,17 @@ const BankOfContent = () => {
       
       setPillars(updatedPillars);
       
-      toast.success(`${restoredIdeas.length} item(s) restored to Idea Development`);
+      toast.success(
+        restoredIdeas.length === 1
+          ? `"${restoredIdeas[0].title}" has been restored to Pillar 1`
+          : `${restoredIdeas.length} items restored to Pillar 1`, 
+        {
+          duration: 5000,
+          description: "These items were moved from Content Calendar"
+        }
+      );
+      
+      console.log("Content items restored to Idea Development:", restoredIdeas);
     }
   }, []);
 

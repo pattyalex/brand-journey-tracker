@@ -145,7 +145,20 @@ const ContentCard = ({
     if (onRestoreToIdeas) {
       try {
         onRestoreToIdeas(content);
-        toast.success(`"${content.title}" restored to Idea Development`);
+        toast.success(`"${content.title}" will be restored to Idea Development`, {
+          description: "Navigate to Idea Development to see this content in Pillar 1",
+          duration: 5000
+        });
+        
+        setTimeout(() => {
+          toast.info("To see your restored content, go to Idea Development page", {
+            duration: 8000,
+            action: {
+              label: "Got it",
+              onClick: () => {}
+            }
+          });
+        }, 500);
       } catch (error) {
         console.error("Error restoring to ideas:", error);
         toast.error("Failed to restore to Idea Development");
@@ -161,17 +174,17 @@ const ContentCard = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="icon"
                   aria-label="Restore to Ideas"
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 bg-white hover:bg-blue-50 hover:text-blue-600"
                   onClick={handleRestoreToIdeas}
                 >
                   <CornerUpLeft className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent className="bg-white text-black border shadow-md">
-                <p>Restore to Idea Development</p>
+                <p>Restore to Idea Development (Pillar 1)</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
