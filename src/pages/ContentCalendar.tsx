@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
-  formatDate, 
+  format as formatDate, 
   startOfMonth, 
   endOfMonth, 
   eachDayOfInterval, 
@@ -44,6 +44,7 @@ import { ContentItem as ContentItemType } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
 import { toast } from "sonner";
 import { restoreContentToIdeas } from "@/utils/contentRestoreUtils";
+import { cn } from "@/lib/utils";
 
 interface ContentItem {
   id: string;
@@ -306,7 +307,7 @@ const ContentCalendar = () => {
     const contentItem = readyToScheduleContent.find(item => item.id === contentId);
     if (!contentItem) return;
     
-    const targetDay = document.querySelector(`[data-date="${format(newDate, 'yyyy-MM-dd')}"]`);
+    const targetDay = document.querySelector(`[data-date="${formatDate(newDate, 'yyyy-MM-dd')}"]`);
     
     if (targetDay) {
       const contentRect = document.getElementById(`content-card-${contentId}`)?.getBoundingClientRect();
@@ -330,7 +331,7 @@ const ContentCalendar = () => {
           setAnimatingContent(null);
           setAnimationTarget(null);
           
-          toast.success(`"${contentItem.title}" scheduled for ${format(newDate, "PPP")}`);
+          toast.success(`"${contentItem.title}" scheduled for ${formatDate(newDate, "PPP")}`);
         }, 500);
       } else {
         scheduleContent(contentId, newDate);
@@ -353,7 +354,7 @@ const ContentCalendar = () => {
     setReadyToScheduleContent(prev => prev.filter(item => item.id !== contentId));
     setScheduledContent(prev => [...prev, scheduledItem]);
     
-    toast.success(`"${contentItem.title}" scheduled for ${format(date, "PPP")}`);
+    toast.success(`"${contentItem.title}" scheduled for ${formatDate(date, "PPP")}`);
   };
 
   const createNewContent = () => {
@@ -600,7 +601,7 @@ const ContentCalendar = () => {
               const isCurrentDay = isToday(day);
               const dayContent = getContentForDate(day);
               const isWeekendDay = isWeekend(day);
-              const dateStr = format(day, 'yyyy-MM-dd');
+              const dateStr = formatDate(day, 'yyyy-MM-dd');
               
               return (
                 <div 
