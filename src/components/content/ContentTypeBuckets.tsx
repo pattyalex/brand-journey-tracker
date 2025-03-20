@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -104,7 +103,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     }
   }, [isEditingDescription]);
 
-  // Calculate card positions for proper expansion
   useEffect(() => {
     if (cardsContainerRef.current) {
       const container = cardsContainerRef.current;
@@ -202,12 +200,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     });
   };
 
-  const handleCardClick = (formatId: string) => {
-    if (editingFormatId === formatId) return;
-    
-    setExpandedCardId(prev => prev === formatId ? null : formatId);
-  };
-  
   const toggleCardExpansion = (formatId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setExpandedCardId(prev => prev === formatId ? null : formatId);
@@ -283,7 +275,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                   <Trash2 className="h-3.5 w-3.5 text-gray-500" />
                 </Button>
                 
-                <CollapsibleTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <CollapsibleTrigger asChild>
                   <Button 
                     variant="ghost" 
                     size="sm" 
@@ -296,10 +288,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                   </Button>
                 </CollapsibleTrigger>
                 
-                <div 
-                  className="p-3 cursor-pointer"
-                  onClick={() => handleCardClick(type.id)}
-                >
+                <div className="p-3">
                   <div 
                     className="flex items-center gap-2 mb-1"
                     onDoubleClick={(e) => {
