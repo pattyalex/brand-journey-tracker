@@ -4,7 +4,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  Trash2, Pencil, CalendarClock, FileText, CornerUpLeft
+  Trash2, Pencil, Send, FileText, CornerUpLeft
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ContentItem } from "@/types/content";
@@ -19,7 +19,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import DateSchedulePicker from "./DateSchedulePicker";
 
 interface ContentCardProps {
   content: ContentItem;
@@ -44,10 +43,8 @@ const ContentCard = ({
   onRestoreToIdeas,
   originalPillarId
 }: ContentCardProps) => {
-  const [date, setDate] = useState<Date | undefined>(content.scheduledDate ? new Date(content.scheduledDate) : undefined);
+  const [date, setDate] = useState<Date | undefined>(content.scheduledDate);
   const [formatName, setFormatName] = useState<string>("Post");
-  const [showScheduler, setShowScheduler] = useState<boolean>(false);
-  const [isScheduled, setIsScheduled] = useState<boolean>(!!content.scheduledDate);
   
   const determinePillarToRestoreTo = () => {
     console.log(`[ContentCard] Determining pillar to restore to for "${content.title}" (ID: ${content.id}):`);
@@ -109,10 +106,6 @@ const ContentCard = ({
       }
     }
   }, [content.bucketId, pillar.id]);
-
-  useEffect(() => {
-    setIsScheduled(!!date);
-  }, [date, content.scheduledDate]);
   
   const getContentFormat = () => {
     if (content.format && content.format !== 'text') {
@@ -158,44 +151,6 @@ const ContentCard = ({
   const platforms = getPlatforms();
   const uniqueTags = getUniqueTags();
   const contentFormat = getContentFormat();
-
-  const handleSchedule = () => {
-    setShowScheduler(!showScheduler);
-  };
-
-  const handleDateChange = (newDate: Date | undefined) => {
-    console.log("Date selected:", newDate);
-    
-    if (newDate) {
-      setDate(newDate);
-      setIsScheduled(true);
-      
-      if (onScheduleContent) {
-        onScheduleContent(content.id, newDate);
-        console.log(`Content "${content.title}" scheduled for ${format(newDate, "MMMM d, yyyy")}`);
-        toast.success(`"${content.title}" scheduled for ${format(newDate, "MMMM d, yyyy")}`);
-      } else {
-        try {
-          const storedContent = localStorage.getItem('content-list');
-          if (storedContent) {
-            const contentList = JSON.parse(storedContent);
-            const updatedList = contentList.map((item: ContentItem) => {
-              if (item.id === content.id) {
-                return { ...item, scheduledDate: newDate };
-              }
-              return item;
-            });
-            localStorage.setItem('content-list', JSON.stringify(updatedList));
-            console.log("Content scheduled date stored locally");
-          }
-        } catch (error) {
-          console.error("Error updating scheduled date locally:", error);
-        }
-      }
-      
-      setShowScheduler(false);
-    }
-  };
 
   const handleSendToCalendar = () => {
     try {
@@ -289,10 +244,10 @@ const ContentCard = ({
       )}
       
       <CardHeader className="p-4 pb-2">
-        <CardTitle className="text-base font-bold mb-1 line-clamp-2 flex items-center">
+        <CardTitle className="text-base font-bold mb-1 line-clamp-2">
           {content.title}
-          {isScheduled && date && (
-            <Badge variant="outline" className="ml-2 text-xs bg-green-50 text-green-700 border-green-200">
+          {date && (
+            <Badge variant="outline" className="ml-2 text-xs">
               {format(date, "MMM d")}
             </Badge>
           )}
@@ -335,12 +290,6 @@ const ContentCard = ({
           <span>
             {content.dateCreated ? formatDistanceToNow(new Date(content.dateCreated), { addSuffix: true }) : 'Unknown date'}
           </span>
-          {isScheduled && date && (
-            <span className="ml-2 flex items-center text-green-600">
-              <CalendarClock className="h-3 w-3 mr-1" />
-              Scheduled for {format(date, "MMM d")}
-            </span>
-          )}
         </div>
       </CardContent>
       
@@ -350,17 +299,17 @@ const ContentCard = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant={isScheduled ? "default" : "outline"}
+                  variant="outline"
                   size="sm"
-                  aria-label="Schedule Content"
-                  className={`h-8 w-8 p-0 ${isScheduled ? "bg-green-600 hover:bg-green-700" : ""}`}
-                  onClick={handleSchedule}
+                  aria-label="Send to Content Calendar"
+                  className="h-8 w-8 p-0"
+                  onClick={handleSendToCalendar}
                 >
-                  <CalendarClock className="h-4 w-4" />
+                  <Send className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent className="bg-white text-black border shadow-md">
-                <p>{isScheduled ? "Update schedule" : "Schedule content"}</p>
+                <p>Send to content calendar</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -387,17 +336,6 @@ const ContentCard = ({
           </Button>
         </div>
       </CardFooter>
-      
-      {showScheduler && (
-        <div className="absolute bottom-16 left-0 p-2 bg-white rounded-md shadow-lg z-20 w-full md:w-[300px] max-w-full">
-          <DateSchedulePicker 
-            date={date}
-            onDateChange={handleDateChange}
-            label="Schedule for"
-            className="w-full"
-          />
-        </div>
-      )}
     </Card>
   );
 };
