@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
 } from "@/components/ui/card";
@@ -41,6 +40,24 @@ const ContentCard = ({
   onScheduleContent
 }: ContentCardProps) => {
   const [date, setDate] = useState<Date | undefined>(content.scheduledDate);
+  const [formatName, setFormatName] = useState<string>("Post");
+  
+  useEffect(() => {
+    if (content.bucketId) {
+      try {
+        const savedFormats = localStorage.getItem(`content-formats-${pillar.id}`);
+        if (savedFormats) {
+          const parsedFormats = JSON.parse(savedFormats);
+          const format = parsedFormats.find((f: any) => f.id === content.bucketId);
+          if (format) {
+            setFormatName(format.name);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load content format name:", error);
+      }
+    }
+  }, [content.bucketId, pillar.id]);
   
   const getContentFormat = () => {
     if (content.format && content.format !== 'text') {
@@ -50,13 +67,13 @@ const ContentCard = ({
     if (content.format === 'text' && content.url) {
       try {
         const parsedContent = JSON.parse(content.url);
-        return parsedContent.format || "Post";
+        return parsedContent.format || formatName;
       } catch {
-        return "Post";
+        return formatName;
       }
     }
     
-    return "Post";
+    return formatName;
   };
 
   const getPlatforms = () => {
@@ -113,7 +130,6 @@ const ContentCard = ({
       readyToScheduleContent.push(contentToSchedule);
       localStorage.setItem('readyToScheduleContent', JSON.stringify(readyToScheduleContent));
       
-      // Remove the content from the current pillar after sending to calendar
       onDeleteContent(content.id);
       
       toast.success(`"${content.title}" sent to Content Calendar`);
