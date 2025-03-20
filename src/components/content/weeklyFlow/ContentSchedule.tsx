@@ -209,7 +209,7 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
                         dayColumnRefs.current[day] = el;
                       }
                     }}
-                    className={`p-3 border-r border-gray-300 min-h-[80px] transition-colors ${
+                    className={`p-2 border-r border-gray-300 min-h-[70px] transition-colors ${
                       isHighlighted ? 'bg-blue-50' : ''
                     } ${
                       dayIndex === 0 ? 'border-l border-gray-300' : ''
@@ -228,7 +228,7 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
                       return (
                         <div 
                           key={content.id}
-                          className="bg-white p-2 rounded-md border border-gray-200 shadow-sm flex items-center gap-2 group hover:shadow-md transition-shadow cursor-grab mb-2"
+                          className="bg-white py-1 px-2 rounded-md border border-gray-200 shadow-sm flex items-center gap-2 group hover:shadow-md transition-shadow cursor-grab mb-1"
                           draggable
                           onDragStart={(e) => handleTaskDragStart(e, content.id)}
                           onClick={() => handleTaskClick(content)}
