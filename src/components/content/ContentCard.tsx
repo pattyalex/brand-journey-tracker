@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
@@ -250,6 +251,8 @@ const ContentCard = ({
       e.nativeEvent.stopImmediatePropagation();
     }
     
+    // Log for debugging
+    console.log("Schedule button clicked, toggling date picker:", !isDatePickerOpen);
     setIsDatePickerOpen(!isDatePickerOpen);
   };
 
@@ -507,8 +510,9 @@ const ContentCard = ({
           
           {isDatePickerOpen && isInCalendarView && (
             <div 
-              className="absolute top-10 -left-4 z-50 bg-white border rounded-md shadow-lg p-2 min-w-[250px]"
+              className="absolute top-10 -left-4 z-[100] bg-white border rounded-md shadow-lg p-2 min-w-[250px] block"
               onClick={(e) => e.stopPropagation()}
+              style={{ display: 'block' }}
             >
               <DateSchedulePicker
                 date={date}
