@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Platform, ContentItem } from "@/types/content-flow";
 import PlatformIcon from "./PlatformIcon";
