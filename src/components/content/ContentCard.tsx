@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  Trash2, Pencil, Send, FileText, CornerUpLeft, CalendarClock
+  Trash2, Pencil, Send, FileText, CornerUpLeft, CalendarClock, Move
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ContentItem } from "@/types/content";
@@ -21,6 +20,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import DateSchedulePicker from "@/components/content/DateSchedulePicker";
+import { cn } from "@/lib/utils";
 
 interface ContentCardProps {
   content: ContentItem;
@@ -33,6 +33,7 @@ interface ContentCardProps {
   onRestoreToIdeas?: (content: ContentItem, originalPillarId?: string) => void;
   originalPillarId?: string;
   isInCalendarView?: boolean;
+  isDraggable?: boolean;
 }
 
 const ContentCard = ({
@@ -45,7 +46,8 @@ const ContentCard = ({
   onScheduleContent,
   onRestoreToIdeas,
   originalPillarId,
-  isInCalendarView = false
+  isInCalendarView = false,
+  isDraggable = false
 }: ContentCardProps) => {
   const [date, setDate] = useState<Date | undefined>(content.scheduledDate);
   const [formatName, setFormatName] = useState<string>("Post");
@@ -265,7 +267,18 @@ const ContentCard = ({
   };
 
   return (
-    <Card className="overflow-hidden relative h-full border-2 w-full">
+    <Card className={cn(
+      "overflow-hidden relative h-full border-2 w-full",
+      isDraggable && "cursor-grab hover:shadow-md transition-shadow"
+    )}>
+      {isDraggable && (
+        <div className="absolute top-0 left-0 w-full h-full opacity-0 z-10 group-hover:opacity-100 transition-opacity">
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-blue-500">
+            <Move size={24} className="h-8 w-8 text-blue-400 opacity-0 group-hover:opacity-25" />
+          </div>
+        </div>
+      )}
+      
       {onRestoreToIdeas && (
         <div className="absolute top-2 right-2 z-10">
           <TooltipProvider delayDuration={200}>

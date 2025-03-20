@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { CalendarIcon, FileText, ChevronLeft, ChevronRight, PlusCircle, Trash2, Instagram, Youtube, AtSign, Pencil, CornerUpLeft } from "lucide-react";
+import { CalendarIcon, FileText, ChevronLeft, ChevronRight, PlusCircle, Trash2, Instagram, Youtube, AtSign, Pencil, CornerUpLeft, Move } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -134,6 +134,9 @@ const ContentCalendar = () => {
 
   const [animatingContent, setAnimatingContent] = useState<string | null>(null);
   const [animationTarget, setAnimationTarget] = useState<{x: number, y: number} | null>(null);
+  const [draggedContent, setDraggedContent] = useState<ContentItem | null>(null);
+  const [dropTarget, setDropTarget] = useState<string | null>(null);
+  const readyContentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     try {
@@ -464,6 +467,89 @@ const ContentCalendar = () => {
     }
   };
 
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, content: ContentItem) => {
+    e.dataTransfer.setData("contentId", content.id);
+    e.dataTransfer.setData("source", content.scheduledDate ? "calendar" : "ready");
+    setDraggedContent(content);
+    
+    const dragImage = document.createElement('div');
+    dragImage.innerHTML = `<div class="bg-white p-2 rounded shadow-md opacity-70 border-2 border-blue-400 flex gap-2 items-center">
+      <span class="text-blue-600"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+        <path d="M5 9l4 4 10-10"></path>
+      </svg></span>
+      <span>${content.title}</span>
+    </div>`;
+    document.body.appendChild(dragImage);
+    e.dataTransfer.setDragImage(dragImage, 20, 20);
+    
+    setTimeout(() => {
+      document.body.removeChild(dragImage);
+    }, 0);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>, targetId: string) => {
+    e.preventDefault();
+    setDropTarget(targetId);
+  };
+
+  const handleDragLeave = () => {
+    setDropTarget(null);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>, targetDate?: Date) => {
+    e.preventDefault();
+    setDropTarget(null);
+    
+    const contentId = e.dataTransfer.getData("contentId");
+    const source = e.dataTransfer.getData("source");
+    
+    if (!contentId) return;
+    
+    if (source === "calendar") {
+      const content = scheduledContent.find(item => item.id === contentId);
+      if (!content) return;
+      
+      if (targetDate) {
+        const updatedContent = {
+          ...content,
+          scheduledDate: targetDate
+        };
+        
+        setScheduledContent(prev => [
+          ...prev.filter(item => item.id !== contentId),
+          updatedContent
+        ]);
+        
+        toast.success(`"${content.title}" moved to ${formatDate(targetDate, "PPP")}`);
+      } else {
+        const contentForReadySection = {
+          ...content,
+          scheduledDate: null
+        };
+        
+        setScheduledContent(prev => prev.filter(item => item.id !== contentId));
+        setReadyToScheduleContent(prev => [...prev, contentForReadySection]);
+        
+        toast.success(`"${content.title}" moved back to ready content`);
+      }
+    } else {
+      const content = readyToScheduleContent.find(item => item.id === contentId);
+      if (!content || !targetDate) return;
+      
+      const updatedContent = {
+        ...content,
+        scheduledDate: targetDate
+      };
+      
+      setReadyToScheduleContent(prev => prev.filter(item => item.id !== contentId));
+      setScheduledContent(prev => [...prev, updatedContent]);
+      
+      toast.success(`"${content.title}" scheduled for ${formatDate(targetDate, "PPP")}`);
+    }
+    
+    setDraggedContent(null);
+  };
+
   return (
     <Layout>
       <div className="space-y-4">
@@ -515,9 +601,25 @@ const ContentCalendar = () => {
           </div>
         </div>
         
-        <Card className="overflow-hidden">
+        <Card 
+          className={cn(
+            "overflow-hidden",
+            dropTarget === "ready-content" ? "ring-2 ring-blue-400 bg-blue-50" : ""
+          )}
+          ref={readyContentRef}
+          onDragOver={(e) => handleDragOver(e, "ready-content")}
+          onDragLeave={handleDragLeave}
+          onDrop={(e) => handleDrop(e)}
+        >
           <CardHeader>
-            <CardTitle>Content Ready to be Scheduled</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              Content Ready to be Scheduled
+              {draggedContent && draggedContent.scheduledDate && (
+                <span className="text-sm font-normal text-blue-600">
+                  Drop here to move content back to ready section
+                </span>
+              )}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {readyToScheduleContent.length > 0 ? (
@@ -532,6 +634,7 @@ const ContentCalendar = () => {
                   };
                   
                   const isAnimating = animatingContent === content.id;
+                  const isDragging = draggedContent?.id === content.id;
                   
                   return (
                     <div 
@@ -539,7 +642,8 @@ const ContentCalendar = () => {
                       key={content.id}
                       className={cn(
                         "transition-all duration-500",
-                        isAnimating && "fixed z-50"
+                        isAnimating && "fixed z-50",
+                        isDragging && "opacity-50"
                       )}
                       style={
                         isAnimating && animationTarget
@@ -549,6 +653,8 @@ const ContentCalendar = () => {
                             }
                           : {}
                       }
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, content)}
                     >
                       <ContentCard
                         key={content.id}
@@ -566,6 +672,7 @@ const ContentCalendar = () => {
                         originalPillarId={content.pillarId}
                         isInCalendarView={true}
                         onScheduleContent={(contentId, date) => handleDateChange(contentId, date)}
+                        isDraggable={true}
                       />
                     </div>
                   );
@@ -602,27 +709,34 @@ const ContentCalendar = () => {
               const dayContent = getContentForDate(day);
               const isWeekendDay = isWeekend(day);
               const dateStr = formatDate(day, 'yyyy-MM-dd');
+              const isDropTarget = dropTarget === dateStr;
               
               return (
                 <div 
                   key={i} 
                   data-date={dateStr}
-                  className={`border-t border-l min-h-[120px] p-1 ${
-                    !isCurrentMonth ? "bg-gray-50 text-gray-400" : ""
-                  } ${isCurrentDay ? "bg-blue-50" : ""} ${
-                    isWeekendDay && isCurrentMonth ? "bg-gray-100" : ""
-                  }`}
+                  className={cn(
+                    "border-t border-l min-h-[120px] p-1",
+                    !isCurrentMonth ? "bg-gray-50 text-gray-400" : "",
+                    isCurrentDay ? "bg-blue-50" : "",
+                    isWeekendDay && isCurrentMonth ? "bg-gray-100" : "",
+                    isDropTarget ? "ring-2 ring-inset ring-blue-400 bg-blue-50" : ""
+                  )}
                   onClick={() => {
                     setSelectedDate(day);
                     if (isCurrentMonth && dayContent.length === 0) {
                       setNewContentDialogOpen(true);
                     }
                   }}
+                  onDragOver={(e) => isCurrentMonth && handleDragOver(e, dateStr)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => isCurrentMonth && handleDrop(e, day)}
                 >
                   <div className="flex justify-between items-start p-1">
-                    <div className={`text-sm font-medium ${
+                    <div className={cn(
+                      "text-sm font-medium",
                       isCurrentDay ? "bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center" : ""
-                    }`}>
+                    )}>
                       {formatDate(day, 'd')}
                     </div>
                     {isCurrentMonth && (
@@ -645,19 +759,26 @@ const ContentCalendar = () => {
                     {dayContent.map((content) => (
                       <div 
                         key={content.id} 
-                        className="group"
+                        className={cn(
+                          "group cursor-grab",
+                          draggedContent?.id === content.id ? "opacity-50" : ""
+                        )}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, content)}
                       >
                         <div 
-                          className={`text-xs p-1 rounded cursor-pointer ${
+                          className={cn(
+                            "text-xs p-1 rounded cursor-pointer flex items-center",
                             content.format && formatColors[getContentFormat(content)] 
                               ? formatColors[getContentFormat(content)] 
                               : "bg-gray-100 text-gray-800"
-                          }`}
+                          )}
                           onClick={(e) => {
                             e.stopPropagation();
                           }}
                         >
-                          <div className="flex items-center justify-between">
+                          <Move className="h-3 w-3 mr-1 text-gray-500" />
+                          <div className="flex-1 flex items-center justify-between">
                             <span className="truncate">{content.title}</span>
                             <div className="flex">
                               <Button 
