@@ -4,7 +4,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  Trash2, Pencil, Send, FileText, CornerUpLeft
+  Trash2, Pencil, CalendarClock, FileText, CornerUpLeft
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ContentItem } from "@/types/content";
@@ -19,6 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import DateSchedulePicker from "./DateSchedulePicker";
 
 interface ContentCardProps {
   content: ContentItem;
@@ -45,6 +46,7 @@ const ContentCard = ({
 }: ContentCardProps) => {
   const [date, setDate] = useState<Date | undefined>(content.scheduledDate);
   const [formatName, setFormatName] = useState<string>("Post");
+  const [showScheduler, setShowScheduler] = useState<boolean>(false);
   
   const determinePillarToRestoreTo = () => {
     console.log(`[ContentCard] Determining pillar to restore to for "${content.title}" (ID: ${content.id}):`);
@@ -151,6 +153,19 @@ const ContentCard = ({
   const platforms = getPlatforms();
   const uniqueTags = getUniqueTags();
   const contentFormat = getContentFormat();
+
+  const handleSchedule = () => {
+    setShowScheduler(!showScheduler);
+  };
+
+  const handleDateChange = (newDate: Date | undefined) => {
+    setDate(newDate);
+    if (newDate && onScheduleContent) {
+      onScheduleContent(content.id, newDate);
+      toast.success(`"${content.title}" scheduled for ${format(newDate, "MMMM d, yyyy")}`);
+      setShowScheduler(false);
+    }
+  };
 
   const handleSendToCalendar = () => {
     try {
@@ -301,15 +316,15 @@ const ContentCard = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  aria-label="Send to Content Calendar"
+                  aria-label="Schedule Content"
                   className="h-8 w-8 p-0"
-                  onClick={handleSendToCalendar}
+                  onClick={handleSchedule}
                 >
-                  <Send className="h-4 w-4" />
+                  <CalendarClock className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent className="bg-white text-black border shadow-md">
-                <p>Send to content calendar</p>
+                <p>Schedule content</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -336,6 +351,17 @@ const ContentCard = ({
           </Button>
         </div>
       </CardFooter>
+      
+      {showScheduler && (
+        <div className="absolute bottom-16 left-0 p-2 bg-white rounded-md shadow-lg z-20 w-full">
+          <DateSchedulePicker 
+            date={date}
+            onDateChange={handleDateChange}
+            label="Schedule for"
+            className="w-full"
+          />
+        </div>
+      )}
     </Card>
   );
 };
