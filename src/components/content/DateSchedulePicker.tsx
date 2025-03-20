@@ -32,7 +32,7 @@ const DateSchedulePicker = ({
           <Button
             variant="outline"
             className={cn(
-              "w-full justify-start text-left font-normal min-w-72",
+              "w-full justify-start text-left font-normal min-w-[280px]",
               !date && "text-muted-foreground"
             )}
           >
