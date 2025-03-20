@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
@@ -363,7 +364,7 @@ const ContentCard = ({
               </TooltipTrigger>
               <TooltipContent className="bg-white text-black border shadow-md">
                 {isInCalendarView ? 
-                  "Schedule for publishing" : 
+                  "Add to the content calendar" : 
                   "Send to content calendar"
                 }
               </TooltipContent>
