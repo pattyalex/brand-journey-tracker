@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
@@ -160,12 +159,10 @@ const ContentCard = ({
   const uniqueTags = getUniqueTags();
   const contentFormat = getContentFormat();
 
-  // Separate button click handlers from the card dragging functionality
   const handleSendToCalendar = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    // Stop event from bubbling up to parent elements
     if (e.isPropagationStopped && !e.isPropagationStopped()) {
       e.stopPropagation();
     }
@@ -242,11 +239,9 @@ const ContentCard = ({
   };
 
   const handleScheduleButtonClick = (e: React.MouseEvent) => {
-    // Force stop propagation to prevent drag behavior
     e.preventDefault();
     e.stopPropagation();
     
-    // Double-check that propagation is stopped
     if (e.isPropagationStopped && !e.isPropagationStopped()) {
       e.stopPropagation();
     }
@@ -255,11 +250,9 @@ const ContentCard = ({
   };
 
   const handleRestoreToIdeas = (e: React.MouseEvent) => {
-    // Force stop propagation to prevent drag behavior
     e.preventDefault();
     e.stopPropagation();
     
-    // Double-check that propagation is stopped
     if (e.isPropagationStopped && !e.isPropagationStopped()) {
       e.stopPropagation();
     }
@@ -294,11 +287,9 @@ const ContentCard = ({
   };
 
   const handleDeleteClick = (e: React.MouseEvent) => {
-    // Force stop propagation to prevent drag behavior
     e.preventDefault();
     e.stopPropagation();
     
-    // Double-check that propagation is stopped
     if (e.isPropagationStopped && !e.isPropagationStopped()) {
       e.stopPropagation();
     }
@@ -307,11 +298,9 @@ const ContentCard = ({
   };
 
   const handleEditClick = (e: React.MouseEvent) => {
-    // Force stop propagation to prevent drag behavior
     e.preventDefault();
     e.stopPropagation();
     
-    // Double-check that propagation is stopped
     if (e.isPropagationStopped && !e.isPropagationStopped()) {
       e.stopPropagation();
     }
@@ -319,7 +308,6 @@ const ContentCard = ({
     onEditContent(content.id);
   };
 
-  // Prevent drag events from triggering on buttons
   const preventDragOnButtons = (e: React.DragEvent) => {
     if ((e.target as HTMLElement).tagName === 'BUTTON' || 
         (e.target as HTMLElement).closest('button')) {
@@ -356,6 +344,7 @@ const ContentCard = ({
                   className="h-8 w-8 p-0 bg-white hover:bg-blue-50 hover:text-blue-600"
                   onClick={handleRestoreToIdeas}
                   type="button"
+                  draggable={false}
                 >
                   <CornerUpLeft className="h-4 w-4" />
                 </Button>
@@ -431,6 +420,7 @@ const ContentCard = ({
                     className={`h-8 w-8 ${date ? 'bg-green-500 hover:bg-green-600' : ''}`}
                     onClick={handleScheduleButtonClick}
                     type="button"
+                    draggable={false}
                   >
                     <CalendarClock className="h-4 w-4" />
                   </Button>
@@ -442,6 +432,7 @@ const ContentCard = ({
                     className="h-8 p-2"
                     onClick={handleSendToCalendar}
                     type="button"
+                    draggable={false}
                   >
                     <Send className="h-4 w-4" />
                   </Button>
@@ -475,6 +466,7 @@ const ContentCard = ({
             aria-label="Delete"
             className="h-8 w-8 p-0"
             type="button"
+            draggable={false}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -485,6 +477,7 @@ const ContentCard = ({
             aria-label="Edit"
             className="h-8 w-8 p-0"
             type="button"
+            draggable={false}
           >
             <Pencil className="h-4 w-4" />
           </Button>
