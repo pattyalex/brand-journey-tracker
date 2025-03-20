@@ -1,7 +1,7 @@
 
 import { ContentItem } from "@/types/content";
 
-export const restoreContentToIdeas = (content: ContentItem) => {
+export const restoreContentToIdeas = (content: ContentItem, originalPillarId: string = "1") => {
   try {
     // Get existing restored content from localStorage
     const restoredIdeasKey = 'restoredToIdeasContent';
@@ -12,12 +12,14 @@ export const restoreContentToIdeas = (content: ContentItem) => {
       restoredIdeas = JSON.parse(storedContent);
     }
     
-    // Add current content to restored ideas with a timestamp
+    // Add current content to restored ideas with a timestamp and original pillar ID
     restoredIdeas.push({
       ...content,
       restoredAt: new Date().toISOString(),
       // Adding a flag to make it easier to identify restored items
-      isRestored: true
+      isRestored: true,
+      // Store the original pillar ID to restore to the correct pillar
+      originalPillarId: originalPillarId
     });
     
     // Save back to localStorage
@@ -35,12 +37,13 @@ export const restoreContentToIdeas = (content: ContentItem) => {
     restorationLog.push({
       contentId: content.id,
       title: content.title,
+      pillarId: originalPillarId,
       restoredAt: new Date().toISOString()
     });
     
     localStorage.setItem(logKey, JSON.stringify(restorationLog));
     
-    console.log(`Content "${content.title}" (ID: ${content.id}) has been marked for restoration to Ideas`);
+    console.log(`Content "${content.title}" (ID: ${content.id}) has been marked for restoration to Ideas Pillar ${originalPillarId}`);
     return true;
   } catch (error) {
     console.error("Error restoring content to ideas:", error);

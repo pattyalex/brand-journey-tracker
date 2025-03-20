@@ -28,7 +28,8 @@ interface ContentCardProps {
   onDeleteContent: (contentId: string) => void;
   onEditContent: (contentId: string) => void;
   onScheduleContent?: (contentId: string, scheduledDate: Date) => void;
-  onRestoreToIdeas?: (content: ContentItem) => void;
+  onRestoreToIdeas?: (content: ContentItem, originalPillarId?: string) => void;
+  originalPillarId?: string;
 }
 
 const ContentCard = ({
@@ -39,7 +40,8 @@ const ContentCard = ({
   onDeleteContent,
   onEditContent,
   onScheduleContent,
-  onRestoreToIdeas
+  onRestoreToIdeas,
+  originalPillarId
 }: ContentCardProps) => {
   const [date, setDate] = useState<Date | undefined>(content.scheduledDate);
   const [formatName, setFormatName] = useState<string>("Post");
@@ -144,9 +146,13 @@ const ContentCard = ({
   const handleRestoreToIdeas = () => {
     if (onRestoreToIdeas) {
       try {
-        onRestoreToIdeas(content);
+        const pillarToRestoreTo = originalPillarId || "1";
+        const targetPillar = pillars.find(p => p.id === pillarToRestoreTo)?.name || "Pillar 1";
+        
+        onRestoreToIdeas(content, pillarToRestoreTo);
+        
         toast.success(`"${content.title}" will be restored to Idea Development`, {
-          description: "Navigate to Idea Development to see this content in Pillar 1",
+          description: `Navigate to Idea Development to see this content in ${targetPillar}`,
           duration: 5000
         });
         

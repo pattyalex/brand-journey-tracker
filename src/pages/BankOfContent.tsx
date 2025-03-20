@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -56,24 +57,65 @@ const BankOfContent = () => {
     
     if (restoredIdeas.length > 0) {
       const updatedPillars = [...pillars];
-      const firstPillar = updatedPillars[0];
       
-      updatedPillars[0] = {
-        ...firstPillar,
-        content: [...firstPillar.content, ...restoredIdeas]
-      };
+      // Group restored items by their original pillar ID
+      const itemsByPillar: Record<string, ContentItem[]> = {};
+      let totalRestored = 0;
+      let lastRestoredItem: ContentItem | null = null;
+      
+      restoredIdeas.forEach(item => {
+        const pillarId = item.originalPillarId || "1"; // Default to first pillar if not specified
+        if (!itemsByPillar[pillarId]) {
+          itemsByPillar[pillarId] = [];
+        }
+        itemsByPillar[pillarId].push(item);
+        totalRestored++;
+        lastRestoredItem = item;
+      });
+      
+      // Add items to their respective pillars
+      Object.entries(itemsByPillar).forEach(([pillarId, items]) => {
+        const pillarIndex = updatedPillars.findIndex(p => p.id === pillarId);
+        if (pillarIndex >= 0) {
+          updatedPillars[pillarIndex] = {
+            ...updatedPillars[pillarIndex],
+            content: [...updatedPillars[pillarIndex].content, ...items]
+          };
+          console.log(`Restored ${items.length} items to Pillar ${pillarId}`);
+        } else {
+          // If pillar doesn't exist (perhaps it was deleted), add to first pillar
+          updatedPillars[0] = {
+            ...updatedPillars[0],
+            content: [...updatedPillars[0].content, ...items]
+          };
+          console.log(`Pillar ${pillarId} not found, restored ${items.length} items to Pillar 1 instead`);
+        }
+      });
       
       setPillars(updatedPillars);
       
-      toast.success(
-        restoredIdeas.length === 1
-          ? `"${restoredIdeas[0].title}" has been restored to Pillar 1`
-          : `${restoredIdeas.length} items restored to Pillar 1`, 
-        {
-          duration: 5000,
-          description: "These items were moved from Content Calendar"
-        }
-      );
+      // Show appropriate toast message based on number of items
+      if (totalRestored === 1 && lastRestoredItem) {
+        const targetPillar = lastRestoredItem.originalPillarId ? 
+          pillars.find(p => p.id === lastRestoredItem!.originalPillarId)?.name || "Pillar 1" : 
+          "Pillar 1";
+          
+        toast.success(
+          `"${lastRestoredItem.title}" has been restored to ${targetPillar}`,
+          {
+            duration: 5000,
+            description: "This item was moved from Content Calendar"
+          }
+        );
+      } else if (totalRestored > 1) {
+        toast.success(
+          `${totalRestored} items restored to their original pillars`,
+          {
+            duration: 5000,
+            description: "These items were moved from Content Calendar"
+          }
+        );
+      }
       
       console.log("Content items restored to Idea Development:", restoredIdeas);
     }
