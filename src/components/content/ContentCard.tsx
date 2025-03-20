@@ -353,7 +353,7 @@ const ContentCard = ({
       </CardFooter>
       
       {showScheduler && (
-        <div className="absolute bottom-16 left-0 p-2 bg-white rounded-md shadow-lg z-20 w-full">
+        <div className="absolute bottom-16 left-0 p-2 bg-white rounded-md shadow-lg z-20 w-full md:w-[300px] max-w-full">
           <DateSchedulePicker 
             date={date}
             onDateChange={handleDateChange}
