@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
@@ -159,9 +160,15 @@ const ContentCard = ({
   const uniqueTags = getUniqueTags();
   const contentFormat = getContentFormat();
 
+  // Separate button click handlers from the card dragging functionality
   const handleSendToCalendar = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    // Stop event from bubbling up to parent elements
+    if (e.isPropagationStopped && !e.isPropagationStopped()) {
+      e.stopPropagation();
+    }
     
     try {
       let readyToScheduleContent = [];
@@ -235,14 +242,27 @@ const ContentCard = ({
   };
 
   const handleScheduleButtonClick = (e: React.MouseEvent) => {
+    // Force stop propagation to prevent drag behavior
     e.preventDefault();
     e.stopPropagation();
+    
+    // Double-check that propagation is stopped
+    if (e.isPropagationStopped && !e.isPropagationStopped()) {
+      e.stopPropagation();
+    }
+    
     setIsDatePickerOpen(!isDatePickerOpen);
   };
 
   const handleRestoreToIdeas = (e: React.MouseEvent) => {
+    // Force stop propagation to prevent drag behavior
     e.preventDefault();
     e.stopPropagation();
+    
+    // Double-check that propagation is stopped
+    if (e.isPropagationStopped && !e.isPropagationStopped()) {
+      e.stopPropagation();
+    }
     
     if (onRestoreToIdeas) {
       if (!pillarToRestoreTo) {
@@ -274,22 +294,48 @@ const ContentCard = ({
   };
 
   const handleDeleteClick = (e: React.MouseEvent) => {
+    // Force stop propagation to prevent drag behavior
     e.preventDefault();
     e.stopPropagation();
+    
+    // Double-check that propagation is stopped
+    if (e.isPropagationStopped && !e.isPropagationStopped()) {
+      e.stopPropagation();
+    }
+    
     onDeleteContent(content.id);
   };
 
   const handleEditClick = (e: React.MouseEvent) => {
+    // Force stop propagation to prevent drag behavior
     e.preventDefault();
     e.stopPropagation();
+    
+    // Double-check that propagation is stopped
+    if (e.isPropagationStopped && !e.isPropagationStopped()) {
+      e.stopPropagation();
+    }
+    
     onEditContent(content.id);
   };
 
+  // Prevent drag events from triggering on buttons
+  const preventDragOnButtons = (e: React.DragEvent) => {
+    if ((e.target as HTMLElement).tagName === 'BUTTON' || 
+        (e.target as HTMLElement).closest('button')) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+  };
+
   return (
-    <Card className={cn(
-      "overflow-hidden relative h-full border-2 w-full",
-      isDraggable && "cursor-grab hover:shadow-md transition-shadow"
-    )}>
+    <Card 
+      className={cn(
+        "overflow-hidden relative h-full border-2 w-full",
+        isDraggable && "cursor-grab hover:shadow-md transition-shadow"
+      )}
+      onDragStart={preventDragOnButtons}
+    >
       {isDraggable && (
         <div className="absolute top-0 left-0 w-full h-full opacity-0 z-10 group-hover:opacity-100 transition-opacity">
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-blue-500">
