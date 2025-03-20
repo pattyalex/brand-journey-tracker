@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
@@ -146,9 +147,16 @@ const ContentCard = ({
   const handleRestoreToIdeas = () => {
     if (onRestoreToIdeas) {
       try {
-        const pillarToRestoreTo = originalPillarId || content.originalPillarId || "1";
+        // Determine the pillar to restore to: first check originalPillarId from props,
+        // then from content, then default to content.pillarId or "1"
+        const pillarToRestoreTo = originalPillarId || 
+                                 content.originalPillarId || 
+                                 (content.bucketId ? content.bucketId : "1");
+        
+        // Find the pillar name for the toast message
         const targetPillar = pillars.find(p => p.id === pillarToRestoreTo)?.name || "Pillar 1";
         
+        // Call the restore function with the content and target pillar ID
         onRestoreToIdeas(content, pillarToRestoreTo);
         
         toast.success(`"${content.title}" will be restored to Idea Development`, {

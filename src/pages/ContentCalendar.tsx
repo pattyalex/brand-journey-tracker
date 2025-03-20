@@ -380,8 +380,14 @@ const ContentCalendar = () => {
         setReadyToScheduleContent(prev => prev.filter(item => item.id !== content.id));
       }
 
+      // Determine which pillar to restore to
+      // First check passed originalPillarId, then content.originalPillarId, then default to "1"
+      const pillarToRestoreTo = originalPillarId || content.originalPillarId || 
+                               (content.bucketId ? content.bucketId : "1");
+      
+      console.log(`Restoring content to pillar: ${pillarToRestoreTo}`, content);
+
       // Use the utility function to store the content for restoration
-      const pillarToRestoreTo = originalPillarId || content.originalPillarId || "1";
       restoreContentToIdeas(content, pillarToRestoreTo);
       
       const targetPillar = pillarToRestoreTo === "1" ? "Pillar 1" : 
