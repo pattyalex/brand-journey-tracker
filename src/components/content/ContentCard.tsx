@@ -53,6 +53,7 @@ const ContentCard = ({
   const [formatName, setFormatName] = useState<string>("Post");
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isInteractingWithButton, setIsInteractingWithButton] = useState(false);
   
   const determinePillarToRestoreTo = () => {
     console.log(`[ContentCard] Determining pillar to restore to for "${content.title}" (ID: ${content.id}):`);
@@ -310,13 +311,14 @@ const ContentCard = ({
   };
 
   const preventDragOnButtons = (e: React.DragEvent) => {
-    if (
-      (e.target as HTMLElement).tagName === 'BUTTON' || 
-      (e.target as HTMLElement).closest('button') ||
-      (e.target as HTMLElement).tagName === 'svg' ||
-      (e.target as HTMLElement).tagName === 'path' ||
-      (e.target as HTMLElement).closest('svg')
-    ) {
+    const target = e.target as HTMLElement;
+    const isButton = target.tagName === 'BUTTON' || 
+                     target.closest('button') ||
+                     target.tagName === 'svg' ||
+                     target.tagName === 'path' ||
+                     target.closest('svg');
+                     
+    if (isButton || isInteractingWithButton) {
       e.stopPropagation();
       e.preventDefault();
       return false;
@@ -324,13 +326,14 @@ const ContentCard = ({
   };
   
   const handleDragStart = (e: React.DragEvent) => {
-    if (
-      (e.target as HTMLElement).tagName === 'BUTTON' || 
-      (e.target as HTMLElement).closest('button') ||
-      (e.target as HTMLElement).tagName === 'svg' ||
-      (e.target as HTMLElement).tagName === 'path' ||
-      (e.target as HTMLElement).closest('svg')
-    ) {
+    const target = e.target as HTMLElement;
+    const isButton = target.tagName === 'BUTTON' || 
+                     target.closest('button') ||
+                     target.tagName === 'svg' ||
+                     target.tagName === 'path' ||
+                     target.closest('svg');
+                     
+    if (isButton || isInteractingWithButton) {
       e.preventDefault();
       e.stopPropagation();
       return false;
@@ -342,20 +345,28 @@ const ContentCard = ({
   const handleDragEnd = () => {
     setIsDragging(false);
   };
+  
+  const handleButtonMouseEnter = () => {
+    setIsInteractingWithButton(true);
+  };
+  
+  const handleButtonMouseLeave = () => {
+    setIsInteractingWithButton(false);
+  };
 
   return (
     <Card 
       className={cn(
         "overflow-hidden relative h-full border-2 w-full",
-        isDraggable && !isDragging && "cursor-grab hover:shadow-md transition-shadow",
+        isDraggable && !isDragging && !isInteractingWithButton && "cursor-grab hover:shadow-md transition-shadow",
         isDraggable && isDragging && "cursor-grabbing"
       )}
-      draggable={isDraggable}
+      draggable={isDraggable && !isInteractingWithButton}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragOver={preventDragOnButtons}
     >
-      {isDraggable && (
+      {isDraggable && !isInteractingWithButton && (
         <div className="absolute top-0 left-0 w-full h-full opacity-0 z-10 group-hover:opacity-100 transition-opacity">
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-blue-500">
             <Move size={24} className="h-8 w-8 text-blue-400 opacity-0 group-hover:opacity-25" />
@@ -372,12 +383,15 @@ const ContentCard = ({
                   variant="outline"
                   size="icon"
                   aria-label="Restore to Ideas"
-                  className="h-8 w-8 p-0 bg-white hover:bg-blue-50 hover:text-blue-600"
+                  className="h-8 w-8 p-0 bg-white hover:bg-blue-50 hover:text-blue-600 cursor-pointer !important"
                   onClick={handleRestoreToIdeas}
                   type="button"
                   draggable={false}
+                  onMouseEnter={handleButtonMouseEnter}
+                  onMouseLeave={handleButtonMouseLeave}
+                  style={{ cursor: 'pointer' }}
                 >
-                  <CornerUpLeft className="h-4 w-4" />
+                  <CornerUpLeft className="h-4 w-4 pointer-events-none" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent className="bg-white text-black border shadow-md">
@@ -448,26 +462,30 @@ const ContentCard = ({
                     variant={date ? "default" : "outline"}
                     size="icon"
                     aria-label="Schedule Content"
-                    className={`h-8 w-8 ${date ? 'bg-green-500 hover:bg-green-600' : ''}`}
+                    className={`h-8 w-8 ${date ? 'bg-green-500 hover:bg-green-600' : ''} cursor-pointer !important`}
                     onClick={handleScheduleButtonClick}
                     type="button"
                     draggable={false}
+                    onMouseEnter={handleButtonMouseEnter}
+                    onMouseLeave={handleButtonMouseLeave}
                     style={{ cursor: 'pointer' }}
                   >
-                    <CalendarClock className="h-4 w-4" />
+                    <CalendarClock className="h-4 w-4 pointer-events-none" />
                   </Button>
                 ) : (
                   <Button
                     variant="outline"
                     size="sm"
                     aria-label="Send to Content Calendar"
-                    className="h-8 p-2 cursor-pointer"
+                    className="h-8 p-2 cursor-pointer !important"
                     onClick={handleSendToCalendar}
                     type="button"
                     draggable={false}
+                    onMouseEnter={handleButtonMouseEnter}
+                    onMouseLeave={handleButtonMouseLeave}
                     style={{ cursor: 'pointer' }}
                   >
-                    <Send className="h-4 w-4" />
+                    <Send className="h-4 w-4 pointer-events-none" />
                   </Button>
                 )}
               </TooltipTrigger>
@@ -481,7 +499,10 @@ const ContentCard = ({
           </TooltipProvider>
           
           {isDatePickerOpen && isInCalendarView && (
-            <div className="absolute bottom-16 left-0 z-10 bg-white border rounded-md shadow-lg p-2 min-w-[250px]">
+            <div 
+              className="absolute bottom-16 left-0 z-10 bg-white border rounded-md shadow-lg p-2 min-w-[250px]"
+              onClick={(e) => e.stopPropagation()}
+            >
               <DateSchedulePicker
                 date={date}
                 onDateChange={handleDateChange}
@@ -497,24 +518,28 @@ const ContentCard = ({
             size="sm"
             onClick={handleDeleteClick}
             aria-label="Delete"
-            className="h-8 w-8 p-0 cursor-pointer"
+            className="h-8 w-8 p-0 cursor-pointer !important"
             type="button"
             draggable={false}
+            onMouseEnter={handleButtonMouseEnter}
+            onMouseLeave={handleButtonMouseLeave}
             style={{ cursor: 'pointer' }}
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-4 w-4 pointer-events-none" />
           </Button>
           <Button 
             variant="outline" 
             size="sm"
             onClick={handleEditClick}
             aria-label="Edit"
-            className="h-8 w-8 p-0 cursor-pointer"
+            className="h-8 w-8 p-0 cursor-pointer !important"
             type="button"
             draggable={false}
+            onMouseEnter={handleButtonMouseEnter}
+            onMouseLeave={handleButtonMouseLeave}
             style={{ cursor: 'pointer' }}
           >
-            <Pencil className="h-4 w-4" />
+            <Pencil className="h-4 w-4 pointer-events-none" />
           </Button>
         </div>
       </CardFooter>
