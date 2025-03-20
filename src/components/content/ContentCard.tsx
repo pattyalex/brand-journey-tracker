@@ -205,7 +205,6 @@ const ContentCard = ({
       onScheduleContent(content.id, newDate);
       setIsDatePickerOpen(false);
     } else if (newDate) {
-      // Original date change handling as fallback
       try {
         const updatedContent = {
           ...content,
@@ -235,11 +234,16 @@ const ContentCard = ({
     }
   };
 
-  const handleScheduleButtonClick = () => {
+  const handleScheduleButtonClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     setIsDatePickerOpen(!isDatePickerOpen);
   };
 
-  const handleRestoreToIdeas = () => {
+  const handleRestoreToIdeas = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     if (onRestoreToIdeas) {
       if (!pillarToRestoreTo) {
         toast.warning(`"${content.title}" has no original pillar information`, {
@@ -269,6 +273,18 @@ const ContentCard = ({
     }
   };
 
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onDeleteContent(content.id);
+  };
+
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onEditContent(content.id);
+  };
+
   return (
     <Card className={cn(
       "overflow-hidden relative h-full border-2 w-full",
@@ -293,6 +309,7 @@ const ContentCard = ({
                   aria-label="Restore to Ideas"
                   className="h-8 w-8 p-0 bg-white hover:bg-blue-50 hover:text-blue-600"
                   onClick={handleRestoreToIdeas}
+                  type="button"
                 >
                   <CornerUpLeft className="h-4 w-4" />
                 </Button>
@@ -367,6 +384,7 @@ const ContentCard = ({
                     aria-label="Schedule Content"
                     className={`h-8 w-8 ${date ? 'bg-green-500 hover:bg-green-600' : ''}`}
                     onClick={handleScheduleButtonClick}
+                    type="button"
                   >
                     <CalendarClock className="h-4 w-4" />
                   </Button>
@@ -407,18 +425,20 @@ const ContentCard = ({
           <Button 
             variant="ghost" 
             size="sm"
-            onClick={() => onDeleteContent(content.id)}
+            onClick={handleDeleteClick}
             aria-label="Delete"
             className="h-8 w-8 p-0"
+            type="button"
           >
             <Trash2 className="h-4 w-4" />
           </Button>
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => onEditContent(content.id)}
+            onClick={handleEditClick}
             aria-label="Edit"
             className="h-8 w-8 p-0"
+            type="button"
           >
             <Pencil className="h-4 w-4" />
           </Button>
