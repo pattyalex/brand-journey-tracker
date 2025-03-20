@@ -31,7 +31,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { CalendarIcon, FileText, ChevronLeft, ChevronRight, PlusCircle, Trash2 } from "lucide-react";
+import { CalendarIcon, FileText, ChevronLeft, ChevronRight, PlusCircle, Trash2, Instagram, Youtube, AtSign } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -48,6 +48,7 @@ interface ContentItem {
   format?: string;
   tags?: string[];
   buckets?: string[];
+  platforms?: string[];
   scheduledDate?: Date | null;
 }
 
@@ -58,7 +59,25 @@ const formatColors: Record<string, string> = {
   "Story": "bg-amber-100 text-amber-800",
   "Podcast": "bg-emerald-100 text-emerald-800",
   "Newsletter": "bg-indigo-100 text-indigo-800",
-  "Post": "bg-cyan-100 text-cyan-800"
+  "Post": "bg-cyan-100 text-cyan-800",
+  "Vlog": "bg-purple-100 text-purple-800"
+};
+
+// Map platform names to their respective icons
+const getPlatformIcon = (platform: string) => {
+  const lowercasePlatform = platform.toLowerCase();
+  
+  switch (lowercasePlatform) {
+    case 'instagram':
+      return <Instagram className="h-3 w-3" />;
+    case 'youtube':
+      return <Youtube className="h-3 w-3" />;
+    case 'twitter':
+    case 'x':
+      return <AtSign className="h-3 w-3" />;
+    default:
+      return <AtSign className="h-3 w-3" />;
+  }
 };
 
 const isWeekend = (date: Date) => {
@@ -151,6 +170,7 @@ const ContentCalendar = () => {
       description: newContentDescription,
       format: newContentFormat,
       tags: [],
+      platforms: [],
       scheduledDate: selectedDate
     };
     
@@ -303,6 +323,24 @@ const ContentCalendar = () => {
                             {getContentFormat(content)}
                           </Badge>
                         )}
+                        
+                        {/* Display platform tags */}
+                        {content.platforms && content.platforms.length > 0 && 
+                          content.platforms.slice(0, 2).map((platform, idx) => (
+                            <Badge 
+                              key={`platform-${idx}`} 
+                              className="bg-purple-100 text-purple-800 text-xs px-2 py-0.5 rounded-full flex items-center gap-1"
+                            >
+                              {getPlatformIcon(platform)}
+                              <span>{platform}</span>
+                            </Badge>
+                          ))
+                        }
+                        {content.platforms && content.platforms.length > 2 && (
+                          <Badge className="bg-purple-100 text-purple-800 text-xs">
+                            +{content.platforms.length - 2}
+                          </Badge>
+                        )}
                       </div>
                       
                       <div className="flex justify-between items-center mt-3">
@@ -417,30 +455,54 @@ const ContentCalendar = () => {
                     {dayContent.map((content) => (
                       <div 
                         key={content.id} 
-                        className={`text-xs p-1 rounded cursor-pointer ${
-                          content.format && formatColors[getContentFormat(content)] 
-                            ? formatColors[getContentFormat(content)] 
-                            : "bg-gray-100 text-gray-800"
-                        }`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // Open a dialog with details here if needed
-                        }}
+                        className="group"
                       >
-                        <div className="flex items-center justify-between">
-                          <span className="truncate">{content.title}</span>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-4 w-4 opacity-0 group-hover:opacity-100"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteScheduledContent(content.id);
-                            }}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
+                        <div 
+                          className={`text-xs p-1 rounded cursor-pointer ${
+                            content.format && formatColors[getContentFormat(content)] 
+                              ? formatColors[getContentFormat(content)] 
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Open a dialog with details here if needed
+                          }}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="truncate">{content.title}</span>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-4 w-4 opacity-0 group-hover:opacity-100"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteScheduledContent(content.id);
+                              }}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </div>
+                        
+                        {/* Display platform tags in calendar view */}
+                        {content.platforms && content.platforms.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1 ml-1">
+                            {content.platforms.slice(0, 2).map((platform, idx) => (
+                              <Badge
+                                key={`cal-platform-${content.id}-${idx}`}
+                                className="bg-purple-100 text-purple-800 text-xs px-1.5 py-0 rounded-full flex items-center gap-0.5"
+                              >
+                                {getPlatformIcon(platform)}
+                                <span className="text-[9px]">{platform}</span>
+                              </Badge>
+                            ))}
+                            {content.platforms.length > 2 && (
+                              <Badge className="bg-purple-100 text-purple-800 text-[9px]">
+                                +{content.platforms.length - 2}
+                              </Badge>
+                            )}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -495,6 +557,7 @@ const ContentCalendar = () => {
                   <option value="Story">Story</option>
                   <option value="Podcast">Podcast</option>
                   <option value="Newsletter">Newsletter</option>
+                  <option value="Vlog">Vlog</option>
                 </select>
               </div>
             </div>
