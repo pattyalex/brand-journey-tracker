@@ -116,9 +116,7 @@ const ContentCard = ({
       // Remove the content from the current pillar after sending to calendar
       onDeleteContent(content.id);
       
-      toast.success(`"${content.title}" has been sent to Content Calendar`, {
-        description: "Visit the Content Calendar page to view and schedule it."
-      });
+      toast.success(`"${content.title}" sent to Content Calendar`);
     } catch (error) {
       console.error("Error sending to calendar:", error);
       toast.error("Failed to send to Content Calendar");
