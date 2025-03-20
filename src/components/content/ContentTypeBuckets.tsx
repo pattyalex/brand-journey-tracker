@@ -56,6 +56,10 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
   const descInputRef = useRef<HTMLInputElement>(null);
   const [showFullDescription, setShowFullDescription] = useState<string | null>(null);
 
+  // State to manage the expanded card position
+  const [cardPositions, setCardPositions] = useState<Record<string, { top: number, left: number }>>({});
+  const cardsContainerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     try {
       const savedFormats = localStorage.getItem(`content-formats-${pillarId}`);
@@ -99,6 +103,29 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
       descInputRef.current.focus();
     }
   }, [isEditingDescription]);
+
+  // Calculate card positions for proper expansion
+  useEffect(() => {
+    if (cardsContainerRef.current) {
+      const container = cardsContainerRef.current;
+      const cardElements = container.querySelectorAll('[data-card-id]');
+      const positions: Record<string, { top: number, left: number }> = {};
+      
+      cardElements.forEach((cardElement) => {
+        const cardId = cardElement.getAttribute('data-card-id');
+        if (cardId) {
+          const rect = cardElement.getBoundingClientRect();
+          const containerRect = container.getBoundingClientRect();
+          positions[cardId] = { 
+            top: rect.top - containerRect.top, 
+            left: rect.left - containerRect.left 
+          };
+        }
+      });
+      
+      setCardPositions(positions);
+    }
+  }, [contentTypes, isAddingFormat, expandedCardId]);
 
   const handleAddFormat = () => {
     if (!newFormatName.trim()) return;
@@ -224,127 +251,140 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         </div>
       )}
       
-      <div className="flex flex-wrap gap-3">
+      <div ref={cardsContainerRef} className="flex flex-wrap gap-3 relative">
         {contentTypes.map((type) => (
-          <Collapsible
-            key={type.id}
-            open={expandedCardId === type.id}
-            onOpenChange={() => setExpandedCardId(expandedCardId === type.id ? null : type.id)}
-            className="w-[200px] transition-all duration-200 ease-in-out"
+          <div 
+            key={type.id} 
+            data-card-id={type.id}
+            className={`transition-all duration-200 ease-in-out ${expandedCardId === type.id ? 'z-10' : 'z-0'}`}
+            style={{
+              position: expandedCardId === type.id ? 'absolute' : 'relative',
+              top: expandedCardId === type.id ? cardPositions[type.id]?.top || 0 : 'auto',
+              left: expandedCardId === type.id ? cardPositions[type.id]?.left || 0 : 'auto',
+            }}
           >
-            <Card 
-              className={`border rounded-lg shadow-sm relative group hover:border-purple-300 transition-all 
-                ${expandedCardId === type.id ? 'w-[280px]' : 'w-[200px]'}`}
+            <Collapsible
+              open={expandedCardId === type.id}
+              onOpenChange={() => setExpandedCardId(expandedCardId === type.id ? null : type.id)}
+              className={`transition-all duration-200 ease-in-out ${expandedCardId === type.id ? 'w-[300px]' : 'w-[200px]'}`}
             >
-              <Button
-                type="button"
-                variant="ghost"
-                size="xs"
-                className="absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-30 hover:bg-gray-100"
-                onClick={(e) => handleDeleteFormat(e, type.id)}
-                title="Delete format"
+              <Card 
+                className={`border rounded-lg shadow-sm relative group hover:border-purple-300 transition-all 
+                  ${expandedCardId === type.id ? 'w-[300px] bg-white' : 'w-[200px]'}`}
               >
-                <Trash2 className="h-3.5 w-3.5 text-gray-500" />
-              </Button>
-              
-              <CollapsibleTrigger asChild onClick={(e) => e.stopPropagation()}>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="absolute top-1 right-8 p-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="xs"
+                  className="absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-30 hover:bg-gray-100"
+                  onClick={(e) => handleDeleteFormat(e, type.id)}
+                  title="Delete format"
                 >
-                  {expandedCardId === type.id ? 
-                    <ChevronUp className="h-4 w-4 text-purple-500" /> : 
-                    <ChevronDown className="h-4 w-4 text-purple-500" />
-                  }
+                  <Trash2 className="h-3.5 w-3.5 text-gray-500" />
                 </Button>
-              </CollapsibleTrigger>
-              
-              <div className="p-3">
+                
+                <CollapsibleTrigger asChild onClick={(e) => e.stopPropagation()}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="absolute top-1 right-8 p-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    {expandedCardId === type.id ? 
+                      <ChevronUp className="h-4 w-4 text-purple-500" /> : 
+                      <ChevronDown className="h-4 w-4 text-purple-500" />
+                    }
+                  </Button>
+                </CollapsibleTrigger>
+                
                 <div 
-                  className="flex items-center gap-2 mb-1"
-                  onDoubleClick={(e) => {
-                    e.stopPropagation();
-                    handleDoubleClick(type.id, type.name, type.description || "");
-                  }}
-                  title="Double-click to edit"
+                  className="p-3 cursor-pointer"
+                  onClick={() => handleCardClick(type.id)}
                 >
-                  {editingFormatId === type.id && !isEditingDescription ? (
-                    <Input
-                      ref={editInputRef}
-                      value={editingName}
-                      onChange={(e) => setEditingName(e.target.value)}
-                      onKeyDown={handleKeyPress}
-                      onBlur={handleBlur}
-                      className="h-7 py-1 px-2 min-w-0 text-sm font-medium"
-                      autoFocus
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  ) : (
-                    <span className="text-sm font-medium text-gray-900 truncate">
-                      {type.name}
-                    </span>
-                  )}
+                  <div 
+                    className="flex items-center gap-2 mb-1"
+                    onDoubleClick={(e) => {
+                      e.stopPropagation();
+                      handleDoubleClick(type.id, type.name, type.description || "");
+                    }}
+                    title="Double-click to edit"
+                  >
+                    {editingFormatId === type.id && !isEditingDescription ? (
+                      <Input
+                        ref={editInputRef}
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        onKeyDown={handleKeyPress}
+                        onBlur={handleBlur}
+                        className="h-7 py-1 px-2 min-w-0 text-sm font-medium"
+                        autoFocus
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    ) : (
+                      <span className="text-sm font-medium text-gray-900 truncate">
+                        {type.name}
+                      </span>
+                    )}
+                  </div>
+                  
+                  <CollapsibleContent className="transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+                    <div
+                      className="mt-1"
+                      onDoubleClick={(e) => {
+                        e.stopPropagation();
+                        handleDescriptionDoubleClick(type.id, type.description || "");
+                      }}
+                      title="Double-click to edit description"
+                    >
+                      {editingFormatId === type.id && isEditingDescription ? (
+                        <Input
+                          ref={descInputRef}
+                          value={editingDescription}
+                          onChange={(e) => setEditingDescription(e.target.value)}
+                          onKeyDown={handleKeyPress}
+                          onBlur={handleBlur}
+                          className="h-7 py-1 px-2 min-w-0 text-xs mt-2"
+                          placeholder="Short description"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        <p className="text-xs text-gray-500 mt-2 whitespace-pre-wrap">
+                          {type.description}
+                        </p>
+                      )}
+                    </div>
+                  </CollapsibleContent>
+                  
+                  {!expandedCardId || expandedCardId !== type.id ? (
+                    <div
+                      className="mt-1 h-8 overflow-hidden relative"
+                      onDoubleClick={(e) => {
+                        e.stopPropagation();
+                        handleDescriptionDoubleClick(type.id, type.description || "");
+                      }}
+                      title="Double-click to edit description"
+                    >
+                      {editingFormatId === type.id && isEditingDescription ? (
+                        <Input
+                          ref={descInputRef}
+                          value={editingDescription}
+                          onChange={(e) => setEditingDescription(e.target.value)}
+                          onKeyDown={handleKeyPress}
+                          onBlur={handleBlur}
+                          className="h-7 py-1 px-2 min-w-0 text-xs"
+                          placeholder="Short description"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        <p className="text-xs text-gray-500 line-clamp-2">
+                          {type.description}
+                        </p>
+                      )}
+                    </div>
+                  ) : null}
                 </div>
-                
-                <CollapsibleContent className="transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-                  <div
-                    className="mt-1"
-                    onDoubleClick={(e) => {
-                      e.stopPropagation();
-                      handleDescriptionDoubleClick(type.id, type.description || "");
-                    }}
-                    title="Double-click to edit description"
-                  >
-                    {editingFormatId === type.id && isEditingDescription ? (
-                      <Input
-                        ref={descInputRef}
-                        value={editingDescription}
-                        onChange={(e) => setEditingDescription(e.target.value)}
-                        onKeyDown={handleKeyPress}
-                        onBlur={handleBlur}
-                        className="h-7 py-1 px-2 min-w-0 text-xs mt-2"
-                        placeholder="Short description"
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    ) : (
-                      <p className="text-xs text-gray-500 mt-2 whitespace-pre-wrap">
-                        {type.description}
-                      </p>
-                    )}
-                  </div>
-                </CollapsibleContent>
-                
-                {!expandedCardId || expandedCardId !== type.id ? (
-                  <div
-                    className="mt-1 h-8 overflow-hidden relative"
-                    onDoubleClick={(e) => {
-                      e.stopPropagation();
-                      handleDescriptionDoubleClick(type.id, type.description || "");
-                    }}
-                    title="Double-click to edit description"
-                  >
-                    {editingFormatId === type.id && isEditingDescription ? (
-                      <Input
-                        ref={descInputRef}
-                        value={editingDescription}
-                        onChange={(e) => setEditingDescription(e.target.value)}
-                        onKeyDown={handleKeyPress}
-                        onBlur={handleBlur}
-                        className="h-7 py-1 px-2 min-w-0 text-xs"
-                        placeholder="Short description"
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    ) : (
-                      <p className="text-xs text-gray-500 line-clamp-2">
-                        {type.description}
-                      </p>
-                    )}
-                  </div>
-                ) : null}
-              </div>
-            </Card>
-          </Collapsible>
+              </Card>
+            </Collapsible>
+          </div>
         ))}
         
         <TooltipProvider delayDuration={0}>
