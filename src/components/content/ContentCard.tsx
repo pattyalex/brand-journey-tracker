@@ -14,7 +14,6 @@ import { getTagColorClasses } from "@/utils/tagColors";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { useNavigate } from "react-router-dom";
 import {
   Tooltip,
   TooltipContent,
@@ -42,7 +41,6 @@ const ContentCard = ({
   onScheduleContent
 }: ContentCardProps) => {
   const [date, setDate] = useState<Date | undefined>(content.scheduledDate);
-  const navigate = useNavigate();
   
   const getContentFormat = () => {
     // First check if the format is directly available
@@ -115,7 +113,7 @@ const ContentCard = ({
       toast.success(`"${content.title}" sent to Content Calendar`);
     }
     
-    navigate('/content-calendar');
+    // Removed navigation to content calendar page
   };
 
   return (
