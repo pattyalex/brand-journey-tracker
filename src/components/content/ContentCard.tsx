@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
@@ -111,6 +112,9 @@ const ContentCard = ({
       
       readyToScheduleContent.push(contentToSchedule);
       localStorage.setItem('readyToScheduleContent', JSON.stringify(readyToScheduleContent));
+      
+      // Remove the content from the current pillar after sending to calendar
+      onDeleteContent(content.id);
       
       toast.success(`"${content.title}" sent to Content Calendar`);
     } catch (error) {
