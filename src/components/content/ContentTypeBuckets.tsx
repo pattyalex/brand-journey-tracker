@@ -1,7 +1,8 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, Info } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ContentItem } from "@/types/content";
 import { 
@@ -16,6 +17,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 type ContentType = {
   id: string;
@@ -174,10 +180,10 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     
     setExpandedCardId(prev => prev === formatId ? null : formatId);
   };
-
-  const toggleFullDescription = (e: React.MouseEvent, typeId: string) => {
+  
+  const toggleCardExpansion = (formatId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setShowFullDescription(prev => prev === typeId ? null : typeId);
+    setExpandedCardId(prev => prev === formatId ? null : formatId);
   };
 
   return (
@@ -220,104 +226,125 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
       
       <div className="flex flex-wrap gap-3">
         {contentTypes.map((type) => (
-          <Card 
-            key={type.id} 
-            className="w-[200px] border rounded-lg shadow-sm cursor-pointer hover:border-purple-300 transition-all relative group"
-            onClick={() => handleCardClick(type.id)}
+          <Collapsible
+            key={type.id}
+            open={expandedCardId === type.id}
+            onOpenChange={() => setExpandedCardId(expandedCardId === type.id ? null : type.id)}
+            className="w-[200px] transition-all duration-200 ease-in-out"
           >
-            <Button
-              type="button"
-              variant="ghost"
-              size="xs"
-              className="absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-30 hover:bg-gray-100"
-              onClick={(e) => handleDeleteFormat(e, type.id)}
-              title="Delete format"
+            <Card 
+              className={`border rounded-lg shadow-sm relative group hover:border-purple-300 transition-all 
+                ${expandedCardId === type.id ? 'w-[280px]' : 'w-[200px]'}`}
             >
-              <Trash2 className="h-3.5 w-3.5 text-gray-500" />
-            </Button>
-            
-            <div className="p-3">
-              <div 
-                className="flex items-center gap-2 mb-1"
-                onDoubleClick={(e) => {
-                  e.stopPropagation();
-                  handleDoubleClick(type.id, type.name, type.description || "");
-                }}
-                title="Double-click to edit"
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
+                className="absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-30 hover:bg-gray-100"
+                onClick={(e) => handleDeleteFormat(e, type.id)}
+                title="Delete format"
               >
-                {editingFormatId === type.id && !isEditingDescription ? (
-                  <Input
-                    ref={editInputRef}
-                    value={editingName}
-                    onChange={(e) => setEditingName(e.target.value)}
-                    onKeyDown={handleKeyPress}
-                    onBlur={handleBlur}
-                    className="h-7 py-1 px-2 min-w-0 text-sm font-medium"
-                    autoFocus
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                ) : (
-                  <span className="text-sm font-medium text-gray-900 truncate">
-                    {type.name}
-                  </span>
-                )}
-              </div>
+                <Trash2 className="h-3.5 w-3.5 text-gray-500" />
+              </Button>
               
-              <div
-                className="mt-1 h-8 overflow-hidden relative"
-                onDoubleClick={(e) => {
-                  e.stopPropagation();
-                  handleDescriptionDoubleClick(type.id, type.description || "");
-                }}
-                title="Double-click to edit description"
-              >
-                {editingFormatId === type.id && isEditingDescription ? (
-                  <Input
-                    ref={descInputRef}
-                    value={editingDescription}
-                    onChange={(e) => setEditingDescription(e.target.value)}
-                    onKeyDown={handleKeyPress}
-                    onBlur={handleBlur}
-                    className="h-7 py-1 px-2 min-w-0 text-xs"
-                    placeholder="Short description"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                ) : (
-                  <div className="flex items-start">
-                    <Popover>
-                      <PopoverTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <div className="flex w-full">
-                          <p className="text-xs text-gray-500 line-clamp-2 flex-1">
-                            {type.description}
-                          </p>
-                          {type.description && type.description.length > 60 && (
-                            <button
-                              onClick={(e) => e.stopPropagation()}
-                              className="ml-1 text-purple-500 hover:text-purple-700 transition-colors focus:outline-none"
-                              title="View full description"
-                            >
-                              <Info className="h-3 w-3" />
-                            </button>
-                          )}
-                        </div>
-                      </PopoverTrigger>
-                      <PopoverContent 
-                        className="w-[250px] p-4" 
-                        side="right" 
-                        align="start"
+              <CollapsibleTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="absolute top-1 right-8 p-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  {expandedCardId === type.id ? 
+                    <ChevronUp className="h-4 w-4 text-purple-500" /> : 
+                    <ChevronDown className="h-4 w-4 text-purple-500" />
+                  }
+                </Button>
+              </CollapsibleTrigger>
+              
+              <div className="p-3">
+                <div 
+                  className="flex items-center gap-2 mb-1"
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    handleDoubleClick(type.id, type.name, type.description || "");
+                  }}
+                  title="Double-click to edit"
+                >
+                  {editingFormatId === type.id && !isEditingDescription ? (
+                    <Input
+                      ref={editInputRef}
+                      value={editingName}
+                      onChange={(e) => setEditingName(e.target.value)}
+                      onKeyDown={handleKeyPress}
+                      onBlur={handleBlur}
+                      className="h-7 py-1 px-2 min-w-0 text-sm font-medium"
+                      autoFocus
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  ) : (
+                    <span className="text-sm font-medium text-gray-900 truncate">
+                      {type.name}
+                    </span>
+                  )}
+                </div>
+                
+                <CollapsibleContent className="transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+                  <div
+                    className="mt-1"
+                    onDoubleClick={(e) => {
+                      e.stopPropagation();
+                      handleDescriptionDoubleClick(type.id, type.description || "");
+                    }}
+                    title="Double-click to edit description"
+                  >
+                    {editingFormatId === type.id && isEditingDescription ? (
+                      <Input
+                        ref={descInputRef}
+                        value={editingDescription}
+                        onChange={(e) => setEditingDescription(e.target.value)}
+                        onKeyDown={handleKeyPress}
+                        onBlur={handleBlur}
+                        className="h-7 py-1 px-2 min-w-0 text-xs mt-2"
+                        placeholder="Short description"
                         onClick={(e) => e.stopPropagation()}
-                      >
-                        <div className="space-y-2">
-                          <h4 className="font-medium">{type.name}</h4>
-                          <p className="text-xs text-gray-700">{type.description}</p>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
+                      />
+                    ) : (
+                      <p className="text-xs text-gray-500 mt-2 whitespace-pre-wrap">
+                        {type.description}
+                      </p>
+                    )}
                   </div>
-                )}
+                </CollapsibleContent>
+                
+                {!expandedCardId || expandedCardId !== type.id ? (
+                  <div
+                    className="mt-1 h-8 overflow-hidden relative"
+                    onDoubleClick={(e) => {
+                      e.stopPropagation();
+                      handleDescriptionDoubleClick(type.id, type.description || "");
+                    }}
+                    title="Double-click to edit description"
+                  >
+                    {editingFormatId === type.id && isEditingDescription ? (
+                      <Input
+                        ref={descInputRef}
+                        value={editingDescription}
+                        onChange={(e) => setEditingDescription(e.target.value)}
+                        onKeyDown={handleKeyPress}
+                        onBlur={handleBlur}
+                        className="h-7 py-1 px-2 min-w-0 text-xs"
+                        placeholder="Short description"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    ) : (
+                      <p className="text-xs text-gray-500 line-clamp-2">
+                        {type.description}
+                      </p>
+                    )}
+                  </div>
+                ) : null}
               </div>
-            </div>
-          </Card>
+            </Card>
+          </Collapsible>
         ))}
         
         <TooltipProvider delayDuration={0}>
