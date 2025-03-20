@@ -333,7 +333,6 @@ const ContentCard = ({
   };
   
   const handleDragStart = (e: React.DragEvent) => {
-    // If we're interacting with a button or button-like element, prevent drag
     const target = e.target as HTMLElement;
     const isButton = target.tagName === 'BUTTON' || 
                      target.closest('button') ||
@@ -359,7 +358,6 @@ const ContentCard = ({
   };
   
   const handleButtonMouseLeave = () => {
-    // Small delay to prevent immediate drag activation when moving quickly between buttons
     setTimeout(() => {
       setIsInteractingWithButton(false);
     }, 200);
@@ -505,24 +503,6 @@ const ContentCard = ({
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          
-          {isDatePickerOpen && isInCalendarView && (
-            <div 
-              className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9999] bg-white border rounded-md shadow-xl p-2 min-w-[280px]"
-              onClick={(e) => e.stopPropagation()}
-              style={{ 
-                display: 'block',
-                boxShadow: '0 0 20px rgba(0, 0, 0, 0.3)',
-                filter: 'drop-shadow(0 0 10px rgba(0, 0, 0, 0.3))'
-              }}
-            >
-              <DateSchedulePicker
-                date={date}
-                onDateChange={handleDateChange}
-                className="w-full"
-              />
-            </div>
-          )}
         </div>
         
         <div className="flex gap-2 z-20 relative">
@@ -557,9 +537,29 @@ const ContentCard = ({
       
       {isDatePickerOpen && isInCalendarView && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-5 z-[9000]"
+          className="fixed inset-0 bg-black bg-opacity-30 z-[9000]"
           onClick={() => setIsDatePickerOpen(false)}
         />
+      )}
+      
+      {isDatePickerOpen && isInCalendarView && (
+        <div 
+          className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9999]"
+          onClick={(e) => e.stopPropagation()}
+          style={{ 
+            display: 'block',
+            boxShadow: '0 4px 24px rgba(0, 0, 0, 0.4)',
+            filter: 'drop-shadow(0 0 16px rgba(0, 0, 0, 0.4))',
+            borderRadius: '8px',
+            backgroundColor: 'white'
+          }}
+        >
+          <DateSchedulePicker
+            date={date}
+            onDateChange={handleDateChange}
+            className="w-full"
+          />
+        </div>
       )}
     </Card>
   );
