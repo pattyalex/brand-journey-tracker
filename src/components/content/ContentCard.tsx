@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
@@ -508,7 +507,7 @@ const ContentCard = ({
           
           {isDatePickerOpen && isInCalendarView && (
             <div 
-              className="absolute bottom-16 left-0 z-50 bg-white border rounded-md shadow-lg p-2 min-w-[250px]"
+              className="absolute top-10 -left-4 z-50 bg-white border rounded-md shadow-lg p-2 min-w-[250px]"
               onClick={(e) => e.stopPropagation()}
             >
               <DateSchedulePicker
