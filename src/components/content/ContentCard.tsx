@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
@@ -46,6 +45,16 @@ const ContentCard = ({
 }: ContentCardProps) => {
   const [date, setDate] = useState<Date | undefined>(content.scheduledDate);
   const [formatName, setFormatName] = useState<string>("Post");
+  
+  const pillarToRestoreTo = originalPillarId || 
+                         content.originalPillarId || 
+                         content.bucketId || 
+                         "1";
+                         
+  const targetPillarName = pillars.find(p => p.id === pillarToRestoreTo)?.name || 
+                         (pillarToRestoreTo === "1" ? "Pillar 1" : 
+                          pillarToRestoreTo === "2" ? "Pillar 2" : 
+                          pillarToRestoreTo === "3" ? "Pillar 3" : "Pillar 1");
   
   useEffect(() => {
     if (content.bucketId) {
@@ -147,14 +156,8 @@ const ContentCard = ({
   const handleRestoreToIdeas = () => {
     if (onRestoreToIdeas) {
       try {
-        // Explicitly capture current pillar.id as the source pillar if not from Calendar
         const currentPillarId = pillar.id || "1";
         
-        // Priority for restoration target:
-        // 1. Use explicitly passed originalPillarId prop (highest priority)
-        // 2. Use content.originalPillarId if it exists (from previous restoration)
-        // 3. Use content.bucketId if available (specific bucket association) 
-        // 4. Use current pillar.id as fallback (where it currently is)
         const pillarToRestoreTo = originalPillarId || 
                                  content.originalPillarId || 
                                  content.bucketId || 
@@ -162,10 +165,8 @@ const ContentCard = ({
         
         console.log(`ContentCard: Restoring content "${content.title}" from pillar ${currentPillarId} to pillar ID: ${pillarToRestoreTo}`);
         
-        // Find the pillar name for the toast message
         const targetPillar = pillars.find(p => p.id === pillarToRestoreTo)?.name || "Pillar 1";
         
-        // Call the restore function with the content and target pillar ID
         onRestoreToIdeas(content, pillarToRestoreTo);
         
         toast.success(`"${content.title}" will be restored to Idea Development`, {
@@ -207,7 +208,7 @@ const ContentCard = ({
                 </Button>
               </TooltipTrigger>
               <TooltipContent className="bg-white text-black border shadow-md">
-                <p>Restore to Idea Development (Pillar 1)</p>
+                <p>Restore to Idea Development ({targetPillarName})</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
