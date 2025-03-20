@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
@@ -169,6 +170,8 @@ const ContentCard = ({
       e.nativeEvent.stopImmediatePropagation();
     }
     
+    setIsInteractingWithButton(false); // Reset the interaction state
+    
     try {
       let readyToScheduleContent = [];
       const storedContent = localStorage.getItem('readyToScheduleContent');
@@ -259,6 +262,8 @@ const ContentCard = ({
       e.nativeEvent.stopImmediatePropagation();
     }
     
+    setIsInteractingWithButton(false); // Reset the interaction state
+    
     if (onRestoreToIdeas) {
       if (!pillarToRestoreTo) {
         toast.warning(`"${content.title}" has no original pillar information`, {
@@ -296,6 +301,7 @@ const ContentCard = ({
       e.nativeEvent.stopImmediatePropagation();
     }
     
+    setIsInteractingWithButton(false); // Reset the interaction state
     onDeleteContent(content.id);
   };
 
@@ -307,6 +313,7 @@ const ContentCard = ({
       e.nativeEvent.stopImmediatePropagation();
     }
     
+    setIsInteractingWithButton(false); // Reset the interaction state
     onEditContent(content.id);
   };
 
@@ -326,6 +333,7 @@ const ContentCard = ({
   };
   
   const handleDragStart = (e: React.DragEvent) => {
+    // If we're interacting with a button or button-like element, prevent drag
     const target = e.target as HTMLElement;
     const isButton = target.tagName === 'BUTTON' || 
                      target.closest('button') ||
@@ -351,7 +359,10 @@ const ContentCard = ({
   };
   
   const handleButtonMouseLeave = () => {
-    setIsInteractingWithButton(false);
+    // Small delay to prevent immediate drag activation when moving quickly between buttons
+    setTimeout(() => {
+      setIsInteractingWithButton(false);
+    }, 100);
   };
 
   return (
@@ -383,13 +394,12 @@ const ContentCard = ({
                   variant="outline"
                   size="icon"
                   aria-label="Restore to Ideas"
-                  className="h-8 w-8 p-0 bg-white hover:bg-blue-50 hover:text-blue-600 cursor-pointer !important"
+                  className="h-8 w-8 p-0 bg-white hover:bg-blue-50 hover:text-blue-600 !cursor-pointer"
                   onClick={handleRestoreToIdeas}
                   type="button"
                   draggable={false}
                   onMouseEnter={handleButtonMouseEnter}
                   onMouseLeave={handleButtonMouseLeave}
-                  style={{ cursor: 'pointer' }}
                 >
                   <CornerUpLeft className="h-4 w-4 pointer-events-none" />
                 </Button>
@@ -462,13 +472,12 @@ const ContentCard = ({
                     variant={date ? "default" : "outline"}
                     size="icon"
                     aria-label="Schedule Content"
-                    className={`h-8 w-8 ${date ? 'bg-green-500 hover:bg-green-600' : ''} cursor-pointer !important`}
+                    className={`h-8 w-8 ${date ? 'bg-green-500 hover:bg-green-600' : ''} !cursor-pointer`}
                     onClick={handleScheduleButtonClick}
                     type="button"
                     draggable={false}
                     onMouseEnter={handleButtonMouseEnter}
                     onMouseLeave={handleButtonMouseLeave}
-                    style={{ cursor: 'pointer' }}
                   >
                     <CalendarClock className="h-4 w-4 pointer-events-none" />
                   </Button>
@@ -477,13 +486,12 @@ const ContentCard = ({
                     variant="outline"
                     size="sm"
                     aria-label="Send to Content Calendar"
-                    className="h-8 p-2 cursor-pointer !important"
+                    className="h-8 p-2 !cursor-pointer"
                     onClick={handleSendToCalendar}
                     type="button"
                     draggable={false}
                     onMouseEnter={handleButtonMouseEnter}
                     onMouseLeave={handleButtonMouseLeave}
-                    style={{ cursor: 'pointer' }}
                   >
                     <Send className="h-4 w-4 pointer-events-none" />
                   </Button>
@@ -518,12 +526,11 @@ const ContentCard = ({
             size="sm"
             onClick={handleDeleteClick}
             aria-label="Delete"
-            className="h-8 w-8 p-0 cursor-pointer !important"
+            className="h-8 w-8 p-0 !cursor-pointer"
             type="button"
             draggable={false}
             onMouseEnter={handleButtonMouseEnter}
             onMouseLeave={handleButtonMouseLeave}
-            style={{ cursor: 'pointer' }}
           >
             <Trash2 className="h-4 w-4 pointer-events-none" />
           </Button>
@@ -532,12 +539,11 @@ const ContentCard = ({
             size="sm"
             onClick={handleEditClick}
             aria-label="Edit"
-            className="h-8 w-8 p-0 cursor-pointer !important"
+            className="h-8 w-8 p-0 !cursor-pointer"
             type="button"
             draggable={false}
             onMouseEnter={handleButtonMouseEnter}
             onMouseLeave={handleButtonMouseLeave}
-            style={{ cursor: 'pointer' }}
           >
             <Pencil className="h-4 w-4 pointer-events-none" />
           </Button>
