@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
-  format, 
+  format as formatDate, 
   startOfMonth, 
   endOfMonth, 
   eachDayOfInterval, 
@@ -40,7 +40,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import IdeaCreationDialog from "@/components/content/IdeaCreationDialog";
 
-// Define the content item type
 interface ContentItem {
   id: string;
   title: string;
@@ -64,7 +63,6 @@ const formatColors: Record<string, string> = {
   "Vlog": "bg-purple-100 text-purple-800"
 };
 
-// Map platform names to their respective icons
 const getPlatformIcon = (platform: string) => {
   const lowercasePlatform = platform.toLowerCase();
   
@@ -87,7 +85,6 @@ const isWeekend = (date: Date) => {
 };
 
 const ContentCalendar = () => {
-  // Set today as March 14, 2025 (Friday)
   const getToday = () => {
     const today = new Date(2025, 2, 14); // Note: months are 0-indexed, so 2 = March
     return today;
@@ -103,11 +100,9 @@ const ContentCalendar = () => {
   const [newContentDescription, setNewContentDescription] = useState("");
   const [newContentFormat, setNewContentFormat] = useState("Post");
   
-  // New state variables for editing content
   const [editContentDialogOpen, setEditContentDialogOpen] = useState(false);
   const [currentEditingContent, setCurrentEditingContent] = useState<ContentItem | null>(null);
 
-  // New state variables for dialog content
   const [title, setTitle] = useState("");
   const [bucketId, setBucketId] = useState("");
   const [textContent, setTextContent] = useState("");
@@ -123,14 +118,11 @@ const ContentCalendar = () => {
   const [inspirationLinks, setInspirationLinks] = useState<string[]>([]);
   const [inspirationImages, setInspirationImages] = useState<string[]>([]);
 
-  // Load content from localStorage on component mount
   useEffect(() => {
     try {
-      // Load ready to schedule content
       const readyToScheduleData = localStorage.getItem('readyToScheduleContent');
       if (readyToScheduleData) {
         const parsedData = JSON.parse(readyToScheduleData);
-        // Parse any date strings back to Date objects
         const contentWithDates = parsedData.map((item: any) => ({
           ...item,
           scheduledDate: item.scheduledDate ? new Date(item.scheduledDate) : null
@@ -138,11 +130,9 @@ const ContentCalendar = () => {
         setReadyToScheduleContent(contentWithDates);
       }
 
-      // Load scheduled content
       const scheduledData = localStorage.getItem('scheduledContent');
       if (scheduledData) {
         const parsedData = JSON.parse(scheduledData);
-        // Parse any date strings back to Date objects
         const contentWithDates = parsedData.map((item: any) => ({
           ...item,
           scheduledDate: item.scheduledDate ? new Date(item.scheduledDate) : null
@@ -154,7 +144,6 @@ const ContentCalendar = () => {
     }
   }, []);
 
-  // Save content to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('readyToScheduleContent', JSON.stringify(readyToScheduleContent));
   }, [readyToScheduleContent]);
@@ -163,16 +152,13 @@ const ContentCalendar = () => {
     localStorage.setItem('scheduledContent', JSON.stringify(scheduledContent));
   }, [scheduledContent]);
 
-  // Function to handle editing content
   const handleEditContent = (content: ContentItem) => {
     setCurrentEditingContent(content);
     
-    // Set all the form values based on the content
     setTitle(content.title || "");
     setTagsList(content.tags || []);
     setPlatformsList(content.platforms || []);
     
-    // Parse the URL JSON if it exists
     if (content.url) {
       try {
         const parsedContent = JSON.parse(content.url);
@@ -193,11 +179,9 @@ const ContentCalendar = () => {
     setEditContentDialogOpen(true);
   };
 
-  // Function to handle updating content after edit
   const handleUpdateContent = () => {
     if (!currentEditingContent) return;
     
-    // Create updated content object
     const updatedContent: ContentItem = {
       ...currentEditingContent,
       title,
@@ -218,13 +202,11 @@ const ContentCalendar = () => {
       })
     };
     
-    // Update in ready to schedule list
     if (currentEditingContent.scheduledDate === null) {
       setReadyToScheduleContent(prev => 
         prev.map(item => item.id === currentEditingContent.id ? updatedContent : item)
       );
     } 
-    // Update in scheduled content list
     else {
       setScheduledContent(prev => 
         prev.map(item => item.id === currentEditingContent.id ? updatedContent : item)
@@ -258,7 +240,6 @@ const ContentCalendar = () => {
     resetEditForm();
   };
 
-  // Functions for tag management
   const handleAddTag = () => {
     if (currentTag.trim() && !tagsList.includes(currentTag.trim())) {
       setTagsList([...tagsList, currentTag.trim()]);
@@ -270,7 +251,6 @@ const ContentCalendar = () => {
     setTagsList(tagsList.filter(tag => tag !== tagToRemove));
   };
 
-  // Functions for platform management
   const handleAddPlatform = () => {
     if (currentPlatform.trim() && !platformsList.includes(currentPlatform.trim())) {
       setPlatformsList([...platformsList, currentPlatform.trim()]);
@@ -282,7 +262,6 @@ const ContentCalendar = () => {
     setPlatformsList(platformsList.filter(platform => platform !== platformToRemove));
   };
 
-  // Functions for inspiration management
   const handleAddInspirationLink = (link: string) => {
     if (link.trim()) {
       setInspirationLinks([...inspirationLinks, link.trim()]);
@@ -304,21 +283,17 @@ const ContentCalendar = () => {
   };
 
   const scheduleContent = (contentId: string, date: Date) => {
-    // Find the content item
     const contentItem = readyToScheduleContent.find(item => item.id === contentId);
     
     if (!contentItem) return;
     
-    // Create a new version with the scheduled date
     const scheduledItem = {
       ...contentItem,
       scheduledDate: date
     };
     
-    // Remove from ready to schedule
     setReadyToScheduleContent(prev => prev.filter(item => item.id !== contentId));
     
-    // Add to scheduled content
     setScheduledContent(prev => [...prev, scheduledItem]);
   };
 
@@ -343,22 +318,19 @@ const ContentCalendar = () => {
   };
 
   const deleteContent = (contentId: string) => {
-    // Remove content from ready to schedule
     setReadyToScheduleContent(prev => prev.filter(item => item.id !== contentId));
   };
 
   const deleteScheduledContent = (contentId: string) => {
-    // Remove content from scheduled
     setScheduledContent(prev => prev.filter(item => item.id !== contentId));
   };
 
-  // Helper function to get the correct format display
   const getContentFormat = (content: ContentItem) => {
     if (content.format && content.format !== 'text') {
       return content.format;
     }
     
-    return "Post"; // Default format
+    return "Post";
   };
 
   const getContentForDate = (date: Date) => {
@@ -374,21 +346,17 @@ const ContentCalendar = () => {
     });
   };
 
-  // Navigation functions
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
   const goToToday = () => setCurrentMonth(getToday());
 
-  // Generate days for the current month view
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-  // Calculate start and end of the calendar grid (Sunday to Saturday)
   const calendarStart = startOfWeek(monthStart);
   const calendarEnd = endOfWeek(monthEnd);
   
-  // Generate all calendar days
   const calendarDays = eachDayOfInterval({ 
     start: calendarStart, 
     end: calendarEnd 
@@ -445,7 +413,6 @@ const ContentCalendar = () => {
           </div>
         </div>
         
-        {/* Content Ready to Schedule Section - Always visible */}
         <Card className="overflow-hidden">
           <CardHeader>
             <CardTitle>Content Ready to be Scheduled</CardTitle>
@@ -485,7 +452,6 @@ const ContentCalendar = () => {
                           </Badge>
                         )}
                         
-                        {/* Display platform tags */}
                         {content.platforms && content.platforms.length > 0 && 
                           content.platforms.slice(0, 2).map((platform, idx) => (
                             <Badge 
@@ -563,12 +529,10 @@ const ContentCalendar = () => {
         </Card>
         
         <div className="text-center text-2xl font-semibold mb-4">
-          {format(currentMonth, 'MMMM yyyy')}
+          {formatDate(currentMonth, 'MMMM yyyy')}
         </div>
         
-        {/* Main Calendar View */}
         <div className="border rounded-md bg-white overflow-hidden">
-          {/* Calendar Header - Days of week */}
           <div className="grid grid-cols-7 border-b">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
               <div key={day} className="p-2 text-center font-medium text-gray-500">
@@ -577,7 +541,6 @@ const ContentCalendar = () => {
             ))}
           </div>
           
-          {/* Calendar Grid */}
           <div className="grid grid-cols-7 min-h-[70vh]">
             {calendarDays.map((day, i) => {
               const isCurrentMonth = isSameMonth(day, currentMonth);
@@ -604,7 +567,7 @@ const ContentCalendar = () => {
                     <div className={`text-sm font-medium ${
                       isCurrentDay ? "bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center" : ""
                     }`}>
-                      {format(day, 'd')}
+                      {formatDate(day, 'd')}
                     </div>
                     {isCurrentMonth && (
                       <Button 
@@ -622,7 +585,6 @@ const ContentCalendar = () => {
                     )}
                   </div>
                   
-                  {/* Content items for the day */}
                   <div className="space-y-1 mt-1 max-h-[90px] overflow-y-auto">
                     {dayContent.map((content) => (
                       <div 
@@ -637,7 +599,6 @@ const ContentCalendar = () => {
                           }`}
                           onClick={(e) => {
                             e.stopPropagation();
-                            // Open a dialog with details here if needed
                           }}
                         >
                           <div className="flex items-center justify-between">
@@ -669,7 +630,6 @@ const ContentCalendar = () => {
                           </div>
                         </div>
                         
-                        {/* Display platform tags in calendar view */}
                         {content.platforms && content.platforms.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-1 ml-1">
                             {content.platforms.slice(0, 2).map((platform, idx) => (
@@ -697,13 +657,12 @@ const ContentCalendar = () => {
           </div>
         </div>
         
-        {/* New Content Dialog */}
         <Dialog open={newContentDialogOpen} onOpenChange={setNewContentDialogOpen}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>Add New Content</DialogTitle>
               <DialogDescription>
-                Create a new content item for {selectedDate ? format(selectedDate, 'MMMM d, yyyy') : 'selected date'}
+                Create a new content item for {selectedDate ? formatDate(selectedDate, 'MMMM d, yyyy') : 'selected date'}
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
@@ -757,7 +716,6 @@ const ContentCalendar = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Edit Content Dialog */}
         <IdeaCreationDialog
           open={editContentDialogOpen}
           onOpenChange={setEditContentDialogOpen}
