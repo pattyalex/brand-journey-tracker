@@ -25,21 +25,23 @@ const DateSchedulePicker = ({
   className,
 }: DateSchedulePickerProps) => {
   return (
-    <div className={cn("grid gap-0.5 rounded border border-gray-300 bg-gray-50 p-1.5 shadow-sm w-full", className)}>
-      {label && <div className="text-xs font-medium px-1">{label}</div>}
+    <div className={cn("grid gap-2", className)}>
+      {label && <div className="text-sm font-medium">{label}</div>}
       <Popover>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
-            size="xs"
             className={cn(
-              "justify-start text-left font-normal min-w-[60px] max-w-full px-1 py-0 h-5 bg-white border-gray-300",
+              "justify-start text-left font-normal min-w-[120px] max-w-full",
               !date && "text-muted-foreground"
             )}
           >
-            <CalendarIcon className="mr-0.5 h-2.5 w-2.5" />
-            {date ? format(date, "MM/dd/yy") : (
-              <span className="text-[10px] leading-none flex items-center">Pick date</span>
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {date ? format(date, "PPP") : (
+              <span className="flex flex-col items-start">
+                <span>Pick a date</span>
+                <span>for scheduling</span>
+              </span>
             )}
           </Button>
         </PopoverTrigger>
@@ -49,7 +51,7 @@ const DateSchedulePicker = ({
             selected={date}
             onSelect={onDateChange}
             initialFocus
-            className="p-1 pointer-events-auto scale-75 origin-top-left"
+            className="p-3 pointer-events-auto"
           />
         </PopoverContent>
       </Popover>
