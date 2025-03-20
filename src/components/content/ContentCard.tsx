@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
@@ -43,25 +42,21 @@ const ContentCard = ({
   const [date, setDate] = useState<Date | undefined>(content.scheduledDate);
   
   const getContentFormat = () => {
-    // First check if the format is directly available
     if (content.format && content.format !== 'text') {
       return content.format;
     }
     
-    // If format is text, try to extract from url
     if (content.format === 'text' && content.url) {
       try {
         const parsedContent = JSON.parse(content.url);
         return parsedContent.format || "Post";
       } catch {
-        return "Post"; // Default to Post if parsing fails
+        return "Post";
       }
     }
     
-    return "Post"; // Default format
+    return "Post";
   };
-
-  const contentFormat = getContentFormat();
 
   const getPlatforms = () => {
     if (content.platforms && content.platforms.length > 0) {
@@ -81,39 +76,47 @@ const ContentCard = ({
     return [];
   };
 
-  // Deduplicate tags if they exist
   const getUniqueTags = () => {
     if (!content.tags || !Array.isArray(content.tags)) return [];
     
-    // Use Set to remove duplicates
     return [...new Set(content.tags)];
   };
 
   const platforms = getPlatforms();
   const uniqueTags = getUniqueTags();
+  const contentFormat = getContentFormat();
 
   const handleSendToCalendar = () => {
-    const readyToScheduleContent = JSON.parse(localStorage.getItem('readyToScheduleContent') || '[]');
-    
-    const existingIndex = readyToScheduleContent.findIndex((item: ContentItem) => item.id === content.id);
-    
-    if (existingIndex >= 0) {
-      toast.info(`"${content.title}" is already in your calendar`);
-    } else {
-      // Make sure to include the proper format and platforms when sending to calendar
+    try {
+      let readyToScheduleContent = [];
+      const storedContent = localStorage.getItem('readyToScheduleContent');
+      
+      if (storedContent) {
+        readyToScheduleContent = JSON.parse(storedContent);
+      }
+      
+      const existingIndex = readyToScheduleContent.findIndex((item: ContentItem) => item.id === content.id);
+      
+      if (existingIndex >= 0) {
+        toast.info(`"${content.title}" is already in your calendar`);
+        return;
+      }
+      
       const contentToSchedule = {
         ...content,
-        format: contentFormat, // Use the determined format
-        platforms: platforms,   // Include platforms
-        tags: uniqueTags        // Include deduplicated tags
+        format: contentFormat,
+        platforms: platforms,
+        tags: uniqueTags
       };
       
       readyToScheduleContent.push(contentToSchedule);
       localStorage.setItem('readyToScheduleContent', JSON.stringify(readyToScheduleContent));
+      
       toast.success(`"${content.title}" sent to Content Calendar`);
+    } catch (error) {
+      console.error("Error sending to calendar:", error);
+      toast.error("Failed to send to Content Calendar");
     }
-    
-    // Removed navigation to content calendar page
   };
 
   return (
