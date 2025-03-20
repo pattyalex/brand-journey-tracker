@@ -236,7 +236,7 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
                           <div className="flex-shrink-0">
                             <PlatformIcon platform={platform} size={16} />
                           </div>
-                          <span className="text-sm font-medium truncate flex-grow">{platform.name}</span>
+                          <span className="text-sm font-medium flex-grow">{platform.name}</span>
                           
                           {content.notes && (
                             <MessageSquare className="h-3.5 w-3.5 text-blue-500 mr-1 flex-shrink-0" />
