@@ -147,19 +147,23 @@ const ContentCard = ({
   const handleRestoreToIdeas = () => {
     if (onRestoreToIdeas) {
       try {
-        // Determine the pillar to restore to based on priority:
-        // 1. Use originalPillarId from props (may come from parent component)
-        // 2. Use content.originalPillarId (may be set during previous restoration)
-        // 3. Use content.bucketId (if the content comes from a specific bucket/pillar)
-        // 4. Default to "1" as fallback
+        // Explicitly capture current pillar.id as the source pillar if not from Calendar
+        const currentPillarId = pillar.id || "1";
+        
+        // Priority for restoration target:
+        // 1. Use explicitly passed originalPillarId prop (highest priority)
+        // 2. Use content.originalPillarId if it exists (from previous restoration)
+        // 3. Use content.bucketId if available (specific bucket association) 
+        // 4. Use current pillar.id as fallback (where it currently is)
         const pillarToRestoreTo = originalPillarId || 
                                  content.originalPillarId || 
-                                 (content.bucketId ? content.bucketId : pillar.id);
+                                 content.bucketId || 
+                                 currentPillarId;
+        
+        console.log(`ContentCard: Restoring content "${content.title}" from pillar ${currentPillarId} to pillar ID: ${pillarToRestoreTo}`);
         
         // Find the pillar name for the toast message
         const targetPillar = pillars.find(p => p.id === pillarToRestoreTo)?.name || "Pillar 1";
-        
-        console.log(`Restoring content "${content.title}" to pillar ID: ${pillarToRestoreTo}`);
         
         // Call the restore function with the content and target pillar ID
         onRestoreToIdeas(content, pillarToRestoreTo);

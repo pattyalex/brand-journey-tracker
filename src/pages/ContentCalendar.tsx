@@ -125,6 +125,12 @@ const ContentCalendar = () => {
   const [inspirationLinks, setInspirationLinks] = useState<string[]>([]);
   const [inspirationImages, setInspirationImages] = useState<string[]>([]);
 
+  const [pillars, setPillars] = useState<Pillar[]>([
+    { id: "1", name: "Pillar 1", content: [] },
+    { id: "2", name: "Pillar 2", content: [] },
+    { id: "3", name: "Pillar 3", content: [] }
+  ]);
+
   useEffect(() => {
     try {
       const readyToScheduleData = localStorage.getItem('readyToScheduleContent');
@@ -380,19 +386,25 @@ const ContentCalendar = () => {
         setReadyToScheduleContent(prev => prev.filter(item => item.id !== content.id));
       }
 
-      // Determine which pillar to restore to
-      // First check passed originalPillarId, then content.originalPillarId, then default to "1"
-      const pillarToRestoreTo = originalPillarId || content.originalPillarId || 
-                               (content.bucketId ? content.bucketId : "1");
+      // Determine which pillar to restore to:
+      // 1. Use the passed originalPillarId (highest priority)
+      // 2. Use content's existing originalPillarId 
+      // 3. Use content's bucketId if available
+      // 4. Default to "1" only as last resort
+      const pillarToRestoreTo = originalPillarId || 
+                               content.originalPillarId || 
+                               content.bucketId || 
+                               "1";
       
-      console.log(`Restoring content to pillar: ${pillarToRestoreTo}`, content);
+      console.log(`ContentCalendar: Restoring content "${content.title}" to pillar: ${pillarToRestoreTo}`, content);
 
       // Use the utility function to store the content for restoration
       restoreContentToIdeas(content, pillarToRestoreTo);
       
-      const targetPillar = pillarToRestoreTo === "1" ? "Pillar 1" : 
+      const targetPillar = pillars.find(p => p.id === pillarToRestoreTo)?.name || 
+                          (pillarToRestoreTo === "1" ? "Pillar 1" : 
                            pillarToRestoreTo === "2" ? "Pillar 2" : 
-                           pillarToRestoreTo === "3" ? "Pillar 3" : "Pillar 1";
+                           pillarToRestoreTo === "3" ? "Pillar 3" : "Pillar 1");
       
       toast.success(`"${content.title}" will be restored to Idea Development`, {
         description: `Navigate to Idea Development to see this content in ${targetPillar}`,

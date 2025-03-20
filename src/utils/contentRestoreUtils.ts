@@ -20,8 +20,8 @@ export const restoreContentToIdeas = (content: ContentItem, originalPillarId: st
       restoredAt: new Date().toISOString(),
       // Adding a flag to make it easier to identify restored items
       isRestored: true,
-      // Explicitly set the originalPillarId param
-      originalPillarId
+      // Use the explicit originalPillarId or preserve the one it already has
+      originalPillarId: originalPillarId || content.originalPillarId || "1"
     });
     
     // Save back to localStorage
@@ -62,8 +62,9 @@ export const getRestoredIdeas = (): ContentItem[] => {
       const restoredIdeas = JSON.parse(storedContent);
       console.log(`Retrieved ${restoredIdeas.length} items that were restored to Ideas`);
       
-      // Map through each item to ensure it has an originalPillarId and that it's preserved
+      // Map through each item to ensure originalPillarId is preserved
       const processedIdeas = restoredIdeas.map((item: ContentItem) => {
+        // Only set default if originalPillarId is completely missing
         if (!item.originalPillarId) {
           console.log(`Setting default originalPillarId for item: ${item.id}`);
           return { ...item, originalPillarId: "1" };
