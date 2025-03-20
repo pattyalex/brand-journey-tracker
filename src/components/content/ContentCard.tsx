@@ -4,7 +4,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  Trash2, Pencil, Send, FileText, CornerUpLeft
+  Trash2, Pencil, Send, FileText, CornerUpLeft, CalendarClock
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ContentItem } from "@/types/content";
@@ -19,6 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import DateSchedulePicker from "@/components/content/DateSchedulePicker";
 
 interface ContentCardProps {
   content: ContentItem;
@@ -30,6 +31,7 @@ interface ContentCardProps {
   onScheduleContent?: (contentId: string, scheduledDate: Date) => void;
   onRestoreToIdeas?: (content: ContentItem, originalPillarId?: string) => void;
   originalPillarId?: string;
+  isInCalendarView?: boolean;
 }
 
 const ContentCard = ({
@@ -41,10 +43,12 @@ const ContentCard = ({
   onEditContent,
   onScheduleContent,
   onRestoreToIdeas,
-  originalPillarId
+  originalPillarId,
+  isInCalendarView = false
 }: ContentCardProps) => {
   const [date, setDate] = useState<Date | undefined>(content.scheduledDate);
   const [formatName, setFormatName] = useState<string>("Post");
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   
   const determinePillarToRestoreTo = () => {
     console.log(`[ContentCard] Determining pillar to restore to for "${content.title}" (ID: ${content.id}):`);
@@ -188,6 +192,43 @@ const ContentCard = ({
     }
   };
 
+  const handleDateChange = (newDate: Date | undefined) => {
+    setDate(newDate);
+    
+    if (newDate) {
+      try {
+        const updatedContent = {
+          ...content,
+          scheduledDate: newDate
+        };
+        
+        if (isInCalendarView) {
+          let contents = [];
+          const storedContent = localStorage.getItem('readyToScheduleContent');
+          
+          if (storedContent) {
+            contents = JSON.parse(storedContent);
+            const index = contents.findIndex((item: any) => item.id === content.id);
+            if (index >= 0) {
+              contents[index] = updatedContent;
+              localStorage.setItem('readyToScheduleContent', JSON.stringify(contents));
+            }
+          }
+        }
+        
+        toast.success(`"${content.title}" scheduled for ${format(newDate, "PPP")}`);
+        setIsDatePickerOpen(false);
+      } catch (error) {
+        console.error("Error scheduling content:", error);
+        toast.error("Failed to schedule content");
+      }
+    }
+  };
+
+  const handleScheduleButtonClick = () => {
+    setIsDatePickerOpen(!isDatePickerOpen);
+  };
+
   const handleRestoreToIdeas = () => {
     if (onRestoreToIdeas) {
       if (!pillarToRestoreTo) {
@@ -298,21 +339,48 @@ const ContentCard = ({
           <TooltipProvider delayDuration={200}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  aria-label="Send to Content Calendar"
-                  className="h-8 w-8 p-0"
-                  onClick={handleSendToCalendar}
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
+                {isInCalendarView ? (
+                  <Button
+                    variant={date ? "default" : "outline"}
+                    size="sm"
+                    aria-label="Schedule Content"
+                    className={`h-8 p-2 ${date ? 'bg-green-500 hover:bg-green-600' : ''}`}
+                    onClick={handleScheduleButtonClick}
+                  >
+                    <CalendarClock className="h-4 w-4 mr-1" />
+                    Schedule
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    aria-label="Send to Content Calendar"
+                    className="h-8 p-2"
+                    onClick={handleSendToCalendar}
+                  >
+                    <Send className="h-4 w-4 mr-1" />
+                    Calendar
+                  </Button>
+                )}
               </TooltipTrigger>
               <TooltipContent className="bg-white text-black border shadow-md">
-                <p>Send to content calendar</p>
+                {isInCalendarView ? 
+                  "Schedule for publishing" : 
+                  "Send to content calendar"
+                }
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
+          
+          {isDatePickerOpen && isInCalendarView && (
+            <div className="absolute bottom-16 left-0 z-10 bg-white border rounded-md shadow-lg p-2 min-w-[250px]">
+              <DateSchedulePicker
+                date={date}
+                onDateChange={handleDateChange}
+                className="w-full"
+              />
+            </div>
+          )}
         </div>
         
         <div className="flex gap-2">

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -508,6 +509,7 @@ const ContentCalendar = () => {
                       onEditContent={() => handleEditContent(content)}
                       onRestoreToIdeas={handleRestoreToIdeas}
                       originalPillarId={content.pillarId}
+                      isInCalendarView={true}
                     />
                   );
                 })}
