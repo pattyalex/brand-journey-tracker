@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
 } from "@/components/ui/card";
@@ -54,6 +54,8 @@ const ContentCard = ({
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isInteractingWithButton, setIsInteractingWithButton] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const calendarButtonRef = useRef<HTMLButtonElement>(null);
   
   const determinePillarToRestoreTo = () => {
     console.log(`[ContentCard] Determining pillar to restore to for "${content.title}" (ID: ${content.id}):`);
@@ -365,6 +367,7 @@ const ContentCard = ({
 
   return (
     <Card 
+      ref={cardRef}
       className={cn(
         "overflow-hidden relative h-full border-2 w-full",
         isDraggable && !isDragging && !isInteractingWithButton && "cursor-grab hover:shadow-md transition-shadow",
@@ -467,6 +470,7 @@ const ContentCard = ({
               <TooltipTrigger asChild>
                 {isInCalendarView ? (
                   <Button
+                    ref={calendarButtonRef}
                     variant={date ? "default" : "outline"}
                     size="icon"
                     aria-label="Schedule Content"
@@ -544,14 +548,17 @@ const ContentCard = ({
       
       {isDatePickerOpen && isInCalendarView && (
         <div 
-          className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9999]"
+          className="absolute z-[9999]"
           onClick={(e) => e.stopPropagation()}
-          style={{ 
-            display: 'block',
+          style={{
+            position: 'absolute',
+            top: calendarButtonRef.current ? calendarButtonRef.current.offsetTop + calendarButtonRef.current.offsetHeight + 8 : '100%',
+            left: calendarButtonRef.current ? calendarButtonRef.current.offsetLeft : 0,
             boxShadow: '0 4px 24px rgba(0, 0, 0, 0.4)',
             filter: 'drop-shadow(0 0 16px rgba(0, 0, 0, 0.4))',
             borderRadius: '8px',
-            backgroundColor: 'white'
+            backgroundColor: 'white',
+            zIndex: 9999
           }}
         >
           <DateSchedulePicker
