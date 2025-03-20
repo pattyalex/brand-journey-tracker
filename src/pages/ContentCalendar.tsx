@@ -40,8 +40,10 @@ import { Calendar } from "@/components/ui/calendar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import IdeaCreationDialog from "@/components/content/IdeaCreationDialog";
 import ContentCard from "@/components/content/ContentCard";
-import { ContentItem } from "@/types/content";
+import { ContentItem as ContentItemType } from "@/types/content";
+import { Pillar } from "@/pages/BankOfContent";
 import { toast } from "sonner";
+import { restoreContentToIdeas } from "@/utils/contentRestoreUtils";
 
 interface ContentItem {
   id: string;
@@ -369,7 +371,7 @@ const ContentCalendar = () => {
     end: calendarEnd 
   });
 
-  const handleRestoreToIdeas = (content: ContentItem) => {
+  const handleRestoreToIdeas = (content: ContentItemType, originalPillarId?: string) => {
     try {
       // Remove from current lists
       if (content.scheduledDate) {
@@ -378,40 +380,31 @@ const ContentCalendar = () => {
         setReadyToScheduleContent(prev => prev.filter(item => item.id !== content.id));
       }
 
-      // Add to the original content pillars
-      let allPillars = [];
-      const allPillarsStr = localStorage.getItem("contentPillars");
+      // Use the utility function to store the content for restoration
+      const pillarToRestoreTo = originalPillarId || content.originalPillarId || "1";
+      restoreContentToIdeas(content, pillarToRestoreTo);
       
-      if (allPillarsStr) {
-        allPillars = JSON.parse(allPillarsStr);
-        
-        // Find the right pillar to add content back to (or add to first pillar if none found)
-        let foundPillar = false;
-        allPillars = allPillars.map((pillar: any) => {
-          if (content.pillarId && pillar.id === content.pillarId) {
-            foundPillar = true;
-            return {
-              ...pillar,
-              content: [...(pillar.content || []), content]
-            };
+      const targetPillar = pillarToRestoreTo === "1" ? "Pillar 1" : 
+                           pillarToRestoreTo === "2" ? "Pillar 2" : 
+                           pillarToRestoreTo === "3" ? "Pillar 3" : "Pillar 1";
+      
+      toast.success(`"${content.title}" will be restored to Idea Development`, {
+        description: `Navigate to Idea Development to see this content in ${targetPillar}`,
+        duration: 5000
+      });
+      
+      setTimeout(() => {
+        toast.info("To see your restored content, go to Idea Development page", {
+          duration: 8000,
+          action: {
+            label: "Got it",
+            onClick: () => {}
           }
-          return pillar;
         });
-
-        // If no matching pillar was found, add to the first pillar
-        if (!foundPillar && allPillars.length > 0) {
-          allPillars[0] = {
-            ...allPillars[0],
-            content: [...(allPillars[0].content || []), content]
-          };
-        }
-
-        localStorage.setItem("contentPillars", JSON.stringify(allPillars));
-        toast.success(`"${content.title}" moved back to Idea Development`);
-      }
+      }, 500);
     } catch (error) {
       console.error("Error restoring content to ideas:", error);
-      toast.error("Failed to restore content to Idea Development");
+      toast.error("Failed to restore to Idea Development");
     }
   };
 
@@ -473,18 +466,33 @@ const ContentCalendar = () => {
           <CardContent className="space-y-4">
             {readyToScheduleContent.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {readyToScheduleContent.map((content, index) => (
-                  <ContentCard
-                    key={content.id}
-                    content={content}
-                    index={index}
-                    pillar={{ id: content.pillarId || "default", name: "Default Pillar" }}
-                    pillars={[]}
-                    onDeleteContent={deleteContent}
-                    onEditContent={() => handleEditContent(content)}
-                    onRestoreToIdeas={handleRestoreToIdeas}
-                  />
-                ))}
+                {readyToScheduleContent.map((content, index) => {
+                  const contentItem: ContentItemType = {
+                    ...content as unknown as ContentItemType,
+                    url: content.url || "",
+                    format: content.format || "text",
+                    dateCreated: content.dateCreated ? new Date(content.dateCreated) : new Date(),
+                    description: content.description || "",
+                  };
+                  
+                  return (
+                    <ContentCard
+                      key={content.id}
+                      content={contentItem}
+                      index={index}
+                      pillar={{ id: content.pillarId || "default", name: "Default Pillar", content: [] }}
+                      pillars={[
+                        { id: "1", name: "Pillar 1", content: [] },
+                        { id: "2", name: "Pillar 2", content: [] },
+                        { id: "3", name: "Pillar 3", content: [] }
+                      ]}
+                      onDeleteContent={deleteContent}
+                      onEditContent={() => handleEditContent(content)}
+                      onRestoreToIdeas={handleRestoreToIdeas}
+                      originalPillarId={content.pillarId}
+                    />
+                  );
+                })}
               </div>
             ) : (
               <div className="text-center py-8">

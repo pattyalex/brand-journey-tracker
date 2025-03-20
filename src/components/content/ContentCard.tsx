@@ -146,7 +146,7 @@ const ContentCard = ({
   const handleRestoreToIdeas = () => {
     if (onRestoreToIdeas) {
       try {
-        const pillarToRestoreTo = originalPillarId || "1";
+        const pillarToRestoreTo = originalPillarId || content.originalPillarId || "1";
         const targetPillar = pillars.find(p => p.id === pillarToRestoreTo)?.name || "Pillar 1";
         
         onRestoreToIdeas(content, pillarToRestoreTo);

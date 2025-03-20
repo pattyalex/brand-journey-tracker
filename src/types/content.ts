@@ -14,4 +14,6 @@ export interface ContentItem {
   caption?: string;
   createdAt?: Date;
   bucketId?: string;
+  originalPillarId?: string; // Added to track which pillar the content came from
+  isRestored?: boolean; // Added to flag restored items
 }
