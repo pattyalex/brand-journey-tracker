@@ -46,15 +46,45 @@ const ContentCard = ({
   const [date, setDate] = useState<Date | undefined>(content.scheduledDate);
   const [formatName, setFormatName] = useState<string>("Post");
   
-  const pillarToRestoreTo = originalPillarId || 
-                         content.originalPillarId || 
-                         content.bucketId || 
-                         "1";
-                         
-  const targetPillarName = pillars.find(p => p.id === pillarToRestoreTo)?.name || 
-                         (pillarToRestoreTo === "1" ? "Pillar 1" : 
-                          pillarToRestoreTo === "2" ? "Pillar 2" : 
-                          pillarToRestoreTo === "3" ? "Pillar 3" : "Pillar 1");
+  const determinePillarToRestoreTo = () => {
+    console.log(`Determining pillar to restore to for "${content.title}" (ID: ${content.id}):`);
+    console.log(`- originalPillarId prop: ${originalPillarId || "undefined"}`);
+    console.log(`- content.originalPillarId: ${content.originalPillarId || "undefined"}`);
+    console.log(`- content.bucketId: ${content.bucketId || "undefined"}`);
+    console.log(`- current pillar: ${pillar.id || "1"}`);
+    
+    if (originalPillarId) {
+      console.log(`Using provided originalPillarId: ${originalPillarId}`);
+      return originalPillarId;
+    } 
+    
+    if (content.originalPillarId) {
+      console.log(`Using content's originalPillarId: ${content.originalPillarId}`);
+      return content.originalPillarId;
+    }
+    
+    const currentPillarId = pillar.id || "1";
+    console.log(`Defaulting to current pillar: ${currentPillarId}`);
+    return currentPillarId;
+  };
+  
+  const pillarToRestoreTo = determinePillarToRestoreTo();
+  
+  const getTargetPillarName = () => {
+    const targetPillar = pillars.find(p => p.id === pillarToRestoreTo);
+    
+    if (targetPillar) {
+      return targetPillar.name;
+    }
+    
+    if (pillarToRestoreTo === "1") return "Pillar 1";
+    if (pillarToRestoreTo === "2") return "Pillar 2";  
+    if (pillarToRestoreTo === "3") return "Pillar 3";
+    
+    return `Pillar ${pillarToRestoreTo}`;
+  };
+  
+  const targetPillarName = getTargetPillarName();
   
   useEffect(() => {
     if (content.bucketId) {
@@ -138,7 +168,8 @@ const ContentCard = ({
         ...content,
         format: contentFormat,
         platforms: platforms,
-        tags: uniqueTags
+        tags: uniqueTags,
+        originalPillarId: pillar.id || content.originalPillarId || "1"
       };
       
       readyToScheduleContent.push(contentToSchedule);
@@ -156,21 +187,12 @@ const ContentCard = ({
   const handleRestoreToIdeas = () => {
     if (onRestoreToIdeas) {
       try {
-        const currentPillarId = pillar.id || "1";
-        
-        const pillarToRestoreTo = originalPillarId || 
-                                 content.originalPillarId || 
-                                 content.bucketId || 
-                                 currentPillarId;
-        
-        console.log(`ContentCard: Restoring content "${content.title}" from pillar ${currentPillarId} to pillar ID: ${pillarToRestoreTo}`);
-        
-        const targetPillar = pillars.find(p => p.id === pillarToRestoreTo)?.name || "Pillar 1";
+        console.log(`ContentCard: Restoring content "${content.title}" to pillar ID: ${pillarToRestoreTo}`);
         
         onRestoreToIdeas(content, pillarToRestoreTo);
         
         toast.success(`"${content.title}" will be restored to Idea Development`, {
-          description: `Navigate to Idea Development to see this content in ${targetPillar}`,
+          description: `Navigate to Idea Development to see this content in ${targetPillarName}`,
           duration: 5000
         });
         

@@ -1,4 +1,3 @@
-
 import { ContentItem } from "@/types/content";
 
 export const restoreContentToIdeas = (content: ContentItem, originalPillarId: string = "1") => {
@@ -12,7 +11,13 @@ export const restoreContentToIdeas = (content: ContentItem, originalPillarId: st
       restoredIdeas = JSON.parse(storedContent);
     }
     
-    console.log(`Restoring content "${content.title}" to pillar ID: ${originalPillarId}`);
+    console.log(`ContentRestoreUtils: Restoring content "${content.title}" (ID: ${content.id}) to pillar ID: ${originalPillarId}`);
+    console.log(`- Content's existing originalPillarId: ${content.originalPillarId || "undefined"}`);
+    console.log(`- Content's bucketId: ${content.bucketId || "undefined"}`);
+    
+    // Preserve the existing originalPillarId if available and no new one is specified
+    const finalPillarId = originalPillarId || content.originalPillarId || "1";
+    console.log(`- Final pillar ID for restoration: ${finalPillarId}`);
     
     // Add current content to restored ideas with a timestamp and original pillar ID
     restoredIdeas.push({
@@ -20,8 +25,8 @@ export const restoreContentToIdeas = (content: ContentItem, originalPillarId: st
       restoredAt: new Date().toISOString(),
       // Adding a flag to make it easier to identify restored items
       isRestored: true,
-      // Use the explicit originalPillarId or preserve the one it already has
-      originalPillarId: originalPillarId || content.originalPillarId || "1"
+      // Use the explicit originalPillarId from the parameter or preserve the one it already has
+      originalPillarId: finalPillarId
     });
     
     // Save back to localStorage
@@ -39,13 +44,13 @@ export const restoreContentToIdeas = (content: ContentItem, originalPillarId: st
     restorationLog.push({
       contentId: content.id,
       title: content.title,
-      pillarId: originalPillarId,
+      pillarId: finalPillarId,
       restoredAt: new Date().toISOString()
     });
     
     localStorage.setItem(logKey, JSON.stringify(restorationLog));
     
-    console.log(`Content "${content.title}" (ID: ${content.id}) has been marked for restoration to Ideas Pillar ${originalPillarId}`);
+    console.log(`Content "${content.title}" (ID: ${content.id}) has been marked for restoration to Ideas Pillar ${finalPillarId}`);
     return true;
   } catch (error) {
     console.error("Error restoring content to ideas:", error);
