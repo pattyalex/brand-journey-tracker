@@ -25,14 +25,17 @@ const DateSchedulePicker = ({
   className,
 }: DateSchedulePickerProps) => {
   return (
-    <div className={cn("grid gap-2", className)}>
+    <div className={cn(
+      "grid gap-2 p-3 border border-gray-200 rounded-md bg-white shadow-sm max-w-[300px]", 
+      className
+    )}>
       {label && <div className="text-sm font-medium">{label}</div>}
       <Popover>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
             className={cn(
-              "justify-start text-left font-normal min-w-[120px] max-w-full",
+              "justify-start text-left font-normal border-gray-300 w-full",
               !date && "text-muted-foreground"
             )}
           >
