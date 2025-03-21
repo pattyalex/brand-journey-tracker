@@ -3,7 +3,7 @@ import { Platform, ContentItem } from "@/types/content-flow";
 import PlatformIcon from "./PlatformIcon";
 import { v4 as uuidv4 } from "uuid";
 import TaskNotesDialog from "./TaskNotesDialog";
-import { MessageSquare, Move } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 
 interface ContentScheduleProps {
   platforms: Platform[];
@@ -236,7 +236,7 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
                           {content.notes && (
                             <MessageSquare className="h-3.5 w-3.5 text-blue-500 mr-1 flex-shrink-0" />
                           )}
-                          <Move className="h-3.5 w-3.5 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                          
                         </div>
                       );
                     })}
