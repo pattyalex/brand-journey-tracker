@@ -777,7 +777,6 @@ const ContentCalendar = () => {
                             e.stopPropagation();
                           }}
                         >
-                          <Move className="h-3 w-3 mr-1 text-gray-500" />
                           <div className="flex-1 flex items-center justify-between">
                             <span className="truncate">{content.title}</span>
                             <div className="flex">
@@ -873,70 +872,3 @@ const ContentCalendar = () => {
                 >
                   <option value="Post">Post</option>
                   <option value="Video">Video</option>
-                  <option value="Blog Post">Blog Post</option>
-                  <option value="Reel">Reel</option>
-                  <option value="Story">Story</option>
-                  <option value="Podcast">Podcast</option>
-                  <option value="Newsletter">Newsletter</option>
-                  <option value="Vlog">Vlog</option>
-                </select>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setNewContentDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={createNewContent}>
-                Save
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        <IdeaCreationDialog
-          open={editContentDialogOpen}
-          onOpenChange={setEditContentDialogOpen}
-          title={title}
-          onTitleChange={setTitle}
-          bucketId={bucketId}
-          onBucketChange={setBucketId}
-          pillarId=""
-          scriptText={textContent}
-          onScriptTextChange={setTextContent}
-          visualNotes={visualNotes}
-          onVisualNotesChange={setVisualNotes}
-          format={format}
-          onFormatChange={setFormat}
-          shootDetails={shootDetails}
-          onShootDetailsChange={setShootDetails}
-          captionText={captionText}
-          onCaptionTextChange={setCaptionText}
-          platforms={platformsList}
-          currentPlatform={currentPlatform}
-          onCurrentPlatformChange={setCurrentPlatform}
-          onAddPlatform={handleAddPlatform}
-          onRemovePlatform={handleRemovePlatform}
-          tags={tagsList}
-          currentTag={currentTag}
-          onCurrentTagChange={setCurrentTag}
-          onAddTag={handleAddTag}
-          onRemoveTag={handleRemoveTag}
-          onSave={handleUpdateContent}
-          onCancel={handleCancelEdit}
-          isEditMode={true}
-          dialogTitle="Edit Content"
-          inspirationText={inspirationText}
-          onInspirationTextChange={setInspirationText}
-          inspirationLinks={inspirationLinks}
-          onAddInspirationLink={handleAddInspirationLink}
-          onRemoveInspirationLink={handleRemoveInspirationLink}
-          inspirationImages={inspirationImages}
-          onAddInspirationImage={handleAddInspirationImage}
-          onRemoveInspirationImage={handleRemoveInspirationImage}
-        />
-      </div>
-    </Layout>
-  );
-};
-
-export default ContentCalendar;
