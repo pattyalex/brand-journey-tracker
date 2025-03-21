@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -784,24 +783,24 @@ const ContentCalendar = () => {
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                className="h-4 w-4 opacity-0 group-hover:opacity-100"
+                                className="h-3 w-3 opacity-0 group-hover:opacity-100"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleEditContent(content);
                                 }}
                               >
-                                <Pencil className="h-3 w-3" />
+                                <Pencil className="h-2 w-2" />
                               </Button>
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                className="h-4 w-4 opacity-0 group-hover:opacity-100"
+                                className="h-3 w-3 opacity-0 group-hover:opacity-100"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   deleteScheduledContent(content.id);
                                 }}
                               >
-                                <Trash2 className="h-3 w-3" />
+                                <Trash2 className="h-2 w-2" />
                               </Button>
                             </div>
                           </div>
