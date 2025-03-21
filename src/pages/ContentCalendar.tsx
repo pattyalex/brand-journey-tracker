@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -583,22 +582,6 @@ const ContentCalendar = () => {
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    onClick={() => setShowReadyContent(!showReadyContent)}
-                    variant={showReadyContent ? "default" : "outline"}
-                    className="h-8"
-                  >
-                    Ready Content
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>View content ready to be scheduled</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
           </div>
         </div>
         
@@ -885,58 +868,3 @@ const ContentCalendar = () => {
             <DialogFooter>
               <Button variant="outline" onClick={() => setNewContentDialogOpen(false)}>
                 Cancel
-              </Button>
-              <Button onClick={createNewContent}>
-                Save
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        <IdeaCreationDialog
-          open={editContentDialogOpen}
-          onOpenChange={setEditContentDialogOpen}
-          title={title}
-          onTitleChange={setTitle}
-          bucketId={bucketId}
-          onBucketChange={setBucketId}
-          pillarId=""
-          scriptText={textContent}
-          onScriptTextChange={setTextContent}
-          visualNotes={visualNotes}
-          onVisualNotesChange={setVisualNotes}
-          format={format}
-          onFormatChange={setFormat}
-          shootDetails={shootDetails}
-          onShootDetailsChange={setShootDetails}
-          captionText={captionText}
-          onCaptionTextChange={setCaptionText}
-          platforms={platformsList}
-          currentPlatform={currentPlatform}
-          onCurrentPlatformChange={setCurrentPlatform}
-          onAddPlatform={handleAddPlatform}
-          onRemovePlatform={handleRemovePlatform}
-          tags={tagsList}
-          currentTag={currentTag}
-          onCurrentTagChange={setCurrentTag}
-          onAddTag={handleAddTag}
-          onRemoveTag={handleRemoveTag}
-          onSave={handleUpdateContent}
-          onCancel={handleCancelEdit}
-          isEditMode={true}
-          dialogTitle="Edit Content"
-          inspirationText={inspirationText}
-          onInspirationTextChange={setInspirationText}
-          inspirationLinks={inspirationLinks}
-          onAddInspirationLink={handleAddInspirationLink}
-          onRemoveInspirationLink={handleRemoveInspirationLink}
-          inspirationImages={inspirationImages}
-          onAddInspirationImage={handleAddInspirationImage}
-          onRemoveInspirationImage={handleRemoveInspirationImage}
-        />
-      </div>
-    </Layout>
-  );
-};
-
-export default ContentCalendar;
