@@ -1,13 +1,9 @@
 
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Layout from "@/components/Layout";
 import { FolderOpen, HandshakeIcon, TrendingUp } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 const Index = () => {
-  const navigate = useNavigate();
-
   return (
     <Layout>
       <div className="max-w-6xl mx-auto px-6 py-16 space-y-16 fade-in">
@@ -19,13 +15,6 @@ const Index = () => {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             All-in-one platform for content creators to manage projects, track income, and grow their business
           </p>
-          <Button 
-            size="lg" 
-            className="bg-primary text-white hover:bg-primary/90 text-lg px-8 py-6"
-            onClick={() => navigate("/get-started")}
-          >
-            Get Started
-          </Button>
         </section>
 
         {/* Features Section */}
