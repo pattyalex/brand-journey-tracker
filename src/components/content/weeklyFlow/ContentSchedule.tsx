@@ -236,7 +236,6 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
                           {content.notes && (
                             <MessageSquare className="h-3.5 w-3.5 text-blue-500 mr-1 flex-shrink-0" />
                           )}
-                          
                         </div>
                       );
                     })}
