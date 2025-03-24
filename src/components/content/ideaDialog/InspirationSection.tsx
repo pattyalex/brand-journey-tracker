@@ -77,26 +77,40 @@ const InspirationSection = ({
 
       <div className="flex flex-col space-y-2">
         <div className="flex items-center gap-2">
+          <div className="flex-1 flex items-center gap-2">
+            <Input
+              placeholder="Add a link..."
+              value={currentLink}
+              onChange={(e) => setCurrentLink(e.target.value)}
+              className="h-8 text-xs border-purple-200 focus-visible:ring-purple-400 w-full"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddLink();
+                }
+              }}
+            />
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={handleAddLink}
+              className="h-8 w-8 p-0 border-purple-200 hover:bg-purple-100 hover:text-purple-700 flex-shrink-0"
+            >
+              <PlusCircle className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <Label htmlFor="image-upload" className="cursor-pointer bg-purple-50 flex items-center gap-1 px-2 py-1 rounded border border-purple-200 text-xs hover:bg-purple-100 text-purple-700 transition-colors flex-shrink-0">
+            <ImageIcon className="h-3 w-3" />
+            <span>Upload image</span>
+          </Label>
           <Input
-            placeholder="Add a link..."
-            value={currentLink}
-            onChange={(e) => setCurrentLink(e.target.value)}
-            className="h-8 text-xs border-purple-200 focus-visible:ring-purple-400"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleAddLink();
-              }
-            }}
+            id="image-upload"
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageUpload}
           />
-          <Button 
-            size="sm" 
-            variant="outline" 
-            onClick={handleAddLink}
-            className="h-8 w-8 p-0 border-purple-200 hover:bg-purple-100 hover:text-purple-700"
-          >
-            <PlusCircle className="h-4 w-4" />
-          </Button>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -121,43 +135,27 @@ const InspirationSection = ({
         </div>
       </div>
 
-      <div className="flex flex-col space-y-2">
-        <div className="flex items-center">
-          <Label htmlFor="image-upload" className="cursor-pointer bg-purple-50 flex items-center gap-1 px-2 py-1 rounded border border-purple-200 text-xs hover:bg-purple-100 text-purple-700 transition-colors">
-            <ImageIcon className="h-3 w-3" />
-            <span>Upload image</span>
-          </Label>
-          <Input
-            id="image-upload"
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleImageUpload}
-          />
+      {inspirationImages.length > 0 && (
+        <div className="grid grid-cols-4 gap-2 mt-1">
+          {inspirationImages.map((image, index) => (
+            <div key={index} className="relative group aspect-square bg-purple-50 rounded overflow-hidden border border-purple-200">
+              <img
+                src={image}
+                alt={`Inspiration ${index + 1}`}
+                className="h-full w-full object-cover"
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onRemoveInspirationImage(index)}
+                className="absolute top-1 right-1 h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 hover:bg-white/90"
+              >
+                <X className="h-3 w-3 text-purple-600" />
+              </Button>
+            </div>
+          ))}
         </div>
-
-        {inspirationImages.length > 0 && (
-          <div className="grid grid-cols-3 gap-2 mt-2">
-            {inspirationImages.map((image, index) => (
-              <div key={index} className="relative group aspect-square bg-purple-50 rounded overflow-hidden border border-purple-200">
-                <img
-                  src={image}
-                  alt={`Inspiration ${index + 1}`}
-                  className="h-full w-full object-cover"
-                />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onRemoveInspirationImage(index)}
-                  className="absolute top-1 right-1 h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 hover:bg-white/90"
-                >
-                  <X className="h-3 w-3 text-purple-600" />
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 };
