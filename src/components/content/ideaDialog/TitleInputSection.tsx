@@ -1,6 +1,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Type } from "lucide-react";
 
 interface TitleInputSectionProps {
   title: string;
@@ -13,14 +14,17 @@ const TitleInputSection = ({
 }: TitleInputSectionProps) => {
   return (
     <div className="grid gap-2">
-      <Label htmlFor="idea-title" className="text-sm font-medium">Title</Label>
+      <div className="flex items-center gap-2 mb-1">
+        <Type size={18} className="text-gray-500" />
+        <Label htmlFor="idea-title" className="text-sm font-medium">Title</Label>
+      </div>
       <div className="relative">
         <Input
           id="idea-title"
           value={title}
           onChange={(e) => onTitleChange(e.target.value)}
           placeholder="Enter a catchy hook for your idea..."
-          className="w-full h-10 pr-2" // Added right padding to prevent text from being cut off
+          className="w-full h-10 pr-2"
         />
       </div>
     </div>

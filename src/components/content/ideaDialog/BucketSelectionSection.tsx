@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FolderIcon } from "lucide-react";
 
 interface BucketSelectionSectionProps {
   bucketId: string;
@@ -44,9 +45,12 @@ const BucketSelectionSection = ({
 
   return (
     <div className="grid gap-2">
-      <Label htmlFor="format-select" className="text-sm font-medium">
-        Content Format
-      </Label>
+      <div className="flex items-center gap-2 mb-1">
+        <FolderIcon size={18} className="text-gray-500" />
+        <Label htmlFor="format-select" className="text-sm font-medium">
+          Content Format
+        </Label>
+      </div>
       <Select 
         value={bucketId} 
         onValueChange={onBucketChange}
@@ -62,7 +66,6 @@ const BucketSelectionSection = ({
           ))}
         </SelectContent>
       </Select>
-      {/* Removed the description text that was here */}
     </div>
   );
 };
