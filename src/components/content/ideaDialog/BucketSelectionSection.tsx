@@ -62,11 +62,7 @@ const BucketSelectionSection = ({
           ))}
         </SelectContent>
       </Select>
-      {bucketId && (
-        <p className="text-xs text-gray-500 mt-1">
-          {contentFormats.find(f => f.id === bucketId)?.description || ""}
-        </p>
-      )}
+      {/* Removed the description text that was here */}
     </div>
   );
 };
