@@ -10,7 +10,6 @@ import CaptionInputSection from "./CaptionInputSection";
 import PlatformsSection from "./PlatformsSection";
 import TagsSection from "./TagsSection";
 import InspirationSection from "./InspirationSection";
-import FormatSelectionSection from "./FormatSelectionSection";
 
 interface DialogContentProps {
   title: string;
@@ -101,14 +100,6 @@ const DialogContent = ({
               pillarId={pillarId} 
             />
           </div>
-        </div>
-        
-        {/* Format selection row */}
-        <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-100 shadow-sm">
-          <FormatSelectionSection 
-            format={format}
-            onFormatChange={onFormatChange}
-          />
         </div>
         
         {/* Inspiration section with new styling */}
