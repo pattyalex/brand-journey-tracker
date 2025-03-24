@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PlusCircle, Link as LinkIcon, ImageIcon, X, Lightbulb } from "lucide-react";
 import { Label } from "@/components/ui/label";
@@ -78,6 +77,38 @@ const InspirationSection = ({
         onChange={(e) => onInspirationTextChange(e.target.value)}
       />
 
+      <div className="flex items-center flex-wrap gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setShowLinkDialog(true)}
+          className="h-8 flex items-center gap-1 bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100 text-xs"
+        >
+          <LinkIcon className="h-3 w-3" />
+          <span>Add link</span>
+        </Button>
+        
+        {inspirationLinks.map((link, index) => (
+          <Badge 
+            key={index} 
+            variant="outline" 
+            className="flex items-center gap-1 bg-purple-50 text-purple-600 border-purple-200 hover:bg-purple-100"
+          >
+            <LinkIcon className="h-3 w-3" />
+            <span className="max-w-[200px] truncate">{link}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onRemoveInspirationLink(index)}
+              className="h-4 w-4 p-0 hover:bg-transparent hover:text-purple-800"
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          </Badge>
+        ))}
+      </div>
+
       <div className="flex items-center gap-2">
         <Label htmlFor="image-upload" className="cursor-pointer bg-purple-50 flex items-center gap-1 px-2 py-1 rounded border border-purple-200 text-xs hover:bg-purple-100 text-purple-700 transition-colors h-8">
           <ImageIcon className="h-3 w-3" />
@@ -90,41 +121,7 @@ const InspirationSection = ({
           className="hidden"
           onChange={handleImageUpload}
         />
-        
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => setShowLinkDialog(true)}
-          className="h-8 flex items-center gap-1 bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100 text-xs"
-        >
-          <LinkIcon className="h-3 w-3" />
-          <span>Add link</span>
-        </Button>
       </div>
-
-      {inspirationLinks.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-2">
-          {inspirationLinks.map((link, index) => (
-            <Badge 
-              key={index} 
-              variant="outline" 
-              className="flex items-center gap-1 bg-purple-50 text-purple-600 border-purple-200 hover:bg-purple-100"
-            >
-              <LinkIcon className="h-3 w-3" />
-              <span className="max-w-[200px] truncate">{link}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onRemoveInspirationLink(index)}
-                className="h-4 w-4 p-0 hover:bg-transparent hover:text-purple-800"
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            </Badge>
-          ))}
-        </div>
-      )}
 
       {inspirationImages.length > 0 && (
         <div className="grid grid-cols-4 gap-2 mt-2">
