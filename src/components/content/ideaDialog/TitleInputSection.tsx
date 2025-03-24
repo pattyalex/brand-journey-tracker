@@ -18,7 +18,7 @@ const TitleInputSection = ({
         <Target size={18} className="text-gray-500" />
         <Label htmlFor="idea-title" className="text-sm font-medium">Title</Label>
       </div>
-      <div className="relative">
+      <div className="relative px-1">
         <Input
           id="idea-title"
           value={title}
