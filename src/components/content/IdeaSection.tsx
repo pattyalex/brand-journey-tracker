@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Lightbulb, FileText, Filter, FilterX } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,18 @@ interface IdeaSectionProps {
   onContentAdded: (pillarId: string, content: ContentItem) => void;
   onAddToBucket: (formatId: string) => void;
 }
+
+// Get pillar-specific text color
+const getPillarTextColor = (pillarId: string) => {
+  switch (pillarId) {
+    case "1": return "text-primary";
+    case "2": return "text-purple-600";
+    case "3": return "text-blue-600";
+    case "4": return "text-orange-500";
+    case "5": return "text-green-600";
+    default: return "text-gray-600";
+  }
+};
 
 const IdeaSection = ({
   pillar,
@@ -253,7 +266,7 @@ const IdeaSection = ({
       </div>
       
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mt-4">
-        <h2 className="text-xl font-semibold flex items-center">
+        <h2 className={`text-xl font-semibold flex items-center ${getPillarTextColor(pillar.id)}`}>
           <Lightbulb className="h-5 w-5 mr-2" /> 
           {pillar.name} Ideas
         </h2>

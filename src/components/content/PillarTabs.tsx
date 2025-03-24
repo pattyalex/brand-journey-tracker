@@ -41,12 +41,24 @@ interface PillarTabsProps {
 // Define color classes for each pillar
 const getPillarColorClass = (pillarId: string) => {
   switch (pillarId) {
-    case "1": return "bg-primary text-primary-foreground";
-    case "2": return "bg-purple-600 text-white";
-    case "3": return "bg-blue-600 text-white";
-    case "4": return "bg-orange-500 text-white";
-    case "5": return "bg-green-600 text-white";
-    default: return "bg-gray-600 text-white";
+    case "1": return "bg-primary text-primary-foreground after:bg-primary";
+    case "2": return "bg-purple-600 text-white after:bg-purple-600";
+    case "3": return "bg-blue-600 text-white after:bg-blue-600";
+    case "4": return "bg-orange-500 text-white after:bg-orange-500";
+    case "5": return "bg-green-600 text-white after:bg-green-600";
+    default: return "bg-gray-600 text-white after:bg-gray-600";
+  }
+};
+
+// Get inactive tab style based on pillar ID
+const getInactiveTabStyle = (pillarId: string) => {
+  switch (pillarId) {
+    case "1": return "hover:bg-primary/10 hover:text-primary";
+    case "2": return "hover:bg-purple-600/10 hover:text-purple-600";
+    case "3": return "hover:bg-blue-600/10 hover:text-blue-600";
+    case "4": return "hover:bg-orange-500/10 hover:text-orange-500";
+    case "5": return "hover:bg-green-600/10 hover:text-green-600";
+    default: return "hover:bg-gray-600/10 hover:text-gray-600";
   }
 };
 
@@ -127,7 +139,7 @@ const PillarTabs = ({
                 <div className="flex items-center">
                   <TabsTrigger 
                     value={pillar.id}
-                    className={`data-[state=active]:${getPillarColorClass(pillar.id)} px-5 py-2 text-base transition-all duration-300`}
+                    className={`data-[state=active]:${getPillarColorClass(pillar.id)} ${getInactiveTabStyle(pillar.id)} data-[state=active]:pillar-tab-active px-5 py-2 text-base transition-all duration-300`}
                     onClick={() => onTabChange(pillar.id)}
                   >
                     {pillar.name}

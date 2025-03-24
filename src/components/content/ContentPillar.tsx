@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
@@ -8,11 +9,11 @@ import { Button } from "@/components/ui/button";
 
 const getPillarCardStyle = (pillarId: string) => {
   switch (pillarId) {
-    case "1": return "ring-1 ring-pillar-1/20";
-    case "2": return "ring-1 ring-pillar-2/20";
-    case "3": return "ring-1 ring-pillar-3/20";
-    case "4": return "ring-1 ring-pillar-4/20";
-    case "5": return "ring-1 ring-pillar-5/20";
+    case "1": return "ring-1 ring-pillar-1/20 border-l-2 border-l-pillar-1";
+    case "2": return "ring-1 ring-pillar-2/20 border-l-2 border-l-pillar-2";
+    case "3": return "ring-1 ring-pillar-3/20 border-l-2 border-l-pillar-3";
+    case "4": return "ring-1 ring-pillar-4/20 border-l-2 border-l-pillar-4";
+    case "5": return "ring-1 ring-pillar-5/20 border-l-2 border-l-pillar-5";
     default: return "";
   }
 };
@@ -40,7 +41,7 @@ const ContentPillar = ({
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
   const cardStyle = getPillarCardStyle(pillar.id);
-
+  
   useEffect(() => {
     console.log("ContentPillar received pillar:", pillar.id, pillar.name);
     console.log("ContentPillar content count:", pillar.content.length);
@@ -113,9 +114,13 @@ const ContentPillar = ({
     };
   }, [filteredContent]);
 
+  const getPillarContentClass = () => {
+    return `pillar-content-${pillar.id} rounded-lg p-4 transition-all duration-500`;
+  };
+
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="space-y-2 relative">
+      <div className={`space-y-2 relative ${getPillarContentClass()} pillar-transition`}>
         {filteredContent.length === 0 ? (
           <div className={`text-center p-8 border border-dashed rounded-lg bg-muted/30 ${cardStyle}`}>
             <p className="text-muted-foreground">
