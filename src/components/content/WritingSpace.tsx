@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useState } from "react";
 import { Pencil, Sparkles } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -60,10 +59,8 @@ const WritingSpace = ({
     <div className={`space-y-4 pr-2 transition-all duration-300 ${expandedClass}`}>
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold flex items-center">
-          <Pencil className="h-5 w-5 mr-2 text-purple-600" />
-          <span className="bg-gradient-to-r from-purple-600 via-violet-500 to-pink-500 bg-clip-text text-transparent">
-            Brainstorm
-          </span>
+          <Pencil className="h-5 w-5 mr-2" />
+          Brainstorm
         </h2>
         
         <div className="flex items-center gap-2">
