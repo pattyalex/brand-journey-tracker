@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface InspirationSectionProps {
   inspirationText: string;
@@ -79,10 +80,18 @@ const InspirationSection = ({
       />
 
       <div className="flex items-center flex-wrap gap-2">
-        <Label htmlFor="image-upload" className="cursor-pointer bg-purple-50 flex items-center gap-1 px-1.5 py-0.5 rounded border border-purple-200 text-xs hover:bg-purple-100 text-purple-700 transition-colors h-6">
-          <ImageIcon className="h-2.5 w-2.5" />
-          <span className="text-xs">Upload image</span>
-        </Label>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Label htmlFor="image-upload" className="cursor-pointer bg-purple-50 flex items-center justify-center rounded border border-purple-200 hover:bg-purple-100 text-purple-700 transition-colors h-6 w-6">
+                <ImageIcon className="h-2.5 w-2.5" />
+              </Label>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-xs">Upload image</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <Input
           id="image-upload"
           type="file"
@@ -91,16 +100,24 @@ const InspirationSection = ({
           onChange={handleImageUpload}
         />
         
-        <Button
-          type="button"
-          variant="outline"
-          size="xs"
-          onClick={() => setShowLinkDialog(true)}
-          className="h-6 flex items-center gap-1 bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100 text-xs px-1.5 py-0.5"
-        >
-          <LinkIcon className="h-2.5 w-2.5" />
-          <span>Add link</span>
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => setShowLinkDialog(true)}
+                className="h-6 w-6 p-0 flex items-center justify-center bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100"
+              >
+                <LinkIcon className="h-2.5 w-2.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-xs">Add link</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         
         {inspirationLinks.map((link, index) => (
           <Badge 
