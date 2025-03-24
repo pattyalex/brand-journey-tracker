@@ -87,51 +87,61 @@ const DialogContent = ({
 }: DialogContentProps) => {
   return (
     <ScrollArea className="h-[calc(95vh-140px)] pr-4" style={{ overflowY: 'auto', touchAction: 'pan-y' }}>
-      <div className="grid gap-3 py-4 pr-2">
-        <TitleInputSection title={title} onTitleChange={onTitleChange} />
+      <div className="grid gap-5 py-4 pr-2">
+        <div className="space-y-5">
+          <TitleInputSection title={title} onTitleChange={onTitleChange} />
+          
+          <FormatSelectionSection format={format} onFormatChange={onFormatChange} />
+        </div>
         
-        <FormatSelectionSection format={format} onFormatChange={onFormatChange} />
+        <div className="space-y-5 pt-1">
+          <BucketSelectionSection 
+            bucketId={bucketId} 
+            onBucketChange={onBucketChange} 
+            pillarId={pillarId} 
+          />
+          
+          <InspirationSection
+            inspirationText={inspirationText}
+            onInspirationTextChange={onInspirationTextChange}
+            inspirationLinks={inspirationLinks}
+            onAddInspirationLink={onAddInspirationLink}
+            onRemoveInspirationLink={onRemoveInspirationLink}
+            inspirationImages={inspirationImages}
+            onAddInspirationImage={onAddInspirationImage}
+            onRemoveInspirationImage={onRemoveInspirationImage}
+          />
+        </div>
         
-        <BucketSelectionSection 
-          bucketId={bucketId} 
-          onBucketChange={onBucketChange} 
-          pillarId={pillarId} 
-        />
+        <div className="space-y-5 pt-1">
+          <ScriptInputSection scriptText={scriptText} onScriptTextChange={onScriptTextChange} />
+          
+          <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
+        </div>
         
-        <InspirationSection
-          inspirationText={inspirationText}
-          onInspirationTextChange={onInspirationTextChange}
-          inspirationLinks={inspirationLinks}
-          onAddInspirationLink={onAddInspirationLink}
-          onRemoveInspirationLink={onRemoveInspirationLink}
-          inspirationImages={inspirationImages}
-          onAddInspirationImage={onAddInspirationImage}
-          onRemoveInspirationImage={onRemoveInspirationImage}
-        />
+        <div className="space-y-5 pt-1">
+          <ShootDetailsSection shootDetails={shootDetails} onShootDetailsChange={onShootDetailsChange} />
+          
+          <CaptionInputSection captionText={captionText} onCaptionTextChange={onCaptionTextChange} />
+        </div>
         
-        <ScriptInputSection scriptText={scriptText} onScriptTextChange={onScriptTextChange} />
-        
-        <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
-        
-        <ShootDetailsSection shootDetails={shootDetails} onShootDetailsChange={onShootDetailsChange} />
-        
-        <CaptionInputSection captionText={captionText} onCaptionTextChange={onCaptionTextChange} />
-        
-        <PlatformsSection
-          platforms={platforms}
-          currentPlatform={currentPlatform}
-          onCurrentPlatformChange={onCurrentPlatformChange}
-          onAddPlatform={onAddPlatform}
-          onRemovePlatform={onRemovePlatform}
-        />
-        
-        <TagsSection
-          tags={tags}
-          currentTag={currentTag}
-          onCurrentTagChange={onCurrentTagChange}
-          onAddTag={onAddTag}
-          onRemoveTag={onRemoveTag}
-        />
+        <div className="space-y-5 pt-1">
+          <PlatformsSection
+            platforms={platforms}
+            currentPlatform={currentPlatform}
+            onCurrentPlatformChange={onCurrentPlatformChange}
+            onAddPlatform={onAddPlatform}
+            onRemovePlatform={onRemovePlatform}
+          />
+          
+          <TagsSection
+            tags={tags}
+            currentTag={currentTag}
+            onCurrentTagChange={onCurrentTagChange}
+            onAddTag={onAddTag}
+            onRemoveTag={onRemoveTag}
+          />
+        </div>
         
         {children}
       </div>

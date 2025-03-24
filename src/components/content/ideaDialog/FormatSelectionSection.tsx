@@ -29,7 +29,7 @@ const FormatSelectionSection = ({
   ];
 
   return (
-    <div className="grid gap-1">
+    <div className="grid gap-2">
       <Label htmlFor="content-format">Content Format</Label>
       <Select value={format} onValueChange={onFormatChange}>
         <SelectTrigger id="content-format" className="w-full">
