@@ -10,6 +10,7 @@ import CaptionInputSection from "./CaptionInputSection";
 import PlatformsSection from "./PlatformsSection";
 import TagsSection from "./TagsSection";
 import InspirationSection from "./InspirationSection";
+import FormatSelectionSection from "./FormatSelectionSection";
 
 interface DialogContentProps {
   title: string;
@@ -86,18 +87,16 @@ const DialogContent = ({
 }: DialogContentProps) => {
   return (
     <ScrollArea className="h-[calc(95vh-140px)] pr-4" style={{ overflowY: 'auto', touchAction: 'pan-y' }}>
-      <div className="grid gap-6 py-4 pr-2">
+      <div className="grid gap-3 py-4 pr-2">
         <TitleInputSection title={title} onTitleChange={onTitleChange} />
         
-        <div className="h-1"></div>
+        <FormatSelectionSection format={format} onFormatChange={onFormatChange} />
         
         <BucketSelectionSection 
           bucketId={bucketId} 
           onBucketChange={onBucketChange} 
           pillarId={pillarId} 
         />
-        
-        <div className="h-4"></div>
         
         <InspirationSection
           inspirationText={inspirationText}
@@ -110,15 +109,9 @@ const DialogContent = ({
           onRemoveInspirationImage={onRemoveInspirationImage}
         />
         
-        <div className="h-8"></div>
-        
         <ScriptInputSection scriptText={scriptText} onScriptTextChange={onScriptTextChange} />
         
-        <div className="h-4"></div>
-        
         <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
-        
-        <div className="h-4"></div>
         
         <ShootDetailsSection shootDetails={shootDetails} onShootDetailsChange={onShootDetailsChange} />
         
