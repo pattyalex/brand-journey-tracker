@@ -10,6 +10,7 @@ import CaptionInputSection from "./CaptionInputSection";
 import PlatformsSection from "./PlatformsSection";
 import TagsSection from "./TagsSection";
 import InspirationSection from "./InspirationSection";
+import FormatSelectionSection from "./FormatSelectionSection";
 
 interface DialogContentProps {
   title: string;
@@ -93,12 +94,18 @@ const DialogContent = ({
             <TitleInputSection title={title} onTitleChange={onTitleChange} />
           </div>
           
-          <div>
-            <BucketSelectionSection 
-              bucketId={bucketId} 
-              onBucketChange={onBucketChange} 
-              pillarId={pillarId} 
-            />
+          <div className="md:pl-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <BucketSelectionSection 
+                bucketId={bucketId} 
+                onBucketChange={onBucketChange} 
+                pillarId={pillarId} 
+              />
+              <FormatSelectionSection
+                format={format}
+                onFormatChange={onFormatChange}
+              />
+            </div>
           </div>
         </div>
         
