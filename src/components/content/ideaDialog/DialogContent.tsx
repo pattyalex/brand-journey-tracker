@@ -1,4 +1,3 @@
-
 import { ReactNode } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import TitleInputSection from "./TitleInputSection";
@@ -94,18 +93,12 @@ const DialogContent = ({
             <TitleInputSection title={title} onTitleChange={onTitleChange} />
           </div>
           
-          <div className="md:pl-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <BucketSelectionSection 
-                bucketId={bucketId} 
-                onBucketChange={onBucketChange} 
-                pillarId={pillarId} 
-              />
-              <FormatSelectionSection
-                format={format}
-                onFormatChange={onFormatChange}
-              />
-            </div>
+          <div>
+            <BucketSelectionSection 
+              bucketId={bucketId} 
+              onBucketChange={onBucketChange} 
+              pillarId={pillarId} 
+            />
           </div>
         </div>
         
