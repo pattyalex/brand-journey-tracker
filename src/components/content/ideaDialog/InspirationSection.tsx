@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface InspirationSectionProps {
   inspirationText: string;
@@ -32,11 +33,13 @@ const InspirationSection = ({
   const [isOpen, setIsOpen] = useState(false);
   const [currentLink, setCurrentLink] = useState("");
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [showLinkDialog, setShowLinkDialog] = useState(false);
 
   const handleAddLink = () => {
     if (currentLink.trim()) {
       onAddInspirationLink(currentLink.trim());
       setCurrentLink("");
+      setShowLinkDialog(false);
     }
   };
 
@@ -75,64 +78,50 @@ const InspirationSection = ({
         onChange={(e) => onInspirationTextChange(e.target.value)}
       />
 
-      <div className="flex flex-col space-y-2">
-        <div className="flex items-center gap-2">
-          <div className="flex-1 flex items-center gap-2">
-            <Input
-              placeholder="Add a link..."
-              value={currentLink}
-              onChange={(e) => setCurrentLink(e.target.value)}
-              className="h-8 text-xs border-purple-200 focus-visible:ring-purple-400 w-full"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleAddLink();
-                }
-              }}
-            />
-            <Button 
-              size="sm" 
-              variant="outline" 
-              onClick={handleAddLink}
-              className="h-8 w-8 p-0 border-purple-200 hover:bg-purple-100 hover:text-purple-700 flex-shrink-0"
-            >
-              <PlusCircle className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          <Label htmlFor="image-upload" className="cursor-pointer bg-purple-50 flex items-center gap-1 px-2 py-1 rounded border border-purple-200 text-xs hover:bg-purple-100 text-purple-700 transition-colors flex-shrink-0">
-            <ImageIcon className="h-3 w-3" />
-            <span>Upload image</span>
-          </Label>
-          <Input
-            id="image-upload"
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleImageUpload}
-          />
-        </div>
+      <div className="flex items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setShowLinkDialog(true)}
+          className="h-8 flex items-center gap-1 bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100 text-xs"
+        >
+          <LinkIcon className="h-3 w-3" />
+          <span>Add link</span>
+        </Button>
+        
+        <Label htmlFor="image-upload" className="cursor-pointer bg-purple-50 flex items-center gap-1 px-2 py-1 rounded border border-purple-200 text-xs hover:bg-purple-100 text-purple-700 transition-colors h-8">
+          <ImageIcon className="h-3 w-3" />
+          <span>Upload image</span>
+        </Label>
+        <Input
+          id="image-upload"
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleImageUpload}
+        />
+      </div>
 
-        <div className="flex flex-wrap gap-2">
-          {inspirationLinks.map((link, index) => (
-            <Badge 
-              key={index} 
-              variant="outline" 
-              className="flex items-center gap-1 bg-purple-50 text-purple-600 border-purple-200 hover:bg-purple-100"
+      <div className="flex flex-wrap gap-2">
+        {inspirationLinks.map((link, index) => (
+          <Badge 
+            key={index} 
+            variant="outline" 
+            className="flex items-center gap-1 bg-purple-50 text-purple-600 border-purple-200 hover:bg-purple-100"
+          >
+            <LinkIcon className="h-3 w-3" />
+            <span className="max-w-[200px] truncate">{link}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onRemoveInspirationLink(index)}
+              className="h-4 w-4 p-0 hover:bg-transparent hover:text-purple-800"
             >
-              <LinkIcon className="h-3 w-3" />
-              <span className="max-w-[200px] truncate">{link}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onRemoveInspirationLink(index)}
-                className="h-4 w-4 p-0 hover:bg-transparent hover:text-purple-800"
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            </Badge>
-          ))}
-        </div>
+              <X className="h-3 w-3" />
+            </Button>
+          </Badge>
+        ))}
       </div>
 
       {inspirationImages.length > 0 && (
@@ -156,6 +145,49 @@ const InspirationSection = ({
           ))}
         </div>
       )}
+
+      {/* Link Dialog */}
+      <Dialog open={showLinkDialog} onOpenChange={setShowLinkDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-purple-700">Add Inspiration Link</DialogTitle>
+          </DialogHeader>
+          <div className="flex items-center gap-2 mt-2">
+            <Input
+              placeholder="Enter link URL..."
+              value={currentLink}
+              onChange={(e) => setCurrentLink(e.target.value)}
+              className="text-sm border-purple-200 focus-visible:ring-purple-400"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddLink();
+                }
+              }}
+              autoFocus
+            />
+          </div>
+          <DialogFooter className="sm:justify-end mt-4">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowLinkDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="button"
+              size="sm"
+              onClick={handleAddLink}
+              variant="vision"
+              disabled={!currentLink.trim()}
+            >
+              Add Link
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
