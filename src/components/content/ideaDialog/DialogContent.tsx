@@ -111,15 +111,19 @@ const DialogContent = ({
           />
         </div>
         
-        <div className="space-y-5 pt-4">  {/* Increased padding from pt-1 to pt-4 */}
-          <ScriptInputSection scriptText={scriptText} onScriptTextChange={onScriptTextChange} />
+        {/* New two-column layout for Script, Visual Notes, and Shoot Details */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-4">
+          <div className="space-y-5">
+            <ScriptInputSection scriptText={scriptText} onScriptTextChange={onScriptTextChange} />
+          </div>
           
-          <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
+          <div className="space-y-5">
+            <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
+            <ShootDetailsSection shootDetails={shootDetails} onShootDetailsChange={onShootDetailsChange} />
+          </div>
         </div>
         
         <div className="space-y-5 pt-1">
-          <ShootDetailsSection shootDetails={shootDetails} onShootDetailsChange={onShootDetailsChange} />
-          
           <CaptionInputSection captionText={captionText} onCaptionTextChange={onCaptionTextChange} />
         </div>
         
@@ -153,4 +157,3 @@ const DialogContent = ({
 };
 
 export default DialogContent;
-

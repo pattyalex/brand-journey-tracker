@@ -19,7 +19,7 @@ const ShootDetailsSection = ({
         value={shootDetails}
         onChange={(e) => onShootDetailsChange(e.target.value)}
         placeholder="Enter details about the shoot, such as location, outfits, props needed..."
-        className="min-h-[100px] resize-y"
+        className="min-h-[150px] resize-y" // Increased height for better balance in the layout
       />
     </div>
   );
