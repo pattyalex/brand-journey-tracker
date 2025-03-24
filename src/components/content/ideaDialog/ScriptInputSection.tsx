@@ -19,7 +19,7 @@ const ScriptInputSection = ({
         value={scriptText}
         onChange={(e) => onScriptTextChange(e.target.value)}
         placeholder="Write your script here..."
-        className="min-h-[120px] resize-y"
+        className="min-h-[180px] resize-y" // Increased from 120px to 180px
       />
     </div>
   );
