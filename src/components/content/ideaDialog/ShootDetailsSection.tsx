@@ -1,6 +1,7 @@
 
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Camera } from "lucide-react";
 
 interface ShootDetailsSectionProps {
   shootDetails: string;
@@ -13,7 +14,10 @@ const ShootDetailsSection = ({
 }: ShootDetailsSectionProps) => {
   return (
     <div className="grid gap-2">
-      <Label htmlFor="shoot-details">Shoot Details</Label>
+      <div className="flex items-center gap-2">
+        <Camera size={18} className="text-muted-foreground" />
+        <Label htmlFor="shoot-details">Shoot Details</Label>
+      </div>
       <Textarea
         id="shoot-details"
         value={shootDetails}
