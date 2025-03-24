@@ -15,7 +15,7 @@ const TitleInputSection = ({
   return (
     <div className="grid gap-2">
       <div className="flex items-center gap-2 mb-1">
-        <Target size={18} className="text-purple-500" />
+        <Target size={18} className="text-gray-500" />
         <Label htmlFor="idea-title" className="text-sm font-medium">Title</Label>
       </div>
       <div className="relative px-1">
@@ -24,7 +24,7 @@ const TitleInputSection = ({
           value={title}
           onChange={(e) => onTitleChange(e.target.value)}
           placeholder="Enter a catchy hook for your idea..."
-          className="w-full h-10 pr-2 border-gray-200 focus:border-purple-400 focus:ring-purple-200"
+          className="w-full h-10 pr-2"
         />
       </div>
     </div>

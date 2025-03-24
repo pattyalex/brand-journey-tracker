@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useState } from "react";
 import { Pencil, Sparkles } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -59,8 +58,8 @@ const WritingSpace = ({
   return (
     <div className={`space-y-4 pr-2 transition-all duration-300 ${expandedClass}`}>
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold flex items-center text-purple-800">
-          <Pencil className="h-5 w-5 mr-2 text-purple-600" />
+        <h2 className="text-xl font-semibold flex items-center">
+          <Pencil className="h-5 w-5 mr-2" />
           Brainstorm
         </h2>
         
@@ -68,7 +67,7 @@ const WritingSpace = ({
           <Button
             variant="ghost"
             size="sm"
-            className="cursor-pointer transition-all duration-150 hover:bg-purple-100 active:scale-95 rounded-md text-purple-700 shadow-sm px-3"
+            className="cursor-pointer transition-all duration-150 hover:bg-[#FDE1D3] active:scale-95 rounded-md text-primary shadow-sm px-3"
             onClick={() => {
               const sparklesButton = document.querySelector('[aria-label="Show title hook suggestions"]') as HTMLButtonElement;
               if (sparklesButton) {
@@ -76,23 +75,23 @@ const WritingSpace = ({
               }
             }}
           >
-            <Sparkles className="h-4 w-4 mr-1.5 text-purple-600" />
+            <Sparkles className="h-4 w-4 mr-1.5 text-primary" />
             <span className="text-sm font-medium">Hook Ideas</span>
           </Button>
           
           <Button
             variant="ghost"
             size="sm"
-            className="cursor-pointer transition-all duration-150 hover:bg-purple-100 active:scale-95 rounded-md shadow-sm"
+            className="cursor-pointer transition-all duration-150 hover:bg-[#FDE1D3] active:scale-95 rounded-md shadow-sm"
             onClick={() => setIsMeganOpen(!isMeganOpen)}
             aria-label={isMeganOpen ? "Hide Megan" : "Ask Megan"}
           >
             {isMeganOpen ? (
-              <span className="px-3 py-1.5 text-purple-700 hover:text-purple-900 font-medium">Hide Megan</span>
+              <span className="px-3 py-1.5 text-primary hover:text-primary/90 font-medium">Hide Megan</span>
             ) : (
               <div className="flex items-center gap-2 px-3 py-1.5 w-full">
-                <span className="text-purple-700 hover:text-purple-900 font-medium">Ask Megan</span>
-                <div className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center text-white text-xs">
+                <span className="text-primary hover:text-primary/90 font-medium">Ask Megan</span>
+                <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs">
                   M
                 </div>
               </div>
@@ -123,7 +122,7 @@ const WritingSpace = ({
       </div>
 
       <div className="h-[calc(100vh-140px)]">
-        <div className={`rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full relative bg-gradient-to-b from-white to-purple-50 ${isMeganOpen ? "flex flex-row" : "flex flex-col"}`}>
+        <div className={`rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full relative bg-[#F6F6F7] ${isMeganOpen ? "flex flex-row" : "flex flex-col"}`}>
           <div className={`${isMeganOpen ? "w-1/2 border-r border-gray-200 flex flex-col" : "w-full flex-1 flex flex-col"}`}>
             <SimpleTextFormattingToolbar onFormat={handleFormatClick} />
             
@@ -138,7 +137,7 @@ const WritingSpace = ({
                   handleTextSelection(selectedText);
                 }}
                 placeholder="Start writing your content ideas here..."
-                className="min-h-full w-full h-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-700 text-sm p-4"
+                className="min-h-full w-full h-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-sm p-4"
               />
             </div>
           </div>
