@@ -83,8 +83,8 @@ const InspirationSection = ({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Label htmlFor="image-upload" className="cursor-pointer bg-purple-50 flex items-center justify-center rounded border border-purple-200 hover:bg-purple-100 text-purple-700 transition-colors h-6 w-6">
-                <ImageIcon className="h-2.5 w-2.5" />
+              <Label htmlFor="image-upload" className="cursor-pointer bg-purple-50 flex items-center justify-center rounded border border-purple-200 hover:bg-purple-100 text-purple-700 transition-colors h-7 w-7">
+                <ImageIcon className="h-3.5 w-3.5" />
               </Label>
             </TooltipTrigger>
             <TooltipContent>
