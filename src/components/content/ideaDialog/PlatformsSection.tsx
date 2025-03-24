@@ -26,7 +26,7 @@ const PlatformsSection = ({
         onPlatformChange={onCurrentPlatformChange}
         onAddPlatform={onAddPlatform}
         onRemovePlatform={onRemovePlatform}
-        placeholder="Add platforms where this content will be published (e.g., Instagram, TikTok, etc.)"
+        placeholder="Add platforms (e.g., Instagram, TikTok)"
       />
     </div>
   );

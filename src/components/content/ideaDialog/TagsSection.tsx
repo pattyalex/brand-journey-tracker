@@ -26,7 +26,8 @@ const TagsSection = ({
         onTagChange={onCurrentTagChange}
         onAddTag={onAddTag}
         onRemoveTag={onRemoveTag}
-        placeholder="Add status tags (e.g., To Finalize Script, To Film, To Edit, To Post)"
+        placeholder="Add status tags (e.g., To Film, To Edit)"
+        className="w-full"
       />
     </div>
   );

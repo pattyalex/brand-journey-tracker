@@ -18,7 +18,7 @@ const PlatformsInput = ({
   onPlatformChange,
   onAddPlatform,
   onRemovePlatform,
-  placeholder = "Add platforms where this content will be published (e.g., Instagram, TikTok, etc.)"
+  placeholder = "Add platforms where this content will be published"
 }: PlatformsInputProps) => {
   return (
     <div className="grid gap-2">
@@ -29,6 +29,7 @@ const PlatformsInput = ({
           placeholder={placeholder}
           onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), onAddPlatform())}
           className="flex-1"
+          title={placeholder} // Added title attribute to show full text on hover
         />
         <Button type="button" onClick={onAddPlatform} variant="outline" size="icon" className="shrink-0">
           <Plus className="h-4 w-4" />
