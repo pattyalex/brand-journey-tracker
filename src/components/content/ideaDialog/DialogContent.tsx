@@ -90,8 +90,6 @@ const DialogContent = ({
       <div className="grid gap-5 py-4 pr-2">
         <div className="space-y-5">
           <TitleInputSection title={title} onTitleChange={onTitleChange} />
-          
-          <FormatSelectionSection format={format} onFormatChange={onFormatChange} />
         </div>
         
         <div className="space-y-5 pt-1">
@@ -132,6 +130,11 @@ const DialogContent = ({
             onCurrentPlatformChange={onCurrentPlatformChange}
             onAddPlatform={onAddPlatform}
             onRemovePlatform={onRemovePlatform}
+          />
+          
+          <FormatSelectionSection 
+            format={format} 
+            onFormatChange={onFormatChange} 
           />
           
           <TagsSection
