@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -58,13 +57,12 @@ const BankOfContent = () => {
     if (restoredIdeas.length > 0) {
       const updatedPillars = [...pillars];
       
-      // Group restored items by their original pillar ID
       const itemsByPillar: Record<string, ContentItem[]> = {};
       let totalRestored = 0;
       let lastRestoredItem: ContentItem | null = null;
       
       restoredIdeas.forEach(item => {
-        const pillarId = item.originalPillarId || "1"; // Default to first pillar if not specified
+        const pillarId = item.originalPillarId || "1";
         if (!itemsByPillar[pillarId]) {
           itemsByPillar[pillarId] = [];
         }
@@ -73,7 +71,6 @@ const BankOfContent = () => {
         lastRestoredItem = item;
       });
       
-      // Add items to their respective pillars
       Object.entries(itemsByPillar).forEach(([pillarId, items]) => {
         const pillarIndex = updatedPillars.findIndex(p => p.id === pillarId);
         if (pillarIndex >= 0) {
@@ -83,7 +80,6 @@ const BankOfContent = () => {
           };
           console.log(`Restored ${items.length} items to Pillar ${pillarId}`);
         } else {
-          // If pillar doesn't exist (perhaps it was deleted), add to first pillar
           updatedPillars[0] = {
             ...updatedPillars[0],
             content: [...updatedPillars[0].content, ...items]
@@ -94,7 +90,6 @@ const BankOfContent = () => {
       
       setPillars(updatedPillars);
       
-      // Show appropriate toast message based on number of items
       if (totalRestored === 1 && lastRestoredItem) {
         const targetPillar = lastRestoredItem.originalPillarId ? 
           pillars.find(p => p.id === lastRestoredItem!.originalPillarId)?.name || "Pillar 1" : 
@@ -344,7 +339,7 @@ const BankOfContent = () => {
   return (
     <Layout>
       <div className="container mx-auto py-6 space-y-6 fade-in">
-        <h1 className="text-3xl font-bold">Idea Development</h1>
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">Idea Development</h1>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex items-center justify-between">
@@ -358,37 +353,43 @@ const BankOfContent = () => {
             />
           </div>
           
-          <ContentTypeBuckets 
-            onAddIdea={handleAddToBucket} 
-            pillarId={activeTab}
-          />
+          <div className="mt-6 mb-4">
+            <ContentTypeBuckets 
+              onAddIdea={handleAddToBucket} 
+              pillarId={activeTab}
+            />
+          </div>
           
           {pillars.map((pillar) => (
-            <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <WritingSpace 
-                  writingText={writingText}
-                  onTextChange={updateWritingSpace}
-                  onTextSelection={handleTextSelection}
-                  onFormatText={handleFormatText}
-                />
+            <TabsContent key={pillar.id} value={pillar.id} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
+                  <WritingSpace 
+                    writingText={writingText}
+                    onTextChange={updateWritingSpace}
+                    onTextSelection={handleTextSelection}
+                    onFormatText={handleFormatText}
+                  />
+                </div>
                 
-                <IdeaSection 
-                  pillar={pillar}
-                  pillars={pillars}
-                  searchQuery={searchQuery}
-                  onNewIdeaClick={openNewIdeaDialog}
-                  onDeleteContent={(contentId) => deleteContent(pillar.id, contentId)}
-                  onMoveContent={(toPillarId, contentId) => moveContent(pillar.id, toPillarId, contentId)}
-                  onEditContent={(contentId) => editContent(pillar.id, contentId)}
-                  onReorderContent={(newItems) => handleReorderContent(pillar.id, newItems)}
-                  editingContent={editingContent}
-                  isEditing={isEditing}
-                  onContentUpdated={updateContent}
-                  onCancelEdit={cancelEditing}
-                  onContentAdded={addContentToPillar}
-                  onAddToBucket={handleAddToBucket}
-                />
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
+                  <IdeaSection 
+                    pillar={pillar}
+                    pillars={pillars}
+                    searchQuery={searchQuery}
+                    onNewIdeaClick={openNewIdeaDialog}
+                    onDeleteContent={(contentId) => deleteContent(pillar.id, contentId)}
+                    onMoveContent={(toPillarId, contentId) => moveContent(pillar.id, toPillarId, contentId)}
+                    onEditContent={(contentId) => editContent(pillar.id, contentId)}
+                    onReorderContent={(newItems) => handleReorderContent(pillar.id, newItems)}
+                    editingContent={editingContent}
+                    isEditing={isEditing}
+                    onContentUpdated={updateContent}
+                    onCancelEdit={cancelEditing}
+                    onContentAdded={addContentToPillar}
+                    onAddToBucket={handleAddToBucket}
+                  />
+                </div>
               </div>
             </TabsContent>
           ))}
