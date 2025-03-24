@@ -768,7 +768,7 @@ const ContentCalendar = () => {
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                className="h-4 w-4 opacity-100"
+                                className="h-4 w-4 opacity-0 group-hover:opacity-100"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleEditContent(content);
