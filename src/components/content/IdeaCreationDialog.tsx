@@ -6,7 +6,6 @@ import {
   DialogContent,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
 import DialogHeader from "./ideaDialog/DialogHeader";
 import DialogContentBody from "./ideaDialog/DialogContent";
 import { toast } from "sonner";
@@ -147,9 +146,7 @@ const IdeaCreationDialog = ({
             />
           </div>
           
-          <Separator className="my-4" />
-          
-          <DialogFooter className="flex flex-wrap items-center gap-2">
+          <DialogFooter className="mt-4 flex flex-wrap items-center gap-2">
             <Button variant="outline" onClick={onCancel}>
               Cancel
             </Button>

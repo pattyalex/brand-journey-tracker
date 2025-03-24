@@ -1,7 +1,6 @@
 
 import { ReactNode } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import TitleInputSection from "./TitleInputSection";
 import BucketSelectionSection from "./BucketSelectionSection";
 import ScriptInputSection from "./ScriptInputSection";
@@ -102,8 +101,6 @@ const DialogContent = ({
             />
           </div>
         </div>
-        
-        <Separator className="my-1" />
         
         {/* Inspiration section with new styling */}
         <div className="bg-purple-50 rounded-lg p-4 border border-purple-100 shadow-sm">
