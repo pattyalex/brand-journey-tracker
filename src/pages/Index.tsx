@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Layout from "@/components/Layout";
-import { FolderOpen, HandshakeIcon, TrendingUp } from "lucide-react";
+import { FolderOpen, HandshakeIcon, TrendingUp, Share2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Index = () => {
@@ -29,7 +29,7 @@ const Index = () => {
         </section>
 
         {/* Features Section */}
-        <section className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        <section className="grid md:grid-cols-4 gap-8 max-w-5xl mx-auto">
           {features.map((feature, index) => (
             <Card key={index} className="p-6 hover:shadow-lg transition-all duration-300 bg-gray-50/50">
               <feature.icon className="w-10 h-10 mb-4 text-primary" />
@@ -58,6 +58,11 @@ const features = [
     title: "Performance Analytics",
     description: "Monitor your growth and make data-driven content decisions",
     icon: TrendingUp,
+  },
+  {
+    title: "Social Scheduling",
+    description: "Schedule and publish content directly to social media platforms",
+    icon: Share2,
   },
 ];
 

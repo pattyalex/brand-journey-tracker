@@ -18,6 +18,7 @@ import Help from './pages/Help';
 import NotFound from './pages/NotFound';
 import WeeklyContentTasks from './pages/WeeklyContentTasks';
 import ContentPlanning from './pages/ContentPlanning';
+import SocialMediaScheduler from './pages/SocialMediaScheduler';
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
           <Route path="/my-account" element={<MyAccount />} />
           <Route path="/help" element={<Help />} />
           <Route path="/weekly-content" element={<WeeklyContentTasks />} />
+          <Route path="/social-media-scheduler" element={<SocialMediaScheduler />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
