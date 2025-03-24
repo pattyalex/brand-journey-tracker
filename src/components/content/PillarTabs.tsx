@@ -38,6 +38,18 @@ interface PillarTabsProps {
   onDeletePillar: (pillarId: string) => void;
 }
 
+// Define color classes for each pillar
+const getPillarColorClass = (pillarId: string) => {
+  switch (pillarId) {
+    case "1": return "bg-primary text-primary-foreground";
+    case "2": return "bg-purple-600 text-white";
+    case "3": return "bg-blue-600 text-white";
+    case "4": return "bg-orange-500 text-white";
+    case "5": return "bg-green-600 text-white";
+    default: return "bg-gray-600 text-white";
+  }
+};
+
 const PillarTabs = ({ 
   pillars, 
   activeTab, 
@@ -84,21 +96,21 @@ const PillarTabs = ({
           {pillars.map((pillar) => (
             <div key={pillar.id} className="relative flex items-center">
               {editingPillarId === pillar.id ? (
-                <div className="px-4 py-2 flex items-center bg-primary text-primary-foreground rounded-sm">
+                <div className={`px-4 py-2 flex items-center rounded-sm ${getPillarColorClass(pillar.id)}`}>
                   <Input
                     value={editingPillarName}
                     onChange={(e) => setEditingPillarName(e.target.value)}
                     onKeyDown={handlePillarNameKeyDown}
                     onBlur={saveEditingPillar}
                     autoFocus
-                    className="h-7 px-1 py-0 text-base w-40 bg-transparent border-0 focus-visible:ring-0 text-primary-foreground"
+                    className="h-7 px-1 py-0 text-base w-40 bg-transparent border-0 focus-visible:ring-0 text-white"
                     data-testid="edit-pillar-name-input"
                   />
                   <Button
                     size="xs"
                     variant="ghost"
                     onClick={saveEditingPillar}
-                    className="ml-1 text-primary-foreground hover:text-primary-foreground/90 hover:bg-transparent p-0 h-6 w-6"
+                    className="ml-1 text-white hover:text-white/90 hover:bg-transparent p-0 h-6 w-6"
                   >
                     <Check className="h-4 w-4" />
                   </Button>
@@ -106,7 +118,7 @@ const PillarTabs = ({
                     size="xs"
                     variant="ghost"
                     onClick={cancelEditingPillar}
-                    className="text-primary-foreground hover:text-primary-foreground/90 hover:bg-transparent p-0 h-6 w-6"
+                    className="text-white hover:text-white/90 hover:bg-transparent p-0 h-6 w-6"
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -115,9 +127,7 @@ const PillarTabs = ({
                 <div className="flex items-center">
                   <TabsTrigger 
                     value={pillar.id}
-                    className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white px-5 py-2 text-base ${
-                      pillar.id === "1" && activeTab === "1" ? "bg-[#8B6B4E] text-white" : ""
-                    }`}
+                    className={`data-[state=active]:${getPillarColorClass(pillar.id)} px-5 py-2 text-base transition-all duration-300`}
                     onClick={() => onTabChange(pillar.id)}
                   >
                     {pillar.name}

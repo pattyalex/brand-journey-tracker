@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
@@ -6,6 +5,17 @@ import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautif
 import ContentCard from "./ContentCard";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+const getPillarCardStyle = (pillarId: string) => {
+  switch (pillarId) {
+    case "1": return "ring-1 ring-pillar-1/20";
+    case "2": return "ring-1 ring-pillar-2/20";
+    case "3": return "ring-1 ring-pillar-3/20";
+    case "4": return "ring-1 ring-pillar-4/20";
+    case "5": return "ring-1 ring-pillar-5/20";
+    default: return "";
+  }
+};
 
 interface ContentPillarProps {
   pillar: Pillar;
@@ -29,6 +39,7 @@ const ContentPillar = ({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
+  const cardStyle = getPillarCardStyle(pillar.id);
 
   useEffect(() => {
     console.log("ContentPillar received pillar:", pillar.id, pillar.name);
@@ -106,7 +117,7 @@ const ContentPillar = ({
     <DragDropContext onDragEnd={onDragEnd}>
       <div className="space-y-2 relative">
         {filteredContent.length === 0 ? (
-          <div className="text-center p-8 border border-dashed rounded-lg bg-muted/30">
+          <div className={`text-center p-8 border border-dashed rounded-lg bg-muted/30 ${cardStyle}`}>
             <p className="text-muted-foreground">
               {searchQuery 
                 ? "No matching content found" 
@@ -150,7 +161,7 @@ const ContentPillar = ({
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            className={`${snapshot.isDragging ? 'opacity-70' : 'opacity-100'} max-w-[360px]`}
+                            className={`${snapshot.isDragging ? 'opacity-70' : 'opacity-100'} max-w-[360px] ${cardStyle}`}
                             style={{
                               ...provided.draggableProps.style,
                             }}

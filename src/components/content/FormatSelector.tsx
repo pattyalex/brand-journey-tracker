@@ -28,12 +28,26 @@ const DEFAULT_PREDEFINED_FORMATS = [
   "Behind the Scenes"
 ];
 
+const getFormatTagColor = (pillarId?: string) => {
+  if (!pillarId) return "bg-blue-100 text-blue-800";
+  
+  switch (pillarId) {
+    case "1": return "bg-amber-100 text-amber-800";
+    case "2": return "bg-purple-100 text-purple-800";
+    case "3": return "bg-blue-100 text-blue-800";
+    case "4": return "bg-orange-100 text-orange-800";
+    case "5": return "bg-green-100 text-green-800";
+    default: return "bg-blue-100 text-blue-800";
+  }
+};
+
 interface FormatSelectorProps {
   selectedFormat: string;
   onFormatChange: (format: string) => void;
+  pillarId?: string;
 }
 
-const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps) => {
+const FormatSelector = ({ selectedFormat, onFormatChange, pillarId }: FormatSelectorProps) => {
   const [customFormat, setCustomFormat] = useState("");
   const [isAddingCustom, setIsAddingCustom] = useState(false);
   const [formats, setFormats] = useState<string[]>(() => {
@@ -42,6 +56,8 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
   });
   const [scrollPosition, setScrollPosition] = useState(0);
   const SCROLL_STEP = 120;
+  
+  const formatTagColorClass = getFormatTagColor(pillarId);
 
   const saveFormats = (newFormats: string[]) => {
     localStorage.setItem("contentFormats", JSON.stringify(newFormats));
@@ -139,7 +155,7 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
       ) : (
         <Select value={selectedFormat || ""} onValueChange={handleSelectFormat}>
           <SelectTrigger 
-            className="w-full shadow-sm hover:shadow-md transition-shadow duration-200" 
+            className={`w-full shadow-sm hover:shadow-md transition-shadow duration-200 ${pillarId ? `border-l-2 border-pillar-${pillarId}` : ''}`}
             data-component="format-selector" 
             aria-label="Select a content format"
           >
@@ -201,13 +217,13 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
 
       {selectedFormat && (
         <div className="flex items-center mt-2">
-          <span className="bg-blue-100 text-blue-800 text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm">
+          <span className={`${formatTagColorClass} text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm`}>
             {selectedFormat}
             <Button 
               variant="ghost" 
               size="xs" 
               onClick={handleClearSelectedFormat}
-              className="ml-1 p-0 h-5 w-5 rounded-full hover:bg-blue-200"
+              className={`ml-1 p-0 h-5 w-5 rounded-full hover:bg-${formatTagColorClass.includes('blue') ? 'blue' : formatTagColorClass.includes('purple') ? 'purple' : formatTagColorClass.includes('amber') ? 'amber' : formatTagColorClass.includes('orange') ? 'orange' : 'green'}-200`}
             >
               <X className="h-3.5 w-3.5" />
             </Button>

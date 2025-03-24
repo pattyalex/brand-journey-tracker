@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -85,6 +86,32 @@
   .card-shadow:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.05);
   }
+  
+  /* Pillar theme transition */
+  [data-state="active"] {
+    transition: all 0.3s ease-in-out;
+  }
+  
+  /* Pillar-specific gradient backgrounds */
+  .pillar-1-bg {
+    background: linear-gradient(to right, rgba(139,107,78,0.05), transparent);
+  }
+  
+  .pillar-2-bg {
+    background: linear-gradient(to right, rgba(124,58,237,0.05), transparent);
+  }
+  
+  .pillar-3-bg {
+    background: linear-gradient(to right, rgba(37,99,235,0.05), transparent);
+  }
+  
+  .pillar-4-bg {
+    background: linear-gradient(to right, rgba(249,115,22,0.05), transparent);
+  }
+  
+  .pillar-5-bg {
+    background: linear-gradient(to right, rgba(22,163,74,0.05), transparent);
+  }
 }
 
 /* Custom Scrollbar */
@@ -168,5 +195,21 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+/* Pillar transition animation */
+.pillar-transition {
+  animation: pillarFadeIn 0.4s ease-out;
+}
+
+@keyframes pillarFadeIn {
+  from {
+    opacity: 0.7;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

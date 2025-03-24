@@ -61,6 +61,14 @@ export default {
           800: '#5b21b6',
           900: '#4c1d95',
           950: '#2e1065',
+        },
+        // Add our pillar colors
+        pillar: {
+          1: '#8B6B4E', // Brown
+          2: '#7c3aed', // Purple
+          3: '#2563eb', // Blue
+          4: '#f97316', // Orange
+          5: '#16a34a', // Green
         }
       },
       borderRadius: {
