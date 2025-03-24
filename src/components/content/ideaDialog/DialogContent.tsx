@@ -110,13 +110,13 @@ const DialogContent = ({
           />
         </div>
         
-        {/* New two-column layout for Script, Visual Notes, and Shoot Details */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-4">
-          <div className="space-y-5">
+        {/* Adjusted grid columns - script now takes 60% (3/5) and visual notes/shoot details 40% (2/5) */}
+        <div className="grid grid-cols-5 gap-5 pt-4">
+          <div className="col-span-3 space-y-5">
             <ScriptInputSection scriptText={scriptText} onScriptTextChange={onScriptTextChange} />
           </div>
           
-          <div className="space-y-5">
+          <div className="col-span-2 space-y-5">
             <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
             <ShootDetailsSection shootDetails={shootDetails} onShootDetailsChange={onShootDetailsChange} />
           </div>
