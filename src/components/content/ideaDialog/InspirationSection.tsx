@@ -123,17 +123,17 @@ const InspirationSection = ({
           <Badge 
             key={index} 
             variant="outline" 
-            className="flex items-center gap-1 bg-purple-50 text-purple-600 border-purple-200 hover:bg-purple-100 h-6 px-1.5 py-0.5 text-xs"
+            className="flex items-center gap-1 bg-purple-50 text-purple-600 border-purple-200 hover:bg-purple-100 h-5 px-1 py-0 text-[10px]"
           >
-            <LinkIcon className="h-2.5 w-2.5" />
-            <span className="max-w-[200px] truncate text-xs">{link}</span>
+            <LinkIcon className="h-2 w-2" />
+            <span className="max-w-[150px] truncate text-[10px]">{link}</span>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onRemoveInspirationLink(index)}
-              className="h-3.5 w-3.5 p-0 hover:bg-transparent hover:text-purple-800"
+              className="h-3 w-3 p-0 hover:bg-transparent hover:text-purple-800"
             >
-              <X className="h-2.5 w-2.5" />
+              <X className="h-2 w-2" />
             </Button>
           </Badge>
         ))}
