@@ -30,7 +30,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { CalendarIcon, FileText, ChevronLeft, ChevronRight, PlusCircle, Trash2, Instagram, Youtube, AtSign, Pencil, CornerUpLeft, Share2 } from "lucide-react";
+import { CalendarIcon, FileText, ChevronLeft, ChevronRight, PlusCircle, Trash2, Instagram, Youtube, AtSign, Pencil, CornerUpLeft } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -45,7 +45,6 @@ import { Pillar } from "@/pages/BankOfContent";
 import { toast } from "sonner";
 import { restoreContentToIdeas } from "@/utils/contentRestoreUtils";
 import { cn } from "@/lib/utils";
-import { useNavigate } from "react-router-dom";
 
 interface ContentItem {
   id: string;
@@ -94,8 +93,6 @@ const isWeekend = (date: Date) => {
 };
 
 const ContentCalendar = () => {
-  const navigate = useNavigate();
-  
   const getToday = () => {
     const today = new Date(2025, 2, 14); // Note: months are 0-indexed, so 2 = March
     return today;
@@ -563,15 +560,7 @@ const ContentCalendar = () => {
               Schedule and organize your content publishing plan.
             </p>
           </div>
-          <div className="flex items-center space-x-3">
-            <Button 
-              variant="outline" 
-              onClick={() => navigate("/social-media-scheduler")}
-              className="h-8 flex items-center gap-1.5"
-            >
-              <Share2 className="h-4 w-4" />
-              Social Scheduler
-            </Button>
+          <div className="flex items-center space-x-2">
             <Button 
               variant="outline" 
               onClick={prevMonth}
