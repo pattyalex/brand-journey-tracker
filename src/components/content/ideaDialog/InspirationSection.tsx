@@ -103,29 +103,31 @@ const InspirationSection = ({
         </Button>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {inspirationLinks.map((link, index) => (
-          <Badge 
-            key={index} 
-            variant="outline" 
-            className="flex items-center gap-1 bg-purple-50 text-purple-600 border-purple-200 hover:bg-purple-100"
-          >
-            <LinkIcon className="h-3 w-3" />
-            <span className="max-w-[200px] truncate">{link}</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onRemoveInspirationLink(index)}
-              className="h-4 w-4 p-0 hover:bg-transparent hover:text-purple-800"
+      {inspirationLinks.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-2">
+          {inspirationLinks.map((link, index) => (
+            <Badge 
+              key={index} 
+              variant="outline" 
+              className="flex items-center gap-1 bg-purple-50 text-purple-600 border-purple-200 hover:bg-purple-100"
             >
-              <X className="h-3 w-3" />
-            </Button>
-          </Badge>
-        ))}
-      </div>
+              <LinkIcon className="h-3 w-3" />
+              <span className="max-w-[200px] truncate">{link}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onRemoveInspirationLink(index)}
+                className="h-4 w-4 p-0 hover:bg-transparent hover:text-purple-800"
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </Badge>
+          ))}
+        </div>
+      )}
 
       {inspirationImages.length > 0 && (
-        <div className="grid grid-cols-4 gap-2 mt-1">
+        <div className="grid grid-cols-4 gap-2 mt-2">
           {inspirationImages.map((image, index) => (
             <div key={index} className="relative group aspect-square bg-purple-50 rounded overflow-hidden border border-purple-200">
               <img
