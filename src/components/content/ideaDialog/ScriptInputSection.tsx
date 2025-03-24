@@ -1,6 +1,7 @@
 
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { FileText } from "lucide-react";
 
 interface ScriptInputSectionProps {
   scriptText: string;
@@ -13,7 +14,10 @@ const ScriptInputSection = ({
 }: ScriptInputSectionProps) => {
   return (
     <div className="grid gap-2">
-      <Label htmlFor="develop-script">Script</Label>
+      <div className="flex items-center gap-2">
+        <FileText size={18} className="text-muted-foreground" />
+        <Label htmlFor="develop-script">Script</Label>
+      </div>
       <Textarea
         id="develop-script"
         value={scriptText}
