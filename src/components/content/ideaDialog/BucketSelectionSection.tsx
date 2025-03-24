@@ -43,7 +43,7 @@ const BucketSelectionSection = ({
   }, [pillarId]);
 
   return (
-    <div className="space-y-4">
+    <div className="grid gap-2">
       <Label htmlFor="format-select" className="text-sm font-medium">
         Content Format
       </Label>
@@ -51,7 +51,7 @@ const BucketSelectionSection = ({
         value={bucketId} 
         onValueChange={onBucketChange}
       >
-        <SelectTrigger id="format-select" className="w-full">
+        <SelectTrigger id="format-select" className="w-full h-10">
           <SelectValue placeholder="Select a content format" />
         </SelectTrigger>
         <SelectContent>
@@ -63,7 +63,7 @@ const BucketSelectionSection = ({
         </SelectContent>
       </Select>
       {bucketId && (
-        <p className="text-xs text-gray-500 mt-2">
+        <p className="text-xs text-gray-500 mt-1">
           {contentFormats.find(f => f.id === bucketId)?.description || ""}
         </p>
       )}

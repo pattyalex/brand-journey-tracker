@@ -12,15 +12,15 @@ const TitleInputSection = ({
   onTitleChange,
 }: TitleInputSectionProps) => {
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-2">
       <Label htmlFor="idea-title" className="text-sm font-medium">Title</Label>
-      <div className="relative flex items-center">
+      <div className="relative">
         <Input
           id="idea-title"
           value={title}
           onChange={(e) => onTitleChange(e.target.value)}
           placeholder="Enter a catchy hook for your idea..."
-          className="w-full"
+          className="w-full h-10"
         />
       </div>
     </div>
