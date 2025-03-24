@@ -1,6 +1,7 @@
 
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { MessageSquareText } from "lucide-react";
 
 interface CaptionInputSectionProps {
   captionText: string;
@@ -13,7 +14,10 @@ const CaptionInputSection = ({
 }: CaptionInputSectionProps) => {
   return (
     <div className="grid gap-2">
-      <Label htmlFor="caption-text">Caption</Label>
+      <div className="flex items-center gap-2">
+        <MessageSquareText size={18} className="text-muted-foreground" />
+        <Label htmlFor="caption-text">Caption</Label>
+      </div>
       <Textarea
         id="caption-text"
         value={captionText}
