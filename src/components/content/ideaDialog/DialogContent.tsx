@@ -111,7 +111,7 @@ const DialogContent = ({
           />
         </div>
         
-        <div className="space-y-5 pt-1">
+        <div className="space-y-5 pt-4">  {/* Increased padding from pt-1 to pt-4 */}
           <ScriptInputSection scriptText={scriptText} onScriptTextChange={onScriptTextChange} />
           
           <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
@@ -153,3 +153,4 @@ const DialogContent = ({
 };
 
 export default DialogContent;
+
