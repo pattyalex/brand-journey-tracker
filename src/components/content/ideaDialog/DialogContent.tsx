@@ -117,8 +117,9 @@ const DialogContent = ({
           </div>
           
           <div className="col-span-2 space-y-5">
-            <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
+            {/* Swapped the order of ShootDetailsSection and VisualNotesSection */}
             <ShootDetailsSection shootDetails={shootDetails} onShootDetailsChange={onShootDetailsChange} />
+            <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
           </div>
         </div>
         
