@@ -102,7 +102,7 @@ const PillarTabs = ({
   };
 
   return (
-    <div className="flex items-center justify-between mb-6">
+    <div className="mb-6">
       <div className="flex items-center">
         <TabsList className="bg-background border overflow-x-auto flex items-center h-12">
           {pillars.map((pillar) => (
@@ -139,7 +139,15 @@ const PillarTabs = ({
                 <div className="flex items-center">
                   <TabsTrigger 
                     value={pillar.id}
-                    className={`data-[state=active]:${getPillarColorClass(pillar.id)} ${getInactiveTabStyle(pillar.id)} data-[state=active]:pillar-tab-active px-5 py-2 text-base transition-all duration-300`}
+                    className={`
+                      data-[state=active]:${getPillarColorClass(pillar.id)} 
+                      ${getInactiveTabStyle(pillar.id)}
+                      data-[state=active]:pillar-tab-active 
+                      data-[state=active]:shadow-md
+                      px-6 py-2.5 text-base font-medium 
+                      transition-all duration-300 border-b-4 border-transparent
+                      data-[state=active]:border-current
+                    `}
                     onClick={() => onTabChange(pillar.id)}
                   >
                     {pillar.name}
