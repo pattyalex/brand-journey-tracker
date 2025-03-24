@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { PlusCircle, Link as LinkIcon, ImageIcon, X, Lightbulb } from "lucide-react";
 import { Label } from "@/components/ui/label";
@@ -78,6 +79,18 @@ const InspirationSection = ({
       />
 
       <div className="flex items-center flex-wrap gap-2">
+        <Label htmlFor="image-upload" className="cursor-pointer bg-purple-50 flex items-center gap-1 px-2 py-1 rounded border border-purple-200 text-xs hover:bg-purple-100 text-purple-700 transition-colors h-8">
+          <ImageIcon className="h-3 w-3" />
+          <span>Upload image</span>
+        </Label>
+        <Input
+          id="image-upload"
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleImageUpload}
+        />
+        
         <Button
           type="button"
           variant="outline"
@@ -107,20 +120,6 @@ const InspirationSection = ({
             </Button>
           </Badge>
         ))}
-      </div>
-
-      <div className="flex items-center gap-2">
-        <Label htmlFor="image-upload" className="cursor-pointer bg-purple-50 flex items-center gap-1 px-2 py-1 rounded border border-purple-200 text-xs hover:bg-purple-100 text-purple-700 transition-colors h-8">
-          <ImageIcon className="h-3 w-3" />
-          <span>Upload image</span>
-        </Label>
-        <Input
-          id="image-upload"
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleImageUpload}
-        />
       </div>
 
       {inspirationImages.length > 0 && (
