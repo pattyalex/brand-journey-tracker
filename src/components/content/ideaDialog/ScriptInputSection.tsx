@@ -13,17 +13,17 @@ const ScriptInputSection = ({
   onScriptTextChange,
 }: ScriptInputSectionProps) => {
   return (
-    <div className="grid gap-2">
+    <div className="grid gap-2 bg-white rounded-lg p-4 border shadow-sm transition-all duration-200 hover:shadow-md">
       <div className="flex items-center gap-2">
-        <FileText size={18} className="text-muted-foreground" />
-        <Label htmlFor="develop-script">Script</Label>
+        <FileText size={18} className="text-gray-600" />
+        <Label htmlFor="develop-script" className="font-medium">Script</Label>
       </div>
       <Textarea
         id="develop-script"
         value={scriptText}
         onChange={(e) => onScriptTextChange(e.target.value)}
         placeholder="Write your script here..."
-        className="min-h-[350px] resize-y" // Increased height for the column layout
+        className="min-h-[350px] resize-y focus-visible:ring-gray-400" 
       />
     </div>
   );

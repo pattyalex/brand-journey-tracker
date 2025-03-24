@@ -87,17 +87,23 @@ const DialogContent = ({
   return (
     <ScrollArea className="h-[calc(95vh-140px)] pr-4" style={{ overflowY: 'auto', touchAction: 'pan-y' }}>
       <div className="grid gap-5 py-4 pr-2">
-        <div className="space-y-5">
-          <TitleInputSection title={title} onTitleChange={onTitleChange} />
+        {/* Title and bucket row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="space-y-3">
+            <TitleInputSection title={title} onTitleChange={onTitleChange} />
+          </div>
+          
+          <div className="space-y-3">
+            <BucketSelectionSection 
+              bucketId={bucketId} 
+              onBucketChange={onBucketChange} 
+              pillarId={pillarId} 
+            />
+          </div>
         </div>
         
-        <div className="space-y-5 pt-1">
-          <BucketSelectionSection 
-            bucketId={bucketId} 
-            onBucketChange={onBucketChange} 
-            pillarId={pillarId} 
-          />
-          
+        {/* Inspiration section with new styling */}
+        <div className="bg-purple-50 rounded-lg p-4 border border-purple-100 shadow-sm">
           <InspirationSection
             inspirationText={inspirationText}
             onInspirationTextChange={onInspirationTextChange}
@@ -110,39 +116,46 @@ const DialogContent = ({
           />
         </div>
         
-        {/* Adjusted grid columns - script now takes 60% (3/5) and visual notes/shoot details 40% (2/5) */}
-        <div className="grid grid-cols-5 gap-5 pt-4">
-          <div className="col-span-3 space-y-5">
+        {/* Script and visual sections */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          {/* Script section (takes 2/3 on large screens) */}
+          <div className="lg:col-span-2 space-y-4">
             <ScriptInputSection scriptText={scriptText} onScriptTextChange={onScriptTextChange} />
           </div>
           
-          <div className="col-span-2 space-y-5">
-            {/* Swapped the order of ShootDetailsSection and VisualNotesSection */}
+          {/* Visual notes and shoot details (takes 1/3 on large screens) */}
+          <div className="space-y-5">
             <ShootDetailsSection shootDetails={shootDetails} onShootDetailsChange={onShootDetailsChange} />
             <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
           </div>
         </div>
         
-        <div className="space-y-5 pt-1">
+        {/* Caption section */}
+        <div className="bg-amber-50 rounded-lg p-4 border border-amber-100 shadow-sm">
           <CaptionInputSection captionText={captionText} onCaptionTextChange={onCaptionTextChange} />
         </div>
         
-        <div className="space-y-5 pt-1">
-          <PlatformsSection
-            platforms={platforms}
-            currentPlatform={currentPlatform}
-            onCurrentPlatformChange={onCurrentPlatformChange}
-            onAddPlatform={onAddPlatform}
-            onRemovePlatform={onRemovePlatform}
-          />
+        {/* Platforms and tags in two columns */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="bg-blue-50 rounded-lg p-4 border border-blue-100 shadow-sm">
+            <PlatformsSection
+              platforms={platforms}
+              currentPlatform={currentPlatform}
+              onCurrentPlatformChange={onCurrentPlatformChange}
+              onAddPlatform={onAddPlatform}
+              onRemovePlatform={onRemovePlatform}
+            />
+          </div>
           
-          <TagsSection
-            tags={tags}
-            currentTag={currentTag}
-            onCurrentTagChange={onCurrentTagChange}
-            onAddTag={onAddTag}
-            onRemoveTag={onRemoveTag}
-          />
+          <div className="bg-green-50 rounded-lg p-4 border border-green-100 shadow-sm">
+            <TagsSection
+              tags={tags}
+              currentTag={currentTag}
+              onCurrentTagChange={onCurrentTagChange}
+              onAddTag={onAddTag}
+              onRemoveTag={onRemoveTag}
+            />
+          </div>
         </div>
         
         {children}
