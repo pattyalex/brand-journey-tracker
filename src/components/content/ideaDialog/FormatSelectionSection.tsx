@@ -32,7 +32,7 @@ const FormatSelectionSection = ({
   return (
     <div className="grid gap-2">
       <div className="flex items-center gap-2 mb-1">
-        <Flame size={18} className="text-gray-500" />
+        <Flame size={18} className="text-orange-500" />
         <Label htmlFor="content-format">Content Format</Label>
       </div>
       <Select value={format} onValueChange={onFormatChange}>
