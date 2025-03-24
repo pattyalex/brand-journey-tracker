@@ -79,9 +79,9 @@ const InspirationSection = ({
       />
 
       <div className="flex items-center flex-wrap gap-2">
-        <Label htmlFor="image-upload" className="cursor-pointer bg-purple-50 flex items-center gap-1 px-2 py-1 rounded border border-purple-200 text-xs hover:bg-purple-100 text-purple-700 transition-colors h-8">
-          <ImageIcon className="h-3 w-3" />
-          <span>Upload image</span>
+        <Label htmlFor="image-upload" className="cursor-pointer bg-purple-50 flex items-center gap-1 px-1.5 py-0.5 rounded border border-purple-200 text-xs hover:bg-purple-100 text-purple-700 transition-colors h-6">
+          <ImageIcon className="h-2.5 w-2.5" />
+          <span className="text-xs">Upload image</span>
         </Label>
         <Input
           id="image-upload"
@@ -94,11 +94,11 @@ const InspirationSection = ({
         <Button
           type="button"
           variant="outline"
-          size="sm"
+          size="xs"
           onClick={() => setShowLinkDialog(true)}
-          className="h-8 flex items-center gap-1 bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100 text-xs"
+          className="h-6 flex items-center gap-1 bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100 text-xs px-1.5 py-0.5"
         >
-          <LinkIcon className="h-3 w-3" />
+          <LinkIcon className="h-2.5 w-2.5" />
           <span>Add link</span>
         </Button>
         
@@ -106,17 +106,17 @@ const InspirationSection = ({
           <Badge 
             key={index} 
             variant="outline" 
-            className="flex items-center gap-1 bg-purple-50 text-purple-600 border-purple-200 hover:bg-purple-100"
+            className="flex items-center gap-1 bg-purple-50 text-purple-600 border-purple-200 hover:bg-purple-100 h-6 px-1.5 py-0.5 text-xs"
           >
-            <LinkIcon className="h-3 w-3" />
-            <span className="max-w-[200px] truncate">{link}</span>
+            <LinkIcon className="h-2.5 w-2.5" />
+            <span className="max-w-[200px] truncate text-xs">{link}</span>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onRemoveInspirationLink(index)}
-              className="h-4 w-4 p-0 hover:bg-transparent hover:text-purple-800"
+              className="h-3.5 w-3.5 p-0 hover:bg-transparent hover:text-purple-800"
             >
-              <X className="h-3 w-3" />
+              <X className="h-2.5 w-2.5" />
             </Button>
           </Badge>
         ))}
