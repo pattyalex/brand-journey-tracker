@@ -1,7 +1,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Flame } from "lucide-react";
+import { Target } from "lucide-react";
 
 interface TitleInputSectionProps {
   title: string;
@@ -15,7 +15,7 @@ const TitleInputSection = ({
   return (
     <div className="grid gap-2">
       <div className="flex items-center gap-2 mb-1">
-        <Flame size={18} className="text-gray-500" />
+        <Target size={18} className="text-gray-500" />
         <Label htmlFor="idea-title" className="text-sm font-medium">Title</Label>
       </div>
       <div className="relative">
