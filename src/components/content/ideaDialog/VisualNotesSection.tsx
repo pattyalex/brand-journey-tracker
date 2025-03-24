@@ -1,7 +1,7 @@
 
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Frame } from "lucide-react";
+import { Image } from "lucide-react";
 
 interface VisualNotesSectionProps {
   visualNotes: string;
@@ -15,7 +15,7 @@ const VisualNotesSection = ({
   return (
     <div className="grid gap-2">
       <div className="flex items-center gap-2">
-        <Frame size={18} className="text-muted-foreground" />
+        <Image size={18} className="text-muted-foreground" />
         <Label htmlFor="visual-notes">Visual Notes</Label>
       </div>
       <Textarea
