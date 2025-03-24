@@ -75,7 +75,7 @@ const InspirationSection = ({
       <CollapsibleContent className="px-4 pb-3">
         <div className="grid gap-2 text-sm">
           <Textarea
-            placeholder="Add some inspiration or notes..."
+            placeholder="If you're recreating or inspired by another piece of content, write notes about it here..."
             className="min-h-[60px] resize-y text-sm"
             value={inspirationText}
             onChange={(e) => onInspirationTextChange(e.target.value)}
