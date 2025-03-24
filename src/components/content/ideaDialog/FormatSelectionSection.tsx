@@ -1,7 +1,7 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Flame } from "lucide-react";
+import { FileType } from "lucide-react";
 
 interface FormatSelectionSectionProps {
   format: string;
@@ -32,7 +32,7 @@ const FormatSelectionSection = ({
   return (
     <div className="grid gap-2">
       <div className="flex items-center gap-2 mb-1">
-        <Flame size={18} className="text-gray-500" />
+        <FileType size={18} className="text-gray-500" />
         <Label htmlFor="content-format">Content Format</Label>
       </div>
       <Select value={format} onValueChange={onFormatChange}>

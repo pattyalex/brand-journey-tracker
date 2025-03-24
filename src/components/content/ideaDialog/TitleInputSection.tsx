@@ -13,7 +13,7 @@ const TitleInputSection = ({
   onTitleChange,
 }: TitleInputSectionProps) => {
   return (
-    <div className="grid gap-2 pl-4">
+    <div className="grid gap-2">
       <div className="flex items-center gap-2 mb-1">
         <Target size={18} className="text-gray-500" />
         <Label htmlFor="idea-title" className="text-sm font-medium">Title</Label>

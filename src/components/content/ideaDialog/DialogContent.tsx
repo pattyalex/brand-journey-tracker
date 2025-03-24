@@ -1,3 +1,4 @@
+
 import { ReactNode } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import TitleInputSection from "./TitleInputSection";
@@ -9,7 +10,6 @@ import CaptionInputSection from "./CaptionInputSection";
 import PlatformsSection from "./PlatformsSection";
 import TagsSection from "./TagsSection";
 import InspirationSection from "./InspirationSection";
-import FormatSelectionSection from "./FormatSelectionSection";
 
 interface DialogContentProps {
   title: string;
