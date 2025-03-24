@@ -1,619 +1,432 @@
 
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import Layout from "@/components/Layout";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar } from "@/components/ui/calendar";
-import { format, parseISO } from "date-fns";
-import { Instagram, Facebook, Twitter, Youtube, ExternalLink, Settings, Plus, Calendar as CalendarIcon } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { 
+  Table, 
+  TableHeader, 
+  TableRow, 
+  TableHead, 
+  TableBody, 
+  TableCell 
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import { 
+  Facebook, 
+  Instagram, 
+  Twitter, 
+  Linkedin, 
+  Youtube, 
+  TikTok, 
+  MoreHorizontal, 
+  Edit2, 
+  Trash, 
+  Plus, 
+  Link as LinkIcon,
+  Clock,
+  CheckCircle,
+  XCircle,
+  FileImage,
+  FileText,
+  Activity
+} from "lucide-react";
+import { format } from "date-fns";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "sonner";
 
-// Type definition for content items from calendar
-interface ContentItem {
-  id: string;
-  title: string;
-  description?: string;
-  format?: string;
-  tags?: string[];
-  platforms?: string[];
-  scheduledDate?: Date | null;
-  url?: string;
-}
+// Mock schedule data
+const scheduledPosts = [
+  {
+    id: "1",
+    title: "5 Tips for Better Content",
+    content: "Here are 5 tips that will help you create better content...",
+    platform: "instagram",
+    scheduledFor: new Date(2023, 11, 10, 14, 30),
+    status: "scheduled",
+    image: "/placeholder.svg",
+    type: "image"
+  },
+  {
+    id: "2",
+    title: "Upcoming Workshop Announcement",
+    content: "Join us next week for an exclusive workshop on content strategy!",
+    platform: "linkedin",
+    scheduledFor: new Date(2023, 11, 12, 10, 0),
+    status: "scheduled",
+    image: null,
+    type: "text"
+  },
+  {
+    id: "3",
+    title: "Behind the Scenes",
+    content: "Take a look behind the scenes of our latest project...",
+    platform: "tiktok",
+    scheduledFor: new Date(2023, 11, 8, 16, 15),
+    status: "published",
+    image: "/placeholder.svg",
+    type: "video"
+  },
+  {
+    id: "4",
+    title: "New Product Launch",
+    content: "We're excited to announce our new product line launching next month!",
+    platform: "twitter",
+    scheduledFor: new Date(2023, 11, 15, 9, 0),
+    status: "failed",
+    image: "/placeholder.svg",
+    type: "image"
+  }
+];
 
-// Type for connected social media accounts
-interface SocialAccount {
-  id: string;
-  platform: "instagram" | "facebook" | "twitter" | "youtube";
-  username: string;
-  profileImage?: string;
-  isConnected: boolean;
-}
+// Mock connected accounts
+const connectedAccounts = [
+  { id: "1", platform: "instagram", username: "creativecontent", isActive: true },
+  { id: "2", platform: "linkedin", username: "creative.content.official", isActive: true },
+  { id: "3", platform: "twitter", username: "creativecontentco", isActive: false },
+  { id: "4", platform: "facebook", username: "Creative Content Co.", isActive: true },
+  { id: "5", platform: "tiktok", username: "@creativecontent", isActive: true }
+];
 
-// Type for scheduled social posts
-interface ScheduledPost {
-  id: string;
-  contentId: string;
-  accountId: string;
-  platform: string;
-  scheduledTime: string;
-  status: "scheduled" | "posted" | "failed";
-  postText: string;
-  mediaUrls?: string[];
-}
+// Platform icons mapping
+const platformIcons: Record<string, React.ComponentType> = {
+  instagram: Instagram,
+  facebook: Facebook,
+  twitter: Twitter,
+  linkedin: Linkedin,
+  youtube: Youtube,
+  tiktok: TikTok
+};
+
+// Status badge color mapping
+const statusColors: Record<string, string> = {
+  scheduled: "bg-blue-100 text-blue-800",
+  published: "bg-green-100 text-green-800",
+  failed: "bg-red-100 text-red-800"
+};
+
+// Status icons
+const statusIcons: Record<string, React.ReactNode> = {
+  scheduled: <Clock className="h-4 w-4 mr-1" />,
+  published: <CheckCircle className="h-4 w-4 mr-1" />,
+  failed: <XCircle className="h-4 w-4 mr-1" />
+};
+
+// Content type icons
+const contentTypeIcons: Record<string, React.ReactNode> = {
+  image: <FileImage className="h-4 w-4 mr-1" />,
+  video: <Activity className="h-4 w-4 mr-1" />,
+  text: <FileText className="h-4 w-4 mr-1" />
+};
 
 const SocialMediaScheduler = () => {
-  const [scheduledContent, setScheduledContent] = useState<ContentItem[]>([]);
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [connectedAccounts, setConnectedAccounts] = useState<SocialAccount[]>([]);
-  const [scheduledPosts, setScheduledPosts] = useState<ScheduledPost[]>([]);
-  const [isConnectDialogOpen, setIsConnectDialogOpen] = useState(false);
-  const [newAccountPlatform, setNewAccountPlatform] = useState<"instagram" | "facebook" | "twitter" | "youtube">("instagram");
-  const [newAccountUsername, setNewAccountUsername] = useState("");
-  const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false);
-  const [selectedContent, setSelectedContent] = useState<ContentItem | null>(null);
-  const [selectedAccount, setSelectedAccount] = useState<string>("");
-  const [postTime, setPostTime] = useState("12:00");
-  const [postText, setPostText] = useState("");
-  const { toast } = useToast();
-
-  // Load content from localStorage
-  useEffect(() => {
-    try {
-      const scheduledData = localStorage.getItem('scheduledContent');
-      if (scheduledData) {
-        const parsedData = JSON.parse(scheduledData);
-        const contentWithDates = parsedData.map((item: any) => ({
-          ...item,
-          scheduledDate: item.scheduledDate ? new Date(item.scheduledDate) : null,
-        }));
-        setScheduledContent(contentWithDates);
-      }
-
-      // Load connected accounts from localStorage
-      const accountsData = localStorage.getItem('connectedSocialAccounts');
-      if (accountsData) {
-        setConnectedAccounts(JSON.parse(accountsData));
-      }
-
-      // Load scheduled posts from localStorage
-      const postsData = localStorage.getItem('scheduledSocialPosts');
-      if (postsData) {
-        setScheduledPosts(JSON.parse(postsData));
-      }
-    } catch (error) {
-      console.error("Error loading data:", error);
-    }
-  }, []);
-
-  // Save connected accounts to localStorage when they change
-  useEffect(() => {
-    localStorage.setItem('connectedSocialAccounts', JSON.stringify(connectedAccounts));
-  }, [connectedAccounts]);
-
-  // Save scheduled posts to localStorage when they change
-  useEffect(() => {
-    localStorage.setItem('scheduledSocialPosts', JSON.stringify(scheduledPosts));
-  }, [scheduledPosts]);
-
-  // Filter content for selected date
-  const getContentForDate = () => {
-    return scheduledContent.filter(item => {
-      if (!item.scheduledDate) return false;
-      const contentDate = new Date(item.scheduledDate);
-      return (
-        contentDate.getDate() === selectedDate.getDate() &&
-        contentDate.getMonth() === selectedDate.getMonth() &&
-        contentDate.getFullYear() === selectedDate.getFullYear()
-      );
-    });
+  const [posts, setPosts] = useState(scheduledPosts);
+  const [accounts, setAccounts] = useState(connectedAccounts);
+  const [activeTab, setActiveTab] = useState("upcoming");
+  
+  const handleConnect = (platform: string) => {
+    toast.success(`Connected to ${platform} successfully!`);
+    setAccounts(prev => 
+      prev.map(account => 
+        account.platform === platform 
+          ? { ...account, isActive: true } 
+          : account
+      )
+    );
   };
-
-  // Get posts scheduled for the selected date
-  const getScheduledPostsForDate = () => {
-    return scheduledPosts.filter(post => {
-      const postDate = new Date(post.scheduledTime);
-      return (
-        postDate.getDate() === selectedDate.getDate() &&
-        postDate.getMonth() === selectedDate.getMonth() &&
-        postDate.getFullYear() === selectedDate.getFullYear()
-      );
-    });
+  
+  const handleDisconnect = (id: string) => {
+    toast.success("Account disconnected");
+    setAccounts(prev => 
+      prev.map(account => 
+        account.id === id 
+          ? { ...account, isActive: false } 
+          : account
+      )
+    );
   };
-
-  // Handle connecting a new social account
-  const handleConnectAccount = () => {
-    if (!newAccountUsername.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter a username",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // In a real application, this would involve OAuth or API integration
-    // For demo purposes, we're just simulating the connection
-    const newAccount: SocialAccount = {
-      id: Math.random().toString(36).substring(2, 9),
-      platform: newAccountPlatform,
-      username: newAccountUsername,
-      isConnected: true,
-    };
-
-    setConnectedAccounts(prev => [...prev, newAccount]);
-    setIsConnectDialogOpen(false);
-    setNewAccountUsername("");
-
-    toast({
-      title: "Account Connected",
-      description: `Your ${newAccountPlatform} account @${newAccountUsername} has been connected.`,
-    });
+  
+  const handleDelete = (id: string) => {
+    toast.success("Post deleted from schedule");
+    setPosts(prev => prev.filter(post => post.id !== id));
   };
-
-  // Handle scheduling a post
-  const handleSchedulePost = () => {
-    if (!selectedContent) return;
-    if (!selectedAccount) {
-      toast({
-        title: "Error",
-        description: "Please select an account to post to",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Create the scheduled post
-    const scheduledTime = new Date(selectedDate);
-    const [hours, minutes] = postTime.split(':').map(Number);
-    scheduledTime.setHours(hours, minutes);
-
-    const newPost: ScheduledPost = {
-      id: Math.random().toString(36).substring(2, 9),
-      contentId: selectedContent.id,
-      accountId: selectedAccount,
-      platform: connectedAccounts.find(acc => acc.id === selectedAccount)?.platform || "instagram",
-      scheduledTime: scheduledTime.toISOString(),
-      status: "scheduled",
-      postText: postText || selectedContent.title,
-    };
-
-    setScheduledPosts(prev => [...prev, newPost]);
-    setIsScheduleDialogOpen(false);
-    resetScheduleForm();
-
-    toast({
-      title: "Post Scheduled",
-      description: `Your post "${selectedContent.title}" has been scheduled for ${format(scheduledTime, "PPp")}`,
-    });
-  };
-
-  // Reset the scheduling form
-  const resetScheduleForm = () => {
-    setSelectedContent(null);
-    setSelectedAccount("");
-    setPostTime("12:00");
-    setPostText("");
-  };
-
-  // Open the schedule dialog for a content item
-  const openScheduleDialog = (content: ContentItem) => {
-    setSelectedContent(content);
-    // Pre-fill the post text with the content title
-    setPostText(content.title || "");
-    setIsScheduleDialogOpen(true);
-  };
-
-  // Get platform icon based on platform name
+  
+  const filteredPosts = activeTab === "upcoming" 
+    ? posts.filter(post => post.status === "scheduled")
+    : activeTab === "published"
+    ? posts.filter(post => post.status === "published")
+    : posts.filter(post => post.status === "failed");
+  
   const getPlatformIcon = (platform: string) => {
-    switch (platform.toLowerCase()) {
-      case 'instagram':
-        return <Instagram className="h-5 w-5" />;
-      case 'facebook':
-        return <Facebook className="h-5 w-5" />;
-      case 'twitter':
-        return <Twitter className="h-5 w-5" />;
-      case 'youtube':
-        return <Youtube className="h-5 w-5" />;
-      default:
-        return <ExternalLink className="h-5 w-5" />;
-    }
+    const Icon = platformIcons[platform] || LinkIcon;
+    return <Icon className="h-5 w-5" />;
   };
 
   return (
     <Layout>
-      <div className="container py-6 max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-2">Social Media Scheduler</h1>
-        <p className="text-muted-foreground mb-6">
-          Schedule and publish your content directly to social media platforms.
-        </p>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Calendar & Content */}
-          <div className="lg:col-span-2 space-y-6">
+      <div className="container mx-auto py-6 space-y-8 fade-in">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">Social Media Scheduler</h1>
+            <p className="text-muted-foreground">Schedule, manage and publish content to your social platforms</p>
+          </div>
+          
+          <Button className="gap-1">
+            <Plus className="h-4 w-4" />
+            <span>Create New Post</span>
+          </Button>
+        </div>
+        
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="md:col-span-2">
             <Card>
-              <CardHeader>
-                <CardTitle>Content Calendar</CardTitle>
+              <CardHeader className="pb-3">
+                <CardTitle>Scheduled Content</CardTitle>
                 <CardDescription>
-                  Select a date to see content scheduled for that day
+                  View and manage your upcoming, published, and failed posts
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="flex flex-col sm:flex-row gap-6">
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={(date) => date && setSelectedDate(date)}
-                    className="rounded-md border"
-                  />
-                  
-                  <div className="flex-1">
-                    <h3 className="font-medium mb-4">
-                      Content for {format(selectedDate, "MMMM d, yyyy")}
-                    </h3>
-                    {getContentForDate().length > 0 ? (
-                      <div className="space-y-3">
-                        {getContentForDate().map((content) => (
-                          <div 
-                            key={content.id} 
-                            className="p-4 border rounded-lg bg-card hover:shadow-md transition-shadow"
-                          >
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <h4 className="font-medium">{content.title}</h4>
-                                {content.description && (
-                                  <p className="text-muted-foreground text-sm mt-1">
-                                    {content.description}
-                                  </p>
-                                )}
-                                {content.platforms && content.platforms.length > 0 && (
-                                  <div className="flex flex-wrap gap-1.5 mt-2">
-                                    {content.platforms.map((platform, idx) => (
-                                      <Badge
-                                        key={`platform-${idx}`}
-                                        variant="secondary"
-                                        className="flex items-center gap-1"
-                                      >
-                                        {getPlatformIcon(platform)}
-                                        <span>{platform}</span>
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => openScheduleDialog(content)}
-                              >
-                                Schedule Post
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-6 text-muted-foreground">
-                        No content scheduled for this date.
-                      </div>
-                    )}
-                  </div>
+              
+              <Tabs defaultValue="upcoming" value={activeTab} onValueChange={setActiveTab}>
+                <div className="px-6">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+                    <TabsTrigger value="published">Published</TabsTrigger>
+                    <TabsTrigger value="failed">Failed</TabsTrigger>
+                  </TabsList>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Scheduled Posts</CardTitle>
-                <CardDescription>
-                  Posts scheduled to be published to social media
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {getScheduledPostsForDate().length > 0 ? (
-                  <div className="space-y-4">
-                    {getScheduledPostsForDate().map((post) => {
-                      const content = scheduledContent.find(c => c.id === post.contentId);
-                      const account = connectedAccounts.find(a => a.id === post.accountId);
-                      if (!content || !account) return null;
-                      
-                      return (
-                        <div 
-                          key={post.id} 
-                          className="p-4 border rounded-lg bg-card hover:shadow-md transition-shadow"
-                        >
-                          <div className="flex items-start justify-between">
-                            <div className="flex gap-3">
-                              <div className="mt-1">
-                                {getPlatformIcon(account.platform)}
-                              </div>
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium text-sm">@{account.username}</span>
+                
+                <TabsContent value={activeTab} className="pt-2">
+                  <ScrollArea className="h-[400px] w-full">
+                    <div className="px-6">
+                      {filteredPosts.length === 0 ? (
+                        <div className="h-[200px] flex items-center justify-center flex-col text-center p-8 space-y-2">
+                          <div className="bg-gray-100 p-3 rounded-full">
+                            {activeTab === "upcoming" ? (
+                              <Clock className="h-8 w-8 text-muted-foreground" />
+                            ) : activeTab === "published" ? (
+                              <CheckCircle className="h-8 w-8 text-muted-foreground" />
+                            ) : (
+                              <XCircle className="h-8 w-8 text-muted-foreground" />
+                            )}
+                          </div>
+                          <h3 className="font-medium">No {activeTab} posts</h3>
+                          <p className="text-muted-foreground text-sm">
+                            {activeTab === "upcoming" 
+                              ? "You don't have any scheduled posts yet"
+                              : activeTab === "published"
+                              ? "Your published posts will appear here"
+                              : "Any failed posts will be shown here"}
+                          </p>
+                        </div>
+                      ) : (
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Content</TableHead>
+                              <TableHead>Platform</TableHead>
+                              <TableHead>Schedule/Publish Date</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {filteredPosts.map(post => (
+                              <TableRow key={post.id}>
+                                <TableCell>
+                                  <div className="flex items-center gap-3">
+                                    {post.image && (
+                                      <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center overflow-hidden">
+                                        {contentTypeIcons[post.type]}
+                                      </div>
+                                    )}
+                                    <div>
+                                      <div className="font-medium">{post.title}</div>
+                                      <div className="text-sm text-muted-foreground truncate max-w-[200px]">
+                                        {post.content}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-1.5">
+                                    {getPlatformIcon(post.platform)}
+                                    <span className="capitalize">{post.platform}</span>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  {format(post.scheduledFor, "MMM d, yyyy · h:mm a")}
+                                </TableCell>
+                                <TableCell>
                                   <Badge 
-                                    variant={post.status === "scheduled" ? "outline" : 
-                                           post.status === "posted" ? "success" : "destructive"}
-                                    className="text-xs"
+                                    variant="outline" 
+                                    className={`${statusColors[post.status]} flex items-center gap-1 capitalize`}
                                   >
+                                    {statusIcons[post.status]}
                                     {post.status}
                                   </Badge>
-                                </div>
-                                <h4 className="font-medium mt-1">{content.title}</h4>
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  {post.postText}
-                                </p>
-                                <p className="text-xs text-muted-foreground mt-2">
-                                  Scheduled for {format(new Date(post.scheduledTime), "h:mm a")}
-                                </p>
-                              </div>
-                            </div>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => {
-                                // In a real app, this would trigger the post or cancel it
-                                toast({
-                                  title: "Not implemented",
-                                  description: "This feature would publish the post immediately in a real application.",
-                                });
-                              }}
-                            >
-                              Publish Now
-                            </Button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center py-6 text-muted-foreground">
-                    No posts scheduled for this date.
-                  </div>
-                )}
-              </CardContent>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      <DropdownMenuItem className="flex items-center gap-2">
+                                        <Edit2 className="h-4 w-4" />
+                                        <span>Edit</span>
+                                      </DropdownMenuItem>
+                                      
+                                      {post.status === "scheduled" && (
+                                        <DropdownMenuItem className="flex items-center gap-2">
+                                          <Clock className="h-4 w-4" />
+                                          <span>Reschedule</span>
+                                        </DropdownMenuItem>
+                                      )}
+                                      
+                                      {post.status === "failed" && (
+                                        <DropdownMenuItem className="flex items-center gap-2">
+                                          <Clock className="h-4 w-4" />
+                                          <span>Retry</span>
+                                        </DropdownMenuItem>
+                                      )}
+                                      
+                                      <DropdownMenuSeparator />
+                                      
+                                      <DropdownMenuItem 
+                                        className="flex items-center gap-2 text-destructive"
+                                        onClick={() => handleDelete(post.id)}
+                                      >
+                                        <Trash className="h-4 w-4" />
+                                        <span>Delete</span>
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      )}
+                    </div>
+                  </ScrollArea>
+                </TabsContent>
+              </Tabs>
             </Card>
           </div>
-
-          {/* Right Column - Connected Accounts */}
-          <div className="space-y-6">
+          
+          <div>
             <Card>
               <CardHeader>
-                <CardTitle className="flex justify-between items-center">
-                  <span>Connected Accounts</span>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setIsConnectDialogOpen(true)}
-                    className="h-8 gap-1"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Connect
-                  </Button>
-                </CardTitle>
+                <CardTitle>Connected Accounts</CardTitle>
+                <CardDescription>
+                  Manage your social media connections
+                </CardDescription>
               </CardHeader>
-              <CardContent>
-                {connectedAccounts.length > 0 ? (
-                  <div className="space-y-3">
-                    {connectedAccounts.map((account) => (
-                      <div 
-                        key={account.id} 
-                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center justify-center h-10 w-10 bg-muted rounded-full overflow-hidden">
-                            {getPlatformIcon(account.platform)}
-                          </div>
-                          <div>
-                            <h4 className="font-medium">@{account.username}</h4>
-                            <p className="text-xs text-muted-foreground capitalize">
-                              {account.platform}
-                            </p>
-                          </div>
+              
+              <CardContent className="space-y-4">
+                {accounts.map(account => (
+                  <div key={account.id} className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {getPlatformIcon(account.platform)}
+                      <div>
+                        <div className="font-medium capitalize">{account.platform}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {account.username}
                         </div>
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
-                          onClick={() => {
-                            toast({
-                              title: "Not implemented",
-                              description: "Account settings would be available here in a real application.",
-                            });
-                          }}
-                        >
-                          <Settings className="h-4 w-4" />
-                        </Button>
                       </div>
-                    ))}
+                    </div>
+                    
+                    {account.isActive ? (
+                      <Badge 
+                        variant="outline" 
+                        className="bg-green-100 text-green-800"
+                      >
+                        Connected
+                      </Badge>
+                    ) : (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleConnect(account.platform)}
+                      >
+                        Connect
+                      </Button>
+                    )}
                   </div>
-                ) : (
-                  <div className="text-center py-6">
-                    <p className="text-muted-foreground mb-4">No accounts connected yet</p>
-                    <Button onClick={() => setIsConnectDialogOpen(true)}>
-                      Connect Your First Account
-                    </Button>
-                  </div>
-                )}
+                ))}
+                
+                <Button 
+                  variant="outline" 
+                  className="w-full mt-2 gap-1"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Add Account</span>
+                </Button>
               </CardContent>
             </Card>
-
-            <Card>
+            
+            <Card className="mt-6">
               <CardHeader>
-                <CardTitle>Analytics Overview</CardTitle>
+                <CardTitle>Analytics</CardTitle>
+                <CardDescription>
+                  Your social media performance
+                </CardDescription>
               </CardHeader>
+              
               <CardContent>
-                <div className="text-center py-6">
-                  <p className="text-muted-foreground mb-2">
-                    Connect your accounts to see post performance analytics
-                  </p>
-                  <Button 
-                    variant="outline"
-                    onClick={() => {
-                      toast({
-                        title: "Not implemented",
-                        description: "Social media analytics would be available here in a real application.",
-                      });
-                    }}
-                  >
-                    View Analytics
-                  </Button>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="text-sm text-muted-foreground">
+                      Total Scheduled Posts
+                    </div>
+                    <div className="text-3xl font-bold">
+                      {posts.filter(p => p.status === "scheduled").length}
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="text-sm text-muted-foreground">
+                      Published Posts
+                    </div>
+                    <div className="text-3xl font-bold">
+                      {posts.filter(p => p.status === "published").length}
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="text-sm text-muted-foreground">
+                      Failed Posts
+                    </div>
+                    <div className="text-3xl font-bold text-destructive">
+                      {posts.filter(p => p.status === "failed").length}
+                    </div>
+                  </div>
                 </div>
               </CardContent>
+              
+              <CardFooter>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                >
+                  View Detailed Analytics
+                </Button>
+              </CardFooter>
             </Card>
           </div>
         </div>
-
-        {/* Connect Account Dialog */}
-        <Dialog open={isConnectDialogOpen} onOpenChange={setIsConnectDialogOpen}>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Connect Social Media Account</DialogTitle>
-              <DialogDescription>
-                Connect your accounts to schedule and publish content.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="platform">Platform</Label>
-                <Select 
-                  value={newAccountPlatform} 
-                  onValueChange={(value: any) => setNewAccountPlatform(value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a platform" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="instagram">Instagram</SelectItem>
-                    <SelectItem value="facebook">Facebook</SelectItem>
-                    <SelectItem value="twitter">Twitter</SelectItem>
-                    <SelectItem value="youtube">YouTube</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="username">Username</Label>
-                <Input
-                  id="username"
-                  value={newAccountUsername}
-                  onChange={(e) => setNewAccountUsername(e.target.value)}
-                  placeholder="@yourusername"
-                />
-              </div>
-              <div className="text-sm text-muted-foreground mt-2">
-                Note: In a real application, this would redirect you to authenticate with the platform.
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsConnectDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleConnectAccount}>
-                Connect Account
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Schedule Post Dialog */}
-        <Dialog open={isScheduleDialogOpen} onOpenChange={setIsScheduleDialogOpen}>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Schedule Social Media Post</DialogTitle>
-              <DialogDescription>
-                Schedule this content to be published to your social media.
-              </DialogDescription>
-            </DialogHeader>
-            {selectedContent && (
-              <div className="grid gap-4 py-4">
-                <div className="p-3 border rounded-md bg-muted/50">
-                  <h4 className="font-medium">{selectedContent.title}</h4>
-                  {selectedContent.description && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {selectedContent.description}
-                    </p>
-                  )}
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="account">Post to</Label>
-                  <Select 
-                    value={selectedAccount} 
-                    onValueChange={setSelectedAccount}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select an account" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {connectedAccounts.map(account => (
-                        <SelectItem key={account.id} value={account.id}>
-                          <div className="flex items-center gap-2">
-                            {getPlatformIcon(account.platform)}
-                            <span>@{account.username} ({account.platform})</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="time">Time</Label>
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-2 border rounded-md p-2 bg-muted/50 flex-1">
-                      <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                      <span>{format(selectedDate, "MMMM d, yyyy")}</span>
-                    </div>
-                    <Input
-                      id="time"
-                      type="time"
-                      value={postTime}
-                      onChange={(e) => setPostTime(e.target.value)}
-                      className="w-24"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="postText">Post Caption</Label>
-                  <Textarea
-                    id="postText"
-                    value={postText}
-                    onChange={(e) => setPostText(e.target.value)}
-                    placeholder="Write your post caption here..."
-                    rows={4}
-                  />
-                </div>
-              </div>
-            )}
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsScheduleDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleSchedulePost}>
-                Schedule Post
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
     </Layout>
   );
