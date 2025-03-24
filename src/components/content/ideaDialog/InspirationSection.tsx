@@ -79,17 +79,6 @@ const InspirationSection = ({
       />
 
       <div className="flex items-center gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => setShowLinkDialog(true)}
-          className="h-8 flex items-center gap-1 bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100 text-xs"
-        >
-          <LinkIcon className="h-3 w-3" />
-          <span>Add link</span>
-        </Button>
-        
         <Label htmlFor="image-upload" className="cursor-pointer bg-purple-50 flex items-center gap-1 px-2 py-1 rounded border border-purple-200 text-xs hover:bg-purple-100 text-purple-700 transition-colors h-8">
           <ImageIcon className="h-3 w-3" />
           <span>Upload image</span>
@@ -101,6 +90,17 @@ const InspirationSection = ({
           className="hidden"
           onChange={handleImageUpload}
         />
+        
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setShowLinkDialog(true)}
+          className="h-8 flex items-center gap-1 bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100 text-xs"
+        >
+          <LinkIcon className="h-3 w-3" />
+          <span>Add link</span>
+        </Button>
       </div>
 
       <div className="flex flex-wrap gap-2">
