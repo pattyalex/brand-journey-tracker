@@ -1,6 +1,7 @@
 
 import { Label } from "@/components/ui/label";
 import TagsInput from "../TagsInput";
+import { Tag } from "lucide-react";
 
 interface TagsSectionProps {
   tags: string[];
@@ -19,7 +20,10 @@ const TagsSection = ({
 }: TagsSectionProps) => {
   return (
     <div className="grid gap-2">
-      <Label htmlFor="tags">Status</Label>
+      <div className="flex items-center gap-2 mb-1">
+        <Tag size={18} className="text-green-500" />
+        <Label htmlFor="tags">Status</Label>
+      </div>
       <TagsInput
         tags={tags}
         currentTag={currentTag}
