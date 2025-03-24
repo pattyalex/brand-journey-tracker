@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -262,7 +263,8 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
             >
               <Card 
                 className={`border rounded-lg shadow-sm relative group hover:border-purple-300 transition-all 
-                  ${expandedCardId === type.id ? 'w-[300px] bg-white' : 'w-[200px]'}`}
+                  ${expandedCardId === type.id ? 'w-[300px] bg-white' : 'w-[200px]'}
+                  hover:shadow-md shadow-gray-200/60`}
               >
                 <Button
                   type="button"
@@ -382,7 +384,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               <Button 
                 variant="ghost" 
                 onClick={() => setIsAddingFormat(!isAddingFormat)}
-                className="w-[200px] h-[80px] flex items-center justify-center p-0"
+                className="w-[200px] h-[80px] flex items-center justify-center p-0 hover:shadow-sm transition-shadow"
               >
                 <Plus className="h-5 w-5 text-purple-500" />
               </Button>
