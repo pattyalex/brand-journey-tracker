@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -129,7 +130,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarColor }: ContentTypeBuc
   const getFormatColorScheme = (index: number) => {
     return {
       bg: "#FFFFFF",
-      border: pillarColor ? `${pillarColor}30` : "#E5E7EB",
+      border: pillarColor ? `${pillarColor}60` : "#C0C0C0", // Intensified border color
       text: "#333333",
       hover: pillarColor ? `${pillarColor}08` : "#F9FAFB"
     };
@@ -328,7 +329,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarColor }: ContentTypeBuc
             variants={cardVariants}
             whileHover={{ 
               scale: 1.02,
-              boxShadow: `0 4px 12px rgba(0, 0, 0, 0.03)`,
+              boxShadow: `0 4px 12px rgba(0, 0, 0, 0.05)`,
               transition: { duration: 0.2 }
             }}
           >
@@ -344,7 +345,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarColor }: ContentTypeBuc
                   backgroundColor: colorScheme.bg,
                   borderColor: colorScheme.border,
                   boxShadow: `0 2px 8px rgba(0, 0, 0, 0.02)`,
-                  borderWidth: '1px',
+                  borderWidth: '2px', // Increased border width for more intensity
                 }}
               >
                 <Button
@@ -485,8 +486,8 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarColor }: ContentTypeBuc
                 whileTap={{ scale: 0.98 }}
                 className="border border-dashed rounded-xl"
                 style={pillarColor ? { 
-                  borderColor: `${pillarColor}20`,
-                  borderWidth: '1px'
+                  borderColor: `${pillarColor}50`,  // Intensified border color
+                  borderWidth: '2px'  // Increased border width
                 } : undefined}
               >
                 <Button 
