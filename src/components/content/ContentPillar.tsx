@@ -6,6 +6,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautif
 import ContentCard from "./ContentCard";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ContentPillarProps {
   pillar: Pillar;
@@ -102,17 +103,51 @@ const ContentPillar = ({
     };
   }, [filteredContent]);
 
+  // Animation variants for the content cards
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { 
+        type: "spring",
+        stiffness: 300,
+        damping: 24
+      }
+    }
+  };
+
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="space-y-2 relative">
+      <motion.div 
+        className="space-y-2 relative"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
+      >
         {filteredContent.length === 0 ? (
-          <div className="text-center p-8 border border-dashed rounded-lg bg-muted/30">
+          <motion.div 
+            className="text-center p-8 border border-dashed rounded-lg bg-muted/30"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
             <p className="text-muted-foreground">
               {searchQuery 
                 ? "No matching content found" 
                 : "No ideas yet. Create a new idea to get started."}
             </p>
-          </div>
+          </motion.div>
         ) : (
           <div className="relative">
             {filteredContent.length > 3 && showLeftArrow && (
@@ -134,41 +169,47 @@ const ContentPillar = ({
             >
               <Droppable droppableId="content-cards" direction="horizontal">
                 {(provided) => (
-                  <div 
+                  <motion.div 
                     {...provided.droppableProps}
                     ref={provided.innerRef}
                     className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4 min-w-min px-2"
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
                   >
-                    {filteredContent.map((content, index) => (
-                      <Draggable
-                        key={content.id}
-                        draggableId={content.id}
-                        index={index}
-                      >
-                        {(provided, snapshot) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            className={`${snapshot.isDragging ? 'opacity-70' : 'opacity-100'} max-w-[360px]`}
-                            style={{
-                              ...provided.draggableProps.style,
-                            }}
-                          >
-                            <ContentCard
-                              content={content}
-                              index={index}
-                              pillar={pillar}
-                              pillars={pillars}
-                              onDeleteContent={onDeleteContent}
-                              onEditContent={onEditContent}
-                            />
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
+                    <AnimatePresence>
+                      {filteredContent.map((content, index) => (
+                        <Draggable
+                          key={content.id}
+                          draggableId={content.id}
+                          index={index}
+                        >
+                          {(provided, snapshot) => (
+                            <motion.div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              className={`${snapshot.isDragging ? 'opacity-70' : 'opacity-100'} max-w-[360px]`}
+                              style={{
+                                ...provided.draggableProps.style,
+                              }}
+                              variants={itemVariants}
+                            >
+                              <ContentCard
+                                content={content}
+                                index={index}
+                                pillar={pillar}
+                                pillars={pillars}
+                                onDeleteContent={onDeleteContent}
+                                onEditContent={onEditContent}
+                              />
+                            </motion.div>
+                          )}
+                        </Draggable>
+                      ))}
+                    </AnimatePresence>
                     {provided.placeholder}
-                  </div>
+                  </motion.div>
                 )}
               </Droppable>
             </div>
@@ -186,7 +227,7 @@ const ContentPillar = ({
             )}
           </div>
         )}
-      </div>
+      </motion.div>
     </DragDropContext>
   );
 };

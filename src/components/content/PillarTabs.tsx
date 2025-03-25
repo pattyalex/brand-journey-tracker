@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pillar } from "@/pages/BankOfContent";
@@ -28,6 +27,7 @@ import {
   TooltipProvider,
   TooltipTrigger
 } from "@/components/ui/tooltip";
+import { motion } from "framer-motion";
 
 interface PillarTabsProps {
   pillars: Pillar[];
@@ -78,7 +78,12 @@ const PillarTabs = ({
   };
 
   return (
-    <div className="flex items-center justify-between mb-6">
+    <motion.div 
+      className="flex items-center justify-between mb-6"
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       <div className="flex items-center">
         <TabsList className="bg-background border overflow-x-auto flex items-center h-12">
           {pillars.map((pillar) => (
@@ -117,10 +122,17 @@ const PillarTabs = ({
                     value={pillar.id}
                     className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white px-5 py-2 text-base ${
                       pillar.id === "1" && activeTab === "1" ? "bg-[#8B6B4E] text-white" : ""
-                    }`}
+                    } transition-all duration-300`}
                     onClick={() => onTabChange(pillar.id)}
                   >
-                    {pillar.name}
+                    <motion.span
+                      key={pillar.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {pillar.name}
+                    </motion.span>
                   </TabsTrigger>
                   
                   <DropdownMenu>
@@ -179,13 +191,18 @@ const PillarTabs = ({
         <TooltipProvider delayDuration={0}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                onClick={onAddPillar} 
-                className="h-10 w-10 p-0 ml-6 bg-transparent"
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <Plus className="h-6 w-6 text-purple-500" />
-              </Button>
+                <Button 
+                  variant="ghost" 
+                  onClick={onAddPillar} 
+                  className="h-10 w-10 p-0 ml-6 bg-transparent"
+                >
+                  <Plus className="h-6 w-6 text-purple-500" />
+                </Button>
+              </motion.div>
             </TooltipTrigger>
             <TooltipContent>
               <p>Add pillar</p>
@@ -193,7 +210,7 @@ const PillarTabs = ({
           </Tooltip>
         </TooltipProvider>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

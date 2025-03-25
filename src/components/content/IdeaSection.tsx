@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Lightbulb, FileText, Filter, FilterX } from "lucide-react";
+import { Lightbulb, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
@@ -12,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { motion } from "framer-motion";
 
 interface IdeaSectionProps {
   pillar: Pillar;
@@ -240,7 +241,12 @@ const IdeaSection = ({
   };
 
   return (
-    <div className="space-y-3 pl-2 pr-3">
+    <motion.div 
+      className="space-y-3 pl-2 pr-3"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+    >
       <div className="flex justify-end">
         <ContentUploader 
           pillarId={pillar.id}
@@ -252,7 +258,12 @@ const IdeaSection = ({
         />
       </div>
       
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mt-4">
+      <motion.div 
+        className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mt-4"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
         <h2 className="text-xl font-semibold flex items-center">
           <Lightbulb className="h-5 w-5 mr-2" /> 
           {pillar.name} Ideas
@@ -327,7 +338,7 @@ const IdeaSection = ({
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
       
       <ContentPillar
         pillar={{
@@ -341,7 +352,7 @@ const IdeaSection = ({
         searchQuery={searchQuery}
         onReorderContent={onReorderContent}
       />
-    </div>
+    </motion.div>
   );
 };
 

@@ -1,3 +1,4 @@
+
 import { useRef, useEffect, useState } from "react";
 import { Pencil, Sparkles } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -7,6 +8,7 @@ import SimpleTextFormattingToolbar from "@/components/SimpleTextFormattingToolba
 import { useSidebar } from "@/components/ui/sidebar";
 import MeganAIChat from "./MeganAIChat";
 import TitleHookSuggestions from "./TitleHookSuggestions";
+import { motion } from "framer-motion";
 
 interface WritingSpaceProps {
   writingText: string;
@@ -56,7 +58,12 @@ const WritingSpace = ({
   };
 
   return (
-    <div className={`space-y-4 pr-2 transition-all duration-300 ${expandedClass}`}>
+    <motion.div 
+      className={`space-y-4 pr-2 transition-all duration-300 ${expandedClass}`}
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold flex items-center">
           <Pencil className="h-5 w-5 mr-2" />
@@ -154,7 +161,7 @@ const WritingSpace = ({
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

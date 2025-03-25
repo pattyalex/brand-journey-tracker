@@ -10,6 +10,7 @@ import CaptionInputSection from "./CaptionInputSection";
 import PlatformsSection from "./PlatformsSection";
 import TagsSection from "./TagsSection";
 import InspirationSection from "./InspirationSection";
+import { motion } from "framer-motion";
 
 interface DialogContentProps {
   title: string;
@@ -47,6 +48,23 @@ interface DialogContentProps {
   onRemoveInspirationImage?: (index: number) => void;
   children?: ReactNode;
 }
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+      when: "beforeChildren"
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3 } }
+};
 
 const DialogContent = ({
   title,
@@ -86,9 +104,17 @@ const DialogContent = ({
 }: DialogContentProps) => {
   return (
     <ScrollArea className="h-[calc(95vh-140px)] pr-4" style={{ overflowY: 'auto', touchAction: 'pan-y' }}>
-      <div className="grid gap-5 py-4 pr-2">
+      <motion.div 
+        className="grid gap-5 py-4 pr-2"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
         {/* Title and bucket row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-2 gap-5"
+          variants={itemVariants}
+        >
           <div>
             <TitleInputSection title={title} onTitleChange={onTitleChange} />
           </div>
@@ -100,10 +126,13 @@ const DialogContent = ({
               pillarId={pillarId} 
             />
           </div>
-        </div>
+        </motion.div>
         
         {/* Inspiration section with new styling */}
-        <div className="bg-purple-50 rounded-lg p-4 border border-purple-100 shadow-sm">
+        <motion.div 
+          className="bg-purple-50 rounded-lg p-4 border border-purple-100 shadow-sm"
+          variants={itemVariants}
+        >
           <InspirationSection
             inspirationText={inspirationText}
             onInspirationTextChange={onInspirationTextChange}
@@ -114,10 +143,13 @@ const DialogContent = ({
             onAddInspirationImage={onAddInspirationImage}
             onRemoveInspirationImage={onRemoveInspirationImage}
           />
-        </div>
+        </motion.div>
         
         {/* Script and visual sections */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <motion.div 
+          className="grid grid-cols-1 lg:grid-cols-3 gap-5"
+          variants={itemVariants}
+        >
           {/* Script section (takes 2/3 on large screens) */}
           <div className="lg:col-span-2 space-y-4">
             <ScriptInputSection scriptText={scriptText} onScriptTextChange={onScriptTextChange} />
@@ -128,15 +160,21 @@ const DialogContent = ({
             <ShootDetailsSection shootDetails={shootDetails} onShootDetailsChange={onShootDetailsChange} />
             <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
           </div>
-        </div>
+        </motion.div>
         
         {/* Caption section */}
-        <div className="bg-amber-50 rounded-lg p-4 border border-amber-100 shadow-sm">
+        <motion.div 
+          className="bg-amber-50 rounded-lg p-4 border border-amber-100 shadow-sm"
+          variants={itemVariants}
+        >
           <CaptionInputSection captionText={captionText} onCaptionTextChange={onCaptionTextChange} />
-        </div>
+        </motion.div>
         
         {/* Platforms and tags in two columns */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-2 gap-5"
+          variants={itemVariants}
+        >
           <div className="bg-blue-50 rounded-lg p-4 border border-blue-100 shadow-sm">
             <PlatformsSection
               platforms={platforms}
@@ -156,10 +194,10 @@ const DialogContent = ({
               onRemoveTag={onRemoveTag}
             />
           </div>
-        </div>
+        </motion.div>
         
         {children}
-      </div>
+      </motion.div>
     </ScrollArea>
   );
 };
