@@ -1,4 +1,3 @@
-
 import { ReactNode } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import TitleInputSection from "./TitleInputSection";
@@ -49,21 +48,20 @@ interface DialogContentProps {
   children?: ReactNode;
 }
 
-// Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.05,
-      when: "beforeChildren"
-    }
+    transition: { duration: 0.3 }
   }
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.3 } }
+  hidden: { opacity: 0 },
+  visible: { 
+    opacity: 1, 
+    transition: { duration: 0.2 } 
+  }
 };
 
 const DialogContent = ({
@@ -110,7 +108,6 @@ const DialogContent = ({
         initial="hidden"
         animate="visible"
       >
-        {/* Title and bucket row */}
         <motion.div 
           className="grid grid-cols-1 md:grid-cols-2 gap-5"
           variants={itemVariants}
@@ -128,7 +125,6 @@ const DialogContent = ({
           </div>
         </motion.div>
         
-        {/* Inspiration section with new styling */}
         <motion.div 
           className="bg-purple-50 rounded-lg p-4 border border-purple-100 shadow-sm"
           variants={itemVariants}
@@ -145,24 +141,20 @@ const DialogContent = ({
           />
         </motion.div>
         
-        {/* Script and visual sections */}
         <motion.div 
           className="grid grid-cols-1 lg:grid-cols-3 gap-5"
           variants={itemVariants}
         >
-          {/* Script section (takes 2/3 on large screens) */}
           <div className="lg:col-span-2 space-y-4">
             <ScriptInputSection scriptText={scriptText} onScriptTextChange={onScriptTextChange} />
           </div>
           
-          {/* Visual notes and shoot details (takes 1/3 on large screens) */}
           <div className="space-y-5">
             <ShootDetailsSection shootDetails={shootDetails} onShootDetailsChange={onShootDetailsChange} />
             <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
           </div>
         </motion.div>
         
-        {/* Caption section */}
         <motion.div 
           className="bg-amber-50 rounded-lg p-4 border border-amber-100 shadow-sm"
           variants={itemVariants}
@@ -170,7 +162,6 @@ const DialogContent = ({
           <CaptionInputSection captionText={captionText} onCaptionTextChange={onCaptionTextChange} />
         </motion.div>
         
-        {/* Platforms and tags in two columns */}
         <motion.div 
           className="grid grid-cols-1 md:grid-cols-2 gap-5"
           variants={itemVariants}

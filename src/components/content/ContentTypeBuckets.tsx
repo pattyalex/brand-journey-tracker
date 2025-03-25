@@ -209,52 +209,24 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.07,
-        delayChildren: 0.1
-      }
-    },
-    exit: {
-      opacity: 0,
-      transition: { 
-        staggerChildren: 0.05,
-        staggerDirection: -1 
-      }
+      transition: { duration: 0.3 }
     }
   };
 
   const cardVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 20,
-      scale: 0.95
-    },
+    hidden: { opacity: 0 },
     visible: { 
-      opacity: 1, 
-      y: 0,
-      scale: 1,
-      transition: { 
-        type: "spring", 
-        stiffness: 300, 
-        damping: 24 
-      }
-    },
-    exit: { 
-      opacity: 0, 
-      y: 10,
-      scale: 0.95,
-      transition: { 
-        duration: 0.2
-      }
+      opacity: 1,
+      transition: { duration: 0.2 }
     }
   };
 
   return (
     <div className="mt-4 mb-6">
       <motion.div 
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2 }}
         className="flex justify-between items-center mb-3"
       >
         <h2 className="text-xl font-semibold">Content Formats</h2>
@@ -262,9 +234,10 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
       
       {isAddingFormat && (
         <motion.div 
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          exit={{ opacity: 0, height: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
           className="mb-3 flex flex-col gap-2"
         >
           <Input
@@ -303,7 +276,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        exit="exit"
         key={pillarId}
       >
         {contentTypes.map((type) => (
@@ -317,7 +289,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               left: expandedCardId === type.id ? cardPositions[type.id]?.left || 0 : 'auto',
             }}
             variants={cardVariants}
-            layout
           >
             <Collapsible
               open={expandedCardId === type.id}
@@ -445,7 +416,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
             <TooltipTrigger asChild>
               <motion.div
                 variants={cardVariants}
-                layout
               >
                 <Button 
                   variant="ghost" 
