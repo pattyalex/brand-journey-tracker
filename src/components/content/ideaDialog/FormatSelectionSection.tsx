@@ -42,9 +42,9 @@ const FormatSelectionSection = ({
           id="content-format" 
           className="w-full transition-all duration-300"
           style={selectedFormat ? {
-            borderColor: `${selectedFormat.color}50`,
-            boxShadow: `0 0 0 1px ${selectedFormat.color}30`,
-            background: `${selectedFormat.color}05`,
+            borderColor: selectedFormat.color,
+            borderWidth: '2px',
+            background: 'white',
           } : undefined}
         >
           <SelectValue placeholder="Select content format" />
@@ -78,10 +78,12 @@ const FormatSelectionSection = ({
         <div 
           className="mt-1 px-3 py-1.5 text-xs inline-flex items-center rounded-md transition-all duration-300 font-medium"
           style={{ 
-            backgroundColor: `${selectedFormat.color}12`,
+            backgroundColor: 'white',
             color: selectedFormat.color,
             borderLeft: `2px solid ${selectedFormat.color}`,
-            boxShadow: `inset 0 0 0 1px ${selectedFormat.color}20`
+            borderTop: `1px solid ${selectedFormat.color}20`,
+            borderRight: `1px solid ${selectedFormat.color}20`,
+            borderBottom: `1px solid ${selectedFormat.color}20`,
           }}
         >
           Selected: {selectedFormat.label}

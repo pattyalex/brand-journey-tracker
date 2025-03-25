@@ -127,31 +127,15 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarColor }: ContentTypeBuc
     }
   }, [contentTypes, isAddingFormat, expandedCardId]);
 
-  // Function to generate colors based on pillar color
+  // Generate neutral card styling with pillar-colored border
   const getFormatColorScheme = (index: number) => {
-    // If a pillar color is provided, use it to generate card colors
-    if (pillarColor) {
-      const opacity = (index % 4 + 6) / 10; // Creates opacity values from 0.6 to 0.9
-      return {
-        bg: `${pillarColor}10`, // Light background
-        border: `${pillarColor}30`, // Slightly darker border
-        text: pillarColor // Full color for text
-      };
-    }
-    
-    // Fallback to original colors if no pillar color provided
-    const FORMAT_COLORS = [
-      { bg: "#F3F4FF", border: "#D0D5FF", text: "#4B50C5" },
-      { bg: "#F0FFF4", border: "#C6F6D5", text: "#38A169" },
-      { bg: "#FFF8F0", border: "#FEEBC8", text: "#D69E2E" },
-      { bg: "#FFF0F7", border: "#FED7E2", text: "#D53F8C" },
-      { bg: "#F0F5FF", border: "#BAE6FD", text: "#0284C7" },
-      { bg: "#FFF5F5", border: "#FED7D7", text: "#E53E3E" },
-      { bg: "#FFFAF0", border: "#FEEBC8", text: "#DD6B20" },
-      { bg: "#F0FFF4", border: "#C6F7E2", text: "#2C7A7B" }
-    ];
-    
-    return FORMAT_COLORS[index % FORMAT_COLORS.length];
+    // Neutral colors for all cards, but with pillar-colored border
+    return {
+      bg: "#FFFFFF", // White background
+      border: pillarColor || "#D4D4D8", // Use pillar color for border, or default to gray
+      text: "#333333", // Dark text for better readability
+      hover: pillarColor ? `${pillarColor}15` : "#F9FAFB" // Light hover state based on pillar color
+    };
   };
 
   const handleAddFormat = () => {
@@ -300,10 +284,10 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarColor }: ContentTypeBuc
               onClick={handleAddFormat} 
               size="sm"
               style={pillarColor ? { 
-                backgroundColor: `${pillarColor}15`,
                 color: pillarColor,
-                borderColor: `${pillarColor}40`
+                borderColor: pillarColor,
               } : undefined}
+              variant="outline"
               className="border"
             >
               Add
@@ -347,7 +331,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarColor }: ContentTypeBuc
             variants={cardVariants}
             whileHover={{ 
               scale: 1.03,
-              boxShadow: `0 10px 25px ${colorScheme.border}80`,
+              boxShadow: `0 10px 25px rgba(0, 0, 0, 0.05)`,
               transition: { duration: 0.2 }
             }}
           >
@@ -362,7 +346,8 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarColor }: ContentTypeBuc
                 style={{
                   backgroundColor: colorScheme.bg,
                   borderColor: colorScheme.border,
-                  boxShadow: `0 4px 14px ${colorScheme.border}50`
+                  boxShadow: `0 4px 14px rgba(0, 0, 0, 0.03)`,
+                  borderWidth: '2px',
                 }}
               >
                 <Button
@@ -412,7 +397,10 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarColor }: ContentTypeBuc
                         onClick={(e) => e.stopPropagation()}
                       />
                     ) : (
-                      <span className="text-sm font-medium truncate" style={{ color: colorScheme.text }}>
+                      <span 
+                        className="text-sm font-medium truncate" 
+                        style={{ color: pillarColor || colorScheme.text }}
+                      >
                         {type.name}
                       </span>
                     )}
@@ -475,12 +463,12 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarColor }: ContentTypeBuc
                   ) : null}
                   
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm" 
                     className="w-full mt-2 rounded-md text-xs font-medium"
                     style={{ 
-                      color: colorScheme.text,
-                      backgroundColor: `${colorScheme.text}10`, 
+                      color: pillarColor || "#333",
+                      borderColor: pillarColor || "#D4D4D8",
                     }}
                     onClick={() => onAddIdea(type.id)}
                   >
@@ -499,11 +487,14 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarColor }: ContentTypeBuc
                 variants={cardVariants}
                 whileHover={{ 
                   scale: 1.05,
-                  backgroundColor: pillarColor ? `${pillarColor}10` : "rgba(249, 244, 255, 0.7)" 
+                  backgroundColor: "rgba(249, 250, 251, 0.7)" 
                 }}
                 whileTap={{ scale: 0.98 }}
-                className="border border-dashed border-gray-300 rounded-xl"
-                style={pillarColor ? { borderColor: `${pillarColor}40` } : undefined}
+                className="border border-dashed rounded-xl"
+                style={pillarColor ? { 
+                  borderColor: pillarColor,
+                  borderWidth: '2px'
+                } : undefined}
               >
                 <Button 
                   variant="ghost" 
