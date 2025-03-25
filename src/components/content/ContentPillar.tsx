@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
@@ -114,27 +113,39 @@ const ContentPillar = ({
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, x: 80 },
+    hidden: { 
+      opacity: 0, 
+      y: 50,
+      x: -30,
+      scale: 0.8,
+      rotate: -2
+    },
     visible: {
       opacity: 1,
+      y: 0,
       x: 0,
+      scale: 1,
+      rotate: 0,
       transition: { 
         type: "spring",
-        stiffness: 300,
-        damping: 24
+        stiffness: 80,
+        damping: 15,
+        mass: 0.8
       }
     }
   };
 
   const emptyStateVariants = {
-    hidden: { opacity: 0, x: 80 },
+    hidden: { opacity: 0, y: 50 },
     visible: { 
       opacity: 1, 
-      x: 0,
+      y: 0,
       transition: { 
-        duration: 0.45,
-        delay: 0.15,
-        ease: "easeOut"
+        duration: 0.5,
+        delay: 0.2,
+        type: "spring",
+        stiffness: 100,
+        damping: 15
       }
     }
   };
@@ -188,8 +199,9 @@ const ContentPillar = ({
                     variants={containerVariants}
                     initial="hidden"
                     animate="visible"
+                    key={pillar.id}
                   >
-                    <AnimatePresence>
+                    <AnimatePresence mode="wait">
                       {filteredContent.map((content, index) => (
                         <Draggable
                           key={content.id}
@@ -206,6 +218,8 @@ const ContentPillar = ({
                                 ...provided.draggableProps.style,
                               }}
                               variants={itemVariants}
+                              custom={index}
+                              layout
                             >
                               <ContentCard
                                 content={content}

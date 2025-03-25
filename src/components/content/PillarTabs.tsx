@@ -185,12 +185,12 @@ const PillarTabs = ({
                       />
                     )}
                     
-                    {/* Ripple effect when clicked */}
+                    {/* Water ripple effect when clicked */}
                     {activeTab === pillar.id && (
                       <motion.div
                         initial={{ scale: 0, x: "-50%", y: "-50%", opacity: 0.7 }}
-                        animate={{ scale: 1.5, opacity: 0 }}
-                        transition={{ duration: 0.8 }}
+                        animate={{ scale: 2, opacity: 0 }}
+                        transition={{ duration: 1, ease: "easeOut" }}
                         className="absolute rounded-full bg-white/30 w-40 h-40 pointer-events-none"
                         style={{ left: "50%", top: "50%", zIndex: -1 }}
                       />
