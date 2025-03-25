@@ -47,9 +47,9 @@ const BucketSelectionSection = ({
   return (
     <motion.div 
       className="grid gap-2"
-      initial={{ opacity: 0, x: 20 }}
+      initial={{ opacity: 0, x: 60 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.4, delay: 0.1 }}
     >
       <div className="flex items-center gap-2 mb-1">
         <FolderIcon size={18} className="text-gray-500" />

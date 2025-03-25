@@ -60,9 +60,9 @@ const WritingSpace = ({
   return (
     <motion.div 
       className={`space-y-4 pr-2 transition-all duration-300 ${expandedClass}`}
-      initial={{ opacity: 0, x: -10 }}
+      initial={{ opacity: 0, x: 60 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.4 }}
     >
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold flex items-center">

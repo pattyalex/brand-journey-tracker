@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Check, ChevronDown, ChevronUp, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -122,17 +123,17 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
   return (
     <motion.div 
       className={`space-y-2 ${formatSelectorClassName}`}
-      initial={{ opacity: 0, x: 20 }}
+      initial={{ opacity: 0, x: 60 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
     >
       {isAddingCustom ? (
         <motion.div 
           className="flex items-center gap-2"
-          initial={{ opacity: 0, x: 20 }}
+          initial={{ opacity: 0, x: 40 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.3 }}
+          exit={{ opacity: 0, x: -40 }}
+          transition={{ duration: 0.35 }}
         >
           <Input
             value={customFormat}
@@ -225,9 +226,9 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
       {selectedFormat && (
         <motion.div 
           className="flex items-center mt-2"
-          initial={{ opacity: 0, x: 20 }}
+          initial={{ opacity: 0, x: 40 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.35, delay: 0.1 }}
         >
           <span className="bg-blue-100 text-blue-800 text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5">
             {selectedFormat}

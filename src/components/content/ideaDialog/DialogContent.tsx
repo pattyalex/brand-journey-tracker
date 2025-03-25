@@ -50,23 +50,24 @@ interface DialogContentProps {
 }
 
 const containerVariants = {
-  hidden: { opacity: 0, x: 30 },
+  hidden: { opacity: 0, x: 50 },
   visible: {
     opacity: 1,
     x: 0,
     transition: { 
-      duration: 0.4,
-      when: "beforeChildren"
+      duration: 0.5,
+      when: "beforeChildren",
+      staggerChildren: 0.1
     }
   }
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, x: 20 },
+  hidden: { opacity: 0, x: 80 },
   visible: { 
     opacity: 1, 
     x: 0,
-    transition: { duration: 0.3 } 
+    transition: { duration: 0.4 } 
   }
 };
 

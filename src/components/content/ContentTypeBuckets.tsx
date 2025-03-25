@@ -211,27 +211,27 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     visible: {
       opacity: 1,
       transition: { 
-        duration: 0.3, 
-        staggerChildren: 0.1
+        duration: 0.4,
+        staggerChildren: 0.08
       }
     }
   };
 
   const cardVariants = {
-    hidden: { opacity: 0, x: 30 },
+    hidden: { opacity: 0, x: 80 },
     visible: { 
       opacity: 1,
       x: 0,
-      transition: { duration: 0.3 }
+      transition: { duration: 0.45 }
     }
   };
 
   return (
     <div className="mt-4 mb-6">
       <motion.div 
-        initial={{ opacity: 0, x: 20 }}
+        initial={{ opacity: 0, x: 60 }}
         animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.3 }}
+        transition={{ duration: 0.4 }}
         className="flex justify-between items-center mb-3"
       >
         <h2 className="text-xl font-semibold">Content Formats</h2>
@@ -239,10 +239,10 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
       
       {isAddingFormat && (
         <motion.div 
-          initial={{ opacity: 0, x: 20 }}
+          initial={{ opacity: 0, x: 60 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.3 }}
+          exit={{ opacity: 0, x: -60 }}
+          transition={{ duration: 0.4 }}
           className="mb-3 flex flex-col gap-2"
         >
           <Input
