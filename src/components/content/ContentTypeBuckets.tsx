@@ -212,25 +212,34 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
       opacity: 1,
       transition: { 
         duration: 0.4,
-        staggerChildren: 0.08
+        staggerChildren: 0.1
       }
     }
   };
 
   const cardVariants = {
-    hidden: { opacity: 0, x: 80 },
+    hidden: { 
+      opacity: 0, 
+      y: 20,
+      scale: 0.95
+    },
     visible: { 
       opacity: 1,
-      x: 0,
-      transition: { duration: 0.45 }
+      y: 0,
+      scale: 1,
+      transition: { 
+        type: "spring",
+        stiffness: 70,
+        damping: 12
+      }
     }
   };
 
   return (
     <div className="mt-4 mb-6">
       <motion.div 
-        initial={{ opacity: 0, x: 60 }}
-        animate={{ opacity: 1, x: 0 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
         className="flex justify-between items-center mb-3"
       >
@@ -239,9 +248,9 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
       
       {isAddingFormat && (
         <motion.div 
-          initial={{ opacity: 0, x: 60 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -60 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.4 }}
           className="mb-3 flex flex-col gap-2"
         >
@@ -294,6 +303,11 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               left: expandedCardId === type.id ? cardPositions[type.id]?.left || 0 : 'auto',
             }}
             variants={cardVariants}
+            whileHover={{ 
+              scale: 1.03,
+              boxShadow: "0 10px 25px rgba(0,0,0,0.07)",
+              transition: { duration: 0.2 }
+            }}
           >
             <Collapsible
               open={expandedCardId === type.id}
@@ -421,6 +435,11 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
             <TooltipTrigger asChild>
               <motion.div
                 variants={cardVariants}
+                whileHover={{ 
+                  scale: 1.05, 
+                  backgroundColor: "rgba(249, 244, 255, 0.7)" 
+                }}
+                whileTap={{ scale: 0.98 }}
               >
                 <Button 
                   variant="ghost" 
