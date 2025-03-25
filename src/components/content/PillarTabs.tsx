@@ -83,13 +83,21 @@ const PillarTabs = ({
       className="flex items-center justify-between mb-6"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ 
-        duration: 0.4,
-        ease: [0.4, 0, 0.2, 1]
-      }}
+      transition={{ duration: 0.4 }}
     >
       <div className="flex items-center">
         <TabsList className="bg-background border overflow-x-auto flex items-center h-12 relative">
+          <motion.div 
+            className="absolute bottom-0 h-1 bg-[#8B6B4E]" 
+            layoutId="tab-underline"
+            style={{
+              width: "100%",
+              left: 0,
+              right: 0,
+              height: "2px"
+            }}
+          />
+          
           {pillars.map((pillar) => (
             <div key={pillar.id} className="relative flex items-center">
               {editingPillarId === pillar.id ? (
@@ -121,21 +129,55 @@ const PillarTabs = ({
                   </Button>
                 </div>
               ) : (
-                <div className="flex items-center">
+                <div className="flex items-center relative">
                   <TabsTrigger 
                     value={pillar.id}
-                    className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white px-5 py-2 text-base ${
-                      pillar.id === "1" && activeTab === "1" ? "bg-[#8B6B4E] text-white" : ""
-                    } transition-all duration-500 relative overflow-hidden`}
+                    className={`relative px-5 py-2 text-base transition-all duration-300 overflow-hidden z-10
+                      ${activeTab === pillar.id ? "text-white font-medium" : "text-gray-700 hover:text-gray-900"}`}
                     onClick={() => onTabChange(pillar.id)}
                   >
-                    {/* Smoother tab indicator with animation */}
+                    {/* Animated background for active tab */}
                     {activeTab === pillar.id && (
                       <motion.div 
                         className="absolute inset-0 bg-[#8B6B4E] -z-10"
                         layoutId="pillar-background"
+                        style={{ borderRadius: '0.375rem' }}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
+                        transition={{ duration: 0.5 }}
+                      />
+                    )}
+                    
+                    {/* Text animation */}
+                    <AnimatePresence mode="wait">
+                      <motion.span
+                        key={`${pillar.id}-${activeTab === pillar.id ? 'active' : 'inactive'}`}
+                        initial={{ y: 10, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: -10, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="relative"
+                      >
+                        {pillar.name}
+                      </motion.span>
+                    </AnimatePresence>
+                    
+                    {/* Bottom highlight for active tab */}
+                    {activeTab === pillar.id && (
+                      <motion.div
+                        className="absolute bottom-0 left-0 right-0 bg-white"
+                        layoutId="active-tab-highlight"
+                        initial={{ scaleX: 0, opacity: 0 }}
+                        animate={{ 
+                          scaleX: 1, 
+                          opacity: 1,
+                          height: "3px",
+                          y: 2
+                        }}
+                        style={{ 
+                          originX: 0,
+                          width: "100%"
+                        }}
                         transition={{ 
                           duration: 0.5,
                           ease: [0.4, 0, 0.2, 1]
@@ -143,33 +185,14 @@ const PillarTabs = ({
                       />
                     )}
                     
-                    <AnimatePresence mode="wait">
-                      <motion.span
-                        key={`${pillar.id}-${activeTab === pillar.id ? 'active' : 'inactive'}`}
-                        initial={{ y: 10, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: -10, opacity: 0 }}
-                        transition={{ 
-                          duration: 0.4,
-                          ease: [0.4, 0, 0.2, 1]
-                        }}
-                        className="relative z-10"
-                      >
-                        {pillar.name}
-                      </motion.span>
-                    </AnimatePresence>
-                    
-                    {/* Active tab underline indicator */}
+                    {/* Ripple effect when clicked */}
                     {activeTab === pillar.id && (
                       <motion.div
-                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-white"
-                        layoutId="active-tab-indicator"
-                        initial={{ scaleX: 0 }}
-                        animate={{ scaleX: 1 }}
-                        transition={{ 
-                          duration: 0.5,
-                          ease: [0.4, 0, 0.2, 1]
-                        }}
+                        initial={{ scale: 0, x: "-50%", y: "-50%", opacity: 0.7 }}
+                        animate={{ scale: 1.5, opacity: 0 }}
+                        transition={{ duration: 0.8 }}
+                        className="absolute rounded-full bg-white/30 w-40 h-40 pointer-events-none"
+                        style={{ left: "50%", top: "50%", zIndex: -1 }}
                       />
                     )}
                   </TabsTrigger>

@@ -41,7 +41,6 @@ const TabsContent = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
 >(({ className, ...props }, ref) => {
-  // Create a wrapped motion component for animations
   return (
     <TabsPrimitive.Content
       ref={ref}
@@ -53,12 +52,14 @@ const TabsContent = React.forwardRef<
       {...props}
     >
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
         transition={{ 
           duration: 0.5,
-          ease: [0.4, 0, 0.2, 1] // Use cubic-bezier for a smoother transition
+          type: "spring",
+          stiffness: 100,
+          damping: 15
         }}
       >
         {props.children}
