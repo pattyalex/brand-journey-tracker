@@ -10,7 +10,6 @@ import CaptionInputSection from "./CaptionInputSection";
 import PlatformsSection from "./PlatformsSection";
 import TagsSection from "./TagsSection";
 import InspirationSection from "./InspirationSection";
-import FormatSelectionSection from "./FormatSelectionSection";
 import { motion } from "framer-motion";
 
 interface DialogContentProps {
@@ -47,7 +46,6 @@ interface DialogContentProps {
   inspirationImages?: string[];
   onAddInspirationImage?: (image: string) => void;
   onRemoveInspirationImage?: (index: number) => void;
-  pillarColor?: string;
   children?: ReactNode;
 }
 
@@ -107,7 +105,6 @@ const DialogContent = ({
   inspirationImages = [],
   onAddInspirationImage = () => {},
   onRemoveInspirationImage = () => {},
-  pillarColor,
   children,
 }: DialogContentProps) => {
   return (
@@ -118,10 +115,6 @@ const DialogContent = ({
         initial="hidden"
         animate="visible"
       >
-        <div className="mb-1">
-          <h3 className="text-sm font-medium text-gray-500">Content Details</h3>
-        </div>
-        
         <motion.div 
           className="grid grid-cols-1 md:grid-cols-2 gap-5"
           variants={itemVariants}
@@ -134,28 +127,10 @@ const DialogContent = ({
             <BucketSelectionSection 
               bucketId={bucketId} 
               onBucketChange={onBucketChange} 
-              pillarId={pillarId}
-              pillarColor={pillarColor}
+              pillarId={pillarId} 
             />
           </div>
         </motion.div>
-        
-        <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 gap-5"
-          variants={itemVariants}
-        >
-          <div>
-            <FormatSelectionSection 
-              format={format} 
-              onFormatChange={onFormatChange} 
-              pillarColor={pillarColor}
-            />
-          </div>
-        </motion.div>
-        
-        <div className="mt-3 mb-1">
-          <h3 className="text-sm font-medium text-gray-500">Inspiration & Resources</h3>
-        </div>
         
         <motion.div 
           className="bg-purple-50 rounded-lg p-4 border border-purple-100 shadow-sm"
@@ -173,10 +148,6 @@ const DialogContent = ({
           />
         </motion.div>
         
-        <div className="mt-3 mb-1">
-          <h3 className="text-sm font-medium text-gray-500">Content Script & Production</h3>
-        </div>
-        
         <motion.div 
           className="grid grid-cols-1 lg:grid-cols-3 gap-5"
           variants={itemVariants}
@@ -190,10 +161,6 @@ const DialogContent = ({
             <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
           </div>
         </motion.div>
-        
-        <div className="mt-3 mb-1">
-          <h3 className="text-sm font-medium text-gray-500">Distribution</h3>
-        </div>
         
         <motion.div 
           className="bg-amber-50 rounded-lg p-4 border border-amber-100 shadow-sm"

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Lightbulb, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -252,18 +253,11 @@ const IdeaSection = ({
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, scale: 0.98, y: 30 },
+    hidden: { opacity: 0, x: 80 },
     visible: { 
       opacity: 1, 
-      scale: 1,
-      y: 0,
-      transition: { 
-        type: "spring",
-        stiffness: 70,
-        damping: 10,
-        mass: 0.8,
-        duration: 0.6
-      } 
+      x: 0,
+      transition: { duration: 0.45 } 
     }
   };
 
@@ -273,7 +267,6 @@ const IdeaSection = ({
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      key={pillar.id}
     >
       <motion.div 
         className="flex justify-end"
@@ -295,15 +288,7 @@ const IdeaSection = ({
       >
         <h2 className="text-xl font-semibold flex items-center">
           <Lightbulb className="h-5 w-5 mr-2" /> 
-          <motion.span
-            key={pillar.name}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.4 }}
-          >
-            {pillar.name} Ideas
-          </motion.span>
+          {pillar.name} Ideas
         </h2>
         
         <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full md:w-auto">
@@ -379,7 +364,6 @@ const IdeaSection = ({
       
       <motion.div
         variants={itemVariants}
-        className="relative"
       >
         <ContentPillar
           pillar={{

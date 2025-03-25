@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from "@/components/theme-provider"
 import Dashboard from './pages/Dashboard';
 import BankOfContent from './pages/BankOfContent';
@@ -26,7 +26,6 @@ function App() {
     <ThemeProvider defaultTheme="system" storageKey="vite-react-theme">
       <Router>
         <Routes>
-          {/* Main navigation routes */}
           <Route path="/" element={<Dashboard />} />
           <Route path="/index" element={<Index />} />
           <Route path="/bank-of-content" element={<BankOfContent />} />
@@ -44,11 +43,6 @@ function App() {
           <Route path="/help" element={<Help />} />
           <Route path="/weekly-content" element={<WeeklyContentTasks />} />
           <Route path="/social-media-scheduler" element={<SocialMediaScheduler />} />
-          
-          {/* Redirect to home for empty paths */}
-          <Route path="" element={<Navigate to="/" replace />} />
-          
-          {/* 404 route - must be last */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>

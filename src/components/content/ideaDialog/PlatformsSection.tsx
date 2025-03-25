@@ -22,9 +22,8 @@ const PlatformsSection = ({
     <div className="grid gap-2">
       <div className="flex items-center gap-2 mb-1">
         <Share2 size={18} className="text-blue-500" />
-        <Label htmlFor="platforms" className="text-blue-700 font-medium">Distribution Platforms</Label>
+        <Label htmlFor="platforms">Platforms</Label>
       </div>
-      <p className="text-xs text-blue-600 mb-1">Select the platforms where this content will be published</p>
       <PlatformsInput
         platforms={platforms}
         currentPlatform={currentPlatform}

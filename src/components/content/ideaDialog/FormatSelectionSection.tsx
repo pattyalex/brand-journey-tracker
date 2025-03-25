@@ -6,33 +6,28 @@ import { FileType } from "lucide-react";
 interface FormatSelectionSectionProps {
   format: string;
   onFormatChange: (value: string) => void;
-  pillarColor?: string;
 }
 
 const FormatSelectionSection = ({
   format,
   onFormatChange,
-  pillarColor,
 }: FormatSelectionSectionProps) => {
   const contentFormats = [
-    { value: "photo/image", label: "Photo/Image", color: "#7C3AED" },
-    { value: "pov", label: "POV", color: "#0CA678" },
-    { value: "skit", label: "Skit", color: "#E67E22" },
-    { value: "tutorial", label: "Tutorial", color: "#9B59B6" },
-    { value: "vlog", label: "Vlog", color: "#3498DB" },
-    { value: "review", label: "Review", color: "#C0392B" },
-    { value: "fitcheck", label: "Fit Check", color: "#16A085" },
-    { value: "grwm", label: "GRWM", color: "#D35400" },
-    { value: "story", label: "Story Time", color: "#7C3AED" },
-    { value: "interview", label: "Interview", color: "#0CA678" },
-    { value: "podcast", label: "Podcast", color: "#E67E22" },
-    { value: "challenge", label: "Challenge", color: "#9B59B6" },
-    { value: "unboxing", label: "Unboxing", color: "#3498DB" },
-    { value: "bts", label: "Behind The Scenes", color: "#C0392B" },
+    { value: "photo/image", label: "Photo/Image" },
+    { value: "pov", label: "POV" },
+    { value: "skit", label: "Skit" },
+    { value: "tutorial", label: "Tutorial" },
+    { value: "vlog", label: "Vlog" },
+    { value: "review", label: "Review" },
+    { value: "fitcheck", label: "Fit Check" },
+    { value: "grwm", label: "GRWM" },
+    { value: "story", label: "Story Time" },
+    { value: "interview", label: "Interview" },
+    { value: "podcast", label: "Podcast" },
+    { value: "challenge", label: "Challenge" },
+    { value: "unboxing", label: "Unboxing" },
+    { value: "bts", label: "Behind The Scenes" },
   ];
-
-  const selectedFormat = contentFormats.find(f => f.value === format);
-  const borderColor = pillarColor || (selectedFormat ? selectedFormat.color : undefined);
 
   return (
     <div className="grid gap-2">
@@ -41,15 +36,7 @@ const FormatSelectionSection = ({
         <Label htmlFor="content-format">Content Format</Label>
       </div>
       <Select value={format} onValueChange={onFormatChange}>
-        <SelectTrigger 
-          id="content-format" 
-          className="w-full transition-all duration-300"
-          style={borderColor ? {
-            borderColor: `${borderColor}30`,
-            borderWidth: '1px',
-            background: 'white',
-          } : undefined}
-        >
+        <SelectTrigger id="content-format" className="w-full">
           <SelectValue placeholder="Select content format" />
         </SelectTrigger>
         <SelectContent>
@@ -57,41 +44,12 @@ const FormatSelectionSection = ({
             <SelectItem 
               key={formatOption.value} 
               value={formatOption.value}
-              className="flex items-center transition-colors hover:bg-opacity-10"
-              style={{
-                backgroundColor: format === formatOption.value ? `${formatOption.color}10` : undefined
-              }}
             >
-              <div className="flex items-center">
-                <div 
-                  className="w-2 h-2 rounded-full mr-2"
-                  style={{ 
-                    backgroundColor: formatOption.color,
-                    opacity: 0.7
-                  }}
-                />
-                {formatOption.label}
-              </div>
+              {formatOption.label}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
-      
-      {selectedFormat && (
-        <div 
-          className="mt-1 px-3 py-1.5 text-xs inline-flex items-center rounded-md transition-all duration-300 font-medium"
-          style={{ 
-            backgroundColor: 'white',
-            color: selectedFormat.color,
-            borderLeft: `1px solid ${borderColor || selectedFormat.color}40`,
-            borderTop: `1px solid ${borderColor || selectedFormat.color}15`,
-            borderRight: `1px solid ${borderColor || selectedFormat.color}15`,
-            borderBottom: `1px solid ${borderColor || selectedFormat.color}15`,
-          }}
-        >
-          Selected: {selectedFormat.label}
-        </div>
-      )}
     </div>
   );
 };
