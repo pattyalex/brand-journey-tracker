@@ -121,9 +121,14 @@ const PillarTabs = ({
                     <TabsTrigger 
                       value={pillar.id}
                       className={`relative px-5 py-2 text-base transition-colors duration-300
-                        ${activeTab === pillar.id ? "text-white font-medium bg-[#8B6B4E]" : "text-gray-700 hover:text-gray-900"}`}
+                        ${activeTab === pillar.id 
+                          ? "text-white font-medium bg-[#8B6B4E] shadow-md border-b-2 border-amber-400" 
+                          : "text-gray-700 hover:text-gray-900"}`}
                       onClick={() => onTabChange(pillar.id)}
                     >
+                      {activeTab === pillar.id && (
+                        <div className="absolute inset-0 bg-purple-500/10 -z-10 rounded-sm" />
+                      )}
                       {pillar.name}
                     </TabsTrigger>
                     
