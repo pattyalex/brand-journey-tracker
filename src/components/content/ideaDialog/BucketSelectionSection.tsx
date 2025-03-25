@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FolderIcon } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface BucketSelectionSectionProps {
   bucketId: string;
@@ -44,7 +45,12 @@ const BucketSelectionSection = ({
   }, [pillarId]);
 
   return (
-    <div className="grid gap-2">
+    <motion.div 
+      className="grid gap-2"
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       <div className="flex items-center gap-2 mb-1">
         <FolderIcon size={18} className="text-gray-500" />
         <Label htmlFor="format-select" className="text-sm font-medium">
@@ -66,7 +72,7 @@ const BucketSelectionSection = ({
           ))}
         </SelectContent>
       </Select>
-    </div>
+    </motion.div>
   );
 };
 

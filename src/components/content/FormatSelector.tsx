@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Check, ChevronDown, ChevronUp, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { motion } from "framer-motion";
 
 // Common content formats that creators might use
 const DEFAULT_PREDEFINED_FORMATS = [
@@ -120,9 +120,20 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
   const formatSelectorClassName = "format-selector-component";
 
   return (
-    <div className={`space-y-2 ${formatSelectorClassName}`}>
+    <motion.div 
+      className={`space-y-2 ${formatSelectorClassName}`}
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       {isAddingCustom ? (
-        <div className="flex items-center gap-2">
+        <motion.div 
+          className="flex items-center gap-2"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.3 }}
+        >
           <Input
             value={customFormat}
             onChange={(e) => setCustomFormat(e.target.value)}
@@ -147,7 +158,7 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
           >
             <Check className="h-4 w-4" />
           </Button>
-        </div>
+        </motion.div>
       ) : (
         <Select value={selectedFormat || ""} onValueChange={handleSelectFormat}>
           <SelectTrigger 
@@ -212,7 +223,12 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
       )}
 
       {selectedFormat && (
-        <div className="flex items-center mt-2">
+        <motion.div 
+          className="flex items-center mt-2"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
+        >
           <span className="bg-blue-100 text-blue-800 text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5">
             {selectedFormat}
             <Button 
@@ -224,9 +240,9 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
               <X className="h-3.5 w-3.5" />
             </Button>
           </span>
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 };
 
