@@ -43,6 +43,13 @@ const BucketSelectionSection = ({
       }
     } catch (error) {
       console.error("Failed to load content formats:", error);
+      // Fallback to default formats if there's an error
+      setContentFormats([
+        { id: "blog", name: "Blog Posts", description: "Long-form written content" },
+        { id: "video", name: "Video Content", description: "Video-based content" },
+        { id: "social", name: "Social Media", description: "Short-form posts" },
+        { id: "image", name: "Image Content", description: "Visual content" },
+      ]);
     }
   }, [pillarId]);
 

@@ -102,7 +102,7 @@ const IdeaCreationDialog = ({
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[95vh] sm:max-w-[800px] md:max-w-[900px] lg:max-w-[1000px] w-[90vw]">
+      <DialogContent className="max-h-[95vh] sm:max-w-[800px] md:max-w-[900px] lg:max-w-[1000px] w-[90vw] overflow-hidden">
         <div className="h-full flex flex-col">
           <DialogHeader 
             title={dialogTitle} 
@@ -110,7 +110,7 @@ const IdeaCreationDialog = ({
             toggleMegan={() => {}} 
           />
           
-          <div className="flex-1">
+          <div className="flex-1 overflow-y-auto">
             <DialogContentBody
               title={title}
               onTitleChange={onTitleChange}
