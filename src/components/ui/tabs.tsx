@@ -41,7 +41,7 @@ const TabsContent = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
 >(({ className, ...props }, ref) => {
-  // Create a wrapped motion component for animations with improved page transition
+  // Create a wrapped motion component for animations
   return (
     <TabsPrimitive.Content
       ref={ref}
@@ -56,14 +56,7 @@ const TabsContent = React.forwardRef<
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 10 }}
-        transition={{ 
-          duration: 0.4, 
-          ease: "easeInOut",
-          staggerChildren: 0.05,
-          delayChildren: 0.05
-        }}
-        layout // Add layout prop for smoother transitions when content changes
-        className="w-full"
+        transition={{ duration: 0.3, ease: "easeInOut" }}
       >
         {props.children}
       </motion.div>

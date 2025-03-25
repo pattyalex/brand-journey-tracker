@@ -57,37 +57,14 @@ const WritingSpace = ({
     }
   };
 
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0, x: -10 },
-    visible: { 
-      opacity: 1, 
-      x: 0,
-      transition: { 
-        duration: 0.4,
-        when: "beforeChildren",
-        staggerChildren: 0.1
-      } 
-    },
-    exit: { opacity: 0, x: 10 }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -10 }
-  };
-
   return (
     <motion.div 
       className={`space-y-4 pr-2 transition-all duration-300 ${expandedClass}`}
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
-      layout
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.3 }}
     >
-      <motion.div variants={itemVariants} className="flex items-center justify-between">
+      <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold flex items-center">
           <Pencil className="h-5 w-5 mr-2" />
           Brainstorm
@@ -128,7 +105,7 @@ const WritingSpace = ({
             )}
           </Button>
         </div>
-      </motion.div>
+      </div>
       
       <div className="hidden">
         <TitleHookSuggestions onSelectHook={(hook) => {
@@ -151,7 +128,7 @@ const WritingSpace = ({
         }} />
       </div>
 
-      <motion.div variants={itemVariants} className="h-[calc(100vh-140px)]">
+      <div className="h-[calc(100vh-140px)]">
         <div className={`rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full relative bg-[#F6F6F7] ${isMeganOpen ? "flex flex-row" : "flex flex-col"}`}>
           <div className={`${isMeganOpen ? "w-1/2 border-r border-gray-200 flex flex-col" : "w-full flex-1 flex flex-col"}`}>
             <SimpleTextFormattingToolbar onFormat={handleFormatClick} />
@@ -183,7 +160,7 @@ const WritingSpace = ({
             </div>
           )}
         </div>
-      </motion.div>
+      </div>
     </motion.div>
   );
 };
