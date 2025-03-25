@@ -53,10 +53,13 @@ const TabsContent = React.forwardRef<
       {...props}
     >
       <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -20 }}
-        transition={{ duration: 0.3 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ 
+          duration: 0.5,
+          ease: [0.4, 0, 0.2, 1] // Use cubic-bezier for a smoother transition
+        }}
       >
         {props.children}
       </motion.div>
