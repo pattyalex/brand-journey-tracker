@@ -42,8 +42,8 @@ const FormatSelectionSection = ({
           id="content-format" 
           className="w-full transition-all duration-300"
           style={selectedFormat ? {
-            borderColor: selectedFormat.color,
-            borderWidth: '2px',
+            borderColor: `${selectedFormat.color}40`,
+            borderWidth: '1px',
             background: 'white',
           } : undefined}
         >
@@ -61,10 +61,10 @@ const FormatSelectionSection = ({
             >
               <div className="flex items-center">
                 <div 
-                  className="w-2.5 h-2.5 rounded-full mr-2"
+                  className="w-2 h-2 rounded-full mr-2"
                   style={{ 
                     backgroundColor: formatOption.color,
-                    boxShadow: `0 0 0 1px ${formatOption.color}80`,
+                    opacity: 0.7
                   }}
                 />
                 {formatOption.label}
@@ -80,10 +80,10 @@ const FormatSelectionSection = ({
           style={{ 
             backgroundColor: 'white',
             color: selectedFormat.color,
-            borderLeft: `2px solid ${selectedFormat.color}`,
-            borderTop: `1px solid ${selectedFormat.color}20`,
-            borderRight: `1px solid ${selectedFormat.color}20`,
-            borderBottom: `1px solid ${selectedFormat.color}20`,
+            borderLeft: `1px solid ${selectedFormat.color}40`,
+            borderTop: `1px solid ${selectedFormat.color}15`,
+            borderRight: `1px solid ${selectedFormat.color}15`,
+            borderBottom: `1px solid ${selectedFormat.color}15`,
           }}
         >
           Selected: {selectedFormat.label}

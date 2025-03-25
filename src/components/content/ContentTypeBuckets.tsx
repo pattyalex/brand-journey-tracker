@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -127,14 +126,14 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarColor }: ContentTypeBuc
     }
   }, [contentTypes, isAddingFormat, expandedCardId]);
 
-  // Generate neutral card styling with pillar-colored border
+  // Generate subtle border styling with pillar-colored border
   const getFormatColorScheme = (index: number) => {
-    // Neutral colors for all cards, but with pillar-colored border
+    // Apply a very subtle color based on the pillar color
     return {
       bg: "#FFFFFF", // White background
-      border: pillarColor || "#D4D4D8", // Use pillar color for border, or default to gray
+      border: pillarColor ? `${pillarColor}30` : "#E5E7EB", // Very subtle border using pillar color with 30% opacity
       text: "#333333", // Dark text for better readability
-      hover: pillarColor ? `${pillarColor}15` : "#F9FAFB" // Light hover state based on pillar color
+      hover: pillarColor ? `${pillarColor}08` : "#F9FAFB" // Even lighter hover state
     };
   };
 
@@ -284,8 +283,8 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarColor }: ContentTypeBuc
               onClick={handleAddFormat} 
               size="sm"
               style={pillarColor ? { 
-                color: pillarColor,
-                borderColor: pillarColor,
+                color: "#555",
+                borderColor: `${pillarColor}30`,
               } : undefined}
               variant="outline"
               className="border"
@@ -330,8 +329,8 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarColor }: ContentTypeBuc
             }}
             variants={cardVariants}
             whileHover={{ 
-              scale: 1.03,
-              boxShadow: `0 10px 25px rgba(0, 0, 0, 0.05)`,
+              scale: 1.02,
+              boxShadow: `0 4px 12px rgba(0, 0, 0, 0.03)`,
               transition: { duration: 0.2 }
             }}
           >
@@ -346,8 +345,8 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarColor }: ContentTypeBuc
                 style={{
                   backgroundColor: colorScheme.bg,
                   borderColor: colorScheme.border,
-                  boxShadow: `0 4px 14px rgba(0, 0, 0, 0.03)`,
-                  borderWidth: '2px',
+                  boxShadow: `0 2px 8px rgba(0, 0, 0, 0.02)`,
+                  borderWidth: '1px',
                 }}
               >
                 <Button
@@ -399,7 +398,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarColor }: ContentTypeBuc
                     ) : (
                       <span 
                         className="text-sm font-medium truncate" 
-                        style={{ color: pillarColor || colorScheme.text }}
+                        style={{ color: pillarColor ? `${pillarColor}90` : colorScheme.text }}
                       >
                         {type.name}
                       </span>
@@ -467,8 +466,8 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarColor }: ContentTypeBuc
                     size="sm" 
                     className="w-full mt-2 rounded-md text-xs font-medium"
                     style={{ 
-                      color: pillarColor || "#333",
-                      borderColor: pillarColor || "#D4D4D8",
+                      color: "#555",
+                      borderColor: pillarColor ? `${pillarColor}30` : "#E5E7EB",
                     }}
                     onClick={() => onAddIdea(type.id)}
                   >
@@ -486,21 +485,21 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarColor }: ContentTypeBuc
               <motion.div
                 variants={cardVariants}
                 whileHover={{ 
-                  scale: 1.05,
-                  backgroundColor: "rgba(249, 250, 251, 0.7)" 
+                  scale: 1.02,
+                  backgroundColor: "rgba(249, 250, 251, 0.5)" 
                 }}
                 whileTap={{ scale: 0.98 }}
                 className="border border-dashed rounded-xl"
                 style={pillarColor ? { 
-                  borderColor: pillarColor,
-                  borderWidth: '2px'
+                  borderColor: `${pillarColor}20`,
+                  borderWidth: '1px'
                 } : undefined}
               >
                 <Button 
                   variant="ghost" 
                   onClick={() => setIsAddingFormat(!isAddingFormat)}
                   className="w-[200px] h-[80px] flex items-center justify-center p-0"
-                  style={pillarColor ? { color: pillarColor } : undefined}
+                  style={pillarColor ? { color: `${pillarColor}90` } : undefined}
                 >
                   <Plus className="h-5 w-5" />
                 </Button>
