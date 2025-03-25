@@ -45,9 +45,6 @@ function App() {
           <Route path="/weekly-content" element={<WeeklyContentTasks />} />
           <Route path="/social-media-scheduler" element={<SocialMediaScheduler />} />
           
-          {/* Redirect to home for empty paths */}
-          <Route path="" element={<Navigate to="/" replace />} />
-          
           {/* 404 route - must be last */}
           <Route path="*" element={<NotFound />} />
         </Routes>
