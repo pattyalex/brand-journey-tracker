@@ -53,6 +53,7 @@ interface IdeaCreationDialogProps {
   inspirationImages?: string[];
   onAddInspirationImage?: (image: string) => void;
   onRemoveInspirationImage?: (index: number) => void;
+  pillarColor?: string;
 }
 
 const IdeaCreationDialog = ({
@@ -95,6 +96,7 @@ const IdeaCreationDialog = ({
   inspirationImages = [],
   onAddInspirationImage = () => {},
   onRemoveInspirationImage = () => {},
+  pillarColor,
 }: IdeaCreationDialogProps) => {
   const navigate = useNavigate();
   
@@ -143,6 +145,7 @@ const IdeaCreationDialog = ({
               inspirationImages={inspirationImages}
               onAddInspirationImage={onAddInspirationImage}
               onRemoveInspirationImage={onRemoveInspirationImage}
+              pillarColor={pillarColor}
             />
           </div>
           
