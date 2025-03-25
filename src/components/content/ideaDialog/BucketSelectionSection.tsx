@@ -24,7 +24,12 @@ const BucketSelectionSection = ({
   pillarId,
   pillarColor
 }: BucketSelectionSectionProps) => {
-  const [contentFormats, setContentFormats] = useState<ContentFormat[]>([]);
+  const [contentFormats, setContentFormats] = useState<ContentFormat[]>([
+    { id: "blog", name: "Blog Posts", description: "Long-form written content" },
+    { id: "video", name: "Video Content", description: "Video-based content" },
+    { id: "social", name: "Social Media", description: "Short-form posts" },
+    { id: "image", name: "Image Content", description: "Visual content" },
+  ]);
   
   useEffect(() => {
     try {
@@ -32,24 +37,10 @@ const BucketSelectionSection = ({
       if (savedFormats) {
         const parsedFormats = JSON.parse(savedFormats);
         setContentFormats(parsedFormats);
-      } else {
-        // Default formats if none found in localStorage
-        setContentFormats([
-          { id: "blog", name: "Blog Posts", description: "Long-form written content" },
-          { id: "video", name: "Video Content", description: "Video-based content" },
-          { id: "social", name: "Social Media", description: "Short-form posts" },
-          { id: "image", name: "Image Content", description: "Visual content" },
-        ]);
       }
     } catch (error) {
       console.error("Failed to load content formats:", error);
-      // Fallback to default formats if there's an error
-      setContentFormats([
-        { id: "blog", name: "Blog Posts", description: "Long-form written content" },
-        { id: "video", name: "Video Content", description: "Video-based content" },
-        { id: "social", name: "Social Media", description: "Short-form posts" },
-        { id: "image", name: "Image Content", description: "Visual content" },
-      ]);
+      // Default formats already set in useState
     }
   }, [pillarId]);
 
@@ -67,7 +58,7 @@ const BucketSelectionSection = ({
         </Label>
       </div>
       <Select 
-        value={bucketId} 
+        value={bucketId || ""} 
         onValueChange={onBucketChange}
       >
         <SelectTrigger 
