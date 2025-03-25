@@ -16,8 +16,9 @@ const CaptionInputSection = ({
     <div className="grid gap-2">
       <div className="flex items-center gap-2">
         <MessageCircle size={18} className="text-amber-500" />
-        <Label htmlFor="caption-text" className="text-amber-700 font-medium">Caption</Label>
+        <Label htmlFor="caption-text" className="text-amber-700 font-medium">Social Media Caption</Label>
       </div>
+      <p className="text-xs text-amber-600 mb-1">Create engaging captions for your content across platforms</p>
       <Textarea
         id="caption-text"
         value={captionText}
