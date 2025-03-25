@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Lightbulb, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -240,14 +241,37 @@ const IdeaSection = ({
     setStatusFilter("all");
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        when: "beforeChildren",
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: 80 },
+    visible: { 
+      opacity: 1, 
+      x: 0,
+      transition: { duration: 0.45 } 
+    }
+  };
+
   return (
     <motion.div 
       className="space-y-3 pl-2 pr-3"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.4 }}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
     >
-      <div className="flex justify-end">
+      <motion.div 
+        className="flex justify-end"
+        variants={itemVariants}
+      >
         <ContentUploader 
           pillarId={pillar.id}
           onContentAdded={onContentAdded}
@@ -256,13 +280,11 @@ const IdeaSection = ({
           isEditMode={isEditing}
           onCancelEdit={onCancelEdit}
         />
-      </div>
+      </motion.div>
       
       <motion.div 
         className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mt-4"
-        initial={{ opacity: 0, x: 80 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.45, delay: 0.1 }}
+        variants={itemVariants}
       >
         <h2 className="text-xl font-semibold flex items-center">
           <Lightbulb className="h-5 w-5 mr-2" /> 
@@ -340,18 +362,22 @@ const IdeaSection = ({
         </div>
       </motion.div>
       
-      <ContentPillar
-        pillar={{
-          ...pillar,
-          content: getFilteredContent()
-        }}
-        pillars={pillars}
-        onDeleteContent={onDeleteContent}
-        onMoveContent={onMoveContent}
-        onEditContent={onEditContent}
-        searchQuery={searchQuery}
-        onReorderContent={onReorderContent}
-      />
+      <motion.div
+        variants={itemVariants}
+      >
+        <ContentPillar
+          pillar={{
+            ...pillar,
+            content: getFilteredContent()
+          }}
+          pillars={pillars}
+          onDeleteContent={onDeleteContent}
+          onMoveContent={onMoveContent}
+          onEditContent={onEditContent}
+          searchQuery={searchQuery}
+          onReorderContent={onReorderContent}
+        />
+      </motion.div>
     </motion.div>
   );
 };

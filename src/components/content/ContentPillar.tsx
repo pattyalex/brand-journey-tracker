@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
@@ -107,16 +108,16 @@ const ContentPillar = ({
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.05
+        staggerChildren: 0.08
       }
     }
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, x: 80 },
     visible: {
       opacity: 1,
-      y: 0,
+      x: 0,
       transition: { 
         type: "spring",
         stiffness: 300,

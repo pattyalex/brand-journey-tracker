@@ -50,12 +50,12 @@ interface DialogContentProps {
 }
 
 const containerVariants = {
-  hidden: { opacity: 0, x: 50 },
+  hidden: { opacity: 0, x: 80 },
   visible: {
     opacity: 1,
     x: 0,
     transition: { 
-      duration: 0.5,
+      duration: 0.45,
       when: "beforeChildren",
       staggerChildren: 0.1
     }
