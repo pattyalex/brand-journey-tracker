@@ -73,7 +73,7 @@ const InspirationSection = ({
       </div>
 
       <Textarea
-        placeholder="If you're recreating or inspired by another piece of content, write notes about it here..."
+        placeholder="If you're inspired by or recreating another piece of content, upload it here"
         className="min-h-[60px] resize-y text-sm border-purple-200 focus-visible:ring-purple-400"
         value={inspirationText}
         onChange={(e) => onInspirationTextChange(e.target.value)}
