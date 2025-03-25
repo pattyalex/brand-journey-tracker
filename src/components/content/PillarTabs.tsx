@@ -30,16 +30,16 @@ import {
 } from "@/components/ui/tooltip";
 import { motion } from "framer-motion";
 
-// Pastel color palette for pillars
+// Refined color palette with more elegant, less saturated colors
 const PILLAR_COLORS = [
-  "#8B5CF6", // Purple
-  "#10B981", // Emerald
-  "#F59E0B", // Amber
-  "#EC4899", // Pink
-  "#3B82F6", // Blue
-  "#EF4444", // Red
-  "#06B6D4", // Cyan
-  "#F97316", // Orange
+  "#7C3AED", // Deep purple
+  "#0CA678", // Teal
+  "#E67E22", // Soft orange
+  "#9B59B6", // Lavender
+  "#3498DB", // Sky blue
+  "#C0392B", // Crimson
+  "#16A085", // Green teal
+  "#D35400", // Burnt orange
 ];
 
 interface PillarTabsProps {
@@ -91,7 +91,7 @@ const PillarTabs = ({
   };
 
   // Get color for a pillar based on its index
-  const getPillarColor = (index: number) => {
+  const getPillarColor = (index: number): string => {
     return PILLAR_COLORS[index % PILLAR_COLORS.length];
   };
 
@@ -102,7 +102,7 @@ const PillarTabs = ({
           <h3 className="text-sm font-medium text-gray-500 mr-2">Content Categories</h3>
         </div>
         <div className="flex items-center">
-          <TabsList className="bg-background border overflow-x-auto flex items-center h-12 relative">
+          <TabsList className="bg-gray-50 border shadow-sm overflow-x-auto flex items-center h-12 relative">
             {pillars.map((pillar, index) => {
               const pillColor = getPillarColor(index);
               return (
@@ -140,30 +140,33 @@ const PillarTabs = ({
                       <TabsTrigger 
                         value={pillar.id}
                         pillColor={pillColor}
-                        className={`relative px-5 py-2 text-base transition-colors duration-300
+                        className={`relative px-5 py-3 text-base transition-all duration-300
                           ${activeTab === pillar.id 
-                            ? "text-white font-medium shadow-md" 
-                            : "text-gray-700 hover:text-gray-900"}`}
+                            ? "text-gray-800 font-medium" 
+                            : "text-gray-600 hover:text-gray-800"}`}
                         style={{
-                          backgroundColor: activeTab === pillar.id ? `${pillColor}15` : 'transparent',
-                          borderLeft: `3px solid ${pillColor}`,
-                          boxShadow: activeTab === pillar.id ? `0 2px 10px ${pillColor}30` : 'none',
+                          backgroundColor: activeTab === pillar.id ? `${pillColor}10` : 'transparent',
+                          borderLeft: activeTab === pillar.id ? `3px solid ${pillColor}` : `3px solid transparent`,
+                          boxShadow: activeTab === pillar.id ? `0 2px 8px ${pillColor}25` : 'none',
                         }}
                         onClick={() => onTabChange(pillar.id)}
                       >
                         {activeTab === pillar.id && (
-                          <div 
-                            className="absolute inset-0 rounded-sm -z-10" 
+                          <motion.div 
+                            className="absolute inset-0 -z-10" 
+                            layoutId="activeTab"
                             style={{ 
-                              backgroundColor: `${pillColor}15`,
-                              borderBottom: `2px solid ${pillColor}` 
+                              borderBottom: `2px solid ${pillColor}`,
+                              backgroundColor: `${pillColor}10`,
+                              borderRadius: '0.25rem',
                             }}
+                            transition={{ type: "spring", duration: 0.5 }}
                           />
                         )}
                         <span
                           style={{ 
                             color: activeTab === pillar.id ? pillColor : 'inherit',
-                            fontWeight: activeTab === pillar.id ? 'bold' : 'normal'
+                            fontWeight: activeTab === pillar.id ? '600' : 'normal'
                           }}
                         >
                           {pillar.name}
@@ -233,11 +236,11 @@ const PillarTabs = ({
                   transition={{ duration: 0.2 }}
                 >
                   <Button 
-                    variant="ghost" 
+                    variant="outline" 
                     onClick={onAddPillar} 
-                    className="h-10 w-10 p-0 ml-6 bg-transparent"
+                    className="h-10 w-10 p-0 ml-6 border-gray-200"
                   >
-                    <Plus className="h-6 w-6 text-purple-500" />
+                    <Plus className="h-5 w-5 text-gray-600" />
                   </Button>
                 </motion.div>
               </TooltipTrigger>

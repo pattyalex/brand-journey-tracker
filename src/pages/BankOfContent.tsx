@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -11,15 +12,16 @@ import IdeaCreationDialog from "@/components/content/IdeaCreationDialog";
 import ContentTypeBuckets from "@/components/content/ContentTypeBuckets";
 import { getRestoredIdeas } from "@/utils/contentRestoreUtils";
 
+// Refined color palette with more elegant, less saturated colors
 const PILLAR_COLORS = [
-  "#8B5CF6", // Purple
-  "#10B981", // Emerald
-  "#F59E0B", // Amber
-  "#EC4899", // Pink
-  "#3B82F6", // Blue
-  "#EF4444", // Red
-  "#06B6D4", // Cyan
-  "#F97316", // Orange
+  "#7C3AED", // Deep purple
+  "#0CA678", // Teal
+  "#E67E22", // Soft orange
+  "#9B59B6", // Lavender
+  "#3498DB", // Sky blue
+  "#C0392B", // Crimson
+  "#16A085", // Green teal
+  "#D35400", // Burnt orange
 ];
 
 export type Pillar = {

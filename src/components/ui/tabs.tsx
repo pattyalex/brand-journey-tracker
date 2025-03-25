@@ -56,8 +56,8 @@ const TabsContent = React.forwardRef<
         className
       )}
       style={pillColor ? {
-        background: `${pillColor}10`, // Very light version of the color (10% opacity)
-        boxShadow: `0 0 0 1px ${pillColor}30` // Subtle border with 30% opacity
+        background: `${pillColor}08`, // Very subtle background (8% opacity)
+        boxShadow: `0 0 0 1px ${pillColor}20` // Subtle border with 20% opacity
       } : undefined}
       {...props}
     >

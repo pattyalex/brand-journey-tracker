@@ -13,21 +13,23 @@ const FormatSelectionSection = ({
   onFormatChange,
 }: FormatSelectionSectionProps) => {
   const contentFormats = [
-    { value: "photo/image", label: "Photo/Image" },
-    { value: "pov", label: "POV" },
-    { value: "skit", label: "Skit" },
-    { value: "tutorial", label: "Tutorial" },
-    { value: "vlog", label: "Vlog" },
-    { value: "review", label: "Review" },
-    { value: "fitcheck", label: "Fit Check" },
-    { value: "grwm", label: "GRWM" },
-    { value: "story", label: "Story Time" },
-    { value: "interview", label: "Interview" },
-    { value: "podcast", label: "Podcast" },
-    { value: "challenge", label: "Challenge" },
-    { value: "unboxing", label: "Unboxing" },
-    { value: "bts", label: "Behind The Scenes" },
+    { value: "photo/image", label: "Photo/Image", color: "#7C3AED" },
+    { value: "pov", label: "POV", color: "#0CA678" },
+    { value: "skit", label: "Skit", color: "#E67E22" },
+    { value: "tutorial", label: "Tutorial", color: "#9B59B6" },
+    { value: "vlog", label: "Vlog", color: "#3498DB" },
+    { value: "review", label: "Review", color: "#C0392B" },
+    { value: "fitcheck", label: "Fit Check", color: "#16A085" },
+    { value: "grwm", label: "GRWM", color: "#D35400" },
+    { value: "story", label: "Story Time", color: "#7C3AED" },
+    { value: "interview", label: "Interview", color: "#0CA678" },
+    { value: "podcast", label: "Podcast", color: "#E67E22" },
+    { value: "challenge", label: "Challenge", color: "#9B59B6" },
+    { value: "unboxing", label: "Unboxing", color: "#3498DB" },
+    { value: "bts", label: "Behind The Scenes", color: "#C0392B" },
   ];
+
+  const selectedFormat = contentFormats.find(f => f.value === format);
 
   return (
     <div className="grid gap-2">
@@ -36,7 +38,14 @@ const FormatSelectionSection = ({
         <Label htmlFor="content-format">Content Format</Label>
       </div>
       <Select value={format} onValueChange={onFormatChange}>
-        <SelectTrigger id="content-format" className="w-full">
+        <SelectTrigger 
+          id="content-format" 
+          className="w-full"
+          style={selectedFormat ? {
+            borderColor: `${selectedFormat.color}50`,
+            boxShadow: `0 0 0 1px ${selectedFormat.color}30`
+          } : undefined}
+        >
           <SelectValue placeholder="Select content format" />
         </SelectTrigger>
         <SelectContent>
@@ -44,12 +53,32 @@ const FormatSelectionSection = ({
             <SelectItem 
               key={formatOption.value} 
               value={formatOption.value}
+              className="flex items-center"
             >
-              {formatOption.label}
+              <div className="flex items-center">
+                <div 
+                  className="w-2 h-2 rounded-full mr-2"
+                  style={{ backgroundColor: formatOption.color }}
+                />
+                {formatOption.label}
+              </div>
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
+      
+      {selectedFormat && (
+        <div 
+          className="mt-1 px-3 py-1 text-xs inline-flex items-center rounded-full"
+          style={{ 
+            backgroundColor: `${selectedFormat.color}15`,
+            color: selectedFormat.color,
+            borderLeft: `2px solid ${selectedFormat.color}`
+          }}
+        >
+          Selected: {selectedFormat.label}
+        </div>
+      )}
     </div>
   );
 };

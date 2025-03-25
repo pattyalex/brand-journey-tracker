@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,6 +34,17 @@ interface ContentTypeBucketsProps {
   onAddIdea: (formatId: string) => void;
   pillarId: string;
 }
+
+const FORMAT_COLORS = [
+  { bg: "#F3F4FF", border: "#D0D5FF", text: "#4B50C5" },
+  { bg: "#F0FFF4", border: "#C6F6D5", text: "#38A169" },
+  { bg: "#FFF8F0", border: "#FEEBC8", text: "#D69E2E" },
+  { bg: "#FFF0F7", border: "#FED7E2", text: "#D53F8C" },
+  { bg: "#F0F5FF", border: "#BAE6FD", text: "#0284C7" },
+  { bg: "#FFF5F5", border: "#FED7D7", text: "#E53E3E" },
+  { bg: "#FFFAF0", border: "#FEEBC8", text: "#DD6B20" },
+  { bg: "#F0FFF4", border: "#C6F7E2", text: "#2C7A7B" }
+];
 
 const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) => {
   const { toast } = useToast();
@@ -125,6 +135,10 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
       setCardPositions(positions);
     }
   }, [contentTypes, isAddingFormat, expandedCardId]);
+
+  const getFormatColor = (index: number) => {
+    return FORMAT_COLORS[index % FORMAT_COLORS.length];
+  };
 
   const handleAddFormat = () => {
     if (!newFormatName.trim()) return;
@@ -292,7 +306,10 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         animate="visible"
         key={pillarId}
       >
-        {contentTypes.map((type) => (
+        {contentTypes.map((type, index) => {
+          const colorScheme = getFormatColor(index);
+          
+          return (
           <motion.div 
             key={type.id} 
             data-card-id={type.id}
@@ -315,18 +332,24 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               className={`transition-all duration-200 ease-in-out ${expandedCardId === type.id ? 'w-[300px]' : 'w-[200px]'}`}
             >
               <Card 
-                className={`border rounded-lg shadow-sm relative group hover:border-purple-300 transition-all 
-                  ${expandedCardId === type.id ? 'w-[300px] bg-white' : 'w-[200px]'}`}
+                className={`relative group transition-all rounded-xl overflow-hidden
+                  ${expandedCardId === type.id ? 'w-[300px]' : 'w-[200px]'}`}
+                style={{
+                  backgroundColor: colorScheme.bg,
+                  borderColor: colorScheme.border,
+                  boxShadow: `0 4px 14px ${colorScheme.border}50`
+                }}
               >
                 <Button
                   type="button"
                   variant="ghost"
                   size="xs"
-                  className="absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-30 hover:bg-gray-100"
+                  className="absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-30 hover:bg-white/50"
                   onClick={(e) => handleDeleteFormat(e, type.id)}
                   title="Delete format"
+                  style={{ color: colorScheme.text }}
                 >
-                  <Trash2 className="h-3.5 w-3.5 text-gray-500" />
+                  <Trash2 className="h-3.5 w-3.5" />
                 </Button>
                 
                 <CollapsibleTrigger asChild>
@@ -334,10 +357,11 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                     variant="ghost" 
                     size="sm" 
                     className="absolute top-1 right-8 p-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{ color: colorScheme.text }}
                   >
                     {expandedCardId === type.id ? 
-                      <ChevronUp className="h-4 w-4 text-purple-500" /> : 
-                      <ChevronDown className="h-4 w-4 text-purple-500" />
+                      <ChevronUp className="h-4 w-4" /> : 
+                      <ChevronDown className="h-4 w-4" />
                     }
                   </Button>
                 </CollapsibleTrigger>
@@ -363,7 +387,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                         onClick={(e) => e.stopPropagation()}
                       />
                     ) : (
-                      <span className="text-sm font-medium text-gray-900 truncate">
+                      <span className="text-sm font-medium truncate" style={{ color: colorScheme.text }}>
                         {type.name}
                       </span>
                     )}
@@ -424,11 +448,24 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                       )}
                     </div>
                   ) : null}
+                  
+                  <Button
+                    variant="ghost"
+                    size="sm" 
+                    className="w-full mt-2 rounded-md text-xs font-medium"
+                    style={{ 
+                      color: colorScheme.text,
+                      backgroundColor: `${colorScheme.text}10`, 
+                    }}
+                    onClick={() => onAddIdea(type.id)}
+                  >
+                    <Plus className="h-3.5 w-3.5 mr-1" /> Add Content
+                  </Button>
                 </div>
               </Card>
             </Collapsible>
           </motion.div>
-        ))}
+        )})}
         
         <TooltipProvider delayDuration={0}>
           <Tooltip>
@@ -436,17 +473,18 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               <motion.div
                 variants={cardVariants}
                 whileHover={{ 
-                  scale: 1.05, 
+                  scale: 1.05,
                   backgroundColor: "rgba(249, 244, 255, 0.7)" 
                 }}
                 whileTap={{ scale: 0.98 }}
+                className="border border-dashed border-gray-300 rounded-xl"
               >
                 <Button 
                   variant="ghost" 
                   onClick={() => setIsAddingFormat(!isAddingFormat)}
                   className="w-[200px] h-[80px] flex items-center justify-center p-0"
                 >
-                  <Plus className="h-5 w-5 text-purple-500" />
+                  <Plus className="h-5 w-5 text-gray-500" />
                 </Button>
               </motion.div>
             </TooltipTrigger>
