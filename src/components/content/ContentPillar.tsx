@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
@@ -103,7 +102,6 @@ const ContentPillar = ({
     };
   }, [filteredContent]);
 
-  // Animation variants for the content cards
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -127,6 +125,19 @@ const ContentPillar = ({
     }
   };
 
+  const emptyStateVariants = {
+    hidden: { opacity: 0, x: 80 },
+    visible: { 
+      opacity: 1, 
+      x: 0,
+      transition: { 
+        duration: 0.45,
+        delay: 0.15,
+        ease: "easeOut"
+      }
+    }
+  };
+
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <motion.div 
@@ -138,9 +149,9 @@ const ContentPillar = ({
         {filteredContent.length === 0 ? (
           <motion.div 
             className="text-center p-8 border border-dashed rounded-lg bg-muted/30"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
+            variants={emptyStateVariants}
+            initial="hidden"
+            animate="visible"
           >
             <p className="text-muted-foreground">
               {searchQuery 
