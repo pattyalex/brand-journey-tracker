@@ -1,3 +1,4 @@
+
 import { ReactNode } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import TitleInputSection from "./TitleInputSection";
@@ -49,18 +50,23 @@ interface DialogContentProps {
 }
 
 const containerVariants = {
-  hidden: { opacity: 0 },
+  hidden: { opacity: 0, x: 30 },
   visible: {
     opacity: 1,
-    transition: { duration: 0.3 }
+    x: 0,
+    transition: { 
+      duration: 0.4,
+      when: "beforeChildren"
+    }
   }
 };
 
 const itemVariants = {
-  hidden: { opacity: 0 },
+  hidden: { opacity: 0, x: 20 },
   visible: { 
     opacity: 1, 
-    transition: { duration: 0.2 } 
+    x: 0,
+    transition: { duration: 0.3 } 
   }
 };
 
