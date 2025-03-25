@@ -370,10 +370,19 @@ const BankOfContent = () => {
             />
           </div>
           
-          <ContentTypeBuckets 
-            onAddIdea={handleAddToBucket} 
-            pillarId={activeTab}
-          />
+          {pillars.map((pillar, index) => {
+            const pillarColor = getPillarColor(index);
+            
+            // Only render ContentTypeBuckets for the active pillar
+            return activeTab === pillar.id && (
+              <ContentTypeBuckets 
+                key={`bucket-${pillar.id}`}
+                onAddIdea={handleAddToBucket} 
+                pillarId={pillar.id}
+                pillarColor={pillarColor}
+              />
+            );
+          })}
           
           {pillars.map((pillar, index) => (
             <TabsContent 

@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,20 +34,10 @@ type ContentType = {
 interface ContentTypeBucketsProps {
   onAddIdea: (formatId: string) => void;
   pillarId: string;
+  pillarColor?: string; // Added pillar color prop
 }
 
-const FORMAT_COLORS = [
-  { bg: "#F3F4FF", border: "#D0D5FF", text: "#4B50C5" },
-  { bg: "#F0FFF4", border: "#C6F6D5", text: "#38A169" },
-  { bg: "#FFF8F0", border: "#FEEBC8", text: "#D69E2E" },
-  { bg: "#FFF0F7", border: "#FED7E2", text: "#D53F8C" },
-  { bg: "#F0F5FF", border: "#BAE6FD", text: "#0284C7" },
-  { bg: "#FFF5F5", border: "#FED7D7", text: "#E53E3E" },
-  { bg: "#FFFAF0", border: "#FEEBC8", text: "#DD6B20" },
-  { bg: "#F0FFF4", border: "#C6F7E2", text: "#2C7A7B" }
-];
-
-const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) => {
+const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarColor }: ContentTypeBucketsProps) => {
   const { toast } = useToast();
   const [contentTypes, setContentTypes] = useState<ContentType[]>([
     { id: "blog", name: "Blog Posts", description: "Long-form written content", items: [] },
@@ -136,7 +127,30 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     }
   }, [contentTypes, isAddingFormat, expandedCardId]);
 
-  const getFormatColor = (index: number) => {
+  // Function to generate colors based on pillar color
+  const getFormatColorScheme = (index: number) => {
+    // If a pillar color is provided, use it to generate card colors
+    if (pillarColor) {
+      const opacity = (index % 4 + 6) / 10; // Creates opacity values from 0.6 to 0.9
+      return {
+        bg: `${pillarColor}10`, // Light background
+        border: `${pillarColor}30`, // Slightly darker border
+        text: pillarColor // Full color for text
+      };
+    }
+    
+    // Fallback to original colors if no pillar color provided
+    const FORMAT_COLORS = [
+      { bg: "#F3F4FF", border: "#D0D5FF", text: "#4B50C5" },
+      { bg: "#F0FFF4", border: "#C6F6D5", text: "#38A169" },
+      { bg: "#FFF8F0", border: "#FEEBC8", text: "#D69E2E" },
+      { bg: "#FFF0F7", border: "#FED7E2", text: "#D53F8C" },
+      { bg: "#F0F5FF", border: "#BAE6FD", text: "#0284C7" },
+      { bg: "#FFF5F5", border: "#FED7D7", text: "#E53E3E" },
+      { bg: "#FFFAF0", border: "#FEEBC8", text: "#DD6B20" },
+      { bg: "#F0FFF4", border: "#C6F7E2", text: "#2C7A7B" }
+    ];
+    
     return FORMAT_COLORS[index % FORMAT_COLORS.length];
   };
 
@@ -282,7 +296,18 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
             className="max-w-xs mb-2"
           />
           <div className="flex gap-2">
-            <Button onClick={handleAddFormat} size="sm">Add</Button>
+            <Button 
+              onClick={handleAddFormat} 
+              size="sm"
+              style={pillarColor ? { 
+                backgroundColor: `${pillarColor}15`,
+                color: pillarColor,
+                borderColor: `${pillarColor}40`
+              } : undefined}
+              className="border"
+            >
+              Add
+            </Button>
             <Button 
               variant="ghost" 
               size="sm" 
@@ -307,7 +332,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         key={pillarId}
       >
         {contentTypes.map((type, index) => {
-          const colorScheme = getFormatColor(index);
+          const colorScheme = getFormatColorScheme(index);
           
           return (
           <motion.div 
@@ -322,7 +347,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
             variants={cardVariants}
             whileHover={{ 
               scale: 1.03,
-              boxShadow: "0 10px 25px rgba(0,0,0,0.07)",
+              boxShadow: `0 10px 25px ${colorScheme.border}80`,
               transition: { duration: 0.2 }
             }}
           >
@@ -474,17 +499,19 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                 variants={cardVariants}
                 whileHover={{ 
                   scale: 1.05,
-                  backgroundColor: "rgba(249, 244, 255, 0.7)" 
+                  backgroundColor: pillarColor ? `${pillarColor}10` : "rgba(249, 244, 255, 0.7)" 
                 }}
                 whileTap={{ scale: 0.98 }}
                 className="border border-dashed border-gray-300 rounded-xl"
+                style={pillarColor ? { borderColor: `${pillarColor}40` } : undefined}
               >
                 <Button 
                   variant="ghost" 
                   onClick={() => setIsAddingFormat(!isAddingFormat)}
                   className="w-[200px] h-[80px] flex items-center justify-center p-0"
+                  style={pillarColor ? { color: pillarColor } : undefined}
                 >
-                  <Plus className="h-5 w-5 text-gray-500" />
+                  <Plus className="h-5 w-5" />
                 </Button>
               </motion.div>
             </TooltipTrigger>

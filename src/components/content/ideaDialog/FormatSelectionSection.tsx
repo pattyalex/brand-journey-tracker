@@ -40,10 +40,11 @@ const FormatSelectionSection = ({
       <Select value={format} onValueChange={onFormatChange}>
         <SelectTrigger 
           id="content-format" 
-          className="w-full"
+          className="w-full transition-all duration-300"
           style={selectedFormat ? {
             borderColor: `${selectedFormat.color}50`,
-            boxShadow: `0 0 0 1px ${selectedFormat.color}30`
+            boxShadow: `0 0 0 1px ${selectedFormat.color}30`,
+            background: `${selectedFormat.color}05`,
           } : undefined}
         >
           <SelectValue placeholder="Select content format" />
@@ -53,12 +54,18 @@ const FormatSelectionSection = ({
             <SelectItem 
               key={formatOption.value} 
               value={formatOption.value}
-              className="flex items-center"
+              className="flex items-center transition-colors hover:bg-opacity-10"
+              style={{
+                backgroundColor: format === formatOption.value ? `${formatOption.color}10` : undefined
+              }}
             >
               <div className="flex items-center">
                 <div 
-                  className="w-2 h-2 rounded-full mr-2"
-                  style={{ backgroundColor: formatOption.color }}
+                  className="w-2.5 h-2.5 rounded-full mr-2"
+                  style={{ 
+                    backgroundColor: formatOption.color,
+                    boxShadow: `0 0 0 1px ${formatOption.color}80`,
+                  }}
                 />
                 {formatOption.label}
               </div>
@@ -69,11 +76,12 @@ const FormatSelectionSection = ({
       
       {selectedFormat && (
         <div 
-          className="mt-1 px-3 py-1 text-xs inline-flex items-center rounded-full"
+          className="mt-1 px-3 py-1.5 text-xs inline-flex items-center rounded-md transition-all duration-300 font-medium"
           style={{ 
-            backgroundColor: `${selectedFormat.color}15`,
+            backgroundColor: `${selectedFormat.color}12`,
             color: selectedFormat.color,
-            borderLeft: `2px solid ${selectedFormat.color}`
+            borderLeft: `2px solid ${selectedFormat.color}`,
+            boxShadow: `inset 0 0 0 1px ${selectedFormat.color}20`
           }}
         >
           Selected: {selectedFormat.label}
