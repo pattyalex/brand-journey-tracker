@@ -9,6 +9,7 @@ interface BucketSelectionSectionProps {
   bucketId: string;
   onBucketChange: (value: string) => void;
   pillarId: string;
+  pillarColor?: string;
 }
 
 type ContentFormat = {
@@ -20,7 +21,8 @@ type ContentFormat = {
 const BucketSelectionSection = ({
   bucketId,
   onBucketChange,
-  pillarId
+  pillarId,
+  pillarColor
 }: BucketSelectionSectionProps) => {
   const [contentFormats, setContentFormats] = useState<ContentFormat[]>([]);
   
@@ -61,7 +63,14 @@ const BucketSelectionSection = ({
         value={bucketId} 
         onValueChange={onBucketChange}
       >
-        <SelectTrigger id="format-select" className="w-full h-10">
+        <SelectTrigger 
+          id="format-select" 
+          className="w-full h-10"
+          style={pillarColor ? { 
+            borderColor: `${pillarColor}30`,
+            borderWidth: '1px'
+          } : undefined}
+        >
           <SelectValue placeholder="Select a content format" />
         </SelectTrigger>
         <SelectContent>

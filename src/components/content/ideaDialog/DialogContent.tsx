@@ -10,6 +10,7 @@ import CaptionInputSection from "./CaptionInputSection";
 import PlatformsSection from "./PlatformsSection";
 import TagsSection from "./TagsSection";
 import InspirationSection from "./InspirationSection";
+import FormatSelectionSection from "./FormatSelectionSection";
 import { motion } from "framer-motion";
 
 interface DialogContentProps {
@@ -46,6 +47,7 @@ interface DialogContentProps {
   inspirationImages?: string[];
   onAddInspirationImage?: (image: string) => void;
   onRemoveInspirationImage?: (index: number) => void;
+  pillarColor?: string;
   children?: ReactNode;
 }
 
@@ -105,6 +107,7 @@ const DialogContent = ({
   inspirationImages = [],
   onAddInspirationImage = () => {},
   onRemoveInspirationImage = () => {},
+  pillarColor,
   children,
 }: DialogContentProps) => {
   return (
@@ -131,7 +134,21 @@ const DialogContent = ({
             <BucketSelectionSection 
               bucketId={bucketId} 
               onBucketChange={onBucketChange} 
-              pillarId={pillarId} 
+              pillarId={pillarId}
+              pillarColor={pillarColor}
+            />
+          </div>
+        </motion.div>
+        
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-2 gap-5"
+          variants={itemVariants}
+        >
+          <div>
+            <FormatSelectionSection 
+              format={format} 
+              onFormatChange={onFormatChange} 
+              pillarColor={pillarColor}
             />
           </div>
         </motion.div>

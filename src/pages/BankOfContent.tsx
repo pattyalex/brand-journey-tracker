@@ -476,6 +476,7 @@ const BankOfContent = () => {
           inspirationImages={[]}
           onAddInspirationImage={() => {}}
           onRemoveInspirationImage={() => {}}
+          pillarColor={getPillarColor(pillars.findIndex(p => p.id === activeTab))}
         />
       </div>
     </Layout>

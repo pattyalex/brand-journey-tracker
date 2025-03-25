@@ -6,11 +6,13 @@ import { FileType } from "lucide-react";
 interface FormatSelectionSectionProps {
   format: string;
   onFormatChange: (value: string) => void;
+  pillarColor?: string;
 }
 
 const FormatSelectionSection = ({
   format,
   onFormatChange,
+  pillarColor,
 }: FormatSelectionSectionProps) => {
   const contentFormats = [
     { value: "photo/image", label: "Photo/Image", color: "#7C3AED" },
@@ -30,6 +32,7 @@ const FormatSelectionSection = ({
   ];
 
   const selectedFormat = contentFormats.find(f => f.value === format);
+  const borderColor = pillarColor || (selectedFormat ? selectedFormat.color : undefined);
 
   return (
     <div className="grid gap-2">
@@ -41,8 +44,8 @@ const FormatSelectionSection = ({
         <SelectTrigger 
           id="content-format" 
           className="w-full transition-all duration-300"
-          style={selectedFormat ? {
-            borderColor: `${selectedFormat.color}30`,
+          style={borderColor ? {
+            borderColor: `${borderColor}30`,
             borderWidth: '1px',
             background: 'white',
           } : undefined}
@@ -80,10 +83,10 @@ const FormatSelectionSection = ({
           style={{ 
             backgroundColor: 'white',
             color: selectedFormat.color,
-            borderLeft: `1px solid ${selectedFormat.color}40`,
-            borderTop: `1px solid ${selectedFormat.color}15`,
-            borderRight: `1px solid ${selectedFormat.color}15`,
-            borderBottom: `1px solid ${selectedFormat.color}15`,
+            borderLeft: `1px solid ${borderColor || selectedFormat.color}40`,
+            borderTop: `1px solid ${borderColor || selectedFormat.color}15`,
+            borderRight: `1px solid ${borderColor || selectedFormat.color}15`,
+            borderBottom: `1px solid ${borderColor || selectedFormat.color}15`,
           }}
         >
           Selected: {selectedFormat.label}
