@@ -33,7 +33,7 @@ type ContentType = {
 interface ContentTypeBucketsProps {
   onAddIdea: (formatId: string) => void;
   pillarId: string;
-  pillarColor?: string; // Added pillar color prop
+  pillarColor?: string;
 }
 
 const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarColor }: ContentTypeBucketsProps) => {
@@ -126,14 +126,12 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarColor }: ContentTypeBuc
     }
   }, [contentTypes, isAddingFormat, expandedCardId]);
 
-  // Generate subtle border styling with pillar-colored border
   const getFormatColorScheme = (index: number) => {
-    // Apply a very subtle color based on the pillar color
     return {
-      bg: "#FFFFFF", // White background
-      border: pillarColor ? `${pillarColor}30` : "#E5E7EB", // Very subtle border using pillar color with 30% opacity
-      text: "#333333", // Dark text for better readability
-      hover: pillarColor ? `${pillarColor}08` : "#F9FAFB" // Even lighter hover state
+      bg: "#FFFFFF",
+      border: pillarColor ? `${pillarColor}30` : "#E5E7EB",
+      text: "#333333",
+      hover: pillarColor ? `${pillarColor}08` : "#F9FAFB"
     };
   };
 
@@ -396,10 +394,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarColor }: ContentTypeBuc
                         onClick={(e) => e.stopPropagation()}
                       />
                     ) : (
-                      <span 
-                        className="text-sm font-medium truncate" 
-                        style={{ color: pillarColor ? `${pillarColor}90` : colorScheme.text }}
-                      >
+                      <span className="text-sm font-medium truncate">
                         {type.name}
                       </span>
                     )}
@@ -466,7 +461,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarColor }: ContentTypeBuc
                     size="sm" 
                     className="w-full mt-2 rounded-md text-xs font-medium"
                     style={{ 
-                      color: "#555",
                       borderColor: pillarColor ? `${pillarColor}30` : "#E5E7EB",
                     }}
                     onClick={() => onAddIdea(type.id)}

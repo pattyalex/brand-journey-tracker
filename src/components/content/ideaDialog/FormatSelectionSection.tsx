@@ -42,7 +42,7 @@ const FormatSelectionSection = ({
           id="content-format" 
           className="w-full transition-all duration-300"
           style={selectedFormat ? {
-            borderColor: `${selectedFormat.color}40`,
+            borderColor: `${selectedFormat.color}30`,
             borderWidth: '1px',
             background: 'white',
           } : undefined}
