@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Check, ChevronDown, ChevronUp, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
+// Common content formats that creators might use
 const DEFAULT_PREDEFINED_FORMATS = [
   "POV Skit",
   "Tutorial",
@@ -28,37 +30,23 @@ const DEFAULT_PREDEFINED_FORMATS = [
   "Behind the Scenes"
 ];
 
-const getFormatTagColor = (pillarId?: string) => {
-  if (!pillarId) return "bg-blue-100 text-blue-800";
-  
-  switch (pillarId) {
-    case "1": return "bg-amber-100 text-amber-800";
-    case "2": return "bg-purple-100 text-purple-800";
-    case "3": return "bg-blue-100 text-blue-800";
-    case "4": return "bg-orange-100 text-orange-800";
-    case "5": return "bg-green-100 text-green-800";
-    default: return "bg-blue-100 text-blue-800";
-  }
-};
-
 interface FormatSelectorProps {
   selectedFormat: string;
   onFormatChange: (format: string) => void;
-  pillarId?: string;
 }
 
-const FormatSelector = ({ selectedFormat, onFormatChange, pillarId }: FormatSelectorProps) => {
+const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps) => {
   const [customFormat, setCustomFormat] = useState("");
   const [isAddingCustom, setIsAddingCustom] = useState(false);
   const [formats, setFormats] = useState<string[]>(() => {
+    // Try to load saved formats from localStorage, fallback to defaults
     const savedFormats = localStorage.getItem("contentFormats");
     return savedFormats ? JSON.parse(savedFormats) : DEFAULT_PREDEFINED_FORMATS;
   });
   const [scrollPosition, setScrollPosition] = useState(0);
-  const SCROLL_STEP = 120;
-  
-  const formatTagColorClass = getFormatTagColor(pillarId);
+  const SCROLL_STEP = 120; // Amount to scroll with each button click
 
+  // Save formats to localStorage whenever they change
   const saveFormats = (newFormats: string[]) => {
     localStorage.setItem("contentFormats", JSON.stringify(newFormats));
     setFormats(newFormats);
@@ -76,6 +64,7 @@ const FormatSelector = ({ selectedFormat, onFormatChange, pillarId }: FormatSele
     if (customFormat.trim()) {
       const newFormat = customFormat.trim();
       
+      // Only add if not already in the list
       if (!formats.includes(newFormat)) {
         const newFormats = [...formats, newFormat];
         saveFormats(newFormats);
@@ -88,10 +77,14 @@ const FormatSelector = ({ selectedFormat, onFormatChange, pillarId }: FormatSele
   };
 
   const handleDeleteFormat = (formatToDelete: string, e: React.MouseEvent) => {
+    // Stop the event from bubbling up to the parent SelectItem
     e.stopPropagation();
+    
+    // Filter out the format to delete
     const newFormats = formats.filter(format => format !== formatToDelete);
     saveFormats(newFormats);
     
+    // If the currently selected format is being deleted, clear the selection
     if (selectedFormat === formatToDelete) {
       onFormatChange("");
     }
@@ -105,6 +98,7 @@ const FormatSelector = ({ selectedFormat, onFormatChange, pillarId }: FormatSele
     const newPosition = Math.max(0, scrollPosition - SCROLL_STEP);
     setScrollPosition(newPosition);
     
+    // Find the ScrollArea viewport and scroll it
     const viewport = document.querySelector('.formats-scroll-area [data-radix-scroll-area-viewport]');
     if (viewport) {
       viewport.scrollTop = newPosition;
@@ -115,12 +109,14 @@ const FormatSelector = ({ selectedFormat, onFormatChange, pillarId }: FormatSele
     const newPosition = scrollPosition + SCROLL_STEP;
     setScrollPosition(newPosition);
     
+    // Find the ScrollArea viewport and scroll it
     const viewport = document.querySelector('.formats-scroll-area [data-radix-scroll-area-viewport]');
     if (viewport) {
       viewport.scrollTop = newPosition;
     }
   };
 
+  // Use a unique className for the format selector to prevent conflicts
   const formatSelectorClassName = "format-selector-component";
 
   return (
@@ -155,13 +151,13 @@ const FormatSelector = ({ selectedFormat, onFormatChange, pillarId }: FormatSele
       ) : (
         <Select value={selectedFormat || ""} onValueChange={handleSelectFormat}>
           <SelectTrigger 
-            className={`w-full shadow-sm hover:shadow-md transition-shadow duration-200 ${pillarId ? `border-l-2 border-pillar-${pillarId}` : ''}`}
+            className="w-full" 
             data-component="format-selector" 
             aria-label="Select a content format"
           >
             <SelectValue placeholder="Select a content format" />
           </SelectTrigger>
-          <SelectContent className="select-none max-h-[300px] shadow-md">
+          <SelectContent className="select-none max-h-[300px]">
             <div className="flex items-center justify-center border-b border-gray-100 py-1">
               <Button
                 variant="ghost"
@@ -217,13 +213,13 @@ const FormatSelector = ({ selectedFormat, onFormatChange, pillarId }: FormatSele
 
       {selectedFormat && (
         <div className="flex items-center mt-2">
-          <span className={`${formatTagColorClass} text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm`}>
+          <span className="bg-blue-100 text-blue-800 text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5">
             {selectedFormat}
             <Button 
               variant="ghost" 
               size="xs" 
               onClick={handleClearSelectedFormat}
-              className={`ml-1 p-0 h-5 w-5 rounded-full hover:bg-${formatTagColorClass.includes('blue') ? 'blue' : formatTagColorClass.includes('purple') ? 'purple' : formatTagColorClass.includes('amber') ? 'amber' : formatTagColorClass.includes('orange') ? 'orange' : 'green'}-200`}
+              className="ml-1 p-0 h-5 w-5 rounded-full hover:bg-blue-200"
             >
               <X className="h-3.5 w-3.5" />
             </Button>

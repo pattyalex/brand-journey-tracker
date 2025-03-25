@@ -61,24 +61,12 @@ export default {
           800: '#5b21b6',
           900: '#4c1d95',
           950: '#2e1065',
-        },
-        // Add our pillar colors
-        pillar: {
-          1: '#8B6B4E', // Brown
-          2: '#7c3aed', // Purple
-          3: '#2563eb', // Blue
-          4: '#f97316', // Orange
-          5: '#16a34a', // Green
         }
       },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)'
-      },
-      boxShadow: {
-        'card': '0 2px 8px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03)',
-        'card-hover': '0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.05)',
       },
       keyframes: {
         'fade-in': {

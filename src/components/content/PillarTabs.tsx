@@ -38,30 +38,6 @@ interface PillarTabsProps {
   onDeletePillar: (pillarId: string) => void;
 }
 
-// Define color classes for each pillar
-const getPillarColorClass = (pillarId: string) => {
-  switch (pillarId) {
-    case "1": return "bg-primary text-primary-foreground after:bg-primary";
-    case "2": return "bg-purple-600 text-white after:bg-purple-600";
-    case "3": return "bg-blue-600 text-white after:bg-blue-600";
-    case "4": return "bg-orange-500 text-white after:bg-orange-500";
-    case "5": return "bg-green-600 text-white after:bg-green-600";
-    default: return "bg-gray-600 text-white after:bg-gray-600";
-  }
-};
-
-// Get inactive tab style based on pillar ID
-const getInactiveTabStyle = (pillarId: string) => {
-  switch (pillarId) {
-    case "1": return "hover:bg-primary/10 hover:text-primary";
-    case "2": return "hover:bg-purple-600/10 hover:text-purple-600";
-    case "3": return "hover:bg-blue-600/10 hover:text-blue-600";
-    case "4": return "hover:bg-orange-500/10 hover:text-orange-500";
-    case "5": return "hover:bg-green-600/10 hover:text-green-600";
-    default: return "hover:bg-gray-600/10 hover:text-gray-600";
-  }
-};
-
 const PillarTabs = ({ 
   pillars, 
   activeTab, 
@@ -102,27 +78,27 @@ const PillarTabs = ({
   };
 
   return (
-    <div className="mb-6">
+    <div className="flex items-center justify-between mb-6">
       <div className="flex items-center">
         <TabsList className="bg-background border overflow-x-auto flex items-center h-12">
           {pillars.map((pillar) => (
             <div key={pillar.id} className="relative flex items-center">
               {editingPillarId === pillar.id ? (
-                <div className={`px-4 py-2 flex items-center rounded-sm ${getPillarColorClass(pillar.id)}`}>
+                <div className="px-4 py-2 flex items-center bg-primary text-primary-foreground rounded-sm">
                   <Input
                     value={editingPillarName}
                     onChange={(e) => setEditingPillarName(e.target.value)}
                     onKeyDown={handlePillarNameKeyDown}
                     onBlur={saveEditingPillar}
                     autoFocus
-                    className="h-7 px-1 py-0 text-base w-40 bg-transparent border-0 focus-visible:ring-0 text-white"
+                    className="h-7 px-1 py-0 text-base w-40 bg-transparent border-0 focus-visible:ring-0 text-primary-foreground"
                     data-testid="edit-pillar-name-input"
                   />
                   <Button
                     size="xs"
                     variant="ghost"
                     onClick={saveEditingPillar}
-                    className="ml-1 text-white hover:text-white/90 hover:bg-transparent p-0 h-6 w-6"
+                    className="ml-1 text-primary-foreground hover:text-primary-foreground/90 hover:bg-transparent p-0 h-6 w-6"
                   >
                     <Check className="h-4 w-4" />
                   </Button>
@@ -130,7 +106,7 @@ const PillarTabs = ({
                     size="xs"
                     variant="ghost"
                     onClick={cancelEditingPillar}
-                    className="text-white hover:text-white/90 hover:bg-transparent p-0 h-6 w-6"
+                    className="text-primary-foreground hover:text-primary-foreground/90 hover:bg-transparent p-0 h-6 w-6"
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -139,15 +115,9 @@ const PillarTabs = ({
                 <div className="flex items-center">
                   <TabsTrigger 
                     value={pillar.id}
-                    className={`
-                      data-[state=active]:${getPillarColorClass(pillar.id)} 
-                      ${getInactiveTabStyle(pillar.id)}
-                      data-[state=active]:pillar-tab-active 
-                      data-[state=active]:shadow-md
-                      px-6 py-2.5 text-base font-medium 
-                      transition-all duration-300 border-b-4 border-transparent
-                      data-[state=active]:border-current
-                    `}
+                    className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white px-5 py-2 text-base ${
+                      pillar.id === "1" && activeTab === "1" ? "bg-[#8B6B4E] text-white" : ""
+                    }`}
                     onClick={() => onTabChange(pillar.id)}
                   >
                     {pillar.name}

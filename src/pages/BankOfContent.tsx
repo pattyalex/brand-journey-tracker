@@ -20,18 +20,6 @@ export type Pillar = {
   onUpdateWritingSpace?: (pillarId: string, text: string) => void;
 };
 
-// Function to get pillar theme classes
-const getPillarThemeClass = (pillarId: string) => {
-  switch (pillarId) {
-    case "1": return "border-l-4 border-pillar-1 shadow-[0_0_15px_rgba(139,107,78,0.1)]";
-    case "2": return "border-l-4 border-pillar-2 shadow-[0_0_15px_rgba(124,58,237,0.1)]";
-    case "3": return "border-l-4 border-pillar-3 shadow-[0_0_15px_rgba(37,99,235,0.1)]";
-    case "4": return "border-l-4 border-pillar-4 shadow-[0_0_15px_rgba(249,115,22,0.1)]";
-    case "5": return "border-l-4 border-pillar-5 shadow-[0_0_15px_rgba(22,163,74,0.1)]";
-    default: return "border-l-4 border-gray-400";
-  }
-};
-
 const BankOfContent = () => {
   const [pillars, setPillars] = useState<Pillar[]>([
     { id: "1", name: "Pillar 1", content: [], writingSpace: "" },
@@ -376,14 +364,10 @@ const BankOfContent = () => {
           />
           
           {pillars.map((pillar) => (
-            <TabsContent 
-              key={pillar.id} 
-              value={pillar.id} 
-              className={`space-y-4 rounded-lg p-4 transition-all duration-300 ${getPillarThemeClass(pillar.id)}`}
-            >
+            <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <WritingSpace 
-                  writingText={pillar.id === activeTab ? writingText : pillar.writingSpace || ""}
+                  writingText={writingText}
                   onTextChange={updateWritingSpace}
                   onTextSelection={handleTextSelection}
                   onFormatText={handleFormatText}
