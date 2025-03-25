@@ -21,6 +21,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { motion } from "framer-motion";
 
 type ContentType = {
   id: string;
@@ -55,7 +56,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
   const descInputRef = useRef<HTMLInputElement>(null);
   const [showFullDescription, setShowFullDescription] = useState<string | null>(null);
 
-  // State to manage the expanded card position
   const [cardPositions, setCardPositions] = useState<Record<string, { top: number, left: number }>>({});
   const cardsContainerRef = useRef<HTMLDivElement>(null);
 
@@ -67,7 +67,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         const formats = parsedFormats.map((format: any) => {
           return { 
             ...format, 
-            description: format.description || "" // Ensure description exists
+            description: format.description || "" 
           };
         });
         setContentTypes(formats);
@@ -205,14 +205,68 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     setExpandedCardId(prev => prev === formatId ? null : formatId);
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.07,
+        delayChildren: 0.1
+      }
+    },
+    exit: {
+      opacity: 0,
+      transition: { 
+        staggerChildren: 0.05,
+        staggerDirection: -1 
+      }
+    }
+  };
+
+  const cardVariants = {
+    hidden: { 
+      opacity: 0, 
+      y: 20,
+      scale: 0.95
+    },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      scale: 1,
+      transition: { 
+        type: "spring", 
+        stiffness: 300, 
+        damping: 24 
+      }
+    },
+    exit: { 
+      opacity: 0, 
+      y: 10,
+      scale: 0.95,
+      transition: { 
+        duration: 0.2
+      }
+    }
+  };
+
   return (
     <div className="mt-4 mb-6">
-      <div className="flex justify-between items-center mb-3">
+      <motion.div 
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="flex justify-between items-center mb-3"
+      >
         <h2 className="text-xl font-semibold">Content Formats</h2>
-      </div>
+      </motion.div>
       
       {isAddingFormat && (
-        <div className="mb-3 flex flex-col gap-2">
+        <motion.div 
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          className="mb-3 flex flex-col gap-2"
+        >
           <Input
             value={newFormatName}
             onChange={(e) => setNewFormatName(e.target.value)}
@@ -240,12 +294,20 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               Cancel
             </Button>
           </div>
-        </div>
+        </motion.div>
       )}
       
-      <div ref={cardsContainerRef} className="flex flex-wrap gap-3 relative">
+      <motion.div 
+        ref={cardsContainerRef} 
+        className="flex flex-wrap gap-3 relative"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        key={pillarId}
+      >
         {contentTypes.map((type) => (
-          <div 
+          <motion.div 
             key={type.id} 
             data-card-id={type.id}
             className={`transition-all duration-200 ease-in-out ${expandedCardId === type.id ? 'z-10' : 'z-0'}`}
@@ -254,6 +316,8 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               top: expandedCardId === type.id ? cardPositions[type.id]?.top || 0 : 'auto',
               left: expandedCardId === type.id ? cardPositions[type.id]?.left || 0 : 'auto',
             }}
+            variants={cardVariants}
+            layout
           >
             <Collapsible
               open={expandedCardId === type.id}
@@ -373,26 +437,31 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                 </div>
               </Card>
             </Collapsible>
-          </div>
+          </motion.div>
         ))}
         
         <TooltipProvider delayDuration={0}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                onClick={() => setIsAddingFormat(!isAddingFormat)}
-                className="w-[200px] h-[80px] flex items-center justify-center p-0"
+              <motion.div
+                variants={cardVariants}
+                layout
               >
-                <Plus className="h-5 w-5 text-purple-500" />
-              </Button>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setIsAddingFormat(!isAddingFormat)}
+                  className="w-[200px] h-[80px] flex items-center justify-center p-0"
+                >
+                  <Plus className="h-5 w-5 text-purple-500" />
+                </Button>
+              </motion.div>
             </TooltipTrigger>
             <TooltipContent>
               <p>Add format</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-      </div>
+      </motion.div>
     </div>
   );
 };
