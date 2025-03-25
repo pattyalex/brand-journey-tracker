@@ -48,20 +48,9 @@ const TabsContent = React.forwardRef<
         "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 data-[state=active]:bg-purple-50/30 data-[state=active]:p-4 data-[state=active]:rounded-md transition-all duration-300",
         className
       )}
-      asChild
       {...props}
     >
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ 
-          duration: 0.3,
-          ease: [0.4, 0, 0.2, 1]
-        }}
-      >
-        {props.children}
-      </motion.div>
+      {props.children}
     </TabsPrimitive.Content>
   )
 })
