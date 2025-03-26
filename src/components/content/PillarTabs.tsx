@@ -28,6 +28,7 @@ import {
   TooltipProvider,
   TooltipTrigger
 } from "@/components/ui/tooltip";
+import { motion } from "framer-motion";
 
 interface PillarTabsProps {
   pillars: Pillar[];
@@ -113,21 +114,36 @@ const PillarTabs = ({
                 </div>
               ) : (
                 <div className="flex items-center">
-                  <TabsTrigger 
-                    value={pillar.id}
-                    className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white px-5 py-2 text-base ${
-                      pillar.id === "1" && activeTab === "1" ? "bg-[#8B6B4E] text-white" : ""
-                    } transition-all duration-300 relative overflow-hidden`}
-                    onClick={() => onTabChange(pillar.id)}
+                  <motion.div
+                    animate={{ 
+                      scale: pillar.id === activeTab ? 1.3 : 1,
+                      zIndex: pillar.id === activeTab ? 10 : 0,
+                    }}
+                    transition={{ 
+                      type: "spring", 
+                      stiffness: 300, 
+                      damping: 20,
+                      duration: 0.3
+                    }}
+                    style={{ transformOrigin: "center" }}
+                    className="relative"
                   >
-                    <span className="relative z-10">
-                      {pillar.name}
-                    </span>
-                    
-                    {activeTab === pillar.id && (
-                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-white rounded-t-full" />
-                    )}
-                  </TabsTrigger>
+                    <TabsTrigger 
+                      value={pillar.id}
+                      className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white px-5 py-2 text-base ${
+                        pillar.id === "1" && activeTab === "1" ? "bg-[#8B6B4E] text-white" : ""
+                      } transition-all duration-300 relative overflow-hidden`}
+                      onClick={() => onTabChange(pillar.id)}
+                    >
+                      <span className="relative z-10">
+                        {pillar.name}
+                      </span>
+                      
+                      {activeTab === pillar.id && (
+                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white rounded-t-full" />
+                      )}
+                    </TabsTrigger>
+                  </motion.div>
                   
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
