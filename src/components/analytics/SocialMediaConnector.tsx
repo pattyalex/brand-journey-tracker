@@ -2,7 +2,7 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Instagram, Youtube, Twitter, Linkedin, Twitch } from "lucide-react";
+import { Instagram, Youtube, Twitter, Linkedin, Twitch, Music } from "lucide-react";
 
 interface SocialMediaConnectorProps {
   connectedPlatforms: string[];
@@ -10,7 +10,7 @@ interface SocialMediaConnectorProps {
   onDisconnect: (platform: string) => void;
 }
 
-// Custom TikTok SVG icon component
+// Custom TikTok SVG icon component - improved version with musical note style
 const TikTokIcon = ({ className }: { className?: string }) => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
@@ -24,10 +24,12 @@ const TikTokIcon = ({ className }: { className?: string }) => (
     strokeLinejoin="round" 
     className={className}
   >
-    <path d="M9 12a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" />
+    <path d="M9 10a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" />
     <path d="M15 8a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
     <path d="M15 8v8a4 4 0 0 1-4 4" />
     <line x1="15" y1="4" x2="15" y2="12" />
+    <path d="M19 12l-4-1" />
+    <path d="M19 8l-4 1" />
   </svg>
 );
 
@@ -45,10 +47,10 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
       color: "bg-gradient-to-r from-purple-500 to-pink-500",
     },
     {
-      id: "TikTok", // Changed from Facebook to TikTok
-      name: "TikTok", // Changed from Facebook to TikTok
-      icon: <TikTokIcon className="h-5 w-5" />, // Custom TikTok icon
-      color: "bg-black", // TikTok brand color
+      id: "TikTok",
+      name: "TikTok",
+      icon: <TikTokIcon className="h-5 w-5" />,
+      color: "bg-black",
     },
     {
       id: "Twitter",
