@@ -367,7 +367,7 @@ const BankOfContent = () => {
             <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <WritingSpace 
-                  writingText={writingText}
+                  writingText={pillar.writingSpace || ""}
                   onTextChange={updateWritingSpace}
                   onTextSelection={handleTextSelection}
                   onFormatText={handleFormatText}
