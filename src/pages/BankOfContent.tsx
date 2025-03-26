@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -37,7 +36,6 @@ const BankOfContent = () => {
   const [visualNotes, setVisualNotes] = useState("");
   const [shootDetails, setShootDetails] = useState("");
   const [captionText, setCaptionText] = useState("");
-  const [selectedFormat, setSelectedFormat] = useState("text");
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [currentPlatform, setCurrentPlatform] = useState("");
   const [showNewIdeaDialog, setShowNewIdeaDialog] = useState(false);
@@ -173,7 +171,6 @@ const BankOfContent = () => {
     setNewIdeaTitle("");
     setDevelopScriptText("");
     setVisualNotes("");
-    setSelectedFormat("text");
     setShootDetails("");
     setCaptionText("");
     setSelectedPlatforms([]);
@@ -302,7 +299,7 @@ const BankOfContent = () => {
       id: `content-${Date.now()}`,
       title: newIdeaTitle,
       description: developScriptText || selectedText,
-      format: selectedFormat,
+      format: "text",
       url: JSON.stringify({
         script: developScriptText || selectedText,
         visualNotes: visualNotes,
@@ -324,7 +321,6 @@ const BankOfContent = () => {
     setDevelopScriptText("");
     setSelectedText("");
     setVisualNotes("");
-    setSelectedFormat("text");
     setShootDetails("");
     setCaptionText("");
     setSelectedPlatforms([]);
@@ -415,8 +411,6 @@ const BankOfContent = () => {
           onScriptTextChange={setDevelopScriptText}
           visualNotes={visualNotes}
           onVisualNotesChange={setVisualNotes}
-          format={selectedFormat}
-          onFormatChange={setSelectedFormat}
           shootDetails={shootDetails}
           onShootDetailsChange={setShootDetails}
           captionText={captionText}
