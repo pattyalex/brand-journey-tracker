@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,7 +14,8 @@ import {
   Instagram,
   Link,
   Copy,
-  Repeat
+  Repeat,
+  Music
 } from "lucide-react";
 import { 
   BarChart as RechartsBarChart,
@@ -129,7 +131,7 @@ const getPlatformIcon = (platform: string) => {
     case "Instagram":
       return <Instagram className="h-4 w-4 text-pink-500" />;
     case "TikTok":
-      return getTikTokIcon();
+      return <Music className="h-4 w-4 text-black" />;
     default:
       return null;
   }
