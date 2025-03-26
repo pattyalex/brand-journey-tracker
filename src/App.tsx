@@ -1,12 +1,11 @@
 
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/components/theme-provider"
 
-// Eagerly load core components
+// Eagerly load Dashboard as it's the main entry point
 import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
-import Index from './pages/Index';
 
 // Lazy load all other pages
 const BankOfContent = lazy(() => import('./pages/BankOfContent'));
@@ -24,6 +23,7 @@ const MyAccount = lazy(() => import('./pages/MyAccount'));
 const Help = lazy(() => import('./pages/Help'));
 const WeeklyContentTasks = lazy(() => import('./pages/WeeklyContentTasks'));
 const SocialMediaScheduler = lazy(() => import('./pages/SocialMediaScheduler'));
+const Index = lazy(() => import('./pages/Index'));
 
 // Loading component
 const PageLoader = () => (
@@ -41,8 +41,7 @@ function App() {
       <Router>
         <Suspense fallback={<PageLoader />}>
           <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/" element={<Dashboard />} />
             <Route path="/index" element={<Index />} />
             <Route path="/bank-of-content" element={<BankOfContent />} />
             <Route path="/content-ideation" element={<ContentIdeation />} />

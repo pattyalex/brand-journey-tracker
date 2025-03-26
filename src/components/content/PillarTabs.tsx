@@ -28,7 +28,6 @@ import {
   TooltipProvider,
   TooltipTrigger
 } from "@/components/ui/tooltip";
-import { motion } from "framer-motion";
 
 interface PillarTabsProps {
   pillars: Pillar[];
@@ -114,23 +113,21 @@ const PillarTabs = ({
                 </div>
               ) : (
                 <div className="flex items-center">
-                  <div className={`relative ${pillar.id === activeTab ? "z-10 scale-[1.3]" : ""}`}>
-                    <TabsTrigger 
-                      value={pillar.id}
-                      className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white px-5 py-2 text-base ${
-                        pillar.id === "1" && activeTab === "1" ? "bg-[#8B6B4E] text-white" : ""
-                      } transition-all duration-300 relative overflow-hidden`}
-                      onClick={() => onTabChange(pillar.id)}
-                    >
-                      <span className="relative z-10">
-                        {pillar.name}
-                      </span>
-                      
-                      {activeTab === pillar.id && (
-                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white rounded-t-full" />
-                      )}
-                    </TabsTrigger>
-                  </div>
+                  <TabsTrigger 
+                    value={pillar.id}
+                    className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white px-5 py-2 text-base ${
+                      pillar.id === "1" && activeTab === "1" ? "bg-[#8B6B4E] text-white" : ""
+                    } transition-all duration-300 relative overflow-hidden`}
+                    onClick={() => onTabChange(pillar.id)}
+                  >
+                    <span className="relative z-10">
+                      {pillar.name}
+                    </span>
+                    
+                    {activeTab === pillar.id && (
+                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-white rounded-t-full" />
+                    )}
+                  </TabsTrigger>
                   
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
