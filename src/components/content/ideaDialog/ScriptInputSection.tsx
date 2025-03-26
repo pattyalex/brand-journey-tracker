@@ -2,7 +2,7 @@
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { FileText, ChevronDown, ChevronUp } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -29,7 +29,14 @@ const ScriptInputSection = ({
   };
 
   return (
-    <div className={`transition-all duration-200 ${isOpen ? 'bg-white rounded-lg p-4 border shadow-sm hover:shadow-md' : 'bg-gray-50 rounded p-2 border shadow-sm hover:shadow-md flex items-center justify-between'}`}>
+    <motion.div 
+      layout
+      transition={{ 
+        layout: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1.0] },
+        opacity: { duration: 0.2 }
+      }}
+      className={`transition-all duration-400 ${isOpen ? 'bg-white rounded-lg p-4 border shadow-sm hover:shadow-md' : 'bg-gray-50 rounded p-2 border shadow-sm hover:shadow-md flex items-center justify-between'}`}
+    >
       {isOpen ? (
         <>
           <div className="flex items-center justify-between mb-1">
@@ -50,8 +57,8 @@ const ScriptInputSection = ({
           
           <Collapsible open={isOpen} onOpenChange={setIsOpen}>
             <CollapsibleContent 
-              className="transition-all duration-300"
-              style={{ animation: "collapsible-down 0.3s ease-out" }}
+              className="transition-all duration-400"
+              style={{ animation: "collapsible-down 0.4s ease-out" }}
             >
               <Textarea
                 id="develop-script"
@@ -85,7 +92,7 @@ const ScriptInputSection = ({
           </Button>
         </>
       )}
-    </div>
+    </motion.div>
   );
 };
 

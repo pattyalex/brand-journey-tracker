@@ -10,7 +10,7 @@ import CaptionInputSection from "./CaptionInputSection";
 import PlatformsSection from "./PlatformsSection";
 import TagsSection from "./TagsSection";
 import InspirationSection from "./InspirationSection";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 
 interface DialogContentProps {
   title: string;
@@ -124,152 +124,178 @@ const DialogContent = ({
         initial="hidden"
         animate="visible"
       >
-        <motion.div 
-          whileHover={{ scale: 1.01 }} 
-          transition={{ duration: 0.2 }}
-          variants={itemVariants}
-          layout
-        >
-          <BucketSelectionSection 
-            bucketId={bucketId} 
-            onBucketChange={onBucketChange} 
-            pillarId={pillarId} 
-          />
-        </motion.div>
-        
-        <motion.div 
-          className="bg-purple-50 rounded-lg p-4 mx-2 border border-purple-100 shadow-sm"
-          variants={itemVariants}
-          whileHover={{ scale: 1.01 }} 
-          transition={{ duration: 0.2 }}
-          layout
-        >
-          <InspirationSection
-            inspirationText={inspirationText}
-            onInspirationTextChange={onInspirationTextChange}
-            inspirationLinks={inspirationLinks}
-            onAddInspirationLink={onAddInspirationLink}
-            onRemoveInspirationLink={onRemoveInspirationLink}
-            inspirationImages={inspirationImages}
-            onAddInspirationImage={onAddInspirationImage}
-            onRemoveInspirationImage={onRemoveInspirationImage}
-          />
-        </motion.div>
-        
-        <motion.div 
-          whileHover={{ scale: 1.01 }} 
-          transition={{ duration: 0.2 }}
-          variants={itemVariants}
-          layout
-          className="mx-2"
-        >
-          <TitleInputSection title={title} onTitleChange={onTitleChange} />
-        </motion.div>
-        
-        <motion.div 
-          className={`grid grid-cols-1 ${isScriptExpanded ? 'lg:grid-cols-3' : 'lg:grid-cols-1'} gap-5 mx-2`}
-          variants={itemVariants}
-          layout
-        >
+        <LayoutGroup>
           <motion.div 
-            className={isScriptExpanded ? "lg:col-span-2 space-y-4" : ""}
+            whileHover={{ scale: 1.01 }} 
+            transition={{ duration: 0.2 }}
+            variants={itemVariants}
+            layout
+          >
+            <BucketSelectionSection 
+              bucketId={bucketId} 
+              onBucketChange={onBucketChange} 
+              pillarId={pillarId} 
+            />
+          </motion.div>
+          
+          <motion.div 
+            className="bg-purple-50 rounded-lg p-4 mx-2 border border-purple-100 shadow-sm"
+            variants={itemVariants}
             whileHover={{ scale: 1.01 }} 
             transition={{ duration: 0.2 }}
             layout
           >
-            <ScriptInputSection 
-              scriptText={scriptText} 
-              onScriptTextChange={onScriptTextChange} 
-              onCollapseChange={handleScriptCollapseChange}
-            />
-          </motion.div>
-          
-          {isScriptExpanded ? (
-            <div className="space-y-5 h-full">
-              <motion.div
-                whileHover={{ scale: 1.01 }} 
-                transition={{ duration: 0.2 }}
-                layout
-                className="h-[calc(50%-0.625rem)]" // Half height minus half of gap (5/2 = 2.5px)
-              >
-                <ShootDetailsSection shootDetails={shootDetails} onShootDetailsChange={onShootDetailsChange} />
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.01 }} 
-                transition={{ duration: 0.2 }}
-                layout
-                className="h-[calc(50%-0.625rem)]" // Half height minus half of gap (5/2 = 2.5px)
-              >
-                <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
-              </motion.div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
-              <motion.div
-                whileHover={{ scale: 1.01 }} 
-                transition={{ duration: 0.2 }}
-                layout
-                className="h-full"
-              >
-                <ShootDetailsSection shootDetails={shootDetails} onShootDetailsChange={onShootDetailsChange} />
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.01 }} 
-                transition={{ duration: 0.2 }}
-                layout
-                className="h-full"
-              >
-                <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
-              </motion.div>
-            </div>
-          )}
-        </motion.div>
-        
-        <motion.div 
-          className="bg-amber-50 rounded-lg p-4 mx-2 border border-amber-100 shadow-sm"
-          variants={itemVariants}
-          whileHover={{ scale: 1.01 }} 
-          transition={{ duration: 0.2 }}
-          layout
-        >
-          <CaptionInputSection captionText={captionText} onCaptionTextChange={onCaptionTextChange} />
-        </motion.div>
-        
-        <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 gap-5 mx-2"
-          variants={itemVariants}
-          layout
-        >
-          <motion.div 
-            className="bg-blue-50 rounded-lg p-4 border border-blue-100 shadow-sm"
-            whileHover={{ scale: 1.01 }} 
-            transition={{ duration: 0.2 }}
-          >
-            <PlatformsSection
-              platforms={platforms}
-              currentPlatform={currentPlatform}
-              onCurrentPlatformChange={onCurrentPlatformChange}
-              onAddPlatform={onAddPlatform}
-              onRemovePlatform={onRemovePlatform}
+            <InspirationSection
+              inspirationText={inspirationText}
+              onInspirationTextChange={onInspirationTextChange}
+              inspirationLinks={inspirationLinks}
+              onAddInspirationLink={onAddInspirationLink}
+              onRemoveInspirationLink={onRemoveInspirationLink}
+              inspirationImages={inspirationImages}
+              onAddInspirationImage={onAddInspirationImage}
+              onRemoveInspirationImage={onRemoveInspirationImage}
             />
           </motion.div>
           
           <motion.div 
-            className="bg-green-50 rounded-lg p-4 border border-green-100 shadow-sm"
             whileHover={{ scale: 1.01 }} 
             transition={{ duration: 0.2 }}
+            variants={itemVariants}
+            layout
+            className="mx-2"
           >
-            <TagsSection
-              tags={tags}
-              currentTag={currentTag}
-              onCurrentTagChange={onCurrentTagChange}
-              onAddTag={onAddTag}
-              onRemoveTag={onRemoveTag}
-            />
+            <TitleInputSection title={title} onTitleChange={onTitleChange} />
           </motion.div>
-        </motion.div>
-        
-        {children}
+          
+          <motion.div 
+            className={`grid grid-cols-1 ${isScriptExpanded ? 'lg:grid-cols-3' : 'lg:grid-cols-1'} gap-5 mx-2`}
+            variants={itemVariants}
+            layout
+            transition={{ 
+              layout: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+              opacity: { duration: 0.3 }
+            }}
+          >
+            <motion.div 
+              className={isScriptExpanded ? "lg:col-span-2 space-y-4" : ""}
+              whileHover={{ scale: 1.01 }} 
+              transition={{ duration: 0.2 }}
+              layout
+            >
+              <ScriptInputSection 
+                scriptText={scriptText} 
+                onScriptTextChange={onScriptTextChange} 
+                onCollapseChange={handleScriptCollapseChange}
+              />
+            </motion.div>
+            
+            <AnimatePresence mode="wait">
+              {isScriptExpanded ? (
+                <motion.div 
+                  className="space-y-5 h-full"
+                  layout
+                  transition={{ 
+                    layout: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+                    opacity: { duration: 0.3 }
+                  }}
+                  key="expanded"
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.01 }} 
+                    transition={{ duration: 0.2 }}
+                    layout
+                    className="h-[calc(50%-0.625rem)]"
+                  >
+                    <ShootDetailsSection shootDetails={shootDetails} onShootDetailsChange={onShootDetailsChange} />
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.01 }} 
+                    transition={{ duration: 0.2 }}
+                    layout
+                    className="h-[calc(50%-0.625rem)]"
+                  >
+                    <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
+                  </motion.div>
+                </motion.div>
+              ) : (
+                <motion.div 
+                  className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4"
+                  layout
+                  transition={{ 
+                    layout: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+                    opacity: { duration: 0.3 }
+                  }}
+                  initial={{ opacity: 0.8, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  key="collapsed"
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.01 }} 
+                    transition={{ duration: 0.2 }}
+                    layout
+                    className="h-full"
+                  >
+                    <ShootDetailsSection shootDetails={shootDetails} onShootDetailsChange={onShootDetailsChange} />
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.01 }} 
+                    transition={{ duration: 0.2 }}
+                    layout
+                    className="h-full"
+                  >
+                    <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+          
+          <motion.div 
+            className="bg-amber-50 rounded-lg p-4 mx-2 border border-amber-100 shadow-sm"
+            variants={itemVariants}
+            whileHover={{ scale: 1.01 }} 
+            transition={{ duration: 0.2 }}
+            layout
+          >
+            <CaptionInputSection captionText={captionText} onCaptionTextChange={onCaptionTextChange} />
+          </motion.div>
+          
+          <motion.div 
+            className="grid grid-cols-1 md:grid-cols-2 gap-5 mx-2"
+            variants={itemVariants}
+            layout
+          >
+            <motion.div 
+              className="bg-blue-50 rounded-lg p-4 border border-blue-100 shadow-sm"
+              whileHover={{ scale: 1.01 }} 
+              transition={{ duration: 0.2 }}
+            >
+              <PlatformsSection
+                platforms={platforms}
+                currentPlatform={currentPlatform}
+                onCurrentPlatformChange={onCurrentPlatformChange}
+                onAddPlatform={onAddPlatform}
+                onRemovePlatform={onRemovePlatform}
+              />
+            </motion.div>
+            
+            <motion.div 
+              className="bg-green-50 rounded-lg p-4 border border-green-100 shadow-sm"
+              whileHover={{ scale: 1.01 }} 
+              transition={{ duration: 0.2 }}
+            >
+              <TagsSection
+                tags={tags}
+                currentTag={currentTag}
+                onCurrentTagChange={onCurrentTagChange}
+                onAddTag={onAddTag}
+                onRemoveTag={onRemoveTag}
+              />
+            </motion.div>
+          </motion.div>
+          
+          {children}
+        </LayoutGroup>
       </motion.div>
     </ScrollArea>
   );
