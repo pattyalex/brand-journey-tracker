@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,9 +40,9 @@ const containerVariants = {
   visible: {
     opacity: 1,
     transition: { 
-      duration: 0.4,
+      duration: 0.3,
       ease: "easeOut",
-      staggerChildren: 0.05
+      staggerChildren: 0.04
     }
   }
 };
@@ -54,8 +53,9 @@ const cardVariants = {
     opacity: 1,
     y: 0,
     transition: { 
-      duration: 0.3,
-      ease: [0.4, 0, 0.2, 1]
+      duration: 0.25,
+      ease: [0.4, 0, 0.2, 1],
+      translateZ: 0
     }
   }
 };
@@ -233,9 +233,9 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
   return (
     <div className="mt-4 mb-6">
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
         className="flex justify-between items-center mb-3"
       >
         <h2 className="text-xl font-semibold">Content Formats</h2>
@@ -243,11 +243,12 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
       
       {isAddingFormat && (
         <motion.div 
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.25, ease: "easeInOut" }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2, ease: "easeInOut" }}
           className="mb-3 flex flex-col gap-2"
+          style={{ willChange: "transform, opacity" }}
         >
           <Input
             value={newFormatName}
@@ -286,6 +287,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         initial="hidden"
         animate="visible"
         key={pillarId}
+        style={{ willChange: "transform, opacity" }}
       >
         {contentTypes.map((type) => (
           <motion.div 
@@ -296,6 +298,8 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               position: expandedCardId === type.id ? 'absolute' : 'relative',
               top: expandedCardId === type.id ? cardPositions[type.id]?.top || 0 : 'auto',
               left: expandedCardId === type.id ? cardPositions[type.id]?.left || 0 : 'auto',
+              willChange: "transform, opacity",
+              backfaceVisibility: "hidden"
             }}
             variants={cardVariants}
             layout
@@ -430,6 +434,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                 whileHover={{ scale: 1.02, transition: { duration: 0.15 } }}
                 whileTap={{ scale: 0.98, transition: { duration: 0.15 } }}
                 transition={{ duration: 0.15 }}
+                style={{ willChange: "transform" }}
               >
                 <Button 
                   variant="ghost" 
