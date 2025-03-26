@@ -16,7 +16,8 @@ import {
   Instagram,
   Facebook,
   Twitter,
-  Copy
+  Copy,
+  Plus
 } from "lucide-react";
 import CreateSimilarContentDialog from "./CreateSimilarContentDialog";
 
@@ -283,10 +284,12 @@ const PostPerformanceTab: React.FC<PostPerformanceTabProps> = ({ platforms }) =>
                   </TableCell>
                   <TableCell className="text-right">
                     <Button 
-                      variant="secondary" 
+                      variant="vision" 
                       size="sm"
                       onClick={() => handleCreateSimilar(post)}
+                      className="animate-pulse shadow-md hover:shadow-lg"
                     >
+                      <Plus className="h-4 w-4" />
                       Create Similar
                     </Button>
                   </TableCell>
