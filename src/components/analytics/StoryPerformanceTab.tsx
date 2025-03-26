@@ -38,7 +38,7 @@ const stories = [
     thumbnail: "https://placehold.co/90x160/E1306C/white?text=Story",
     views: 12543,
     completionRate: 75,
-    swipeUps: 234,
+    linkClicks: 234,
     date: "2023-11-22",
   },
   {
@@ -48,7 +48,7 @@ const stories = [
     thumbnail: "https://placehold.co/90x160/E1306C/white?text=Story",
     views: 10876,
     completionRate: 68,
-    swipeUps: 312,
+    linkClicks: 312,
     date: "2023-11-20",
   },
   {
@@ -58,7 +58,7 @@ const stories = [
     thumbnail: "https://placehold.co/90x160/4267B2/white?text=Story",
     views: 8432,
     completionRate: 82,
-    swipeUps: 189,
+    linkClicks: 189,
     date: "2023-11-18",
   },
   {
@@ -68,7 +68,7 @@ const stories = [
     thumbnail: "https://placehold.co/90x160/E1306C/white?text=Story",
     views: 9543,
     completionRate: 71,
-    swipeUps: 123,
+    linkClicks: 123,
     date: "2023-11-15",
   },
   {
@@ -78,7 +78,7 @@ const stories = [
     thumbnail: "https://placehold.co/90x160/4267B2/white?text=Story",
     views: 7654,
     completionRate: 64,
-    swipeUps: 276,
+    linkClicks: 276,
     date: "2023-11-12",
   },
 ];
@@ -198,7 +198,7 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
               Sorted by {
                 sortBy === "views" ? "views" : 
                 sortBy === "completionRate" ? "completion rate" : 
-                sortBy === "swipeUps" ? "swipe ups" : "date"
+                sortBy === "linkClicks" ? "link clicks" : "date"
               }
               {sortOrder === "desc" ? " (highest first)" : " (lowest first)"}
             </CardDescription>
@@ -238,11 +238,11 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleSort("swipeUps")}
+                      onClick={() => handleSort("linkClicks")}
                       className="flex items-center gap-1 -ml-3"
                     >
-                      Swipe Ups
-                      {sortBy === "swipeUps" && (
+                      Link Clicks
+                      {sortBy === "linkClicks" && (
                         sortOrder === "desc" ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />
                       )}
                     </Button>
@@ -293,7 +293,7 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                        {story.swipeUps.toLocaleString()}
+                        {story.linkClicks.toLocaleString()}
                       </div>
                     </TableCell>
                     <TableCell>
