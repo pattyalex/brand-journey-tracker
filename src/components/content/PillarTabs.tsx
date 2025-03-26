@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pillar } from "@/pages/BankOfContent";
@@ -115,6 +114,7 @@ const PillarTabs = ({
               ) : (
                 <div className="flex items-center">
                   <motion.div
+                    initial={{ scale: 1 }}
                     animate={{ 
                       scale: pillar.id === activeTab ? 1.3 : 1,
                       zIndex: pillar.id === activeTab ? 10 : 0,
