@@ -132,7 +132,7 @@ const DialogContent = ({
         </motion.div>
         
         <motion.div 
-          className="bg-purple-50 rounded-lg p-4 border border-purple-100 shadow-sm"
+          className="bg-purple-50 rounded-lg p-4 mx-2 border border-purple-100 shadow-sm"
           variants={itemVariants}
           whileHover={{ scale: 1.01 }} 
           transition={{ duration: 0.2 }}
@@ -155,12 +155,13 @@ const DialogContent = ({
           transition={{ duration: 0.2 }}
           variants={itemVariants}
           layout
+          className="mx-2"
         >
           <TitleInputSection title={title} onTitleChange={onTitleChange} />
         </motion.div>
         
         <motion.div 
-          className="grid grid-cols-1 lg:grid-cols-3 gap-5"
+          className="grid grid-cols-1 lg:grid-cols-3 gap-5 mx-2"
           variants={itemVariants}
           layout
         >
@@ -189,7 +190,7 @@ const DialogContent = ({
         </motion.div>
         
         <motion.div 
-          className="bg-amber-50 rounded-lg p-4 border border-amber-100 shadow-sm"
+          className="bg-amber-50 rounded-lg p-4 mx-2 border border-amber-100 shadow-sm"
           variants={itemVariants}
           whileHover={{ scale: 1.01 }} 
           transition={{ duration: 0.2 }}
@@ -199,7 +200,7 @@ const DialogContent = ({
         </motion.div>
         
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 gap-5"
+          className="grid grid-cols-1 md:grid-cols-2 gap-5 mx-2"
           variants={itemVariants}
           layout
         >
