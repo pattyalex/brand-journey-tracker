@@ -1,4 +1,3 @@
-
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { FileText, ChevronDown, ChevronUp } from "lucide-react";
@@ -57,7 +56,7 @@ const ScriptInputSection = ({
                 id="develop-script"
                 value={scriptText}
                 onChange={(e) => onScriptTextChange(e.target.value)}
-                placeholder="Write your script here or collapse this section if you don't need a script for this content idea."
+                placeholder="Write your script here or collapse this section if you don't need a script for your content idea."
                 className="min-h-[385px] resize-y focus-visible:ring-gray-400" 
               />
             </CollapsibleContent>
