@@ -11,7 +11,7 @@ import {
   Calendar,
   BarChart,
   Instagram,
-  Facebook,
+  TikTok,
   Link,
   Copy,
   Repeat
@@ -60,8 +60,8 @@ const stories = [
   {
     id: "3",
     title: "Q&A session",
-    platform: "Facebook",
-    thumbnail: "https://placehold.co/90x160/4267B2/white?text=Story",
+    platform: "TikTok",
+    thumbnail: "https://placehold.co/90x160/000000/white?text=Story",
     views: 8432,
     completionRate: 82,
     linkClicks: 189,
@@ -82,8 +82,8 @@ const stories = [
   {
     id: "5",
     title: "Promotion announcement",
-    platform: "Facebook",
-    thumbnail: "https://placehold.co/90x160/4267B2/white?text=Story",
+    platform: "TikTok",
+    thumbnail: "https://placehold.co/90x160/000000/white?text=Story",
     views: 7654,
     completionRate: 64,
     linkClicks: 276,
@@ -107,8 +107,8 @@ const getPlatformIcon = (platform: string) => {
   switch (platform) {
     case "Instagram":
       return <Instagram className="h-4 w-4 text-pink-500" />;
-    case "Facebook":
-      return <Facebook className="h-4 w-4 text-blue-600" />;
+    case "TikTok":
+      return <TikTok className="h-4 w-4 text-black" />;
     default:
       return null;
   }
@@ -132,7 +132,7 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedContent, setSelectedContent] = useState<{title: string, platform: string} | null>(null);
 
-  const hasStoryPlatforms = platforms.some(p => p === "Instagram" || p === "Facebook");
+  const hasStoryPlatforms = platforms.some(p => p === "Instagram" || p === "TikTok");
 
   const filteredStories = selectedPlatform === "All"
     ? stories.filter(story => platforms.includes(story.platform))
@@ -168,7 +168,7 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
             <BarChart className="mx-auto h-12 w-12 text-muted-foreground/60" />
             <h3 className="text-xl font-medium">No Story Data Available</h3>
             <p className="text-muted-foreground max-w-md mx-auto">
-              Connect Instagram or Facebook to see Story performance analytics.
+              Connect Instagram or TikTok to see Story performance analytics.
             </p>
           </div>
         </CardContent>
@@ -187,7 +187,7 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
           <SelectContent>
             <SelectItem value="All">All Platforms</SelectItem>
             {platforms
-              .filter(p => p === "Instagram" || p === "Facebook")
+              .filter(p => p === "Instagram" || p === "TikTok")
               .map(platform => (
                 <SelectItem key={platform} value={platform}>{platform}</SelectItem>
               ))}
