@@ -1,9 +1,9 @@
 
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, Users, ThumbsUp, MessageSquare, BarChart, TrendingUp, Megaphone, Radio } from "lucide-react";
+import { Eye, Users, ThumbsUp, MessageSquare, BarChart as BarChartIcon, TrendingUp, Megaphone, Radio } from "lucide-react";
 import { 
-  BarChart as RechartsBarChart,
+  BarChart,
   Bar, 
   LineChart, 
   Line, 
@@ -233,7 +233,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ platforms }) => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <BarChart className="h-5 w-5" /> Engagement Across Platforms
+            <BarChartIcon className="h-5 w-5" /> Engagement Across Platforms
           </CardTitle>
         </CardHeader>
         <CardContent>
