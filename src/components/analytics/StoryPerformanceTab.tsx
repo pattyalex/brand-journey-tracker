@@ -13,7 +13,8 @@ import {
   Instagram,
   Facebook,
   Link,
-  Copy
+  Copy,
+  Repeat
 } from "lucide-react";
 import { 
   BarChart as RechartsBarChart,
@@ -26,6 +27,7 @@ import {
 } from "recharts";
 import { ChartContainer } from "@/components/ui/chart";
 import CreateSimilarContentDialog from "./CreateSimilarContentDialog";
+import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface StoryPerformanceTabProps {
   platforms: string[];
@@ -302,6 +304,23 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
                   <TableRow key={story.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
+                        <TooltipProvider>
+                          <UITooltip>
+                            <TooltipTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                onClick={() => handleCreateSimilar(story)}
+                                className="h-8 w-8 rounded-full"
+                              >
+                                <Repeat className="h-4 w-4 text-purple-500" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Recreate content</p>
+                            </TooltipContent>
+                          </UITooltip>
+                        </TooltipProvider>
                         <div className="relative w-10 h-16 rounded overflow-hidden">
                           <img 
                             src={story.thumbnail} 
@@ -342,13 +361,7 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button 
-                        variant="secondary" 
-                        size="sm"
-                        onClick={() => handleCreateSimilar(story)}
-                      >
-                        Create Similar
-                      </Button>
+                      {/* Removed the "Create Similar" button from here since it's now on the left */}
                     </TableCell>
                   </TableRow>
                 ))}
