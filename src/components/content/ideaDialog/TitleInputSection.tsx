@@ -15,13 +15,13 @@ const TitleInputSection = ({
 }: TitleInputSectionProps) => {
   return (
     <motion.div 
-      className="grid gap-2"
+      className="grid gap-2 bg-white rounded-lg p-4 border shadow-sm transition-all duration-200 hover:shadow-md w-full max-w-md mx-auto"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
     >
       <motion.div 
-        className="flex items-center gap-2 mb-1 ml-4"
+        className="flex items-center gap-2 ml-4"
         initial={{ opacity: 0, x: -10 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.3, delay: 0.1 }}
