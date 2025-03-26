@@ -306,7 +306,8 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
             >
               <Card 
                 className={`border rounded-lg shadow-sm relative group hover:border-purple-300 transition-all 
-                  ${expandedCardId === type.id ? 'w-[300px] bg-white' : 'w-[200px]'}`}
+                  ${expandedCardId === type.id ? 'w-[300px] bg-white shadow-[0_4px_14px_rgba(130,87,229,0.25)]' : 'w-[200px] shadow-[0_2px_10px_rgba(156,138,192,0.15)]'} 
+                  hover:shadow-[0_6px_16px_rgba(130,87,229,0.3)]`}
               >
                 <Button
                   type="button"
@@ -432,7 +433,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                 <Button 
                   variant="ghost" 
                   onClick={() => setIsAddingFormat(!isAddingFormat)}
-                  className="w-[200px] h-[80px] flex items-center justify-center p-0"
+                  className="w-[200px] h-[80px] flex items-center justify-center p-0 shadow-[0_2px_10px_rgba(156,138,192,0.1)] hover:shadow-[0_4px_14px_rgba(130,87,229,0.2)]"
                 >
                   <Plus className="h-5 w-5 text-purple-500" />
                 </Button>
