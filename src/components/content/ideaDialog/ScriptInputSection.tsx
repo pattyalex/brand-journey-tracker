@@ -14,7 +14,7 @@ const ScriptInputSection = ({
 }: ScriptInputSectionProps) => {
   return (
     <div className="grid gap-2 bg-white rounded-lg p-4 border shadow-sm transition-all duration-200 hover:shadow-md">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 ml-4">
         <FileText size={18} className="text-gray-600" />
         <Label htmlFor="develop-script" className="font-medium">Script</Label>
       </div>
