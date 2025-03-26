@@ -12,18 +12,6 @@ import IdeaCreationDialog from "@/components/content/IdeaCreationDialog";
 import ContentTypeBuckets from "@/components/content/ContentTypeBuckets";
 import { getRestoredIdeas } from "@/utils/contentRestoreUtils";
 
-// Refined color palette with more elegant, less saturated colors
-const PILLAR_COLORS = [
-  "#7C3AED", // Deep purple
-  "#0CA678", // Teal
-  "#E67E22", // Soft orange
-  "#9B59B6", // Lavender
-  "#3498DB", // Sky blue
-  "#C0392B", // Crimson
-  "#16A085", // Green teal
-  "#D35400", // Burnt orange
-];
-
 export type Pillar = {
   id: string;
   name: string;
@@ -64,22 +52,19 @@ const BankOfContent = () => {
 
   const allContent = pillars.flatMap(pillar => pillar.content);
 
-  const getPillarColor = (index: number) => {
-    return PILLAR_COLORS[index % PILLAR_COLORS.length];
-  };
-
   useEffect(() => {
     const restoredIdeas = getRestoredIdeas();
     
     if (restoredIdeas.length > 0) {
       const updatedPillars = [...pillars];
       
+      // Group restored items by their original pillar ID
       const itemsByPillar: Record<string, ContentItem[]> = {};
       let totalRestored = 0;
       let lastRestoredItem: ContentItem | null = null;
       
       restoredIdeas.forEach(item => {
-        const pillarId = item.originalPillarId || "1";
+        const pillarId = item.originalPillarId || "1"; // Default to first pillar if not specified
         if (!itemsByPillar[pillarId]) {
           itemsByPillar[pillarId] = [];
         }
@@ -88,6 +73,7 @@ const BankOfContent = () => {
         lastRestoredItem = item;
       });
       
+      // Add items to their respective pillars
       Object.entries(itemsByPillar).forEach(([pillarId, items]) => {
         const pillarIndex = updatedPillars.findIndex(p => p.id === pillarId);
         if (pillarIndex >= 0) {
@@ -97,6 +83,7 @@ const BankOfContent = () => {
           };
           console.log(`Restored ${items.length} items to Pillar ${pillarId}`);
         } else {
+          // If pillar doesn't exist (perhaps it was deleted), add to first pillar
           updatedPillars[0] = {
             ...updatedPillars[0],
             content: [...updatedPillars[0].content, ...items]
@@ -107,6 +94,7 @@ const BankOfContent = () => {
       
       setPillars(updatedPillars);
       
+      // Show appropriate toast message based on number of items
       if (totalRestored === 1 && lastRestoredItem) {
         const targetPillar = lastRestoredItem.originalPillarId ? 
           pillars.find(p => p.id === lastRestoredItem!.originalPillarId)?.name || "Pillar 1" : 
@@ -370,30 +358,16 @@ const BankOfContent = () => {
             />
           </div>
           
-          {pillars.map((pillar, index) => {
-            const pillarColor = getPillarColor(index);
-            
-            // Only render ContentTypeBuckets for the active pillar
-            return activeTab === pillar.id && (
-              <ContentTypeBuckets 
-                key={`bucket-${pillar.id}`}
-                onAddIdea={handleAddToBucket} 
-                pillarId={pillar.id}
-                pillarColor={pillarColor}
-              />
-            );
-          })}
+          <ContentTypeBuckets 
+            onAddIdea={handleAddToBucket} 
+            pillarId={activeTab}
+          />
           
-          {pillars.map((pillar, index) => (
-            <TabsContent 
-              key={pillar.id} 
-              value={pillar.id} 
-              className="space-y-4"
-              pillColor={getPillarColor(index)}
-            >
+          {pillars.map((pillar) => (
+            <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <WritingSpace 
-                  writingText={pillars.find(p => p.id === activeTab)?.writingSpace || ""}
+                  writingText={writingText}
                   onTextChange={updateWritingSpace}
                   onTextSelection={handleTextSelection}
                   onFormatText={handleFormatText}
@@ -476,7 +450,6 @@ const BankOfContent = () => {
           inspirationImages={[]}
           onAddInspirationImage={() => {}}
           onRemoveInspirationImage={() => {}}
-          pillarColor={getPillarColor(pillars.findIndex(p => p.id === activeTab))}
         />
       </div>
     </Layout>

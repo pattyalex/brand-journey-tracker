@@ -9,7 +9,6 @@ interface BucketSelectionSectionProps {
   bucketId: string;
   onBucketChange: (value: string) => void;
   pillarId: string;
-  pillarColor?: string;
 }
 
 type ContentFormat = {
@@ -21,15 +20,9 @@ type ContentFormat = {
 const BucketSelectionSection = ({
   bucketId,
   onBucketChange,
-  pillarId,
-  pillarColor
+  pillarId
 }: BucketSelectionSectionProps) => {
-  const [contentFormats, setContentFormats] = useState<ContentFormat[]>([
-    { id: "blog", name: "Blog Posts", description: "Long-form written content" },
-    { id: "video", name: "Video Content", description: "Video-based content" },
-    { id: "social", name: "Social Media", description: "Short-form posts" },
-    { id: "image", name: "Image Content", description: "Visual content" },
-  ]);
+  const [contentFormats, setContentFormats] = useState<ContentFormat[]>([]);
   
   useEffect(() => {
     try {
@@ -37,10 +30,17 @@ const BucketSelectionSection = ({
       if (savedFormats) {
         const parsedFormats = JSON.parse(savedFormats);
         setContentFormats(parsedFormats);
+      } else {
+        // Default formats if none found in localStorage
+        setContentFormats([
+          { id: "blog", name: "Blog Posts", description: "Long-form written content" },
+          { id: "video", name: "Video Content", description: "Video-based content" },
+          { id: "social", name: "Social Media", description: "Short-form posts" },
+          { id: "image", name: "Image Content", description: "Visual content" },
+        ]);
       }
     } catch (error) {
       console.error("Failed to load content formats:", error);
-      // Default formats already set in useState
     }
   }, [pillarId]);
 
@@ -58,17 +58,10 @@ const BucketSelectionSection = ({
         </Label>
       </div>
       <Select 
-        value={bucketId || ""} 
+        value={bucketId} 
         onValueChange={onBucketChange}
       >
-        <SelectTrigger 
-          id="format-select" 
-          className="w-full h-10"
-          style={pillarColor ? { 
-            borderColor: `${pillarColor}30`,
-            borderWidth: '1px'
-          } : undefined}
-        >
+        <SelectTrigger id="format-select" className="w-full h-10">
           <SelectValue placeholder="Select a content format" />
         </SelectTrigger>
         <SelectContent>
