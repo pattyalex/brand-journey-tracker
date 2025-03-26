@@ -1,4 +1,3 @@
-
 import { ReactNode } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import TitleInputSection from "./TitleInputSection";
@@ -10,7 +9,6 @@ import CaptionInputSection from "./CaptionInputSection";
 import PlatformsSection from "./PlatformsSection";
 import TagsSection from "./TagsSection";
 import InspirationSection from "./InspirationSection";
-import FormatSelectionSection from "./FormatSelectionSection";
 import { motion } from "framer-motion";
 
 interface DialogContentProps {
@@ -19,8 +17,6 @@ interface DialogContentProps {
   bucketId: string;
   onBucketChange: (value: string) => void;
   pillarId: string;
-  format: string;
-  onFormatChange: (value: string) => void;
   scriptText: string;
   onScriptTextChange: (value: string) => void;
   visualNotes: string;
@@ -81,8 +77,6 @@ const DialogContent = ({
   bucketId,
   onBucketChange,
   pillarId,
-  format,
-  onFormatChange,
   scriptText,
   onScriptTextChange,
   visualNotes,
@@ -155,25 +149,14 @@ const DialogContent = ({
           />
         </motion.div>
         
-        <div className="grid grid-cols-2 gap-5">
-          <motion.div 
-            whileHover={{ scale: 1.01 }} 
-            transition={{ duration: 0.2 }}
-            variants={itemVariants}
-            layout
-          >
-            <TitleInputSection title={title} onTitleChange={onTitleChange} />
-          </motion.div>
-          
-          <motion.div 
-            whileHover={{ scale: 1.01 }} 
-            transition={{ duration: 0.2 }}
-            variants={itemVariants}
-            layout
-          >
-            <FormatSelectionSection format={format} onFormatChange={onFormatChange} />
-          </motion.div>
-        </div>
+        <motion.div 
+          whileHover={{ scale: 1.01 }} 
+          transition={{ duration: 0.2 }}
+          variants={itemVariants}
+          layout
+        >
+          <TitleInputSection title={title} onTitleChange={onTitleChange} />
+        </motion.div>
         
         <motion.div 
           className="grid grid-cols-1 lg:grid-cols-3 gap-5"

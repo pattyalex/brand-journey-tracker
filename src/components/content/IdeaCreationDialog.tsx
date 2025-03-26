@@ -23,8 +23,6 @@ interface IdeaCreationDialogProps {
   onScriptTextChange: (value: string) => void;
   visualNotes: string;
   onVisualNotesChange: (value: string) => void;
-  format?: string;
-  onFormatChange?: (value: string) => void;
   shootDetails: string;
   onShootDetailsChange: (value: string) => void;
   captionText: string;
@@ -67,8 +65,6 @@ const IdeaCreationDialog = ({
   onScriptTextChange,
   visualNotes = "",
   onVisualNotesChange = () => {},
-  format = "Post",
-  onFormatChange = () => {},
   shootDetails,
   onShootDetailsChange,
   captionText,
@@ -115,8 +111,6 @@ const IdeaCreationDialog = ({
               bucketId={bucketId}
               onBucketChange={onBucketChange}
               pillarId={pillarId}
-              format={format}
-              onFormatChange={onFormatChange}
               scriptText={scriptText}
               onScriptTextChange={onScriptTextChange}
               visualNotes={visualNotes}
