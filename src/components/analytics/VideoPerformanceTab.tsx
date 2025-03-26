@@ -17,8 +17,10 @@ import {
   Instagram,
   Facebook,
   Twitter,
-  ExternalLink
+  ExternalLink,
+  Copy
 } from "lucide-react";
+import CreateSimilarContentDialog from "./CreateSimilarContentDialog";
 
 interface VideoPerformanceTabProps {
   platforms: string[];
@@ -107,6 +109,8 @@ const VideoPerformanceTab: React.FC<VideoPerformanceTabProps> = ({ platforms }) 
   const [selectedPlatform, setSelectedPlatform] = useState("All");
   const [sortBy, setSortBy] = useState("views");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [selectedContent, setSelectedContent] = useState<{title: string, platform: string} | null>(null);
 
   const filteredVideos = selectedPlatform === "All"
     ? videos.filter(video => platforms.includes(video.platform))
@@ -124,6 +128,14 @@ const VideoPerformanceTab: React.FC<VideoPerformanceTabProps> = ({ platforms }) 
       setSortBy(column);
       setSortOrder("desc");
     }
+  };
+
+  const handleCreateSimilar = (video: typeof videos[0]) => {
+    setSelectedContent({
+      title: video.title,
+      platform: video.platform
+    });
+    setIsCreateDialogOpen(true);
   };
 
   return (
@@ -144,12 +156,18 @@ const VideoPerformanceTab: React.FC<VideoPerformanceTabProps> = ({ platforms }) 
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Performance Metrics</CardTitle>
-          <CardDescription>
-            Sorted by {sortBy === "views" ? "views" : sortBy === "likes" ? "likes" : sortBy === "comments" ? "comments" : "retention rate"}
-            {sortOrder === "desc" ? " (highest first)" : " (lowest first)"}
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Performance Metrics</CardTitle>
+            <CardDescription>
+              Sorted by {sortBy === "views" ? "views" : sortBy === "likes" ? "likes" : sortBy === "comments" ? "comments" : "retention rate"}
+              {sortOrder === "desc" ? " (highest first)" : " (lowest first)"}
+            </CardDescription>
+          </div>
+          <Button variant="outline" size="sm" className="flex items-center gap-1">
+            <Copy className="h-4 w-4" />
+            Export Data
+          </Button>
         </CardHeader>
         <CardContent>
           <Table>
@@ -209,6 +227,7 @@ const VideoPerformanceTab: React.FC<VideoPerformanceTabProps> = ({ platforms }) 
                   </Button>
                 </TableHead>
                 <TableHead>Date</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -264,11 +283,20 @@ const VideoPerformanceTab: React.FC<VideoPerformanceTabProps> = ({ platforms }) 
                   <TableCell>
                     {new Date(video.date).toLocaleDateString()}
                   </TableCell>
+                  <TableCell className="text-right">
+                    <Button 
+                      variant="secondary" 
+                      size="sm"
+                      onClick={() => handleCreateSimilar(video)}
+                    >
+                      Create Similar
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
               {sortedVideos.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8">
+                  <TableCell colSpan={7} className="text-center py-8">
                     <BarChart className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                     <p>No video data available for the selected platform.</p>
                   </TableCell>
@@ -278,6 +306,14 @@ const VideoPerformanceTab: React.FC<VideoPerformanceTabProps> = ({ platforms }) 
           </Table>
         </CardContent>
       </Card>
+
+      <CreateSimilarContentDialog 
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        contentDetails={selectedContent}
+        onSave={() => setIsCreateDialogOpen(false)}
+        onCancel={() => setIsCreateDialogOpen(false)}
+      />
     </div>
   );
 };

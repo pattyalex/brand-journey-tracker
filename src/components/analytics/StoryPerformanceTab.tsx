@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,7 +13,8 @@ import {
   BarChart,
   Instagram,
   Facebook,
-  Link
+  Link,
+  Copy
 } from "lucide-react";
 import { 
   BarChart as RechartsBarChart,
@@ -24,6 +26,7 @@ import {
   ResponsiveContainer 
 } from "recharts";
 import { ChartContainer } from "@/components/ui/chart";
+import CreateSimilarContentDialog from "./CreateSimilarContentDialog";
 
 interface StoryPerformanceTabProps {
   platforms: string[];
@@ -125,6 +128,8 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
   const [selectedPlatform, setSelectedPlatform] = useState("All");
   const [sortBy, setSortBy] = useState("views");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [selectedContent, setSelectedContent] = useState<{title: string, platform: string} | null>(null);
 
   const hasStoryPlatforms = platforms.some(p => p === "Instagram" || p === "Facebook");
 
@@ -144,6 +149,14 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
       setSortBy(column);
       setSortOrder("desc");
     }
+  };
+
+  const handleCreateSimilar = (story: typeof stories[0]) => {
+    setSelectedContent({
+      title: story.title,
+      platform: story.platform
+    });
+    setIsCreateDialogOpen(true);
   };
 
   if (!hasStoryPlatforms) {
@@ -208,16 +221,22 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Recent Stories</CardTitle>
-            <CardDescription>
-              Sorted by {
-                sortBy === "views" ? "views" : 
-                sortBy === "completionRate" ? "completion rate" : 
-                sortBy === "linkClicks" ? "link clicks" : "date"
-              }
-              {sortOrder === "desc" ? " (highest first)" : " (lowest first)"}
-            </CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Recent Stories</CardTitle>
+              <CardDescription>
+                Sorted by {
+                  sortBy === "views" ? "views" : 
+                  sortBy === "completionRate" ? "completion rate" : 
+                  sortBy === "linkClicks" ? "link clicks" : "date"
+                }
+                {sortOrder === "desc" ? " (highest first)" : " (lowest first)"}
+              </CardDescription>
+            </div>
+            <Button variant="outline" size="sm" className="flex items-center gap-1">
+              <Copy className="h-4 w-4" />
+              Export Data
+            </Button>
           </CardHeader>
           <CardContent>
             <Table>
@@ -276,6 +295,7 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
                       )}
                     </Button>
                   </TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -322,11 +342,20 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
                         {new Date(story.date).toLocaleDateString()}
                       </div>
                     </TableCell>
+                    <TableCell className="text-right">
+                      <Button 
+                        variant="secondary" 
+                        size="sm"
+                        onClick={() => handleCreateSimilar(story)}
+                      >
+                        Create Similar
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
                 {sortedStories.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8">
+                    <TableCell colSpan={6} className="text-center py-8">
                       <BarChart className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                       <p>No story data available for the selected platform.</p>
                     </TableCell>
@@ -337,6 +366,14 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
           </CardContent>
         </Card>
       </div>
+
+      <CreateSimilarContentDialog 
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        contentDetails={selectedContent}
+        onSave={() => setIsCreateDialogOpen(false)}
+        onCancel={() => setIsCreateDialogOpen(false)}
+      />
     </div>
   );
 };

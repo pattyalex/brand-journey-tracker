@@ -15,8 +15,10 @@ import {
   BarChart,
   Instagram,
   Facebook,
-  Twitter
+  Twitter,
+  Copy
 } from "lucide-react";
+import CreateSimilarContentDialog from "./CreateSimilarContentDialog";
 
 interface PostPerformanceTabProps {
   platforms: string[];
@@ -103,6 +105,8 @@ const PostPerformanceTab: React.FC<PostPerformanceTabProps> = ({ platforms }) =>
   const [selectedPlatform, setSelectedPlatform] = useState("All");
   const [sortBy, setSortBy] = useState("impressions");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [selectedContent, setSelectedContent] = useState<{title: string, platform: string} | null>(null);
 
   const filteredPosts = selectedPlatform === "All"
     ? posts.filter(post => platforms.includes(post.platform))
@@ -120,6 +124,14 @@ const PostPerformanceTab: React.FC<PostPerformanceTabProps> = ({ platforms }) =>
       setSortBy(column);
       setSortOrder("desc");
     }
+  };
+
+  const handleCreateSimilar = (post: typeof posts[0]) => {
+    setSelectedContent({
+      title: post.content.substring(0, 40) + (post.content.length > 40 ? "..." : ""),
+      platform: post.platform
+    });
+    setIsCreateDialogOpen(true);
   };
 
   return (
@@ -140,17 +152,23 @@ const PostPerformanceTab: React.FC<PostPerformanceTabProps> = ({ platforms }) =>
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Performance Metrics</CardTitle>
-          <CardDescription>
-            Sorted by {
-              sortBy === "impressions" ? "impressions" : 
-              sortBy === "likes" ? "likes" : 
-              sortBy === "comments" ? "comments" : 
-              sortBy === "shares" ? "shares" : "engagement rate"
-            }
-            {sortOrder === "desc" ? " (highest first)" : " (lowest first)"}
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Performance Metrics</CardTitle>
+            <CardDescription>
+              Sorted by {
+                sortBy === "impressions" ? "impressions" : 
+                sortBy === "likes" ? "likes" : 
+                sortBy === "comments" ? "comments" : 
+                sortBy === "shares" ? "shares" : "engagement rate"
+              }
+              {sortOrder === "desc" ? " (highest first)" : " (lowest first)"}
+            </CardDescription>
+          </div>
+          <Button variant="outline" size="sm" className="flex items-center gap-1">
+            <Copy className="h-4 w-4" />
+            Export Data
+          </Button>
         </CardHeader>
         <CardContent>
           <Table>
@@ -210,6 +228,7 @@ const PostPerformanceTab: React.FC<PostPerformanceTabProps> = ({ platforms }) =>
                   </Button>
                 </TableHead>
                 <TableHead>Date</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -262,11 +281,20 @@ const PostPerformanceTab: React.FC<PostPerformanceTabProps> = ({ platforms }) =>
                   <TableCell>
                     {new Date(post.date).toLocaleDateString()}
                   </TableCell>
+                  <TableCell className="text-right">
+                    <Button 
+                      variant="secondary" 
+                      size="sm"
+                      onClick={() => handleCreateSimilar(post)}
+                    >
+                      Create Similar
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
               {sortedPosts.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8">
+                  <TableCell colSpan={7} className="text-center py-8">
                     <BarChart className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                     <p>No post data available for the selected platform.</p>
                   </TableCell>
@@ -276,6 +304,14 @@ const PostPerformanceTab: React.FC<PostPerformanceTabProps> = ({ platforms }) =>
           </Table>
         </CardContent>
       </Card>
+
+      <CreateSimilarContentDialog 
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        contentDetails={selectedContent}
+        onSave={() => setIsCreateDialogOpen(false)}
+        onCancel={() => setIsCreateDialogOpen(false)}
+      />
     </div>
   );
 };
