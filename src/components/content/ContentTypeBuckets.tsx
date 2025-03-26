@@ -40,9 +40,9 @@ const containerVariants = {
   visible: {
     opacity: 1,
     transition: { 
-      duration: 0.6,
+      duration: 0.4,
       ease: "easeOut",
-      staggerChildren: 0.1
+      staggerChildren: 0.05
     }
   }
 };
@@ -53,7 +53,7 @@ const cardVariants = {
     opacity: 1,
     y: 0,
     transition: { 
-      duration: 0.5,
+      duration: 0.3,
       ease: [0.4, 0, 0.2, 1]
     }
   }
@@ -234,7 +234,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
         className="flex justify-between items-center mb-3"
       >
         <h2 className="text-xl font-semibold">Content Formats</h2>
@@ -245,7 +245,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.4, ease: "easeInOut" }}
+          transition={{ duration: 0.25, ease: "easeInOut" }}
           className="mb-3 flex flex-col gap-2"
         >
           <Input
@@ -290,7 +290,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
           <motion.div 
             key={type.id} 
             data-card-id={type.id}
-            className={`transition-all duration-300 ease-in-out ${expandedCardId === type.id ? 'z-10' : 'z-0'}`}
+            className={`transition-all duration-200 ease-in-out ${expandedCardId === type.id ? 'z-10' : 'z-0'}`}
             style={{
               position: expandedCardId === type.id ? 'absolute' : 'relative',
               top: expandedCardId === type.id ? cardPositions[type.id]?.top || 0 : 'auto',
@@ -302,7 +302,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
             <Collapsible
               open={expandedCardId === type.id}
               onOpenChange={() => setExpandedCardId(expandedCardId === type.id ? null : type.id)}
-              className={`transition-all duration-200 ease-in-out ${expandedCardId === type.id ? 'w-[300px]' : 'w-[200px]'}`}
+              className={`transition-all duration-150 ease-in-out ${expandedCardId === type.id ? 'w-[300px]' : 'w-[200px]'}`}
             >
               <Card 
                 className={`border rounded-lg shadow-sm relative group hover:border-purple-300 transition-all 
@@ -425,9 +425,9 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
             <TooltipTrigger asChild>
               <motion.div
                 variants={cardVariants}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ duration: 0.2 }}
+                whileHover={{ scale: 1.02, transition: { duration: 0.15 } }}
+                whileTap={{ scale: 0.98, transition: { duration: 0.15 } }}
+                transition={{ duration: 0.15 }}
               >
                 <Button 
                   variant="ghost" 
