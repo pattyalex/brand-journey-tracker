@@ -53,7 +53,7 @@ const BucketSelectionSection = ({
       whileHover={{ scale: 1.01 }}
     >
       <div className="flex items-center gap-1">
-        <Flame size={18} className="text-orange-500" />
+        <Flame size={18} className="text-black" />
         <Label htmlFor="format-select" className="text-sm font-medium">
           Pisica
         </Label>
