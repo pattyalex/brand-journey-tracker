@@ -21,6 +21,7 @@ import {
   Copy
 } from "lucide-react";
 import CreateSimilarContentDialog from "./CreateSimilarContentDialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface VideoPerformanceTabProps {
   platforms: string[];
@@ -235,6 +236,23 @@ const VideoPerformanceTab: React.FC<VideoPerformanceTabProps> = ({ platforms }) 
                 <TableRow key={video.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => handleCreateSimilar(video)}
+                              className="h-8 w-8 rounded-full"
+                            >
+                              <Repeat className="h-4 w-4 text-purple-500" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Recreate content</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                       <div className="relative w-24 h-14 rounded overflow-hidden">
                         <img 
                           src={video.thumbnail} 
@@ -284,13 +302,7 @@ const VideoPerformanceTab: React.FC<VideoPerformanceTabProps> = ({ platforms }) 
                     {new Date(video.date).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button 
-                      variant="secondary" 
-                      size="sm"
-                      onClick={() => handleCreateSimilar(video)}
-                    >
-                      Create Similar
-                    </Button>
+                    {/* Removed the "Create Similar" button from here since it's now on the left */}
                   </TableCell>
                 </TableRow>
               ))}
