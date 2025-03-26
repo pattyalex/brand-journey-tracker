@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
@@ -17,6 +16,43 @@ interface ContentPillarProps {
   searchQuery: string;
   onReorderContent?: (items: ContentItem[]) => void;
 }
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut",
+      staggerChildren: 0.08
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { 
+      duration: 0.5,
+      ease: [0.4, 0, 0.2, 1]
+    }
+  }
+};
+
+const emptyStateVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { 
+      duration: 0.45,
+      delay: 0.15,
+      ease: "easeOut"
+    }
+  }
+};
 
 const ContentPillar = ({
   pillar,
@@ -103,56 +139,18 @@ const ContentPillar = ({
     };
   }, [filteredContent]);
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.08
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, x: 80 },
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: { 
-        type: "spring",
-        stiffness: 300,
-        damping: 24
-      }
-    }
-  };
-
-  const emptyStateVariants = {
-    hidden: { opacity: 0, x: 80 },
-    visible: { 
-      opacity: 1, 
-      x: 0,
-      transition: { 
-        duration: 0.45,
-        delay: 0.15,
-        ease: "easeOut"
-      }
-    }
-  };
-
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <motion.div 
         className="space-y-2 relative"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.4 }}
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
       >
         {filteredContent.length === 0 ? (
           <motion.div 
             className="text-center p-8 border border-dashed rounded-lg bg-muted/30"
             variants={emptyStateVariants}
-            initial="hidden"
-            animate="visible"
           >
             <p className="text-muted-foreground">
               {searchQuery 
@@ -163,15 +161,21 @@ const ContentPillar = ({
         ) : (
           <div className="relative">
             {filteredContent.length > 3 && showLeftArrow && (
-              <Button 
-                onClick={scrollLeft} 
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
-                variant="outline"
-                size="icon"
-                aria-label="Scroll left"
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
               >
-                <ChevronLeft className="h-6 w-6" />
-              </Button>
+                <Button 
+                  onClick={scrollLeft} 
+                  className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
+                  variant="outline"
+                  size="icon"
+                  aria-label="Scroll left"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </Button>
+              </motion.div>
             )}
             
             <div 
@@ -186,8 +190,6 @@ const ContentPillar = ({
                     ref={provided.innerRef}
                     className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4 min-w-min px-2"
                     variants={containerVariants}
-                    initial="hidden"
-                    animate="visible"
                   >
                     <AnimatePresence>
                       {filteredContent.map((content, index) => (
@@ -206,6 +208,9 @@ const ContentPillar = ({
                                 ...provided.draggableProps.style,
                               }}
                               variants={itemVariants}
+                              layout
+                              whileHover={{ scale: 1.01 }}
+                              transition={{ duration: 0.2 }}
                             >
                               <ContentCard
                                 content={content}
@@ -227,15 +232,21 @@ const ContentPillar = ({
             </div>
             
             {filteredContent.length > 3 && showRightArrow && (
-              <Button 
-                onClick={scrollRight} 
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
-                variant="outline"
-                size="icon"
-                aria-label="Scroll right"
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
               >
-                <ChevronRight className="h-6 w-6" />
-              </Button>
+                <Button 
+                  onClick={scrollRight} 
+                  className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10 p-0 bg-white bg-opacity-70 shadow-lg hover:bg-opacity-100 border border-gray-200"
+                  variant="outline"
+                  size="icon"
+                  aria-label="Scroll right"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </Button>
+              </motion.div>
             )}
           </div>
         )}

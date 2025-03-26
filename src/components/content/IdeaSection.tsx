@@ -32,6 +32,30 @@ interface IdeaSectionProps {
   onAddToBucket: (formatId: string) => void;
 }
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.6,
+      ease: "easeOut",
+      staggerChildren: 0.12
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { 
+      duration: 0.5,
+      ease: [0.4, 0, 0.2, 1]
+    }
+  }
+};
+
 const IdeaSection = ({
   pillar,
   pillars,
@@ -241,26 +265,6 @@ const IdeaSection = ({
     setStatusFilter("all");
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        when: "beforeChildren",
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, x: 80 },
-    visible: { 
-      opacity: 1, 
-      x: 0,
-      transition: { duration: 0.45 } 
-    }
-  };
-
   return (
     <motion.div 
       className="space-y-3 pl-2 pr-3"
@@ -272,14 +276,20 @@ const IdeaSection = ({
         className="flex justify-end"
         variants={itemVariants}
       >
-        <ContentUploader 
-          pillarId={pillar.id}
-          onContentAdded={onContentAdded}
-          onContentUpdated={onContentUpdated}
-          contentToEdit={editingContent}
-          isEditMode={isEditing}
-          onCancelEdit={onCancelEdit}
-        />
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ duration: 0.2 }}
+        >
+          <ContentUploader 
+            pillarId={pillar.id}
+            onContentAdded={onContentAdded}
+            onContentUpdated={onContentUpdated}
+            contentToEdit={editingContent}
+            isEditMode={isEditing}
+            onCancelEdit={onCancelEdit}
+          />
+        </motion.div>
       </motion.div>
       
       <motion.div 
@@ -292,7 +302,10 @@ const IdeaSection = ({
         </h2>
         
         <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full md:w-auto">
-          <div className="flex items-center gap-2 w-full md:w-auto">
+          <motion.div 
+            className="flex items-center gap-2 w-full md:w-auto"
+            variants={itemVariants}
+          >
             <Filter className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground whitespace-nowrap">Filter by:</span>
             
@@ -358,12 +371,13 @@ const IdeaSection = ({
                 </SelectContent>
               </Select>
             )}
-          </div>
+          </motion.div>
         </div>
       </motion.div>
       
       <motion.div
         variants={itemVariants}
+        layout
       >
         <ContentPillar
           pillar={{

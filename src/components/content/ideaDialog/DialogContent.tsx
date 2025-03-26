@@ -50,24 +50,27 @@ interface DialogContentProps {
 }
 
 const containerVariants = {
-  hidden: { opacity: 0, x: 80 },
+  hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
-    x: 0,
+    y: 0,
     transition: { 
-      duration: 0.45,
-      when: "beforeChildren",
+      duration: 0.5,
+      ease: "easeOut",
       staggerChildren: 0.1
     }
   }
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, x: 80 },
+  hidden: { opacity: 0, y: 20 },
   visible: { 
     opacity: 1, 
-    x: 0,
-    transition: { duration: 0.4 } 
+    y: 0,
+    transition: { 
+      duration: 0.4,
+      ease: [0.4, 0, 0.2, 1]
+    }
   }
 };
 
@@ -118,23 +121,33 @@ const DialogContent = ({
         <motion.div 
           className="grid grid-cols-1 md:grid-cols-2 gap-5"
           variants={itemVariants}
+          layout
         >
-          <div>
+          <motion.div 
+            whileHover={{ scale: 1.01 }} 
+            transition={{ duration: 0.2 }}
+          >
             <TitleInputSection title={title} onTitleChange={onTitleChange} />
-          </div>
+          </motion.div>
           
-          <div>
+          <motion.div
+            whileHover={{ scale: 1.01 }} 
+            transition={{ duration: 0.2 }}
+          >
             <BucketSelectionSection 
               bucketId={bucketId} 
               onBucketChange={onBucketChange} 
               pillarId={pillarId} 
             />
-          </div>
+          </motion.div>
         </motion.div>
         
         <motion.div 
           className="bg-purple-50 rounded-lg p-4 border border-purple-100 shadow-sm"
           variants={itemVariants}
+          whileHover={{ scale: 1.01 }} 
+          transition={{ duration: 0.2 }}
+          layout
         >
           <InspirationSection
             inspirationText={inspirationText}
@@ -151,20 +164,38 @@ const DialogContent = ({
         <motion.div 
           className="grid grid-cols-1 lg:grid-cols-3 gap-5"
           variants={itemVariants}
+          layout
         >
-          <div className="lg:col-span-2 space-y-4">
+          <motion.div 
+            className="lg:col-span-2 space-y-4"
+            whileHover={{ scale: 1.01 }} 
+            transition={{ duration: 0.2 }}
+          >
             <ScriptInputSection scriptText={scriptText} onScriptTextChange={onScriptTextChange} />
-          </div>
+          </motion.div>
           
           <div className="space-y-5">
-            <ShootDetailsSection shootDetails={shootDetails} onShootDetailsChange={onShootDetailsChange} />
-            <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
+            <motion.div
+              whileHover={{ scale: 1.01 }} 
+              transition={{ duration: 0.2 }}
+            >
+              <ShootDetailsSection shootDetails={shootDetails} onShootDetailsChange={onShootDetailsChange} />
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.01 }} 
+              transition={{ duration: 0.2 }}
+            >
+              <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
+            </motion.div>
           </div>
         </motion.div>
         
         <motion.div 
           className="bg-amber-50 rounded-lg p-4 border border-amber-100 shadow-sm"
           variants={itemVariants}
+          whileHover={{ scale: 1.01 }} 
+          transition={{ duration: 0.2 }}
+          layout
         >
           <CaptionInputSection captionText={captionText} onCaptionTextChange={onCaptionTextChange} />
         </motion.div>
@@ -172,8 +203,13 @@ const DialogContent = ({
         <motion.div 
           className="grid grid-cols-1 md:grid-cols-2 gap-5"
           variants={itemVariants}
+          layout
         >
-          <div className="bg-blue-50 rounded-lg p-4 border border-blue-100 shadow-sm">
+          <motion.div 
+            className="bg-blue-50 rounded-lg p-4 border border-blue-100 shadow-sm"
+            whileHover={{ scale: 1.01 }} 
+            transition={{ duration: 0.2 }}
+          >
             <PlatformsSection
               platforms={platforms}
               currentPlatform={currentPlatform}
@@ -181,9 +217,13 @@ const DialogContent = ({
               onAddPlatform={onAddPlatform}
               onRemovePlatform={onRemovePlatform}
             />
-          </div>
+          </motion.div>
           
-          <div className="bg-green-50 rounded-lg p-4 border border-green-100 shadow-sm">
+          <motion.div 
+            className="bg-green-50 rounded-lg p-4 border border-green-100 shadow-sm"
+            whileHover={{ scale: 1.01 }} 
+            transition={{ duration: 0.2 }}
+          >
             <TagsSection
               tags={tags}
               currentTag={currentTag}
@@ -191,7 +231,7 @@ const DialogContent = ({
               onAddTag={onAddTag}
               onRemoveTag={onRemoveTag}
             />
-          </div>
+          </motion.div>
         </motion.div>
         
         {children}
