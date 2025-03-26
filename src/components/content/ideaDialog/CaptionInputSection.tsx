@@ -23,7 +23,7 @@ const CaptionInputSection = ({
         value={captionText}
         onChange={(e) => onCaptionTextChange(e.target.value)}
         placeholder="Draft a caption for your content when posting to social media platforms..."
-        className="min-h-[100px] resize-y border-amber-200 focus-visible:ring-amber-400"
+        className="min-h-[100px] resize-y border-amber-300 focus-visible:ring-amber-400"
       />
     </div>
   );
