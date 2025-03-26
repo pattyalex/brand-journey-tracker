@@ -185,11 +185,12 @@ const DialogContent = ({
           </motion.div>
           
           {isScriptExpanded ? (
-            <div className="space-y-5">
+            <div className="space-y-5 h-full">
               <motion.div
                 whileHover={{ scale: 1.01 }} 
                 transition={{ duration: 0.2 }}
                 layout
+                className="h-[calc(50%-0.625rem)]" // Half height minus half of gap (5/2 = 2.5px)
               >
                 <ShootDetailsSection shootDetails={shootDetails} onShootDetailsChange={onShootDetailsChange} />
               </motion.div>
@@ -197,6 +198,7 @@ const DialogContent = ({
                 whileHover={{ scale: 1.01 }} 
                 transition={{ duration: 0.2 }}
                 layout
+                className="h-[calc(50%-0.625rem)]" // Half height minus half of gap (5/2 = 2.5px)
               >
                 <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
               </motion.div>
@@ -207,6 +209,7 @@ const DialogContent = ({
                 whileHover={{ scale: 1.01 }} 
                 transition={{ duration: 0.2 }}
                 layout
+                className="h-full"
               >
                 <ShootDetailsSection shootDetails={shootDetails} onShootDetailsChange={onShootDetailsChange} />
               </motion.div>
@@ -214,6 +217,7 @@ const DialogContent = ({
                 whileHover={{ scale: 1.01 }} 
                 transition={{ duration: 0.2 }}
                 layout
+                className="h-full"
               >
                 <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
               </motion.div>
