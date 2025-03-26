@@ -35,21 +35,19 @@ const ScriptInputSection = ({
           <FileText size={18} className="text-gray-600" />
           <Label htmlFor="develop-script" className="text-sm font-medium">Script</Label>
         </div>
-        <CollapsibleTrigger asChild>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="h-8 px-2 text-gray-500 hover:text-gray-700"
-            onClick={handleCollapseToggle}
-          >
-            {isOpen ? (
-              <ChevronUp size={16} className="mr-1" />
-            ) : (
-              <ChevronDown size={16} className="mr-1" />
-            )}
-            {isOpen ? "Collapse" : "Expand"}
-          </Button>
-        </CollapsibleTrigger>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="h-8 px-2 text-gray-500 hover:text-gray-700"
+          onClick={handleCollapseToggle}
+        >
+          {isOpen ? (
+            <ChevronUp size={16} className="mr-1" />
+          ) : (
+            <ChevronDown size={16} className="mr-1" />
+          )}
+          {isOpen ? "Collapse" : "Expand"}
+        </Button>
       </div>
       
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
