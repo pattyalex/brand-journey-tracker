@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,7 +11,8 @@ import {
   Calendar,
   BarChart,
   Instagram,
-  Facebook
+  Facebook,
+  Link
 } from "lucide-react";
 import { 
   BarChart as RechartsBarChart,
@@ -40,6 +40,7 @@ const stories = [
     completionRate: 75,
     linkClicks: 234,
     date: "2023-11-22",
+    hasLink: true,
   },
   {
     id: "2",
@@ -50,6 +51,7 @@ const stories = [
     completionRate: 68,
     linkClicks: 312,
     date: "2023-11-20",
+    hasLink: true,
   },
   {
     id: "3",
@@ -60,6 +62,7 @@ const stories = [
     completionRate: 82,
     linkClicks: 189,
     date: "2023-11-18",
+    hasLink: true,
   },
   {
     id: "4",
@@ -68,8 +71,9 @@ const stories = [
     thumbnail: "https://placehold.co/90x160/E1306C/white?text=Story",
     views: 9543,
     completionRate: 71,
-    linkClicks: 123,
+    linkClicks: 0,
     date: "2023-11-15",
+    hasLink: false,
   },
   {
     id: "5",
@@ -80,6 +84,18 @@ const stories = [
     completionRate: 64,
     linkClicks: 276,
     date: "2023-11-12",
+    hasLink: true,
+  },
+  {
+    id: "6",
+    title: "Daily vlog highlight",
+    platform: "Instagram",
+    thumbnail: "https://placehold.co/90x160/E1306C/white?text=Story",
+    views: 6432,
+    completionRate: 55,
+    linkClicks: null,
+    date: "2023-11-10",
+    hasLink: false,
   },
 ];
 
@@ -291,10 +307,14 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
                     </TableCell>
                     <TableCell>{story.completionRate}%</TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1">
-                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                        {story.linkClicks.toLocaleString()}
-                      </div>
+                      {story.hasLink ? (
+                        <div className="flex items-center gap-1">
+                          <Link className="h-4 w-4 text-muted-foreground" />
+                          {story.linkClicks ? story.linkClicks.toLocaleString() : '0'}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">N/A</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
