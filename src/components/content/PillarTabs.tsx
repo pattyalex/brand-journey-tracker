@@ -114,21 +114,7 @@ const PillarTabs = ({
                 </div>
               ) : (
                 <div className="flex items-center">
-                  <motion.div
-                    initial={{ scale: pillar.id === activeTab ? 1.3 : 1 }}
-                    animate={{ 
-                      scale: pillar.id === activeTab ? 1.3 : 1,
-                      zIndex: pillar.id === activeTab ? 10 : 0,
-                    }}
-                    transition={{ 
-                      type: "spring", 
-                      stiffness: 300, 
-                      damping: 20,
-                      duration: 0.3
-                    }}
-                    style={{ transformOrigin: "center" }}
-                    className="relative"
-                  >
+                  <div className={`relative ${pillar.id === activeTab ? "z-10 scale-[1.3]" : ""}`}>
                     <TabsTrigger 
                       value={pillar.id}
                       className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white px-5 py-2 text-base ${
@@ -144,7 +130,7 @@ const PillarTabs = ({
                         <div className="absolute bottom-0 left-0 right-0 h-1 bg-white rounded-t-full" />
                       )}
                     </TabsTrigger>
-                  </motion.div>
+                  </div>
                   
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
