@@ -1,7 +1,7 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, Users, ThumbsUp, MessageSquare, BarChart, TrendingUp } from "lucide-react";
+import { Eye, Users, ThumbsUp, MessageSquare, BarChart, TrendingUp, Megaphone, Radio } from "lucide-react";
 import { 
   BarChart as RechartsBarChart,
   Bar, 
@@ -17,6 +17,7 @@ import {
   Area
 } from "recharts";
 import { ChartContainer } from "@/components/ui/chart";
+import TimeFilterSelect from "@/components/analytics/TimeFilterSelect";
 
 // Mock data - would be replaced with real API data
 const engagementData = [
@@ -38,6 +39,26 @@ const followersData = [
   { name: "Jun", Instagram: 26000, Facebook: 18000, Twitter: 12000, YouTube: 10000 },
 ];
 
+// Mock data for impressions
+const impressionsData = [
+  { name: "Jan", Instagram: 42000, Facebook: 32400, Twitter: 21800, YouTube: 25200 },
+  { name: "Feb", Instagram: 38000, Facebook: 31398, Twitter: 24800, YouTube: 27800 },
+  { name: "Mar", Instagram: 45000, Facebook: 39800, Twitter: 22200, YouTube: 31800 },
+  { name: "Apr", Instagram: 52780, Facebook: 43908, Twitter: 27200, YouTube: 33800 },
+  { name: "May", Instagram: 61890, Facebook: 48800, Twitter: 32500, YouTube: 38200 },
+  { name: "Jun", Instagram: 72390, Facebook: 53800, Twitter: 38800, YouTube: 44300 },
+];
+
+// Mock data for reach
+const reachData = [
+  { name: "Jan", Instagram: 22000, Facebook: 18400, Twitter: 12800, YouTube: 15200 },
+  { name: "Feb", Instagram: 24000, Facebook: 19398, Twitter: 14800, YouTube: 16800 },
+  { name: "Mar", Instagram: 28000, Facebook: 21800, Twitter: 15200, YouTube: 17800 },
+  { name: "Apr", Instagram: 32780, Facebook: 24908, Twitter: 17200, YouTube: 19800 },
+  { name: "May", Instagram: 36890, Facebook: 28800, Twitter: 19500, YouTube: 21200 },
+  { name: "Jun", Instagram: 41390, Facebook: 33800, Twitter: 22800, YouTube: 24300 },
+];
+
 const statsData = [
   { title: "Total Followers", value: "67,893", icon: Users, change: "+2.5%" },
   { title: "Total Views", value: "1.2M", icon: Eye, change: "+18.2%" },
@@ -50,6 +71,19 @@ interface OverviewTabProps {
 }
 
 const OverviewTab: React.FC<OverviewTabProps> = ({ platforms }) => {
+  const [timeRange, setTimeRange] = useState<string>("last30days");
+  const [customStartDate, setCustomStartDate] = useState<Date | undefined>(undefined);
+  const [customEndDate, setCustomEndDate] = useState<Date | undefined>(undefined);
+  
+  const handleTimeRangeChange = (range: string) => {
+    setTimeRange(range);
+  };
+  
+  const handleCustomDateChange = (start: Date | undefined, end: Date | undefined) => {
+    setCustomStartDate(start);
+    setCustomEndDate(end);
+  };
+  
   const config = {
     Instagram: { color: "#E1306C" },
     Facebook: { color: "#4267B2" },
@@ -59,6 +93,14 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ platforms }) => {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end mb-4">
+        <TimeFilterSelect 
+          selectedRange={timeRange}
+          onDateRangeChange={handleTimeRangeChange}
+          onCustomDateChange={handleCustomDateChange}
+        />
+      </div>
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {statsData.map((stat, index) => (
           <Card key={index}>
@@ -114,6 +156,74 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ platforms }) => {
                   <Area type="monotone" dataKey="YouTube" stroke="#FF0000" fill="#FF0000" fillOpacity={0.2} />
                 )}
               </AreaChart>
+            </ChartContainer>
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Impressions Graph */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Megaphone className="h-5 w-5" /> Impressions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-80 w-full">
+            <ChartContainer config={config}>
+              <BarChart data={impressionsData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                {platforms.includes("Instagram") && (
+                  <Bar dataKey="Instagram" fill="#E1306C" stackId="a" />
+                )}
+                {platforms.includes("Facebook") && (
+                  <Bar dataKey="Facebook" fill="#4267B2" stackId="a" />
+                )}
+                {platforms.includes("Twitter") && (
+                  <Bar dataKey="Twitter" fill="#1DA1F2" stackId="a" />
+                )}
+                {platforms.includes("YouTube") && (
+                  <Bar dataKey="YouTube" fill="#FF0000" stackId="a" />
+                )}
+              </BarChart>
+            </ChartContainer>
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Reach Graph */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Radio className="h-5 w-5" /> Reach
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-80 w-full">
+            <ChartContainer config={config}>
+              <LineChart data={reachData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                {platforms.includes("Instagram") && (
+                  <Line type="monotone" dataKey="Instagram" stroke="#E1306C" activeDot={{ r: 8 }} />
+                )}
+                {platforms.includes("Facebook") && (
+                  <Line type="monotone" dataKey="Facebook" stroke="#4267B2" />
+                )}
+                {platforms.includes("Twitter") && (
+                  <Line type="monotone" dataKey="Twitter" stroke="#1DA1F2" />
+                )}
+                {platforms.includes("YouTube") && (
+                  <Line type="monotone" dataKey="YouTube" stroke="#FF0000" />
+                )}
+              </LineChart>
             </ChartContainer>
           </div>
         </CardContent>
