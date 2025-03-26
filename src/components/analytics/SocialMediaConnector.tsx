@@ -1,7 +1,8 @@
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Instagram, Youtube, Twitter, Linkedin, Twitch, Music } from "lucide-react";
+import { Instagram, Youtube, Linkedin, Music } from "lucide-react";
 
 interface SocialMediaConnectorProps {
   connectedPlatforms: string[];
@@ -29,12 +30,6 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
       color: "bg-black",
     },
     {
-      id: "Twitter",
-      name: "Twitter",
-      icon: <Twitter className="h-5 w-5" />,
-      color: "bg-blue-400",
-    },
-    {
       id: "YouTube",
       name: "Youtube",
       icon: <Youtube className="h-5 w-5" />,
@@ -46,19 +41,13 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
       icon: <Linkedin className="h-5 w-5" />,
       color: "bg-blue-600",
     },
-    {
-      id: "Twitch",
-      name: "Twitch",
-      icon: <Twitch className="h-5 w-5" />,
-      color: "bg-purple-600",
-    },
   ];
 
   return (
     <Card>
       <CardContent className="p-6">
         <h2 className="text-xl font-semibold mb-4">Connected Platforms</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {platforms.map((platform) => {
             const isConnected = connectedPlatforms.includes(platform.id);
             return (
