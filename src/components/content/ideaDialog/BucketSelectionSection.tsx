@@ -63,7 +63,7 @@ const BucketSelectionSection = ({
         onValueChange={onBucketChange}
       >
         <SelectTrigger id="format-select" className="w-full h-10 pl-3">
-          <SelectValue placeholder="Select a content format" />
+          <SelectValue placeholder="Select from your saved content formats in Pillars" />
         </SelectTrigger>
         <SelectContent>
           {contentFormats.map((format) => (
