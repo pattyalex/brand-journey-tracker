@@ -29,7 +29,7 @@ const VisualNotesSection = ({
         id="visual-notes"
         value={visualNotes}
         onChange={(e) => onVisualNotesChange(e.target.value)}
-        placeholder="Add notes to enhance your content visually. Think of angles, subliminal hooks, any creative details..."
+        placeholder="Think of angles, visual subliminal hooks, any creative details..."
         className="min-h-[150px] h-full resize-y focus-visible:ring-gray-400" 
       />
     </motion.div>
