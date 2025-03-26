@@ -47,7 +47,7 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
     <Card>
       <CardContent className="p-6">
         <h2 className="text-xl font-semibold mb-4">Connected Platforms</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div className="flex flex-wrap gap-4">
           {platforms.map((platform) => {
             const isConnected = connectedPlatforms.includes(platform.id);
             return (
