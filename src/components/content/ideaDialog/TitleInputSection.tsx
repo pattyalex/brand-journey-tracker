@@ -21,7 +21,7 @@ const TitleInputSection = ({
       transition={{ duration: 0.4, ease: "easeOut" }}
     >
       <motion.div 
-        className="flex items-center gap-2 mb-1 ml-4"
+        className="flex items-center gap-2 mb-1"
         initial={{ opacity: 0, x: -10 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.3, delay: 0.1 }}
