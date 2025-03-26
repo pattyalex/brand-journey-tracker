@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,12 +13,7 @@ import {
   isToday,
   addMonths,
   subMonths,
-  parseISO,
   getDay,
-  setDefaultOptions,
-  setYear,
-  setMonth,
-  setDate,
   startOfWeek,
   endOfWeek
 } from "date-fns";
@@ -28,7 +24,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { CalendarIcon, FileText, ChevronLeft, ChevronRight, PlusCircle, Trash2, Instagram, Youtube, AtSign, Pencil, CornerUpLeft } from "lucide-react";
 import {
@@ -61,14 +56,14 @@ interface ContentItem {
 }
 
 const formatColors: Record<string, string> = {
-  "Video": "bg-purple-100 text-purple-800",
-  "Blog Post": "bg-blue-100 text-blue-800",
-  "Reel": "bg-pink-100 text-pink-800",
-  "Story": "bg-amber-100 text-amber-800",
-  "Podcast": "bg-emerald-100 text-emerald-800",
-  "Newsletter": "bg-indigo-100 text-indigo-800",
-  "Post": "bg-cyan-100 text-cyan-800",
-  "Vlog": "bg-purple-100 text-purple-800"
+  "Video": "bg-purple-100 text-purple-800 border-purple-300",
+  "Blog Post": "bg-blue-100 text-blue-800 border-blue-300",
+  "Reel": "bg-pink-100 text-pink-800 border-pink-300",
+  "Story": "bg-amber-100 text-amber-800 border-amber-300",
+  "Podcast": "bg-emerald-100 text-emerald-800 border-emerald-300",
+  "Newsletter": "bg-indigo-100 text-indigo-800 border-indigo-300",
+  "Post": "bg-cyan-100 text-cyan-800 border-cyan-300",
+  "Vlog": "bg-purple-100 text-purple-800 border-purple-300"
 };
 
 const getPlatformIcon = (platform: string) => {
@@ -94,8 +89,7 @@ const isWeekend = (date: Date) => {
 
 const ContentCalendar = () => {
   const getToday = () => {
-    const today = new Date(2025, 2, 14); // Note: months are 0-indexed, so 2 = March
-    return today;
+    return new Date();
   };
 
   const [currentMonth, setCurrentMonth] = useState(getToday());
@@ -744,19 +738,17 @@ const ContentCalendar = () => {
                       <div 
                         key={content.id} 
                         className={cn(
-                          "group cursor-grab",
-                          draggedContent?.id === content.id ? "opacity-50" : ""
+                          "group cursor-grab border rounded",
+                          draggedContent?.id === content.id ? "opacity-50" : "",
+                          content.format && formatColors[getContentFormat(content)] 
+                            ? formatColors[getContentFormat(content)] 
+                            : "bg-gray-100 text-gray-800 border-gray-300"
                         )}
                         draggable
                         onDragStart={(e) => handleDragStart(e, content)}
                       >
                         <div 
-                          className={cn(
-                            "text-xs p-1 rounded cursor-pointer flex items-center",
-                            content.format && formatColors[getContentFormat(content)] 
-                              ? formatColors[getContentFormat(content)] 
-                              : "bg-gray-100 text-gray-800"
-                          )}
+                          className="text-xs p-1 cursor-pointer flex items-center"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleEditContent(content);
@@ -792,7 +784,7 @@ const ContentCalendar = () => {
                         </div>
                         
                         {content.platforms && content.platforms.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1 ml-1">
+                          <div className="flex flex-wrap gap-1 mt-1 ml-1 pb-1">
                             {content.platforms.slice(0, 2).map((platform, idx) => (
                               <Badge
                                 key={`cal-platform-${content.id}-${idx}`}
