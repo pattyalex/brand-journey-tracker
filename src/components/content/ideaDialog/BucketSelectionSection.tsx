@@ -55,7 +55,7 @@ const BucketSelectionSection = ({
       <div className="flex items-center gap-1">
         <Flame size={18} className="text-black" />
         <Label htmlFor="format-select" className="text-sm font-medium">
-          Pisica
+          Content Format
         </Label>
       </div>
       <Select 
