@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -11,7 +12,6 @@ import {
   Calendar,
   BarChart,
   Instagram,
-  TikTok,
   Link,
   Copy,
   Repeat
@@ -108,7 +108,26 @@ const getPlatformIcon = (platform: string) => {
     case "Instagram":
       return <Instagram className="h-4 w-4 text-pink-500" />;
     case "TikTok":
-      return <TikTok className="h-4 w-4 text-black" />;
+      // Since TikTok icon is not available in lucide-react, we use SVG directly
+      return (
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          width="16" 
+          height="16" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          strokeWidth="2" 
+          strokeLinecap="round" 
+          strokeLinejoin="round" 
+          className="h-4 w-4 text-black"
+        >
+          <path d="M9 12a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" />
+          <path d="M15 8a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
+          <path d="M15 8v8a4 4 0 0 1-4 4" />
+          <line x1="15" y1="4" x2="15" y2="12" />
+        </svg>
+      );
     default:
       return null;
   }
