@@ -1,5 +1,5 @@
 
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import TitleInputSection from "./TitleInputSection";
 import BucketSelectionSection from "./BucketSelectionSection";
@@ -110,6 +110,12 @@ const DialogContent = ({
   onRemoveInspirationImage = () => {},
   children,
 }: DialogContentProps) => {
+  const [isScriptExpanded, setIsScriptExpanded] = useState(true);
+
+  const handleScriptCollapseChange = (isOpen: boolean) => {
+    setIsScriptExpanded(isOpen);
+  };
+
   return (
     <ScrollArea className="h-[calc(95vh-140px)] pr-4" style={{ overflowY: 'auto', touchAction: 'pan-y' }}>
       <motion.div 
@@ -161,32 +167,58 @@ const DialogContent = ({
         </motion.div>
         
         <motion.div 
-          className="grid grid-cols-1 lg:grid-cols-3 gap-5 mx-2"
+          className={`grid grid-cols-1 ${isScriptExpanded ? 'lg:grid-cols-3' : 'lg:grid-cols-1'} gap-5 mx-2`}
           variants={itemVariants}
           layout
         >
           <motion.div 
-            className="lg:col-span-2 space-y-4"
+            className={isScriptExpanded ? "lg:col-span-2 space-y-4" : ""}
             whileHover={{ scale: 1.01 }} 
             transition={{ duration: 0.2 }}
+            layout
           >
-            <ScriptInputSection scriptText={scriptText} onScriptTextChange={onScriptTextChange} />
+            <ScriptInputSection 
+              scriptText={scriptText} 
+              onScriptTextChange={onScriptTextChange} 
+              onCollapseChange={handleScriptCollapseChange}
+            />
           </motion.div>
           
-          <div className="space-y-5">
-            <motion.div
-              whileHover={{ scale: 1.01 }} 
-              transition={{ duration: 0.2 }}
-            >
-              <ShootDetailsSection shootDetails={shootDetails} onShootDetailsChange={onShootDetailsChange} />
-            </motion.div>
-            <motion.div
-              whileHover={{ scale: 1.01 }} 
-              transition={{ duration: 0.2 }}
-            >
-              <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
-            </motion.div>
-          </div>
+          {isScriptExpanded ? (
+            <div className="space-y-5">
+              <motion.div
+                whileHover={{ scale: 1.01 }} 
+                transition={{ duration: 0.2 }}
+                layout
+              >
+                <ShootDetailsSection shootDetails={shootDetails} onShootDetailsChange={onShootDetailsChange} />
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.01 }} 
+                transition={{ duration: 0.2 }}
+                layout
+              >
+                <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
+              </motion.div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
+              <motion.div
+                whileHover={{ scale: 1.01 }} 
+                transition={{ duration: 0.2 }}
+                layout
+              >
+                <ShootDetailsSection shootDetails={shootDetails} onShootDetailsChange={onShootDetailsChange} />
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.01 }} 
+                transition={{ duration: 0.2 }}
+                layout
+              >
+                <VisualNotesSection visualNotes={visualNotes} onVisualNotesChange={onVisualNotesChange} />
+              </motion.div>
+            </div>
+          )}
         </motion.div>
         
         <motion.div 
