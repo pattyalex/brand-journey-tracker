@@ -159,6 +159,7 @@ const DialogContent = ({
           transition={{ duration: 0.2 }}
           variants={itemVariants}
           layout
+          className="w-1/2 mx-auto"
         >
           <TitleInputSection title={title} onTitleChange={onTitleChange} />
         </motion.div>
