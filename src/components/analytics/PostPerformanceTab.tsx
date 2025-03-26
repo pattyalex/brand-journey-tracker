@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -17,15 +16,16 @@ import {
   Facebook,
   Twitter,
   Copy,
-  Plus
+  Plus,
+  Repeat
 } from "lucide-react";
 import CreateSimilarContentDialog from "./CreateSimilarContentDialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface PostPerformanceTabProps {
   platforms: string[];
 }
 
-// Mock data - would be replaced with real API data
 const posts = [
   {
     id: "1",
@@ -237,15 +237,23 @@ const PostPerformanceTab: React.FC<PostPerformanceTabProps> = ({ platforms }) =>
                 <TableRow key={post.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <Button 
-                        variant="vision" 
-                        size="xs"
-                        onClick={() => handleCreateSimilar(post)}
-                        className="animate-pulse shadow-md hover:shadow-lg min-w-24 whitespace-nowrap"
-                      >
-                        <Plus className="h-3 w-3" />
-                        Create Similar
-                      </Button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => handleCreateSimilar(post)}
+                              className="h-8 w-8 rounded-full"
+                            >
+                              <Repeat className="h-4 w-4 text-purple-500" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Recreate content</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                       <div className="relative w-16 h-16 rounded overflow-hidden">
                         <img 
                           src={post.thumbnail} 
