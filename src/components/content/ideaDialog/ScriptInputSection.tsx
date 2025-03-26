@@ -3,7 +3,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { FileText, ChevronDown, ChevronUp } from "lucide-react";
 import { motion } from "framer-motion";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
@@ -29,46 +29,61 @@ const ScriptInputSection = ({
   };
 
   return (
-    <div className="grid gap-2 bg-white rounded-lg p-4 border shadow-sm transition-all duration-200 hover:shadow-md">
-      <div className="flex items-center justify-between mb-1">
-        <div className="flex items-center gap-2">
-          <FileText size={18} className="text-gray-600" />
-          <Label htmlFor="develop-script" className="text-sm font-medium">Script</Label>
-        </div>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="h-8 px-2 text-gray-500 hover:text-gray-700"
-          onClick={handleCollapseToggle}
-        >
-          {isOpen ? (
-            <ChevronUp size={16} className="mr-1" />
-          ) : (
-            <ChevronDown size={16} className="mr-1" />
-          )}
-          {isOpen ? "Collapse" : "Expand"}
-        </Button>
-      </div>
-      
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleContent 
-          className="transition-all duration-300"
-          style={{ animation: isOpen ? "collapsible-down 0.3s ease-out" : "collapsible-up 0.3s ease-out" }}
-        >
-          <Textarea
-            id="develop-script"
-            value={scriptText}
-            onChange={(e) => onScriptTextChange(e.target.value)}
-            placeholder="Write your script here..."
-            className="min-h-[385px] resize-y focus-visible:ring-gray-400" 
-          />
-        </CollapsibleContent>
-      </Collapsible>
-      
-      {!isOpen && (
-        <div className="text-gray-400 text-sm italic mt-1">
-          Script section is collapsed. Click Expand to edit.
-        </div>
+    <div className={`transition-all duration-200 ${isOpen ? 'bg-white rounded-lg p-4 border shadow-sm hover:shadow-md' : 'bg-gray-50 rounded p-2 border shadow-sm hover:shadow-md flex items-center justify-between'}`}>
+      {isOpen ? (
+        <>
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <FileText size={18} className="text-gray-600" />
+              <Label htmlFor="develop-script" className="text-sm font-medium">Script</Label>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 px-2 text-gray-500 hover:text-gray-700"
+              onClick={handleCollapseToggle}
+            >
+              <ChevronUp size={16} className="mr-1" />
+              Collapse
+            </Button>
+          </div>
+          
+          <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+            <CollapsibleContent 
+              className="transition-all duration-300"
+              style={{ animation: "collapsible-down 0.3s ease-out" }}
+            >
+              <Textarea
+                id="develop-script"
+                value={scriptText}
+                onChange={(e) => onScriptTextChange(e.target.value)}
+                placeholder="Write your script here..."
+                className="min-h-[385px] resize-y focus-visible:ring-gray-400" 
+              />
+            </CollapsibleContent>
+          </Collapsible>
+        </>
+      ) : (
+        <>
+          <div className="flex items-center gap-2">
+            <FileText size={18} className="text-gray-600" />
+            <span className="text-sm font-medium text-gray-600">Script</span>
+            {scriptText && (
+              <span className="text-xs text-gray-500 italic">
+                ({scriptText.length > 0 ? `${scriptText.slice(0, 25)}${scriptText.length > 25 ? '...' : ''}` : 'Empty'})
+              </span>
+            )}
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-7 px-2 text-gray-500 hover:text-gray-700"
+            onClick={handleCollapseToggle}
+          >
+            <ChevronDown size={14} />
+            <span className="sr-only">Expand</span>
+          </Button>
+        </>
       )}
     </div>
   );
