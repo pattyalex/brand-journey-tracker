@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -34,9 +33,8 @@ const ageData = [
 ];
 
 const genderData = [
-  { name: "Female", value: 65 },
-  { name: "Male", value: 32 },
-  { name: "Non-binary", value: 3 },
+  { name: "Female", value: 67 },
+  { name: "Male", value: 33 },
 ];
 
 const locationData = [
