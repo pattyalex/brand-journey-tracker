@@ -10,7 +10,6 @@ import CaptionInputSection from "./CaptionInputSection";
 import PlatformsSection from "./PlatformsSection";
 import TagsSection from "./TagsSection";
 import InspirationSection from "./InspirationSection";
-import FormatSelectionSection from "./FormatSelectionSection";
 import { motion } from "framer-motion";
 
 interface DialogContentProps {
@@ -120,17 +119,10 @@ const DialogContent = ({
         animate="visible"
       >
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 gap-5"
+          className="grid grid-cols-1 md:grid-cols-1 gap-5"
           variants={itemVariants}
           layout
         >
-          <motion.div 
-            whileHover={{ scale: 1.01 }} 
-            transition={{ duration: 0.2 }}
-          >
-            <FormatSelectionSection format={format} onFormatChange={onFormatChange} />
-          </motion.div>
-          
           <motion.div
             whileHover={{ scale: 1.01 }} 
             transition={{ duration: 0.2 }}
