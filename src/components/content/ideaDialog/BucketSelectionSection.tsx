@@ -62,7 +62,7 @@ const BucketSelectionSection = ({
         value={bucketId} 
         onValueChange={onBucketChange}
       >
-        <SelectTrigger id="format-select" className="w-full h-10 pl-1">
+        <SelectTrigger id="format-select" className="w-full h-10 pl-3">
           <SelectValue placeholder="Select a content format" />
         </SelectTrigger>
         <SelectContent>
