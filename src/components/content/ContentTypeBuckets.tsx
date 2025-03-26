@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,6 +34,30 @@ interface ContentTypeBucketsProps {
   onAddIdea: (formatId: string) => void;
   pillarId: string;
 }
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { 
+      duration: 0.6,
+      ease: "easeOut",
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1,
+    y: 0,
+    transition: { 
+      duration: 0.5,
+      ease: [0.4, 0, 0.2, 1]
+    }
+  }
+};
 
 const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) => {
   const { toast } = useToast();
@@ -206,32 +229,12 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     setExpandedCardId(prev => prev === formatId ? null : formatId);
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { 
-        duration: 0.4,
-        staggerChildren: 0.08
-      }
-    }
-  };
-
-  const cardVariants = {
-    hidden: { opacity: 0, x: 80 },
-    visible: { 
-      opacity: 1,
-      x: 0,
-      transition: { duration: 0.45 }
-    }
-  };
-
   return (
     <div className="mt-4 mb-6">
       <motion.div 
-        initial={{ opacity: 0, x: 60 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.4 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
         className="flex justify-between items-center mb-3"
       >
         <h2 className="text-xl font-semibold">Content Formats</h2>
@@ -239,10 +242,10 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
       
       {isAddingFormat && (
         <motion.div 
-          initial={{ opacity: 0, x: 60 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -60 }}
-          transition={{ duration: 0.4 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.4, ease: "easeInOut" }}
           className="mb-3 flex flex-col gap-2"
         >
           <Input
@@ -287,13 +290,14 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
           <motion.div 
             key={type.id} 
             data-card-id={type.id}
-            className={`transition-all duration-200 ease-in-out ${expandedCardId === type.id ? 'z-10' : 'z-0'}`}
+            className={`transition-all duration-300 ease-in-out ${expandedCardId === type.id ? 'z-10' : 'z-0'}`}
             style={{
               position: expandedCardId === type.id ? 'absolute' : 'relative',
               top: expandedCardId === type.id ? cardPositions[type.id]?.top || 0 : 'auto',
               left: expandedCardId === type.id ? cardPositions[type.id]?.left || 0 : 'auto',
             }}
             variants={cardVariants}
+            layout
           >
             <Collapsible
               open={expandedCardId === type.id}
@@ -421,6 +425,9 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
             <TooltipTrigger asChild>
               <motion.div
                 variants={cardVariants}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ duration: 0.2 }}
               >
                 <Button 
                   variant="ghost" 
