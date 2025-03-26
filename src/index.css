@@ -81,13 +81,7 @@
 
 /* SelectValue placeholder styling */
 [data-placeholder] {
-  color: rgb(156 163 175) !important; /* gray-400 */
-}
-
-/* Input placeholder styling */
-::placeholder {
-  color: rgb(156 163 175) !important; /* gray-400 */
-  opacity: 1;
+  color: #6B7280 !important; /* gray-500 - matching the input in the image */
 }
 
 /* Custom Scrollbar */
