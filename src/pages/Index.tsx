@@ -5,12 +5,30 @@ import Layout from "@/components/Layout";
 import { FolderOpen, HandshakeIcon, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+const features = [
+  {
+    title: "Content Management",
+    description: "Plan, organize, and track your content creation workflow in one place",
+    icon: FolderOpen,
+  },
+  {
+    title: "Revenue Growth",
+    description: "Track income from brand deals, sponsorships, and other revenue streams",
+    icon: HandshakeIcon,
+  },
+  {
+    title: "Performance Analytics",
+    description: "Monitor your growth and make data-driven content decisions",
+    icon: TrendingUp,
+  },
+];
+
 const Index = () => {
   const navigate = useNavigate();
 
   return (
     <Layout>
-      <div className="max-w-6xl mx-auto px-6 py-16 space-y-16 fade-in">
+      <div className="max-w-6xl mx-auto px-6 py-16 space-y-16">
         {/* Hero Section */}
         <section className="text-center space-y-6">
           <h1 className="text-5xl md:text-6xl font-bold mb-4 font-playfair leading-tight">
@@ -42,23 +60,5 @@ const Index = () => {
     </Layout>
   );
 };
-
-const features = [
-  {
-    title: "Content Management",
-    description: "Plan, organize, and track your content creation workflow in one place",
-    icon: FolderOpen,
-  },
-  {
-    title: "Revenue Growth",
-    description: "Track income from brand deals, sponsorships, and other revenue streams",
-    icon: HandshakeIcon,
-  },
-  {
-    title: "Performance Analytics",
-    description: "Monitor your growth and make data-driven content decisions",
-    icon: TrendingUp,
-  },
-];
 
 export default Index;
