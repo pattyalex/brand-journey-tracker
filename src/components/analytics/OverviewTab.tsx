@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, Users, ThumbsUp, MessageSquare, BarChart as BarChartIcon, TrendingUp, Megaphone, Radio } from "lucide-react";
@@ -18,6 +19,7 @@ import {
 import { ChartContainer } from "@/components/ui/chart";
 import TimeFilterSelect from "@/components/analytics/TimeFilterSelect";
 
+// Mock data - would be replaced with real API data
 const engagementData = [
   { name: "Jan", Instagram: 4000, Facebook: 2400, Twitter: 1800, YouTube: 3200 },
   { name: "Feb", Instagram: 3000, Facebook: 1398, Twitter: 2800, YouTube: 2800 },
@@ -27,6 +29,7 @@ const engagementData = [
   { name: "Jun", Instagram: 2390, Facebook: 3800, Twitter: 2800, YouTube: 4300 },
 ];
 
+// Mock data for followers growth
 const followersData = [
   { name: "Jan", Instagram: 15200, Facebook: 12400, Twitter: 8800, YouTube: 6200 },
   { name: "Feb", Instagram: 16800, Facebook: 13100, Twitter: 9200, YouTube: 6800 },
@@ -36,6 +39,7 @@ const followersData = [
   { name: "Jun", Instagram: 26000, Facebook: 18000, Twitter: 12000, YouTube: 10000 },
 ];
 
+// Mock data for impressions
 const impressionsData = [
   { name: "Jan", Instagram: 42000, Facebook: 32400, Twitter: 21800, YouTube: 25200 },
   { name: "Feb", Instagram: 38000, Facebook: 31398, Twitter: 24800, YouTube: 27800 },
@@ -45,6 +49,7 @@ const impressionsData = [
   { name: "Jun", Instagram: 72390, Facebook: 53800, Twitter: 38800, YouTube: 44300 },
 ];
 
+// Mock data for reach
 const reachData = [
   { name: "Jan", Instagram: 22000, Facebook: 18400, Twitter: 12800, YouTube: 15200 },
   { name: "Feb", Instagram: 24000, Facebook: 19398, Twitter: 14800, YouTube: 16800 },
@@ -60,25 +65,6 @@ const statsData = [
   { title: "Engagement Rate", value: "5.32%", icon: ThumbsUp, change: "+1.2%" },
   { title: "Comments", value: "8,246", icon: MessageSquare, change: "+7.1%" },
 ];
-
-const platformMetrics = {
-  Instagram: {
-    impressions: { current: 72390, previous: 61890, change: "+16.9%" },
-    reach: { current: 41390, previous: 36890, change: "+12.2%" }
-  },
-  Facebook: {
-    impressions: { current: 53800, previous: 48800, change: "+10.2%" },
-    reach: { current: 33800, previous: 28800, change: "+17.4%" }
-  },
-  Twitter: {
-    impressions: { current: 38800, previous: 32500, change: "+19.4%" },
-    reach: { current: 22800, previous: 19500, change: "+16.9%" }
-  },
-  YouTube: {
-    impressions: { current: 44300, previous: 38200, change: "+16.0%" },
-    reach: { current: 24300, previous: 21200, change: "+14.6%" }
-  }
-};
 
 interface OverviewTabProps {
   platforms: string[];
@@ -103,31 +89,6 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ platforms }) => {
     Facebook: { color: "#4267B2" },
     Twitter: { color: "#1DA1F2" },
     YouTube: { color: "#FF0000" },
-  };
-
-  const calculateTotalMetrics = (metricType: 'impressions' | 'reach') => {
-    const totalCurrent = platforms.reduce((sum, platform) => 
-      sum + (platformMetrics[platform as keyof typeof platformMetrics]?.[metricType]?.current || 0), 0);
-    
-    const totalPrevious = platforms.reduce((sum, platform) => 
-      sum + (platformMetrics[platform as keyof typeof platformMetrics]?.[metricType]?.previous || 0), 0);
-    
-    const percentChange = totalPrevious > 0 
-      ? (((totalCurrent - totalPrevious) / totalPrevious) * 100).toFixed(1)
-      : "0.0";
-    
-    return {
-      current: totalCurrent,
-      previous: totalPrevious,
-      change: `${Number(percentChange) >= 0 ? '+' : ''}${percentChange}%`
-    };
-  };
-
-  const totalImpressions = calculateTotalMetrics('impressions');
-  const totalReach = calculateTotalMetrics('reach');
-
-  const formatNumber = (num: number) => {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
   return (
@@ -166,120 +127,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ platforms }) => {
         ))}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Megaphone className="h-5 w-5" /> Impressions
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <Card className="col-span-1 lg:col-span-1">
-              <CardContent className="pt-6">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-muted-foreground">Total Impressions</p>
-                    <h3 className="text-3xl font-bold mt-1">{formatNumber(totalImpressions.current)}</h3>
-                  </div>
-                  <div className="rounded-full p-2 bg-primary/10">
-                    <Eye className="h-5 w-5 text-primary" />
-                  </div>
-                </div>
-                <div className="mt-4 text-xs">
-                  <span className={`inline-block rounded-full px-2 py-0.5 ${
-                    totalImpressions.change.startsWith("+") ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                  }`}>
-                    {totalImpressions.change}
-                  </span>
-                  <span className="text-muted-foreground ml-2">vs. previous period</span>
-                </div>
-              </CardContent>
-            </Card>
-            
-            {platforms.map((platform) => {
-              const platformData = platformMetrics[platform as keyof typeof platformMetrics]?.impressions;
-              if (!platformData) return null;
-              
-              return (
-                <Card key={`${platform}-impressions`} className="col-span-1">
-                  <CardContent className="pt-6">
-                    <div>
-                      <p className="text-muted-foreground">{platform}</p>
-                      <h3 className="text-2xl font-bold mt-1">{formatNumber(platformData.current)}</h3>
-                    </div>
-                    <div className="mt-4 text-xs">
-                      <span className={`inline-block rounded-full px-2 py-0.5 ${
-                        platformData.change.startsWith("+") ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                      }`}>
-                        {platformData.change}
-                      </span>
-                      <span className="text-muted-foreground ml-2">vs. previous period</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Radio className="h-5 w-5" /> Reach
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <Card className="col-span-1 lg:col-span-1">
-              <CardContent className="pt-6">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-muted-foreground">Total Reach</p>
-                    <h3 className="text-3xl font-bold mt-1">{formatNumber(totalReach.current)}</h3>
-                  </div>
-                  <div className="rounded-full p-2 bg-primary/10">
-                    <Eye className="h-5 w-5 text-primary" />
-                  </div>
-                </div>
-                <div className="mt-4 text-xs">
-                  <span className={`inline-block rounded-full px-2 py-0.5 ${
-                    totalReach.change.startsWith("+") ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                  }`}>
-                    {totalReach.change}
-                  </span>
-                  <span className="text-muted-foreground ml-2">vs. previous period</span>
-                </div>
-              </CardContent>
-            </Card>
-            
-            {platforms.map((platform) => {
-              const platformData = platformMetrics[platform as keyof typeof platformMetrics]?.reach;
-              if (!platformData) return null;
-              
-              return (
-                <Card key={`${platform}-reach`} className="col-span-1">
-                  <CardContent className="pt-6">
-                    <div>
-                      <p className="text-muted-foreground">{platform}</p>
-                      <h3 className="text-2xl font-bold mt-1">{formatNumber(platformData.current)}</h3>
-                    </div>
-                    <div className="mt-4 text-xs">
-                      <span className={`inline-block rounded-full px-2 py-0.5 ${
-                        platformData.change.startsWith("+") ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                      }`}>
-                        {platformData.change}
-                      </span>
-                      <span className="text-muted-foreground ml-2">vs. previous period</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
+      {/* Followers Growth Graph */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -312,7 +160,76 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ platforms }) => {
           </div>
         </CardContent>
       </Card>
+      
+      {/* Impressions Graph */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Megaphone className="h-5 w-5" /> Impressions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-80 w-full">
+            <ChartContainer config={config}>
+              <BarChart data={impressionsData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                {platforms.includes("Instagram") && (
+                  <Bar dataKey="Instagram" fill="#E1306C" stackId="a" />
+                )}
+                {platforms.includes("Facebook") && (
+                  <Bar dataKey="Facebook" fill="#4267B2" stackId="a" />
+                )}
+                {platforms.includes("Twitter") && (
+                  <Bar dataKey="Twitter" fill="#1DA1F2" stackId="a" />
+                )}
+                {platforms.includes("YouTube") && (
+                  <Bar dataKey="YouTube" fill="#FF0000" stackId="a" />
+                )}
+              </BarChart>
+            </ChartContainer>
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Reach Graph */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Radio className="h-5 w-5" /> Reach
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-80 w-full">
+            <ChartContainer config={config}>
+              <LineChart data={reachData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                {platforms.includes("Instagram") && (
+                  <Line type="monotone" dataKey="Instagram" stroke="#E1306C" activeDot={{ r: 8 }} />
+                )}
+                {platforms.includes("Facebook") && (
+                  <Line type="monotone" dataKey="Facebook" stroke="#4267B2" />
+                )}
+                {platforms.includes("Twitter") && (
+                  <Line type="monotone" dataKey="Twitter" stroke="#1DA1F2" />
+                )}
+                {platforms.includes("YouTube") && (
+                  <Line type="monotone" dataKey="YouTube" stroke="#FF0000" />
+                )}
+              </LineChart>
+            </ChartContainer>
+          </div>
+        </CardContent>
+      </Card>
 
+      {/* Engagement Across Platforms Graph */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
