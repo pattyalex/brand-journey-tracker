@@ -12,7 +12,6 @@ export const defaultMenuItems: MenuItem[] = [
     isDeletable: false,
     subItems: [
       { title: 'Idea Development', icon: Database, url: '/bank-of-content' },
-      { title: 'X', icon: PenLine, url: '/content-ideation' },
       { title: 'Content Calendar', icon: Calendar, url: '/content-calendar' },
       { title: 'Strategy and Growth', icon: TrendingUp, url: '/strategy-growth' },
       { title: 'Income Tracker', icon: CreditCard, url: '/income-tracker' },
