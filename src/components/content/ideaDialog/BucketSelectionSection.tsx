@@ -28,7 +28,7 @@ const BucketSelectionSection = ({
   ]);
 
   return (
-    <div className="max-w-xs">
+    <div className="w-56">
       <Select value={bucketId} onValueChange={onBucketChange}>
         <SelectTrigger className="w-full">
           <SelectValue placeholder="Select a content format" />
