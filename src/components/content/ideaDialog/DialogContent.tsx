@@ -10,6 +10,7 @@ import CaptionInputSection from "./CaptionInputSection";
 import PlatformsSection from "./PlatformsSection";
 import TagsSection from "./TagsSection";
 import InspirationSection from "./InspirationSection";
+import FormatSelectionSection from "./FormatSelectionSection";
 import { motion } from "framer-motion";
 
 interface DialogContentProps {
@@ -127,7 +128,7 @@ const DialogContent = ({
             whileHover={{ scale: 1.01 }} 
             transition={{ duration: 0.2 }}
           >
-            <TitleInputSection title={title} onTitleChange={onTitleChange} />
+            <FormatSelectionSection format={format} onFormatChange={onFormatChange} />
           </motion.div>
           
           <motion.div
@@ -159,6 +160,15 @@ const DialogContent = ({
             onAddInspirationImage={onAddInspirationImage}
             onRemoveInspirationImage={onRemoveInspirationImage}
           />
+        </motion.div>
+        
+        <motion.div 
+          whileHover={{ scale: 1.01 }} 
+          transition={{ duration: 0.2 }}
+          variants={itemVariants}
+          layout
+        >
+          <TitleInputSection title={title} onTitleChange={onTitleChange} />
         </motion.div>
         
         <motion.div 
