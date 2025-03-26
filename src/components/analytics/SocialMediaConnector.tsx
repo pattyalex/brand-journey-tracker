@@ -2,7 +2,7 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Instagram, Youtube, Linkedin, Music } from "lucide-react";
+import { Instagram, Youtube, Linkedin, Music, Twitch } from "lucide-react";
 
 interface SocialMediaConnectorProps {
   connectedPlatforms: string[];
@@ -40,6 +40,12 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
       name: "LinkedIn",
       icon: <Linkedin className="h-5 w-5" />,
       color: "bg-blue-600",
+    },
+    {
+      id: "Twitch",
+      name: "Twitch",
+      icon: <Twitch className="h-5 w-5" />,
+      color: "bg-purple-600",
     },
   ];
 
