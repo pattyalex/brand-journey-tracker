@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, Users, ThumbsUp, MessageSquare, BarChart } from "lucide-react";
+import { Eye, Users, ThumbsUp, MessageSquare, BarChart, TrendingUp } from "lucide-react";
 import { 
   BarChart as RechartsBarChart,
   Bar, 
@@ -12,7 +12,9 @@ import {
   CartesianGrid, 
   Tooltip, 
   Legend, 
-  ResponsiveContainer 
+  ResponsiveContainer, 
+  AreaChart,
+  Area
 } from "recharts";
 import { ChartContainer } from "@/components/ui/chart";
 
@@ -24,6 +26,16 @@ const engagementData = [
   { name: "Apr", Instagram: 2780, Facebook: 3908, Twitter: 1200, YouTube: 3800 },
   { name: "May", Instagram: 1890, Facebook: 4800, Twitter: 2500, YouTube: 5200 },
   { name: "Jun", Instagram: 2390, Facebook: 3800, Twitter: 2800, YouTube: 4300 },
+];
+
+// Mock data for followers growth
+const followersData = [
+  { name: "Jan", Instagram: 15200, Facebook: 12400, Twitter: 8800, YouTube: 6200 },
+  { name: "Feb", Instagram: 16800, Facebook: 13100, Twitter: 9200, YouTube: 6800 },
+  { name: "Mar", Instagram: 18400, Facebook: 14200, Twitter: 9800, YouTube: 7500 },
+  { name: "Apr", Instagram: 21000, Facebook: 15400, Twitter: 10400, YouTube: 8300 },
+  { name: "May", Instagram: 23500, Facebook: 16700, Twitter: 11200, YouTube: 9100 },
+  { name: "Jun", Instagram: 26000, Facebook: 18000, Twitter: 12000, YouTube: 10000 },
 ];
 
 const statsData = [
@@ -73,6 +85,41 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ platforms }) => {
         ))}
       </div>
 
+      {/* Followers Growth Graph */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" /> Followers Growth
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-80 w-full">
+            <ChartContainer config={config}>
+              <AreaChart data={followersData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                {platforms.includes("Instagram") && (
+                  <Area type="monotone" dataKey="Instagram" stroke="#E1306C" fill="#E1306C" fillOpacity={0.2} />
+                )}
+                {platforms.includes("Facebook") && (
+                  <Area type="monotone" dataKey="Facebook" stroke="#4267B2" fill="#4267B2" fillOpacity={0.2} />
+                )}
+                {platforms.includes("Twitter") && (
+                  <Area type="monotone" dataKey="Twitter" stroke="#1DA1F2" fill="#1DA1F2" fillOpacity={0.2} />
+                )}
+                {platforms.includes("YouTube") && (
+                  <Area type="monotone" dataKey="YouTube" stroke="#FF0000" fill="#FF0000" fillOpacity={0.2} />
+                )}
+              </AreaChart>
+            </ChartContainer>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Engagement Across Platforms Graph */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
