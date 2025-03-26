@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -80,7 +81,13 @@
 
 /* SelectValue placeholder styling */
 [data-placeholder] {
-  color: #9ca3af !important; /* gray-400 */
+  color: rgb(156 163 175) !important; /* gray-400 */
+}
+
+/* Input placeholder styling */
+::placeholder {
+  color: rgb(156 163 175) !important; /* gray-400 */
+  opacity: 1;
 }
 
 /* Custom Scrollbar */
