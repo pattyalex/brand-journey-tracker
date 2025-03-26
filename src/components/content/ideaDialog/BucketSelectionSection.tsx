@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TrendingUp } from "lucide-react";
+import { Flame } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface BucketSelectionSectionProps {
@@ -53,7 +53,7 @@ const BucketSelectionSection = ({
       whileHover={{ scale: 1.01 }}
     >
       <div className="flex items-center gap-1">
-        <TrendingUp size={18} className="text-blue-500" />
+        <Flame size={18} className="text-orange-500" />
         <Label htmlFor="format-select" className="text-sm font-medium">
           Pisica
         </Label>
