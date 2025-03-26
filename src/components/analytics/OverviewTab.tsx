@@ -161,41 +161,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ platforms }) => {
         </CardContent>
       </Card>
       
-      {/* Impressions Graph */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Megaphone className="h-5 w-5" /> Impressions
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-80 w-full">
-            <ChartContainer config={config}>
-              <BarChart data={impressionsData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                {platforms.includes("Instagram") && (
-                  <Bar dataKey="Instagram" fill="#E1306C" stackId="a" />
-                )}
-                {platforms.includes("Facebook") && (
-                  <Bar dataKey="Facebook" fill="#4267B2" stackId="a" />
-                )}
-                {platforms.includes("Twitter") && (
-                  <Bar dataKey="Twitter" fill="#1DA1F2" stackId="a" />
-                )}
-                {platforms.includes("YouTube") && (
-                  <Bar dataKey="YouTube" fill="#FF0000" stackId="a" />
-                )}
-              </BarChart>
-            </ChartContainer>
-          </div>
-        </CardContent>
-      </Card>
-      
-      {/* Reach Graph */}
+      {/* Reach Section - Moved before Impressions */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -224,6 +190,40 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ platforms }) => {
                   <Line type="monotone" dataKey="YouTube" stroke="#FF0000" />
                 )}
               </LineChart>
+            </ChartContainer>
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Impressions Section - Moved after Reach */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Megaphone className="h-5 w-5" /> Impressions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-80 w-full">
+            <ChartContainer config={config}>
+              <BarChart data={impressionsData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                {platforms.includes("Instagram") && (
+                  <Bar dataKey="Instagram" fill="#E1306C" stackId="a" />
+                )}
+                {platforms.includes("Facebook") && (
+                  <Bar dataKey="Facebook" fill="#4267B2" stackId="a" />
+                )}
+                {platforms.includes("Twitter") && (
+                  <Bar dataKey="Twitter" fill="#1DA1F2" stackId="a" />
+                )}
+                {platforms.includes("YouTube") && (
+                  <Bar dataKey="YouTube" fill="#FF0000" stackId="a" />
+                )}
+              </BarChart>
             </ChartContainer>
           </div>
         </CardContent>
