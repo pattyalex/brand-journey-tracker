@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -433,7 +434,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                 <Button 
                   variant="ghost" 
                   onClick={() => setIsAddingFormat(!isAddingFormat)}
-                  className="w-[200px] h-[80px] flex items-center justify-center p-0 shadow-[0_2px_10px_rgba(156,138,192,0.1)] hover:shadow-[0_4px_14px_rgba(130,87,229,0.2)]"
+                  className="w-[200px] h-[80px] flex items-center justify-center p-0"
                 >
                   <Plus className="h-5 w-5 text-purple-500" />
                 </Button>
