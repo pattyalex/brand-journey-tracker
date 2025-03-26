@@ -1,12 +1,8 @@
 
-import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Instagram, Facebook, Twitter, Youtube, Plus, X } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Instagram, Youtube, Twitter, Linkedin, Twitch } from "lucide-react";
 
 interface SocialMediaConnectorProps {
   connectedPlatforms: string[];
@@ -14,103 +10,104 @@ interface SocialMediaConnectorProps {
   onDisconnect: (platform: string) => void;
 }
 
-const platforms = [
-  { name: "Instagram", icon: Instagram, color: "bg-pink-500" },
-  { name: "Facebook", icon: Facebook, color: "bg-blue-600" },
-  { name: "Twitter", icon: Twitter, color: "bg-sky-400" },
-  { name: "YouTube", icon: Youtube, color: "bg-red-500" }
-];
+// Custom TikTok SVG icon component
+const TikTokIcon = ({ className }: { className?: string }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width="24" 
+    height="24" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <path d="M9 12a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" />
+    <path d="M15 8a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
+    <path d="M15 8v8a4 4 0 0 1-4 4" />
+    <line x1="15" y1="4" x2="15" y2="12" />
+  </svg>
+);
 
 const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
   connectedPlatforms,
   onConnect,
-  onDisconnect
+  onDisconnect,
 }) => {
-  const [selectedPlatform, setSelectedPlatform] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [accessToken, setAccessToken] = useState("");
-
-  const handleConnect = () => {
-    if (selectedPlatform && accessToken.trim()) {
-      onConnect(selectedPlatform);
-      setAccessToken("");
-      setIsDialogOpen(false);
-    }
-  };
+  // Define available platforms
+  const platforms = [
+    {
+      id: "Instagram",
+      name: "Instagram",
+      icon: <Instagram className="h-5 w-5" />,
+      color: "bg-gradient-to-r from-purple-500 to-pink-500",
+    },
+    {
+      id: "TikTok", // Changed from Facebook to TikTok
+      name: "TikTok", // Changed from Facebook to TikTok
+      icon: <TikTokIcon className="h-5 w-5" />, // Custom TikTok icon
+      color: "bg-black", // TikTok brand color
+    },
+    {
+      id: "Twitter",
+      name: "Twitter",
+      icon: <Twitter className="h-5 w-5" />,
+      color: "bg-blue-400",
+    },
+    {
+      id: "YouTube",
+      name: "Youtube",
+      icon: <Youtube className="h-5 w-5" />,
+      color: "bg-red-600",
+    },
+    {
+      id: "LinkedIn",
+      name: "LinkedIn",
+      icon: <Linkedin className="h-5 w-5" />,
+      color: "bg-blue-600",
+    },
+    {
+      id: "Twitch",
+      name: "Twitch",
+      icon: <Twitch className="h-5 w-5" />,
+      color: "bg-purple-600",
+    },
+  ];
 
   return (
-    <Card className="border border-border/40">
-      <CardHeader>
-        <CardTitle className="text-xl">Connected Platforms</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-wrap gap-3">
+    <Card>
+      <CardContent className="p-6">
+        <h2 className="text-xl font-semibold mb-4">Connected Platforms</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
           {platforms.map((platform) => {
-            const isConnected = connectedPlatforms.includes(platform.name);
-            
+            const isConnected = connectedPlatforms.includes(platform.id);
             return (
-              <div key={platform.name} className="relative">
-                {isConnected && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button 
-                          onClick={() => onDisconnect(platform.name)}
-                          className="absolute -top-2 -right-2 rounded-full bg-background border border-border z-10 p-1"
-                        >
-                          <X size={14} />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent>Disconnect</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-                
-                <div
-                  className={`flex items-center justify-center w-16 h-16 rounded-lg border ${
-                    isConnected ? platform.color + " text-white" : "bg-muted hover:bg-muted/80"
-                  } transition-colors cursor-pointer`}
-                  onClick={() => {
-                    if (!isConnected) {
-                      setSelectedPlatform(platform.name);
-                      setIsDialogOpen(true);
-                    }
-                  }}
+              <div key={platform.id} className="flex flex-col items-center">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className={`h-16 w-16 rounded-lg mb-2 ${
+                    isConnected ? platform.color : "bg-muted"
+                  } ${
+                    isConnected ? "text-white" : "text-muted-foreground"
+                  } hover:scale-105 transition-transform`}
+                  onClick={() =>
+                    isConnected
+                      ? onDisconnect(platform.id)
+                      : onConnect(platform.id)
+                  }
                 >
-                  <platform.icon size={28} />
-                </div>
-                <p className="text-xs text-center mt-1">{platform.name}</p>
+                  {platform.icon}
+                </Button>
+                <span className="text-sm">{platform.name}</span>
+                {isConnected && (
+                  <span className="text-xs text-green-600 mt-1">Connected</span>
+                )}
               </div>
             );
           })}
-          
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Connect {selectedPlatform}</DialogTitle>
-                <DialogDescription>
-                  Enter your access token to connect your {selectedPlatform} account.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-2">
-                <div className="space-y-2">
-                  <Label htmlFor="token">Access Token</Label>
-                  <Input
-                    id="token"
-                    value={accessToken}
-                    onChange={(e) => setAccessToken(e.target.value)}
-                    placeholder="Enter your access token"
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleConnect}>Connect</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
         </div>
       </CardContent>
     </Card>
