@@ -237,6 +237,15 @@ const PostPerformanceTab: React.FC<PostPerformanceTabProps> = ({ platforms }) =>
                 <TableRow key={post.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
+                      <Button 
+                        variant="vision" 
+                        size="xs"
+                        onClick={() => handleCreateSimilar(post)}
+                        className="animate-pulse shadow-md hover:shadow-lg min-w-24 whitespace-nowrap"
+                      >
+                        <Plus className="h-3 w-3" />
+                        Create Similar
+                      </Button>
                       <div className="relative w-16 h-16 rounded overflow-hidden">
                         <img 
                           src={post.thumbnail} 
@@ -283,15 +292,7 @@ const PostPerformanceTab: React.FC<PostPerformanceTabProps> = ({ platforms }) =>
                     {new Date(post.date).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button 
-                      variant="vision" 
-                      size="sm"
-                      onClick={() => handleCreateSimilar(post)}
-                      className="animate-pulse shadow-md hover:shadow-lg"
-                    >
-                      <Plus className="h-4 w-4" />
-                      Create Similar
-                    </Button>
+                    {/* No button here anymore, it's moved to the left side */}
                   </TableCell>
                 </TableRow>
               ))}
