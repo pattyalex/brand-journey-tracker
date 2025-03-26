@@ -78,6 +78,11 @@
   }
 }
 
+/* SelectValue placeholder styling */
+[data-placeholder] {
+  color: #9ca3af !important; /* gray-400 */
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
