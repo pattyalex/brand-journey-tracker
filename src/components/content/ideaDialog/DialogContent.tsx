@@ -10,6 +10,7 @@ import CaptionInputSection from "./CaptionInputSection";
 import PlatformsSection from "./PlatformsSection";
 import TagsSection from "./TagsSection";
 import InspirationSection from "./InspirationSection";
+import FormatSelectionSection from "./FormatSelectionSection";
 import { motion } from "framer-motion";
 
 interface DialogContentProps {
@@ -154,15 +155,25 @@ const DialogContent = ({
           />
         </motion.div>
         
-        <motion.div 
-          whileHover={{ scale: 1.01 }} 
-          transition={{ duration: 0.2 }}
-          variants={itemVariants}
-          layout
-          className="w-1/2" // Changed from "w-1/2 mx-auto" to "w-1/2" to align left
-        >
-          <TitleInputSection title={title} onTitleChange={onTitleChange} />
-        </motion.div>
+        <div className="grid grid-cols-2 gap-5">
+          <motion.div 
+            whileHover={{ scale: 1.01 }} 
+            transition={{ duration: 0.2 }}
+            variants={itemVariants}
+            layout
+          >
+            <TitleInputSection title={title} onTitleChange={onTitleChange} />
+          </motion.div>
+          
+          <motion.div 
+            whileHover={{ scale: 1.01 }} 
+            transition={{ duration: 0.2 }}
+            variants={itemVariants}
+            layout
+          >
+            <FormatSelectionSection format={format} onFormatChange={onFormatChange} />
+          </motion.div>
+        </div>
         
         <motion.div 
           className="grid grid-cols-1 lg:grid-cols-3 gap-5"
