@@ -23,8 +23,8 @@ interface IdeaCreationDialogProps {
   onScriptTextChange: (value: string) => void;
   visualNotes: string;
   onVisualNotesChange: (value: string) => void;
-  format?: string;
-  onFormatChange?: (value: string) => void;
+  format: string;
+  onFormatChange: (value: string) => void;
   shootDetails: string;
   onShootDetailsChange: (value: string) => void;
   captionText: string;
