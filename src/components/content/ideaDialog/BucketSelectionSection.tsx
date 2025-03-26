@@ -54,7 +54,7 @@ const BucketSelectionSection = ({
       <div className="flex items-center gap-2 mb-1">
         <FolderIcon size={18} className="text-gray-500" />
         <Label htmlFor="format-select" className="text-sm font-medium">
-          Content Format
+          Pisica
         </Label>
       </div>
       <Select 
