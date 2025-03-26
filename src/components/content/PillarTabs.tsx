@@ -124,9 +124,7 @@ const PillarTabs = ({
                       {pillar.name}
                     </span>
                     
-                    {activeTab === pillar.id && (
-                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-white rounded-t-full" />
-                    )}
+                    {/* Removed the white underline div that was here */}
                   </TabsTrigger>
                   
                   <DropdownMenu>
