@@ -1,25 +1,35 @@
 
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
 import { toast } from "sonner";
+import { Instagram, Facebook, Twitter, Youtube, Users, BarChart, Percent, Clock, MapPin, ChevronDown, Plus } from "lucide-react";
+import { ChartContainer } from "@/components/ui/chart";
+import SocialMediaConnector from "@/components/analytics/SocialMediaConnector";
+import OverviewTab from "@/components/analytics/OverviewTab";
+import CommunityTab from "@/components/analytics/CommunityTab";
+import VideoPerformanceTab from "@/components/analytics/VideoPerformanceTab";
+import PostPerformanceTab from "@/components/analytics/PostPerformanceTab";
+import StoryPerformanceTab from "@/components/analytics/StoryPerformanceTab";
 
 const Analytics = () => {
-  const [analyticsLog, setAnalyticsLog] = useState("");
+  const [selectedTab, setSelectedTab] = useState("overview");
+  const [connectedPlatforms, setConnectedPlatforms] = useState<string[]>([]);
   
-  const handleLogSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!analyticsLog.trim()) {
-      toast.error("Please enter some analytics data");
-      return;
+  const handleConnectPlatform = (platform: string) => {
+    if (!connectedPlatforms.includes(platform)) {
+      setConnectedPlatforms([...connectedPlatforms, platform]);
+      toast.success(`${platform} connected successfully`);
+    } else {
+      toast.info(`${platform} is already connected`);
     }
-    
-    // Here we would typically save the analytics data
-    toast.success("Analytics data logged successfully");
-    setAnalyticsLog("");
+  };
+
+  const handleDisconnectPlatform = (platform: string) => {
+    setConnectedPlatforms(connectedPlatforms.filter(p => p !== platform));
+    toast.success(`${platform} disconnected`);
   };
 
   return (
@@ -32,55 +42,56 @@ const Analytics = () => {
           </p>
         </div>
         
-        <Tabs defaultValue="log" className="w-full">
-          <TabsList className="mb-4">
-            <TabsTrigger value="log">Log Your Analytics</TabsTrigger>
-            <TabsTrigger value="overview" disabled>Overview</TabsTrigger>
-            <TabsTrigger value="reports" disabled>Reports</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="log" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Log Your Analytics Data</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleLogSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <label htmlFor="analytics" className="text-sm font-medium">
-                      Enter your analytics data
-                    </label>
-                    <Textarea
-                      id="analytics"
-                      placeholder="Paste analytics data here or write notes about your performance..."
-                      value={analyticsLog}
-                      onChange={(e) => setAnalyticsLog(e.target.value)}
-                      rows={8}
-                      className="w-full"
-                    />
-                  </div>
-                  <Button type="submit">Save Analytics Data</Button>
-                </form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="overview">
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-muted-foreground">Analytics overview will be available soon.</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="reports">
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-muted-foreground">Analytics reports will be available soon.</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+        {/* Platform Connector Section */}
+        <SocialMediaConnector 
+          connectedPlatforms={connectedPlatforms}
+          onConnect={handleConnectPlatform}
+          onDisconnect={handleDisconnectPlatform}
+        />
+        
+        {connectedPlatforms.length > 0 ? (
+          <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
+            <TabsList className="mb-4 flex flex-wrap">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="community">Community</TabsTrigger>
+              <TabsTrigger value="videos">Video Performance</TabsTrigger>
+              <TabsTrigger value="posts">Post Performance</TabsTrigger>
+              <TabsTrigger value="stories">Story Performance</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="overview">
+              <OverviewTab platforms={connectedPlatforms} />
+            </TabsContent>
+            
+            <TabsContent value="community">
+              <CommunityTab platforms={connectedPlatforms} />
+            </TabsContent>
+            
+            <TabsContent value="videos">
+              <VideoPerformanceTab platforms={connectedPlatforms} />
+            </TabsContent>
+            
+            <TabsContent value="posts">
+              <PostPerformanceTab platforms={connectedPlatforms} />
+            </TabsContent>
+            
+            <TabsContent value="stories">
+              <StoryPerformanceTab platforms={connectedPlatforms} />
+            </TabsContent>
+          </Tabs>
+        ) : (
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center space-y-4 py-8">
+                <BarChart className="mx-auto h-12 w-12 text-muted-foreground/60" />
+                <h3 className="text-xl font-medium">Connect Your Social Platforms</h3>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  Connect your social media accounts to see analytics data across all your platforms in one place.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </Layout>
   );
