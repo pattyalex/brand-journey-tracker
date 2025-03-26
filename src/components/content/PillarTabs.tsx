@@ -28,7 +28,6 @@ import {
   TooltipProvider,
   TooltipTrigger
 } from "@/components/ui/tooltip";
-import { motion, AnimatePresence } from "framer-motion";
 
 interface PillarTabsProps {
   pillars: Pillar[];
@@ -79,12 +78,7 @@ const PillarTabs = ({
   };
 
   return (
-    <motion.div 
-      className="flex items-center justify-between mb-6"
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
+    <div className="flex items-center justify-between mb-6">
       <div className="flex items-center">
         <TabsList className="bg-background border overflow-x-auto flex items-center h-12 relative">
           {pillars.map((pillar) => (
@@ -126,41 +120,12 @@ const PillarTabs = ({
                     } transition-all duration-300 relative overflow-hidden`}
                     onClick={() => onTabChange(pillar.id)}
                   >
-                    <motion.div 
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
-                      initial={{ x: "-100%" }}
-                      animate={{ 
-                        x: activeTab === pillar.id ? "100%" : "-100%" 
-                      }}
-                      transition={{ 
-                        duration: 0.8, 
-                        ease: "easeInOut",
-                        repeat: activeTab === pillar.id ? 0 : 0
-                      }}
-                    />
-                    <AnimatePresence mode="wait">
-                      <motion.span
-                        key={`${pillar.id}-${activeTab === pillar.id ? 'active' : 'inactive'}`}
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: -20, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="relative z-10"
-                      >
-                        {pillar.name}
-                      </motion.span>
-                    </AnimatePresence>
+                    <span className="relative z-10">
+                      {pillar.name}
+                    </span>
                     
                     {activeTab === pillar.id && (
-                      <motion.div
-                        className="absolute bottom-0 left-0 right-0 h-1 bg-white rounded-t-full"
-                        layoutId="activeTabIndicator"
-                        transition={{ 
-                          type: "spring", 
-                          stiffness: 300, 
-                          damping: 30 
-                        }}
-                      />
+                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-white rounded-t-full" />
                     )}
                   </TabsTrigger>
                   
@@ -220,10 +185,7 @@ const PillarTabs = ({
         <TooltipProvider delayDuration={0}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <motion.div
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-              >
+              <div>
                 <Button 
                   variant="ghost" 
                   onClick={onAddPillar} 
@@ -231,7 +193,7 @@ const PillarTabs = ({
                 >
                   <Plus className="h-6 w-6 text-purple-500" />
                 </Button>
-              </motion.div>
+              </div>
             </TooltipTrigger>
             <TooltipContent>
               <p>Add pillar</p>
@@ -239,7 +201,7 @@ const PillarTabs = ({
           </Tooltip>
         </TooltipProvider>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
