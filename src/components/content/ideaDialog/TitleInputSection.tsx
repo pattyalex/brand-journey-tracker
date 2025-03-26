@@ -15,7 +15,7 @@ const TitleInputSection = ({
 }: TitleInputSectionProps) => {
   return (
     <motion.div 
-      className="grid gap-2 bg-white rounded-lg p-4 border shadow-sm transition-all duration-200 hover:shadow-md"
+      className="grid gap-2"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
