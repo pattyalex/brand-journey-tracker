@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -40,6 +39,7 @@ const videos = [
     watchTime: "28:52",
     retentionRate: 64,
     date: "2023-09-15",
+    link: "https://youtube.com/watch?v=sample1"
   },
   {
     id: "2",
@@ -52,6 +52,7 @@ const videos = [
     watchTime: "12:24",
     retentionRate: 72,
     date: "2023-10-02",
+    link: "https://youtube.com/watch?v=sample2"
   },
   {
     id: "3",
@@ -64,6 +65,7 @@ const videos = [
     watchTime: "05:18",
     retentionRate: 58,
     date: "2023-10-18",
+    link: "https://instagram.com/p/sample3"
   },
   {
     id: "4",
@@ -76,6 +78,7 @@ const videos = [
     watchTime: "19:34",
     retentionRate: 51,
     date: "2023-11-05",
+    link: "https://facebook.com/videos/sample4"
   },
   {
     id: "5",
@@ -88,6 +91,7 @@ const videos = [
     watchTime: "08:47",
     retentionRate: 49,
     date: "2023-11-20",
+    link: "https://youtube.com/watch?v=sample5"
   },
 ];
 
@@ -111,7 +115,7 @@ const VideoPerformanceTab: React.FC<VideoPerformanceTabProps> = ({ platforms }) 
   const [sortBy, setSortBy] = useState("views");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [selectedContent, setSelectedContent] = useState<{title: string, platform: string} | null>(null);
+  const [selectedContent, setSelectedContent] = useState<{title: string, platform: string, link?: string} | null>(null);
 
   const filteredVideos = selectedPlatform === "All"
     ? videos.filter(video => platforms.includes(video.platform))
@@ -134,7 +138,8 @@ const VideoPerformanceTab: React.FC<VideoPerformanceTabProps> = ({ platforms }) 
   const handleCreateSimilar = (video: typeof videos[0]) => {
     setSelectedContent({
       title: video.title,
-      platform: video.platform
+      platform: video.platform,
+      link: video.link
     });
     setIsCreateDialogOpen(true);
   };

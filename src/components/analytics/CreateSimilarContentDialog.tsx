@@ -17,6 +17,7 @@ interface CreateSimilarContentDialogProps {
   contentDetails: {
     title: string;
     platform: string;
+    link?: string; // Add optional link property
   } | null;
   onSave: () => void;
   onCancel: () => void;
@@ -44,7 +45,9 @@ const CreateSimilarContentDialog = ({
   );
   const [inspirationText, setInspirationText] = useState(contentDetails ? 
     `This content is inspired by "${contentDetails.title}" which performed well on ${contentDetails.platform}.` : "");
-  const [inspirationLinks, setInspirationLinks] = useState<string[]>([]);
+  const [inspirationLinks, setInspirationLinks] = useState<string[]>(
+    contentDetails?.link ? [contentDetails.link] : []
+  );
   const [inspirationImages, setInspirationImages] = useState<string[]>([]);
   const [selectedPillarId, setSelectedPillarId] = useState("");
   const [isPillarSelected, setIsPillarSelected] = useState(false);
@@ -58,6 +61,13 @@ const CreateSimilarContentDialog = ({
   useEffect(() => {
     if (contentDetails?.title) {
       setTitle(`Recreate: ${contentDetails.title}`);
+    }
+  }, [contentDetails]);
+
+  // Update inspirationLinks when contentDetails changes
+  useEffect(() => {
+    if (contentDetails?.link) {
+      setInspirationLinks([contentDetails.link]);
     }
   }, [contentDetails]);
 
