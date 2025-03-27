@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,7 +11,6 @@ import {
   TooltipProvider,
   TooltipTrigger 
 } from "@/components/ui/tooltip";
-import { ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import DialogHeader from "@/components/content/ideaDialog/DialogHeader";
 import DialogContentBody from "@/components/content/ideaDialog/DialogContent";
@@ -24,7 +22,7 @@ interface CreateSimilarContentDialogProps {
   contentDetails: {
     title: string;
     platform: string;
-    link?: string; // Add optional link property
+    link?: string;
   } | null;
   onSave: () => void;
   onCancel: () => void;
@@ -37,7 +35,6 @@ const CreateSimilarContentDialog = ({
   onSave,
   onCancel,
 }: CreateSimilarContentDialogProps) => {
-  // Use the original content title with "recreate" prefix if available
   const [title, setTitle] = useState(contentDetails?.title ? `Recreate: ${contentDetails.title}` : "");
   const [bucketId, setBucketId] = useState("");
   const [scriptText, setScriptText] = useState("");
@@ -64,21 +61,18 @@ const CreateSimilarContentDialog = ({
     { id: "3", name: "Pillar 3", content: [] }
   ]);
 
-  // Update title when contentDetails changes
   useEffect(() => {
     if (contentDetails?.title) {
       setTitle(`Recreate: ${contentDetails.title}`);
     }
   }, [contentDetails]);
 
-  // Update inspirationLinks when contentDetails changes
   useEffect(() => {
     if (contentDetails?.link) {
       setInspirationLinks([contentDetails.link]);
     }
   }, [contentDetails]);
 
-  // Load pillars from localStorage if available
   useEffect(() => {
     try {
       const savedPillars = localStorage.getItem("pillars");
@@ -90,11 +84,8 @@ const CreateSimilarContentDialog = ({
     }
   }, []);
 
-  // Track when pillar is selected
   useEffect(() => {
     setIsPillarSelected(!!selectedPillarId);
-    
-    // Reset bucket ID when pillar changes to force user to select from new formats
     setBucketId("");
   }, [selectedPillarId]);
 
@@ -141,22 +132,18 @@ const CreateSimilarContentDialog = ({
   };
 
   const handleSave = () => {
-    // Validate that pillar is selected
     if (!selectedPillarId) {
       toast.error("Please select a pillar for this content");
       return;
     }
 
-    // Get the existing pillar data
     try {
       const savedPillars = localStorage.getItem("pillars") || JSON.stringify(pillars);
       const existingPillars: Pillar[] = JSON.parse(savedPillars);
       
-      // Find the selected pillar
       const targetPillarIndex = existingPillars.findIndex(p => p.id === selectedPillarId);
       
       if (targetPillarIndex !== -1) {
-        // Create the new content item
         const newContentItem = {
           id: `content-${Date.now()}`,
           title: title,
@@ -179,10 +166,8 @@ const CreateSimilarContentDialog = ({
           bucketId
         };
         
-        // Add the new content to the selected pillar
         existingPillars[targetPillarIndex].content.push(newContentItem);
         
-        // Save the updated pillars back to localStorage
         localStorage.setItem("pillars", JSON.stringify(existingPillars));
         
         const pillarName = existingPillars[targetPillarIndex].name;
@@ -200,7 +185,6 @@ const CreateSimilarContentDialog = ({
     onSave();
   };
 
-  // Get the name of the selected pillar for the tooltip
   const getSelectedPillarName = () => {
     const pillar = pillars.find(p => p.id === selectedPillarId);
     return pillar ? pillar.name : "selected pillar";
@@ -272,8 +256,7 @@ const CreateSimilarContentDialog = ({
                 </TooltipTrigger>
                 <TooltipContent className="max-w-[250px] text-sm">
                   <p>
-                    Your content will be saved to <strong>{getSelectedPillarName()}</strong> in <strong>Idea Development</strong>{" "}
-                    <ExternalLink className="inline h-3 w-3 ml-1" />
+                    Your content will be saved to <strong>{getSelectedPillarName()}</strong> in <strong>Idea Development</strong>
                   </p>
                 </TooltipContent>
               </Tooltip>
