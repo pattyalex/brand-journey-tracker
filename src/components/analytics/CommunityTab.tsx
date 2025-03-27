@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,6 +19,7 @@ import {
 import { Calendar, Clock, MapPin, Users, BarChart, PieChart } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChartContainer } from "@/components/ui/chart";
+import TimeFilterSelect from "./TimeFilterSelect";
 
 interface CommunityTabProps {
   platforms: string[];
@@ -63,21 +65,42 @@ const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
 
 const CommunityTab: React.FC<CommunityTabProps> = ({ platforms }) => {
   const [selectedPlatform, setSelectedPlatform] = useState(platforms[0]);
+  const [timeRange, setTimeRange] = useState("last30days");
+  
+  const handleTimeRangeChange = (range: string) => {
+    setTimeRange(range);
+    // Here you would typically fetch new data based on the selected time range
+    console.log(`Fetching community data for time range: ${range}`);
+  };
+  
+  const handleCustomDateChange = (startDate: Date | undefined, endDate: Date | undefined) => {
+    if (startDate && endDate) {
+      // Here you would typically fetch new data based on the custom date range
+      console.log(`Fetching community data from ${startDate.toISOString()} to ${endDate.toISOString()}`);
+    }
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-4">
         <h2 className="text-2xl font-bold">Audience Demographics</h2>
-        <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select platform" />
-          </SelectTrigger>
-          <SelectContent>
-            {platforms.map(platform => (
-              <SelectItem key={platform} value={platform}>{platform}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex flex-wrap gap-4 items-center">
+          <TimeFilterSelect 
+            selectedRange={timeRange} 
+            onDateRangeChange={handleTimeRangeChange} 
+            onCustomDateChange={handleCustomDateChange}
+          />
+          <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select platform" />
+            </SelectTrigger>
+            <SelectContent>
+              {platforms.map(platform => (
+                <SelectItem key={platform} value={platform}>{platform}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

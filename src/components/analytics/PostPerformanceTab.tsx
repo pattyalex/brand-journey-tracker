@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import CreateSimilarContentDialog from "./CreateSimilarContentDialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import TimeFilterSelect from "./TimeFilterSelect";
 
 interface PostPerformanceTabProps {
   platforms: string[];
@@ -108,6 +109,7 @@ const PostPerformanceTab: React.FC<PostPerformanceTabProps> = ({ platforms }) =>
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedContent, setSelectedContent] = useState<{title: string, platform: string} | null>(null);
+  const [timeRange, setTimeRange] = useState("last30days");
 
   const filteredPosts = selectedPlatform === "All"
     ? posts.filter(post => platforms.includes(post.platform))
@@ -135,21 +137,39 @@ const PostPerformanceTab: React.FC<PostPerformanceTabProps> = ({ platforms }) =>
     setIsCreateDialogOpen(true);
   };
 
+  const handleTimeRangeChange = (range: string) => {
+    setTimeRange(range);
+    console.log(`Fetching post data for time range: ${range}`);
+  };
+
+  const handleCustomDateChange = (startDate: Date | undefined, endDate: Date | undefined) => {
+    if (startDate && endDate) {
+      console.log(`Fetching post data from ${startDate.toISOString()} to ${endDate.toISOString()}`);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-4">
         <h2 className="text-2xl font-bold">Post Performance</h2>
-        <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select platform" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="All">All Platforms</SelectItem>
-            {platforms.map(platform => (
-              <SelectItem key={platform} value={platform}>{platform}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex flex-wrap gap-4 items-center">
+          <TimeFilterSelect 
+            selectedRange={timeRange} 
+            onDateRangeChange={handleTimeRangeChange} 
+            onCustomDateChange={handleCustomDateChange}
+          />
+          <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select platform" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">All Platforms</SelectItem>
+              {platforms.map(platform => (
+                <SelectItem key={platform} value={platform}>{platform}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <Card>

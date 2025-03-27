@@ -28,12 +28,12 @@ import {
 import { ChartContainer } from "@/components/ui/chart";
 import CreateSimilarContentDialog from "./CreateSimilarContentDialog";
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import TimeFilterSelect from "./TimeFilterSelect";
 
 interface StoryPerformanceTabProps {
   platforms: string[];
 }
 
-// Mock data - would be replaced with real API data
 const stories = [
   {
     id: "1",
@@ -130,6 +130,7 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedContent, setSelectedContent] = useState<{title: string, platform: string} | null>(null);
+  const [timeRange, setTimeRange] = useState("last30days");
 
   const hasStoryPlatforms = platforms.some(p => p === "Instagram" || p === "TikTok");
 
@@ -159,6 +160,17 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
     setIsCreateDialogOpen(true);
   };
 
+  const handleTimeRangeChange = (range: string) => {
+    setTimeRange(range);
+    console.log(`Fetching story data for time range: ${range}`);
+  };
+
+  const handleCustomDateChange = (startDate: Date | undefined, endDate: Date | undefined) => {
+    if (startDate && endDate) {
+      console.log(`Fetching story data from ${startDate.toISOString()} to ${endDate.toISOString()}`);
+    }
+  };
+
   if (!hasStoryPlatforms) {
     return (
       <Card>
@@ -177,21 +189,28 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-4">
         <h2 className="text-2xl font-bold">Story Performance</h2>
-        <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select platform" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="All">All Platforms</SelectItem>
-            {platforms
-              .filter(p => p === "Instagram" || p === "TikTok")
-              .map(platform => (
-                <SelectItem key={platform} value={platform}>{platform}</SelectItem>
-              ))}
-          </SelectContent>
-        </Select>
+        <div className="flex flex-wrap gap-4 items-center">
+          <TimeFilterSelect 
+            selectedRange={timeRange} 
+            onDateRangeChange={handleTimeRangeChange} 
+            onCustomDateChange={handleCustomDateChange}
+          />
+          <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select platform" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">All Platforms</SelectItem>
+              {platforms
+                .filter(p => p === "Instagram" || p === "TikTok")
+                .map(platform => (
+                  <SelectItem key={platform} value={platform}>{platform}</SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -21,12 +21,14 @@ interface TimeFilterSelectProps {
   onDateRangeChange: (range: string) => void;
   onCustomDateChange?: (startDate: Date | undefined, endDate: Date | undefined) => void;
   selectedRange: string;
+  className?: string;
 }
 
 const TimeFilterSelect: React.FC<TimeFilterSelectProps> = ({
   onDateRangeChange,
   onCustomDateChange,
   selectedRange,
+  className,
 }) => {
   const [startDate, setStartDate] = React.useState<Date>();
   const [endDate, setEndDate] = React.useState<Date>();
@@ -47,7 +49,7 @@ const TimeFilterSelect: React.FC<TimeFilterSelectProps> = ({
   };
 
   return (
-    <div className="flex items-center space-x-2">
+    <div className={`flex items-center space-x-2 ${className}`}>
       <Select value={selectedRange} onValueChange={onDateRangeChange}>
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="Select time range" />
