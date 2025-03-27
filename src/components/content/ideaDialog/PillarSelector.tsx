@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Pillar } from "@/pages/BankOfContent";
+import { Flame } from "lucide-react";
 
 interface PillarSelectorProps {
   pillarId: string;
@@ -23,12 +24,15 @@ const PillarSelector = ({ pillarId, onPillarChange, pillars }: PillarSelectorPro
 
   return (
     <div className="space-y-2">
-      <Label htmlFor="pillar-selector" className="font-medium">
-        Destination Pillar
-      </Label>
+      <div className="flex items-center gap-2">
+        <Flame className="h-4 w-4 text-blue-700" />
+        <Label htmlFor="pillar-selector" className="font-medium text-blue-900">
+          Destination Pillar
+        </Label>
+      </div>
       <Select value={pillarId} onValueChange={handleSelectChange}>
-        <SelectTrigger id="pillar-selector" className="w-full">
-          <SelectValue placeholder="Select a pillar" />
+        <SelectTrigger id="pillar-selector" className="w-full bg-white border-blue-200">
+          <SelectValue placeholder="Select from your saved Pillars" />
         </SelectTrigger>
         <SelectContent>
           {pillars.map((pillar) => (
@@ -38,7 +42,7 @@ const PillarSelector = ({ pillarId, onPillarChange, pillars }: PillarSelectorPro
           ))}
         </SelectContent>
       </Select>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-blue-600">
         Select which pillar this content will be added to
       </p>
     </div>

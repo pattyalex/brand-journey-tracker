@@ -176,20 +176,18 @@ const DialogContent = ({
           </motion.div>
           
           <motion.div 
-            whileHover={{ scale: 1.01 }} 
-            transition={{ duration: 0.2 }}
-            variants={itemVariants}
-            layout
-            className="mx-2"
-          >
-            <TitleInputSection title={title} onTitleChange={onTitleChange} />
-          </motion.div>
-          
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-1 gap-4 mx-2"
+            className="grid grid-cols-1 md:grid-cols-2 gap-4 mx-2"
             variants={itemVariants}
             layout
           >
+            <motion.div 
+              whileHover={{ scale: 1.01 }} 
+              transition={{ duration: 0.2 }}
+              layout
+            >
+              <TitleInputSection title={title} onTitleChange={onTitleChange} />
+            </motion.div>
+            
             <motion.div
               className="bg-blue-50 rounded-lg p-4 border border-blue-100 shadow-sm"
               whileHover={{ scale: 1.01 }}
