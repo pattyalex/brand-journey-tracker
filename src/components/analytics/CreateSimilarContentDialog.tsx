@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -48,9 +49,9 @@ const CreateSimilarContentDialog = ({
     contentDetails?.platform ? [contentDetails.platform] : []
   );
   
-  // Enhanced inspiration text with more details about the content being recreated
+  // Inspiration text with just a single concise sentence
   const [inspirationText, setInspirationText] = useState(contentDetails ? 
-    `This content is inspired by "${contentDetails.title}" which performed well on ${contentDetails.platform}. Recreating successful content is a great strategy to build on what works.` : "");
+    `This content is inspired by "${contentDetails.title}" which performed well on ${contentDetails.platform}.` : "");
   
   const [inspirationLinks, setInspirationLinks] = useState<string[]>(
     contentDetails?.link ? [contentDetails.link] : []
@@ -70,9 +71,9 @@ const CreateSimilarContentDialog = ({
       setTitle(`Recreate: ${contentDetails.title}`);
       setPlatformsList(contentDetails.platform ? [contentDetails.platform] : []);
       
-      // Set enhanced inspiration text
+      // Set simplified inspiration text
       setInspirationText(
-        `This content is inspired by "${contentDetails.title}" which performed well on ${contentDetails.platform}. Recreating successful content is a great strategy to build on what works.`
+        `This content is inspired by "${contentDetails.title}" which performed well on ${contentDetails.platform}.`
       );
       
       // Set inspiration link if available
