@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -104,7 +103,7 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
       case "TikTok":
         return (
           <img 
-            src="/lovable-uploads/92fb0abf-4282-4316-ac20-3f0b2335270b.png" 
+            src="/lovable-uploads/90927544-c91c-4984-8768-0682ffd06e44.png" 
             alt="TikTok Logo" 
             className="w-8 h-8 object-contain"
           />
