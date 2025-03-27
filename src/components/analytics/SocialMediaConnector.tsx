@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,23 +41,23 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
     {
       id: "TikTok",
       name: "TikTok",
-      logoUrl: "/lovable-uploads/a0a8f806-0764-43d1-b2b1-17c378795bb6.png",
+      logoUrl: "/lovable-uploads/92fb0abf-4282-4316-ac20-3f0b2335270b.png",
       icon: <Music className="h-5 w-5" />,
-      color: "bg-black",
+      color: "bg-gradient-to-br from-black via-black to-zinc-900",
     },
     {
       id: "YouTube",
       name: "Youtube",
       logoUrl: "/lovable-uploads/4d0fd149-7d80-4e04-b2f0-c7dcff4da3b5.png",
       icon: <Youtube className="h-5 w-5" />,
-      color: "bg-red-600",
+      color: "bg-gradient-to-r from-red-600 to-red-700",
     },
     {
       id: "LinkedIn",
       name: "LinkedIn",
       logoUrl: "/lovable-uploads/4d0fd149-7d80-4e04-b2f0-c7dcff4da3b5.png",
       icon: <Linkedin className="h-5 w-5" />,
-      color: "bg-blue-600",
+      color: "bg-gradient-to-r from-blue-600 to-blue-700",
     },
   ];
 
@@ -113,11 +114,11 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
         );
       case "TikTok":
         return (
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-black">
+          <div className="flex items-center justify-center w-12 h-12 p-2 bg-white rounded-xl shadow-md overflow-hidden">
             <img 
-              src="/lovable-uploads/a0a8f806-0764-43d1-b2b1-17c378795bb6.png" 
+              src="/lovable-uploads/92fb0abf-4282-4316-ac20-3f0b2335270b.png" 
               alt="TikTok Logo" 
-              className="w-8 h-8"
+              className="w-full h-full object-contain"
             />
           </div>
         );
@@ -147,52 +148,78 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
   };
 
   return (
-    <Card>
+    <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300">
       <CardContent className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Connected Platforms</h2>
-        <div className="flex flex-wrap gap-4">
+        <h2 className="text-xl font-semibold mb-6 text-gray-800">Connected Platforms</h2>
+        <div className="flex flex-wrap gap-6 justify-center sm:justify-start">
           {combinedPlatforms.map((platform) => {
             const isConnected = connectedPlatforms.includes(platform.id);
             const isCustom = platform.id.startsWith('custom-');
             
             return (
               <div key={platform.id} className="flex flex-col items-center">
-                <div className="relative group">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className={`h-16 w-16 rounded-lg mb-2 flex items-center justify-center ${
-                      isConnected ? platform.color : "bg-muted"
-                    } ${
-                      isConnected ? "text-white" : "text-muted-foreground"
-                    } hover:scale-105 transition-transform`}
-                    onClick={() =>
-                      isConnected
-                        ? onDisconnect(platform.id)
-                        : onConnect(platform.id)
-                    }
-                  >
-                    {getPlatformLogo(platform.id)}
-                  </Button>
-                  
-                  {canDeletePlatform(platform.id) && (
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-gray-200 text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeletePlatform(platform.id);
-                      }}
-                      title={`Delete ${platform.name}`}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  )}
-                </div>
-                <span className="text-sm">{platform.name}</span>
+                <HoverCard>
+                  <HoverCardTrigger asChild>
+                    <div className="relative group">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className={`h-20 w-20 rounded-2xl mb-3 flex items-center justify-center ${
+                          isConnected ? platform.color : "bg-gray-100"
+                        } ${
+                          isConnected ? "text-white shadow-lg" : "text-gray-400"
+                        } hover:scale-105 transition-all duration-200 shadow-sm ${
+                          isConnected ? "ring-2 ring-offset-2 ring-opacity-50" : ""
+                        } ${
+                          platform.id === "TikTok" ? "p-0 overflow-hidden" : ""
+                        }`}
+                        style={{
+                          ringColor: isConnected && platform.id === "Instagram" ? "#d946ef" : 
+                                    isConnected && platform.id === "TikTok" ? "#000000" :
+                                    isConnected && platform.id === "YouTube" ? "#ff0000" :
+                                    isConnected && platform.id === "LinkedIn" ? "#0077b5" : ""
+                        }}
+                        onClick={() =>
+                          isConnected
+                            ? onDisconnect(platform.id)
+                            : onConnect(platform.id)
+                        }
+                      >
+                        {getPlatformLogo(platform.id)}
+                      </Button>
+                      
+                      {canDeletePlatform(platform.id) && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-white shadow-md text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity border border-gray-200 hover:bg-red-50 hover:text-red-500"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeletePlatform(platform.id);
+                          }}
+                          title={`Delete ${platform.name}`}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
+                  </HoverCardTrigger>
+                  <HoverCardContent className="w-60 p-4">
+                    <div className="space-y-2">
+                      <h4 className="font-medium">{platform.name}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {isConnected 
+                          ? `Connected. Click to disconnect your ${platform.name} account.` 
+                          : `Not connected. Click to connect your ${platform.name} account.`}
+                      </p>
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
+                <span className="text-sm font-medium text-gray-700">{platform.name}</span>
                 {isConnected && (
-                  <span className="text-xs text-green-600 mt-1">Connected</span>
+                  <span className="text-xs text-green-600 font-medium mt-1 flex items-center gap-1">
+                    <span className="h-1.5 w-1.5 bg-green-500 rounded-full"></span> Connected
+                  </span>
                 )}
               </div>
             );
@@ -202,12 +229,12 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
             <Button
               variant="outline"
               size="icon"
-              className="h-16 w-16 rounded-lg mb-2 bg-muted hover:bg-muted-foreground/20 hover:scale-105 transition-transform"
+              className="h-20 w-20 rounded-2xl mb-3 bg-gray-50 hover:bg-gray-100 hover:scale-105 transition-all duration-200 border-dashed border-2 border-gray-300"
               onClick={() => setIsAddDialogOpen(true)}
             >
-              <Plus className="h-8 w-8 text-muted-foreground" />
+              <Plus className="h-8 w-8 text-gray-400" />
             </Button>
-            <span className="text-sm">Add Platform</span>
+            <span className="text-sm font-medium text-gray-700">Add Platform</span>
           </div>
         </div>
       </CardContent>
@@ -225,20 +252,21 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
                 value={newPlatformName}
                 onChange={(e) => setNewPlatformName(e.target.value)}
                 placeholder="Enter platform name"
+                className="focus-within:ring-2 focus-within:ring-purple-500"
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="platform-color">Platform Color</Label>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <Input
                   id="platform-color"
                   type="color"
                   value={newPlatformColor}
                   onChange={(e) => setNewPlatformColor(e.target.value)}
-                  className="w-12 h-12 p-1 cursor-pointer"
+                  className="w-16 h-16 p-1 cursor-pointer rounded-md"
                 />
                 <div className="text-sm text-muted-foreground">
-                  Select a color for this platform
+                  Select a brand color for this platform
                 </div>
               </div>
             </div>
@@ -247,7 +275,11 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
             <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleAddCustomPlatform} disabled={!newPlatformName.trim()}>
+            <Button 
+              className="bg-purple-600 hover:bg-purple-700"
+              onClick={handleAddCustomPlatform} 
+              disabled={!newPlatformName.trim()}
+            >
               Add Platform
             </Button>
           </DialogFooter>
