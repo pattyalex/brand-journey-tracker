@@ -47,8 +47,11 @@ const CreateSimilarContentDialog = ({
   const [platformsList, setPlatformsList] = useState<string[]>(
     contentDetails?.platform ? [contentDetails.platform] : []
   );
+  
+  // Enhanced inspiration text with more details about the content being recreated
   const [inspirationText, setInspirationText] = useState(contentDetails ? 
-    `This content is inspired by "${contentDetails.title}" which performed well on ${contentDetails.platform}.` : "");
+    `This content is inspired by "${contentDetails.title}" which performed well on ${contentDetails.platform}. Recreating successful content is a great strategy to build on what works.` : "");
+  
   const [inspirationLinks, setInspirationLinks] = useState<string[]>(
     contentDetails?.link ? [contentDetails.link] : []
   );
@@ -61,15 +64,21 @@ const CreateSimilarContentDialog = ({
     { id: "3", name: "Pillar 3", content: [] }
   ]);
 
+  // Update fields when contentDetails changes
   useEffect(() => {
-    if (contentDetails?.title) {
+    if (contentDetails) {
       setTitle(`Recreate: ${contentDetails.title}`);
-    }
-  }, [contentDetails]);
-
-  useEffect(() => {
-    if (contentDetails?.link) {
-      setInspirationLinks([contentDetails.link]);
+      setPlatformsList(contentDetails.platform ? [contentDetails.platform] : []);
+      
+      // Set enhanced inspiration text
+      setInspirationText(
+        `This content is inspired by "${contentDetails.title}" which performed well on ${contentDetails.platform}. Recreating successful content is a great strategy to build on what works.`
+      );
+      
+      // Set inspiration link if available
+      if (contentDetails.link) {
+        setInspirationLinks([contentDetails.link]);
+      }
     }
   }, [contentDetails]);
 
