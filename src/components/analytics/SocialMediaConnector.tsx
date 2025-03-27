@@ -1,8 +1,7 @@
-
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Instagram, Youtube, Linkedin, Music, Twitch, Plus, Trash2 } from "lucide-react";
+import { Instagram, Youtube, Linkedin, Music, Plus, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -55,12 +54,6 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
       name: "LinkedIn",
       icon: <Linkedin className="h-5 w-5" />,
       color: "bg-blue-600",
-    },
-    {
-      id: "Twitch",
-      name: "Twitch",
-      icon: <Twitch className="h-5 w-5" />,
-      color: "bg-purple-600",
     },
   ];
 
@@ -133,11 +126,11 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
                     {platform.icon}
                   </Button>
                   
-                  {/* Delete button - shows on hover */}
+                  {/* Delete button - shows on hover, now gray instead of red */}
                   <Button
-                    variant="destructive"
+                    variant="outline"
                     size="icon"
-                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-gray-200 text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDeletePlatform(platform.id);
