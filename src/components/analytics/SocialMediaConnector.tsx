@@ -103,9 +103,9 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
       case "TikTok":
         return (
           <img 
-            src="/lovable-uploads/90927544-c91c-4984-8768-0682ffd06e44.png" 
+            src="/lovable-uploads/582bb98d-488d-4d15-b4fb-5c8a59930a4a.png" 
             alt="TikTok Logo" 
-            className="w-8 h-8 object-contain"
+            className="w-8 h-8 object-contain" 
           />
         );
       case "YouTube":
