@@ -30,30 +30,38 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
   const [newPlatformName, setNewPlatformName] = useState("");
   const [newPlatformColor, setNewPlatformColor] = useState("#6d28d9"); // Default purple color
 
-  // Define available platforms
+  // Define available platforms with actual logos
   const platforms = [
     {
       id: "Instagram",
       name: "Instagram",
-      icon: <Instagram className="h-5 w-5" />,
+      logo: "/lovable-uploads/c42fa5df-9252-4281-a4a8-0bc811de9bcf.png",
+      logoPosition: "0 0", // Position for Instagram logo in the sprite
+      icon: <Instagram className="h-5 w-5" />, // Keep the icon as fallback
       color: "bg-gradient-to-r from-purple-500 to-pink-500",
     },
     {
       id: "TikTok",
       name: "TikTok",
-      icon: <Music className="h-5 w-5" />,
+      logo: "/lovable-uploads/c42fa5df-9252-4281-a4a8-0bc811de9bcf.png",
+      logoPosition: "-65px 0", // Position for TikTok logo in the sprite
+      icon: <Music className="h-5 w-5" />, // Keep the icon as fallback
       color: "bg-black",
     },
     {
       id: "YouTube",
       name: "Youtube",
-      icon: <Youtube className="h-5 w-5" />,
+      logo: "/lovable-uploads/c42fa5df-9252-4281-a4a8-0bc811de9bcf.png",
+      logoPosition: "-130px 0", // Position for YouTube logo in the sprite
+      icon: <Youtube className="h-5 w-5" />, // Keep the icon as fallback
       color: "bg-red-600",
     },
     {
       id: "LinkedIn",
       name: "LinkedIn",
-      icon: <Linkedin className="h-5 w-5" />,
+      logo: "/lovable-uploads/c42fa5df-9252-4281-a4a8-0bc811de9bcf.png",
+      logoPosition: "-195px 0", // Position for LinkedIn logo in the sprite
+      icon: <Linkedin className="h-5 w-5" />, // Keep the icon as fallback
       color: "bg-blue-600",
     },
   ];
@@ -103,6 +111,28 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
     })),
   ];
 
+  // Function to render platform logo or fallback icon
+  const renderPlatformLogo = (platform: any, isConnected: boolean) => {
+    // For standard platforms with sprite logo
+    if (platform.logo && !platform.id.startsWith('custom-')) {
+      return (
+        <div 
+          className={`w-10 h-10 bg-no-repeat ${
+            isConnected ? "opacity-100" : "opacity-50"
+          }`}
+          style={{
+            backgroundImage: `url(${platform.logo})`,
+            backgroundPosition: platform.logoPosition,
+            backgroundSize: "260px 65px", // Size of the sprite sheet
+          }}
+        />
+      );
+    }
+    
+    // For custom platforms or fallback
+    return platform.icon;
+  };
+
   return (
     <Card>
       <CardContent className="p-6">
@@ -118,7 +148,7 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
                   <Button
                     variant="outline"
                     size="icon"
-                    className={`h-16 w-16 rounded-lg mb-2 ${
+                    className={`h-16 w-16 rounded-lg mb-2 flex items-center justify-center ${
                       isConnected ? platform.color : "bg-muted"
                     } ${
                       isConnected ? "text-white" : "text-muted-foreground"
@@ -129,7 +159,7 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
                         : onConnect(platform.id)
                     }
                   >
-                    {platform.icon}
+                    {renderPlatformLogo(platform, isConnected)}
                   </Button>
                   
                   {/* Delete button - only show for platforms that can be deleted */}
