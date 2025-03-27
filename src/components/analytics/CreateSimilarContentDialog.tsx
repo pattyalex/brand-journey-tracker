@@ -35,7 +35,6 @@ const CreateSimilarContentDialog = ({
   const [visualNotes, setVisualNotes] = useState("");
   const [shootDetails, setShootDetails] = useState("");
   const [captionText, setCaptionText] = useState("");
-  const [format, setFormat] = useState("text");
   const [currentTag, setCurrentTag] = useState("");
   const [tagsList, setTagsList] = useState<string[]>([]);
   const [currentPlatform, setCurrentPlatform] = useState("");
@@ -125,12 +124,11 @@ const CreateSimilarContentDialog = ({
             caption: captionText,
             platforms: platformsList,
             bucketId,
-            format,
             inspirationText,
             inspirationLinks,
             inspirationImages
           }),
-          format: format,
+          format: "",
           dateCreated: new Date(),
           tags: tagsList,
           platforms: platformsList
@@ -174,8 +172,8 @@ const CreateSimilarContentDialog = ({
               bucketId={bucketId}
               onBucketChange={setBucketId}
               pillarId={selectedPillarId}
-              format={format}
-              onFormatChange={setFormat}
+              format=""
+              onFormatChange={() => {}}
               scriptText={scriptText}
               onScriptTextChange={setScriptText}
               visualNotes={visualNotes}
