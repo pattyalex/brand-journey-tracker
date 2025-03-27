@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -87,6 +88,11 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
     }
   };
 
+  // Function to check if a platform should have delete button
+  const canDeletePlatform = (platformId: string) => {
+    return platformId !== "Instagram" && platformId !== "TikTok";
+  };
+
   const combinedPlatforms = [
     ...platforms,
     ...customPlatforms.map(custom => ({
@@ -126,19 +132,21 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
                     {platform.icon}
                   </Button>
                   
-                  {/* Delete button - shows on hover, now gray instead of red */}
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-gray-200 text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeletePlatform(platform.id);
-                    }}
-                    title={`Delete ${platform.name}`}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
+                  {/* Delete button - only show for platforms that can be deleted */}
+                  {canDeletePlatform(platform.id) && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-gray-200 text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeletePlatform(platform.id);
+                      }}
+                      title={`Delete ${platform.name}`}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  )}
                 </div>
                 <span className="text-sm">{platform.name}</span>
                 {isConnected && (
