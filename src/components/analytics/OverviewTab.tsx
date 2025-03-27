@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, Users, ThumbsUp, MessageSquare, BarChartIcon, TrendingUp, Megaphone, Radio } from "lucide-react";
@@ -60,8 +59,8 @@ const statsData = [
   { title: "Total Followers", value: "67,893", icon: Users, change: "+2.5%" },
   { title: "Reach", value: "3.4M", icon: Radio, change: "+12.8%" },
   { title: "Engagement Rate", value: "5.32%", icon: ThumbsUp, change: "+1.2%" },
-  { title: "Likes", value: "12,468", icon: ThumbsUp, change: "+9.3%" },
   { title: "Impressions", value: "5.7M", icon: Megaphone, change: "+15.3%" },
+  { title: "Likes", value: "12,468", icon: ThumbsUp, change: "+9.3%" },
 ];
 
 interface OverviewTabProps {
