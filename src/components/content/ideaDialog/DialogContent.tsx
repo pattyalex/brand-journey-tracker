@@ -10,7 +10,6 @@ import CaptionInputSection from "./CaptionInputSection";
 import PlatformsSection from "./PlatformsSection";
 import TagsSection from "./TagsSection";
 import InspirationSection from "./InspirationSection";
-import PillarSelector from "./PillarSelector";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { Pillar } from "@/pages/BankOfContent";
 
@@ -146,24 +145,11 @@ const DialogContent = ({
       >
         <LayoutGroup>
           <motion.div 
-            className="grid grid-cols-1 md:grid-cols-2 gap-4 mx-2"
+            className="grid grid-cols-1 md:grid-cols-1 gap-4 mx-2"
             variants={itemVariants}
             layout
           >
-            {/* Destination Pillar now comes first */}
-            <motion.div
-              className="bg-blue-50 rounded-lg p-4 border border-blue-100 shadow-sm"
-              whileHover={{ scale: 1.01 }}
-              transition={{ duration: 0.2 }}
-            >
-              <PillarSelector 
-                pillarId={pillarId} 
-                onPillarChange={onPillarChange} 
-                pillars={pillars}
-              />
-            </motion.div>
-            
-            {/* Content Format now comes second */}
+            {/* Content Format */}
             <motion.div 
               whileHover={{ scale: 1.01 }} 
               transition={{ duration: 0.2 }}
