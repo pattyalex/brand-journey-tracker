@@ -243,7 +243,7 @@ const CreateSimilarContentDialog = ({
             <Button variant="outline" onClick={onCancel}>
               Cancel
             </Button>
-            <TooltipProvider>
+            <TooltipProvider delayDuration={50}>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button 
