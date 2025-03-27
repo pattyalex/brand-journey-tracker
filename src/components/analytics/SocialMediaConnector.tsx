@@ -2,10 +2,11 @@
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Instagram, Youtube, Linkedin, Music, Twitch, Plus } from "lucide-react";
+import { Instagram, Youtube, Linkedin, Music, Twitch, Plus, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 
 interface SocialMediaConnectorProps {
   connectedPlatforms: string[];
@@ -81,6 +82,18 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
     }
   };
 
+  const handleDeletePlatform = (platformId: string) => {
+    // First disconnect if it's connected
+    if (connectedPlatforms.includes(platformId)) {
+      onDisconnect(platformId);
+    }
+    
+    // Then remove from custom platforms if it's a custom one
+    if (platformId.startsWith('custom-')) {
+      setCustomPlatforms(customPlatforms.filter(p => p.id !== platformId));
+    }
+  };
+
   const combinedPlatforms = [
     ...platforms,
     ...customPlatforms.map(custom => ({
@@ -98,24 +111,42 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
         <div className="flex flex-wrap gap-4">
           {combinedPlatforms.map((platform) => {
             const isConnected = connectedPlatforms.includes(platform.id);
+            const isCustom = platform.id.startsWith('custom-');
+            
             return (
               <div key={platform.id} className="flex flex-col items-center">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className={`h-16 w-16 rounded-lg mb-2 ${
-                    isConnected ? platform.color : "bg-muted"
-                  } ${
-                    isConnected ? "text-white" : "text-muted-foreground"
-                  } hover:scale-105 transition-transform`}
-                  onClick={() =>
-                    isConnected
-                      ? onDisconnect(platform.id)
-                      : onConnect(platform.id)
-                  }
-                >
-                  {platform.icon}
-                </Button>
+                <div className="relative group">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className={`h-16 w-16 rounded-lg mb-2 ${
+                      isConnected ? platform.color : "bg-muted"
+                    } ${
+                      isConnected ? "text-white" : "text-muted-foreground"
+                    } hover:scale-105 transition-transform`}
+                    onClick={() =>
+                      isConnected
+                        ? onDisconnect(platform.id)
+                        : onConnect(platform.id)
+                    }
+                  >
+                    {platform.icon}
+                  </Button>
+                  
+                  {/* Delete button - shows on hover */}
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeletePlatform(platform.id);
+                    }}
+                    title={`Delete ${platform.name}`}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
                 <span className="text-sm">{platform.name}</span>
                 {isConnected && (
                   <span className="text-xs text-green-600 mt-1">Connected</span>
