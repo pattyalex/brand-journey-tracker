@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -255,7 +254,7 @@ const CreateSimilarContentDialog = ({
                     Create
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent className="px-3 py-2 text-sm text-center">
+                <TooltipContent className="px-4 py-2 text-sm text-center min-w-[200px]">
                   Your content will be saved to<br /><strong>{getSelectedPillarName()}</strong> in <strong>Idea Development</strong>
                 </TooltipContent>
               </Tooltip>

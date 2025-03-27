@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PlusCircle, Link as LinkIcon, ImageIcon, X, Lightbulb } from "lucide-react";
 import { Label } from "@/components/ui/label";
@@ -87,7 +86,7 @@ const InspirationSection = ({
                 <ImageIcon className="h-3.5 w-3.5" />
               </Label>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent className="min-w-[100px] px-3 py-1.5 text-center">
               <p className="text-xs">Upload image</p>
             </TooltipContent>
           </Tooltip>
@@ -113,7 +112,7 @@ const InspirationSection = ({
                 <LinkIcon className="h-2.5 w-2.5" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent className="min-w-[80px] px-3 py-1.5 text-center">
               <p className="text-xs">Add link</p>
             </TooltipContent>
           </Tooltip>
@@ -161,7 +160,6 @@ const InspirationSection = ({
         </div>
       )}
 
-      {/* Link Dialog */}
       <Dialog open={showLinkDialog} onOpenChange={setShowLinkDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
