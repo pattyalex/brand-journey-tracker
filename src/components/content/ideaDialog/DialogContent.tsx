@@ -148,18 +148,7 @@ const DialogContent = ({
             variants={itemVariants}
             layout
           >
-            <motion.div 
-              whileHover={{ scale: 1.01 }} 
-              transition={{ duration: 0.2 }}
-              layout
-            >
-              <BucketSelectionSection 
-                bucketId={bucketId} 
-                onBucketChange={onBucketChange} 
-                pillarId={pillarId} 
-              />
-            </motion.div>
-            
+            {/* Swapped position - Destination Pillar now comes first */}
             <motion.div
               className="bg-blue-50 rounded-lg p-4 border border-blue-100 shadow-sm"
               whileHover={{ scale: 1.01 }}
@@ -169,6 +158,19 @@ const DialogContent = ({
                 pillarId={pillarId} 
                 onPillarChange={onBucketChange} 
                 pillars={pillars}
+              />
+            </motion.div>
+            
+            {/* Content Format now comes second */}
+            <motion.div 
+              whileHover={{ scale: 1.01 }} 
+              transition={{ duration: 0.2 }}
+              layout
+            >
+              <BucketSelectionSection 
+                bucketId={bucketId} 
+                onBucketChange={onBucketChange} 
+                pillarId={pillarId} 
               />
             </motion.div>
           </motion.div>
