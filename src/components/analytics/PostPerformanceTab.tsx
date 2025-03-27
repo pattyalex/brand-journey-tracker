@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -20,7 +19,8 @@ import {
   Plus,
   Repeat,
   Save,
-  BookmarkIcon
+  BookmarkIcon,
+  ExternalLink
 } from "lucide-react";
 import CreateSimilarContentDialog from "./CreateSimilarContentDialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -43,6 +43,7 @@ const posts = [
     saved: 421,
     date: "2023-11-10",
     engagementRate: 16.8,
+    url: "https://instagram.com/p/example1"
   },
   {
     id: "2",
@@ -56,6 +57,7 @@ const posts = [
     saved: 132,
     date: "2023-10-28",
     engagementRate: 13.3,
+    url: "https://twitter.com/example/status/example2"
   },
   {
     id: "3",
@@ -69,6 +71,7 @@ const posts = [
     saved: 98,
     date: "2023-10-15",
     engagementRate: 12.9,
+    url: "https://facebook.com/posts/example3"
   },
   {
     id: "4",
@@ -82,6 +85,7 @@ const posts = [
     saved: 652,
     date: "2023-11-01",
     engagementRate: 19.3,
+    url: "https://instagram.com/p/example4"
   },
   {
     id: "5",
@@ -95,6 +99,7 @@ const posts = [
     saved: 387,
     date: "2023-11-15",
     engagementRate: 15.2,
+    url: "https://instagram.com/p/example5"
   },
 ];
 
@@ -153,6 +158,12 @@ const PostPerformanceTab: React.FC<PostPerformanceTabProps> = ({ platforms }) =>
   const handleCustomDateChange = (startDate: Date | undefined, endDate: Date | undefined) => {
     if (startDate && endDate) {
       console.log(`Fetching post data from ${startDate.toISOString()} to ${endDate.toISOString()}`);
+    }
+  };
+
+  const handleViewContent = (url: string) => {
+    if (url) {
+      window.open(url, '_blank');
     }
   };
 
@@ -321,9 +332,20 @@ const PostPerformanceTab: React.FC<PostPerformanceTabProps> = ({ platforms }) =>
                         <div className="font-medium truncate max-w-xs" title={post.content}>
                           {post.content.length > 60 ? post.content.substring(0, 60) + "..." : post.content}
                         </div>
-                        <div className="flex items-center gap-1 text-muted-foreground text-xs mt-1">
-                          {getPlatformIcon(post.platform)}
-                          <span>{post.platform}</span>
+                        <div className="flex items-center gap-2 text-muted-foreground text-xs mt-1">
+                          <div className="flex items-center gap-1">
+                            {getPlatformIcon(post.platform)}
+                            <span>{post.platform}</span>
+                          </div>
+                          <Button 
+                            variant="outline" 
+                            size="xs" 
+                            className="ml-2 flex items-center gap-1"
+                            onClick={() => handleViewContent(post.url)}
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                            View
+                          </Button>
                         </div>
                       </div>
                     </div>

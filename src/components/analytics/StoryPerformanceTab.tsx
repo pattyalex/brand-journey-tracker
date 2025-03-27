@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -18,7 +17,8 @@ import {
   Music,
   Share2,
   Save,
-  BookmarkIcon
+  BookmarkIcon,
+  ExternalLink
 } from "lucide-react";
 import { 
   BarChart as RechartsBarChart,
@@ -51,6 +51,7 @@ const stories = [
     saved: 341,
     date: "2023-11-22",
     hasLink: true,
+    url: "https://instagram.com/stories/user/example1"
   },
   {
     id: "2",
@@ -64,6 +65,7 @@ const stories = [
     saved: 265,
     date: "2023-11-20",
     hasLink: true,
+    url: "https://instagram.com/stories/user/example2"
   },
   {
     id: "3",
@@ -77,6 +79,7 @@ const stories = [
     saved: 219,
     date: "2023-11-18",
     hasLink: true,
+    url: "https://tiktok.com/@user/video/example3"
   },
   {
     id: "4",
@@ -90,6 +93,7 @@ const stories = [
     saved: 187,
     date: "2023-11-15",
     hasLink: false,
+    url: "https://instagram.com/stories/user/example4"
   },
   {
     id: "5",
@@ -103,6 +107,7 @@ const stories = [
     saved: 232,
     date: "2023-11-12",
     hasLink: true,
+    url: "https://tiktok.com/@user/video/example5"
   },
   {
     id: "6",
@@ -116,6 +121,7 @@ const stories = [
     saved: 125,
     date: "2023-11-10",
     hasLink: false,
+    url: "https://instagram.com/stories/user/example6"
   },
 ];
 
@@ -184,6 +190,12 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
   const handleCustomDateChange = (startDate: Date | undefined, endDate: Date | undefined) => {
     if (startDate && endDate) {
       console.log(`Fetching story data from ${startDate.toISOString()} to ${endDate.toISOString()}`);
+    }
+  };
+
+  const handleViewContent = (url: string) => {
+    if (url) {
+      window.open(url, '_blank');
     }
   };
 
@@ -393,9 +405,20 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
                         </div>
                         <div>
                           <div className="font-medium">{story.title}</div>
-                          <div className="flex items-center gap-1 text-muted-foreground text-xs mt-1">
-                            {getPlatformIcon(story.platform)}
-                            <span>{story.platform}</span>
+                          <div className="flex items-center gap-2 text-muted-foreground text-xs mt-1">
+                            <div className="flex items-center gap-1">
+                              {getPlatformIcon(story.platform)}
+                              <span>{story.platform}</span>
+                            </div>
+                            <Button 
+                              variant="outline" 
+                              size="xs" 
+                              className="ml-2 flex items-center gap-1"
+                              onClick={() => handleViewContent(story.url)}
+                            >
+                              <ExternalLink className="h-3.5 w-3.5" />
+                              View
+                            </Button>
                           </div>
                         </div>
                       </div>
@@ -436,7 +459,6 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      {/* Removed the "Create Similar" button from here since it's now on the left */}
                     </TableCell>
                   </TableRow>
                 ))}

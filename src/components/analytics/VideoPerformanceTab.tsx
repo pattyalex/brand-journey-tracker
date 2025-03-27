@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -170,6 +169,12 @@ const VideoPerformanceTab: React.FC<VideoPerformanceTabProps> = ({ platforms }) 
     }
   };
 
+  const handleViewContent = (url: string) => {
+    if (url) {
+      window.open(url, '_blank');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center flex-wrap gap-4">
@@ -333,12 +338,23 @@ const VideoPerformanceTab: React.FC<VideoPerformanceTabProps> = ({ platforms }) 
                         <div className="font-medium truncate max-w-xs" title={video.title}>
                           {video.title.length > 40 ? video.title.substring(0, 40) + "..." : video.title}
                         </div>
-                        <div className="flex items-center gap-1 text-muted-foreground text-xs mt-1">
-                          {getPlatformIcon(video.platform)}
-                          <span>{video.platform}</span>
-                          <span>&bull;</span>
-                          <Clock className="h-3 w-3" />
-                          <span>{video.watchTime}</span>
+                        <div className="flex items-center gap-2 text-muted-foreground text-xs mt-1">
+                          <div className="flex items-center gap-1">
+                            {getPlatformIcon(video.platform)}
+                            <span>{video.platform}</span>
+                            <span>&bull;</span>
+                            <Clock className="h-3 w-3" />
+                            <span>{video.watchTime}</span>
+                          </div>
+                          <Button 
+                            variant="outline" 
+                            size="xs" 
+                            className="ml-2 flex items-center gap-1"
+                            onClick={() => handleViewContent(video.link)}
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                            View
+                          </Button>
                         </div>
                       </div>
                     </div>
