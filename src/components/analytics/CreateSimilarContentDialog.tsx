@@ -29,8 +29,8 @@ const CreateSimilarContentDialog = ({
   onSave,
   onCancel,
 }: CreateSimilarContentDialogProps) => {
-  // Use the original content title directly if available, otherwise use the placeholder
-  const [title, setTitle] = useState(contentDetails?.title || "");
+  // Use the original content title with "recreate" prefix if available
+  const [title, setTitle] = useState(contentDetails?.title ? `Recreate: ${contentDetails.title}` : "");
   const [bucketId, setBucketId] = useState("");
   const [scriptText, setScriptText] = useState("");
   const [visualNotes, setVisualNotes] = useState("");
@@ -57,7 +57,7 @@ const CreateSimilarContentDialog = ({
   // Update title when contentDetails changes
   useEffect(() => {
     if (contentDetails?.title) {
-      setTitle(contentDetails.title);
+      setTitle(`Recreate: ${contentDetails.title}`);
     }
   }, [contentDetails]);
 
