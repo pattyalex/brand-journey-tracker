@@ -92,11 +92,6 @@ const BucketSelectionSection = ({
           )}
         </SelectContent>
       </Select>
-      <p className="text-xs text-gray-500">
-        {!pillarId ? 
-          "Please select a pillar first to see available formats" : 
-          "Select the content format for this idea"}
-      </p>
     </motion.div>
   );
 };
