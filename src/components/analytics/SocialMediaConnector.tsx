@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,34 +29,33 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
   const [newPlatformName, setNewPlatformName] = useState("");
   const [newPlatformColor, setNewPlatformColor] = useState("#6d28d9"); // Default purple color
 
-  // Define available platforms with their actual logos
   const platforms = [
     {
       id: "Instagram",
       name: "Instagram",
       logoUrl: "/lovable-uploads/4d0fd149-7d80-4e04-b2f0-c7dcff4da3b5.png",
-      icon: <Instagram className="h-5 w-5" />, // Fallback icon
+      icon: <Instagram className="h-5 w-5" />,
       color: "bg-gradient-to-r from-purple-500 to-pink-500",
     },
     {
       id: "TikTok",
       name: "TikTok",
       logoUrl: "/lovable-uploads/12763fc6-90f9-43d6-997f-99a12a5eba8d.png",
-      icon: <Music className="h-5 w-5" />, // Fallback icon
+      icon: <Music className="h-5 w-5" />,
       color: "bg-black",
     },
     {
       id: "YouTube",
       name: "Youtube",
       logoUrl: "/lovable-uploads/4d0fd149-7d80-4e04-b2f0-c7dcff4da3b5.png",
-      icon: <Youtube className="h-5 w-5" />, // Fallback icon
+      icon: <Youtube className="h-5 w-5" />,
       color: "bg-red-600",
     },
     {
       id: "LinkedIn",
       name: "LinkedIn",
       logoUrl: "/lovable-uploads/4d0fd149-7d80-4e04-b2f0-c7dcff4da3b5.png",
-      icon: <Linkedin className="h-5 w-5" />, // Fallback icon
+      icon: <Linkedin className="h-5 w-5" />,
       color: "bg-blue-600",
     },
   ];
@@ -73,7 +71,6 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
       setCustomPlatforms([...customPlatforms, newPlatform]);
       onConnect(newPlatform.id);
       
-      // Reset form
       setNewPlatformName("");
       setNewPlatformColor("#6d28d9");
       setIsAddDialogOpen(false);
@@ -81,18 +78,15 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
   };
 
   const handleDeletePlatform = (platformId: string) => {
-    // First disconnect if it's connected
     if (connectedPlatforms.includes(platformId)) {
       onDisconnect(platformId);
     }
     
-    // Then remove from custom platforms if it's a custom one
     if (platformId.startsWith('custom-')) {
       setCustomPlatforms(customPlatforms.filter(p => p.id !== platformId));
     }
   };
 
-  // Function to check if a platform should have delete button
   const canDeletePlatform = (platformId: string) => {
     return platformId !== "Instagram" && platformId !== "TikTok";
   };
@@ -102,14 +96,12 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
     ...customPlatforms.map(custom => ({
       id: custom.id,
       name: custom.name,
-      icon: <Plus className="h-5 w-5" />, // Default icon for custom platforms
+      icon: <Plus className="h-5 w-5" />,
       color: `bg-[${custom.color}]`,
     })),
   ];
 
-  // Get logo for each platform
   const getPlatformLogo = (platformId: string) => {
-    // Use proper logos based on platform ID
     switch(platformId) {
       case "Instagram":
         return (
@@ -124,9 +116,7 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
           <div className="flex items-center justify-center w-10 h-10 rounded-xl">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M19.589 6.686a4.793 4.793 0 0 1-3.077-4.684v-1h-3.329v16.997a2.554 2.554 0 0 1-2.67 2.42 2.549 2.549 0 0 1-1.07-4.853v-3.438c-.153.018-.306.037-.463.037a3.593 3.593 0 0 1-3.591-3.588 3.592 3.592 0 0 1 6.025-2.625v-3.431a7.02 7.02 0 0 0-3.592.976 7.052 7.052 0 0 0-3.432 6.082 7.052 7.052 0 0 0 7.048 7.048 7.052 7.052 0 0 0 7.043-7.043V8.036a7.839 7.839 0 0 0 3.924 1.058V6.686h-.816Z" fill="black"/>
-              <path d="M19.589 6.686a4.793 4.793 0 0 1-3.077-4.684v-1h-3.329v16.997a2.554 2.554 0 0 1-2.67 2.42 2.549 2.549 0 0 1-1.07-4.853v-3.438c-.153.018-.306.037-.463.037a3.593 3.593 0 0 1-3.591-3.588 3.592 3.592 0 0 1 6.025-2.625v-3.431a7.02 7.02 0 0 0-3.592.976 7.052 7.052 0 0 0-3.432 6.082 7.052 7.052 0 0 0 7.048 7.048 7.052 7.052 0 0 0 7.043-7.043V8.036a7.839 7.839 0 0 0 3.924 1.058V6.686h-.816Z" fill="black"/>
-              <path d="M16.512 3.002v1c.637 2.014 2.02 3.486 3.077 4.684h.816v2.409c-1.517-.277-2.85-.973-3.924-1.058v5.394a7.052 7.052 0 0 1-7.043 7.043 7.052 7.052 0 0 1-7.048-7.048 7.052 7.052 0 0 1 3.432-6.083 7.02 7.02 0 0 1 3.592-.975v3.431a3.592 3.592 0 0 0-6.025 2.625 3.593 3.593 0 0 0 3.591 3.588c.157 0 .31-.02.463-.037v3.438a2.549 2.549 0 0 0 3.74 2.433 2.554 2.554 0 0 0 2.67-2.42V3.002h3.329Z" stroke="#3FF6E3" strokeWidth="0.8"/>
-              <path d="M16.512 3.002v1c.637 2.014 2.02 3.486 3.077 4.684h.816v2.409c-1.517-.277-2.85-.973-3.924-1.058v5.394a7.052 7.052 0 0 1-7.043 7.043 7.052 7.052 0 0 1-7.048-7.048 7.052 7.052 0 0 1 3.432-6.083 7.02 7.02 0 0 1 3.592-.975v3.431a3.592 3.592 0 0 0-6.025 2.625 3.593 3.593 0 0 0 3.591 3.588c.157 0 .31-.02.463-.037v3.438a2.549 2.549 0 0 0 3.74 2.433 2.554 2.554 0 0 0 2.67-2.42V3.002h3.329Z" stroke="#FF3291" strokeWidth="0.8"/>
+              <path d="M16.512 3.002v1c.637 2.014 2.02 3.486 3.077 4.684h.816v2.409c-1.517-.277-2.85-.973-3.924-1.058v5.394a7.052 7.052 0 0 1-7.043 7.043 7.052 7.052 0 0 1-7.048-7.048 7.052 7.052 0 0 1 3.432-6.083 7.02 7.02 0 0 1 3.592-.975v3.431a3.592 3.592 0 0 0-6.025 2.625 3.593 3.593 0 0 0 3.591 3.588c.157 0 .31-.02.463-.037v3.438a2.549 2.549 0 0 0 3.74 2.433 2.554 2.554 0 0 0 2.67-2.42V3.002h3.329Z" stroke="#D946EF" strokeWidth="0.8"/>
             </svg>
           </div>
         );
@@ -147,7 +137,6 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
           </div>
         );
       default:
-        // For custom platforms
         return (
           <div className="flex items-center justify-center w-10 h-10 rounded-xl">
             <Plus className="h-5 w-5" />
@@ -185,7 +174,6 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
                     {getPlatformLogo(platform.id)}
                   </Button>
                   
-                  {/* Delete button - only show for platforms that can be deleted */}
                   {canDeletePlatform(platform.id) && (
                     <Button
                       variant="outline"
@@ -209,7 +197,6 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
             );
           })}
           
-          {/* Add New Platform Button */}
           <div className="flex flex-col items-center">
             <Button
               variant="outline"
@@ -224,7 +211,6 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
         </div>
       </CardContent>
 
-      {/* Add Platform Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
