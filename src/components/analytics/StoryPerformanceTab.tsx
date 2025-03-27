@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,7 +15,10 @@ import {
   Link,
   Copy,
   Repeat,
-  Music
+  Music,
+  Share2,
+  Save,
+  BookmarkIcon
 } from "lucide-react";
 import { 
   BarChart as RechartsBarChart,
@@ -43,6 +47,8 @@ const stories = [
     views: 12543,
     completionRate: 75,
     linkClicks: 234,
+    shares: 132,
+    saved: 341,
     date: "2023-11-22",
     hasLink: true,
   },
@@ -54,6 +60,8 @@ const stories = [
     views: 10876,
     completionRate: 68,
     linkClicks: 312,
+    shares: 87,
+    saved: 265,
     date: "2023-11-20",
     hasLink: true,
   },
@@ -65,6 +73,8 @@ const stories = [
     views: 8432,
     completionRate: 82,
     linkClicks: 189,
+    shares: 178,
+    saved: 219,
     date: "2023-11-18",
     hasLink: true,
   },
@@ -76,6 +86,8 @@ const stories = [
     views: 9543,
     completionRate: 71,
     linkClicks: 0,
+    shares: 56,
+    saved: 187,
     date: "2023-11-15",
     hasLink: false,
   },
@@ -87,6 +99,8 @@ const stories = [
     views: 7654,
     completionRate: 64,
     linkClicks: 276,
+    shares: 145,
+    saved: 232,
     date: "2023-11-12",
     hasLink: true,
   },
@@ -98,6 +112,8 @@ const stories = [
     views: 6432,
     completionRate: 55,
     linkClicks: null,
+    shares: 42,
+    saved: 125,
     date: "2023-11-10",
     hasLink: false,
   },
@@ -247,7 +263,10 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
                 Sorted by {
                   sortBy === "views" ? "views" : 
                   sortBy === "completionRate" ? "completion rate" : 
-                  sortBy === "linkClicks" ? "link clicks" : "date"
+                  sortBy === "linkClicks" ? "link clicks" : 
+                  sortBy === "shares" ? "shares" : 
+                  sortBy === "saved" ? "saves" : 
+                  "date"
                 }
                 {sortOrder === "desc" ? " (highest first)" : " (lowest first)"}
               </CardDescription>
@@ -284,6 +303,32 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
                     >
                       Completion
                       {sortBy === "completionRate" && (
+                        sortOrder === "desc" ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleSort("shares")}
+                      className="flex items-center gap-1 -ml-3"
+                    >
+                      Shares
+                      {sortBy === "shares" && (
+                        sortOrder === "desc" ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleSort("saved")}
+                      className="flex items-center gap-1 -ml-3"
+                    >
+                      Saved
+                      {sortBy === "saved" && (
                         sortOrder === "desc" ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />
                       )}
                     </Button>
@@ -363,6 +408,18 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
                     </TableCell>
                     <TableCell>{story.completionRate}%</TableCell>
                     <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Share2 className="h-4 w-4 text-muted-foreground" />
+                        {story.shares?.toLocaleString() || "0"}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <BookmarkIcon className="h-4 w-4 text-muted-foreground" />
+                        {story.saved?.toLocaleString() || "0"}
+                      </div>
+                    </TableCell>
+                    <TableCell>
                       {story.hasLink ? (
                         <div className="flex items-center gap-1">
                           <Link className="h-4 w-4 text-muted-foreground" />
@@ -385,7 +442,7 @@ const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) 
                 ))}
                 {sortedStories.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
+                    <TableCell colSpan={7} className="text-center py-8">
                       <BarChart className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                       <p>No story data available for the selected platform.</p>
                     </TableCell>

@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -17,7 +18,9 @@ import {
   Twitter,
   Copy,
   Plus,
-  Repeat
+  Repeat,
+  Save,
+  BookmarkIcon
 } from "lucide-react";
 import CreateSimilarContentDialog from "./CreateSimilarContentDialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -37,6 +40,7 @@ const posts = [
     likes: 5432,
     comments: 278,
     shares: 132,
+    saved: 421,
     date: "2023-11-10",
     engagementRate: 16.8,
   },
@@ -49,6 +53,7 @@ const posts = [
     likes: 3241,
     comments: 187,
     shares: 415,
+    saved: 132,
     date: "2023-10-28",
     engagementRate: 13.3,
   },
@@ -61,6 +66,7 @@ const posts = [
     likes: 1845,
     comments: 492,
     shares: 87,
+    saved: 98,
     date: "2023-10-15",
     engagementRate: 12.9,
   },
@@ -73,6 +79,7 @@ const posts = [
     likes: 7654,
     comments: 431,
     shares: 89,
+    saved: 652,
     date: "2023-11-01",
     engagementRate: 19.3,
   },
@@ -85,6 +92,7 @@ const posts = [
     likes: 4523,
     comments: 198,
     shares: 65,
+    saved: 387,
     date: "2023-11-15",
     engagementRate: 15.2,
   },
@@ -181,7 +189,9 @@ const PostPerformanceTab: React.FC<PostPerformanceTabProps> = ({ platforms }) =>
                 sortBy === "impressions" ? "impressions" : 
                 sortBy === "likes" ? "likes" : 
                 sortBy === "comments" ? "comments" : 
-                sortBy === "shares" ? "shares" : "engagement rate"
+                sortBy === "shares" ? "shares" : 
+                sortBy === "saved" ? "saves" :
+                "engagement rate"
               }
               {sortOrder === "desc" ? " (highest first)" : " (lowest first)"}
             </CardDescription>
@@ -231,6 +241,32 @@ const PostPerformanceTab: React.FC<PostPerformanceTabProps> = ({ platforms }) =>
                   >
                     Comments
                     {sortBy === "comments" && (
+                      sortOrder === "desc" ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />
+                    )}
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleSort("shares")}
+                    className="flex items-center gap-1 -ml-3"
+                  >
+                    Shares
+                    {sortBy === "shares" && (
+                      sortOrder === "desc" ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />
+                    )}
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleSort("saved")}
+                    className="flex items-center gap-1 -ml-3"
+                  >
+                    Saved
+                    {sortBy === "saved" && (
                       sortOrder === "desc" ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />
                     )}
                   </Button>
@@ -313,6 +349,18 @@ const PostPerformanceTab: React.FC<PostPerformanceTabProps> = ({ platforms }) =>
                   <TableCell>
                     <div className="flex items-center gap-1">
                       <Share2 className="h-4 w-4 text-muted-foreground" />
+                      {post.shares.toLocaleString()}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <BookmarkIcon className="h-4 w-4 text-muted-foreground" />
+                      {post.saved.toLocaleString()}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <BarChart className="h-4 w-4 text-muted-foreground" />
                       {post.engagementRate}%
                     </div>
                   </TableCell>
@@ -326,7 +374,7 @@ const PostPerformanceTab: React.FC<PostPerformanceTabProps> = ({ platforms }) =>
               ))}
               {sortedPosts.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
+                  <TableCell colSpan={8} className="text-center py-8">
                     <BarChart className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                     <p>No post data available for the selected platform.</p>
                   </TableCell>

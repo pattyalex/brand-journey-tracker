@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -17,7 +18,10 @@ import {
   Facebook,
   Twitter,
   ExternalLink,
-  Copy
+  Copy,
+  Share2,
+  Save,
+  BookmarkIcon
 } from "lucide-react";
 import CreateSimilarContentDialog from "./CreateSimilarContentDialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -36,6 +40,8 @@ const videos = [
     views: 156283,
     likes: 12453,
     comments: 843,
+    shares: 2453,
+    saved: 3724,
     watchTime: "28:52",
     retentionRate: 64,
     date: "2023-09-15",
@@ -49,6 +55,8 @@ const videos = [
     views: 98456,
     likes: 7845,
     comments: 512,
+    shares: 1845,
+    saved: 2567,
     watchTime: "12:24",
     retentionRate: 72,
     date: "2023-10-02",
@@ -62,6 +70,8 @@ const videos = [
     views: 68932,
     likes: 9456,
     comments: 745,
+    shares: 1267,
+    saved: 1932,
     watchTime: "05:18",
     retentionRate: 58,
     date: "2023-10-18",
@@ -75,6 +85,8 @@ const videos = [
     views: 45238,
     likes: 3456,
     comments: 287,
+    shares: 956,
+    saved: 786,
     watchTime: "19:34",
     retentionRate: 51,
     date: "2023-11-05",
@@ -88,6 +100,8 @@ const videos = [
     views: 34589,
     likes: 2876,
     comments: 234,
+    shares: 567,
+    saved: 932,
     watchTime: "08:47",
     retentionRate: 49,
     date: "2023-11-20",
@@ -185,7 +199,12 @@ const VideoPerformanceTab: React.FC<VideoPerformanceTabProps> = ({ platforms }) 
           <div>
             <CardTitle>Performance Metrics</CardTitle>
             <CardDescription>
-              Sorted by {sortBy === "views" ? "views" : sortBy === "likes" ? "likes" : sortBy === "comments" ? "comments" : "retention rate"}
+              Sorted by {sortBy === "views" ? "views" : 
+                          sortBy === "likes" ? "likes" : 
+                          sortBy === "comments" ? "comments" : 
+                          sortBy === "shares" ? "shares" : 
+                          sortBy === "saved" ? "saves" : 
+                          "retention rate"}
               {sortOrder === "desc" ? " (highest first)" : " (lowest first)"}
             </CardDescription>
           </div>
@@ -234,6 +253,32 @@ const VideoPerformanceTab: React.FC<VideoPerformanceTabProps> = ({ platforms }) 
                   >
                     Comments
                     {sortBy === "comments" && (
+                      sortOrder === "desc" ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />
+                    )}
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleSort("shares")}
+                    className="flex items-center gap-1 -ml-3"
+                  >
+                    Shares
+                    {sortBy === "shares" && (
+                      sortOrder === "desc" ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />
+                    )}
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleSort("saved")}
+                    className="flex items-center gap-1 -ml-3"
+                  >
+                    Saved
+                    {sortBy === "saved" && (
                       sortOrder === "desc" ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />
                     )}
                   </Button>
@@ -318,6 +363,18 @@ const VideoPerformanceTab: React.FC<VideoPerformanceTabProps> = ({ platforms }) 
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
+                      <Share2 className="h-4 w-4 text-muted-foreground" />
+                      {video.shares.toLocaleString()}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <BookmarkIcon className="h-4 w-4 text-muted-foreground" />
+                      {video.saved.toLocaleString()}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
                       <Repeat className="h-4 w-4 text-muted-foreground" />
                       {video.retentionRate}%
                     </div>
@@ -332,7 +389,7 @@ const VideoPerformanceTab: React.FC<VideoPerformanceTabProps> = ({ platforms }) 
               ))}
               {sortedVideos.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
+                  <TableCell colSpan={8} className="text-center py-8">
                     <BarChart className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                     <p>No video data available for the selected platform.</p>
                   </TableCell>
