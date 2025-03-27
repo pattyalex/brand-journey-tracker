@@ -29,7 +29,8 @@ const CreateSimilarContentDialog = ({
   onSave,
   onCancel,
 }: CreateSimilarContentDialogProps) => {
-  const [title, setTitle] = useState(contentDetails ? `Similar to: ${contentDetails.title}` : "");
+  // Use the original content title directly if available, otherwise use the placeholder
+  const [title, setTitle] = useState(contentDetails?.title || "");
   const [bucketId, setBucketId] = useState("");
   const [scriptText, setScriptText] = useState("");
   const [visualNotes, setVisualNotes] = useState("");
@@ -52,6 +53,13 @@ const CreateSimilarContentDialog = ({
     { id: "2", name: "Pillar 2", content: [] },
     { id: "3", name: "Pillar 3", content: [] }
   ]);
+
+  // Update title when contentDetails changes
+  useEffect(() => {
+    if (contentDetails?.title) {
+      setTitle(contentDetails.title);
+    }
+  }, [contentDetails]);
 
   // Load pillars from localStorage if available
   useEffect(() => {
