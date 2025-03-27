@@ -1,5 +1,4 @@
-
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import TitleInputSection from "./TitleInputSection";
 import BucketSelectionSection from "./BucketSelectionSection";
@@ -10,7 +9,9 @@ import CaptionInputSection from "./CaptionInputSection";
 import PlatformsSection from "./PlatformsSection";
 import TagsSection from "./TagsSection";
 import InspirationSection from "./InspirationSection";
+import PillarSelector from "./PillarSelector";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
+import { Pillar } from "@/pages/BankOfContent";
 
 interface DialogContentProps {
   title: string;
@@ -111,6 +112,22 @@ const DialogContent = ({
   children,
 }: DialogContentProps) => {
   const [isScriptExpanded, setIsScriptExpanded] = useState(true);
+  const [pillars, setPillars] = useState<Pillar[]>([
+    { id: "1", name: "Pillar 1", content: [] },
+    { id: "2", name: "Pillar 2", content: [] },
+    { id: "3", name: "Pillar 3", content: [] }
+  ]);
+
+  useEffect(() => {
+    try {
+      const savedPillars = localStorage.getItem("pillars");
+      if (savedPillars) {
+        setPillars(JSON.parse(savedPillars));
+      }
+    } catch (error) {
+      console.error("Error loading pillars:", error);
+    }
+  }, []);
 
   const handleScriptCollapseChange = (isOpen: boolean) => {
     setIsScriptExpanded(isOpen);
@@ -165,6 +182,52 @@ const DialogContent = ({
             className="mx-2"
           >
             <TitleInputSection title={title} onTitleChange={onTitleChange} />
+          </motion.div>
+          
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 gap-4 mx-2"
+            variants={itemVariants}
+            layout
+          >
+            <motion.div
+              className="bg-gray-50 rounded-lg p-4 border border-gray-200 shadow-sm"
+              whileHover={{ scale: 1.01 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="space-y-2">
+                <label htmlFor="format-select" className="block text-sm font-medium">
+                  Content Format
+                </label>
+                <select
+                  id="format-select"
+                  value={format}
+                  onChange={(e) => onFormatChange(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="Post">Post</option>
+                  <option value="Story">Story</option>
+                  <option value="Reel">Reel</option>
+                  <option value="Video">Video</option>
+                  <option value="Carousel">Carousel</option>
+                  <option value="Blog Post">Blog Post</option>
+                </select>
+                <p className="text-xs text-gray-500">
+                  Select the type of content you're creating
+                </p>
+              </div>
+            </motion.div>
+            
+            <motion.div
+              className="bg-blue-50 rounded-lg p-4 border border-blue-100 shadow-sm"
+              whileHover={{ scale: 1.01 }}
+              transition={{ duration: 0.2 }}
+            >
+              <PillarSelector 
+                pillarId={pillarId} 
+                onPillarChange={onBucketChange} 
+                pillars={pillars}
+              />
+            </motion.div>
           </motion.div>
           
           <motion.div 

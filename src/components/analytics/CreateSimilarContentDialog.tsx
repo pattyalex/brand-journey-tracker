@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,6 +9,7 @@ import {
 import { toast } from "sonner";
 import DialogHeader from "@/components/content/ideaDialog/DialogHeader";
 import DialogContentBody from "@/components/content/ideaDialog/DialogContent";
+import { Pillar } from "@/pages/BankOfContent";
 
 interface CreateSimilarContentDialogProps {
   open: boolean;
@@ -45,6 +46,24 @@ const CreateSimilarContentDialog = ({
     `This content is inspired by "${contentDetails.title}" which performed well on ${contentDetails.platform}.` : "");
   const [inspirationLinks, setInspirationLinks] = useState<string[]>([]);
   const [inspirationImages, setInspirationImages] = useState<string[]>([]);
+  const [selectedPillarId, setSelectedPillarId] = useState("1");
+  const [pillars, setPillars] = useState<Pillar[]>([
+    { id: "1", name: "Pillar 1", content: [] },
+    { id: "2", name: "Pillar 2", content: [] },
+    { id: "3", name: "Pillar 3", content: [] }
+  ]);
+
+  // Load pillars from localStorage if available
+  useEffect(() => {
+    try {
+      const savedPillars = localStorage.getItem("pillars");
+      if (savedPillars) {
+        setPillars(JSON.parse(savedPillars));
+      }
+    } catch (error) {
+      console.error("Error loading pillars:", error);
+    }
+  }, []);
 
   const handleAddTag = () => {
     if (currentTag.trim() && !tagsList.includes(currentTag.trim())) {
@@ -85,8 +104,56 @@ const CreateSimilarContentDialog = ({
   };
 
   const handleSave = () => {
-    // Here we could implement saving the content to a backend or state
-    toast.success("Content idea saved successfully");
+    // Get the existing pillar data
+    try {
+      const savedPillars = localStorage.getItem("pillars") || JSON.stringify(pillars);
+      const existingPillars: Pillar[] = JSON.parse(savedPillars);
+      
+      // Find the selected pillar
+      const targetPillarIndex = existingPillars.findIndex(p => p.id === selectedPillarId);
+      
+      if (targetPillarIndex !== -1) {
+        // Create the new content item
+        const newContentItem = {
+          id: `content-${Date.now()}`,
+          title: title,
+          description: scriptText.substring(0, 100) + (scriptText.length > 100 ? "..." : ""),
+          url: JSON.stringify({
+            script: scriptText,
+            visualNotes,
+            shootDetails,
+            caption: captionText,
+            platforms: platformsList,
+            bucketId,
+            format,
+            inspirationText,
+            inspirationLinks,
+            inspirationImages
+          }),
+          format: format,
+          dateCreated: new Date(),
+          tags: tagsList,
+          platforms: platformsList
+        };
+        
+        // Add the new content to the selected pillar
+        existingPillars[targetPillarIndex].content.push(newContentItem);
+        
+        // Save the updated pillars back to localStorage
+        localStorage.setItem("pillars", JSON.stringify(existingPillars));
+        
+        const pillarName = existingPillars[targetPillarIndex].name;
+        toast.success(`Content idea added to ${pillarName}`, {
+          description: "Navigate to Idea Development to see your new content"
+        });
+      } else {
+        toast.error("Selected pillar not found");
+      }
+    } catch (error) {
+      console.error("Error saving content to pillar:", error);
+      toast.error("Failed to save content to pillar");
+    }
+    
     onSave();
   };
 
@@ -106,7 +173,7 @@ const CreateSimilarContentDialog = ({
               onTitleChange={setTitle}
               bucketId={bucketId}
               onBucketChange={setBucketId}
-              pillarId=""
+              pillarId={selectedPillarId}
               format={format}
               onFormatChange={setFormat}
               scriptText={scriptText}
@@ -135,7 +202,9 @@ const CreateSimilarContentDialog = ({
               inspirationImages={inspirationImages}
               onAddInspirationImage={handleAddInspirationImage}
               onRemoveInspirationImage={handleRemoveInspirationImage}
-            />
+            >
+              {/* PillarSelector will be shown in DialogContentBody */}
+            </DialogContentBody>
           </div>
           
           <DialogFooter className="mt-4 flex flex-wrap items-center gap-2">
