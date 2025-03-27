@@ -115,6 +115,7 @@ const IdeaCreationDialog = ({
               bucketId={bucketId}
               onBucketChange={onBucketChange}
               pillarId={pillarId}
+              onPillarChange={onBucketChange} // Use the same handler for bucket change
               format={format}
               onFormatChange={onFormatChange}
               scriptText={scriptText}

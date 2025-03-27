@@ -45,7 +45,8 @@ const CreateSimilarContentDialog = ({
     `This content is inspired by "${contentDetails.title}" which performed well on ${contentDetails.platform}.` : "");
   const [inspirationLinks, setInspirationLinks] = useState<string[]>([]);
   const [inspirationImages, setInspirationImages] = useState<string[]>([]);
-  const [selectedPillarId, setSelectedPillarId] = useState("1");
+  const [selectedPillarId, setSelectedPillarId] = useState("");
+  const [isPillarSelected, setIsPillarSelected] = useState(false);
   const [pillars, setPillars] = useState<Pillar[]>([
     { id: "1", name: "Pillar 1", content: [] },
     { id: "2", name: "Pillar 2", content: [] },
@@ -63,6 +64,18 @@ const CreateSimilarContentDialog = ({
       console.error("Error loading pillars:", error);
     }
   }, []);
+
+  // Track when pillar is selected
+  useEffect(() => {
+    setIsPillarSelected(!!selectedPillarId);
+    
+    // Reset bucket ID when pillar changes to force user to select from new formats
+    setBucketId("");
+  }, [selectedPillarId]);
+
+  const handlePillarChange = (pillarId: string) => {
+    setSelectedPillarId(pillarId);
+  };
 
   const handleAddTag = () => {
     if (currentTag.trim() && !tagsList.includes(currentTag.trim())) {
@@ -103,6 +116,12 @@ const CreateSimilarContentDialog = ({
   };
 
   const handleSave = () => {
+    // Validate that pillar is selected
+    if (!selectedPillarId) {
+      toast.error("Please select a pillar for this content");
+      return;
+    }
+
     // Get the existing pillar data
     try {
       const savedPillars = localStorage.getItem("pillars") || JSON.stringify(pillars);
@@ -131,7 +150,8 @@ const CreateSimilarContentDialog = ({
           format: "",
           dateCreated: new Date(),
           tags: tagsList,
-          platforms: platformsList
+          platforms: platformsList,
+          bucketId
         };
         
         // Add the new content to the selected pillar
@@ -172,6 +192,7 @@ const CreateSimilarContentDialog = ({
               bucketId={bucketId}
               onBucketChange={setBucketId}
               pillarId={selectedPillarId}
+              onPillarChange={handlePillarChange}
               format=""
               onFormatChange={() => {}}
               scriptText={scriptText}
@@ -200,19 +221,27 @@ const CreateSimilarContentDialog = ({
               inspirationImages={inspirationImages}
               onAddInspirationImage={handleAddInspirationImage}
               onRemoveInspirationImage={handleRemoveInspirationImage}
-            >
-              {/* PillarSelector will be shown in DialogContentBody */}
-            </DialogContentBody>
+            />
           </div>
           
           <DialogFooter className="mt-4 flex flex-wrap items-center gap-2">
             <Button variant="outline" onClick={onCancel}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>
+            <Button 
+              onClick={handleSave}
+              disabled={!selectedPillarId || !title.trim()}
+              className={!selectedPillarId ? "opacity-50 cursor-not-allowed" : ""}
+            >
               Create
             </Button>
           </DialogFooter>
+          
+          {!selectedPillarId && (
+            <p className="text-red-500 text-sm mt-2 text-center">
+              Please select a pillar to continue
+            </p>
+          )}
         </div>
       </DialogContent>
     </Dialog>

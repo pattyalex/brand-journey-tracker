@@ -23,8 +23,15 @@ const BucketSelectionSection = ({
   pillarId
 }: BucketSelectionSectionProps) => {
   const [contentFormats, setContentFormats] = useState<ContentFormat[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   
   useEffect(() => {
+    if (!pillarId) {
+      setContentFormats([]);
+      return;
+    }
+    
+    setIsLoading(true);
     try {
       const savedFormats = localStorage.getItem(`content-formats-${pillarId}`);
       if (savedFormats) {
@@ -41,6 +48,8 @@ const BucketSelectionSection = ({
       }
     } catch (error) {
       console.error("Failed to load content formats:", error);
+    } finally {
+      setIsLoading(false);
     }
   }, [pillarId]);
 
@@ -61,18 +70,33 @@ const BucketSelectionSection = ({
       <Select 
         value={bucketId} 
         onValueChange={onBucketChange}
+        disabled={!pillarId}
       >
-        <SelectTrigger id="format-select" className="w-full h-10 pl-3">
-          <SelectValue placeholder="Select from your saved Content Formats in Pillars" />
+        <SelectTrigger 
+          id="format-select" 
+          className={`w-full h-10 pl-3 ${!pillarId ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          <SelectValue placeholder={!pillarId ? "Select a pillar first" : "Select a content format"} />
         </SelectTrigger>
         <SelectContent>
-          {contentFormats.map((format) => (
-            <SelectItem key={format.id} value={format.id}>
-              {format.name}
+          {contentFormats.length > 0 ? (
+            contentFormats.map((format) => (
+              <SelectItem key={format.id} value={format.id}>
+                {format.name}
+              </SelectItem>
+            ))
+          ) : (
+            <SelectItem value="no-formats" disabled>
+              {isLoading ? "Loading formats..." : "No formats available"}
             </SelectItem>
-          ))}
+          )}
         </SelectContent>
       </Select>
+      <p className="text-xs text-gray-500">
+        {!pillarId ? 
+          "Please select a pillar first to see available formats" : 
+          "Select the content format for this idea"}
+      </p>
     </motion.div>
   );
 };

@@ -27,11 +27,14 @@ const PillarSelector = ({ pillarId, onPillarChange, pillars }: PillarSelectorPro
       <div className="flex items-center gap-2">
         <Flame className="h-4 w-4 text-blue-700" />
         <Label htmlFor="pillar-selector" className="font-medium text-blue-900">
-          Destination Pillar
+          Destination Pillar <span className="text-red-500">*</span>
         </Label>
       </div>
       <Select value={pillarId} onValueChange={handleSelectChange}>
-        <SelectTrigger id="pillar-selector" className="w-full bg-white border-blue-200">
+        <SelectTrigger 
+          id="pillar-selector" 
+          className={`w-full bg-white border-blue-200 ${!pillarId ? 'border-red-300 ring-1 ring-red-200' : ''}`}
+        >
           <SelectValue placeholder="Select from your saved Pillars" />
         </SelectTrigger>
         <SelectContent>
@@ -43,7 +46,11 @@ const PillarSelector = ({ pillarId, onPillarChange, pillars }: PillarSelectorPro
         </SelectContent>
       </Select>
       <p className="text-xs text-blue-600">
-        Select which pillar this content will be added to
+        {!pillarId ? (
+          <span className="text-red-500">Required: Select which pillar this content will be added to</span>
+        ) : (
+          "Content formats will be loaded from this pillar"
+        )}
       </p>
     </div>
   );

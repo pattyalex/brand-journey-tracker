@@ -20,6 +20,7 @@ interface DialogContentProps {
   bucketId: string;
   onBucketChange: (value: string) => void;
   pillarId: string;
+  onPillarChange?: (value: string) => void;
   format: string;
   onFormatChange: (value: string) => void;
   scriptText: string;
@@ -82,6 +83,7 @@ const DialogContent = ({
   bucketId,
   onBucketChange,
   pillarId,
+  onPillarChange = () => {},
   format,
   onFormatChange,
   scriptText,
@@ -148,7 +150,7 @@ const DialogContent = ({
             variants={itemVariants}
             layout
           >
-            {/* Swapped position - Destination Pillar now comes first */}
+            {/* Destination Pillar now comes first */}
             <motion.div
               className="bg-blue-50 rounded-lg p-4 border border-blue-100 shadow-sm"
               whileHover={{ scale: 1.01 }}
@@ -156,7 +158,7 @@ const DialogContent = ({
             >
               <PillarSelector 
                 pillarId={pillarId} 
-                onPillarChange={onBucketChange} 
+                onPillarChange={onPillarChange} 
                 pillars={pillars}
               />
             </motion.div>
