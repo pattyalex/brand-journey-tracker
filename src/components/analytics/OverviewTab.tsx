@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, Users, ThumbsUp, MessageSquare, BarChartIcon, TrendingUp, Megaphone, Radio } from "lucide-react";
@@ -20,7 +19,6 @@ import { ChartContainer } from "@/components/ui/chart";
 import TimeFilterSelect from "@/components/analytics/TimeFilterSelect";
 import { Button } from "@/components/ui/button";
 
-// Mock data - would be replaced with real API data
 const engagementData = [
   { name: "Jan", Instagram: 4000, Facebook: 2400, Twitter: 1800, YouTube: 3200 },
   { name: "Feb", Instagram: 3000, Facebook: 1398, Twitter: 2800, YouTube: 2800 },
@@ -30,7 +28,6 @@ const engagementData = [
   { name: "Jun", Instagram: 2390, Facebook: 3800, Twitter: 2800, YouTube: 4300 },
 ];
 
-// Mock data for followers growth
 const followersData = [
   { name: "Jan", Instagram: 15200, Facebook: 12400, Twitter: 8800, YouTube: 6200 },
   { name: "Feb", Instagram: 16800, Facebook: 13100, Twitter: 9200, YouTube: 6800 },
@@ -40,7 +37,6 @@ const followersData = [
   { name: "Jun", Instagram: 26000, Facebook: 18000, Twitter: 12000, YouTube: 10000 },
 ];
 
-// Mock data for impressions
 const impressionsData = [
   { name: "Jan", Instagram: 42000, Facebook: 32400, Twitter: 21800, YouTube: 25200 },
   { name: "Feb", Instagram: 38000, Facebook: 31398, Twitter: 24800, YouTube: 27800 },
@@ -50,7 +46,6 @@ const impressionsData = [
   { name: "Jun", Instagram: 72390, Facebook: 53800, Twitter: 38800, YouTube: 44300 },
 ];
 
-// Mock data for reach
 const reachData = [
   { name: "Jan", Instagram: 22000, Facebook: 18400, Twitter: 12800, YouTube: 15200 },
   { name: "Feb", Instagram: 24000, Facebook: 19398, Twitter: 14800, YouTube: 16800 },
@@ -65,6 +60,8 @@ const statsData = [
   { title: "Total Views", value: "1.2M", icon: Eye, change: "+18.2%" },
   { title: "Engagement Rate", value: "5.32%", icon: ThumbsUp, change: "+1.2%" },
   { title: "Comments", value: "8,246", icon: MessageSquare, change: "+7.1%" },
+  { title: "Reach", value: "3.4M", icon: Radio, change: "+12.8%" },
+  { title: "Impressions", value: "5.7M", icon: Megaphone, change: "+15.3%" },
 ];
 
 interface OverviewTabProps {
@@ -93,7 +90,6 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ platforms }) => {
     YouTube: { color: "#FF0000" },
   };
 
-  // Prepare single platform engagement data for the chart
   const singlePlatformEngagementData = engagementData.map(item => ({
     name: item.name,
     value: item[selectedPlatform as keyof typeof item] || 0
@@ -122,7 +118,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ platforms }) => {
         />
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {statsData.map((stat, index) => (
           <Card key={index}>
             <CardContent className="pt-6">
@@ -148,7 +144,6 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ platforms }) => {
         ))}
       </div>
 
-      {/* Followers Growth Graph */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -182,7 +177,6 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ platforms }) => {
         </CardContent>
       </Card>
       
-      {/* Reach Section - Moved before Impressions */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -216,7 +210,6 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ platforms }) => {
         </CardContent>
       </Card>
       
-      {/* Impressions Section - Moved after Reach */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -250,7 +243,6 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ platforms }) => {
         </CardContent>
       </Card>
 
-      {/* Engagement for Selected Platform Only */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
