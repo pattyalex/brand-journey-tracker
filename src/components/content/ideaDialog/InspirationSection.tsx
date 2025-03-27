@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { PlusCircle, Link as LinkIcon, ImageIcon, X, Lightbulb } from "lucide-react";
 import { Label } from "@/components/ui/label";
@@ -86,7 +87,7 @@ const InspirationSection = ({
                 <ImageIcon className="h-3.5 w-3.5" />
               </Label>
             </TooltipTrigger>
-            <TooltipContent className="min-w-[120px] px-4 py-1.5 text-center" sideOffset={5} align="end">
+            <TooltipContent className="min-w-[120px] px-4 py-1.5 text-center" sideOffset={10} align="start">
               <p className="text-xs">Upload image</p>
             </TooltipContent>
           </Tooltip>
