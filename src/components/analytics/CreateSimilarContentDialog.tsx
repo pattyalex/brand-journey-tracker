@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import DialogHeader from "@/components/content/ideaDialog/DialogHeader";
-import DialogContent from "./similiarContent/DialogContent";
+import SimilarContentForm from "./similiarContent/DialogContent";
 import { Pillar } from "@/pages/BankOfContent";
 
 interface CreateSimilarContentDialogProps {
@@ -211,7 +211,7 @@ const CreateSimilarContentDialog = ({
           />
           
           <div className="flex-1">
-            <DialogContent
+            <SimilarContentForm
               title={title}
               onTitleChange={setTitle}
               bucketId={bucketId}
