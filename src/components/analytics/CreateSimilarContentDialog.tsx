@@ -6,6 +6,13 @@ import {
   DialogContent,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger 
+} from "@/components/ui/tooltip";
+import { ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import DialogHeader from "@/components/content/ideaDialog/DialogHeader";
 import DialogContentBody from "@/components/content/ideaDialog/DialogContent";
@@ -193,6 +200,12 @@ const CreateSimilarContentDialog = ({
     onSave();
   };
 
+  // Get the name of the selected pillar for the tooltip
+  const getSelectedPillarName = () => {
+    const pillar = pillars.find(p => p.id === selectedPillarId);
+    return pillar ? pillar.name : "selected pillar";
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[95vh] sm:max-w-[800px] md:max-w-[900px] lg:max-w-[1000px] w-[90vw]">
@@ -246,13 +259,25 @@ const CreateSimilarContentDialog = ({
             <Button variant="outline" onClick={onCancel}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleSave}
-              disabled={!selectedPillarId || !title.trim()}
-              className={!selectedPillarId ? "opacity-50 cursor-not-allowed" : ""}
-            >
-              Create
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    onClick={handleSave}
+                    disabled={!selectedPillarId || !title.trim()}
+                    className={!selectedPillarId ? "opacity-50 cursor-not-allowed" : ""}
+                  >
+                    Create
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-[250px] text-sm">
+                  <p>
+                    Your content will be saved to <strong>{getSelectedPillarName()}</strong> in <strong>Idea Development</strong>{" "}
+                    <ExternalLink className="inline h-3 w-3 ml-1" />
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </DialogFooter>
           
           {!selectedPillarId && (
