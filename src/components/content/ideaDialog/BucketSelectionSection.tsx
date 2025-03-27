@@ -46,7 +46,7 @@ const BucketSelectionSection = ({
 
   return (
     <motion.div 
-      className="grid gap-2 px-2 py-3 mx-2 overflow-visible w-1/2"
+      className="grid gap-2 py-3 overflow-visible"
       initial={{ opacity: 0, x: 60 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4, delay: 0.1 }}

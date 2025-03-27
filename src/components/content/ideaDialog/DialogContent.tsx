@@ -144,16 +144,33 @@ const DialogContent = ({
       >
         <LayoutGroup>
           <motion.div 
-            whileHover={{ scale: 1.01 }} 
-            transition={{ duration: 0.2 }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4 mx-2"
             variants={itemVariants}
             layout
           >
-            <BucketSelectionSection 
-              bucketId={bucketId} 
-              onBucketChange={onBucketChange} 
-              pillarId={pillarId} 
-            />
+            <motion.div 
+              whileHover={{ scale: 1.01 }} 
+              transition={{ duration: 0.2 }}
+              layout
+            >
+              <BucketSelectionSection 
+                bucketId={bucketId} 
+                onBucketChange={onBucketChange} 
+                pillarId={pillarId} 
+              />
+            </motion.div>
+            
+            <motion.div
+              className="bg-blue-50 rounded-lg p-4 border border-blue-100 shadow-sm"
+              whileHover={{ scale: 1.01 }}
+              transition={{ duration: 0.2 }}
+            >
+              <PillarSelector 
+                pillarId={pillarId} 
+                onPillarChange={onBucketChange} 
+                pillars={pillars}
+              />
+            </motion.div>
           </motion.div>
           
           <motion.div 
@@ -176,29 +193,13 @@ const DialogContent = ({
           </motion.div>
           
           <motion.div 
-            className="grid grid-cols-1 md:grid-cols-2 gap-4 mx-2"
+            whileHover={{ scale: 1.01 }} 
+            transition={{ duration: 0.2 }}
             variants={itemVariants}
             layout
+            className="mx-2"
           >
-            <motion.div 
-              whileHover={{ scale: 1.01 }} 
-              transition={{ duration: 0.2 }}
-              layout
-            >
-              <TitleInputSection title={title} onTitleChange={onTitleChange} />
-            </motion.div>
-            
-            <motion.div
-              className="bg-blue-50 rounded-lg p-4 border border-blue-100 shadow-sm"
-              whileHover={{ scale: 1.01 }}
-              transition={{ duration: 0.2 }}
-            >
-              <PillarSelector 
-                pillarId={pillarId} 
-                onPillarChange={onBucketChange} 
-                pillars={pillars}
-              />
-            </motion.div>
+            <TitleInputSection title={title} onTitleChange={onTitleChange} />
           </motion.div>
           
           <motion.div 
