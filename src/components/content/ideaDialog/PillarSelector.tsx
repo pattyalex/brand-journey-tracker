@@ -27,7 +27,7 @@ const PillarSelector = ({ pillarId, onPillarChange, pillars }: PillarSelectorPro
       <div className="flex items-center gap-2">
         <Flame className="h-4 w-4 text-blue-700" />
         <Label htmlFor="pillar-selector" className="font-medium text-blue-900">
-          Destination Pillar <span className="text-blue-500">*</span>
+          Destination Pillar <span className="text-red-500">*</span>
         </Label>
       </div>
       <Select value={pillarId} onValueChange={handleSelectChange}>
