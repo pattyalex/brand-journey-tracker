@@ -40,7 +40,7 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
     {
       id: "TikTok",
       name: "TikTok",
-      logoUrl: "/lovable-uploads/625b6683-bc40-4a39-83e3-83de4acee731.png",
+      logoUrl: "/lovable-uploads/a0a8f806-0764-43d1-b2b1-17c378795bb6.png",
       icon: <Music className="h-5 w-5" />,
       color: "bg-black",
     },
@@ -113,11 +113,11 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
         );
       case "TikTok":
         return (
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl">
+          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-black">
             <img 
-              src="/lovable-uploads/625b6683-bc40-4a39-83e3-83de4acee731.png" 
+              src="/lovable-uploads/a0a8f806-0764-43d1-b2b1-17c378795bb6.png" 
               alt="TikTok Logo" 
-              className="w-7 h-7"
+              className="w-8 h-8"
             />
           </div>
         );
