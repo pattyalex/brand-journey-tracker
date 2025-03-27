@@ -113,7 +113,7 @@ const InspirationSection = ({
                 <LinkIcon className="h-2.5 w-2.5" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent className="min-w-[90px] px-4 py-1.5 text-center" sideOffset={5} align="end">
+            <TooltipContent className="min-w-[90px] px-4 py-1.5 text-center" sideOffset={10} align="start">
               <p className="text-xs">Add link</p>
             </TooltipContent>
           </Tooltip>
