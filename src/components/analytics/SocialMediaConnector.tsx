@@ -142,9 +142,7 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
                   <HoverCardTrigger asChild>
                     <div className="relative group">
                       <button
-                        className={`w-14 h-14 rounded-full mb-3 flex items-center justify-center ${
-                          isConnected ? platform.color : "bg-gray-100"
-                        } hover:scale-110 transition-all duration-200`}
+                        className="w-14 h-14 flex items-center justify-center hover:scale-110 transition-all duration-200"
                         onClick={() =>
                           isConnected
                             ? onDisconnect(platform.id)
@@ -191,10 +189,10 @@ const SocialMediaConnector: React.FC<SocialMediaConnectorProps> = ({
           
           <div className="flex flex-col items-center">
             <button
-              className="w-14 h-14 rounded-full mb-3 bg-gray-50 hover:bg-gray-100 hover:scale-110 transition-all duration-200 flex items-center justify-center"
+              className="w-14 h-14 flex items-center justify-center hover:scale-110 transition-all duration-200"
               onClick={() => setIsAddDialogOpen(true)}
             >
-              <Plus className="h-6 w-6 text-gray-400" />
+              <Plus className="h-8 w-8 text-gray-400" />
             </button>
             <span className="text-sm font-medium text-gray-700">Add Platform</span>
           </div>
