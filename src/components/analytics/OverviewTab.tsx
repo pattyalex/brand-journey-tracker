@@ -60,7 +60,7 @@ const statsData = [
   { title: "Total Followers", value: "67,893", icon: Users, change: "+2.5%" },
   { title: "Reach", value: "3.4M", icon: Radio, change: "+12.8%" },
   { title: "Engagement Rate", value: "5.32%", icon: ThumbsUp, change: "+1.2%" },
-  { title: "Comments", value: "8,246", icon: MessageSquare, change: "+7.1%" },
+  { title: "Likes", value: "12,468", icon: ThumbsUp, change: "+9.3%" },
   { title: "Impressions", value: "5.7M", icon: Megaphone, change: "+15.3%" },
 ];
 
