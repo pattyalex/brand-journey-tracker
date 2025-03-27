@@ -254,10 +254,8 @@ const CreateSimilarContentDialog = ({
                     Create
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent className="max-w-[250px] text-sm">
-                  <p>
-                    Your content will be saved to <strong>{getSelectedPillarName()}</strong> in <strong>Idea Development</strong>
-                  </p>
+                <TooltipContent className="px-3 py-2 text-sm text-center">
+                  Your content will be saved to <strong>{getSelectedPillarName()}</strong> in <strong>Idea Development</strong>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
