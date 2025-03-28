@@ -60,7 +60,6 @@ const statsData = [
   { title: "Reach", value: "3.4M", icon: Radio, change: "+12.8%" },
   { title: "Engagement Rate", value: "5.32%", icon: ThumbsUp, change: "+1.2%" },
   { title: "Impressions", value: "5.7M", icon: Megaphone, change: "+15.3%" },
-  { title: "Likes", value: "12,468", icon: ThumbsUp, change: "+9.3%" },
 ];
 
 interface OverviewTabProps {
