@@ -25,6 +25,7 @@ const SocialMediaScheduler = lazy(() => import('./pages/SocialMediaScheduler'));
 const Index = lazy(() => import('./pages/Index'));
 const VisionBoard = lazy(() => import('./pages/VisionBoard'));
 const Research = lazy(() => import('./pages/Research'));
+const PartnershipsManagement = lazy(() => import('./pages/PartnershipsManagement'));
 
 // Loading component
 const PageLoader = () => (
@@ -60,6 +61,7 @@ function App() {
             <Route path="/social-media-scheduler" element={<SocialMediaScheduler />} />
             <Route path="/projects/vision-board" element={<VisionBoard />} />
             <Route path="/research" element={<Research />} />
+            <Route path="/partnerships-management" element={<PartnershipsManagement />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
