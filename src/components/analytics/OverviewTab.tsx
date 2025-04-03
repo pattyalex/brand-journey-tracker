@@ -57,9 +57,9 @@ const reachData = [
 
 const statsData = [
   { title: "Total Followers", value: "67,893", icon: Users, change: "+2.5%" },
+  { title: "Impressions", value: "5.7M", icon: Megaphone, change: "+15.3%" },
   { title: "Reach", value: "3.4M", icon: Radio, change: "+12.8%" },
   { title: "Engagement Rate", value: "5.32%", icon: ThumbsUp, change: "+1.2%" },
-  { title: "Impressions", value: "5.7M", icon: Megaphone, change: "+15.3%" },
 ];
 
 interface OverviewTabProps {
