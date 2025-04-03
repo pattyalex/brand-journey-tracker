@@ -14,9 +14,9 @@ export const defaultMenuItems: MenuItem[] = [
       { title: 'Idea Development', icon: Database, url: '/bank-of-content' },
       { title: 'Content Calendar', icon: Calendar, url: '/content-calendar' },
       { title: 'Analytics', icon: BarChart, url: '/analytics' },
-      { title: 'Strategy and Growth', icon: TrendingUp, url: '/strategy-growth' },
     ]
   },
+  { title: 'Strategy and Growth', icon: TrendingUp, url: '/strategy-growth', isDeletable: false },
   { title: 'Quick Notes', icon: Clipboard, url: '/quick-notes', isDeletable: false },
   { title: 'Goals and Objectives', icon: Lightbulb, url: '/projects/vision-board', isDeletable: true },
   { title: 'Documents', icon: FileText, url: '/documents', isDeletable: true },
