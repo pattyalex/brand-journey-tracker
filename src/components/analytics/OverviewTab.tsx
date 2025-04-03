@@ -57,8 +57,8 @@ const reachData = [
 
 const statsData = [
   { title: "Total Followers", value: "67,893", icon: Users, change: "+2.5%" },
-  { title: "Impressions", value: "5.7M", icon: Megaphone, change: "+15.3%" },
   { title: "Reach", value: "3.4M", icon: Radio, change: "+12.8%" },
+  { title: "Impressions", value: "5.7M", icon: Megaphone, change: "+15.3%" },
   { title: "Engagement Rate", value: "5.32%", icon: ThumbsUp, change: "+1.2%" },
 ];
 
@@ -116,13 +116,13 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ platforms }) => {
         />
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {statsData.map((stat, index) => (
           <Card key={index}>
-            <CardContent className="pt-6">
+            <CardContent className="pt-6 px-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-muted-foreground">{stat.title}</p>
+                  <p className="text-muted-foreground text-sm">{stat.title}</p>
                   <h3 className="text-2xl font-bold mt-1">{stat.value}</h3>
                 </div>
                 <div className="rounded-full p-2 bg-primary/10">
