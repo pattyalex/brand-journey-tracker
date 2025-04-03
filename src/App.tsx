@@ -13,7 +13,6 @@ const ContentIdeation = lazy(() => import('./pages/ContentIdeation'));
 const ContentPlanning = lazy(() => import('./pages/ContentPlanning'));
 const ContentCalendar = lazy(() => import('./pages/ContentCalendar'));
 const StrategyGrowth = lazy(() => import('./pages/StrategyGrowth'));
-const IncomeTracker = lazy(() => import('./pages/IncomeTracker'));
 const Analytics = lazy(() => import('./pages/Analytics'));
 const QuickNotes = lazy(() => import('./pages/QuickNotes'));
 const GetStarted = lazy(() => import('./pages/GetStarted'));
@@ -48,7 +47,6 @@ function App() {
             <Route path="/content-planning" element={<ContentPlanning />} />
             <Route path="/content-calendar" element={<ContentCalendar />} />
             <Route path="/strategy-growth" element={<StrategyGrowth />} />
-            <Route path="/income-tracker" element={<IncomeTracker />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/quick-notes" element={<QuickNotes />} />
             <Route path="/get-started" element={<GetStarted />} />

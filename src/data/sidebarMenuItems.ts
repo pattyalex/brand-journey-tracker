@@ -14,7 +14,6 @@ export const defaultMenuItems: MenuItem[] = [
       { title: 'Idea Development', icon: Database, url: '/bank-of-content' },
       { title: 'Content Calendar', icon: Calendar, url: '/content-calendar' },
       { title: 'Analytics', icon: BarChart, url: '/analytics' },
-      { title: 'Income Tracker', icon: CreditCard, url: '/income-tracker' },
       { title: 'Strategy and Growth', icon: TrendingUp, url: '/strategy-growth' },
     ]
   },

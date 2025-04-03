@@ -1,7 +1,7 @@
 
 import Layout from "@/components/Layout";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Database, Calendar, TrendingUp, Handshake, BarChart } from "lucide-react";
+import { Database, Calendar, TrendingUp, BarChart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const services = [
@@ -33,16 +33,6 @@ const services = [
   {
     title: (
       <div className="flex flex-col">
-        <span>Income</span>
-        <span>Tracker</span>
-      </div>
-    ),
-    icon: Handshake,
-    path: "/income-tracker"
-  },
-  {
-    title: (
-      <div className="flex flex-col">
         <span>Strategy And</span>
         <span>Growth</span>
       </div>
@@ -63,7 +53,7 @@ const GetStarted = () => {
           <p className="text-muted-foreground">Select a feature to begin organizing your content creation journey</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {services.map((service, index) => (
             <Card 
               key={index}
