@@ -84,9 +84,9 @@ const QuickNotes = () => {
       <div className="space-y-6 fade-in">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Quick Notes</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Quick Notes or Reminders</h1>
             <p className="text-muted-foreground mt-1">
-              Write down thoughts and notes
+              Write down thoughts, notes and reminders
             </p>
           </div>
           
@@ -107,7 +107,7 @@ const QuickNotes = () => {
             <CardHeader>
               <CardTitle>Create New Note</CardTitle>
               <CardDescription>
-                Keep track of your important notes
+                Keep track of your important notes and reminders
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
