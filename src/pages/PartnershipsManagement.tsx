@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,15 +21,14 @@ const PartnershipsManagement = () => {
   const [partnerships, setPartnerships] = useState<Partnership[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-  const [newPartner, setNewPartner] = useState({
+  const [newPartner, setNewPartner] = useState<Omit<Partnership, 'id' | 'date'>>({
     name: "",
     contactPerson: "",
     email: "",
-    status: "Pending" as const,
+    status: "Pending",
     description: ""
   });
 
-  // Load partnerships from localStorage on component mount
   useEffect(() => {
     const savedPartnerships = localStorage.getItem("partnerships");
     if (savedPartnerships) {
@@ -42,7 +40,6 @@ const PartnershipsManagement = () => {
     }
   }, []);
   
-  // Save partnerships to localStorage when they change
   useEffect(() => {
     localStorage.setItem("partnerships", JSON.stringify(partnerships));
   }, [partnerships]);
