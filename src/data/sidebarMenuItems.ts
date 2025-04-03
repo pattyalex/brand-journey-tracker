@@ -18,7 +18,6 @@ export const defaultMenuItems: MenuItem[] = [
   },
   { title: 'Strategy and Growth', icon: TrendingUp, url: '/strategy-growth', isDeletable: false },
   { title: 'Quick Notes', icon: Clipboard, url: '/quick-notes', isDeletable: false },
-  { title: 'Goals and Objectives', icon: Lightbulb, url: '/projects/vision-board', isDeletable: true },
   { title: 'Documents', icon: FileText, url: '/documents', isDeletable: true },
 ];
 
