@@ -107,7 +107,7 @@ const QuickNotes = () => {
             <CardHeader>
               <CardTitle>Create New Note</CardTitle>
               <CardDescription>
-                Keep track of your important notes and reminders
+                {/* Description text removed as requested */}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
