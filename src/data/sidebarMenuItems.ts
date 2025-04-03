@@ -23,7 +23,7 @@ export const defaultMenuItems: MenuItem[] = [
     url: '/strategy-growth', 
     isDeletable: false
   },
-  { title: 'Partnerships Management', icon: Handshake, url: '/partnerships-management', isDeletable: false },
+  { title: 'Partnerships', icon: Handshake, url: '/partnerships-management', isDeletable: false },
   { title: 'Quick Notes', icon: Clipboard, url: '/quick-notes', isDeletable: false },
   { title: 'Vision Board', icon: Image, url: '/projects/vision-board', isDeletable: false },
 ];
