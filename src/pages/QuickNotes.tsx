@@ -102,43 +102,7 @@ const QuickNotes = () => {
           </div>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-[1fr_300px]">
-          <Card>
-            <CardHeader>
-              <CardTitle>Create New Note</CardTitle>
-              <CardDescription>
-                {/* Description text removed as requested */}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Input
-                  placeholder="Note title"
-                  value={newNoteTitle}
-                  onChange={(e) => setNewNoteTitle(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Textarea
-                  placeholder="Write your note here..."
-                  className="min-h-[200px] resize-y"
-                  value={newNoteContent}
-                  onChange={(e) => setNewNoteContent(e.target.value)}
-                />
-              </div>
-            </CardContent>
-            <CardFooter className="pt-6 flex justify-end">
-              <Button 
-                onClick={handleAddNote} 
-                size="sm" 
-                className="bg-[#8B6B4E] hover:bg-[#6D5540]"
-              >
-                <PlusCircle className="mr-2 h-3.5 w-3.5" />
-                Add Note
-              </Button>
-            </CardFooter>
-          </Card>
-
+        <div className="grid gap-6 md:grid-cols-[300px_1fr]">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold">
@@ -193,6 +157,42 @@ const QuickNotes = () => {
               </div>
             </ScrollArea>
           </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Create New Note</CardTitle>
+              <CardDescription>
+                {/* Description text removed as requested */}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Input
+                  placeholder="Note title"
+                  value={newNoteTitle}
+                  onChange={(e) => setNewNoteTitle(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Textarea
+                  placeholder="Write your note here..."
+                  className="min-h-[200px] resize-y"
+                  value={newNoteContent}
+                  onChange={(e) => setNewNoteContent(e.target.value)}
+                />
+              </div>
+            </CardContent>
+            <CardFooter className="pt-6 flex justify-end">
+              <Button 
+                onClick={handleAddNote} 
+                size="sm" 
+                className="bg-[#8B6B4E] hover:bg-[#6D5540]"
+              >
+                <PlusCircle className="mr-2 h-3.5 w-3.5" />
+                Add Note
+              </Button>
+            </CardFooter>
+          </Card>
         </div>
       </div>
     </Layout>
