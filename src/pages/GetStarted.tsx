@@ -26,14 +26,9 @@ const services = [
     path: "/content-calendar"
   },
   {
-    title: (
-      <div className="flex flex-col">
-        <span>Strategy And</span>
-        <span>Growth</span>
-      </div>
-    ),
-    icon: TrendingUp,
-    path: "/strategy-growth"
+    title: "Analytics",
+    icon: BarChart,
+    path: "/analytics"
   },
   {
     title: (
@@ -46,9 +41,14 @@ const services = [
     path: "/income-tracker"
   },
   {
-    title: "Analytics",
-    icon: BarChart,
-    path: "/analytics"
+    title: (
+      <div className="flex flex-col">
+        <span>Strategy And</span>
+        <span>Growth</span>
+      </div>
+    ),
+    icon: TrendingUp,
+    path: "/strategy-growth"
   }
 ];
 
