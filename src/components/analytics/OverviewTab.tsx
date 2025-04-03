@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, Users, ThumbsUp, MessageSquare, BarChartIcon, TrendingUp, Megaphone, Radio } from "lucide-react";
@@ -17,7 +18,6 @@ import {
 } from "recharts";
 import { ChartContainer } from "@/components/ui/chart";
 import TimeFilterSelect from "@/components/analytics/TimeFilterSelect";
-import { Button } from "@/components/ui/button";
 
 const engagementData = [
   { name: "Jan", Instagram: 4000, Facebook: 2400, Twitter: 1800, YouTube: 3200 },
@@ -57,8 +57,8 @@ const reachData = [
 
 const statsData = [
   { title: "Total Followers", value: "67,893", icon: Users, change: "+2.5%" },
-  { title: "Reach", value: "3.4M", icon: Radio, change: "+12.8%" },
   { title: "Impressions", value: "5.7M", icon: Megaphone, change: "+15.3%" },
+  { title: "Reach", value: "3.4M", icon: Radio, change: "+12.8%" },
   { title: "Engagement Rate", value: "5.32%", icon: ThumbsUp, change: "+1.2%" },
 ];
 
@@ -70,7 +70,6 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ platforms }) => {
   const [timeRange, setTimeRange] = useState<string>("last30days");
   const [customStartDate, setCustomStartDate] = useState<Date | undefined>(undefined);
   const [customEndDate, setCustomEndDate] = useState<Date | undefined>(undefined);
-  const [selectedPlatform, setSelectedPlatform] = useState<string>(platforms.length > 0 ? platforms[0] : "");
   
   const handleTimeRangeChange = (range: string) => {
     setTimeRange(range);
@@ -88,26 +87,11 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ platforms }) => {
     YouTube: { color: "#FF0000" },
   };
 
-  const singlePlatformEngagementData = engagementData.map(item => ({
-    name: item.name,
-    value: item[selectedPlatform as keyof typeof item] || 0
-  }));
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center mb-4">
         <div className="flex gap-2">
-          {platforms.map((platform) => (
-            <Button
-              key={platform}
-              variant={selectedPlatform === platform ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedPlatform(platform)}
-              className="flex items-center gap-2"
-            >
-              {platform}
-            </Button>
-          ))}
+          {/* Platform selection buttons removed as requested */}
         </div>
         <TimeFilterSelect 
           selectedRange={timeRange}
@@ -244,24 +228,30 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ platforms }) => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <BarChartIcon className="h-5 w-5" /> Engagement for {selectedPlatform}
+            <BarChartIcon className="h-5 w-5" /> Engagement 
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-80 w-full">
             <ChartContainer config={config}>
-              <LineChart data={singlePlatformEngagementData}>
+              <LineChart data={engagementData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Line 
-                  type="monotone" 
-                  dataKey="value" 
-                  name={selectedPlatform}
-                  stroke={config[selectedPlatform as keyof typeof config]?.color || "#E1306C"} 
-                  activeDot={{ r: 8 }} 
-                />
+                <Legend />
+                {platforms.includes("Instagram") && (
+                  <Line type="monotone" dataKey="Instagram" stroke="#E1306C" activeDot={{ r: 8 }} />
+                )}
+                {platforms.includes("Facebook") && (
+                  <Line type="monotone" dataKey="Facebook" stroke="#4267B2" />
+                )}
+                {platforms.includes("Twitter") && (
+                  <Line type="monotone" dataKey="Twitter" stroke="#1DA1F2" />
+                )}
+                {platforms.includes("YouTube") && (
+                  <Line type="monotone" dataKey="YouTube" stroke="#FF0000" />
+                )}
               </LineChart>
             </ChartContainer>
           </div>
