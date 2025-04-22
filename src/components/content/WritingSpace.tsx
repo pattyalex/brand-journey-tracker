@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useState } from "react";
 import { Pencil, Sparkles } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -70,15 +69,127 @@ const WritingSpace = ({
     if (textareaRef.current) {
       const start = textareaRef.current.selectionStart;
       const end = textareaRef.current.selectionEnd;
+      const text = writingText;
       
-      onFormatText(formatType, formatValue);
+      let newText = text;
+      let newCursorPos = end;
       
-      setTimeout(() => {
-        if (textareaRef.current) {
-          textareaRef.current.focus();
+      const selectedText = text.substring(start, end);
+      
+      if (selectedText) {
+        let formattedText = selectedText;
+        
+        switch (formatType) {
+          case 'bold':
+            formattedText = `**${selectedText}**`;
+            newCursorPos = start + formattedText.length;
+            break;
+          case 'italic':
+            formattedText = `_${selectedText}_`;
+            newCursorPos = start + formattedText.length;
+            break;
+          case 'underline':
+            formattedText = `<u>${selectedText}</u>`;
+            newCursorPos = start + formattedText.length;
+            break;
+          case 'bullet':
+            formattedText = `\n- ${selectedText}`;
+            newCursorPos = start + formattedText.length;
+            break;
+          case 'numbered':
+            formattedText = `\n1. ${selectedText}`;
+            newCursorPos = start + formattedText.length;
+            break;
+          case 'align':
+            if (formatValue === 'left') {
+              formattedText = `<div align="left">${selectedText}</div>`;
+            } else if (formatValue === 'center') {
+              formattedText = `<div align="center">${selectedText}</div>`;
+            } else if (formatValue === 'right') {
+              formattedText = `<div align="right">${selectedText}</div>`;
+            }
+            newCursorPos = start + formattedText.length;
+            break;
+          case 'size':
+            if (formatValue === 'small') {
+              formattedText = `<small>${selectedText}</small>`;
+            } else if (formatValue === 'large') {
+              formattedText = `<h3>${selectedText}</h3>`;
+            } else if (formatValue === 'x-large') {
+              formattedText = `<h2>${selectedText}</h2>`;
+            }
+            newCursorPos = start + formattedText.length;
+            break;
+          default:
+            break;
         }
-      }, 10);
+        
+        newText = text.substring(0, start) + formattedText + text.substring(end);
+        onTextChange(newText);
+        
+        setTimeout(() => {
+          if (textareaRef.current) {
+            textareaRef.current.focus();
+            textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
+          }
+        }, 10);
+      } else {
+        let formattingTemplate = '';
+        
+        switch (formatType) {
+          case 'bold':
+            formattingTemplate = '**bold text**';
+            break;
+          case 'italic':
+            formattingTemplate = '_italic text_';
+            break;
+          case 'underline':
+            formattingTemplate = '<u>underlined text</u>';
+            break;
+          case 'bullet':
+            formattingTemplate = '\n- bullet point';
+            break;
+          case 'numbered':
+            formattingTemplate = '\n1. numbered item';
+            break;
+          case 'align':
+            if (formatValue === 'left') {
+              formattingTemplate = '<div align="left">left aligned text</div>';
+            } else if (formatValue === 'center') {
+              formattingTemplate = '<div align="center">centered text</div>';
+            } else if (formatValue === 'right') {
+              formattingTemplate = '<div align="right">right aligned text</div>';
+            }
+            break;
+          case 'size':
+            if (formatValue === 'small') {
+              formattingTemplate = '<small>small text</small>';
+            } else if (formatValue === 'large') {
+              formattingTemplate = '<h3>large text</h3>';
+            } else if (formatValue === 'x-large') {
+              formattingTemplate = '<h2>extra large text</h2>';
+            }
+            break;
+          default:
+            break;
+        }
+        
+        if (formattingTemplate) {
+          newText = text.substring(0, start) + formattingTemplate + text.substring(start);
+          onTextChange(newText);
+          
+          const cursorPos = start + formattingTemplate.length;
+          setTimeout(() => {
+            if (textareaRef.current) {
+              textareaRef.current.focus();
+              textareaRef.current.setSelectionRange(cursorPos, cursorPos);
+            }
+          }, 10);
+        }
+      }
     }
+    
+    onFormatText(formatType, formatValue);
   };
 
   return (
