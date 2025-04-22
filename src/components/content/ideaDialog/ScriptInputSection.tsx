@@ -5,8 +5,9 @@ import { FileText, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import SimpleTextFormattingToolbar from "@/components/SimpleTextFormattingToolbar";
+import ReactMarkdown from 'react-markdown';
 
 interface ScriptInputSectionProps {
   scriptText: string;
@@ -20,6 +21,7 @@ const ScriptInputSection = ({
   onCollapseChange,
 }: ScriptInputSectionProps) => {
   const [isOpen, setIsOpen] = useState(true);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleCollapseToggle = () => {
@@ -148,12 +150,12 @@ const ScriptInputSection = ({
           newText = text.substring(0, start) + formattingTemplate + text.substring(start);
           onScriptTextChange(newText);
           
-          // Place cursor between formatting tags
+          // Select the template text for easy replacement
           const cursorPos = start + formattingTemplate.length;
           setTimeout(() => {
             if (textareaRef.current) {
               textareaRef.current.focus();
-              textareaRef.current.setSelectionRange(cursorPos, cursorPos);
+              textareaRef.current.setSelectionRange(start + 2, cursorPos - 2);
             }
           }, 10);
         }
@@ -177,15 +179,25 @@ const ScriptInputSection = ({
               <FileText size={18} className="text-gray-600" />
               <Label htmlFor="develop-script" className="text-sm font-medium">Script</Label>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-8 px-2 text-gray-500 hover:text-gray-700"
-              onClick={handleCollapseToggle}
-            >
-              <ChevronUp size={16} className="mr-1" />
-              Collapse
-            </Button>
+            <div className="flex space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-8 px-2 text-gray-500 hover:text-gray-700"
+                onClick={() => setIsPreviewMode(!isPreviewMode)}
+              >
+                {isPreviewMode ? "Edit" : "Preview"}
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 px-2 text-gray-500 hover:text-gray-700"
+                onClick={handleCollapseToggle}
+              >
+                <ChevronUp size={16} className="mr-1" />
+                Collapse
+              </Button>
+            </div>
           </div>
           
           <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -194,14 +206,34 @@ const ScriptInputSection = ({
               style={{ animation: "collapsible-down 0.4s ease-out" }}
             >
               <SimpleTextFormattingToolbar onFormat={handleFormatText} />
-              <Textarea
-                id="develop-script"
-                ref={textareaRef}
-                value={scriptText}
-                onChange={(e) => onScriptTextChange(e.target.value)}
-                placeholder="Write your script here or collapse this section if you don't need a script for your content idea..."
-                className="min-h-[350px] resize-y focus-visible:ring-gray-400" 
-              />
+              
+              {isPreviewMode ? (
+                <div className="min-h-[350px] p-4 border rounded-md bg-gray-50 overflow-y-auto">
+                  <ReactMarkdown 
+                    className="prose max-w-none"
+                    components={{
+                      // Allow HTML in markdown
+                      p: ({ node, ...props }) => <p className="my-2" {...props} />,
+                      h2: ({ node, ...props }) => <h2 className="text-2xl font-bold mb-2 mt-4" {...props} />,
+                      h3: ({ node, ...props }) => <h3 className="text-xl font-bold mb-2 mt-3" {...props} />,
+                      ul: ({ node, ...props }) => <ul className="list-disc ml-5 my-2" {...props} />,
+                      ol: ({ node, ...props }) => <ol className="list-decimal ml-5 my-2" {...props} />,
+                      li: ({ node, ...props }) => <li className="my-1" {...props} />
+                    }}
+                  >
+                    {scriptText}
+                  </ReactMarkdown>
+                </div>
+              ) : (
+                <Textarea
+                  id="develop-script"
+                  ref={textareaRef}
+                  value={scriptText}
+                  onChange={(e) => onScriptTextChange(e.target.value)}
+                  placeholder="Write your script here or collapse this section if you don't need a script for your content idea..."
+                  className="min-h-[350px] resize-y focus-visible:ring-gray-400" 
+                />
+              )}
             </CollapsibleContent>
           </Collapsible>
         </>

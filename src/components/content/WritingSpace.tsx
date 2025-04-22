@@ -1,5 +1,6 @@
+
 import { useRef, useEffect, useState } from "react";
-import { Pencil, Sparkles } from "lucide-react";
+import { Pencil, Sparkles, Eye, Edit } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { useSidebar } from "@/components/ui/sidebar";
 import MeganAIChat from "./MeganAIChat";
 import TitleHookSuggestions from "./TitleHookSuggestions";
 import { motion } from "framer-motion";
+import ReactMarkdown from 'react-markdown';
 
 interface WritingSpaceProps {
   writingText: string;
@@ -50,6 +52,7 @@ const WritingSpace = ({
   const { state } = useSidebar();
   const [expandedClass, setExpandedClass] = useState("");
   const [isMeganOpen, setIsMeganOpen] = useState(false);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
   
   useEffect(() => {
     setExpandedClass(state === "collapsed" ? "writing-expanded" : "");
@@ -178,11 +181,12 @@ const WritingSpace = ({
           newText = text.substring(0, start) + formattingTemplate + text.substring(start);
           onTextChange(newText);
           
+          // Select the template text for easy replacement
           const cursorPos = start + formattingTemplate.length;
           setTimeout(() => {
             if (textareaRef.current) {
               textareaRef.current.focus();
-              textareaRef.current.setSelectionRange(cursorPos, cursorPos);
+              textareaRef.current.setSelectionRange(start + 2, cursorPos - 2);
             }
           }, 10);
         }
@@ -209,6 +213,31 @@ const WritingSpace = ({
         </h2>
         
         <div className="flex items-center gap-2">
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Button
+              variant={isPreviewMode ? "default" : "outline"}
+              size="sm"
+              className="cursor-pointer transition-all duration-150 rounded-md shadow-sm"
+              onClick={() => setIsPreviewMode(!isPreviewMode)}
+            >
+              {isPreviewMode ? (
+                <>
+                  <Edit className="h-4 w-4 mr-1.5" />
+                  <span className="text-sm font-medium">Edit</span>
+                </>
+              ) : (
+                <>
+                  <Eye className="h-4 w-4 mr-1.5" />
+                  <span className="text-sm font-medium">Preview</span>
+                </>
+              )}
+            </Button>
+          </motion.div>
+          
           <motion.div
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -290,21 +319,42 @@ const WritingSpace = ({
           transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
         >
           <div className={`${isMeganOpen ? "w-1/2 border-r border-gray-200 flex flex-col" : "w-full flex-1 flex flex-col"}`}>
-            <SimpleTextFormattingToolbar onFormat={handleFormatClick} />
+            {!isPreviewMode && (
+              <SimpleTextFormattingToolbar onFormat={handleFormatClick} />
+            )}
             
             <div className="h-full w-full flex-1">
-              <Textarea
-                ref={textareaRef}
-                value={writingText}
-                onChange={handleTextChange}
-                onSelect={(e) => {
-                  const target = e.target as HTMLTextAreaElement;
-                  const selectedText = target.value.substring(target.selectionStart, target.selectionEnd);
-                  handleTextSelection(selectedText);
-                }}
-                placeholder="Start writing your content ideas here..."
-                className="min-h-full w-full h-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-sm p-4"
-              />
+              {isPreviewMode ? (
+                <div className="min-h-full w-full h-full overflow-auto p-4 bg-white">
+                  <ReactMarkdown 
+                    className="prose max-w-none"
+                    components={{
+                      // Allow HTML in markdown
+                      p: ({ node, ...props }) => <p className="my-2" {...props} />,
+                      h2: ({ node, ...props }) => <h2 className="text-2xl font-bold mb-2 mt-4" {...props} />,
+                      h3: ({ node, ...props }) => <h3 className="text-xl font-bold mb-2 mt-3" {...props} />,
+                      ul: ({ node, ...props }) => <ul className="list-disc ml-5 my-2" {...props} />,
+                      ol: ({ node, ...props }) => <ol className="list-decimal ml-5 my-2" {...props} />,
+                      li: ({ node, ...props }) => <li className="my-1" {...props} />
+                    }}
+                  >
+                    {writingText}
+                  </ReactMarkdown>
+                </div>
+              ) : (
+                <Textarea
+                  ref={textareaRef}
+                  value={writingText}
+                  onChange={handleTextChange}
+                  onSelect={(e) => {
+                    const target = e.target as HTMLTextAreaElement;
+                    const selectedText = target.value.substring(target.selectionStart, target.selectionEnd);
+                    handleTextSelection(selectedText);
+                  }}
+                  placeholder="Start writing your content ideas here..."
+                  className="min-h-full w-full h-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-sm p-4"
+                />
+              )}
             </div>
           </div>
           
