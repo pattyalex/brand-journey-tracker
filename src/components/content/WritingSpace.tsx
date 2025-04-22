@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useState } from "react";
 import { Pencil, Sparkles, Eye, Edit } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -327,9 +326,7 @@ const WritingSpace = ({
               {isPreviewMode ? (
                 <div className="min-h-full w-full h-full overflow-auto p-4 bg-white">
                   <ReactMarkdown 
-                    className="prose max-w-none"
                     components={{
-                      // Allow HTML in markdown
                       p: ({ node, ...props }) => <p className="my-2" {...props} />,
                       h2: ({ node, ...props }) => <h2 className="text-2xl font-bold mb-2 mt-4" {...props} />,
                       h3: ({ node, ...props }) => <h3 className="text-xl font-bold mb-2 mt-3" {...props} />,

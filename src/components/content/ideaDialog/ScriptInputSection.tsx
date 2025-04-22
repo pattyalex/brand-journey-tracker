@@ -1,4 +1,3 @@
-
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { FileText, ChevronDown, ChevronUp } from "lucide-react";
@@ -210,9 +209,7 @@ const ScriptInputSection = ({
               {isPreviewMode ? (
                 <div className="min-h-[350px] p-4 border rounded-md bg-gray-50 overflow-y-auto">
                   <ReactMarkdown 
-                    className="prose max-w-none"
                     components={{
-                      // Allow HTML in markdown
                       p: ({ node, ...props }) => <p className="my-2" {...props} />,
                       h2: ({ node, ...props }) => <h2 className="text-2xl font-bold mb-2 mt-4" {...props} />,
                       h3: ({ node, ...props }) => <h3 className="text-xl font-bold mb-2 mt-3" {...props} />,
