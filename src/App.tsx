@@ -23,7 +23,6 @@ const Help = lazy(() => import('./pages/Help'));
 const WeeklyContentTasks = lazy(() => import('./pages/WeeklyContentTasks'));
 const SocialMediaScheduler = lazy(() => import('./pages/SocialMediaScheduler'));
 const Index = lazy(() => import('./pages/Index'));
-const VisionBoard = lazy(() => import('./pages/VisionBoard'));
 const Research = lazy(() => import('./pages/Research'));
 const PartnershipsManagement = lazy(() => import('./pages/PartnershipsManagement'));
 
@@ -59,7 +58,6 @@ function App() {
             <Route path="/help" element={<Help />} />
             <Route path="/weekly-content" element={<WeeklyContentTasks />} />
             <Route path="/social-media-scheduler" element={<SocialMediaScheduler />} />
-            <Route path="/projects/vision-board" element={<VisionBoard />} />
             <Route path="/research" element={<Research />} />
             <Route path="/partnerships-management" element={<PartnershipsManagement />} />
             <Route path="*" element={<NotFound />} />

@@ -1,5 +1,5 @@
 
-import { Home, FolderOpen, FileText, Settings, Database, CreditCard, Calendar, TrendingUp, BarChart, HelpCircle, CheckSquare, Clipboard, CheckCircle, Image, Handshake } from 'lucide-react';
+import { Home, FolderOpen, FileText, Settings, Database, CreditCard, Calendar, TrendingUp, BarChart, HelpCircle, CheckSquare, Clipboard, CheckCircle, Handshake } from 'lucide-react';
 import { MenuItem } from '@/types/sidebar';
 
 export const defaultMenuItems: MenuItem[] = [
@@ -25,7 +25,6 @@ export const defaultMenuItems: MenuItem[] = [
   },
   { title: 'Partnerships', icon: Handshake, url: '/partnerships-management', isDeletable: false },
   { title: 'Quick Notes', icon: Clipboard, url: '/quick-notes', isDeletable: false },
-  { title: 'Vision Board', icon: Image, url: '/projects/vision-board', isDeletable: false },
 ];
 
 export const settingsItem: MenuItem = { title: 'Settings', icon: Settings, url: '/settings', isDeletable: false };
