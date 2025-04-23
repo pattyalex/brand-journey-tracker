@@ -1,12 +1,15 @@
 
-import { Instagram, Linkedin, Twitter, Youtube, TrendingUp } from 'lucide-react';
+import { Instagram, Linkedin, Twitter, Youtube, TrendingUp, Image, Video } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface TrendingContent {
   title: string;
   platform: string;
   views: string;
-  description: string;
+  description?: string;
+  mediaType?: 'image' | 'video';
+  mediaUrl?: string;
 }
 
 interface TrendingCardProps {
@@ -29,11 +32,25 @@ const TrendingCard = ({ content }: TrendingCardProps) => {
     }
   };
 
+  const getMediaTypeIcon = (mediaType?: string) => {
+    switch (mediaType) {
+      case 'image':
+        return <Image className="w-4 h-4" />;
+      case 'video':
+        return <Video className="w-4 h-4" />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex justify-between items-start">
-          <span>{content.title}</span>
+          <span className="flex items-center gap-2">
+            {getMediaTypeIcon(content.mediaType)}
+            {content.title}
+          </span>
           <span className="text-sm text-muted-foreground flex items-center">
             {getPlatformIcon(content.platform)}
             <span className="ml-1">{content.views}</span>
@@ -44,8 +61,27 @@ const TrendingCard = ({ content }: TrendingCardProps) => {
           {content.platform}
         </span>
       </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground">{content.description}</p>
+      <CardContent className="space-y-4">
+        {content.mediaUrl && (
+          <AspectRatio ratio={16 / 9} className="bg-muted rounded-md overflow-hidden">
+            {content.mediaType === 'video' ? (
+              <video
+                src={content.mediaUrl}
+                className="object-cover w-full h-full"
+                controls
+              />
+            ) : (
+              <img
+                src={content.mediaUrl}
+                alt={content.title}
+                className="object-cover w-full h-full"
+              />
+            )}
+          </AspectRatio>
+        )}
+        {content.description && (
+          <p className="text-sm text-muted-foreground">{content.description}</p>
+        )}
       </CardContent>
     </Card>
   );
