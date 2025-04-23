@@ -1,13 +1,10 @@
+import React, { useRef } from 'react';
+import { FileText, ChevronDown, ChevronUp } from "lucide-react";
+import { motion, LayoutGroup } from "framer-motion";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { FileText, ChevronDown, ChevronUp } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
-import { useState, useRef } from "react";
 import SimpleTextFormattingToolbar from "@/components/SimpleTextFormattingToolbar";
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 
 interface ScriptInputSectionProps {
   scriptText: string;
@@ -20,8 +17,7 @@ const ScriptInputSection = ({
   onScriptTextChange,
   onCollapseChange,
 }: ScriptInputSectionProps) => {
-  const [isOpen, setIsOpen] = useState(true);
-  const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [isOpen, setIsOpen] = React.useState(true);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleCollapseToggle = () => {
@@ -173,63 +169,27 @@ const ScriptInputSection = ({
               <FileText size={18} className="text-gray-600" />
               <Label htmlFor="develop-script" className="text-sm font-medium">Script</Label>
             </div>
-            <div className="flex space-x-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="h-8 px-2 text-gray-500 hover:text-gray-700"
-                onClick={() => setIsPreviewMode(!isPreviewMode)}
-              >
-                {isPreviewMode ? "Edit" : "Preview"}
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-8 px-2 text-gray-500 hover:text-gray-700"
-                onClick={handleCollapseToggle}
-              >
-                <ChevronUp size={16} className="mr-1" />
-                Collapse
-              </Button>
-            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 px-2 text-gray-500 hover:text-gray-700"
+              onClick={handleCollapseToggle}
+            >
+              <ChevronUp size={16} className="mr-1" />
+              Collapse
+            </Button>
           </div>
           
-          <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-            <CollapsibleContent 
-              className="transition-all duration-400"
-              style={{ animation: "collapsible-down 0.4s ease-out" }}
-            >
-              <SimpleTextFormattingToolbar onFormat={handleFormatText} />
-              
-              {isPreviewMode ? (
-                <div className="min-h-[350px] p-4 border rounded-md bg-gray-50 overflow-y-auto">
-                  <ReactMarkdown 
-                    remarkPlugins={[remarkGfm]}
-                    components={{
-                      p: ({children}) => <p className="my-2">{children}</p>,
-                      h2: ({children}) => <h2 className="text-2xl font-bold mb-2 mt-4">{children}</h2>,
-                      h3: ({children}) => <h3 className="text-xl font-bold mb-2 mt-3">{children}</h3>,
-                      ul: ({children}) => <ul className="list-disc ml-5 my-2">{children}</ul>,
-                      ol: ({children}) => <ol className="list-decimal ml-5 my-2">{children}</ol>,
-                      li: ({children}) => <li className="my-1">{children}</li>,
-                      a: ({href, children}) => <a href={href} className="text-blue-500 hover:underline">{children}</a>
-                    }}
-                  >
-                    {scriptText}
-                  </ReactMarkdown>
-                </div>
-              ) : (
-                <Textarea
-                  id="develop-script"
-                  ref={textareaRef}
-                  value={scriptText}
-                  onChange={(e) => onScriptTextChange(e.target.value)}
-                  placeholder="Write your script here or collapse this section if you don't need a script for your content idea..."
-                  className="min-h-[350px] resize-y focus-visible:ring-gray-400" 
-                />
-              )}
-            </CollapsibleContent>
-          </Collapsible>
+          <SimpleTextFormattingToolbar onFormat={handleFormatText} />
+          
+          <Textarea
+            id="develop-script"
+            ref={textareaRef}
+            value={scriptText}
+            onChange={(e) => onScriptTextChange(e.target.value)}
+            placeholder="Write your script here or collapse this section if you don't need a script for your content idea..."
+            className="min-h-[350px] resize-y focus-visible:ring-gray-400" 
+          />
         </>
       ) : (
         <>
