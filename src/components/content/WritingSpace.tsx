@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Pencil, Sparkles } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -54,7 +53,6 @@ const WritingSpace = ({
   const [expandedClass, setExpandedClass] = useState("");
   const [isMeganOpen, setIsMeganOpen] = useState(false);
   const [htmlContent, setHtmlContent] = useState(() => {
-    // Convert plain markdown to HTML if needed for initial content
     if (!writingText.trim().startsWith('<')) {
       return `<p>${writingText.replace(/\n/g, '</p><p>')}</p>`;
     }
