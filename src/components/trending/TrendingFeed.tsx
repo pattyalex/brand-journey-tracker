@@ -3,13 +3,10 @@ import { Search, TrendingUp, Instagram, Linkedin, Twitter, Youtube, Earth, Flag 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { Check, ChevronsUpDown } from "lucide-react";
 
 interface TrendingContent {
   title: string;
@@ -57,7 +54,15 @@ const platforms = [
 
 const locations = [
   { value: "global", label: "Global", icon: Earth },
-  { value: "usa", label: "USA", icon: Flag }
+  { value: "usa", label: "USA", icon: Flag },
+  { value: "europe", label: "Europe" },
+  { value: "asia", label: "Asia" },
+  { value: "africa", label: "Africa" },
+  { value: "australia", label: "Australia" },
+  { value: "south-america", label: "South America" },
+  { value: "canada", label: "Canada" },
+  { value: "uk", label: "United Kingdom" },
+  { value: "india", label: "India" },
 ];
 
 const TrendingFeed = () => {
@@ -66,11 +71,10 @@ const TrendingFeed = () => {
   const [location, setLocation] = useState('global');
   const [trendingContent, setTrendingContent] = useState<TrendingContent[]>(mockTrendingData);
   const [isLoading, setIsLoading] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const handleSearch = async () => {
     setIsLoading(true);
-    // In a future implementation, this would make an API call to get real trending data
-    // Filter content based on selected platform
     const filteredContent = platform === 'all' 
       ? mockTrendingData 
       : mockTrendingData.filter(content => 
@@ -123,22 +127,49 @@ const TrendingFeed = () => {
             </SelectContent>
           </Select>
         </div>
-        <div className="min-w-[140px]">
-          <Select value={location} onValueChange={setLocation}>
-            <SelectTrigger>
-              <SelectValue placeholder="Location" />
-            </SelectTrigger>
-            <SelectContent>
-              {locations.map((loc) => (
-                <SelectItem key={loc.value} value={loc.value}>
-                  <span className="flex items-center gap-2">
-                    <loc.icon className="w-4 h-4" />
-                    {loc.label}
-                  </span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="min-w-[200px]">
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={open}
+                className="w-full justify-between"
+              >
+                {location
+                  ? locations.find((loc) => loc.value === location)?.label
+                  : "Select location..."}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0">
+              <Command>
+                <CommandInput placeholder="Search location..." />
+                <CommandEmpty>No location found.</CommandEmpty>
+                <CommandGroup>
+                  {locations.map((loc) => (
+                    <CommandItem
+                      key={loc.value}
+                      value={loc.value}
+                      onSelect={(currentValue) => {
+                        setLocation(currentValue === location ? "" : currentValue);
+                        setOpen(false);
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          location === loc.value ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {loc.icon && <loc.icon className="mr-2 h-4 w-4" />}
+                      {loc.label}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
         <Button 
           onClick={handleSearch}
