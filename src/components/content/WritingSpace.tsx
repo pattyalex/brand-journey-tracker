@@ -1,140 +1,336 @@
+import { useRef, useEffect, useState } from "react";
+import { Pencil, Sparkles } from 'lucide-react';
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import SimpleTextFormattingToolbar from "@/components/SimpleTextFormattingToolbar";
+import { useSidebar } from "@/components/ui/sidebar";
+import MeganAIChat from "./MeganAIChat";
+import TitleHookSuggestions from "./TitleHookSuggestions";
+import { motion } from "framer-motion";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
-import React from "react";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Bold from "@tiptap/extension-bold";
-import Italic from "@tiptap/extension-italic";
-import Underline from "@tiptap/extension-underline";
-import TextAlign from "@tiptap/extension-text-align";
-import { Bold as BoldIcon, Italic as ItalicIcon, Underline as UnderlineIcon, AlignLeft, AlignCenter, AlignRight } from "lucide-react";
-
-const TOOLBAR_BUTTON =
-  "px-2 py-1 rounded transition-colors duration-100 text-sm mr-1 last:mr-0";
-const TOOLBAR_ACTIVE =
-  "bg-blue-100 text-blue-800 font-semibold shadow-inner";
-const TOOLBAR_INACTIVE =
-  "hover:bg-gray-100 text-gray-500";
-
-export default function WritingSpace() {
-  // Restore: Section headline/title
-  // Restore: Two top action buttons
-  // Adjust: Editor area as described
-
-  // WARNING! If this section is ever moved, update any references
-
-  // ---- RESTORED HEADER AND BUTTONS ----
-  return (
-    <section className="w-full max-w-2xl mx-auto my-8">
-      {/* Restored Section Title */}
-      <h2 className="text-xl md:text-2xl font-semibold mb-3 text-gray-900">
-        Quick Writing Space
-      </h2>
-      {/* Restored Buttons */}
-      <div className="flex items-center mb-4 gap-2">
-        <button
-          type="button"
-          className="px-3 py-1.5 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 transition"
-        >
-          Save Note
-        </button>
-        <button
-          type="button"
-          className="px-3 py-1.5 rounded border border-blue-600 text-blue-600 font-medium hover:bg-blue-50 transition"
-        >
-          Clear
-        </button>
-      </div>
-      {/* ---- END RESTORATIONS ---- */}
-
-      {/* ---- SIMPLE, FUNCTIONAL TIPTAP EDITOR ---- */}
-      <WritingEditor />
-    </section>
-  );
+interface WritingSpaceProps {
+  writingText: string;
+  onTextChange: (text: string) => void;
+  onTextSelection: (selectedText: string) => void;
+  onFormatText: (formatType: string, formatValue?: string) => void;
 }
 
-function WritingEditor() {
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Bold,
-      Italic,
-      Underline,
-      TextAlign.configure({ types: ["heading", "paragraph"] }),
-    ],
-    editorProps: {
-      attributes: {
-        class:
-          // border, radius, padding, and proper focus ring
-          "min-h-[180px] w-full bg-white outline-none border border-[#ccc] rounded-lg p-3 focus:border-blue-400 transition-shadow text-base",
-        spellCheck: "true",
-        style: "box-shadow: none; resize: none;",
-      },
-    },
-    content: "<p>Start writing here...</p>",
-  });
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { 
+      duration: 0.5,
+      ease: "easeOut",
+      staggerChildren: 0.1
+    }
+  }
+};
 
-  if (!editor) return null;
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1,
+    y: 0,
+    transition: { 
+      duration: 0.4,
+      ease: [0.4, 0, 0.2, 1]
+    }
+  }
+};
 
-  const toolbarButton = (cmd: () => void, active: boolean, label: string, Icon?: React.ElementType) => (
-    <button
-      type="button"
-      className={`${TOOLBAR_BUTTON} ${active ? TOOLBAR_ACTIVE : TOOLBAR_INACTIVE}`}
-      onMouseDown={e => {
-        e.preventDefault();
-        cmd();
-      }}
-      aria-label={label}
-      title={label}
+const WritingSpace = ({
+  writingText,
+  onTextChange,
+  onTextSelection,
+  onFormatText
+}: WritingSpaceProps) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { state } = useSidebar();
+  const [expandedClass, setExpandedClass] = useState("");
+  const [isMeganOpen, setIsMeganOpen] = useState(false);
+  
+  useEffect(() => {
+    setExpandedClass(state === "collapsed" ? "writing-expanded" : "");
+  }, [state]);
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onTextChange(e.target.value);
+  };
+
+  const handleTextSelection = (selectedText: string) => {
+    if (selectedText.trim()) {
+      onTextSelection(selectedText);
+    }
+  };
+
+  const handleFormatClick = (formatType: string, formatValue?: string) => {
+    if (textareaRef.current) {
+      const start = textareaRef.current.selectionStart;
+      const end = textareaRef.current.selectionEnd;
+      const text = writingText;
+      
+      let newText = text;
+      let newCursorPos = end;
+      
+      const selectedText = text.substring(start, end);
+      
+      if (selectedText) {
+        let formattedText = selectedText;
+        
+        switch (formatType) {
+          case 'bold':
+            formattedText = `**${selectedText}**`;
+            newCursorPos = start + formattedText.length;
+            break;
+          case 'italic':
+            formattedText = `*${selectedText}*`;
+            newCursorPos = start + formattedText.length;
+            break;
+          case 'underline':
+            formattedText = `__${selectedText}__`;
+            newCursorPos = start + formattedText.length;
+            break;
+          case 'bullet':
+            formattedText = `\n- ${selectedText}`;
+            newCursorPos = start + formattedText.length;
+            break;
+          case 'numbered':
+            formattedText = `\n1. ${selectedText}`;
+            newCursorPos = start + formattedText.length;
+            break;
+          case 'align':
+            if (formatValue === 'left') {
+              formattedText = `<div style="text-align: left">${selectedText}</div>`;
+            } else if (formatValue === 'center') {
+              formattedText = `<div style="text-align: center">${selectedText}</div>`;
+            } else if (formatValue === 'right') {
+              formattedText = `<div style="text-align: right">${selectedText}</div>`;
+            }
+            newCursorPos = start + formattedText.length;
+            break;
+          case 'size':
+            if (formatValue === 'small') {
+              formattedText = `<small>${selectedText}</small>`;
+            } else if (formatValue === 'large') {
+              formattedText = `### ${selectedText}`;
+            } else if (formatValue === 'x-large') {
+              formattedText = `## ${selectedText}`;
+            }
+            newCursorPos = start + formattedText.length;
+            break;
+          default:
+            break;
+        }
+        
+        newText = text.substring(0, start) + formattedText + text.substring(end);
+        onTextChange(newText);
+        
+        setTimeout(() => {
+          if (textareaRef.current) {
+            textareaRef.current.focus();
+            textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
+          }
+        }, 10);
+      } else {
+        let formattingTemplate = '';
+        
+        switch (formatType) {
+          case 'bold':
+            formattingTemplate = '**bold text**';
+            break;
+          case 'italic':
+            formattingTemplate = '*italic text*';
+            break;
+          case 'underline':
+            formattingTemplate = '__underlined text__';
+            break;
+          case 'bullet':
+            formattingTemplate = '\n- bullet point';
+            break;
+          case 'numbered':
+            formattingTemplate = '\n1. numbered item';
+            break;
+          case 'align':
+            if (formatValue === 'left') {
+              formattingTemplate = '<div style="text-align: left">left aligned text</div>';
+            } else if (formatValue === 'center') {
+              formattingTemplate = '<div style="text-align: center">centered text</div>';
+            } else if (formatValue === 'right') {
+              formattingTemplate = '<div style="text-align: right">right aligned text</div>';
+            }
+            break;
+          case 'size':
+            if (formatValue === 'small') {
+              formattingTemplate = '<small>small text</small>';
+            } else if (formatValue === 'large') {
+              formattingTemplate = '### large text';
+            } else if (formatValue === 'x-large') {
+              formattingTemplate = '## extra large text';
+            }
+            break;
+          default:
+            break;
+        }
+        
+        if (formattingTemplate) {
+          newText = text.substring(0, start) + formattingTemplate + text.substring(start);
+          onTextChange(newText);
+          
+          // Select the template text for easy replacement
+          const cursorPos = start + formattingTemplate.length;
+          setTimeout(() => {
+            if (textareaRef.current) {
+              textareaRef.current.focus();
+              textareaRef.current.setSelectionRange(start + 2, cursorPos - 2);
+            }
+          }, 10);
+        }
+      }
+    }
+    
+    onFormatText(formatType, formatValue);
+  };
+
+  return (
+    <motion.div 
+      className={`space-y-4 pr-2 transition-all duration-300 ${expandedClass}`}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
     >
-      {Icon ? <Icon size={16} /> : label}
-    </button>
-  );
-
-  return (
-    <div>
-      <div className="flex gap-1 pb-2 pl-1">
-        {toolbarButton(
-          () => editor.chain().focus().toggleBold().run(),
-          editor.isActive("bold"),
-          "Bold",
-          BoldIcon
-        )}
-        {toolbarButton(
-          () => editor.chain().focus().toggleItalic().run(),
-          editor.isActive("italic"),
-          "Italic",
-          ItalicIcon
-        )}
-        {toolbarButton(
-          () => editor.chain().focus().toggleUnderline().run(),
-          editor.isActive("underline"),
-          "Underline",
-          UnderlineIcon
-        )}
-
-        <span className="mx-2 text-gray-300">|</span>
-        {toolbarButton(
-          () => editor.chain().focus().setTextAlign("left").run(),
-          editor.isActive({ textAlign: "left" }),
-          "Align left",
-          AlignLeft
-        )}
-        {toolbarButton(
-          () => editor.chain().focus().setTextAlign("center").run(),
-          editor.isActive({ textAlign: "center" }),
-          "Align center",
-          AlignCenter
-        )}
-        {toolbarButton(
-          () => editor.chain().focus().setTextAlign("right").run(),
-          editor.isActive({ textAlign: "right" }),
-          "Align right",
-          AlignRight
-        )}
+      <motion.div 
+        className="flex items-center justify-between"
+        variants={itemVariants}
+      >
+        <h2 className="text-xl font-semibold flex items-center">
+          <Pencil className="h-5 w-5 mr-2" />
+          Brainstorm
+        </h2>
+        
+        <div className="flex items-center gap-2">
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Button
+              variant="ghost"
+              size="sm"
+              className="cursor-pointer transition-all duration-150 hover:bg-[#FDE1D3] active:scale-95 rounded-md text-primary shadow-sm px-3"
+              onClick={() => {
+                const sparklesButton = document.querySelector('[aria-label="Show title hook suggestions"]') as HTMLButtonElement;
+                if (sparklesButton) {
+                  sparklesButton.click();
+                }
+              }}
+            >
+              <Sparkles className="h-4 w-4 mr-1.5 text-primary" />
+              <span className="text-sm font-medium">Hook Ideas</span>
+            </Button>
+          </motion.div>
+          
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Button
+              variant="ghost"
+              size="sm"
+              className="cursor-pointer transition-all duration-150 hover:bg-[#FDE1D3] active:scale-95 rounded-md shadow-sm"
+              onClick={() => setIsMeganOpen(!isMeganOpen)}
+              aria-label={isMeganOpen ? "Hide Megan" : "Ask Megan"}
+            >
+              {isMeganOpen ? (
+                <span className="px-3 py-1.5 text-primary hover:text-primary/90 font-medium">Hide Megan</span>
+              ) : (
+                <div className="flex items-center gap-2 px-3 py-1.5 w-full">
+                  <span className="text-primary hover:text-primary/90 font-medium">Ask Megan</span>
+                  <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs">
+                    M
+                  </div>
+                </div>
+              )}
+            </Button>
+          </motion.div>
+        </div>
+      </motion.div>
+      
+      <div className="hidden">
+        <TitleHookSuggestions onSelectHook={(hook) => {
+          if (textareaRef.current) {
+            const cursorPos = textareaRef.current.selectionStart;
+            const textBefore = writingText.substring(0, cursorPos);
+            const textAfter = writingText.substring(cursorPos);
+            onTextChange(textBefore + hook + textAfter);
+            
+            setTimeout(() => {
+              if (textareaRef.current) {
+                textareaRef.current.focus();
+                const newCursorPos = cursorPos + hook.length;
+                textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
+              }
+            }, 10);
+          } else {
+            onTextChange(writingText + hook);
+          }
+        }} />
       </div>
-      <div>
-        <EditorContent editor={editor} />
-      </div>
-    </div>
+
+      <motion.div 
+        className="h-[calc(100vh-140px)]"
+        variants={itemVariants}
+        layout
+      >
+        <motion.div 
+          className={`rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full relative bg-[#F6F6F7] ${isMeganOpen ? "flex flex-row" : "flex flex-col"}`}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+        >
+          <div className={`${isMeganOpen ? "w-1/2 border-r border-gray-200 flex flex-col" : "w-full flex-1 flex flex-col"}`}>
+            <SimpleTextFormattingToolbar onFormat={handleFormatClick} />
+            
+            <div className="h-full w-full flex-1">
+              <Textarea
+                ref={textareaRef}
+                value={writingText}
+                onChange={handleTextChange}
+                onSelect={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  const selectedText = target.value.substring(target.selectionStart, target.selectionEnd);
+                  handleTextSelection(selectedText);
+                }}
+                placeholder="Start writing your content ideas here..."
+                className="min-h-full w-full h-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-sm p-4"
+              />
+            </div>
+          </div>
+          
+          {isMeganOpen && (
+            <motion.div 
+              className="w-1/2 h-full"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+            >
+              <MeganAIChat 
+                onClose={() => setIsMeganOpen(false)} 
+                contextData={{
+                  script: writingText,
+                }}
+              />
+            </motion.div>
+          )}
+        </motion.div>
+      </motion.div>
+    </motion.div>
   );
-}
+};
+
+export default WritingSpace;

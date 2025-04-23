@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -57,12 +58,13 @@ const BankOfContent = () => {
     if (restoredIdeas.length > 0) {
       const updatedPillars = [...pillars];
       
+      // Group restored items by their original pillar ID
       const itemsByPillar: Record<string, ContentItem[]> = {};
       let totalRestored = 0;
       let lastRestoredItem: ContentItem | null = null;
       
       restoredIdeas.forEach(item => {
-        const pillarId = item.originalPillarId || "1";
+        const pillarId = item.originalPillarId || "1"; // Default to first pillar if not specified
         if (!itemsByPillar[pillarId]) {
           itemsByPillar[pillarId] = [];
         }
@@ -71,6 +73,7 @@ const BankOfContent = () => {
         lastRestoredItem = item;
       });
       
+      // Add items to their respective pillars
       Object.entries(itemsByPillar).forEach(([pillarId, items]) => {
         const pillarIndex = updatedPillars.findIndex(p => p.id === pillarId);
         if (pillarIndex >= 0) {
@@ -80,6 +83,7 @@ const BankOfContent = () => {
           };
           console.log(`Restored ${items.length} items to Pillar ${pillarId}`);
         } else {
+          // If pillar doesn't exist (perhaps it was deleted), add to first pillar
           updatedPillars[0] = {
             ...updatedPillars[0],
             content: [...updatedPillars[0].content, ...items]
@@ -90,6 +94,7 @@ const BankOfContent = () => {
       
       setPillars(updatedPillars);
       
+      // Show appropriate toast message based on number of items
       if (totalRestored === 1 && lastRestoredItem) {
         const targetPillar = lastRestoredItem.originalPillarId ? 
           pillars.find(p => p.id === lastRestoredItem!.originalPillarId)?.name || "Pillar 1" : 
@@ -115,15 +120,6 @@ const BankOfContent = () => {
       console.log("Content items restored to Idea Development:", restoredIdeas);
     }
   }, []);
-
-  useEffect(() => {
-    const activePillar = pillars.find(p => p.id === activeTab);
-    if (activePillar && activePillar.writingSpace !== undefined) {
-      setWritingText(activePillar.writingSpace);
-    } else {
-      setWritingText("");
-    }
-  }, [activeTab, pillars]);
 
   const addPillar = () => {
     const newPillarId = String(pillars.length + 1);
@@ -371,7 +367,7 @@ const BankOfContent = () => {
             <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <WritingSpace 
-                  writingText={pillar.id === activeTab ? writingText : (pillar.writingSpace || "")}
+                  writingText={writingText}
                   onTextChange={updateWritingSpace}
                   onTextSelection={handleTextSelection}
                   onFormatText={handleFormatText}
