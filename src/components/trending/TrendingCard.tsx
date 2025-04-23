@@ -1,9 +1,12 @@
 
 import { useState } from 'react';
-import { Eye, ThumbsUp, MessageSquare, Share2, Bookmark, Instagram, Video } from 'lucide-react';
+import { Eye, ThumbsUp, MessageSquare, Share2, Bookmark, Instagram, Video, Copy } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Button } from "@/components/ui/button";
 import TrendingContentDialog from './TrendingContentDialog';
+import CreateSimilarContentDialog from '../analytics/CreateSimilarContentDialog';
+import { toast } from "sonner";
 
 interface TrendingContent {
   title: string;
@@ -15,6 +18,7 @@ interface TrendingContent {
   comments: string;
   shares: string;
   saves: string;
+  description?: string;
   mediaType?: 'image' | 'video';
   mediaUrl?: string;
 }
@@ -25,6 +29,7 @@ interface TrendingCardProps {
 
 const TrendingCard = ({ content }: TrendingCardProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isRecreateDialogOpen, setIsRecreateDialogOpen] = useState(false);
 
   const MetricDisplay = ({ icon: Icon, value }: { icon: any, value: string }) => (
     <div className="flex items-center gap-2 text-muted-foreground">
@@ -33,12 +38,33 @@ const TrendingCard = ({ content }: TrendingCardProps) => {
     </div>
   );
 
+  const handleRecreateClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click from triggering
+    setIsRecreateDialogOpen(true);
+  };
+
+  const handleRecreateComplete = () => {
+    setIsRecreateDialogOpen(false);
+    toast.success("Content idea created successfully!");
+  };
+
   return (
     <>
       <Card 
-        className="hover:shadow-md transition-shadow cursor-pointer" 
+        className="hover:shadow-md transition-shadow cursor-pointer relative" 
         onClick={() => setIsDialogOpen(true)}
       >
+        <div className="absolute top-4 right-4 z-10">
+          <Button
+            size="sm"
+            variant="secondary"
+            className="gap-2"
+            onClick={handleRecreateClick}
+          >
+            <Copy className="w-4 h-4" />
+            Recreate
+          </Button>
+        </div>
         <div className="flex gap-4 p-4">
           <div className="w-40 h-28 bg-muted rounded-md overflow-hidden flex-shrink-0">
             {content.mediaUrl && (
@@ -92,8 +118,21 @@ const TrendingCard = ({ content }: TrendingCardProps) => {
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
       />
+
+      <CreateSimilarContentDialog
+        open={isRecreateDialogOpen}
+        onOpenChange={setIsRecreateDialogOpen}
+        contentDetails={{
+          title: content.title,
+          platform: content.platform,
+          link: content.mediaUrl,
+        }}
+        onSave={handleRecreateComplete}
+        onCancel={() => setIsRecreateDialogOpen(false)}
+      />
     </>
   );
 };
 
 export default TrendingCard;
+
