@@ -1,4 +1,3 @@
-
 import { ReactNode, useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import TitleInputSection from "./TitleInputSection";
@@ -149,7 +148,6 @@ const DialogContent = ({
             variants={itemVariants}
             layout
           >
-            {/* Content Format */}
             <motion.div 
               whileHover={{ scale: 1.01 }} 
               transition={{ duration: 0.2 }}
@@ -208,8 +206,8 @@ const DialogContent = ({
               layout
             >
               <ScriptInputSection 
-                scriptText={scriptText} 
-                onScriptTextChange={onScriptTextChange} 
+                value={scriptText} 
+                onChange={onScriptTextChange} 
                 onCollapseChange={handleScriptCollapseChange}
               />
             </motion.div>
