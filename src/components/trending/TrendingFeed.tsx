@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, TrendingUp } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -86,9 +86,12 @@ const TrendingFeed = () => {
   const [platform, setPlatform] = useState('all');
   const [location, setLocation] = useState('global');
   const [customLocation, setCustomLocation] = useState('');
-  const [trendingContent, setTrendingContent] = useState<TrendingContent[]>(mockTrendingData);
+  const [trendingContent, setTrendingContent] = useState<TrendingContent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [apiKey, setApiKey] = useState(FirecrawlService.getApiKey() || '');
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
   const handleSearch = async () => {
     if (!apiKey) {
@@ -101,6 +104,7 @@ const TrendingFeed = () => {
     }
 
     setIsLoading(true);
+    setPage(1);
     
     try {
       FirecrawlService.saveApiKey(apiKey);
@@ -122,6 +126,7 @@ const TrendingFeed = () => {
         })) || [];
 
         setTrendingContent(transformedContent);
+        setHasMore(transformedContent.length >= 10); // Assuming 10 items per page
         toast({
           title: "Success",
           description: "Successfully fetched trending content",
@@ -142,6 +147,42 @@ const TrendingFeed = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleLoadMore = async () => {
+    setIsLoadingMore(true);
+    try {
+      const result = await FirecrawlService.crawlSocialContent(platform);
+      
+      if (result.success && result.data) {
+        const newContent = result.data.data?.map((item: any) => ({
+          title: item.title || 'Untitled',
+          platform: platform,
+          creator: item.creator || '@unknown',
+          views: item.views || '0',
+          likes: item.likes || '0',
+          comments: item.comments || '0',
+          shares: item.shares || '0',
+          saves: item.saves || '0',
+          description: item.description,
+          mediaType: item.mediaType || 'image',
+          mediaUrl: item.mediaUrl,
+        })) || [];
+
+        setTrendingContent(prev => [...prev, ...newContent]);
+        setPage(prev => prev + 1);
+        setHasMore(newContent.length >= 10); // Assuming 10 items per page
+      }
+    } catch (error) {
+      console.error('Error loading more content:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load more content",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingMore(false);
     }
   };
 
@@ -186,9 +227,30 @@ const TrendingFeed = () => {
 
       <div className="grid gap-4">
         {trendingContent.map((content, index) => (
-          <TrendingCard key={index} content={content} />
+          <TrendingCard key={`${content.creator}-${index}`} content={content} />
         ))}
       </div>
+
+      {hasMore && trendingContent.length > 0 && (
+        <div className="flex justify-center mt-6">
+          <Button
+            onClick={handleLoadMore}
+            disabled={isLoadingMore}
+            variant="outline"
+            size="lg"
+            className="w-40"
+          >
+            {isLoadingMore ? (
+              "Loading..."
+            ) : (
+              <>
+                <TrendingUp className="w-4 h-4 mr-2" />
+                More
+              </>
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
