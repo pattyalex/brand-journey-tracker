@@ -137,6 +137,118 @@ const mockTrendingData: TrendingContent[] = [
   }
 ];
 
+// Additional mock data for loading more content
+const additionalMockData: TrendingContent[] = [
+  {
+    title: "Sustainable Living Practices",
+    platform: "YouTube",
+    creator: "@ecosustainable",
+    views: "520K",
+    likes: "29K",
+    comments: "2.2K",
+    shares: "4.8K",
+    saves: "5.5K",
+    description: "Practical tips for living more sustainably everyday",
+    mediaType: "video",
+    duration: "15:20",
+    mediaUrl: "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4"
+  },
+  {
+    title: "DIY Home Decor",
+    platform: "Instagram",
+    creator: "@homedecorguru",
+    views: "680K",
+    likes: "35K",
+    comments: "2.7K",
+    shares: "5.9K",
+    saves: "7.8K",
+    description: "Creative and budget-friendly home decoration ideas",
+    mediaType: "image",
+    mediaUrl: "https://images.unsplash.com/photo-1513161455079-7dc1de15ef3e?q=80&w=1000"
+  },
+  {
+    title: "Financial Freedom Strategies",
+    platform: "LinkedIn",
+    creator: "@wealthadvisor",
+    views: "450K",
+    likes: "27K",
+    comments: "1.9K",
+    shares: "4.2K",
+    saves: "6.1K",
+    description: "Expert advice for achieving financial independence",
+    mediaType: "image",
+    mediaUrl: "https://images.unsplash.com/photo-1559589689-577aabd1db4f?q=80&w=1000"
+  },
+  {
+    title: "Healthy Cooking Tutorials",
+    platform: "TikTok",
+    creator: "@healthychef",
+    views: "890K",
+    likes: "41K",
+    comments: "3.0K",
+    shares: "7.5K",
+    saves: "8.2K",
+    description: "Quick and nutritious recipes for busy people",
+    mediaType: "video",
+    duration: "6:15",
+    mediaUrl: "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4"
+  },
+  {
+    title: "Mindfulness Meditation",
+    platform: "YouTube",
+    creator: "@mindfulnessmaster",
+    views: "720K",
+    likes: "36K",
+    comments: "2.4K",
+    shares: "5.1K",
+    saves: "6.7K",
+    description: "Guided meditations for stress relief and mental clarity",
+    mediaType: "video",
+    duration: "20:05",
+    mediaUrl: "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4"
+  },
+  {
+    title: "Adventure Travel Stories",
+    platform: "Instagram",
+    creator: "@adventureseeker",
+    views: "950K",
+    likes: "48K",
+    comments: "3.3K",
+    shares: "8.2K",
+    saves: "9.1K",
+    description: "Inspiring travel experiences from around the world",
+    mediaType: "image",
+    mediaUrl: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=1000"
+  },
+  {
+    title: "Career Development Tips",
+    platform: "LinkedIn",
+    creator: "@careercoach",
+    views: "580K",
+    likes: "31K",
+    comments: "2.5K",
+    shares: "4.7K",
+    saves: "5.9K",
+    description: "Strategies for advancing your professional career",
+    mediaType: "image",
+    mediaUrl: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=1000"
+  },
+  {
+    title: "Creative Photography Hacks",
+    platform: "TikTok",
+    creator: "@photographypro",
+    views: "830K",
+    likes: "39K",
+    comments: "2.9K",
+    shares: "6.8K",
+    saves: "7.4K",
+    description: "Simple tricks for taking stunning photos with any camera",
+    mediaType: "video",
+    duration: "4:45",
+    mediaUrl: "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4"
+  }
+];
+
 const TrendingFeed = () => {
   const { toast } = useToast();
   const [niche, setNiche] = useState('');
@@ -149,6 +261,7 @@ const TrendingFeed = () => {
   const [apiKey, setApiKey] = useState(FirecrawlService.getApiKey() || '');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [hasLoadedAdditional, setHasLoadedAdditional] = useState(false);
 
   const handleSearch = async () => {
     if (!apiKey) {
@@ -162,6 +275,7 @@ const TrendingFeed = () => {
 
     setIsLoading(true);
     setPage(1);
+    setHasLoadedAdditional(false);
     
     try {
       FirecrawlService.saveApiKey(apiKey);
@@ -209,7 +323,21 @@ const TrendingFeed = () => {
 
   const handleLoadMore = async () => {
     setIsLoadingMore(true);
+    
     try {
+      // For the mock implementation, we'll use the additional mock data
+      if (!hasLoadedAdditional) {
+        setTimeout(() => {
+          setTrendingContent(prev => [...prev, ...additionalMockData]);
+          setPage(prev => prev + 1);
+          setHasMore(false); // No more content after this
+          setHasLoadedAdditional(true);
+          setIsLoadingMore(false);
+        }, 1000); // Simulate API delay
+        return;
+      }
+      
+      // Actual API implementation (when API is ready)
       const result = await FirecrawlService.crawlSocialContent(platform);
       
       if (result.success && result.data) {
@@ -288,7 +416,7 @@ const TrendingFeed = () => {
         ))}
       </div>
 
-      {hasMore && trendingContent.length > 0 && (
+      {(hasMore || !hasLoadedAdditional) && trendingContent.length > 0 && (
         <div className="flex justify-center mt-6">
           <Button
             onClick={handleLoadMore}
