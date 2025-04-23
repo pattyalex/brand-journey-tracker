@@ -1,6 +1,15 @@
-
 import React, { useState } from 'react';
-import { Bold, Italic, List, ListOrdered, Underline, AlignLeft, AlignCenter, AlignRight, Type } from 'lucide-react';
+import { 
+  Bold, 
+  Italic, 
+  ListUl as List, 
+  ListOrdered, 
+  Underline, 
+  AlignLeft, 
+  AlignCenter, 
+  AlignRight, 
+  Type 
+} from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { motion } from "framer-motion";
 

@@ -1,4 +1,3 @@
-
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { FileText, ChevronDown, ChevronUp } from "lucide-react";
@@ -8,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useRef } from "react";
 import SimpleTextFormattingToolbar from "@/components/SimpleTextFormattingToolbar";
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface ScriptInputSectionProps {
   scriptText: string;
@@ -41,13 +41,11 @@ const ScriptInputSection = ({
       let newText = text;
       let newCursorPos = end;
       
-      // Get the selected text
       const selectedText = text.substring(start, end);
       
       if (selectedText) {
         let formattedText = selectedText;
         
-        // Apply different formatting based on type
         switch (formatType) {
           case 'bold':
             formattedText = `**${selectedText}**`;
@@ -93,11 +91,9 @@ const ScriptInputSection = ({
             break;
         }
         
-        // Replace the selected text with the formatted text
         newText = text.substring(0, start) + formattedText + text.substring(end);
         onScriptTextChange(newText);
         
-        // Set cursor position after the operation completes
         setTimeout(() => {
           if (textareaRef.current) {
             textareaRef.current.focus();
@@ -105,7 +101,6 @@ const ScriptInputSection = ({
           }
         }, 10);
       } else {
-        // If no text is selected, insert formatting template at cursor position
         let formattingTemplate = '';
         
         switch (formatType) {
@@ -150,7 +145,6 @@ const ScriptInputSection = ({
           newText = text.substring(0, start) + formattingTemplate + text.substring(start);
           onScriptTextChange(newText);
           
-          // Select the template text for easy replacement
           const cursorPos = start + formattingTemplate.length;
           setTimeout(() => {
             if (textareaRef.current) {
@@ -209,7 +203,18 @@ const ScriptInputSection = ({
               
               {isPreviewMode ? (
                 <div className="min-h-[350px] p-4 border rounded-md bg-gray-50 overflow-y-auto">
-                  <ReactMarkdown>
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      p: ({children}) => <p className="my-2">{children}</p>,
+                      h2: ({children}) => <h2 className="text-2xl font-bold mb-2 mt-4">{children}</h2>,
+                      h3: ({children}) => <h3 className="text-xl font-bold mb-2 mt-3">{children}</h3>,
+                      ul: ({children}) => <ul className="list-disc ml-5 my-2">{children}</ul>,
+                      ol: ({children}) => <ol className="list-decimal ml-5 my-2">{children}</ol>,
+                      li: ({children}) => <li className="my-1">{children}</li>,
+                      a: ({href, children}) => <a href={href} className="text-blue-500 hover:underline">{children}</a>
+                    }}
+                  >
                     {scriptText}
                   </ReactMarkdown>
                 </div>

@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useState } from "react";
 import { Pencil, Sparkles, Eye, Edit } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -10,6 +9,7 @@ import MeganAIChat from "./MeganAIChat";
 import TitleHookSuggestions from "./TitleHookSuggestions";
 import { motion } from "framer-motion";
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface WritingSpaceProps {
   writingText: string;
@@ -326,7 +326,18 @@ const WritingSpace = ({
             <div className="h-full w-full flex-1">
               {isPreviewMode ? (
                 <div className="min-h-full w-full h-full overflow-auto p-4 bg-white">
-                  <ReactMarkdown>
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      p: ({children}) => <p className="my-2">{children}</p>,
+                      h2: ({children}) => <h2 className="text-2xl font-bold mb-2 mt-4">{children}</h2>,
+                      h3: ({children}) => <h3 className="text-xl font-bold mb-2 mt-3">{children}</h3>,
+                      ul: ({children}) => <ul className="list-disc ml-5 my-2">{children}</ul>,
+                      ol: ({children}) => <ol className="list-decimal ml-5 my-2">{children}</ol>,
+                      li: ({children}) => <li className="my-1">{children}</li>,
+                      a: ({href, children}) => <a href={href} className="text-blue-500 hover:underline">{children}</a>
+                    }}
+                  >
                     {writingText}
                   </ReactMarkdown>
                 </div>
