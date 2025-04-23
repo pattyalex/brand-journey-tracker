@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Search, TrendingUp } from 'lucide-react';
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,7 @@ interface TrendingContent {
   mediaUrl?: string;
 }
 
+// Extend the mock data to have 8 items
 const mockTrendingData: TrendingContent[] = [
   {
     title: "Growing Community Engagement",
@@ -77,6 +79,61 @@ const mockTrendingData: TrendingContent[] = [
     mediaType: "video",
     duration: "5:17",
     mediaUrl: "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4"
+  },
+  // Add 4 more mock items
+  {
+    title: "Digital Marketing Trends",
+    platform: "TikTok",
+    creator: "@digitalmarketer",
+    views: "600K",
+    likes: "25K",
+    comments: "1.5K",
+    shares: "3.9K",
+    saves: "4.7K",
+    description: "Emerging digital marketing strategies for 2024",
+    mediaType: "video",
+    duration: "7:45",
+    mediaUrl: "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4"
+  },
+  {
+    title: "Fitness Motivation",
+    platform: "Instagram",
+    creator: "@fitnessinspiration",
+    views: "750K",
+    likes: "42K",
+    comments: "2.1K",
+    shares: "6.2K",
+    saves: "5.3K",
+    description: "Workout routines and motivational fitness content",
+    mediaType: "image",
+    mediaUrl: "https://images.unsplash.com/photo-1517836357598-8edb3ba7ebe3?q=80&w=1000"
+  },
+  {
+    title: "Travel Vlogging Tips",
+    platform: "YouTube",
+    creator: "@travelvlogger",
+    views: "400K",
+    likes: "22K",
+    comments: "1.7K",
+    shares: "3.5K",
+    saves: "4.1K",
+    description: "How to create engaging travel content",
+    mediaType: "video",
+    duration: "12:30",
+    mediaUrl: "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4"
+  },
+  {
+    title: "Tech Innovation Insights",
+    platform: "LinkedIn",
+    creator: "@techinnovator",
+    views: "550K",
+    likes: "30K",
+    comments: "2.0K",
+    shares: "4.6K",
+    saves: "5.8K",
+    description: "Latest technological innovations and startup trends",
+    mediaType: "image",
+    mediaUrl: "https://images.unsplash.com/photo-1517976487492-5750f3a60ffe?q=80&w=1000"
   }
 ];
 
