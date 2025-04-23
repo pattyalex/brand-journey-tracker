@@ -1,3 +1,4 @@
+
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -98,7 +99,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
         </div>
         <ScrollBar 
           orientation="vertical" 
-          className="absolute right-0 top-0 bottom-0 w-4 bg-red-500/20 hover:bg-red-500/30 rounded-r-md transition-colors duration-200"
+          className="absolute right-0 top-0 bottom-0 w-4 bg-red-500/50 hover:bg-red-500/70 rounded-r-md transition-colors duration-200"
         />
       </ScrollArea>
     </div>
