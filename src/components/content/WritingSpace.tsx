@@ -1,8 +1,6 @@
 
 import { useRef, useEffect, useState } from "react";
-import { Pencil, Sparkles, Edit } from 'lucide-react';
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Textarea } from "@/components/ui/textarea";
+import { Pencil, Sparkles } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import SimpleTextFormattingToolbar from "@/components/SimpleTextFormattingToolbar";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -53,8 +51,7 @@ const WritingSpace = ({
   const { state } = useSidebar();
   const [expandedClass, setExpandedClass] = useState("");
   const [isMeganOpen, setIsMeganOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  
+
   useEffect(() => {
     setExpandedClass(state === "collapsed" ? "writing-expanded" : "");
   }, [state]);
@@ -74,15 +71,12 @@ const WritingSpace = ({
       const start = textareaRef.current.selectionStart;
       const end = textareaRef.current.selectionEnd;
       const text = writingText;
-      
       let newText = text;
       let newCursorPos = end;
-      
       const selectedText = text.substring(start, end);
-      
+
       if (selectedText) {
         let formattedText = selectedText;
-        
         switch (formatType) {
           case 'bold':
             formattedText = `**${selectedText}**`;
@@ -127,10 +121,8 @@ const WritingSpace = ({
           default:
             break;
         }
-        
         newText = text.substring(0, start) + formattedText + text.substring(end);
         onTextChange(newText);
-        
         setTimeout(() => {
           if (textareaRef.current) {
             textareaRef.current.focus();
@@ -139,7 +131,6 @@ const WritingSpace = ({
         }, 10);
       } else {
         let formattingTemplate = '';
-        
         switch (formatType) {
           case 'bold':
             formattingTemplate = '**bold text**';
@@ -177,12 +168,9 @@ const WritingSpace = ({
           default:
             break;
         }
-        
         if (formattingTemplate) {
           newText = text.substring(0, start) + formattingTemplate + text.substring(start);
           onTextChange(newText);
-          
-          // Select the template text for easy replacement
           const cursorPos = start + formattingTemplate.length;
           setTimeout(() => {
             if (textareaRef.current) {
@@ -193,7 +181,6 @@ const WritingSpace = ({
         }
       }
     }
-    
     onFormatText(formatType, formatValue);
   };
 
@@ -268,7 +255,6 @@ const WritingSpace = ({
             const textBefore = writingText.substring(0, cursorPos);
             const textAfter = writingText.substring(cursorPos);
             onTextChange(textBefore + hook + textAfter);
-            
             setTimeout(() => {
               if (textareaRef.current) {
                 textareaRef.current.focus();
@@ -295,22 +281,11 @@ const WritingSpace = ({
         >
           <div className={`${isMeganOpen ? "w-1/2 border-r border-gray-200 flex flex-col" : "w-full flex-1 flex flex-col"}`}>
             <SimpleTextFormattingToolbar onFormat={handleFormatClick} />
-            
-            <div className="h-full w-full flex-1">
-              {!isEditing ? (
-                <div className="min-h-full w-full h-full overflow-auto p-4 bg-white">
-                  <div className="flex justify-end mb-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="px-2 py-1 text-xs rounded hover:bg-gray-100"
-                      onClick={() => setIsEditing(true)}
-                    >
-                      <Edit className="w-4 h-4 mr-1" />
-                      Edit
-                    </Button>
-                  </div>
-                  <ReactMarkdown 
+            <div className="h-full w-full flex-1 relative">
+              {/* Live editable markdown: textarea overlays markdown preview */}
+              <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-0 select-none">
+                <div className="p-4 min-h-full bg-white w-full h-full overflow-auto">
+                  <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
                       p: ({children}) => <p className="my-2">{children}</p>,
@@ -325,22 +300,32 @@ const WritingSpace = ({
                     {writingText}
                   </ReactMarkdown>
                 </div>
-              ) : (
-                <Textarea
-                  ref={textareaRef}
-                  value={writingText}
-                  onChange={handleTextChange}
-                  onBlur={() => setIsEditing(false)}
-                  onSelect={(e) => {
-                    const target = e.target as HTMLTextAreaElement;
-                    const selectedText = target.value.substring(target.selectionStart, target.selectionEnd);
-                    handleTextSelection(selectedText);
-                  }}
-                  placeholder="Start writing your content ideas here..."
-                  className="min-h-full w-full h-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-sm p-4"
-                  autoFocus
-                />
-              )}
+              </div>
+              {/* Transparent textarea overlays the markdown preview exactly */}
+              <textarea
+                ref={textareaRef}
+                value={writingText}
+                onChange={handleTextChange}
+                onSelect={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  const selectedText = target.value.substring(target.selectionStart, target.selectionEnd);
+                  handleTextSelection(selectedText);
+                }}
+                placeholder="Start writing your content ideas here..."
+                className="absolute top-0 left-0 w-full h-full min-h-full border-0 bg-transparent text-gray-600 text-sm p-4 z-10 focus-visible:ring-0 resize-none outline-none"
+                style={{
+                  color: 'transparent',
+                  caretColor: '#222',
+                  background: "transparent",
+                  resize: "none",
+                  // Make the text invisible except caret, so Markdown below is always visible.
+                  WebkitTextFillColor: 'transparent',
+                  MozAppearance: 'none',
+                  overflow: 'auto',
+                }}
+                aria-label="Writing space markdown editor"
+                spellCheck
+              />
             </div>
           </div>
           
@@ -369,3 +354,4 @@ const WritingSpace = ({
 export default WritingSpace;
 
 // NOTE TO USER: This file is now over 350 lines long! Please consider asking me to refactor it into smaller components for easier maintenance.
+
