@@ -1,6 +1,5 @@
-
 import { useState } from 'react';
-import { Search, TrendingUp, Instagram, Linkedin, Twitter, Youtube } from 'lucide-react';
+import { Search, TrendingUp, Instagram, Linkedin, Twitter, Youtube, Earth, Flag } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -56,9 +55,15 @@ const platforms = [
   { value: "threads", label: "Threads" }
 ];
 
+const locations = [
+  { value: "global", label: "Global", icon: Earth },
+  { value: "usa", label: "USA", icon: Flag }
+];
+
 const TrendingFeed = () => {
   const [niche, setNiche] = useState('');
   const [platform, setPlatform] = useState('all');
+  const [location, setLocation] = useState('global');
   const [trendingContent, setTrendingContent] = useState<TrendingContent[]>(mockTrendingData);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -113,6 +118,23 @@ const TrendingFeed = () => {
               {platforms.map((p) => (
                 <SelectItem key={p.value} value={p.value}>
                   {p.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="min-w-[140px]">
+          <Select value={location} onValueChange={setLocation}>
+            <SelectTrigger>
+              <SelectValue placeholder="Location" />
+            </SelectTrigger>
+            <SelectContent>
+              {locations.map((loc) => (
+                <SelectItem key={loc.value} value={loc.value}>
+                  <span className="flex items-center gap-2">
+                    <loc.icon className="w-4 h-4" />
+                    {loc.label}
+                  </span>
                 </SelectItem>
               ))}
             </SelectContent>
