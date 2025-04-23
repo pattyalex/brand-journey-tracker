@@ -1,11 +1,12 @@
-
 import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 import LocationSelector from './LocationSelector';
 import PlatformSelector from './PlatformSelector';
 import TrendingCard from './TrendingCard';
+import { FirecrawlService } from '@/utils/FirecrawlService';
 
 interface TrendingContent {
   title: string;
@@ -17,7 +18,7 @@ interface TrendingContent {
   comments: string;
   shares: string;
   saves: string;
-  description?: string; // Added description as an optional property
+  description?: string;
   mediaType?: 'image' | 'video';
   mediaUrl?: string;
 }
@@ -80,31 +81,81 @@ const mockTrendingData: TrendingContent[] = [
 ];
 
 const TrendingFeed = () => {
+  const { toast } = useToast();
   const [niche, setNiche] = useState('');
   const [platform, setPlatform] = useState('all');
   const [location, setLocation] = useState('global');
   const [customLocation, setCustomLocation] = useState('');
   const [trendingContent, setTrendingContent] = useState<TrendingContent[]>(mockTrendingData);
   const [isLoading, setIsLoading] = useState(false);
+  const [apiKey, setApiKey] = useState(FirecrawlService.getApiKey() || '');
 
   const handleSearch = async () => {
+    if (!apiKey) {
+      toast({
+        title: "API Key Required",
+        description: "Please enter your Firecrawl API key first",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
-    const filteredContent = platform === 'all' 
-      ? mockTrendingData 
-      : mockTrendingData.filter(content => 
-          content.platform.toLowerCase() === platform.toLowerCase()
-        );
     
-    setTimeout(() => {
-      setTrendingContent(filteredContent);
+    try {
+      FirecrawlService.saveApiKey(apiKey);
+      const result = await FirecrawlService.crawlSocialContent(platform);
+      
+      if (result.success && result.data) {
+        const transformedContent = result.data.data?.map((item: any) => ({
+          title: item.title || 'Untitled',
+          platform: platform,
+          creator: item.creator || '@unknown',
+          views: item.views || '0',
+          likes: item.likes || '0',
+          comments: item.comments || '0',
+          shares: item.shares || '0',
+          saves: item.saves || '0',
+          description: item.description,
+          mediaType: item.mediaType || 'image',
+          mediaUrl: item.mediaUrl,
+        })) || [];
+
+        setTrendingContent(transformedContent);
+        toast({
+          title: "Success",
+          description: "Successfully fetched trending content",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to fetch trending content",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching trending content:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch trending content",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
     <div className="w-full space-y-4">
       <div className="flex gap-4 flex-col sm:flex-row">
         <div className="flex-1">
+          <Input
+            placeholder="Enter your Firecrawl API key"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            type="password"
+            className="mb-4"
+          />
           <Input
             placeholder="Enter your niche (e.g., fitness, cooking, tech)"
             value={niche}
@@ -113,10 +164,7 @@ const TrendingFeed = () => {
           />
         </div>
         <div className="min-w-[200px]">
-          <PlatformSelector 
-            value={platform} 
-            onValueChange={setPlatform} 
-          />
+          <PlatformSelector value={platform} onValueChange={setPlatform} />
         </div>
         <div className="min-w-[200px]">
           <LocationSelector
@@ -128,7 +176,7 @@ const TrendingFeed = () => {
         </div>
         <Button 
           onClick={handleSearch}
-          disabled={!niche.trim() || isLoading}
+          disabled={!apiKey || !niche.trim() || isLoading}
           className="min-w-[120px]"
         >
           <Search className="w-4 h-4 mr-2" />
