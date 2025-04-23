@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -58,13 +57,12 @@ const BankOfContent = () => {
     if (restoredIdeas.length > 0) {
       const updatedPillars = [...pillars];
       
-      // Group restored items by their original pillar ID
       const itemsByPillar: Record<string, ContentItem[]> = {};
       let totalRestored = 0;
       let lastRestoredItem: ContentItem | null = null;
       
       restoredIdeas.forEach(item => {
-        const pillarId = item.originalPillarId || "1"; // Default to first pillar if not specified
+        const pillarId = item.originalPillarId || "1";
         if (!itemsByPillar[pillarId]) {
           itemsByPillar[pillarId] = [];
         }
@@ -73,7 +71,6 @@ const BankOfContent = () => {
         lastRestoredItem = item;
       });
       
-      // Add items to their respective pillars
       Object.entries(itemsByPillar).forEach(([pillarId, items]) => {
         const pillarIndex = updatedPillars.findIndex(p => p.id === pillarId);
         if (pillarIndex >= 0) {
@@ -83,7 +80,6 @@ const BankOfContent = () => {
           };
           console.log(`Restored ${items.length} items to Pillar ${pillarId}`);
         } else {
-          // If pillar doesn't exist (perhaps it was deleted), add to first pillar
           updatedPillars[0] = {
             ...updatedPillars[0],
             content: [...updatedPillars[0].content, ...items]
@@ -94,7 +90,6 @@ const BankOfContent = () => {
       
       setPillars(updatedPillars);
       
-      // Show appropriate toast message based on number of items
       if (totalRestored === 1 && lastRestoredItem) {
         const targetPillar = lastRestoredItem.originalPillarId ? 
           pillars.find(p => p.id === lastRestoredItem!.originalPillarId)?.name || "Pillar 1" : 
@@ -345,7 +340,6 @@ const BankOfContent = () => {
     <Layout>
       <div className="container mx-auto py-6 space-y-6 fade-in">
         <h1 className="text-3xl font-bold">Idea Development</h1>
-
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex items-center justify-between">
             <PillarTabs 
@@ -357,22 +351,17 @@ const BankOfContent = () => {
               onDeletePillar={deletePillar}
             />
           </div>
-          
           <ContentTypeBuckets 
             onAddIdea={handleAddToBucket} 
             pillarId={activeTab}
           />
-          
           {pillars.map((pillar) => (
             <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <WritingSpace 
-                  writingText={writingText}
-                  onTextChange={updateWritingSpace}
-                  onTextSelection={handleTextSelection}
-                  onFormatText={handleFormatText}
+                  value={writingText}
+                  onChange={updateWritingSpace}
                 />
-                
                 <IdeaSection 
                   pillar={pillar}
                   pillars={pillars}
@@ -393,7 +382,6 @@ const BankOfContent = () => {
             </TabsContent>
           ))}
         </Tabs>
-
         <ContentSearchModal
           isOpen={isSearchModalOpen}
           onClose={() => setIsSearchModalOpen(false)}
@@ -402,7 +390,6 @@ const BankOfContent = () => {
           content={allContent}
           pillars={pillars}
         />
-        
         <IdeaCreationDialog
           open={showNewIdeaDialog}
           onOpenChange={setShowNewIdeaDialog}
