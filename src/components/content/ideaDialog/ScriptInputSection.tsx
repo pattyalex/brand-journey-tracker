@@ -5,7 +5,7 @@ import { FileText, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import SimpleTextFormattingToolbar from "@/components/SimpleTextFormattingToolbar";
 import ReactMarkdown from 'react-markdown';
 
@@ -209,16 +209,7 @@ const ScriptInputSection = ({
               
               {isPreviewMode ? (
                 <div className="min-h-[350px] p-4 border rounded-md bg-gray-50 overflow-y-auto">
-                  <ReactMarkdown 
-                    components={{
-                      p: ({ node, children }) => <p className="my-2">{children}</p>,
-                      h2: ({ node, children }) => <h2 className="text-2xl font-bold mb-2 mt-4">{children}</h2>,
-                      h3: ({ node, children }) => <h3 className="text-xl font-bold mb-2 mt-3">{children}</h3>,
-                      ul: ({ node, children }) => <ul className="list-disc ml-5 my-2">{children}</ul>,
-                      ol: ({ node, children }) => <ol className="list-decimal ml-5 my-2">{children}</ol>,
-                      li: ({ node, children }) => <li className="my-1">{children}</li>
-                    }}
-                  >
+                  <ReactMarkdown>
                     {scriptText}
                   </ReactMarkdown>
                 </div>
