@@ -1,5 +1,5 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Search, TrendingUp } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,6 @@ interface TrendingContent {
   mediaUrl?: string;
 }
 
-// Extend the mock data to have 8 items
 const mockTrendingData: TrendingContent[] = [
   {
     title: "Growing Community Engagement",
@@ -80,7 +79,6 @@ const mockTrendingData: TrendingContent[] = [
     duration: "5:17",
     mediaUrl: "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4"
   },
-  // Add 4 more mock items
   {
     title: "Digital Marketing Trends",
     platform: "TikTok",
@@ -133,11 +131,10 @@ const mockTrendingData: TrendingContent[] = [
     saves: "5.8K",
     description: "Latest technological innovations and startup trends",
     mediaType: "image",
-    mediaUrl: "https://images.unsplash.com/photo-1517976487492-5750f3a60ffe?q=80&w=1000"
+    mediaUrl: "https://images.unsplash.com/photo-1517976487492-577aabd1db4f?q=80&w=1000"
   }
 ];
 
-// Additional mock data for loading more content
 const additionalMockData: TrendingContent[] = [
   {
     title: "Sustainable Living Practices",
@@ -251,6 +248,8 @@ const additionalMockData: TrendingContent[] = [
 
 const TrendingFeed = () => {
   const { toast } = useToast();
+  const routeLocation = useLocation();
+  const isTrendingPage = routeLocation.pathname === '/trending';
   const [niche, setNiche] = useState('');
   const [platform, setPlatform] = useState('all');
   const [location, setLocation] = useState('global');
@@ -325,7 +324,6 @@ const TrendingFeed = () => {
     setIsLoadingMore(true);
     
     try {
-      // For the mock implementation, we'll use the additional mock data
       if (!hasLoadedAdditional) {
         setTimeout(() => {
           setTrendingContent(prev => [...prev, ...additionalMockData]);
@@ -337,7 +335,6 @@ const TrendingFeed = () => {
         return;
       }
       
-      // Actual API implementation (when API is ready)
       const result = await FirecrawlService.crawlSocialContent(platform);
       
       if (result.success && result.data) {
@@ -375,13 +372,15 @@ const TrendingFeed = () => {
     <div className="w-full space-y-4">
       <div className="flex gap-4 flex-col sm:flex-row">
         <div className="flex-1">
-          <Input
-            placeholder="Enter your Firecrawl API key"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            type="password"
-            className="mb-4"
-          />
+          {isTrendingPage && (
+            <Input
+              placeholder="Enter your Firecrawl API key"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              type="password"
+              className="mb-4"
+            />
+          )}
           <Input
             placeholder="Enter your niche (e.g., fitness, cooking, tech)"
             value={niche}
