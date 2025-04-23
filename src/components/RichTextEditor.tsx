@@ -1,4 +1,3 @@
-
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -53,7 +52,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
         </button>
         <button
           type="button"
-          onClick={() => editor?.chain().focus().toggleMark('underline').run()}
+          onClick={() => editor?.chain().focus().toggleUnderline().run()}
           className={`p-2 rounded text-sm ${editor?.isActive('underline') ? "bg-gray-200" : ""}`}
           title="Underline"
         >
