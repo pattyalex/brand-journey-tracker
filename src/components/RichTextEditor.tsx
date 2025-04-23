@@ -1,11 +1,9 @@
-
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import React from "react";
 import { Bold, Italic, Underline as UnderlineIcon, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface RichTextEditorProps {
   value: string;
@@ -100,13 +98,13 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
           </div>
         </div>
         <div 
-          className="absolute right-0 top-0 bottom-0 w-8 bg-[#ea384c] hover:bg-[#d1303d] rounded-r-lg opacity-90 hover:opacity-100 transition-all duration-200 z-20"
+          className="absolute right-0 top-0 bottom-0 w-8 bg-gray-100 hover:bg-gray-200 rounded-r-lg opacity-90 hover:opacity-100 transition-all duration-200 z-20"
           style={{
             boxShadow: '-2px 0 6px rgba(0,0,0,0.1)',
           }}
         >
           <div className="h-full w-full flex items-center justify-center">
-            <div className="h-24 w-2 bg-white/40 rounded-full my-1"></div>
+            <div className="h-24 w-2 bg-gray-400 rounded-full my-1"></div>
           </div>
         </div>
       </div>
