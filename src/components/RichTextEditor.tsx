@@ -98,7 +98,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
         </div>
         <ScrollBar 
           orientation="vertical" 
-          className="absolute right-0 top-0 bottom-0 w-2 bg-gray-100 rounded-md"
+          className="absolute right-0 top-0 bottom-0 w-4 bg-red-500/20 hover:bg-red-500/30 rounded-r-md transition-colors duration-200"
         />
       </ScrollArea>
     </div>
