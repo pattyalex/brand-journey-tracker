@@ -1,14 +1,24 @@
 
-import { useRef, useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { Pencil, Sparkles } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import SimpleTextFormattingToolbar from "@/components/SimpleTextFormattingToolbar";
 import { useSidebar } from "@/components/ui/sidebar";
 import MeganAIChat from "./MeganAIChat";
 import TitleHookSuggestions from "./TitleHookSuggestions";
 import { motion } from "framer-motion";
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import TipTapEditor from "./TipTapEditor";
+import RichTextToolbar from "./RichTextToolbar";
+import { useEditor } from "@tiptap/react";
+import Bold from '@tiptap/extension-bold';
+import Italic from '@tiptap/extension-italic';
+import Underline from '@tiptap/extension-underline';
+import BulletList from '@tiptap/extension-bullet-list';
+import OrderedList from '@tiptap/extension-ordered-list';
+import Paragraph from '@tiptap/extension-paragraph';
+import Document from '@tiptap/extension-document';
+import Text from '@tiptap/extension-text';
+import TextAlign from '@tiptap/extension-text-align';
+import Heading from '@tiptap/extension-heading';
 
 interface WritingSpaceProps {
   writingText: string;
@@ -47,148 +57,58 @@ const WritingSpace = ({
   onTextSelection,
   onFormatText
 }: WritingSpaceProps) => {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { state } = useSidebar();
   const [expandedClass, setExpandedClass] = useState("");
   const [isMeganOpen, setIsMeganOpen] = useState(false);
+  const [htmlContent, setHtmlContent] = useState(() => {
+    // Convert plain markdown to HTML if needed for initial content
+    if (!writingText.trim().startsWith('<')) {
+      return `<p>${writingText.replace(/\n/g, '</p><p>')}</p>`;
+    }
+    return writingText;
+  });
+
+  const editor = useEditor({
+    extensions: [
+      Document,
+      Paragraph,
+      Text,
+      Bold,
+      Italic,
+      Underline,
+      BulletList,
+      OrderedList,
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
+      Heading.configure({
+        levels: [1, 2, 3],
+      }),
+    ],
+    content: htmlContent,
+    onUpdate: ({ editor }) => {
+      const html = editor.getHTML();
+      setHtmlContent(html);
+      onTextChange(html);
+    },
+    onSelectionUpdate: ({ editor }) => {
+      const { from, to } = editor.state.selection;
+      const selectedText = editor.state.doc.textBetween(from, to, ' ');
+      if (selectedText) {
+        onTextSelection(selectedText);
+      }
+    },
+  });
 
   useEffect(() => {
     setExpandedClass(state === "collapsed" ? "writing-expanded" : "");
   }, [state]);
 
-  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    onTextChange(e.target.value);
-  };
-
-  const handleTextSelection = () => {
-    if (textareaRef.current) {
-      const start = textareaRef.current.selectionStart;
-      const end = textareaRef.current.selectionEnd;
-      const selectedText = writingText.substring(start, end);
-      
-      if (selectedText.trim()) {
-        onTextSelection(selectedText);
-      }
+  useEffect(() => {
+    if (editor && writingText !== editor.getHTML()) {
+      editor.commands.setContent(writingText);
     }
-  };
-
-  const handleFormatClick = (formatType: string, formatValue?: string) => {
-    if (textareaRef.current) {
-      const start = textareaRef.current.selectionStart;
-      const end = textareaRef.current.selectionEnd;
-      const text = writingText;
-      let newText = text;
-      let newCursorPos = end;
-      const selectedText = text.substring(start, end);
-
-      if (selectedText) {
-        let formattedText = selectedText;
-        switch (formatType) {
-          case 'bold':
-            formattedText = `**${selectedText}**`;
-            newCursorPos = start + formattedText.length;
-            break;
-          case 'italic':
-            formattedText = `*${selectedText}*`;
-            newCursorPos = start + formattedText.length;
-            break;
-          case 'underline':
-            formattedText = `__${selectedText}__`;
-            newCursorPos = start + formattedText.length;
-            break;
-          case 'bullet':
-            formattedText = `\n- ${selectedText}`;
-            newCursorPos = start + formattedText.length;
-            break;
-          case 'numbered':
-            formattedText = `\n1. ${selectedText}`;
-            newCursorPos = start + formattedText.length;
-            break;
-          case 'align':
-            if (formatValue === 'left') {
-              formattedText = `<div style="text-align: left">${selectedText}</div>`;
-            } else if (formatValue === 'center') {
-              formattedText = `<div style="text-align: center">${selectedText}</div>`;
-            } else if (formatValue === 'right') {
-              formattedText = `<div style="text-align: right">${selectedText}</div>`;
-            }
-            newCursorPos = start + formattedText.length;
-            break;
-          case 'size':
-            if (formatValue === 'small') {
-              formattedText = `<small>${selectedText}</small>`;
-            } else if (formatValue === 'large') {
-              formattedText = `### ${selectedText}`;
-            } else if (formatValue === 'x-large') {
-              formattedText = `## ${selectedText}`;
-            }
-            newCursorPos = start + formattedText.length;
-            break;
-          default:
-            break;
-        }
-        newText = text.substring(0, start) + formattedText + text.substring(end);
-        onTextChange(newText);
-        setTimeout(() => {
-          if (textareaRef.current) {
-            textareaRef.current.focus();
-            textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
-          }
-        }, 10);
-      } else {
-        let formattingTemplate = '';
-        switch (formatType) {
-          case 'bold':
-            formattingTemplate = '**bold text**';
-            break;
-          case 'italic':
-            formattingTemplate = '*italic text*';
-            break;
-          case 'underline':
-            formattingTemplate = '__underlined text__';
-            break;
-          case 'bullet':
-            formattingTemplate = '\n- bullet point';
-            break;
-          case 'numbered':
-            formattingTemplate = '\n1. numbered item';
-            break;
-          case 'align':
-            if (formatValue === 'left') {
-              formattingTemplate = '<div style="text-align: left">left aligned text</div>';
-            } else if (formatValue === 'center') {
-              formattingTemplate = '<div style="text-align: center">centered text</div>';
-            } else if (formatValue === 'right') {
-              formattingTemplate = '<div style="text-align: right">right aligned text</div>';
-            }
-            break;
-          case 'size':
-            if (formatValue === 'small') {
-              formattingTemplate = '<small>small text</small>';
-            } else if (formatValue === 'large') {
-              formattingTemplate = '### large text';
-            } else if (formatValue === 'x-large') {
-              formattingTemplate = '## extra large text';
-            }
-            break;
-          default:
-            break;
-        }
-        if (formattingTemplate) {
-          newText = text.substring(0, start) + formattingTemplate + text.substring(start);
-          onTextChange(newText);
-          const cursorPos = start + formattingTemplate.length;
-          setTimeout(() => {
-            if (textareaRef.current) {
-              textareaRef.current.focus();
-              textareaRef.current.setSelectionRange(start + 2, cursorPos - 2);
-            }
-          }, 10);
-        }
-      }
-    }
-    onFormatText(formatType, formatValue);
-  };
+  }, [writingText, editor]);
 
   return (
     <motion.div 
@@ -256,20 +176,9 @@ const WritingSpace = ({
       
       <div className="hidden">
         <TitleHookSuggestions onSelectHook={(hook) => {
-          if (textareaRef.current) {
-            const cursorPos = textareaRef.current.selectionStart;
-            const textBefore = writingText.substring(0, cursorPos);
-            const textAfter = writingText.substring(cursorPos);
-            onTextChange(textBefore + hook + textAfter);
-            setTimeout(() => {
-              if (textareaRef.current) {
-                textareaRef.current.focus();
-                const newCursorPos = cursorPos + hook.length;
-                textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
-              }
-            }, 10);
-          } else {
-            onTextChange(writingText + hook);
+          if (editor) {
+            editor.commands.focus();
+            editor.commands.insertContent(hook);
           }
         }} />
       </div>
@@ -286,43 +195,16 @@ const WritingSpace = ({
           transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
         >
           <div className={`${isMeganOpen ? "w-1/2 border-r border-gray-200 flex flex-col" : "w-full flex-1 flex flex-col"}`}>
-            <SimpleTextFormattingToolbar onFormat={handleFormatClick} />
-            <div className="h-full w-full flex-1 relative">
-              <div className="editor-container h-full w-full relative">
-                {/* Markdown preview layer */}
-                <div className="absolute inset-0 p-4 overflow-auto bg-white">
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    components={{
-                      p: ({children}) => <p className="my-2">{children}</p>,
-                      h2: ({children}) => <h2 className="text-2xl font-bold mb-2 mt-4">{children}</h2>,
-                      h3: ({children}) => <h3 className="text-xl font-bold mb-2 mt-3">{children}</h3>,
-                      ul: ({children}) => <ul className="list-disc ml-5 my-2">{children}</ul>,
-                      ol: ({children}) => <ol className="list-decimal ml-5 my-2">{children}</ol>,
-                      li: ({children}) => <li className="my-1">{children}</li>,
-                      a: ({href, children}) => <a href={href} className="text-blue-500 hover:underline">{children}</a>
-                    }}
-                  >
-                    {writingText || 'Start writing your content ideas here...'}
-                  </ReactMarkdown>
-                </div>
-                
-                {/* Editable textarea layer */}
-                <textarea
-                  ref={textareaRef}
-                  value={writingText}
-                  onChange={handleTextChange}
-                  onSelect={handleTextSelection}
-                  placeholder="Start writing your content ideas here..."
-                  className="absolute inset-0 w-full h-full p-4 bg-transparent resize-none focus:outline-none focus:ring-0 border-0 font-sans text-transparent caret-gray-700 selection:bg-blue-200"
-                  style={{
-                    caretColor: '#333',
-                    lineHeight: '1.5',
-                    zIndex: 10,
-                  }}
-                  spellCheck
-                />
-              </div>
+            <RichTextToolbar editor={editor} />
+            <div className="h-full w-full flex-1 overflow-auto bg-white">
+              <TipTapEditor 
+                content={htmlContent}
+                onChange={(html) => {
+                  setHtmlContent(html);
+                  onTextChange(html);
+                }}
+                onSelectionChange={onTextSelection}
+              />
             </div>
           </div>
           
@@ -337,7 +219,7 @@ const WritingSpace = ({
               <MeganAIChat 
                 onClose={() => setIsMeganOpen(false)} 
                 contextData={{
-                  script: writingText,
+                  script: htmlContent,
                 }}
               />
             </motion.div>
