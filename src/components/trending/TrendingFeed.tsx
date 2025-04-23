@@ -4,8 +4,6 @@ import { Search, TrendingUp, Instagram, Linkedin, Twitter, Youtube, Earth, Flag 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { Check, ChevronsUpDown } from "lucide-react";
 import {
@@ -15,6 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 
 interface TrendingContent {
   title: string;
@@ -77,6 +81,7 @@ const TrendingFeed = () => {
   const [niche, setNiche] = useState('');
   const [platform, setPlatform] = useState('all');
   const [location, setLocation] = useState('global');
+  const [customLocation, setCustomLocation] = useState('');
   const [trendingContent, setTrendingContent] = useState<TrendingContent[]>(mockTrendingData);
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -110,6 +115,15 @@ const TrendingFeed = () => {
     }
   };
 
+  // Function to handle location selection
+  const handleLocationSelect = (value: string) => {
+    setLocation(value);
+    setOpen(false);
+  };
+
+  // Find the current location label
+  const currentLocationLabel = locations.find(loc => loc.value === location)?.label || customLocation || "Select location...";
+
   return (
     <div className="w-full space-y-4">
       <div className="flex gap-4 flex-col sm:flex-row">
@@ -136,48 +150,46 @@ const TrendingFeed = () => {
           </Select>
         </div>
         <div className="min-w-[200px]">
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
+          <DropdownMenu open={open} onOpenChange={setOpen}>
+            <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
                 role="combobox"
                 aria-expanded={open}
                 className="w-full justify-between"
               >
-                {location
-                  ? locations.find((loc) => loc.value === location)?.label
-                  : "Select location..."}
+                {currentLocationLabel}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-full p-0">
-              <Command>
-                <CommandInput placeholder="Search location..." />
-                <CommandEmpty>No location found.</CommandEmpty>
-                <CommandGroup>
-                  {locations.map((loc) => (
-                    <CommandItem
-                      key={loc.value}
-                      value={loc.value}
-                      onSelect={(currentValue) => {
-                        setLocation(currentValue === location ? "" : currentValue);
-                        setOpen(false);
-                      }}
-                    >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          location === loc.value ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                      {loc.icon && <loc.icon className="mr-2 h-4 w-4" />}
-                      {loc.label}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </Command>
-            </PopoverContent>
-          </Popover>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[200px]">
+              {locations.map((loc) => (
+                <DropdownMenuItem
+                  key={loc.value}
+                  onSelect={() => handleLocationSelect(loc.value)}
+                  className="flex items-center gap-2"
+                >
+                  {location === loc.value && <Check className="h-4 w-4" />}
+                  {loc.icon && <loc.icon className="h-4 w-4" />}
+                  {loc.label}
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuItem className="p-0">
+                <Input 
+                  placeholder="Enter custom location..."
+                  className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                  value={customLocation}
+                  onChange={(e) => {
+                    setCustomLocation(e.target.value);
+                    if (e.target.value) {
+                      setLocation('custom');
+                    }
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         <Button 
           onClick={handleSearch}
