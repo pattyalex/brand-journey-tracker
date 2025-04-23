@@ -9,16 +9,9 @@ import { motion } from "framer-motion";
 import TipTapEditor from "./TipTapEditor";
 import RichTextToolbar from "./RichTextToolbar";
 import { useEditor } from "@tiptap/react";
-import Bold from '@tiptap/extension-bold';
-import Italic from '@tiptap/extension-italic';
+import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
-import BulletList from '@tiptap/extension-bullet-list';
-import OrderedList from '@tiptap/extension-ordered-list';
-import Paragraph from '@tiptap/extension-paragraph';
-import Document from '@tiptap/extension-document';
-import Text from '@tiptap/extension-text';
 import TextAlign from '@tiptap/extension-text-align';
-import Heading from '@tiptap/extension-heading';
 
 interface WritingSpaceProps {
   writingText: string;
@@ -70,19 +63,10 @@ const WritingSpace = ({
 
   const editor = useEditor({
     extensions: [
-      Document,
-      Paragraph,
-      Text,
-      Bold,
-      Italic,
+      StarterKit,
       Underline,
-      BulletList,
-      OrderedList,
       TextAlign.configure({
         types: ['heading', 'paragraph'],
-      }),
-      Heading.configure({
-        levels: [1, 2, 3],
       }),
     ],
     content: htmlContent,
