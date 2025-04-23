@@ -1,3 +1,4 @@
+
 import Layout from "@/components/Layout";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Database, Calendar, BarChart, TrendingUp } from "lucide-react";
@@ -62,11 +63,6 @@ const GetStarted = () => {
               <CardHeader className="space-y-4">
                 <service.icon className="w-8 h-8 text-primary" />
                 <CardTitle className="text-2xl">{service.title}</CardTitle>
-                {service.component && (
-                  <div className="mt-4">
-                    <service.component />
-                  </div>
-                )}
               </CardHeader>
             </Card>
           ))}
