@@ -20,7 +20,8 @@ import {
   Repeat,
   Save,
   BookmarkIcon,
-  ExternalLink
+  ExternalLink,
+  RefreshCw
 } from "lucide-react";
 import CreateSimilarContentDialog from "./CreateSimilarContentDialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -313,7 +314,10 @@ const PostPerformanceTab: React.FC<PostPerformanceTabProps> = ({ platforms }) =>
                               onClick={() => handleCreateSimilar(post)}
                               className="h-8 w-8 rounded-full"
                             >
-                              <Repeat className="h-4 w-4 text-purple-500" />
+                              <RefreshCw 
+                                className="h-4 w-4 text-purple-500 stroke-[2.5]" 
+                                strokeWidth={2.5} 
+                              />
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>

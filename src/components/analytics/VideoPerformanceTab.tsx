@@ -20,7 +20,8 @@ import {
   Copy,
   Share2,
   Save,
-  BookmarkIcon
+  BookmarkIcon,
+  RefreshCw
 } from "lucide-react";
 import CreateSimilarContentDialog from "./CreateSimilarContentDialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -319,7 +320,10 @@ const VideoPerformanceTab: React.FC<VideoPerformanceTabProps> = ({ platforms }) 
                               onClick={() => handleCreateSimilar(video)}
                               className="h-8 w-8 rounded-full"
                             >
-                              <Repeat className="h-4 w-4 text-purple-500" />
+                              <RefreshCw 
+                                className="h-4 w-4 text-purple-500 stroke-[2.5]" 
+                                strokeWidth={2.5} 
+                              />
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
