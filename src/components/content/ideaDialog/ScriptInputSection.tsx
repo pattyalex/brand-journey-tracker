@@ -1,3 +1,4 @@
+
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { FileText, ChevronDown, ChevronUp } from "lucide-react";
@@ -53,11 +54,11 @@ const ScriptInputSection = ({
             newCursorPos = start + formattedText.length;
             break;
           case 'italic':
-            formattedText = `_${selectedText}_`;
+            formattedText = `*${selectedText}*`;
             newCursorPos = start + formattedText.length;
             break;
           case 'underline':
-            formattedText = `<u>${selectedText}</u>`;
+            formattedText = `__${selectedText}__`;
             newCursorPos = start + formattedText.length;
             break;
           case 'bullet':
@@ -70,11 +71,11 @@ const ScriptInputSection = ({
             break;
           case 'align':
             if (formatValue === 'left') {
-              formattedText = `<div align="left">${selectedText}</div>`;
+              formattedText = `<div style="text-align: left">${selectedText}</div>`;
             } else if (formatValue === 'center') {
-              formattedText = `<div align="center">${selectedText}</div>`;
+              formattedText = `<div style="text-align: center">${selectedText}</div>`;
             } else if (formatValue === 'right') {
-              formattedText = `<div align="right">${selectedText}</div>`;
+              formattedText = `<div style="text-align: right">${selectedText}</div>`;
             }
             newCursorPos = start + formattedText.length;
             break;
@@ -82,9 +83,9 @@ const ScriptInputSection = ({
             if (formatValue === 'small') {
               formattedText = `<small>${selectedText}</small>`;
             } else if (formatValue === 'large') {
-              formattedText = `<h3>${selectedText}</h3>`;
+              formattedText = `### ${selectedText}`;
             } else if (formatValue === 'x-large') {
-              formattedText = `<h2>${selectedText}</h2>`;
+              formattedText = `## ${selectedText}`;
             }
             newCursorPos = start + formattedText.length;
             break;
@@ -112,10 +113,10 @@ const ScriptInputSection = ({
             formattingTemplate = '**bold text**';
             break;
           case 'italic':
-            formattingTemplate = '_italic text_';
+            formattingTemplate = '*italic text*';
             break;
           case 'underline':
-            formattingTemplate = '<u>underlined text</u>';
+            formattingTemplate = '__underlined text__';
             break;
           case 'bullet':
             formattingTemplate = '\n- bullet point';
@@ -125,20 +126,20 @@ const ScriptInputSection = ({
             break;
           case 'align':
             if (formatValue === 'left') {
-              formattingTemplate = '<div align="left">left aligned text</div>';
+              formattingTemplate = '<div style="text-align: left">left aligned text</div>';
             } else if (formatValue === 'center') {
-              formattingTemplate = '<div align="center">centered text</div>';
+              formattingTemplate = '<div style="text-align: center">centered text</div>';
             } else if (formatValue === 'right') {
-              formattingTemplate = '<div align="right">right aligned text</div>';
+              formattingTemplate = '<div style="text-align: right">right aligned text</div>';
             }
             break;
           case 'size':
             if (formatValue === 'small') {
               formattingTemplate = '<small>small text</small>';
             } else if (formatValue === 'large') {
-              formattingTemplate = '<h3>large text</h3>';
+              formattingTemplate = '### large text';
             } else if (formatValue === 'x-large') {
-              formattingTemplate = '<h2>extra large text</h2>';
+              formattingTemplate = '## extra large text';
             }
             break;
           default:
@@ -210,12 +211,12 @@ const ScriptInputSection = ({
                 <div className="min-h-[350px] p-4 border rounded-md bg-gray-50 overflow-y-auto">
                   <ReactMarkdown 
                     components={{
-                      p: ({ node, ...props }) => <p className="my-2" {...props} />,
-                      h2: ({ node, ...props }) => <h2 className="text-2xl font-bold mb-2 mt-4" {...props} />,
-                      h3: ({ node, ...props }) => <h3 className="text-xl font-bold mb-2 mt-3" {...props} />,
-                      ul: ({ node, ...props }) => <ul className="list-disc ml-5 my-2" {...props} />,
-                      ol: ({ node, ...props }) => <ol className="list-decimal ml-5 my-2" {...props} />,
-                      li: ({ node, ...props }) => <li className="my-1" {...props} />
+                      p: ({ node, children }) => <p className="my-2">{children}</p>,
+                      h2: ({ node, children }) => <h2 className="text-2xl font-bold mb-2 mt-4">{children}</h2>,
+                      h3: ({ node, children }) => <h3 className="text-xl font-bold mb-2 mt-3">{children}</h3>,
+                      ul: ({ node, children }) => <ul className="list-disc ml-5 my-2">{children}</ul>,
+                      ol: ({ node, children }) => <ol className="list-decimal ml-5 my-2">{children}</ol>,
+                      li: ({ node, children }) => <li className="my-1">{children}</li>
                     }}
                   >
                     {scriptText}
