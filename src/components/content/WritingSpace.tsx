@@ -60,9 +60,15 @@ const WritingSpace = ({
     onTextChange(e.target.value);
   };
 
-  const handleTextSelection = (selectedText: string) => {
-    if (selectedText.trim()) {
-      onTextSelection(selectedText);
+  const handleTextSelection = () => {
+    if (textareaRef.current) {
+      const start = textareaRef.current.selectionStart;
+      const end = textareaRef.current.selectionEnd;
+      const selectedText = writingText.substring(start, end);
+      
+      if (selectedText.trim()) {
+        onTextSelection(selectedText);
+      }
     }
   };
 
@@ -282,9 +288,9 @@ const WritingSpace = ({
           <div className={`${isMeganOpen ? "w-1/2 border-r border-gray-200 flex flex-col" : "w-full flex-1 flex flex-col"}`}>
             <SimpleTextFormattingToolbar onFormat={handleFormatClick} />
             <div className="h-full w-full flex-1 relative">
-              {/* Live editable markdown: textarea overlays markdown preview */}
-              <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-0 select-none">
-                <div className="p-4 min-h-full bg-white w-full h-full overflow-auto">
+              <div className="editor-container h-full w-full relative">
+                {/* Markdown preview layer */}
+                <div className="absolute inset-0 p-4 overflow-auto bg-white">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
@@ -297,35 +303,26 @@ const WritingSpace = ({
                       a: ({href, children}) => <a href={href} className="text-blue-500 hover:underline">{children}</a>
                     }}
                   >
-                    {writingText}
+                    {writingText || 'Start writing your content ideas here...'}
                   </ReactMarkdown>
                 </div>
+                
+                {/* Editable textarea layer */}
+                <textarea
+                  ref={textareaRef}
+                  value={writingText}
+                  onChange={handleTextChange}
+                  onSelect={handleTextSelection}
+                  placeholder="Start writing your content ideas here..."
+                  className="absolute inset-0 w-full h-full p-4 bg-transparent resize-none focus:outline-none focus:ring-0 border-0 font-sans text-transparent caret-gray-700 selection:bg-blue-200"
+                  style={{
+                    caretColor: '#333',
+                    lineHeight: '1.5',
+                    zIndex: 10,
+                  }}
+                  spellCheck
+                />
               </div>
-              {/* Transparent textarea overlays the markdown preview exactly */}
-              <textarea
-                ref={textareaRef}
-                value={writingText}
-                onChange={handleTextChange}
-                onSelect={(e) => {
-                  const target = e.target as HTMLTextAreaElement;
-                  const selectedText = target.value.substring(target.selectionStart, target.selectionEnd);
-                  handleTextSelection(selectedText);
-                }}
-                placeholder="Start writing your content ideas here..."
-                className="absolute top-0 left-0 w-full h-full min-h-full border-0 bg-transparent text-gray-600 text-sm p-4 z-10 focus-visible:ring-0 resize-none outline-none"
-                style={{
-                  color: 'transparent',
-                  caretColor: '#222',
-                  background: "transparent",
-                  resize: "none",
-                  // Make the text invisible except caret, so Markdown below is always visible.
-                  WebkitTextFillColor: 'transparent',
-                  MozAppearance: 'none',
-                  overflow: 'auto',
-                }}
-                aria-label="Writing space markdown editor"
-                spellCheck
-              />
             </div>
           </div>
           
@@ -352,6 +349,3 @@ const WritingSpace = ({
 };
 
 export default WritingSpace;
-
-// NOTE TO USER: This file is now over 350 lines long! Please consider asking me to refactor it into smaller components for easier maintenance.
-
