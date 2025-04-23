@@ -11,10 +11,10 @@ export const defaultMenuItems: MenuItem[] = [
     url: '/get-started', 
     isDeletable: false,
     subItems: [
+      { title: "What's Trending", icon: TrendingUp, url: '/trending' },
       { title: 'Idea Development', icon: Database, url: '/bank-of-content' },
       { title: 'Content Calendar', icon: Calendar, url: '/content-calendar' },
       { title: 'Analytics', icon: BarChart, url: '/analytics' },
-      { title: "What's Trending", icon: TrendingUp, url: '/trending' },
     ]
   },
   { 
