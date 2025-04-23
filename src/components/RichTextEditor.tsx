@@ -1,3 +1,4 @@
+
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -85,7 +86,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
         </button>
       </div>
       <div className="flex-1 rounded-lg border border-gray-200 bg-white w-full h-full relative">
-        <div className="h-full min-h-[450px] max-h-[70vh] overflow-y-auto pr-2" style={{
+        <div className="h-full min-h-[450px] max-h-[70vh] pr-1" style={{
           overflowY: 'scroll',
           scrollbarWidth: 'thin',
           msOverflowStyle: 'thin',
