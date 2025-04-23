@@ -10,7 +10,14 @@ import RichTextToolbar from "./RichTextToolbar";
 import { useEditor } from "@tiptap/react";
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
+import Italic from '@tiptap/extension-italic';
+import Bold from '@tiptap/extension-bold';
 import TextAlign from '@tiptap/extension-text-align';
+import ListItem from '@tiptap/extension-list-item';
+import BulletList from '@tiptap/extension-bullet-list';
+import OrderedList from '@tiptap/extension-ordered-list';
+import Paragraph from '@tiptap/extension-paragraph';
+import Heading from '@tiptap/extension-heading';
 
 interface WritingSpaceProps {
   writingText: string;
@@ -63,9 +70,16 @@ const WritingSpace = ({
     extensions: [
       StarterKit,
       Underline,
+      Italic,
+      Bold,
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
+      BulletList,
+      OrderedList,
+      ListItem,
+      Paragraph,
+      Heading,
     ],
     content: htmlContent,
     onUpdate: ({ editor }) => {
