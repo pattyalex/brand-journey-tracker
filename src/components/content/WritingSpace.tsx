@@ -7,17 +7,10 @@ import TitleHookSuggestions from "./TitleHookSuggestions";
 import { motion } from "framer-motion";
 import TipTapEditor from "./TipTapEditor";
 import RichTextToolbar from "./RichTextToolbar";
-import { useEditor } from "@tiptap/react";
+import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
-import Italic from '@tiptap/extension-italic';
-import Bold from '@tiptap/extension-bold';
 import TextAlign from '@tiptap/extension-text-align';
-import ListItem from '@tiptap/extension-list-item';
-import BulletList from '@tiptap/extension-bullet-list';
-import OrderedList from '@tiptap/extension-ordered-list';
-import Paragraph from '@tiptap/extension-paragraph';
-import Heading from '@tiptap/extension-heading';
 
 interface WritingSpaceProps {
   writingText: string;
@@ -70,24 +63,19 @@ const WritingSpace = ({
     extensions: [
       StarterKit,
       Underline,
-      Italic,
-      Bold,
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
-      BulletList,
-      OrderedList,
-      ListItem,
-      Paragraph,
-      Heading,
     ],
     content: htmlContent,
     onUpdate: ({ editor }) => {
+      console.log("Editor content updated");
       const html = editor.getHTML();
       setHtmlContent(html);
       onTextChange(html);
     },
     onSelectionUpdate: ({ editor }) => {
+      console.log("Selection updated");
       const { from, to } = editor.state.selection;
       const selectedText = editor.state.doc.textBetween(from, to, ' ');
       if (selectedText) {
@@ -102,6 +90,7 @@ const WritingSpace = ({
 
   useEffect(() => {
     if (editor && writingText !== editor.getHTML()) {
+      console.log("Updating editor content from props");
       editor.commands.setContent(writingText);
     }
   }, [writingText, editor]);
@@ -193,14 +182,12 @@ const WritingSpace = ({
           <div className={`${isMeganOpen ? "w-1/2 border-r border-gray-200 flex flex-col" : "w-full flex-1 flex flex-col"}`}>
             <RichTextToolbar editor={editor} />
             <div className="h-full w-full flex-1 overflow-auto bg-white">
-              <TipTapEditor 
-                content={htmlContent}
-                onChange={(html) => {
-                  setHtmlContent(html);
-                  onTextChange(html);
-                }}
-                onSelectionChange={onTextSelection}
-              />
+              {editor && (
+                <EditorContent 
+                  editor={editor} 
+                  className="h-full min-h-[calc(100vh-220px)] prose focus:outline-none p-4"
+                />
+              )}
             </div>
           </div>
           

@@ -35,6 +35,14 @@ const RichTextToolbar: React.FC<RichTextToolbarProps> = ({ editor }) => {
     tap: { scale: 0.95, transition: { duration: 0.2 } }
   };
 
+  // Helper function to execute editor commands and log results
+  const executeCommand = (commandFn: () => boolean, commandName: string) => {
+    console.log(`Executing ${commandName} command`);
+    const result = commandFn();
+    console.log(`${commandName} command result:`, result);
+    return result;
+  };
+
   const ToolbarButton = ({ 
     onClick, 
     icon: Icon, 
@@ -47,7 +55,10 @@ const RichTextToolbar: React.FC<RichTextToolbarProps> = ({ editor }) => {
     title: string
   }) => (
     <motion.button
-      onClick={onClick}
+      onClick={(e) => {
+        e.preventDefault(); // Prevent default to avoid losing editor focus
+        onClick();
+      }}
       className={cn(
         "p-1 rounded text-gray-600", 
         isActive ? "bg-gray-100 text-primary" : "hover:bg-gray-100"
@@ -77,19 +88,19 @@ const RichTextToolbar: React.FC<RichTextToolbarProps> = ({ editor }) => {
         transition={{ duration: 0.5, staggerChildren: 0.05, delayChildren: 0.1 }}
       >
         <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBold().run()}
+          onClick={() => executeCommand(() => editor.chain().focus().toggleBold().run(), 'bold')}
           icon={Bold}
           isActive={editor.isActive('bold')}
           title="Bold"
         />
         <ToolbarButton
-          onClick={() => editor.chain().focus().toggleItalic().run()}
+          onClick={() => executeCommand(() => editor.chain().focus().toggleItalic().run(), 'italic')}
           icon={Italic}
           isActive={editor.isActive('italic')}
           title="Italic"
         />
         <ToolbarButton
-          onClick={() => editor.chain().focus().toggleUnderline().run()}
+          onClick={() => executeCommand(() => editor.chain().focus().toggleUnderline().run(), 'underline')}
           icon={Underline}
           isActive={editor.isActive('underline')}
           title="Underline"
@@ -123,8 +134,9 @@ const RichTextToolbar: React.FC<RichTextToolbarProps> = ({ editor }) => {
                   "w-full text-left px-3 py-1.5 text-sm hover:bg-gray-100 flex items-center",
                   editor.isActive('heading', { level: 1 }) && "bg-gray-100"
                 )}
-                onClick={() => {
-                  editor.chain().focus().toggleHeading({ level: 1 }).run();
+                onClick={(e) => {
+                  e.preventDefault();
+                  executeCommand(() => editor.chain().focus().toggleHeading({ level: 1 }).run(), 'heading-1');
                   setIsTextSizeOpen(false);
                 }}
                 initial={{ opacity: 0, x: -5 }}
@@ -138,8 +150,9 @@ const RichTextToolbar: React.FC<RichTextToolbarProps> = ({ editor }) => {
                   "w-full text-left px-3 py-1.5 text-sm hover:bg-gray-100 flex items-center",
                   editor.isActive('heading', { level: 2 }) && "bg-gray-100"
                 )}
-                onClick={() => {
-                  editor.chain().focus().toggleHeading({ level: 2 }).run();
+                onClick={(e) => {
+                  e.preventDefault();
+                  executeCommand(() => editor.chain().focus().toggleHeading({ level: 2 }).run(), 'heading-2');
                   setIsTextSizeOpen(false);
                 }}
                 initial={{ opacity: 0, x: -5 }}
@@ -153,8 +166,9 @@ const RichTextToolbar: React.FC<RichTextToolbarProps> = ({ editor }) => {
                   "w-full text-left px-3 py-1.5 text-sm hover:bg-gray-100 flex items-center",
                   editor.isActive('heading', { level: 3 }) && "bg-gray-100"
                 )}
-                onClick={() => {
-                  editor.chain().focus().toggleHeading({ level: 3 }).run();
+                onClick={(e) => {
+                  e.preventDefault();
+                  executeCommand(() => editor.chain().focus().toggleHeading({ level: 3 }).run(), 'heading-3');
                   setIsTextSizeOpen(false);
                 }}
                 initial={{ opacity: 0, x: -5 }}
@@ -168,8 +182,9 @@ const RichTextToolbar: React.FC<RichTextToolbarProps> = ({ editor }) => {
                   "w-full text-left px-3 py-1.5 text-sm hover:bg-gray-100 flex items-center",
                   editor.isActive('paragraph') && !editor.isActive('heading') && "bg-gray-100"
                 )}
-                onClick={() => {
-                  editor.chain().focus().setParagraph().run();
+                onClick={(e) => {
+                  e.preventDefault();
+                  executeCommand(() => editor.chain().focus().setParagraph().run(), 'paragraph');
                   setIsTextSizeOpen(false);
                 }}
                 initial={{ opacity: 0, x: -5 }}
@@ -184,32 +199,32 @@ const RichTextToolbar: React.FC<RichTextToolbarProps> = ({ editor }) => {
         
         <Divider />
         <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
+          onClick={() => executeCommand(() => editor.chain().focus().toggleBulletList().run(), 'bullet-list')}
           icon={List}
           isActive={editor.isActive('bulletList')}
           title="Bullet List"
         />
         <ToolbarButton
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          onClick={() => executeCommand(() => editor.chain().focus().toggleOrderedList().run(), 'ordered-list')}
           icon={ListOrdered}
           isActive={editor.isActive('orderedList')}
           title="Ordered List"
         />
         <Divider />
         <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign('left').run()}
+          onClick={() => executeCommand(() => editor.chain().focus().setTextAlign('left').run(), 'align-left')}
           icon={AlignLeft}
           isActive={editor.isActive({ textAlign: 'left' })}
           title="Align Left"
         />
         <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign('center').run()}
+          onClick={() => executeCommand(() => editor.chain().focus().setTextAlign('center').run(), 'align-center')}
           icon={AlignCenter}
           isActive={editor.isActive({ textAlign: 'center' })}
           title="Align Center"
         />
         <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign('right').run()}
+          onClick={() => executeCommand(() => editor.chain().focus().setTextAlign('right').run(), 'align-right')}
           icon={AlignRight}
           isActive={editor.isActive({ textAlign: 'right' })}
           title="Align Right"
