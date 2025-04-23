@@ -43,7 +43,7 @@ const TipTapEditor = ({
     },
     editorProps: {
       attributes: {
-        class: 'prose focus:outline-none min-h-full p-4',
+        class: 'prose focus:outline-none min-h-full p-4 border-none outline-none', // Add border-none and outline-none
         spellcheck: 'true',
       },
     },
@@ -52,11 +52,11 @@ const TipTapEditor = ({
   const isEditorReady = useMemo(() => !!editor, [editor]);
 
   return (
-    <div className="w-full h-full overflow-auto bg-white">
+    <div className="w-full h-full overflow-auto bg-white border-none outline-none"> {/* Add border-none and outline-none */}
       {isEditorReady && (
         <EditorContent 
           editor={editor} 
-          className="h-full min-h-[calc(100vh-220px)]"
+          className="h-full min-h-[calc(100vh-220px)] border-none outline-none" // Add border-none and outline-none
         />
       )}
     </div>
