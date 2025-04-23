@@ -1,11 +1,18 @@
-
 /* TipTap Editor Styles */
 .ProseMirror {
   min-height: calc(100vh - 200px);
   padding: 1rem;
   line-height: 1.5;
-  outline: none;
+  outline: none !important;
+  border: none !important;
   caret-color: #333;
+}
+
+.ProseMirror:focus,
+.ProseMirror:focus-visible {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .ProseMirror p {
