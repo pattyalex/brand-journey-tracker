@@ -193,7 +193,7 @@ const RichTextToolbar: React.FC<RichTextToolbarProps> = ({ editor }) => {
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           icon={ListOrdered}
           isActive={editor.isActive('orderedList')}
-          title="Numbered List"
+          title="Ordered List"
         />
         <Divider />
         <ToolbarButton
