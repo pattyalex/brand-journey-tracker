@@ -53,7 +53,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
         </button>
         <button
           type="button"
-          onClick={() => editor?.chain().focus().toggleUnderline().run()}
+          onClick={() => editor?.chain().focus().toggleMark('underline').run()}
           className={`p-2 rounded text-sm ${editor?.isActive('underline') ? "bg-gray-200" : ""}`}
           title="Underline"
         >
