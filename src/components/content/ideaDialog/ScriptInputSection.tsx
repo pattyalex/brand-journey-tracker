@@ -1,8 +1,7 @@
-import React, { useRef } from 'react';
+
+import React from 'react';
 import { FileText, ChevronDown, ChevronUp } from "lucide-react";
-import { motion, LayoutGroup } from "framer-motion";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import SimpleTextFormattingToolbar from "@/components/SimpleTextFormattingToolbar";
 
@@ -18,7 +17,6 @@ const ScriptInputSection = ({
   onCollapseChange,
 }: ScriptInputSectionProps) => {
   const [isOpen, setIsOpen] = React.useState(true);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleCollapseToggle = () => {
     const newState = !isOpen;
@@ -28,129 +26,8 @@ const ScriptInputSection = ({
     }
   };
 
-  const handleFormatText = (formatType: string, formatValue?: string) => {
-    if (textareaRef.current) {
-      const start = textareaRef.current.selectionStart;
-      const end = textareaRef.current.selectionEnd;
-      const text = scriptText;
-      
-      let newText = text;
-      let newCursorPos = end;
-      
-      const selectedText = text.substring(start, end);
-      
-      if (selectedText) {
-        let formattedText = selectedText;
-        
-        switch (formatType) {
-          case 'bold':
-            formattedText = `**${selectedText}**`;
-            newCursorPos = start + formattedText.length;
-            break;
-          case 'italic':
-            formattedText = `*${selectedText}*`;
-            newCursorPos = start + formattedText.length;
-            break;
-          case 'underline':
-            formattedText = `__${selectedText}__`;
-            newCursorPos = start + formattedText.length;
-            break;
-          case 'bullet':
-            formattedText = `\n- ${selectedText}`;
-            newCursorPos = start + formattedText.length;
-            break;
-          case 'numbered':
-            formattedText = `\n1. ${selectedText}`;
-            newCursorPos = start + formattedText.length;
-            break;
-          case 'align':
-            if (formatValue === 'left') {
-              formattedText = `<div style="text-align: left">${selectedText}</div>`;
-            } else if (formatValue === 'center') {
-              formattedText = `<div style="text-align: center">${selectedText}</div>`;
-            } else if (formatValue === 'right') {
-              formattedText = `<div style="text-align: right">${selectedText}</div>`;
-            }
-            newCursorPos = start + formattedText.length;
-            break;
-          case 'size':
-            if (formatValue === 'small') {
-              formattedText = `<small>${selectedText}</small>`;
-            } else if (formatValue === 'large') {
-              formattedText = `### ${selectedText}`;
-            } else if (formatValue === 'x-large') {
-              formattedText = `## ${selectedText}`;
-            }
-            newCursorPos = start + formattedText.length;
-            break;
-          default:
-            break;
-        }
-        
-        newText = text.substring(0, start) + formattedText + text.substring(end);
-        onScriptTextChange(newText);
-        
-        setTimeout(() => {
-          if (textareaRef.current) {
-            textareaRef.current.focus();
-            textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
-          }
-        }, 10);
-      } else {
-        let formattingTemplate = '';
-        
-        switch (formatType) {
-          case 'bold':
-            formattingTemplate = '**bold text**';
-            break;
-          case 'italic':
-            formattingTemplate = '*italic text*';
-            break;
-          case 'underline':
-            formattingTemplate = '__underlined text__';
-            break;
-          case 'bullet':
-            formattingTemplate = '\n- bullet point';
-            break;
-          case 'numbered':
-            formattingTemplate = '\n1. numbered item';
-            break;
-          case 'align':
-            if (formatValue === 'left') {
-              formattingTemplate = '<div style="text-align: left">left aligned text</div>';
-            } else if (formatValue === 'center') {
-              formattingTemplate = '<div style="text-align: center">centered text</div>';
-            } else if (formatValue === 'right') {
-              formattingTemplate = '<div style="text-align: right">right aligned text</div>';
-            }
-            break;
-          case 'size':
-            if (formatValue === 'small') {
-              formattingTemplate = '<small>small text</small>';
-            } else if (formatValue === 'large') {
-              formattingTemplate = '### large text';
-            } else if (formatValue === 'x-large') {
-              formattingTemplate = '## extra large text';
-            }
-            break;
-          default:
-            break;
-        }
-        
-        if (formattingTemplate) {
-          newText = text.substring(0, start) + formattingTemplate + text.substring(start);
-          onScriptTextChange(newText);
-          
-          const cursorPos = start + formattingTemplate.length;
-          setTimeout(() => {
-            if (textareaRef.current) {
-              textareaRef.current.focus();
-              textareaRef.current.setSelectionRange(start + 2, cursorPos - 2);
-            }
-          }, 10);
-        }
-      }
-    }
+  const handleFormatText = () => {
+    // Placeholder for future implementation if needed
   };
 
   return (
@@ -167,7 +44,7 @@ const ScriptInputSection = ({
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
               <FileText size={18} className="text-gray-600" />
-              <Label htmlFor="develop-script" className="text-sm font-medium">Script</Label>
+              <span className="text-sm font-medium">Script</span>
             </div>
             <Button 
               variant="ghost" 
@@ -181,37 +58,26 @@ const ScriptInputSection = ({
           </div>
           
           <SimpleTextFormattingToolbar onFormat={handleFormatText} />
-          
-          <Textarea
-            id="develop-script"
-            ref={textareaRef}
-            value={scriptText}
-            onChange={(e) => onScriptTextChange(e.target.value)}
-            placeholder="Write your script here or collapse this section if you don't need a script for your content idea..."
-            className="min-h-[350px] resize-y focus-visible:ring-gray-400" 
-          />
         </>
       ) : (
-        <>
-          <div className="flex items-center gap-2">
-            <FileText size={18} className="text-gray-600" />
-            <span className="text-sm font-medium text-gray-600">Script</span>
-            {scriptText && (
-              <span className="text-xs text-gray-500 italic">
-                ({scriptText.length > 0 ? `${scriptText.slice(0, 25)}${scriptText.length > 25 ? '...' : ''}` : 'Empty'})
-              </span>
-            )}
-          </div>
+        <div className="flex items-center gap-2">
+          <FileText size={18} className="text-gray-600" />
+          <span className="text-sm font-medium text-gray-600">Script</span>
+          {scriptText && (
+            <span className="text-xs text-gray-500 italic">
+              ({scriptText.length > 0 ? `${scriptText.slice(0, 25)}${scriptText.length > 25 ? '...' : ''}` : 'Empty'})
+            </span>
+          )}
           <Button 
             variant="ghost" 
             size="sm" 
-            className="h-7 px-2 text-gray-500 hover:text-gray-700"
+            className="h-7 px-2 text-gray-500 hover:text-gray-700 ml-auto"
             onClick={handleCollapseToggle}
           >
             <ChevronDown size={14} />
             <span className="sr-only">Expand</span>
           </Button>
-        </>
+        </div>
       )}
     </motion.div>
   );
