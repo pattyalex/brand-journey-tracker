@@ -95,13 +95,13 @@ const WritingSpace = ({
               size="sm"
               className="cursor-pointer transition-all duration-150 hover:bg-[#FDE1D3] active:scale-95 rounded-md shadow-sm"
               onClick={() => setIsMeganOpen(!isMeganOpen)}
-              aria-label={isMeganOpen ? "Hide Megan" : "Ask Megan"}
+              aria-label={isMeganOpen ? "Hide Megan" : "Ask Megan AI"}
             >
               {isMeganOpen ? (
                 <span className="px-3 py-1.5 text-primary hover:text-primary/90 font-medium">Hide Megan</span>
               ) : (
                 <div className="flex items-center gap-2 px-3 py-1.5 w-full">
-                  <span className="text-primary hover:text-primary/90 font-medium">Ask Megan</span>
+                  <span className="text-primary hover:text-primary/90 font-medium">Ask Megan AI</span>
                   <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs">
                     M
                   </div>
