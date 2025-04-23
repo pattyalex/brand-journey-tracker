@@ -1,7 +1,8 @@
-
+import { useState } from 'react';
 import { Instagram, Linkedin, Twitter, Youtube, TrendingUp, Image, Video } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import TrendingContentDialog from './TrendingContentDialog';
 
 interface TrendingContent {
   title: string;
@@ -17,6 +18,8 @@ interface TrendingCardProps {
 }
 
 const TrendingCard = ({ content }: TrendingCardProps) => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
   const getPlatformIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
       case 'instagram':
@@ -44,46 +47,57 @@ const TrendingCard = ({ content }: TrendingCardProps) => {
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg flex justify-between items-start">
-          <span className="flex items-center gap-2">
-            {getMediaTypeIcon(content.mediaType)}
-            {content.title}
-          </span>
-          <span className="text-sm text-muted-foreground flex items-center">
+    <>
+      <Card 
+        className="hover:shadow-md transition-shadow cursor-pointer" 
+        onClick={() => setIsDialogOpen(true)}
+      >
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex justify-between items-start">
+            <span className="flex items-center gap-2">
+              {getMediaTypeIcon(content.mediaType)}
+              {content.title}
+            </span>
+            <span className="text-sm text-muted-foreground flex items-center">
+              {getPlatformIcon(content.platform)}
+              <span className="ml-1">{content.views}</span>
+            </span>
+          </CardTitle>
+          <span className="text-sm text-primary flex items-center gap-2">
             {getPlatformIcon(content.platform)}
-            <span className="ml-1">{content.views}</span>
+            {content.platform}
           </span>
-        </CardTitle>
-        <span className="text-sm text-primary flex items-center gap-2">
-          {getPlatformIcon(content.platform)}
-          {content.platform}
-        </span>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {content.mediaUrl && (
-          <AspectRatio ratio={16 / 9} className="bg-muted rounded-md overflow-hidden">
-            {content.mediaType === 'video' ? (
-              <video
-                src={content.mediaUrl}
-                className="object-cover w-full h-full"
-                controls
-              />
-            ) : (
-              <img
-                src={content.mediaUrl}
-                alt={content.title}
-                className="object-cover w-full h-full"
-              />
-            )}
-          </AspectRatio>
-        )}
-        {content.description && (
-          <p className="text-sm text-muted-foreground">{content.description}</p>
-        )}
-      </CardContent>
-    </Card>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {content.mediaUrl && (
+            <AspectRatio ratio={16 / 9} className="bg-muted rounded-md overflow-hidden">
+              {content.mediaType === 'video' ? (
+                <video
+                  src={content.mediaUrl}
+                  className="object-cover w-full h-full"
+                  controls
+                />
+              ) : (
+                <img
+                  src={content.mediaUrl}
+                  alt={content.title}
+                  className="object-cover w-full h-full"
+                />
+              )}
+            </AspectRatio>
+          )}
+          {content.description && (
+            <p className="text-sm text-muted-foreground">{content.description}</p>
+          )}
+        </CardContent>
+      </Card>
+      
+      <TrendingContentDialog 
+        content={content}
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+      />
+    </>
   );
 };
 
