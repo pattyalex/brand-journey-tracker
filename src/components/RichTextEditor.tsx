@@ -1,4 +1,3 @@
-
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -88,14 +87,19 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
         </button>
       </div>
       {/* Scrollable writing area */}
-      <ScrollArea className="flex-1 rounded-lg border border-gray-200 bg-white w-full h-full">
-        <div className="h-full min-h-[450px] max-h-[70vh] pr-2">
+      <ScrollArea 
+        className="flex-1 rounded-lg border border-gray-200 bg-white w-full h-full relative"
+      >
+        <div className="h-full min-h-[450px] max-h-[70vh] pr-4">
           <EditorContent 
             editor={editor} 
             className="flex-1 h-full overflow-y-auto focus:outline-none px-2 py-1"
           />
         </div>
-        <ScrollBar orientation="vertical" />
+        <ScrollBar 
+          orientation="vertical" 
+          className="absolute right-0 top-0 bottom-0 w-2 bg-gray-100 rounded-md"
+        />
       </ScrollArea>
     </div>
   );
