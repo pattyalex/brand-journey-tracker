@@ -5,6 +5,7 @@ import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import React from "react";
 import { Bold, Italic, Underline as UnderlineIcon, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface RichTextEditorProps {
   value: string;
@@ -34,7 +35,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex gap-2 mb-2 border border-gray-200 rounded p-1 bg-gray-50">
+      {/* Toolbar */}
+      <div className="flex gap-2 mb-2 border border-gray-200 rounded p-1 bg-gray-50 sticky top-0 z-10">
         <button
           type="button"
           onClick={() => editor?.chain().focus().toggleBold().run()}
@@ -85,10 +87,15 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
           <AlignRight className="h-4 w-4" />
         </button>
       </div>
-      <EditorContent 
-        editor={editor} 
-        className="flex-1 h-full overflow-y-auto" 
-      />
+      {/* Scrollable writing area */}
+      <ScrollArea className="flex-1 rounded-lg border border-gray-200 bg-white w-full h-full overflow-y-auto">
+        <div className="h-full min-h-[450px] max-h-[70vh]">
+          <EditorContent 
+            editor={editor} 
+            className="flex-1 h-full overflow-y-auto hide-scrollbar focus:outline-none px-2 py-1"
+          />
+        </div>
+      </ScrollArea>
     </div>
   );
 };
