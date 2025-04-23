@@ -1,6 +1,5 @@
-
 import { useState } from 'react';
-import { Search, TrendingUp, Instagram, Linkedin, Twitter, Youtube, Earth, Flag } from 'lucide-react';
+import { Search, TrendingUp, Instagram, Linkedin, Twitter, Youtube, Globe, Flag } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -65,16 +64,8 @@ const platforms = [
 ];
 
 const locations = [
-  { value: "global", label: "Global", icon: Earth },
+  { value: "global", label: "Global", icon: Globe },
   { value: "usa", label: "USA", icon: Flag },
-  { value: "europe", label: "Europe" },
-  { value: "asia", label: "Asia" },
-  { value: "africa", label: "Africa" },
-  { value: "australia", label: "Australia" },
-  { value: "south-america", label: "South America" },
-  { value: "canada", label: "Canada" },
-  { value: "uk", label: "United Kingdom" },
-  { value: "india", label: "India" },
 ];
 
 const TrendingFeed = () => {
@@ -115,13 +106,11 @@ const TrendingFeed = () => {
     }
   };
 
-  // Function to handle location selection
   const handleLocationSelect = (value: string) => {
     setLocation(value);
     setOpen(false);
   };
 
-  // Find the current location label
   const currentLocationLabel = locations.find(loc => loc.value === location)?.label || customLocation || "Select location...";
 
   return (
