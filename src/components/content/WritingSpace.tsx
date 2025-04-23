@@ -129,9 +129,7 @@ const WritingSpace = ({
           transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
         >
           <div className={`${isMeganOpen ? "w-1/2 border-r border-gray-200 flex flex-col" : "w-full flex-1 flex flex-col"}`}>
-            <ScrollArea className="h-full w-full flex-1 min-h-[200px]">
-              <RichTextEditor value={value} onChange={onChange} />
-            </ScrollArea>
+            <RichTextEditor value={value} onChange={onChange} />
           </div>
           {isMeganOpen && (
             <motion.div 
