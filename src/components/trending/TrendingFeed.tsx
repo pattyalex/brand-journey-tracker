@@ -257,27 +257,16 @@ const TrendingFeed = () => {
   const [trendingContent, setTrendingContent] = useState<TrendingContent[]>(mockTrendingData);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [apiKey, setApiKey] = useState(FirecrawlService.getApiKey() || '');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [hasLoadedAdditional, setHasLoadedAdditional] = useState(false);
 
   const handleSearch = async () => {
-    if (!apiKey) {
-      toast({
-        title: "API Key Required",
-        description: "Please enter your Firecrawl API key first",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsLoading(true);
     setPage(1);
     setHasLoadedAdditional(false);
     
     try {
-      FirecrawlService.saveApiKey(apiKey);
       const result = await FirecrawlService.crawlSocialContent(platform);
       
       if (result.success && result.data) {
@@ -372,15 +361,6 @@ const TrendingFeed = () => {
     <div className="w-full space-y-4">
       <div className="flex gap-4 flex-col sm:flex-row">
         <div className="flex-1">
-          {isTrendingPage && (
-            <Input
-              placeholder="Enter your Firecrawl API key"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              type="password"
-              className="mb-4"
-            />
-          )}
           <Input
             placeholder="Enter your niche (e.g., fitness, cooking, tech)"
             value={niche}
@@ -401,7 +381,7 @@ const TrendingFeed = () => {
         </div>
         <Button 
           onClick={handleSearch}
-          disabled={!apiKey || !niche.trim() || isLoading}
+          disabled={!niche.trim() || isLoading}
           className="min-w-[120px]"
         >
           <Search className="w-4 h-4 mr-2" />
