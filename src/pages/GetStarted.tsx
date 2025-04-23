@@ -1,10 +1,21 @@
 
 import Layout from "@/components/Layout";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Database, Calendar, BarChart } from "lucide-react";
+import { Database, Calendar, BarChart, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import TrendingFeed from "@/components/trending/TrendingFeed";
 
 const services = [
+  {
+    title: (
+      <div className="flex flex-col">
+        <span>What's</span>
+        <span>Trending</span>
+      </div>
+    ),
+    icon: TrendingUp,
+    component: TrendingFeed
+  },
   {
     title: (
       <div className="flex flex-col">
@@ -47,12 +58,17 @@ const GetStarted = () => {
           {services.map((service, index) => (
             <Card 
               key={index}
-              onClick={() => navigate(service.path)}
-              className="hover:shadow-lg transition-all duration-300 cursor-pointer hover:scale-105 bg-gray-100"
+              onClick={() => service.path && navigate(service.path)}
+              className={`hover:shadow-lg transition-all duration-300 ${service.path ? 'cursor-pointer' : ''} hover:scale-105 bg-gray-100`}
             >
               <CardHeader className="space-y-4">
                 <service.icon className="w-8 h-8 text-primary" />
                 <CardTitle className="text-2xl">{service.title}</CardTitle>
+                {service.component && (
+                  <div className="mt-4">
+                    <service.component />
+                  </div>
+                )}
               </CardHeader>
             </Card>
           ))}
