@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Lightbulb, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -297,14 +296,9 @@ const IdeaSection = ({
         className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mt-4"
         variants={itemVariants}
       >
-        <h2 className="text-xl font-semibold flex flex-col items-start">
-          <span className="flex items-center">
-            <Lightbulb className="h-5 w-5 mr-2" /> 
-            {pillar.name}
-          </span>
-          <span className="text-base font-medium text-muted-foreground">
-            Content Bank
-          </span>
+        <h2 className="text-xl font-semibold flex items-center">
+          <Lightbulb className="h-5 w-5 mr-2" /> 
+          {pillar.name} Content Bank
         </h2>
         
         <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full md:w-auto">
