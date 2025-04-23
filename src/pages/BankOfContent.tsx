@@ -339,7 +339,7 @@ const BankOfContent = () => {
   return (
     <Layout>
       <div className="container mx-auto py-6 space-y-6 fade-in">
-        <h1 className="text-3xl font-bold">Idea Development</h1>
+        <h1 className="text-3xl font-bold">Fashion Content Bank</h1>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex items-center justify-between">
             <PillarTabs 
