@@ -86,7 +86,7 @@ const TrendingFeed = () => {
   const [platform, setPlatform] = useState('all');
   const [location, setLocation] = useState('global');
   const [customLocation, setCustomLocation] = useState('');
-  const [trendingContent, setTrendingContent] = useState<TrendingContent[]>([]);
+  const [trendingContent, setTrendingContent] = useState<TrendingContent[]>(mockTrendingData);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [apiKey, setApiKey] = useState(FirecrawlService.getApiKey() || '');
