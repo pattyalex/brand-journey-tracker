@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useState } from "react";
 import { Pencil, Sparkles } from 'lucide-react';
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -83,7 +82,7 @@ const WritingSpace = ({
               }}
             >
               <Sparkles className="h-4 w-4 mr-1.5 text-primary" />
-              <span className="text-sm font-medium">Hook Ideas</span>
+              <span className="text-sm font-medium">Hook Generator</span>
             </Button>
           </motion.div>
           <motion.div
