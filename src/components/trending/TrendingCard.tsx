@@ -1,5 +1,6 @@
+
 import { useState } from 'react';
-import { RefreshCw } from 'lucide-react';
+import { Eye, ThumbsUp, MessageSquare, Share2, Bookmark, Instagram, Video, RefreshCw } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
