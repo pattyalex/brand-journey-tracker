@@ -1,9 +1,7 @@
-
 import Layout from "@/components/Layout";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Database, Calendar, BarChart, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import TrendingFeed from "@/components/trending/TrendingFeed";
 
 const services = [
   {
@@ -14,7 +12,7 @@ const services = [
       </div>
     ),
     icon: TrendingUp,
-    component: TrendingFeed
+    path: "/trending"
   },
   {
     title: (

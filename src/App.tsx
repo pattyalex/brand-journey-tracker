@@ -1,4 +1,3 @@
-
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from "@/components/theme-provider"
@@ -9,6 +8,7 @@ import NotFound from './pages/NotFound';
 import GetStarted from './pages/GetStarted';
 
 // Lazy load all other pages
+const TrendingContent = lazy(() => import('./pages/TrendingContent'));
 const BankOfContent = lazy(() => import('./pages/BankOfContent'));
 const ContentIdeation = lazy(() => import('./pages/ContentIdeation'));
 const ContentPlanning = lazy(() => import('./pages/ContentPlanning'));
@@ -58,6 +58,7 @@ function App() {
             <Route path="/weekly-content" element={<WeeklyContentTasks />} />
             <Route path="/social-media-scheduler" element={<SocialMediaScheduler />} />
             <Route path="/partnerships-management" element={<PartnershipsManagement />} />
+            <Route path="/trending" element={<TrendingContent />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
