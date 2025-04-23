@@ -17,6 +17,7 @@ interface TrendingContent {
   comments: string;
   shares: string;
   saves: string;
+  description?: string; // Added description as an optional property
   mediaType?: 'image' | 'video';
   mediaUrl?: string;
 }
