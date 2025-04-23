@@ -1,6 +1,5 @@
-
 import { useState } from 'react';
-import { Eye, ThumbsUp, MessageSquare, Share2, Bookmark, Instagram, Video, Copy } from 'lucide-react';
+import { Eye, ThumbsUp, MessageSquare, Share2, Bookmark, Instagram, Video, RefreshCw } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
@@ -51,21 +50,20 @@ const TrendingCard = ({ content }: TrendingCardProps) => {
   return (
     <>
       <Card 
-        className="hover:shadow-md transition-shadow cursor-pointer relative" 
+        className="hover:shadow-md transition-shadow cursor-pointer" 
         onClick={() => setIsDialogOpen(true)}
       >
-        <div className="absolute top-4 right-4 z-10">
-          <Button
-            size="sm"
-            variant="secondary"
-            className="gap-2"
-            onClick={handleRecreateClick}
-          >
-            <Copy className="w-4 h-4" />
-            Recreate
-          </Button>
-        </div>
         <div className="flex gap-4 p-4">
+          <div className="flex flex-col justify-center">
+            <Button
+              size="icon"
+              variant="vision"
+              className="rounded-full p-2 hover:scale-105 transition-transform"
+              onClick={handleRecreateClick}
+            >
+              <RefreshCw className="w-4 h-4" />
+            </Button>
+          </div>
           <div className="w-40 h-28 bg-muted rounded-md overflow-hidden flex-shrink-0">
             {content.mediaUrl && (
               <AspectRatio ratio={16 / 9} className="h-full">
@@ -135,4 +133,3 @@ const TrendingCard = ({ content }: TrendingCardProps) => {
 };
 
 export default TrendingCard;
-
