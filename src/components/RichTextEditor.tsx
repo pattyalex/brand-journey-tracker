@@ -1,10 +1,11 @@
+
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import React from "react";
 import { Bold, Italic, Underline as UnderlineIcon, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface RichTextEditorProps {
   value: string;
@@ -85,20 +86,30 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
           <AlignRight className="h-4 w-4" />
         </button>
       </div>
-      <ScrollArea 
-        className="flex-1 rounded-lg border border-gray-200 bg-white w-full h-full relative"
-      >
-        <div className="h-full min-h-[450px] max-h-[70vh] pr-4">
-          <EditorContent 
-            editor={editor} 
-            className="flex-1 h-full overflow-y-auto focus:outline-none px-2 py-1"
-          />
+      <div className="flex-1 rounded-lg border border-gray-200 bg-white w-full h-full relative">
+        <div className="h-full min-h-[450px] max-h-[70vh] overflow-y-auto pr-8" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+          <div className="h-full" style={{
+            overflowY: 'scroll',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          }}>
+            <EditorContent 
+              editor={editor} 
+              className="flex-1 h-full focus:outline-none px-4 py-3"
+            />
+          </div>
         </div>
-        <ScrollBar 
-          orientation="vertical" 
-          className="absolute right-0 top-0 bottom-0 w-6 bg-red-500/70 hover:bg-red-500/90 rounded-r-md transition-colors duration-200 z-10"
-        />
-      </ScrollArea>
+        <div 
+          className="absolute right-0 top-0 bottom-0 w-8 bg-[#ea384c] hover:bg-[#d1303d] rounded-r-lg opacity-90 hover:opacity-100 transition-all duration-200 z-20"
+          style={{
+            boxShadow: '-2px 0 6px rgba(0,0,0,0.1)',
+          }}
+        >
+          <div className="h-full w-full flex items-center justify-center">
+            <div className="h-24 w-2 bg-white/40 rounded-full my-1"></div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
