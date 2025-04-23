@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Lightbulb, Filter } from "lucide-react";
+import { Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
