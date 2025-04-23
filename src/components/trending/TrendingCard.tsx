@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Eye, ThumbsUp, MessageSquare, Share2, Bookmark, Instagram, Video, RefreshCw } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { RefreshCw } from 'lucide-react';
+import { Card } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
 import TrendingContentDialog from './TrendingContentDialog';
@@ -57,11 +57,14 @@ const TrendingCard = ({ content }: TrendingCardProps) => {
           <div className="flex flex-col justify-center">
             <Button
               size="icon"
-              variant="vision"
-              className="rounded-full p-2 hover:scale-105 transition-transform"
+              variant="ghost"
+              className="rounded-full p-2 hover:bg-purple-100 focus:bg-purple-100 transition-colors group"
               onClick={handleRecreateClick}
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw 
+                className="w-5 h-5 text-purple-600 group-hover:text-purple-700 transition-colors" 
+                strokeWidth={2.5} 
+              />
             </Button>
           </div>
           <div className="w-40 h-28 bg-muted rounded-md overflow-hidden flex-shrink-0">
