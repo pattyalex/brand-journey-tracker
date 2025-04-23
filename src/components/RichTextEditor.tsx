@@ -85,27 +85,15 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
         </button>
       </div>
       <div className="flex-1 rounded-lg border border-gray-200 bg-white w-full h-full relative">
-        <div className="h-full min-h-[450px] max-h-[70vh] overflow-y-auto pr-8" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
-          <div className="h-full" style={{
-            overflowY: 'scroll',
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-          }}>
-            <EditorContent 
-              editor={editor} 
-              className="flex-1 h-full focus:outline-none px-4 py-3"
-            />
-          </div>
-        </div>
-        <div 
-          className="absolute right-0 top-0 bottom-0 w-8 bg-gray-100 hover:bg-gray-200 rounded-r-lg opacity-90 hover:opacity-100 transition-all duration-200 z-20"
-          style={{
-            boxShadow: '-2px 0 6px rgba(0,0,0,0.1)',
-          }}
-        >
-          <div className="h-full w-full flex items-center justify-center">
-            <div className="h-24 w-2 bg-gray-400 rounded-full my-1"></div>
-          </div>
+        <div className="h-full min-h-[450px] max-h-[70vh] overflow-y-auto pr-2" style={{
+          overflowY: 'scroll',
+          scrollbarWidth: 'thin',
+          msOverflowStyle: 'thin',
+        }}>
+          <EditorContent 
+            editor={editor} 
+            className="flex-1 h-full focus:outline-none px-4 py-3"
+          />
         </div>
       </div>
     </div>
