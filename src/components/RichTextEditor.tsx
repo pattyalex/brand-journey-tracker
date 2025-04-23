@@ -86,10 +86,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
         </button>
       </div>
       <div className="flex-1 rounded-lg border border-gray-200 bg-white w-full h-full relative">
-        <div className="h-full min-h-[450px] max-h-[70vh] pr-1" style={{
+        <div className="h-full min-h-[450px] max-h-[70vh] pr-0" style={{
           overflowY: 'scroll',
           scrollbarWidth: 'thin',
-          msOverflowStyle: 'thin',
         }}>
           <EditorContent 
             editor={editor} 
@@ -102,3 +101,4 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
 };
 
 export default RichTextEditor;
+
