@@ -1,4 +1,3 @@
-
 import { Home, FolderOpen, FileText, Settings, Database, CreditCard, Calendar, TrendingUp, BarChart, HelpCircle, CheckSquare, Clipboard, CheckCircle, Handshake } from 'lucide-react';
 import { MenuItem } from '@/types/sidebar';
 
@@ -11,7 +10,6 @@ export const defaultMenuItems: MenuItem[] = [
     url: '/get-started', 
     isDeletable: false,
     subItems: [
-      { title: 'Research', icon: FileText, url: '/research' },
       { title: 'Idea Development', icon: Database, url: '/bank-of-content' },
       { title: 'Content Calendar', icon: Calendar, url: '/content-calendar' },
       { title: 'Analytics', icon: BarChart, url: '/analytics' },
