@@ -1,5 +1,6 @@
+
 import { useRef, useEffect, useState } from "react";
-import { Pencil, Sparkles } from 'lucide-react';
+import { Pencil, Sparkles, Edit } from 'lucide-react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -52,6 +53,7 @@ const WritingSpace = ({
   const { state } = useSidebar();
   const [expandedClass, setExpandedClass] = useState("");
   const [isMeganOpen, setIsMeganOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   
   useEffect(() => {
     setExpandedClass(state === "collapsed" ? "writing-expanded" : "");
@@ -232,7 +234,6 @@ const WritingSpace = ({
               <span className="text-sm font-medium">Hook Ideas</span>
             </Button>
           </motion.div>
-          
           <motion.div
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -296,18 +297,50 @@ const WritingSpace = ({
             <SimpleTextFormattingToolbar onFormat={handleFormatClick} />
             
             <div className="h-full w-full flex-1">
-              <Textarea
-                ref={textareaRef}
-                value={writingText}
-                onChange={handleTextChange}
-                onSelect={(e) => {
-                  const target = e.target as HTMLTextAreaElement;
-                  const selectedText = target.value.substring(target.selectionStart, target.selectionEnd);
-                  handleTextSelection(selectedText);
-                }}
-                placeholder="Start writing your content ideas here..."
-                className="min-h-full w-full h-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-sm p-4"
-              />
+              {!isEditing ? (
+                <div className="min-h-full w-full h-full overflow-auto p-4 bg-white">
+                  <div className="flex justify-end mb-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="px-2 py-1 text-xs rounded hover:bg-gray-100"
+                      onClick={() => setIsEditing(true)}
+                    >
+                      <Edit className="w-4 h-4 mr-1" />
+                      Edit
+                    </Button>
+                  </div>
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      p: ({children}) => <p className="my-2">{children}</p>,
+                      h2: ({children}) => <h2 className="text-2xl font-bold mb-2 mt-4">{children}</h2>,
+                      h3: ({children}) => <h3 className="text-xl font-bold mb-2 mt-3">{children}</h3>,
+                      ul: ({children}) => <ul className="list-disc ml-5 my-2">{children}</ul>,
+                      ol: ({children}) => <ol className="list-decimal ml-5 my-2">{children}</ol>,
+                      li: ({children}) => <li className="my-1">{children}</li>,
+                      a: ({href, children}) => <a href={href} className="text-blue-500 hover:underline">{children}</a>
+                    }}
+                  >
+                    {writingText}
+                  </ReactMarkdown>
+                </div>
+              ) : (
+                <Textarea
+                  ref={textareaRef}
+                  value={writingText}
+                  onChange={handleTextChange}
+                  onBlur={() => setIsEditing(false)}
+                  onSelect={(e) => {
+                    const target = e.target as HTMLTextAreaElement;
+                    const selectedText = target.value.substring(target.selectionStart, target.selectionEnd);
+                    handleTextSelection(selectedText);
+                  }}
+                  placeholder="Start writing your content ideas here..."
+                  className="min-h-full w-full h-full resize-none border-0 bg-transparent focus-visible:ring-0 text-gray-600 text-sm p-4"
+                  autoFocus
+                />
+              )}
             </div>
           </div>
           
@@ -334,3 +367,5 @@ const WritingSpace = ({
 };
 
 export default WritingSpace;
+
+// NOTE TO USER: This file is now over 350 lines long! Please consider asking me to refactor it into smaller components for easier maintenance.
