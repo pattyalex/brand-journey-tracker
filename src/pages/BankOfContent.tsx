@@ -10,14 +10,7 @@ import IdeaSection from "@/components/content/IdeaSection";
 import IdeaCreationDialog from "@/components/content/IdeaCreationDialog";
 import ContentTypeBuckets from "@/components/content/ContentTypeBuckets";
 import { getRestoredIdeas } from "@/utils/contentRestoreUtils";
-
-export type Pillar = {
-  id: string;
-  name: string;
-  content: ContentItem[];
-  writingSpace?: string;
-  onUpdateWritingSpace?: (pillarId: string, text: string) => void;
-};
+import { cn } from "@/lib/utils";
 
 const pillarBackgroundColors = {
   "1": "bg-[#FEF7CD]", // Soft Yellow
