@@ -6,9 +6,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { Sparkles, ArrowRight, Plus, Trash2, ChevronLeft } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface TitleHookSuggestionsProps {
   onSelectHook: (hook: string) => void;
@@ -402,7 +402,9 @@ const HOOK_DATA = {
   }
 };
 
-const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
+const TitleHookSuggestions = ({
+  onSelectHook,
+}: TitleHookSuggestionsProps) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [hookSelectionDialogOpen, setHookSelectionDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -443,21 +445,6 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
     }
   };
 
-  const handleViewCustomHooks = () => {
-    setSelectedCategory("Create your own");
-    setDialogOpen(false);
-    setHookSelectionDialogOpen(true);
-  };
-
-  const handleDeleteCustomHook = (hookToDelete: string) => {
-    setCustomHooks(prev => prev.filter(hook => hook !== hookToDelete));
-  };
-
-  const handleBackToCategories = () => {
-    setHookSelectionDialogOpen(false);
-    setDialogOpen(true);
-  };
-
   return (
     <>
       <Button 
@@ -471,36 +458,58 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
       </Button>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[700px]">
           <DialogHeader>
-            <DialogTitle>Catchy Hook Ideas</DialogTitle>
-            <DialogDescription>
-              Select a category to find the perfect hook for your content
-            </DialogDescription>
+            <DialogTitle className="text-xl font-semibold mb-4">Hook Creation</DialogTitle>
           </DialogHeader>
           
-          <div className="max-h-[350px] overflow-y-auto">
-            <div className="p-1">
-              {Object.keys(HOOK_DATA).map((category, index) => (
-                <button
-                  key={index}
-                  className="w-full flex justify-between items-center px-4 py-3 text-left hover:bg-accent text-sm font-medium rounded-sm"
-                  onClick={() => handleSelectCategory(category)}
-                >
-                  {category}
-                  <ArrowRight className="h-4 w-4 ml-2 text-muted-foreground" />
-                </button>
-              ))}
-              
-              <button
-                className="w-full flex justify-between items-center px-4 py-3 text-left hover:bg-accent text-sm font-medium rounded-sm"
-                onClick={handleViewCustomHooks}
-              >
-                Create your own
-                <ArrowRight className="h-4 w-4 ml-2 text-muted-foreground" />
-              </button>
-            </div>
-          </div>
+          <Tabs defaultValue="ai" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="ai" className="text-base">
+                Generate Hook with Megan AI
+              </TabsTrigger>
+              <TabsTrigger value="library" className="text-base">
+                Hook Library
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="ai" className="p-4 border rounded-lg">
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">
+                  AI Hook Generation feature coming soon...
+                </p>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="library">
+              <div className="max-h-[500px] overflow-y-auto">
+                <div className="p-1">
+                  {Object.keys(HOOK_DATA).map((category, index) => (
+                    <button
+                      key={index}
+                      className="w-full flex justify-between items-center px-4 py-3 text-left hover:bg-accent text-sm font-medium rounded-sm"
+                      onClick={() => handleSelectCategory(category)}
+                    >
+                      {category}
+                      <ArrowRight className="h-4 w-4 ml-2 text-muted-foreground" />
+                    </button>
+                  ))}
+                  
+                  <button
+                    className="w-full flex justify-between items-center px-4 py-3 text-left hover:bg-accent text-sm font-medium rounded-sm"
+                    onClick={() => {
+                      setSelectedCategory("Create your own");
+                      setDialogOpen(false);
+                      setHookSelectionDialogOpen(true);
+                    }}
+                  >
+                    Create your own
+                    <ArrowRight className="h-4 w-4 ml-2 text-muted-foreground" />
+                  </button>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
 
@@ -510,7 +519,7 @@ const TitleHookSuggestions = ({ onSelectHook }: TitleHookSuggestionsProps) => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={handleBackToCategories}
+              onClick={() => handleBackToCategories()}
               className="mr-2 h-8 w-8"
               aria-label="Back to categories"
             >
