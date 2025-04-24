@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -163,8 +164,8 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
   };
 
   return (
-    <div className="space-y-6 h-full flex flex-col">
-      <div className="flex gap-6">
+    <div className="space-y-6 flex flex-col h-full">
+      <div className="flex gap-6 flex-shrink-0">
         <div className="flex-1 space-y-4">
           <Label className="text-base text-left block">
             Provide some context about your content
@@ -220,28 +221,30 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
       </div>
       
       {generatedHooks.length > 0 && (
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-h-0">
           <h3 className="text-lg font-medium mb-4">Select a hook:</h3>
-          <ScrollArea className="flex-1 rounded-md border">
-            <div className="grid gap-3 p-4">
-              {generatedHooks.map((hook, index) => (
-                <div
-                  key={index}
-                  onClick={() => handleSelectHook(hook)}
-                  className="p-3 border rounded-md cursor-pointer hover:border-primary hover:bg-accent/30 transition-colors flex justify-between items-center"
-                >
-                  <div className="text-sm">{hook}</div>
-                  <Button variant="ghost" size="sm" onClick={(e) => {
-                    e.stopPropagation();
-                    handleSelectHook(hook);
-                  }}>
-                    <Check className="h-4 w-4" />
-                    <span className="sr-only">Select hook</span>
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </ScrollArea>
+          <div className="flex-1 overflow-hidden border rounded-md">
+            <ScrollArea className="h-full">
+              <div className="grid gap-3 p-4">
+                {generatedHooks.map((hook, index) => (
+                  <div
+                    key={index}
+                    onClick={() => handleSelectHook(hook)}
+                    className="p-3 border rounded-md cursor-pointer hover:border-primary hover:bg-accent/30 transition-colors flex justify-between items-center"
+                  >
+                    <div className="text-sm">{hook}</div>
+                    <Button variant="ghost" size="sm" onClick={(e) => {
+                      e.stopPropagation();
+                      handleSelectHook(hook);
+                    }}>
+                      <Check className="h-4 w-4" />
+                      <span className="sr-only">Select hook</span>
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
           <Button
             onClick={handleLoadMore}
             disabled={isGenerating}
