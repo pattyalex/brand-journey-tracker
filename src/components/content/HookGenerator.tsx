@@ -34,7 +34,7 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
   return (
     <div className="flex gap-6">
       <div className="flex-1 space-y-4">
-        <Label className="text-base">
+        <Label className="text-base text-left block">
           Provide some context about your content
         </Label>
         <Textarea
@@ -45,7 +45,7 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
         />
       </div>
 
-      <div className="w-[200px] space-y-6"> {/* Reduced width from 280px to 200px */}
+      <div className="w-[200px] space-y-6">
         <div className="space-y-4">
           <Label className="text-base">Select the tone for your hook</Label>
           <RadioGroup
