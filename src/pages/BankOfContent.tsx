@@ -349,7 +349,7 @@ const BankOfContent = () => {
   return (
     <Layout>
       <div className={cn(
-        "min-h-screen py-6 space-y-6 fade-in transition-colors duration-300 pl-12", // Added pl-12 for more left padding
+        "min-h-screen py-6 space-y-6 fade-in transition-colors duration-300 pl-12 pr-12", // Added pr-12 for more right padding
         pillarBackgroundColors[activeTab] || "bg-background"
       )}>
         <h1 className="text-3xl font-bold container mx-auto">Idea Development</h1>
