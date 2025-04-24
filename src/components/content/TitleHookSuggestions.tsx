@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Sparkles, ArrowRight, Plus, Trash2, ChevronLeft } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import HookGenerator from "./HookGenerator";
 
 interface TitleHookSuggestionsProps {
   onSelectHook: (hook: string) => void;
