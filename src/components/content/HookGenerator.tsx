@@ -41,7 +41,7 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
           value={context}
           onChange={(e) => setContext(e.target.value)}
           placeholder='Enter details about your content. E.g. "This video is about morning routines for ambitious women..."'
-          className="min-h-[240px] resize-none"
+          className="min-h-[240px] resize-none px-3" // Added px-3 to align with the label
         />
       </div>
 
@@ -90,3 +90,4 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
 };
 
 export default HookGenerator;
+
