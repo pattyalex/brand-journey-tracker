@@ -40,7 +40,7 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
         <Textarea
           value={context}
           onChange={(e) => setContext(e.target.value)}
-          placeholder="Enter details about your content, target audience, key message, etc."
+          placeholder='Enter details about your content. E.g. "This video is about morning routines for ambitious women..."'
           className="min-h-[240px] resize-none"
         />
       </div>
