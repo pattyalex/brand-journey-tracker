@@ -274,10 +274,7 @@ const IdeaSection = ({
 
   return (
     <motion.div 
-      className={cn(
-        "space-y-3 pl-2 pr-3 rounded-lg transition-colors duration-300",
-        pillarColors[pillar.id] || "bg-background"
-      )}
+      className="space-y-3 pl-2 pr-3 rounded-lg"
       variants={containerVariants}
       initial="hidden"
       animate="visible"

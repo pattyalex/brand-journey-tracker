@@ -19,6 +19,14 @@ export type Pillar = {
   onUpdateWritingSpace?: (pillarId: string, text: string) => void;
 };
 
+const pillarBackgroundColors = {
+  "1": "bg-[#FEF7CD]", // Soft Yellow
+  "2": "bg-[#E5DEFF]", // Soft Purple
+  "3": "bg-[#FFDEE2]", // Soft Pink
+  "4": "bg-[#D3E4FD]", // Soft Blue
+  "5": "bg-[#F2FCE2]", // Soft Green
+};
+
 const BankOfContent = () => {
   const [pillars, setPillars] = useState<Pillar[]>([
     { id: "1", name: "Pillar 1", content: [], writingSpace: "" },
@@ -338,8 +346,11 @@ const BankOfContent = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto py-6 space-y-6 fade-in">
-        <h1 className="text-3xl font-bold">Idea Development</h1>
+      <div className={cn(
+        "min-h-screen py-6 space-y-6 fade-in transition-colors duration-300",
+        pillarBackgroundColors[activeTab] || "bg-background"
+      )}>
+        <h1 className="text-3xl font-bold container mx-auto">Idea Development</h1>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex items-center justify-between">
             <PillarTabs 
