@@ -142,6 +142,33 @@
   background: #8A898C !important;
 }
 
+/* Enhanced scrollbar visibility for ScrollArea component */
+[data-radix-scroll-area-viewport] {
+  scrollbar-width: auto !important;
+  scrollbar-color: #8E9196 transparent !important;
+  touch-action: pan-y !important;
+}
+
+[data-radix-scroll-area-scrollbar] {
+  display: block !important;
+  opacity: 1 !important;
+  width: 14px !important;
+  background-color: transparent !important;
+  transition: background-color 0.2s ease !important;
+}
+
+[data-radix-scroll-area-thumb] {
+  background: #8E9196 !important;
+  border-radius: 10px !important;
+  width: 8px !important;
+  margin-left: 3px !important;
+  transition: background-color 0.2s ease !important;
+}
+
+[data-radix-scroll-area-thumb]:hover {
+  background: #6B7280 !important;
+}
+
 /* Additional dropdown menu customization */
 [data-radix-popper] [role="menu"],
 [data-radix-popper] [role="listbox"] {
