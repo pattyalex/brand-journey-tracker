@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -213,7 +212,7 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
             ) : (
               <>
                 <Sparkles className="mr-2 h-4 w-4" />
-                Generate Hook
+                Generate Hooks
               </>
             )}
           </Button>
@@ -265,4 +264,3 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
 };
 
 export default HookGenerator;
-
