@@ -82,7 +82,7 @@ const WritingSpace = ({
               }}
             >
               <Sparkles className="h-4 w-4 mr-1.5 text-primary" />
-              <span className="text-sm font-medium">Hook Generator</span>
+              <span className="text-sm font-medium">Hook Generation</span>
             </Button>
           </motion.div>
           <motion.div
