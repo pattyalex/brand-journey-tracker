@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,6 +5,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Sparkles, Check } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const HOOK_TONES = [
   { id: "bold", name: "Bold & Edgy" },
@@ -25,7 +25,6 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedHooks, setGeneratedHooks] = useState<string[]>([]);
 
-  // Mock hook generation based on tone and context
   const generateHooksByTone = (tone: string, context: string): string[] => {
     const contextWords = context.toLowerCase().split(' ');
     const hasKeyword = (word: string) => contextWords.some(w => w.includes(word));
@@ -73,7 +72,6 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
   const handleGenerate = () => {
     setIsGenerating(true);
     
-    // Simulate API call delay
     setTimeout(() => {
       try {
         const hooks = generateHooksByTone(selectedTone, context);
@@ -162,24 +160,26 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
       {generatedHooks.length > 0 && (
         <div className="mt-6 space-y-4">
           <h3 className="text-lg font-medium">Select a hook:</h3>
-          <div className="grid gap-3">
-            {generatedHooks.map((hook, index) => (
-              <div
-                key={index}
-                onClick={() => handleSelectHook(hook)}
-                className="p-3 border rounded-md cursor-pointer hover:border-primary hover:bg-accent/30 transition-colors flex justify-between items-center"
-              >
-                <div className="text-sm">{hook}</div>
-                <Button variant="ghost" size="sm" onClick={(e) => {
-                  e.stopPropagation();
-                  handleSelectHook(hook);
-                }}>
-                  <Check className="h-4 w-4" />
-                  <span className="sr-only">Select hook</span>
-                </Button>
-              </div>
-            ))}
-          </div>
+          <ScrollArea className="h-[300px] rounded-md border">
+            <div className="grid gap-3 p-4">
+              {generatedHooks.map((hook, index) => (
+                <div
+                  key={index}
+                  onClick={() => handleSelectHook(hook)}
+                  className="p-3 border rounded-md cursor-pointer hover:border-primary hover:bg-accent/30 transition-colors flex justify-between items-center"
+                >
+                  <div className="text-sm">{hook}</div>
+                  <Button variant="ghost" size="sm" onClick={(e) => {
+                    e.stopPropagation();
+                    handleSelectHook(hook);
+                  }}>
+                    <Check className="h-4 w-4" />
+                    <span className="sr-only">Select hook</span>
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
         </div>
       )}
     </div>
