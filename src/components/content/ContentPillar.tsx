@@ -6,6 +6,7 @@ import ContentCard from "./ContentCard";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface ContentPillarProps {
   pillar: Pillar;
