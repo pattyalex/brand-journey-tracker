@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -11,6 +12,14 @@ import IdeaCreationDialog from "@/components/content/IdeaCreationDialog";
 import ContentTypeBuckets from "@/components/content/ContentTypeBuckets";
 import { getRestoredIdeas } from "@/utils/contentRestoreUtils";
 import { cn } from "@/lib/utils";
+
+export type Pillar = {
+  id: string;
+  name: string;
+  content: ContentItem[];
+  writingSpace?: string;
+  onUpdateWritingSpace?: (pillarId: string, text: string) => void;
+};
 
 const pillarBackgroundColors = {
   "1": "bg-[#FEF7CD]", // Soft Yellow
@@ -340,7 +349,7 @@ const BankOfContent = () => {
   return (
     <Layout>
       <div className={cn(
-        "min-h-screen py-6 space-y-6 fade-in transition-colors duration-300",
+        "min-h-screen py-6 space-y-6 fade-in transition-colors duration-300 pl-12", // Added pl-12 for more left padding
         pillarBackgroundColors[activeTab] || "bg-background"
       )}>
         <h1 className="text-3xl font-bold container mx-auto">Idea Development</h1>
