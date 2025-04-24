@@ -41,11 +41,11 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
           value={context}
           onChange={(e) => setContext(e.target.value)}
           placeholder="Enter details about your content, target audience, key message, etc."
-          className="min-h-[240px] resize-none px-3"
+          className="min-h-[240px] resize-none"
         />
       </div>
 
-      <div className="w-[200px] space-y-6">
+      <div className="w-[200px] space-y-6"> {/* Reduced width from 280px to 200px */}
         <div className="space-y-4">
           <Label className="text-base">Select the tone for your hook</Label>
           <RadioGroup
