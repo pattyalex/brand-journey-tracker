@@ -28,6 +28,14 @@ const pillarBackgroundColors = {
   "5": "bg-gradient-to-br from-[#F7FFF5] to-[#EFFFE4]", // Lighter Green gradient (keeping this as a fallback)
 };
 
+const pillarBorderColors = {
+  "1": "border-[#E9E4FF]", // Light Purple border
+  "2": "border-[#FFE4E8]", // Light Pink border
+  "3": "border-[#E4F1FF]", // Light Blue border
+  "4": "border-[#FFF9E4]", // Light Yellow border
+  "5": "border-[#EFFFE4]", // Light Green border
+};
+
 const BankOfContent = () => {
   const [pillars, setPillars] = useState<Pillar[]>([
     { id: "1", name: "Pillar 1", content: [], writingSpace: "" },
@@ -347,10 +355,7 @@ const BankOfContent = () => {
 
   return (
     <Layout>
-      <div className={cn(
-        "min-h-screen py-6 space-y-6 fade-in transition-colors duration-300 pl-12 pr-12", // Added pr-12 for more right padding
-        pillarBackgroundColors[activeTab] || "bg-background"
-      )}>
+      <div className="min-h-screen py-6 space-y-6 fade-in pl-12 pr-12">
         <h1 className="text-3xl font-bold container mx-auto">Idea Development</h1>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex items-center justify-between">
