@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -432,6 +433,15 @@ const TitleHookSuggestions = ({
     onSelectHook(hook);
     setHookSelectionDialogOpen(false);
     setDialogOpen(false);
+  };
+
+  const handleBackToCategories = () => {
+    setHookSelectionDialogOpen(false);
+    setDialogOpen(true);
+  };
+
+  const handleDeleteCustomHook = (hookToDelete: string) => {
+    setCustomHooks(prev => prev.filter(hook => hook !== hookToDelete));
   };
 
   const handleCustomHookSubmit = () => {
