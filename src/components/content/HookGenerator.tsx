@@ -7,31 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Sparkles } from "lucide-react";
 
 const HOOK_TONES = [
-  {
-    id: "bold",
-    name: "Bold & Edgy",
-    description: "Direct, provocative, and attention-grabbing"
-  },
-  {
-    id: "classy",
-    name: "Classy & Elegant",
-    description: "Sophisticated, polished, and refined"
-  },
-  {
-    id: "fun",
-    name: "Fun & Playful",
-    description: "Light-hearted, entertaining, and engaging"
-  },
-  {
-    id: "emotional",
-    name: "Emotional & Heartfelt",
-    description: "Empathetic, genuine, and touching"
-  },
-  {
-    id: "confident",
-    name: "Confident & Persuasive",
-    description: "Authoritative, convincing, and impactful"
-  }
+  { id: "bold", name: "Bold & Edgy" },
+  { id: "classy", name: "Classy & Elegant" },
+  { id: "fun", name: "Fun & Playful" },
+  { id: "emotional", name: "Emotional & Heartfelt" },
+  { id: "confident", name: "Confident & Persuasive" }
 ];
 
 interface HookGeneratorProps {
@@ -58,19 +38,20 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
         <RadioGroup
           value={selectedTone}
           onValueChange={setSelectedTone}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          className="grid grid-cols-3 gap-2"
         >
           {HOOK_TONES.map((tone) => (
-            <div key={tone.id} className="flex items-start space-x-3 p-3 rounded-lg border cursor-pointer hover:bg-accent">
-              <RadioGroupItem value={tone.id} id={tone.id} className="mt-1" />
-              <div className="space-y-1">
-                <Label htmlFor={tone.id} className="text-base font-medium">
-                  {tone.name}
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  {tone.description}
-                </p>
-              </div>
+            <div 
+              key={tone.id} 
+              className="flex items-center space-x-2 p-2 rounded-lg border cursor-pointer hover:bg-accent/50 transition-colors"
+            >
+              <RadioGroupItem value={tone.id} id={tone.id} />
+              <Label 
+                htmlFor={tone.id} 
+                className="text-sm font-medium cursor-pointer"
+              >
+                {tone.name}
+              </Label>
             </div>
           ))}
         </RadioGroup>
@@ -107,3 +88,4 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
 };
 
 export default HookGenerator;
+
