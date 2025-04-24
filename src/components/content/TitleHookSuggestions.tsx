@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -484,11 +483,7 @@ const TitleHookSuggestions = ({
             </TabsList>
             
             <TabsContent value="ai" className="p-4 border rounded-lg">
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">
-                  AI Hook Generation feature coming soon...
-                </p>
-              </div>
+              <HookGenerator onSelectHook={onSelectHook} />
             </TabsContent>
 
             <TabsContent value="library">
