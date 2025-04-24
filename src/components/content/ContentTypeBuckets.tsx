@@ -83,6 +83,109 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
   const [cardPositions, setCardPositions] = useState<Record<string, { top: number, left: number }>>({});
   const cardsContainerRef = useRef<HTMLDivElement>(null);
 
+  const pillarBorderColors = {
+    "1": "border-2 rounded-lg shadow-sm relative group transition-all border-[#F4F1FF]/5",
+    "2": "border-2 rounded-lg shadow-sm relative group transition-all border-[#E9E4FF]/5",
+    "3": "border-2 rounded-lg shadow-sm relative group transition-all border-[#D4C9FF]/5",
+    "4": "border-2 rounded-lg shadow-sm relative group transition-all border-[#C0B4FF]/5",
+    "5": "border-2 rounded-lg shadow-sm relative group transition-all border-[#A699FF]/5",
+    "6": "border-2 rounded-lg shadow-sm relative group transition-all border-[#8C7EFF]/5",
+    "7": "border-2 rounded-lg shadow-sm relative group transition-all border-[#786BFF]/5",
+    "8": "border-2 rounded-lg shadow-sm relative group transition-all border-[#6456FF]/5",
+    "9": "border-2 rounded-lg shadow-sm relative group transition-all border-[#5042FF]/5",
+    "10": "border-2 rounded-lg shadow-sm relative group transition-all border-[#3C28FF]/5",
+    "11": "border-2 rounded-lg shadow-sm relative group transition-all border-[#281EFA]/5",
+    "12": "border-2 rounded-lg shadow-sm relative group transition-all border-[#1410F9]/5",
+    "13": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "14": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "15": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "16": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "17": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "18": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "19": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "20": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "21": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "22": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "23": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "24": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "25": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "26": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "27": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "28": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "29": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "30": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "31": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "32": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "33": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "34": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "35": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "36": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "37": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "38": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "39": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "40": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "41": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "42": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "43": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "44": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "45": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "46": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "47": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "48": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "49": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "50": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "51": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "52": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "53": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "54": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "55": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "56": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "57": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "58": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "59": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "60": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "61": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "62": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "63": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "64": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "65": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "66": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "67": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "68": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "69": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "70": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "71": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "72": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "73": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "74": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "75": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "76": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "77": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "78": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "79": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "80": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "81": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "82": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "83": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "84": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "85": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "86": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "87": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "88": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "89": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "90": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "91": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "92": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "93": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "94": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "95": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "96": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "97": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "98": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "99": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+    "100": "border-2 rounded-lg shadow-sm relative group transition-all border-[#0000FF]/5",
+  };
+
   useEffect(() => {
     try {
       const savedFormats = localStorage.getItem(`content-formats-${pillarId}`);
@@ -309,8 +412,9 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               className={`transition-all duration-150 ease-in-out ${expandedCardId === type.id ? 'w-[300px]' : 'w-[200px]'}`}
             >
               <Card 
-                className={`border rounded-lg shadow-sm relative group hover:border-purple-300 transition-all 
-                  ${expandedCardId === type.id ? 'w-[300px] bg-white shadow-[0_4px_14px_rgba(130,87,229,0.25)]' : 'w-[200px] shadow-[0_2px_10px_rgba(156,138,192,0.15)]'} 
+                className={`border-2 rounded-lg shadow-sm relative group transition-all 
+                  ${pillarBorderColors[pillarId as keyof typeof pillarBorderColors] || pillarBorderColors["5"]}
+                  ${expandedCardId === type.id ? 'w-[300px] bg-gradient-to-r from-[#F4F1FF]/5 to-[#E9E4FF]/5 shadow-[0_4px_14px_rgba(130,87,229,0.25)]' : 'w-[200px] bg-white/80 shadow-[0_2px_10px_rgba(156,138,192,0.15)]'} 
                   hover:shadow-[0_6px_16px_rgba(130,87,229,0.3)]`}
               >
                 <Button
@@ -438,7 +542,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                 <Button 
                   variant="ghost" 
                   onClick={() => setIsAddingFormat(!isAddingFormat)}
-                  className="w-[200px] h-[80px] flex items-center justify-center p-0"
+                  className={`w-[200px] h-[80px] flex items-center justify-center p-0 border-2 rounded-lg ${pillarBorderColors[pillarId as keyof typeof pillarBorderColors] || pillarBorderColors["5"]} hover:bg-[#F4F1FF]/5`}
                 >
                   <Plus className="h-5 w-5 text-purple-500" />
                 </Button>
