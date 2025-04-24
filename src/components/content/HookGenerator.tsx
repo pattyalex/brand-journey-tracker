@@ -227,9 +227,9 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
             <ScrollArea
               className="h-full"
               scrollHideDelay={0}
-              style={{ position: "relative" }}
+              style={{ position: "relative", height: "100%" }}
             >
-              <div className="grid gap-3 p-4 pr-5">
+              <div className="grid gap-3 p-4 pr-6">
                 {generatedHooks.map((hook, index) => (
                   <div
                     key={index}
@@ -244,6 +244,7 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
                         e.stopPropagation();
                         handleSelectHook(hook);
                       }}
+                      className="opacity-70 hover:opacity-100"
                     >
                       <Check className="h-4 w-4" />
                       <span className="sr-only">Select hook</span>
@@ -275,4 +276,3 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
 };
 
 export default HookGenerator;
-
