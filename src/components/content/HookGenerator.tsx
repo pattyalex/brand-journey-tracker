@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,7 +41,7 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
           value={context}
           onChange={(e) => setContext(e.target.value)}
           placeholder='Enter details about your content. E.g. "This video is about morning routines for ambitious women..."'
-          className="min-h-[240px] resize-none px-2" // Reduced padding from px-3 to px-2
+          className="min-h-[240px] resize-none px-0 pl-3" // Removed horizontal padding, added left padding to align with label
         />
       </div>
 
