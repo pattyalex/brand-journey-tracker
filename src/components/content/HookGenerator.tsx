@@ -41,7 +41,7 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
           value={context}
           onChange={(e) => setContext(e.target.value)}
           placeholder='Enter details about your content. E.g. "This video is about morning routines for ambitious women..."'
-          className="min-h-[240px] resize-none px-0 pl-3" // Removed horizontal padding, added left padding to align with label
+          className="min-h-[240px] resize-none pl-0" // Removed horizontal padding and ensured left padding is 0
         />
       </div>
 
