@@ -1,4 +1,3 @@
-
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -33,8 +32,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
   });
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex gap-2 mb-2 border border-gray-200 rounded p-1 bg-gray-50 sticky top-0 z-10">
+    <div className="flex flex-col h-full relative rounded-lg border-2 border-[#E9E4FF] bg-gradient-to-r from-[#F4F1FF]/5 to-[#E9E4FF]/5 p-4">
+      <div className="flex gap-2 mb-2 border border-gray-200 rounded p-1 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
         <button
           type="button"
           onClick={() => editor?.chain().focus().toggleBold().run()}
@@ -85,7 +84,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
           <AlignRight className="h-4 w-4" />
         </button>
       </div>
-      <div className="flex-1 rounded-lg border border-gray-200 bg-white w-full h-full relative">
+      <div className="flex-1 rounded-lg border border-[#E9E4FF]/50 bg-white w-full h-full relative">
         <div className="h-full min-h-[450px] max-h-[70vh] pr-0" style={{
           overflowY: 'auto',
           scrollbarWidth: 'thin',
