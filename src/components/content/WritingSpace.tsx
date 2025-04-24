@@ -112,9 +112,7 @@ const WritingSpace = ({
         </div>
       </motion.div>
 
-      <div className="hidden">
-        <TitleHookSuggestions onSelectHook={(hook) => {}} />
-      </div>
+      <TitleHookSuggestions onSelectHook={(hook) => {}} />
 
       <motion.div 
         className="h-[calc(100vh-140px)]"
