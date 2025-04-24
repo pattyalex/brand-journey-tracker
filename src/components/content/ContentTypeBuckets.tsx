@@ -83,109 +83,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
   const [cardPositions, setCardPositions] = useState<Record<string, { top: number, left: number }>>({});
   const cardsContainerRef = useRef<HTMLDivElement>(null);
 
-  const pillarShadowColors = {
-    "1": "shadow-[0_4px_20px_-4px_rgba(244,241,255,0.25)]",
-    "2": "shadow-[0_4px_20px_-4px_rgba(233,228,255,0.25)]",
-    "3": "shadow-[0_4px_20px_-4px_rgba(212,201,255,0.25)]",
-    "4": "shadow-[0_4px_20px_-4px_rgba(192,180,255,0.25)]",
-    "5": "shadow-[0_4px_20px_-4px_rgba(166,153,255,0.25)]",
-    "6": "shadow-[0_4px_20px_-4px_rgba(140,126,255,0.25)]",
-    "7": "shadow-[0_4px_20px_-4px_rgba(120,107,255,0.25)]",
-    "8": "shadow-[0_4px_20px_-4px_rgba(100,86,255,0.25)]",
-    "9": "shadow-[0_4px_20px_-4px_rgba(80,66,255,0.25)]",
-    "10": "shadow-[0_4px_20px_-4px_rgba(60,40,255,0.25)]",
-    "11": "shadow-[0_4px_20px_-4px_rgba(40,30,250,0.25)]",
-    "12": "shadow-[0_4px_20px_-4px_rgba(20,16,249,0.25)]",
-    "13": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "14": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "15": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "16": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "17": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "18": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "19": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "20": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "21": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "22": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "23": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "24": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "25": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "26": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "27": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "28": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "29": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "30": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "31": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "32": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "33": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "34": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "35": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "36": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "37": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "38": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "39": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "40": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "41": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "42": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "43": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "44": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "45": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "46": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "47": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "48": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "49": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "50": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "51": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "52": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "53": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "54": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "55": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "56": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "57": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "58": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "59": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "60": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "61": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "62": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "63": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "64": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "65": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "66": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "67": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "68": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "69": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "70": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "71": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "72": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "73": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "74": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "75": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "76": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "77": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "78": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "79": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "80": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "81": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "82": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "83": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "84": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "85": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "86": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "87": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "88": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "89": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "90": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "91": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "92": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "93": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "94": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "95": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "96": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "97": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "98": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "99": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-    "100": "shadow-[0_4px_20px_-4px_rgba(0,0,255,0.25)]",
-  };
-
   useEffect(() => {
     try {
       const savedFormats = localStorage.getItem(`content-formats-${pillarId}`);
@@ -412,10 +309,9 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
               className={`transition-all duration-150 ease-in-out ${expandedCardId === type.id ? 'w-[300px]' : 'w-[200px]'}`}
             >
               <Card 
-                className={`rounded-lg relative group transition-all 
-                  ${pillarShadowColors[pillarId as keyof typeof pillarShadowColors] || pillarShadowColors["5"]}
-                  ${expandedCardId === type.id ? 'w-[300px] bg-gradient-to-r from-[#F4F1FF]/5 to-[#E9E4FF]/5' : 'w-[200px] bg-white/80'} 
-                  hover:shadow-[0_8px_28px_-4px_rgba(155,135,245,0.3)]`}
+                className={`border rounded-lg shadow-sm relative group hover:border-purple-300 transition-all 
+                  ${expandedCardId === type.id ? 'w-[300px] bg-white shadow-[0_4px_14px_rgba(130,87,229,0.25)]' : 'w-[200px] shadow-[0_2px_10px_rgba(156,138,192,0.15)]'} 
+                  hover:shadow-[0_6px_16px_rgba(130,87,229,0.3)]`}
               >
                 <Button
                   type="button"
@@ -542,7 +438,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                 <Button 
                   variant="ghost" 
                   onClick={() => setIsAddingFormat(!isAddingFormat)}
-                  className={`w-[200px] h-[80px] flex items-center justify-center p-0 border-2 rounded-lg ${pillarShadowColors[pillarId as keyof typeof pillarShadowColors] || pillarShadowColors["5"]} hover:bg-[#F4F1FF]/5`}
+                  className="w-[200px] h-[80px] flex items-center justify-center p-0"
                 >
                   <Plus className="h-5 w-5 text-purple-500" />
                 </Button>

@@ -6,7 +6,6 @@ import ContentCard from "./ContentCard";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
 
 interface ContentPillarProps {
   pillar: Pillar;
@@ -53,14 +52,6 @@ const emptyStateVariants = {
       ease: "easeOut"
     }
   }
-};
-
-const pillarBorderColors = {
-  "1": "border-[#E9E4FF]", // Light Purple border
-  "2": "border-[#FFE4E8]", // Light Pink border
-  "3": "border-[#E4F1FF]", // Light Blue border
-  "4": "border-[#FFF9E4]", // Light Yellow border
-  "5": "border-[#EFFFE4]", // Light Green border
 };
 
 const ContentPillar = ({
@@ -158,10 +149,7 @@ const ContentPillar = ({
       >
         {filteredContent.length === 0 ? (
           <motion.div 
-            className={cn(
-              "text-center p-8 border-2 rounded-lg bg-white",
-              pillarBorderColors[pillar.id as keyof typeof pillarBorderColors] || pillarBorderColors["5"]
-            )}
+            className="text-center p-8 border border-dashed rounded-lg bg-muted/30"
             variants={emptyStateVariants}
           >
             <p className="text-muted-foreground">

@@ -10,7 +10,6 @@ import IdeaSection from "@/components/content/IdeaSection";
 import IdeaCreationDialog from "@/components/content/IdeaCreationDialog";
 import ContentTypeBuckets from "@/components/content/ContentTypeBuckets";
 import { getRestoredIdeas } from "@/utils/contentRestoreUtils";
-import { cn } from "@/lib/utils";
 
 export type Pillar = {
   id: string;
@@ -18,22 +17,6 @@ export type Pillar = {
   content: ContentItem[];
   writingSpace?: string;
   onUpdateWritingSpace?: (pillarId: string, text: string) => void;
-};
-
-const pillarBackgroundColors = {
-  "1": "bg-gradient-to-br from-[#F4F1FF] to-[#E9E4FF]", // Lighter Purple gradient
-  "2": "bg-gradient-to-br from-[#FFF1F3] to-[#FFE4E8]", // Lighter Pink gradient
-  "3": "bg-gradient-to-br from-[#F1F7FF] to-[#E4F1FF]", // Lighter Blue gradient
-  "4": "bg-gradient-to-br from-[#FFFDF5] to-[#FFF9E4]", // Lighter Yellow gradient
-  "5": "bg-gradient-to-br from-[#F7FFF5] to-[#EFFFE4]", // Lighter Green gradient (keeping this as a fallback)
-};
-
-const pillarBorderColors = {
-  "1": "border-[#E9E4FF]", // Light Purple border
-  "2": "border-[#FFE4E8]", // Light Pink border
-  "3": "border-[#E4F1FF]", // Light Blue border
-  "4": "border-[#FFF9E4]", // Light Yellow border
-  "5": "border-[#EFFFE4]", // Light Green border
 };
 
 const BankOfContent = () => {
@@ -355,8 +338,8 @@ const BankOfContent = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen py-6 space-y-6 fade-in pl-12 pr-12">
-        <h1 className="text-3xl font-bold container mx-auto">Idea Development</h1>
+      <div className="container mx-auto py-6 space-y-6 fade-in">
+        <h1 className="text-3xl font-bold">Idea Development</h1>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex items-center justify-between">
             <PillarTabs 

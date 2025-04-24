@@ -32,14 +32,6 @@ interface IdeaSectionProps {
   onAddToBucket: (formatId: string) => void;
 }
 
-const pillarColors = {
-  "1": "bg-[#F2FCE2]", // Soft Green
-  "2": "bg-[#FEF7CD]", // Soft Yellow
-  "3": "bg-[#FFDEE2]", // Soft Pink
-  "4": "bg-[#E5DEFF]", // Soft Purple
-  "5": "bg-[#D3E4FD]", // Soft Blue
-};
-
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -274,7 +266,7 @@ const IdeaSection = ({
 
   return (
     <motion.div 
-      className="space-y-3 pl-2 pr-3 rounded-lg"
+      className="space-y-3 pl-2 pr-3"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
