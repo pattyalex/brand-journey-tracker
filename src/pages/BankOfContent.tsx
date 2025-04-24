@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -22,11 +21,11 @@ export type Pillar = {
 };
 
 const pillarBackgroundColors = {
-  "1": "bg-[#FEF7CD]", // Soft Yellow
-  "2": "bg-[#E5DEFF]", // Soft Purple
-  "3": "bg-[#FFDEE2]", // Soft Pink
-  "4": "bg-[#D3E4FD]", // Soft Blue
-  "5": "bg-[#F2FCE2]", // Soft Green
+  "1": "bg-[#E5DEFF]", // Soft Purple
+  "2": "bg-[#FFDEE2]", // Soft Pink
+  "3": "bg-[#D3E4FD]", // Soft Blue
+  "4": "bg-[#FEF7CD]", // Soft Yellow
+  "5": "bg-[#F2FCE2]", // Soft Green (keeping this as a fallback)
 };
 
 const BankOfContent = () => {
