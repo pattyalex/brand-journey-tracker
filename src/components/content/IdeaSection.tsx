@@ -90,7 +90,6 @@ const IdeaSection = ({
           { id: "blog", name: "Blog Posts" },
           { id: "video", name: "Video Content" },
           { id: "social", name: "Social Media" },
-          { id: "image", name: "Image Content" },
         ];
         setContentFormats(defaultFormats);
       }

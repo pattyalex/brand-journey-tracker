@@ -66,7 +66,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
     { id: "blog", name: "Blog Posts", description: "Long-form written content", items: [] },
     { id: "video", name: "Video Content", description: "Video-based content", items: [] },
     { id: "social", name: "Social Media", description: "Short-form posts", items: [] },
-    { id: "image", name: "Image Content", description: "Visual content", items: [] },
   ]);
   
   const [newFormatName, setNewFormatName] = useState("");
