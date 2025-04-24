@@ -224,8 +224,12 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
         <div className="flex-1 flex flex-col min-h-0">
           <h3 className="text-lg font-medium mb-4">Select a hook:</h3>
           <div className="flex-1 border rounded-md overflow-hidden">
-            <ScrollArea className="h-full pr-4">
-              <div className="grid gap-3 p-4">
+            <ScrollArea
+              className="h-full"
+              scrollHideDelay={0}
+              style={{ position: "relative" }}
+            >
+              <div className="grid gap-3 p-4 pr-5">
                 {generatedHooks.map((hook, index) => (
                   <div
                     key={index}
@@ -271,3 +275,4 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
 };
 
 export default HookGenerator;
+
