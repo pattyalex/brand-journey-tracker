@@ -223,8 +223,8 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
       {generatedHooks.length > 0 && (
         <div className="flex-1 flex flex-col min-h-0">
           <h3 className="text-lg font-medium mb-4">Select a hook:</h3>
-          <div className="flex-1 overflow-hidden border rounded-md">
-            <ScrollArea className="h-full">
+          <div className="flex-1 border rounded-md overflow-hidden">
+            <ScrollArea className="h-full pr-4">
               <div className="grid gap-3 p-4">
                 {generatedHooks.map((hook, index) => (
                   <div
@@ -233,10 +233,14 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
                     className="p-3 border rounded-md cursor-pointer hover:border-primary hover:bg-accent/30 transition-colors flex justify-between items-center"
                   >
                     <div className="text-sm">{hook}</div>
-                    <Button variant="ghost" size="sm" onClick={(e) => {
-                      e.stopPropagation();
-                      handleSelectHook(hook);
-                    }}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSelectHook(hook);
+                      }}
+                    >
                       <Check className="h-4 w-4" />
                       <span className="sr-only">Select hook</span>
                     </Button>
