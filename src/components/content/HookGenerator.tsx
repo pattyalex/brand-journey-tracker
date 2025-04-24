@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -163,7 +164,7 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 h-full flex flex-col">
       <div className="flex gap-6">
         <div className="flex-1 space-y-4">
           <Label className="text-base text-left block">
@@ -220,9 +221,9 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
       </div>
       
       {generatedHooks.length > 0 && (
-        <div className="mt-6 space-y-4">
-          <h3 className="text-lg font-medium">Select a hook:</h3>
-          <ScrollArea className="h-[300px] rounded-md border">
+        <div className="flex-1 flex flex-col">
+          <h3 className="text-lg font-medium mb-4">Select a hook:</h3>
+          <ScrollArea className="flex-1 rounded-md border">
             <div className="grid gap-3 p-4">
               {generatedHooks.map((hook, index) => (
                 <div
@@ -246,7 +247,7 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
             onClick={handleLoadMore}
             disabled={isGenerating}
             variant="outline"
-            className="w-full"
+            className="w-full mt-4"
           >
             {isGenerating ? (
               "Generating..."
@@ -264,3 +265,4 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
 };
 
 export default HookGenerator;
+
