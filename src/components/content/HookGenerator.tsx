@@ -45,7 +45,7 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
         />
       </div>
 
-      <div className="w-[280px] space-y-6">
+      <div className="w-[200px] space-y-6"> {/* Reduced width from 280px to 200px */}
         <div className="space-y-4">
           <Label className="text-base">Select the tone for your hook</Label>
           <RadioGroup
@@ -56,12 +56,12 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
             {HOOK_TONES.map((tone) => (
               <div 
                 key={tone.id} 
-                className="flex items-center space-x-2 p-2 rounded-lg border cursor-pointer hover:bg-accent/50 transition-colors"
+                className="flex items-center space-x-2 p-1.5 rounded-lg border cursor-pointer hover:bg-accent/50 transition-colors"
               >
                 <RadioGroupItem value={tone.id} id={tone.id} />
                 <Label 
                   htmlFor={tone.id} 
-                  className="text-sm font-medium cursor-pointer"
+                  className="text-xs font-medium cursor-pointer"
                 >
                   {tone.name}
                 </Label>
