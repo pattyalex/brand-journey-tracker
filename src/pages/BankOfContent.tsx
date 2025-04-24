@@ -21,11 +21,11 @@ export type Pillar = {
 };
 
 const pillarBackgroundColors = {
-  "1": "bg-[#E5DEFF]", // Soft Purple
-  "2": "bg-[#FFDEE2]", // Soft Pink
-  "3": "bg-[#D3E4FD]", // Soft Blue
-  "4": "bg-[#FEF7CD]", // Soft Yellow
-  "5": "bg-[#F2FCE2]", // Soft Green (keeping this as a fallback)
+  "1": "bg-gradient-to-br from-[#F4F1FF] to-[#E9E4FF]", // Lighter Purple gradient
+  "2": "bg-gradient-to-br from-[#FFF1F3] to-[#FFE4E8]", // Lighter Pink gradient
+  "3": "bg-gradient-to-br from-[#F1F7FF] to-[#E4F1FF]", // Lighter Blue gradient
+  "4": "bg-gradient-to-br from-[#FFFDF5] to-[#FFF9E4]", // Lighter Yellow gradient
+  "5": "bg-gradient-to-br from-[#F7FFF5] to-[#EFFFE4]", // Lighter Green gradient (keeping this as a fallback)
 };
 
 const BankOfContent = () => {
