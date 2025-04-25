@@ -65,7 +65,7 @@ export const ContentCardActions = ({
                   variant="outline"
                   size="icon"
                   aria-label="Send to Content Calendar"
-                  className="h-8 w-8 p-0 cursor-pointer"
+                  className="h-8 w-8 p-0 cursor-pointer relative"
                   onClick={onSendToCalendar}
                   type="button"
                   draggable={false}
@@ -77,9 +77,9 @@ export const ContentCardActions = ({
               )}
             </TooltipTrigger>
             <TooltipContent 
-              side="right" 
+              side="bottom" 
               align="center" 
-              className="bg-white text-black border border-gray-200 px-4 py-2 text-sm font-medium z-[9999] shadow-lg rounded-md opacity-100 pointer-events-none relative top-6"
+              className="bg-white text-black border border-gray-200 px-4 py-2 text-sm font-medium z-[9999] shadow-lg rounded-md opacity-100 pointer-events-none absolute -left-4"
             >
               Send to Content Calendar
             </TooltipContent>
