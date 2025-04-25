@@ -11,8 +11,8 @@ interface HooksListProps {
 const HooksList = ({ hooks, onSelectHook }: HooksListProps) => {
   return (
     <div className="flex-1 border rounded-md overflow-hidden">
-      <ScrollArea className="h-full w-full" scrollHideDelay={0}>
-        <div className="grid gap-3 p-4 pr-6">
+      <ScrollArea className="h-[300px] w-full pr-4" type="always">
+        <div className="grid gap-3 p-4">
           {hooks.map((hook, index) => (
             <div
               key={index}
@@ -27,7 +27,7 @@ const HooksList = ({ hooks, onSelectHook }: HooksListProps) => {
                   e.stopPropagation();
                   onSelectHook(hook);
                 }}
-                className="opacity-70 hover:opacity-100"
+                className="opacity-70 hover:opacity-100 shrink-0"
               >
                 <Check className="h-4 w-4" />
                 <span className="sr-only">Select hook</span>
@@ -41,4 +41,3 @@ const HooksList = ({ hooks, onSelectHook }: HooksListProps) => {
 };
 
 export default HooksList;
-
