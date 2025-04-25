@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { RefreshCcw, Check } from "lucide-react";
@@ -73,7 +74,7 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
           </div>
         ))}
 
-        <div className="mt-4 mb-2 px-2 flex justify-center">
+        <div className="flex justify-center items-center h-16">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
