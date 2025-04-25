@@ -502,11 +502,8 @@ const ContentCard = ({
                   </Button>
                 )}
               </TooltipTrigger>
-              <TooltipContent className="bg-white text-black border shadow-md">
-                {isInCalendarView ? 
-                  "Add to the content calendar" : 
-                  "Send to content calendar"
-                }
+              <TooltipContent className="bg-black text-white border-none">
+                Send to Content Calendar
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
