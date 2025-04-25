@@ -64,7 +64,7 @@ const InspirationSection = ({
     <div className="space-y-3">
       <div className="flex items-center gap-2 mb-1">
         <Lightbulb size={18} className="text-purple-500" />
-        <h3 className="text-sm font-medium text-purple-700">Inspiration</h3>
+        <h3 className="text-sm font-medium text-purple-700">Inspiration Gallery</h3>
         {hasInspiration && (
           <Badge variant="outline" className="ml-2 bg-purple-100 text-purple-600 border-purple-200">
             {inspirationLinks.length + inspirationImages.length}
