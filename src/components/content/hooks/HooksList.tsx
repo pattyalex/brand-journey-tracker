@@ -14,24 +14,6 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
   return (
     <ScrollArea className="h-[350px] w-full pb-4" type="always">
       <div className="px-2 pb-48 pt-1">
-        <div className="mb-4 px-2">
-          <Button
-            onClick={onGenerateMore}
-            disabled={isGenerating}
-            variant="outline"
-            className="w-full"
-          >
-            {isGenerating ? (
-              "Generating..."
-            ) : (
-              <>
-                <Plus className="mr-2 h-4 w-4" />
-                More Hook Ideas
-              </>
-            )}
-          </Button>
-        </div>
-
         {hooks.map((hook, index) => (
           <div
             key={index}
@@ -53,6 +35,24 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
             </Button>
           </div>
         ))}
+
+        <div className="mt-4 mb-4 px-2">
+          <Button
+            onClick={onGenerateMore}
+            disabled={isGenerating}
+            variant="outline"
+            className="w-full"
+          >
+            {isGenerating ? (
+              "Generating..."
+            ) : (
+              <>
+                <Plus className="mr-2 h-4 w-4" />
+                More Hook Ideas
+              </>
+            )}
+          </Button>
+        </div>
       </div>
     </ScrollArea>
   );
