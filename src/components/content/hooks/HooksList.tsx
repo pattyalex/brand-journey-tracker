@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { RefreshCcw, Check } from "lucide-react";
@@ -24,28 +25,6 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
   return (
     <ScrollArea className="h-[350px] w-full pb-4" type="always">
       <div className="px-2 pb-4 pt-1">
-        <div className="flex justify-center items-center mb-4">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  onClick={onGenerateMore} 
-                  disabled={isGenerating}
-                  className="text-purple-600 hover:text-purple-700"
-                  type="button"
-                >
-                  <RefreshCcw className="h-8 w-8" />
-                  <span className="sr-only">More Hooks</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>More Hooks</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-
         {hooks.map((hook, index) => (
           <div
             key={index}
@@ -68,6 +47,28 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
             </Button>
           </div>
         ))}
+
+        <div className="flex justify-center items-center mt-4">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  onClick={onGenerateMore} 
+                  disabled={isGenerating}
+                  className="text-purple-600 hover:text-purple-700"
+                  type="button"
+                >
+                  <RefreshCcw className="h-8 w-8" />
+                  <span className="sr-only">More Hooks</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>More Hooks</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       </div>
     </ScrollArea>
   );
