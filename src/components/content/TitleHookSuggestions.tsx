@@ -491,17 +491,6 @@ const TitleHookSuggestions = ({
             <TabsContent value="library">
               <div className="max-h-[500px] overflow-y-auto">
                 <div className="p-1">
-                  {Object.keys(HOOK_DATA).map((category, index) => (
-                    <button
-                      key={index}
-                      className="w-full flex justify-between items-center px-4 py-3 text-left hover:bg-accent text-sm font-medium rounded-sm"
-                      onClick={() => handleSelectCategory(category)}
-                    >
-                      {category}
-                      <ArrowRight className="h-4 w-4 ml-2 text-muted-foreground" />
-                    </button>
-                  ))}
-                  
                   <button
                     className="w-full flex justify-between items-center px-4 py-3 text-left hover:bg-accent text-sm font-medium rounded-sm"
                     onClick={() => {
@@ -513,6 +502,17 @@ const TitleHookSuggestions = ({
                     Create your own
                     <ArrowRight className="h-4 w-4 ml-2 text-muted-foreground" />
                   </button>
+
+                  {Object.keys(HOOK_DATA).map((category, index) => (
+                    <button
+                      key={index}
+                      className="w-full flex justify-between items-center px-4 py-3 text-left hover:bg-accent text-sm font-medium rounded-sm"
+                      onClick={() => handleSelectCategory(category)}
+                    >
+                      {category}
+                      <ArrowRight className="h-4 w-4 ml-2 text-muted-foreground" />
+                    </button>
+                  ))}
                 </div>
               </div>
             </TabsContent>
