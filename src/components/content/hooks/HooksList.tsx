@@ -16,33 +16,7 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
   const handleSelectHook = (hook: string) => {
     onSelectHook(hook);
     
-    let editorElement = document.querySelector(".ProseMirror");
-    
-    if (!editorElement) {
-      editorElement = document.querySelector("[class*='rich-text']") || 
-                      document.querySelector("[class*='editor']") ||
-                      document.querySelector(".EditorContent");
-    }
-    
-    if (!editorElement) {
-      editorElement = document.querySelector(".rounded-lg.border.border-gray-200") ||
-                      document.querySelector(".writing-space");
-    }
-    
-    console.log("Found editor element:", editorElement);
-    
-    if (editorElement) {
-      setTimeout(() => {
-        editorElement!.scrollIntoView({ 
-          behavior: "smooth", 
-          block: "center" 
-        });
-        console.log("Scrolling to editor element");
-      }, 100);
-    } else {
-      console.log("Editor element not found for scrolling");
-    }
-    
+    // Remove the scrolling logic since we'll handle insertion directly in the editor
     toast({
       title: "Hook selected!",
       description: "The hook has been added to your content."

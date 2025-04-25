@@ -45,19 +45,16 @@ const WritingSpace = ({
   const { state } = useSidebar();
   const [expandedClass, setExpandedClass] = useState("");
   const [isMeganOpen, setIsMeganOpen] = useState(false);
+  const editorRef = useRef(null);
 
   useEffect(() => {
     setExpandedClass(state === "collapsed" ? "writing-expanded" : "");
   }, [state]);
 
   const handleHookSelect = (hook: string) => {
-    const newContent = value ? `${value}\n\n${hook}` : hook;
-    onChange(newContent);
-    
-    toast({
-      title: "Hook inserted",
-      description: "The selected hook has been added to your content"
-    });
+    if (editorRef.current) {
+      editorRef.current.insertHook(hook);
+    }
   };
 
   return (
@@ -137,7 +134,11 @@ const WritingSpace = ({
           transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
         >
           <div className={`${isMeganOpen ? "w-1/2 border-r border-gray-200 flex flex-col" : "w-full flex-1 flex flex-col"}`}>
-            <RichTextEditor value={value} onChange={onChange} />
+            <RichTextEditor 
+              ref={editorRef}
+              value={value} 
+              onChange={onChange} 
+            />
           </div>
           {isMeganOpen && (
             <motion.div 
