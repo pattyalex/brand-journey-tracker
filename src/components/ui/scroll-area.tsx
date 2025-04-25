@@ -14,7 +14,7 @@ const ScrollArea = React.forwardRef<
     {...props}
   >
     <ScrollAreaPrimitive.Viewport 
-      className="h-full w-full rounded-[inherit]"
+      className="h-full w-full rounded-[inherit] scrollbar-hide" // Added scrollbar-hide class
       style={{ 
         touchAction: "pan-y", 
         WebkitOverflowScrolling: "touch",
@@ -58,3 +58,4 @@ const ScrollBar = React.forwardRef<
 ScrollBar.displayName = ScrollAreaPrimitive.ScrollAreaScrollbar.displayName
 
 export { ScrollArea, ScrollBar }
+
