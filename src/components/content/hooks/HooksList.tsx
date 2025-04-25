@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { RefreshCcw, Check } from "lucide-react";
@@ -50,7 +51,7 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
 
   return (
     <ScrollArea className="h-[350px] w-full pb-4" type="always">
-      <div className="px-2 pb-48 pt-1">
+      <div className="px-2 pb-0 pt-1">
         {hooks.map((hook, index) => (
           <div
             key={index}
@@ -73,7 +74,7 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
           </div>
         ))}
 
-        <div className="mt-4 mb-0 px-2 flex justify-center">
+        <div className="mt-4 px-2 flex justify-center">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
