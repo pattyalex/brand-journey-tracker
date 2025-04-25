@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { RotateCcw } from "lucide-react";
+import { Check, RotateCcw } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface HooksListProps {
@@ -31,7 +31,7 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
               }}
               className="opacity-70 hover:opacity-100 shrink-0"
             >
-              <RotateCcw className="h-4 w-4" />
+              <Check className="h-4 w-4" />
               <span className="sr-only">Select hook</span>
             </Button>
           </div>
@@ -63,4 +63,3 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
 };
 
 export default HooksList;
-
