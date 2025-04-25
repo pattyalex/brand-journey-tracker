@@ -16,7 +16,7 @@ const HooksList = ({ hooks, onSelectHook }: HooksListProps) => {
           key={index}
           onClick={() => onSelectHook(hook)}
           className={`p-3 border rounded-md cursor-pointer hover:border-primary hover:bg-accent/30 transition-colors flex justify-between items-center mb-3 mx-2 ${
-            index === hooks.length - 1 ? "mb-6" : ""
+            index === hooks.length - 1 ? "mb-10" : "" // Increased bottom margin for the last item
           }`}
         >
           <div className="text-sm">{hook}</div>
