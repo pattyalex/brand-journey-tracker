@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -784,7 +783,7 @@ const ContentCalendar = () => {
                         </div>
                         
                         {content.platforms && content.platforms.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1 ml-1 pb-1">
+                          <div className="flex flex-wrap gap-1 mt-1 ml-1">
                             {content.platforms.slice(0, 2).map((platform, idx) => (
                               <Badge
                                 key={`cal-platform-${content.id}-${idx}`}
@@ -797,6 +796,28 @@ const ContentCalendar = () => {
                             {content.platforms.length > 2 && (
                               <Badge className="bg-purple-100 text-purple-800 text-[9px]">
                                 +{content.platforms.length - 2}
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                        
+                        {content.tags && content.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1 ml-1 pb-1">
+                            {content.tags.slice(0, 2).map((tag, idx) => (
+                              <Badge
+                                key={`cal-status-${content.id}-${idx}`}
+                                variant="outline"
+                                className="bg-white/50 border-purple-200 text-purple-700 text-[9px] px-1.5 py-0 rounded-full"
+                              >
+                                {tag}
+                              </Badge>
+                            ))}
+                            {content.tags.length > 2 && (
+                              <Badge 
+                                variant="outline"
+                                className="bg-white/50 border-purple-200 text-purple-700 text-[9px]"
+                              >
+                                +{content.tags.length - 2}
                               </Badge>
                             )}
                           </div>
