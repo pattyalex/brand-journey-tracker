@@ -73,7 +73,7 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
           </div>
         ))}
 
-        <div className="mt-4 mb-2 px-2 flex justify-center">
+        <div className="mt-4 mb-1 px-2 flex justify-center">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
