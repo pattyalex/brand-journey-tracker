@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { ContentItem } from "@/types/content";
 import { 
@@ -78,7 +79,7 @@ export const ContentCardActions = ({
             <TooltipContent 
               side="right" 
               align="center" 
-              className="bg-white text-black border border-gray-200 px-4 py-2 text-sm font-medium z-[9999] shadow-lg rounded-md opacity-100 pointer-events-none relative top-2"
+              className="bg-white text-black border border-gray-200 px-4 py-2 text-sm font-medium z-[9999] shadow-lg rounded-md opacity-100 pointer-events-none relative top-6"
             >
               Send to Content Calendar
             </TooltipContent>
