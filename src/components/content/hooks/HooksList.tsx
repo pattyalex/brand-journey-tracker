@@ -23,7 +23,7 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
 
   return (
     <div className="h-[350px] w-full relative">
-      <ScrollArea className="h-full w-full" type="always">
+      <ScrollArea className="h-full w-full">
         <div className="px-2 pb-4 pt-1">
           {hooks.map((hook, index) => (
             <div
