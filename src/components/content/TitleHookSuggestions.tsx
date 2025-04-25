@@ -444,8 +444,8 @@ const TitleHookSuggestions = ({
     setDialogOpen(false);
     
     console.log("After setting dialog states:", { 
-      willCloseMainDialog: false,
-      willCloseSelectionDialog: false
+      dialogOpen: false,
+      hookSelectionDialogOpen: false
     });
   };
 
@@ -560,6 +560,10 @@ const TitleHookSuggestions = ({
         onOpenChange={(open) => {
           console.log("Hook selection dialog onOpenChange:", open);
           setHookSelectionDialogOpen(open);
+          // If hook selection dialog is closed, make sure the main dialog is also closed
+          if (!open) {
+            setDialogOpen(false);
+          }
         }}
       >
         <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
