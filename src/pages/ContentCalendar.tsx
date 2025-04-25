@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -882,3 +883,203 @@ const ContentCalendar = () => {
                             {content.platforms.slice(0, 2).map((platform, idx) => (
                               <Badge
                                 key={`cal-platform-${content.id}-${idx}`}
+                                variant="outline"
+                                className="text-[10px] px-1 py-0 h-4 bg-transparent border-none"
+                              >
+                                <span className="flex items-center gap-0.5">
+                                  {getPlatformIcon(platform)}
+                                  <span className="truncate max-w-10">{platform}</span>
+                                </span>
+                              </Badge>
+                            ))}
+                            {content.platforms.length > 2 && (
+                              <span className="text-[10px] text-muted-foreground">
+                                +{content.platforms.length - 2}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <Dialog open={newContentDialogOpen} onOpenChange={setNewContentDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add Content</DialogTitle>
+              <DialogDescription>
+                Create a new content item for {selectedDate ? formatDate(selectedDate, 'PP') : 'today'}.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="title" className="text-right">
+                  Title
+                </label>
+                <input
+                  id="title"
+                  className="col-span-3 p-2 border rounded"
+                  value={newContentTitle}
+                  onChange={(e) => setNewContentTitle(e.target.value)}
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="description" className="text-right">
+                  Description
+                </label>
+                <textarea
+                  id="description"
+                  className="col-span-3 p-2 border rounded"
+                  value={newContentDescription}
+                  onChange={(e) => setNewContentDescription(e.target.value)}
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="format" className="text-right">
+                  Format
+                </label>
+                <select
+                  id="format"
+                  className="col-span-3 p-2 border rounded"
+                  value={newContentFormat}
+                  onChange={(e) => setNewContentFormat(e.target.value)}
+                >
+                  <option value="Post">Post</option>
+                  <option value="Video">Video</option>
+                  <option value="Reel">Reel</option>
+                  <option value="Story">Story</option>
+                  <option value="Blog Post">Blog Post</option>
+                  <option value="Podcast">Podcast</option>
+                  <option value="Newsletter">Newsletter</option>
+                </select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setNewContentDialogOpen(false)}>Cancel</Button>
+              <Button type="submit" onClick={createNewContent}>Create</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        <Dialog open={editContentDialogOpen} onOpenChange={setEditContentDialogOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Edit Content</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <label htmlFor="edit-title">Title</label>
+                <input
+                  id="edit-title"
+                  className="p-2 border rounded w-full"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <label>Format</label>
+                <select
+                  className="p-2 border rounded w-full"
+                  value={format}
+                  onChange={(e) => setFormat(e.target.value)}
+                >
+                  <option value="Post">Post</option>
+                  <option value="Video">Video</option>
+                  <option value="Reel">Reel</option>
+                  <option value="Story">Story</option>
+                  <option value="Blog Post">Blog Post</option>
+                  <option value="Podcast">Podcast</option>
+                  <option value="Newsletter">Newsletter</option>
+                </select>
+              </div>
+              
+              <div className="grid gap-2">
+                <label>Script/Content</label>
+                <textarea
+                  className="p-2 border rounded w-full"
+                  rows={3}
+                  value={textContent}
+                  onChange={(e) => setTextContent(e.target.value)}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <label>Visual Notes</label>
+                <textarea
+                  className="p-2 border rounded w-full"
+                  rows={2}
+                  value={visualNotes}
+                  onChange={(e) => setVisualNotes(e.target.value)}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <label>Caption</label>
+                <textarea
+                  className="p-2 border rounded w-full"
+                  rows={2}
+                  value={captionText}
+                  onChange={(e) => setCaptionText(e.target.value)}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <label>Tags</label>
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {tagsList.map((tag) => (
+                    <Badge key={tag} className="bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer" onClick={() => handleRemoveTag(tag)}>
+                      {tag} <span className="ml-1">×</span>
+                    </Badge>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    className="p-2 border rounded flex-1"
+                    value={currentTag}
+                    onChange={(e) => setCurrentTag(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleAddTag()}
+                    placeholder="Add tags..."
+                  />
+                  <Button onClick={handleAddTag} size="sm">Add</Button>
+                </div>
+              </div>
+              
+              <div className="grid gap-2">
+                <label>Platforms</label>
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {platformsList.map((platform) => (
+                    <Badge key={platform} className="bg-purple-100 text-purple-800 hover:bg-purple-200 cursor-pointer" onClick={() => handleRemovePlatform(platform)}>
+                      {platform} <span className="ml-1">×</span>
+                    </Badge>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    className="p-2 border rounded flex-1"
+                    value={currentPlatform}
+                    onChange={(e) => setCurrentPlatform(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleAddPlatform()}
+                    placeholder="Add platforms..."
+                  />
+                  <Button onClick={handleAddPlatform} size="sm">Add</Button>
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={handleCancelEdit}>Cancel</Button>
+              <Button onClick={handleUpdateContent}>Save Changes</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </Layout>
+  );
+};
+
+export default ContentCalendar;
