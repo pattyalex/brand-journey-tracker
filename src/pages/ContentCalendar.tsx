@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,6 +39,7 @@ import { Pillar } from "@/pages/BankOfContent";
 import { toast } from "sonner";
 import { restoreContentToIdeas } from "@/utils/contentRestoreUtils";
 import { cn } from "@/lib/utils";
+import ContentFilters from "@/components/content/calendar/ContentFilters";
 
 interface ContentItem {
   id: string;
@@ -53,6 +53,7 @@ interface ContentItem {
   url?: string;
   pillarId?: string;
   dateCreated?: string;
+  status?: string;
 }
 
 const formatColors: Record<string, string> = {
@@ -131,6 +132,11 @@ const ContentCalendar = () => {
   const [draggedContent, setDraggedContent] = useState<ContentItem | null>(null);
   const [dropTarget, setDropTarget] = useState<string | null>(null);
   const readyContentRef = useRef<HTMLDivElement>(null);
+
+  // Add new state for filters
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
+  const [selectedPillars, setSelectedPillars] = useState<string[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
 
   useEffect(() => {
     try {
@@ -390,16 +396,69 @@ const ContentCalendar = () => {
     return "Post";
   };
 
+  // Add filter handlers
+  const handlePlatformChange = (platform: string) => {
+    setSelectedPlatforms(prev => 
+      prev.includes(platform) 
+        ? prev.filter(p => p !== platform)
+        : [...prev, platform]
+    );
+  };
+
+  const handlePillarChange = (pillarId: string) => {
+    setSelectedPillars(prev => 
+      prev.includes(pillarId)
+        ? prev.filter(p => p !== pillarId)
+        : [...prev, pillarId]
+    );
+  };
+
+  const handleStatusChange = (status: string) => {
+    setSelectedStatuses(prev => 
+      prev.includes(status)
+        ? prev.filter(s => s !== status)
+        : [...prev, status]
+    );
+  };
+
+  // Modify getContentForDate to apply filters
   const getContentForDate = (date: Date) => {
     return scheduledContent.filter(content => {
+      // First check if the content is scheduled for this date
       if (!content.scheduledDate) return false;
       
       const contentDate = new Date(content.scheduledDate);
-      return (
+      const isSameDate = 
         contentDate.getDate() === date.getDate() &&
         contentDate.getMonth() === date.getMonth() &&
-        contentDate.getFullYear() === date.getFullYear()
-      );
+        contentDate.getFullYear() === date.getFullYear();
+      
+      if (!isSameDate) return false;
+
+      // Apply platform filter
+      if (selectedPlatforms.length > 0) {
+        const contentPlatforms = content.platforms || [];
+        if (!selectedPlatforms.some(p => contentPlatforms.includes(p))) {
+          return false;
+        }
+      }
+
+      // Apply pillar filter
+      if (selectedPillars.length > 0) {
+        if (!content.pillarId || !selectedPillars.includes(content.pillarId)) {
+          return false;
+        }
+      }
+
+      // Apply status filter
+      if (selectedStatuses.length > 0) {
+        const contentStatus = content.status || 'Draft';
+        if (!selectedStatuses.includes(contentStatus)) {
+          return false;
+        }
+      }
+
+      return true;
     });
   };
 
@@ -418,6 +477,30 @@ const ContentCalendar = () => {
     start: calendarStart, 
     end: calendarEnd 
   });
+
+  // Get unique platforms from scheduled content
+  const availablePlatforms = useMemo(() => {
+    const platforms = new Set<string>();
+    scheduledContent.forEach(content => {
+      if (content.platforms) {
+        content.platforms.forEach(platform => platforms.add(platform));
+      }
+    });
+    return Array.from(platforms);
+  }, [scheduledContent]);
+
+  // Get unique statuses from scheduled content
+  const availableStatuses = useMemo(() => {
+    const statuses = new Set<string>();
+    scheduledContent.forEach(content => {
+      if (content.status) {
+        statuses.add(content.status);
+      } else {
+        statuses.add('Draft');
+      }
+    });
+    return Array.from(statuses);
+  }, [scheduledContent]);
 
   const handleRestoreToIdeas = (content: ContentItemType, originalPillarId?: string) => {
     try {
@@ -555,6 +638,17 @@ const ContentCalendar = () => {
             </p>
           </div>
           <div className="flex items-center space-x-2">
+            <ContentFilters
+              platforms={availablePlatforms}
+              selectedPlatforms={selectedPlatforms}
+              onPlatformChange={handlePlatformChange}
+              pillars={pillars}
+              selectedPillars={selectedPillars}
+              onPillarChange={handlePillarChange}
+              statuses={availableStatuses}
+              selectedStatuses={selectedStatuses}
+              onStatusChange={handleStatusChange}
+            />
             <Button 
               variant="outline" 
               onClick={prevMonth}
@@ -788,131 +882,3 @@ const ContentCalendar = () => {
                             {content.platforms.slice(0, 2).map((platform, idx) => (
                               <Badge
                                 key={`cal-platform-${content.id}-${idx}`}
-                                className="bg-purple-100 text-purple-800 text-xs px-1.5 py-0 rounded-full flex items-center gap-0.5"
-                              >
-                                {getPlatformIcon(platform)}
-                                <span className="text-[9px]">{platform}</span>
-                              </Badge>
-                            ))}
-                            {content.platforms.length > 2 && (
-                              <Badge className="bg-purple-100 text-purple-800 text-[9px]">
-                                +{content.platforms.length - 2}
-                              </Badge>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        
-        <Dialog open={newContentDialogOpen} onOpenChange={setNewContentDialogOpen}>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Add New Content</DialogTitle>
-              <DialogDescription>
-                Create a new content item for {selectedDate ? formatDate(selectedDate, 'MMMM d, yyyy') : 'selected date'}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <label htmlFor="title" className="text-sm font-medium">Title</label>
-                <input
-                  id="title"
-                  value={newContentTitle}
-                  onChange={(e) => setNewContentTitle(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  placeholder="Content title"
-                />
-              </div>
-              <div className="grid gap-2">
-                <label htmlFor="description" className="text-sm font-medium">Description</label>
-                <textarea
-                  id="description"
-                  value={newContentDescription}
-                  onChange={(e) => setNewContentDescription(e.target.value)}
-                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  placeholder="Content description"
-                />
-              </div>
-              <div className="grid gap-2">
-                <label htmlFor="format" className="text-sm font-medium">Format</label>
-                <select
-                  id="format"
-                  value={newContentFormat}
-                  onChange={(e) => setNewContentFormat(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                  <option value="Post">Post</option>
-                  <option value="Video">Video</option>
-                  <option value="Blog Post">Blog Post</option>
-                  <option value="Reel">Reel</option>
-                  <option value="Story">Story</option>
-                  <option value="Podcast">Podcast</option>
-                  <option value="Newsletter">Newsletter</option>
-                  <option value="Vlog">Vlog</option>
-                </select>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setNewContentDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={createNewContent}>
-                Save
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        <IdeaCreationDialog
-          open={editContentDialogOpen}
-          onOpenChange={setEditContentDialogOpen}
-          title={title}
-          onTitleChange={setTitle}
-          bucketId={bucketId}
-          onBucketChange={setBucketId}
-          pillarId=""
-          scriptText={textContent}
-          onScriptTextChange={setTextContent}
-          visualNotes={visualNotes}
-          onVisualNotesChange={setVisualNotes}
-          format={format}
-          onFormatChange={setFormat}
-          shootDetails={shootDetails}
-          onShootDetailsChange={setShootDetails}
-          captionText={captionText}
-          onCaptionTextChange={setCaptionText}
-          platforms={platformsList}
-          currentPlatform={currentPlatform}
-          onCurrentPlatformChange={setCurrentPlatform}
-          onAddPlatform={handleAddPlatform}
-          onRemovePlatform={handleRemovePlatform}
-          tags={tagsList}
-          currentTag={currentTag}
-          onCurrentTagChange={setCurrentTag}
-          onAddTag={handleAddTag}
-          onRemoveTag={handleRemoveTag}
-          onSave={handleUpdateContent}
-          onCancel={handleCancelEdit}
-          isEditMode={true}
-          dialogTitle="Edit Content"
-          inspirationText={inspirationText}
-          onInspirationTextChange={setInspirationText}
-          inspirationLinks={inspirationLinks}
-          onAddInspirationLink={handleAddInspirationLink}
-          onRemoveInspirationLink={handleRemoveInspirationLink}
-          inspirationImages={inspirationImages}
-          onAddInspirationImage={handleAddInspirationImage}
-          onRemoveInspirationImage={handleRemoveInspirationImage}
-        />
-      </div>
-    </Layout>
-  );
-};
-
-export default ContentCalendar;
