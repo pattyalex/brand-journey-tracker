@@ -114,7 +114,9 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
       {generatedHooks.length > 0 && (
         <div className="flex-1 flex flex-col min-h-0">
           <h3 className="text-lg font-medium mb-4">Select a hook:</h3>
-          <HooksList hooks={generatedHooks} onSelectHook={handleSelectHook} />
+          <div className="flex-grow">
+            <HooksList hooks={generatedHooks} onSelectHook={handleSelectHook} />
+          </div>
           <Button
             onClick={handleLoadMore}
             disabled={isGenerating}
@@ -137,4 +139,3 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
 };
 
 export default HookGenerator;
-

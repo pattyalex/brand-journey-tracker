@@ -10,30 +10,30 @@ interface HooksListProps {
 
 const HooksList = ({ hooks, onSelectHook }: HooksListProps) => {
   return (
-    <ScrollArea className="h-[300px] w-full" type="always">
-      <div className="grid gap-3 p-4">
-        {hooks.map((hook, index) => (
-          <div
-            key={index}
-            onClick={() => onSelectHook(hook)}
-            className="p-3 border rounded-md cursor-pointer hover:border-primary hover:bg-accent/30 transition-colors flex justify-between items-center"
+    <ScrollArea className="h-[350px] w-full pb-4" type="always">
+      {hooks.map((hook, index) => (
+        <div
+          key={index}
+          onClick={() => onSelectHook(hook)}
+          className={`p-3 border rounded-md cursor-pointer hover:border-primary hover:bg-accent/30 transition-colors flex justify-between items-center mb-3 mx-2 ${
+            index === hooks.length - 1 ? "mb-6" : ""
+          }`}
+        >
+          <div className="text-sm">{hook}</div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelectHook(hook);
+            }}
+            className="opacity-70 hover:opacity-100 shrink-0"
           >
-            <div className="text-sm">{hook}</div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={(e) => {
-                e.stopPropagation();
-                onSelectHook(hook);
-              }}
-              className="opacity-70 hover:opacity-100 shrink-0"
-            >
-              <Check className="h-4 w-4" />
-              <span className="sr-only">Select hook</span>
-            </Button>
-          </div>
-        ))}
-      </div>
+            <Check className="h-4 w-4" />
+            <span className="sr-only">Select hook</span>
+          </Button>
+        </div>
+      ))}
     </ScrollArea>
   );
 };
