@@ -1,3 +1,4 @@
+
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -10,7 +11,12 @@ interface RichTextEditorProps {
   onChange: (val: string) => void;
 }
 
-const RichTextEditor: React.FC<RichTextEditorProps> = React.forwardRef(({ value, onChange }, ref) => {
+// Define the ref type for the component
+export interface RichTextEditorRef {
+  insertHook: (hookText: string) => void;
+}
+
+const RichTextEditor = React.forwardRef<RichTextEditorRef, RichTextEditorProps>(({ value, onChange }, ref) => {
   const editor = useEditor({
     extensions: [
       StarterKit,

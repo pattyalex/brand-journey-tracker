@@ -1,3 +1,4 @@
+
 import { useRef, useEffect, useState } from "react";
 import { Pencil, Sparkles } from 'lucide-react';
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -6,7 +7,7 @@ import { useSidebar } from "@/components/ui/sidebar";
 import MeganAIChat from "./MeganAIChat";
 import TitleHookSuggestions from "./TitleHookSuggestions";
 import { motion } from "framer-motion";
-import RichTextEditor from "@/components/RichTextEditor";
+import RichTextEditor, { RichTextEditorRef } from "@/components/RichTextEditor";
 import { toast } from "@/hooks/use-toast";
 
 interface WritingSpaceProps {
@@ -45,7 +46,7 @@ const WritingSpace = ({
   const { state } = useSidebar();
   const [expandedClass, setExpandedClass] = useState("");
   const [isMeganOpen, setIsMeganOpen] = useState(false);
-  const editorRef = useRef(null);
+  const editorRef = useRef<RichTextEditorRef>(null);
 
   useEffect(() => {
     setExpandedClass(state === "collapsed" ? "writing-expanded" : "");
