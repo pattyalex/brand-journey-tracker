@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { RotateCcw } from "lucide-react";
+import { Check } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface HooksListProps {
@@ -31,7 +31,7 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
               }}
               className="opacity-70 hover:opacity-100 shrink-0"
             >
-              <RotateCcw className="h-4 w-4" />
+              <Check className="h-4 w-4" />
               <span className="sr-only">Select hook</span>
             </Button>
           </div>
@@ -47,7 +47,7 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
                   disabled={isGenerating}
                   className="text-purple-600 hover:text-purple-700"
                 >
-                  <RotateCcw className="h-12 w-12" />
+                  <Check className="h-12 w-12" />
                   <span className="sr-only">More Hooks</span>
                 </Button>
               </TooltipTrigger>
