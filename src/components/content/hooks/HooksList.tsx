@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { RotateCcw } from "lucide-react";
@@ -62,3 +63,4 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
 };
 
 export default HooksList;
+
