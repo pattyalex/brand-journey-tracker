@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { RefreshCcw, Check } from "lucide-react";
@@ -29,14 +28,14 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
           <div
             key={index}
             className="p-3 border rounded-md cursor-pointer hover:border-primary hover:bg-accent/30 transition-colors flex justify-between items-center mb-3"
-            onClick={() => handleSelectHook(hook)}
+            onClick={() => handleSelectHook(hook)} // Added click handler to the whole div
           >
             <div className="text-sm">{hook}</div>
             <Button 
               variant="ghost" 
               size="sm" 
               onClick={(e) => {
-                e.stopPropagation();
+                e.stopPropagation(); // Prevent triggering parent's onClick
                 handleSelectHook(hook);
               }}
               className="opacity-70 hover:opacity-100 shrink-0"
@@ -48,7 +47,7 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
           </div>
         ))}
 
-        <div className="flex justify-center items-center mt-4">
+        <div className="flex justify-center items-center h-16">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -59,7 +58,7 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
                   className="text-purple-600 hover:text-purple-700"
                   type="button"
                 >
-                  <RefreshCcw className="h-8 w-8" />
+                  <RefreshCcw className="h-12 w-12" />
                   <span className="sr-only">More Hooks</span>
                 </Button>
               </TooltipTrigger>
