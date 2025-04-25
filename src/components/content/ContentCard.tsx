@@ -10,6 +10,7 @@ import { ContentCardContent } from "./card/ContentCardContent";
 import { ContentCardActions } from "./card/ContentCardActions";
 import { RestoreToIdeasButton } from "./card/RestoreToIdeasButton";
 import { Pillar } from "@/pages/BankOfContent";
+import { format } from "date-fns";
 
 const ContentCard = ({
   content,
