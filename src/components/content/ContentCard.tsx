@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { 
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
 } from "@/components/ui/card";
@@ -488,14 +488,15 @@ const ContentCard = ({
                     variant="outline"
                     size="sm"
                     aria-label="Send to Content Calendar"
-                    className="h-8 p-2 cursor-pointer"
+                    className="h-8 px-3 cursor-pointer flex items-center gap-1"
                     onClick={handleSendToCalendar}
                     type="button"
                     draggable={false}
                     onMouseEnter={handleButtonMouseEnter}
                     onMouseLeave={handleButtonMouseLeave}
                   >
-                    <Send className="h-4 w-4 pointer-events-none" />
+                    <Send className="h-4 w-4 mr-1" />
+                    <span>Send to Content Calendar</span>
                   </Button>
                 )}
               </TooltipTrigger>
