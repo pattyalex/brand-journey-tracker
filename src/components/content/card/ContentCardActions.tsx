@@ -76,7 +76,11 @@ export const ContentCardActions = ({
                 </Button>
               )}
             </TooltipTrigger>
-            <TooltipContent className="bg-black text-white border-none px-3 py-1.5 text-xs font-medium">
+            <TooltipContent 
+              side="right" 
+              align="center" 
+              className="bg-black text-white border-none px-3 py-1.5 text-xs font-medium"
+            >
               Send to Content Calendar
             </TooltipContent>
           </Tooltip>
