@@ -18,7 +18,6 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
         {hooks.map((hook, index) => (
           <div
             key={index}
-            onClick={() => onSelectHook(hook)}
             className="p-3 border rounded-md cursor-pointer hover:border-primary hover:bg-accent/30 transition-colors flex justify-between items-center mb-3"
           >
             <div className="text-sm">{hook}</div>
