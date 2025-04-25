@@ -1,7 +1,6 @@
-
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Check, RotateCcw } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface HooksListProps {
@@ -48,7 +47,7 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
                   disabled={isGenerating}
                   className="rounded-full"
                 >
-                  <RotateCcw className="h-5 w-5 text-[#33C3F0]" />
+                  <ChevronDown className="h-5 w-5" />
                   <span className="sr-only">More Hooks</span>
                 </Button>
               </TooltipTrigger>
