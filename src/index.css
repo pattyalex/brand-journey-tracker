@@ -74,6 +74,13 @@
     touch-action: pan-y;
     overscroll-behavior: contain;
   }
+
+  .text-preserve {
+    text-size-adjust: none;
+    -webkit-text-size-adjust: none;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
 }
 
 /* SelectValue placeholder styling */
@@ -192,15 +199,17 @@
   }
 }
 
-/* Collapsible animations */
+/* Collapsible animations with improved timing */
 @keyframes collapsible-down {
   from {
     height: 0;
     opacity: 0;
+    transform: translateY(-4px) scale(0.98);
   }
   to {
     height: var(--radix-collapsible-content-height);
     opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -208,17 +217,62 @@
   from {
     height: var(--radix-collapsible-content-height);
     opacity: 1;
+    transform: translateY(0) scale(1);
   }
   to {
     height: 0;
     opacity: 0;
+    transform: translateY(-4px) scale(0.98);
   }
 }
 
 .animate-collapsible-down {
-  animation: collapsible-down 300ms ease-out;
+  animation: collapsible-down 350ms cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top;
+  will-change: height, opacity, transform;
 }
 
 .animate-collapsible-up {
-  animation: collapsible-up 300ms ease-out;
+  animation: collapsible-up 350ms cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top;
+  will-change: height, opacity, transform;
+}
+
+/* Add improved accordion animations as well */
+@keyframes accordion-down {
+  from {
+    height: 0;
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    height: 0;
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+.animate-accordion-down {
+  animation: accordion-down 350ms cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top;
+  will-change: height, opacity, transform;
+}
+
+.animate-accordion-up {
+  animation: accordion-up 350ms cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top;
+  will-change: height, opacity, transform;
 }
