@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -424,11 +423,6 @@ const TitleHookSuggestions = ({
     localStorage.setItem("customHooks", JSON.stringify(customHooks));
   }, [customHooks]);
 
-  // Debug logs to track dialog state
-  useEffect(() => {
-    console.log("Dialog state:", { dialogOpen, hookSelectionDialogOpen, selectedCategory });
-  }, [dialogOpen, hookSelectionDialogOpen, selectedCategory]);
-
   const handleSelectCategory = (category: string) => {
     setSelectedCategory(category);
     setDialogOpen(false);
@@ -436,17 +430,9 @@ const TitleHookSuggestions = ({
   };
 
   const handleSelectHook = (hook: string) => {
-    console.log("Hook selected:", hook);
     onSelectHook(hook);
-    
-    // Explicitly close all dialogs
     setHookSelectionDialogOpen(false);
     setDialogOpen(false);
-    
-    console.log("After setting dialog states:", { 
-      dialogOpen: false,
-      hookSelectionDialogOpen: false
-    });
   };
 
   const handleBackToCategories = () => {
@@ -460,21 +446,13 @@ const TitleHookSuggestions = ({
 
   const handleCustomHookSubmit = () => {
     if (customHook.trim()) {
-      console.log("Custom hook submitted:", customHook);
       onSelectHook(customHook);
       if (!customHooks.includes(customHook)) {
         setCustomHooks(prev => [...prev, customHook]);
       }
       setCustomHook("");
-      
-      // Explicitly close all dialogs
       setDialogOpen(false);
       setHookSelectionDialogOpen(false);
-      
-      console.log("After custom hook dialog close:", {
-        dialogOpen: false,
-        hookSelectionDialogOpen: false
-      });
     }
   };
 
@@ -490,17 +468,7 @@ const TitleHookSuggestions = ({
         <Sparkles className="h-5 w-5 text-primary" />
       </Button>
 
-      <Dialog 
-        open={dialogOpen} 
-        onOpenChange={(open) => {
-          console.log("Main dialog onOpenChange:", open);
-          setDialogOpen(open);
-          // If closing main dialog, also ensure hook selection dialog is closed
-          if (!open) {
-            setHookSelectionDialogOpen(false);
-          }
-        }}
-      >
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-[700px]">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold mb-4">Hook Creation</DialogTitle>
@@ -517,10 +485,7 @@ const TitleHookSuggestions = ({
             </TabsList>
             
             <TabsContent value="ai" className="p-4 border rounded-lg">
-              <HookGenerator onSelectHook={(hook) => {
-                console.log("Hook selected from generator:", hook);
-                handleSelectHook(hook);
-              }} />
+              <HookGenerator onSelectHook={onSelectHook} />
             </TabsContent>
 
             <TabsContent value="library">
@@ -555,17 +520,7 @@ const TitleHookSuggestions = ({
         </DialogContent>
       </Dialog>
 
-      <Dialog 
-        open={hookSelectionDialogOpen} 
-        onOpenChange={(open) => {
-          console.log("Hook selection dialog onOpenChange:", open);
-          setHookSelectionDialogOpen(open);
-          // If hook selection dialog is closed, make sure the main dialog is also closed
-          if (!open) {
-            setDialogOpen(false);
-          }
-        }}
-      >
+      <Dialog open={hookSelectionDialogOpen} onOpenChange={setHookSelectionDialogOpen}>
         <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
           <DialogHeader className="flex flex-row items-center">
             <Button
@@ -616,12 +571,20 @@ const TitleHookSuggestions = ({
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           e.preventDefault();
-                          handleCustomHookSubmit();
+                          if (customHook.trim()) {
+                            setCustomHooks(prev => [...prev, customHook]);
+                            setCustomHook("");
+                          }
                         }
                       }}
                     />
                     <Button 
-                      onClick={handleCustomHookSubmit}
+                      onClick={() => {
+                        if (customHook.trim()) {
+                          setCustomHooks(prev => [...prev, customHook]);
+                          setCustomHook("");
+                        }
+                      }}
                       disabled={!customHook.trim()}
                       size="sm"
                       className="bg-[#c4b7a6] hover:bg-[#b0a48f] text-white"

@@ -4,7 +4,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { RefreshCcw, Check } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
-import { useEffect } from "react";
 
 interface HooksListProps {
   hooks: string[];
@@ -15,17 +14,12 @@ interface HooksListProps {
 
 const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksListProps) => {
   const handleSelectHook = (hook: string) => {
-    console.log("HooksList - Hook selected:", hook);
     onSelectHook(hook);
     toast({
       title: "Hook selected!",
       description: "The hook has been added to your content."
     });
   };
-
-  useEffect(() => {
-    console.log("HooksList rendered with hooks:", hooks);
-  }, [hooks]);
 
   return (
     <ScrollArea className="h-[350px] w-full pb-4" type="always">
@@ -34,7 +28,7 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
           <div
             key={index}
             className="p-3 border rounded-md cursor-pointer hover:border-primary hover:bg-accent/30 transition-colors flex justify-between items-center mb-3"
-            onClick={() => handleSelectHook(hook)} 
+            onClick={() => handleSelectHook(hook)} // Added click handler to the whole div
           >
             <div className="text-sm">{hook}</div>
             <Button 
