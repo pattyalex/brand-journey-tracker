@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -8,7 +8,6 @@ import { toast } from "@/hooks/use-toast";
 import ToneSelector from "./hooks/ToneSelector";
 import HooksList from "./hooks/HooksList";
 import { generateHooksByTone, generateAdditionalHooks } from "@/utils/hookGenerationUtils";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface HookGeneratorProps {
   onSelectHook: (hook: string) => void;
@@ -89,29 +88,27 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
           />
         </div>
 
-        <ScrollArea className="w-[240px] h-[500px] border rounded-lg" type="always">
-          <div className="p-4 space-y-6">
-            <ToneSelector 
-              selectedTone={selectedTone}
-              onToneChange={setSelectedTone}
-            />
+        <div className="w-[200px] space-y-6">
+          <ToneSelector 
+            selectedTone={selectedTone}
+            onToneChange={setSelectedTone}
+          />
 
-            <Button
-              onClick={handleGenerate}
-              disabled={!context.trim() || isGenerating}
-              className="w-full bg-primary hover:bg-primary/90"
-            >
-              {isGenerating ? (
-                "Generating..."
-              ) : (
-                <>
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  Generate Hooks
-                </>
-              )}
-            </Button>
-          </div>
-        </ScrollArea>
+          <Button
+            onClick={handleGenerate}
+            disabled={!context.trim() || isGenerating}
+            className="w-full bg-primary hover:bg-primary/90"
+          >
+            {isGenerating ? (
+              "Generating..."
+            ) : (
+              <>
+                <Sparkles className="mr-2 h-4 w-4" />
+                Generate Hooks
+              </>
+            )}
+          </Button>
+        </div>
       </div>
       
       {generatedHooks.length > 0 && (
@@ -140,3 +137,4 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
 };
 
 export default HookGenerator;
+
