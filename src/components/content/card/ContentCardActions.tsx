@@ -79,7 +79,8 @@ export const ContentCardActions = ({
             <TooltipContent 
               side="bottom" 
               align="center" 
-              className="bg-white text-black border border-gray-200 px-4 py-2 text-sm font-medium z-[9999] shadow-lg rounded-md opacity-100 pointer-events-none absolute -left-4"
+              sideOffset={8}
+              className="bg-white text-black border border-gray-200 px-4 py-2 text-sm font-medium z-[9999] shadow-lg rounded-md opacity-100 pointer-events-none"
             >
               Send to Content Calendar
             </TooltipContent>
