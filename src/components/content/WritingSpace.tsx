@@ -7,6 +7,7 @@ import MeganAIChat from "./MeganAIChat";
 import TitleHookSuggestions from "./TitleHookSuggestions";
 import { motion } from "framer-motion";
 import RichTextEditor from "@/components/RichTextEditor";
+import { toast } from "@/hooks/use-toast";
 
 interface WritingSpaceProps {
   value: string;
