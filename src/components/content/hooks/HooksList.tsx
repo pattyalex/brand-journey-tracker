@@ -1,7 +1,6 @@
-
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Check, RotateCcw } from "lucide-react";
+import { RefreshCcw, Check } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
 
@@ -16,18 +15,14 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
   const handleSelectHook = (hook: string) => {
     onSelectHook(hook);
     
-    // Scroll to the rich text editor in the writing space
-    // First try to find the editor by its actual component class
     let editorElement = document.querySelector(".ProseMirror");
     
-    // If not found, try the container
     if (!editorElement) {
       editorElement = document.querySelector("[class*='rich-text']") || 
                       document.querySelector("[class*='editor']") ||
                       document.querySelector(".EditorContent");
     }
     
-    // Fallback to a more general container
     if (!editorElement) {
       editorElement = document.querySelector(".rounded-lg.border.border-gray-200") ||
                       document.querySelector(".writing-space");
@@ -78,7 +73,7 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
           </div>
         ))}
 
-        <div className="mt-4 mb-4 px-2 flex justify-center">
+        <div className="mt-4 mb-2 px-2 flex justify-center">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -88,7 +83,7 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
                   disabled={isGenerating}
                   className="text-purple-600 hover:text-purple-700"
                 >
-                  <RotateCcw className="h-12 w-12" />
+                  <RefreshCcw className="h-12 w-12" />
                   <span className="sr-only">More Hooks</span>
                 </Button>
               </TooltipTrigger>
