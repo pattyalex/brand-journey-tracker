@@ -1,44 +1,18 @@
-import React, { useState, useEffect, useRef } from "react";
-import { 
-  Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { 
-  Trash2, Pencil, Send, FileText, CornerUpLeft, CalendarClock, Move
-} from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import React, { useState, useRef, useEffect } from "react";
+import { Card, CardFooter } from "@/components/ui/card";
 import { ContentItem } from "@/types/content";
-import { Pillar } from "@/pages/BankOfContent";
-import { getTagColorClasses } from "@/utils/tagColors";
-import { format } from "date-fns";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import DateSchedulePicker from "@/components/content/DateSchedulePicker";
 import { cn } from "@/lib/utils";
-
-interface ContentCardProps {
-  content: ContentItem;
-  index: number;
-  pillar: Pillar;
-  pillars: Pillar[];
-  onDeleteContent: (contentId: string) => void;
-  onEditContent: (contentId: string) => void;
-  onScheduleContent?: (contentId: string, scheduledDate: Date) => void;
-  onRestoreToIdeas?: (content: ContentItem, originalPillarId?: string) => void;
-  originalPillarId?: string;
-  isInCalendarView?: boolean;
-  isDraggable?: boolean;
-}
+import { Move } from "lucide-react";
+import { ContentCardProps } from "./types/ContentCardTypes";
+import { ContentCardHeader } from "./card/ContentCardHeader";
+import { ContentCardContent } from "./card/ContentCardContent";
+import { ContentCardActions } from "./card/ContentCardActions";
+import { RestoreToIdeasButton } from "./card/RestoreToIdeasButton";
+import { Pillar } from "@/pages/BankOfContent";
 
 const ContentCard = ({
   content,
-  index,
   pillar,
   pillars,
   onDeleteContent,
@@ -155,7 +129,6 @@ const ContentCard = ({
 
   const getUniqueTags = () => {
     if (!content.tags || !Array.isArray(content.tags)) return [];
-    
     return [...new Set(content.tags)];
   };
 
@@ -171,7 +144,7 @@ const ContentCard = ({
       e.nativeEvent.stopImmediatePropagation();
     }
     
-    setIsInteractingWithButton(false); // Reset the interaction state
+    setIsInteractingWithButton(false);
     
     try {
       let readyToScheduleContent = [];
@@ -181,7 +154,9 @@ const ContentCard = ({
         readyToScheduleContent = JSON.parse(storedContent);
       }
       
-      const existingIndex = readyToScheduleContent.findIndex((item: ContentItem) => item.id === content.id);
+      const existingIndex = readyToScheduleContent.findIndex(
+        (item: ContentItem) => item.id === content.id
+      );
       
       if (existingIndex >= 0) {
         toast.info(`"${content.title}" is already in your calendar`);
@@ -244,6 +219,16 @@ const ContentCard = ({
     }
   };
 
+  const handleButtonMouseEnter = () => {
+    setIsInteractingWithButton(true);
+  };
+  
+  const handleButtonMouseLeave = () => {
+    setTimeout(() => {
+      setIsInteractingWithButton(false);
+    }, 200);
+  };
+
   const handleScheduleButtonClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -252,47 +237,7 @@ const ContentCard = ({
       e.nativeEvent.stopImmediatePropagation();
     }
     
-    console.log("Schedule button clicked, toggling date picker:", !isDatePickerOpen);
     setIsDatePickerOpen(!isDatePickerOpen);
-  };
-
-  const handleRestoreToIdeas = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (typeof e.nativeEvent.stopImmediatePropagation === 'function') {
-      e.nativeEvent.stopImmediatePropagation();
-    }
-    
-    setIsInteractingWithButton(false); // Reset the interaction state
-    
-    if (onRestoreToIdeas) {
-      if (!pillarToRestoreTo) {
-        toast.warning(`"${content.title}" has no original pillar information`, {
-          description: "Will try to restore based on available information",
-          duration: 5000
-        });
-      }
-      
-      console.log(`[ContentCard] Restoring content "${content.title}" to pillar ID: ${pillarToRestoreTo || "undefined"}`);
-      
-      onRestoreToIdeas(content, pillarToRestoreTo);
-      
-      toast.success(`"${content.title}" will be restored to Idea Development`, {
-        description: `Navigate to Idea Development to see this content in ${targetPillarName}`,
-        duration: 5000
-      });
-      
-      setTimeout(() => {
-        toast.info("To see your restored content, go to Idea Development page", {
-          duration: 8000,
-          action: {
-            label: "Got it",
-            onClick: () => {}
-          }
-        });
-      }, 500);
-    }
   };
 
   const handleDeleteClick = (e: React.MouseEvent) => {
@@ -303,7 +248,7 @@ const ContentCard = ({
       e.nativeEvent.stopImmediatePropagation();
     }
     
-    setIsInteractingWithButton(false); // Reset the interaction state
+    setIsInteractingWithButton(false);
     onDeleteContent(content.id);
   };
 
@@ -315,8 +260,24 @@ const ContentCard = ({
       e.nativeEvent.stopImmediatePropagation();
     }
     
-    setIsInteractingWithButton(false); // Reset the interaction state
+    setIsInteractingWithButton(false);
     onEditContent(content.id);
+  };
+
+  const handleRestoreToIdeas = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (typeof e.nativeEvent.stopImmediatePropagation === 'function') {
+      e.nativeEvent.stopImmediatePropagation();
+    }
+    
+    setIsInteractingWithButton(false);
+    
+    if (onRestoreToIdeas) {
+      const pillarToRestoreTo = determinePillarToRestoreTo();
+      onRestoreToIdeas(content, pillarToRestoreTo);
+    }
   };
 
   const preventDragOnButtons = (e: React.DragEvent) => {
@@ -354,16 +315,6 @@ const ContentCard = ({
   const handleDragEnd = () => {
     setIsDragging(false);
   };
-  
-  const handleButtonMouseEnter = () => {
-    setIsInteractingWithButton(true);
-  };
-  
-  const handleButtonMouseLeave = () => {
-    setTimeout(() => {
-      setIsInteractingWithButton(false);
-    }, 200);
-  };
 
   return (
     <Card 
@@ -387,187 +338,40 @@ const ContentCard = ({
       )}
       
       {onRestoreToIdeas && (
-        <div className="absolute top-2 right-2 z-20">
-          <TooltipProvider delayDuration={200}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  aria-label="Restore to Ideas"
-                  className="h-8 w-8 p-0 bg-white hover:bg-blue-50 hover:text-blue-600 cursor-pointer"
-                  onClick={handleRestoreToIdeas}
-                  type="button"
-                  draggable={false}
-                  onMouseEnter={handleButtonMouseEnter}
-                  onMouseLeave={handleButtonMouseLeave}
-                >
-                  <CornerUpLeft className="h-4 w-4 pointer-events-none" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent className="bg-white text-black border shadow-md">
-                <p>Restore to Idea Development ({targetPillarName})</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-      )}
-      
-      <CardHeader className="p-4 pb-2">
-        <CardTitle className="text-base font-bold mb-1 line-clamp-2">
-          {content.title}
-          {date && (
-            <Badge variant="outline" className="ml-2 text-xs">
-              {format(date, "MMM d")}
-            </Badge>
-          )}
-        </CardTitle>
-        <CardDescription className="line-clamp-2 text-xs">
-          {content.description}
-        </CardDescription>
-      </CardHeader>
-      
-      <CardContent className="p-4 pt-0">
-        <div className="flex flex-wrap gap-1 mb-2">
-          {contentFormat && (
-            <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
-              <FileText className="h-3 w-3 mr-0.5" />
-              {contentFormat}
-            </span>
-          )}
-          
-          {platforms.length > 0 && platforms.slice(0, 2).map((platform, index) => (
-            <span 
-              key={`platform-${index}`} 
-              className="bg-purple-100 text-purple-800 text-xs px-2 py-0.5 rounded-full"
-            >
-              {platform}
-            </span>
-          ))}
-          
-          {uniqueTags.length > 0 ? (
-            uniqueTags.slice(0, 2).map((tag, index) => (
-              <span 
-                key={`tag-${index}`} 
-                className={`text-xs px-2 py-0.5 rounded-full ${getTagColorClasses(tag)}`}
-              >
-                {tag}
-              </span>
-            ))
-          ) : null}
-        </div>
-        <div className="flex items-center text-xs text-muted-foreground mt-2">
-          <span>
-            {content.dateCreated ? formatDistanceToNow(new Date(content.dateCreated), { addSuffix: true }) : 'Unknown date'}
-          </span>
-        </div>
-      </CardContent>
-      
-      <CardFooter className="p-4 pt-0 flex justify-between">
-        <div className="flex gap-2 z-20 relative">
-          <TooltipProvider delayDuration={200}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                {isInCalendarView ? (
-                  <Button
-                    ref={calendarButtonRef}
-                    variant={date ? "default" : "outline"}
-                    size="icon"
-                    aria-label="Schedule Content"
-                    className={`h-8 w-8 ${date ? 'bg-green-500 hover:bg-green-600' : ''} cursor-pointer`}
-                    onClick={handleScheduleButtonClick}
-                    type="button"
-                    draggable={false}
-                    onMouseEnter={handleButtonMouseEnter}
-                    onMouseLeave={handleButtonMouseLeave}
-                  >
-                    <CalendarClock className="h-4 w-4 pointer-events-none" />
-                  </Button>
-                ) : (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    aria-label="Send to Content Calendar"
-                    className="h-8 w-8 p-0 group relative cursor-pointer"
-                    onClick={handleSendToCalendar}
-                    type="button"
-                    draggable={false}
-                    onMouseEnter={handleButtonMouseEnter}
-                    onMouseLeave={handleButtonMouseLeave}
-                  >
-                    <Send className="h-4 w-4 pointer-events-none" />
-                    <span className="absolute left-full ml-2 px-2 py-1 bg-white border rounded-md shadow-sm whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity">
-                      Send to Content Calendar
-                    </span>
-                  </Button>
-                )}
-              </TooltipTrigger>
-              <TooltipContent className="bg-black text-white border-none">
-                Send to Content Calendar
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-        
-        <div className="flex gap-2 z-20 relative">
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={handleDeleteClick}
-            aria-label="Delete"
-            className="h-8 w-8 p-0 cursor-pointer"
-            type="button"
-            draggable={false}
-            onMouseEnter={handleButtonMouseEnter}
-            onMouseLeave={handleButtonMouseLeave}
-          >
-            <Trash2 className="h-4 w-4 pointer-events-none" />
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handleEditClick}
-            aria-label="Edit"
-            className="h-8 w-8 p-0 cursor-pointer"
-            type="button"
-            draggable={false}
-            onMouseEnter={handleButtonMouseEnter}
-            onMouseLeave={handleButtonMouseLeave}
-          >
-            <Pencil className="h-4 w-4 pointer-events-none" />
-          </Button>
-        </div>
-      </CardFooter>
-      
-      {isDatePickerOpen && isInCalendarView && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-30 z-[9000]"
-          onClick={() => setIsDatePickerOpen(false)}
+        <RestoreToIdeasButton
+          targetPillarName={getTargetPillarName()}
+          onRestore={handleRestoreToIdeas}
+          onButtonMouseEnter={handleButtonMouseEnter}
+          onButtonMouseLeave={handleButtonMouseLeave}
         />
       )}
       
-      {isDatePickerOpen && isInCalendarView && (
-        <div 
-          className="absolute z-[9999]"
-          onClick={(e) => e.stopPropagation()}
-          style={{
-            position: 'absolute',
-            top: calendarButtonRef.current ? calendarButtonRef.current.offsetTop + calendarButtonRef.current.offsetHeight + 8 : '100%',
-            left: calendarButtonRef.current ? calendarButtonRef.current.offsetLeft : 0,
-            boxShadow: '0 4px 24px rgba(0, 0, 0, 0.4)',
-            filter: 'drop-shadow(0 0 16px rgba(0, 0, 0, 0.4))',
-            borderRadius: '8px',
-            backgroundColor: 'white',
-            zIndex: 9999
-          }}
-        >
-          <DateSchedulePicker
-            date={date}
-            onDateChange={handleDateChange}
-            className="w-full"
-          />
-        </div>
-      )}
+      <ContentCardHeader content={content} date={date} />
+      
+      <ContentCardContent
+        content={content}
+        contentFormat={contentFormat}
+        platforms={platforms}
+        uniqueTags={uniqueTags}
+      />
+      
+      <CardFooter className="p-4 pt-0 flex justify-between">
+        <ContentCardActions
+          content={content}
+          isInCalendarView={isInCalendarView}
+          isDatePickerOpen={isDatePickerOpen}
+          date={date}
+          calendarButtonRef={calendarButtonRef}
+          onSendToCalendar={handleSendToCalendar}
+          onScheduleButtonClick={handleScheduleButtonClick}
+          onDelete={handleDeleteClick}
+          onEdit={handleEditClick}
+          onDateChange={handleDateChange}
+          onDatePickerClose={() => setIsDatePickerOpen(false)}
+          onButtonMouseEnter={handleButtonMouseEnter}
+          onButtonMouseLeave={handleButtonMouseLeave}
+        />
+      </CardFooter>
     </Card>
   );
 };
