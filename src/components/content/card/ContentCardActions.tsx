@@ -5,6 +5,7 @@ import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger 
 } from "@/components/ui/tooltip";
 import { Send, Trash2, Pencil, CalendarClock } from "lucide-react";
+import { format } from "date-fns";
 import DateSchedulePicker from "@/components/content/DateSchedulePicker";
 
 interface ContentCardActionsProps {
@@ -75,7 +76,7 @@ export const ContentCardActions = ({
                 </Button>
               )}
             </TooltipTrigger>
-            <TooltipContent className="bg-black text-white border-none">
+            <TooltipContent className="bg-black text-white border-none px-3 py-1.5 text-xs font-medium">
               Send to Content Calendar
             </TooltipContent>
           </Tooltip>
