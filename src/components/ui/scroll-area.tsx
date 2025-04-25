@@ -18,8 +18,7 @@ const ScrollArea = React.forwardRef<
       style={{ 
         touchAction: "pan-y", 
         WebkitOverflowScrolling: "touch",
-        overscrollBehavior: "contain",
-        overflowY: "hidden" // Hide the native scrollbar
+        overscrollBehavior: "contain"
       }}
     >
       {children}
