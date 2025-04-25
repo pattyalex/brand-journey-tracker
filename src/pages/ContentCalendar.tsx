@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -411,7 +412,7 @@ const ContentCalendar = () => {
                       key={content.id}
                       content={contentItem}
                       index={index}
-                      pillar={{ id: content.pillarId || "default", name: "Default Pillar", content: [] }}
+                      pillar={{ id: content.bucketId || "default", name: "Default Pillar", content: [] }}
                       pillars={[
                         { id: "1", name: "Pillar 1", content: [] },
                         { id: "2", name: "Pillar 2", content: [] },
@@ -420,7 +421,7 @@ const ContentCalendar = () => {
                       onDeleteContent={deleteContent}
                       onEditContent={() => handleEditContent(content)}
                       onRestoreToIdeas={(content) => handleRestoreToIdeas(content, content.originalPillarId)}
-                      originalPillarId={content.pillarId}
+                      originalPillarId={content.originalPillarId}
                       isInCalendarView={true}
                       onScheduleContent={(contentId, date) => handleDateChange(contentId, date)}
                       isDraggable={true}
