@@ -49,6 +49,16 @@ const WritingSpace = ({
     setExpandedClass(state === "collapsed" ? "writing-expanded" : "");
   }, [state]);
 
+  const handleHookSelect = (hook: string) => {
+    const newContent = value ? `${value}\n\n${hook}` : hook;
+    onChange(newContent);
+    
+    toast({
+      title: "Hook inserted",
+      description: "The selected hook has been added to your content"
+    });
+  };
+
   return (
     <motion.div 
       className={`space-y-4 pr-2 transition-all duration-300 ${expandedClass}`}
@@ -112,7 +122,7 @@ const WritingSpace = ({
         </div>
       </motion.div>
 
-      <TitleHookSuggestions onSelectHook={(hook) => {}} />
+      <TitleHookSuggestions onSelectHook={handleHookSelect} />
 
       <motion.div 
         className="h-[calc(100vh-140px)]"
