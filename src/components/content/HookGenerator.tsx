@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -73,6 +72,29 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
     });
   };
 
+  const handleGenerateMore = () => {
+    setIsGenerating(true);
+    
+    setTimeout(() => {
+      try {
+        const moreHooks = generateAdditionalHooks(selectedTone);
+        setGeneratedHooks(prev => [...prev, ...moreHooks]);
+        toast({
+          title: "More hook ideas generated!",
+          description: "Fresh ideas have been added below."
+        });
+      } catch (error) {
+        toast({
+          title: "Failed to generate more hooks",
+          description: "Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsGenerating(false);
+      }
+    }, 1200);
+  };
+
   return (
     <div className="space-y-6 flex flex-col h-full">
       <div className="flex gap-6 flex-shrink-0">
@@ -115,7 +137,12 @@ const HookGenerator = ({ onSelectHook }: HookGeneratorProps) => {
         <div className="flex-1 flex flex-col min-h-0">
           <h3 className="text-lg font-medium mb-4">Select a hook:</h3>
           <div className="flex-grow">
-            <HooksList hooks={generatedHooks} onSelectHook={handleSelectHook} />
+            <HooksList 
+              hooks={generatedHooks} 
+              onSelectHook={handleSelectHook} 
+              onGenerateMore={handleGenerateMore}
+              isGenerating={isGenerating}
+            />
           </div>
           <Button
             onClick={handleLoadMore}

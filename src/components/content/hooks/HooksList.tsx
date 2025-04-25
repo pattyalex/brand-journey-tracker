@@ -1,17 +1,19 @@
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Check } from "lucide-react";
+import { Check, Plus } from "lucide-react";
 
 interface HooksListProps {
   hooks: string[];
   onSelectHook: (hook: string) => void;
+  onGenerateMore: () => void;
+  isGenerating: boolean;
 }
 
-const HooksList = ({ hooks, onSelectHook }: HooksListProps) => {
+const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksListProps) => {
   return (
     <ScrollArea className="h-[350px] w-full pb-4" type="always">
-      <div className="px-2 pb-48 pt-1"> {/* Increased bottom padding from pb-24 to pb-48 */}
+      <div className="px-2 pb-48 pt-1">
         {hooks.map((hook, index) => (
           <div
             key={index}
@@ -33,6 +35,24 @@ const HooksList = ({ hooks, onSelectHook }: HooksListProps) => {
             </Button>
           </div>
         ))}
+        
+        <div className="absolute bottom-8 left-0 right-0 px-4 space-y-2">
+          <Button
+            onClick={onGenerateMore}
+            disabled={isGenerating}
+            variant="outline"
+            className="w-full"
+          >
+            {isGenerating ? (
+              "Generating..."
+            ) : (
+              <>
+                <Plus className="mr-2 h-4 w-4" />
+                More Hook Ideas
+              </>
+            )}
+          </Button>
+        </div>
       </div>
     </ScrollArea>
   );
