@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useState } from "react";
 import { Pencil, Sparkles } from 'lucide-react';
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -74,6 +73,7 @@ const WritingSpace = ({
           Brainstorm
         </h2>
         <div className="flex items-center gap-2">
+          <TitleHookSuggestions onSelectHook={handleHookSelect} />
           <motion.div
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -121,12 +121,9 @@ const WritingSpace = ({
         </div>
       </motion.div>
 
-      <TitleHookSuggestions onSelectHook={handleHookSelect} />
-
       <motion.div 
         className="h-[calc(100vh-140px)]"
         variants={itemVariants}
-        layout
       >
         <motion.div 
           className={`rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full relative bg-[#F6F6F7] ${isMeganOpen ? "flex flex-row" : "flex flex-col"}`}

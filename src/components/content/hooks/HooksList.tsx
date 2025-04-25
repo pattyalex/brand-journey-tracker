@@ -15,8 +15,6 @@ interface HooksListProps {
 const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksListProps) => {
   const handleSelectHook = (hook: string) => {
     onSelectHook(hook);
-    
-    // Remove the scrolling logic since we'll handle insertion directly in the editor
     toast({
       title: "Hook selected!",
       description: "The hook has been added to your content."
@@ -30,14 +28,14 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
           <div
             key={index}
             className="p-3 border rounded-md cursor-pointer hover:border-primary hover:bg-accent/30 transition-colors flex justify-between items-center mb-3"
-            onClick={() => handleSelectHook(hook)}
+            onClick={() => handleSelectHook(hook)} // Added click handler to the whole div
           >
             <div className="text-sm">{hook}</div>
             <Button 
               variant="ghost" 
               size="sm" 
               onClick={(e) => {
-                e.stopPropagation();
+                e.stopPropagation(); // Prevent triggering parent's onClick
                 handleSelectHook(hook);
               }}
               className="opacity-70 hover:opacity-100 shrink-0"

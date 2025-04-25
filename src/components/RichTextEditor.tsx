@@ -1,4 +1,3 @@
-
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -11,7 +10,6 @@ interface RichTextEditorProps {
   onChange: (val: string) => void;
 }
 
-// Define the ref type for the component
 export interface RichTextEditorRef {
   insertHook: (hookText: string) => void;
 }
@@ -37,23 +35,18 @@ const RichTextEditor = React.forwardRef<RichTextEditorRef, RichTextEditorProps>(
     },
   });
 
-  // Add this new method to handle hook insertion
   const insertHook = (hookText: string) => {
     if (editor) {
-      // If there's no selection, move to start
       if (!editor.state.selection.anchor) {
         editor.commands.setTextSelection(0);
       }
       
-      // Insert the hook text at current position
       editor.commands.insertContent(hookText);
       
-      // Add a newline after the hook
       editor.commands.enter();
     }
   };
 
-  // Expose the insertHook method through a ref
   React.useImperativeHandle(
     ref,
     () => ({
