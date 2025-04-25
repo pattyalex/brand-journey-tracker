@@ -1,6 +1,7 @@
+
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Check, SquarePlus } from "lucide-react";
+import { Check, CirclePlus } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface HooksListProps {
@@ -47,7 +48,7 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
                   disabled={isGenerating}
                   className="rounded-full"
                 >
-                  <SquarePlus className="h-5 w-5" />
+                  <CirclePlus className="h-5 w-5" />
                   <span className="sr-only">More Hooks</span>
                 </Button>
               </TooltipTrigger>
