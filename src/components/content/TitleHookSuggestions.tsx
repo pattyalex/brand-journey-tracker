@@ -452,6 +452,7 @@ const TitleHookSuggestions = ({
       }
       setCustomHook("");
       setDialogOpen(false);
+      setHookSelectionDialogOpen(false);
     }
   };
 
