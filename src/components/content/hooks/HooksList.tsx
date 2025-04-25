@@ -11,7 +11,7 @@ interface HooksListProps {
 const HooksList = ({ hooks, onSelectHook }: HooksListProps) => {
   return (
     <ScrollArea className="h-[350px] w-full pb-4" type="always">
-      <div className="px-2 pb-24 pt-1"> {/* Increased bottom padding from pb-12 to pb-24 */}
+      <div className="px-2 pb-48 pt-1"> {/* Increased bottom padding from pb-24 to pb-48 */}
         {hooks.map((hook, index) => (
           <div
             key={index}
