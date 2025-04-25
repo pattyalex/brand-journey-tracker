@@ -16,15 +16,35 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
   const handleSelectHook = (hook: string) => {
     onSelectHook(hook);
     
-    // Scroll to the writing space
-    const writingSpaceElement = document.querySelector(".rich-text-editor");
-    if (writingSpaceElement) {
+    // Scroll to the rich text editor in the writing space
+    // First try to find the editor by its actual component class
+    let editorElement = document.querySelector(".ProseMirror");
+    
+    // If not found, try the container
+    if (!editorElement) {
+      editorElement = document.querySelector("[class*='rich-text']") || 
+                      document.querySelector("[class*='editor']") ||
+                      document.querySelector(".EditorContent");
+    }
+    
+    // Fallback to a more general container
+    if (!editorElement) {
+      editorElement = document.querySelector(".rounded-lg.border.border-gray-200") ||
+                      document.querySelector(".writing-space");
+    }
+    
+    console.log("Found editor element:", editorElement);
+    
+    if (editorElement) {
       setTimeout(() => {
-        writingSpaceElement.scrollIntoView({ 
+        editorElement!.scrollIntoView({ 
           behavior: "smooth", 
           block: "center" 
         });
+        console.log("Scrolling to editor element");
       }, 100);
+    } else {
+      console.log("Editor element not found for scrolling");
     }
     
     toast({
