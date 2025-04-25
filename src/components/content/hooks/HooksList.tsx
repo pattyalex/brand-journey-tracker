@@ -67,6 +67,7 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
                 handleSelectHook(hook);
               }}
               className="opacity-70 hover:opacity-100 shrink-0"
+              type="button"
             >
               <Check className="h-4 w-4" />
               <span className="sr-only">Select hook</span>
@@ -83,6 +84,7 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
                   onClick={onGenerateMore} 
                   disabled={isGenerating}
                   className="text-purple-600 hover:text-purple-700"
+                  type="button"
                 >
                   <RefreshCcw className="h-12 w-12" />
                   <span className="sr-only">More Hooks</span>
