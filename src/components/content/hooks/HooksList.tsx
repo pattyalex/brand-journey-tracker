@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { RotateCcw } from "lucide-react";
@@ -42,10 +41,10 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button 
-                  variant="vision" 
+                  variant="ghost" 
                   onClick={onGenerateMore} 
                   disabled={isGenerating}
-                  className="bg-sky-400 text-white hover:bg-sky-500"
+                  className="text-sky-400 hover:text-sky-500"
                 >
                   <RotateCcw className="h-5 w-5" />
                   <span className="sr-only">More Hooks</span>
