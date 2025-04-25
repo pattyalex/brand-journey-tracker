@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Check, Plus } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface HooksListProps {
   hooks: string[];
@@ -36,22 +37,26 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
           </div>
         ))}
 
-        <div className="mt-4 mb-4 px-2">
-          <Button
-            onClick={onGenerateMore}
-            disabled={isGenerating}
-            variant="outline"
-            className="w-full"
-          >
-            {isGenerating ? (
-              "Generating..."
-            ) : (
-              <>
-                <Plus className="mr-2 h-4 w-4" />
-                More Hook Ideas
-              </>
-            )}
-          </Button>
+        <div className="mt-4 mb-4 px-2 flex justify-center">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  onClick={onGenerateMore} 
+                  disabled={isGenerating}
+                  className="rounded-full"
+                >
+                  <Plus className="h-5 w-5" />
+                  <span className="sr-only">More Hooks</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>More Hooks</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
     </ScrollArea>
