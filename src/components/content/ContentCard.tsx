@@ -486,17 +486,19 @@ const ContentCard = ({
                 ) : (
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="icon"
                     aria-label="Send to Content Calendar"
-                    className="h-8 px-3 cursor-pointer flex items-center gap-1"
+                    className="h-8 w-8 p-0 group relative cursor-pointer"
                     onClick={handleSendToCalendar}
                     type="button"
                     draggable={false}
                     onMouseEnter={handleButtonMouseEnter}
                     onMouseLeave={handleButtonMouseLeave}
                   >
-                    <Send className="h-4 w-4 mr-1" />
-                    <span>Send to Content Calendar</span>
+                    <Send className="h-4 w-4 pointer-events-none" />
+                    <span className="absolute left-full ml-2 px-2 py-1 bg-white border rounded-md shadow-sm whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity">
+                      Send to Content Calendar
+                    </span>
                   </Button>
                 )}
               </TooltipTrigger>
