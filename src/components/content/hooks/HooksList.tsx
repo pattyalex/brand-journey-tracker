@@ -24,30 +24,7 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
   return (
     <ScrollArea className="h-[350px] w-full pb-4" type="always">
       <div className="px-2 pb-4 pt-1">
-        {hooks.map((hook, index) => (
-          <div
-            key={index}
-            className="p-3 border rounded-md cursor-pointer hover:border-primary hover:bg-accent/30 transition-colors flex justify-between items-center mb-3"
-            onClick={() => handleSelectHook(hook)} // Added click handler to the whole div
-          >
-            <div className="text-sm">{hook}</div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent triggering parent's onClick
-                handleSelectHook(hook);
-              }}
-              className="opacity-70 hover:opacity-100 shrink-0"
-              type="button"
-            >
-              <Check className="h-4 w-4" />
-              <span className="sr-only">Select hook</span>
-            </Button>
-          </div>
-        ))}
-
-        <div className="flex justify-center items-center h-16">
+        <div className="flex justify-center items-center mb-4">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -58,7 +35,7 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
                   className="text-purple-600 hover:text-purple-700"
                   type="button"
                 >
-                  <RefreshCcw className="h-12 w-12" />
+                  <RefreshCcw className="h-8 w-8" />
                   <span className="sr-only">More Hooks</span>
                 </Button>
               </TooltipTrigger>
@@ -68,6 +45,29 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
             </Tooltip>
           </TooltipProvider>
         </div>
+
+        {hooks.map((hook, index) => (
+          <div
+            key={index}
+            className="p-3 border rounded-md cursor-pointer hover:border-primary hover:bg-accent/30 transition-colors flex justify-between items-center mb-3"
+            onClick={() => handleSelectHook(hook)}
+          >
+            <div className="text-sm">{hook}</div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSelectHook(hook);
+              }}
+              className="opacity-70 hover:opacity-100 shrink-0"
+              type="button"
+            >
+              <Check className="h-4 w-4" />
+              <span className="sr-only">Select hook</span>
+            </Button>
+          </div>
+        ))}
       </div>
     </ScrollArea>
   );
