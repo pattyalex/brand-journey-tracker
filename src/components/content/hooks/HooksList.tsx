@@ -44,9 +44,9 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
                   variant="ghost" 
                   onClick={onGenerateMore} 
                   disabled={isGenerating}
-                  className="text-sky-400 hover:text-sky-500"
+                  className="text-purple-600 hover:text-purple-700"
                 >
-                  <RotateCcw className="h-5 w-5" />
+                  <RotateCcw className="h-7 w-7" />
                   <span className="sr-only">More Hooks</span>
                 </Button>
               </TooltipTrigger>
