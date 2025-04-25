@@ -28,7 +28,7 @@ const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksL
           <div
             key={index}
             className="p-3 border rounded-md cursor-pointer hover:border-primary hover:bg-accent/30 transition-colors flex justify-between items-center mb-3"
-            onClick={() => handleSelectHook(hook)} // Added click handler to the whole div
+            onClick={() => handleSelectHook(hook)} 
           >
             <div className="text-sm">{hook}</div>
             <Button 
