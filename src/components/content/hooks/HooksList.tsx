@@ -15,6 +15,18 @@ interface HooksListProps {
 const HooksList = ({ hooks, onSelectHook, onGenerateMore, isGenerating }: HooksListProps) => {
   const handleSelectHook = (hook: string) => {
     onSelectHook(hook);
+    
+    // Scroll to the writing space
+    const writingSpaceElement = document.querySelector(".rich-text-editor");
+    if (writingSpaceElement) {
+      setTimeout(() => {
+        writingSpaceElement.scrollIntoView({ 
+          behavior: "smooth", 
+          block: "center" 
+        });
+      }, 100);
+    }
+    
     toast({
       title: "Hook selected!",
       description: "The hook has been added to your content."
