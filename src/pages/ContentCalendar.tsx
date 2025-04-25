@@ -1,108 +1,48 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { 
-  format as formatDate, 
-  startOfMonth, 
-  endOfMonth, 
-  eachDayOfInterval, 
-  isSameMonth, 
-  isToday,
-  addMonths,
-  subMonths,
-  getDay,
-  startOfWeek,
-  endOfWeek
-} from "date-fns";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { CalendarIcon, FileText, ChevronLeft, ChevronRight, PlusCircle, Trash2, Instagram, Youtube, AtSign, Pencil, CornerUpLeft } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ChevronLeft, ChevronRight, PlusCircle, Trash2, Instagram, Youtube, AtSign, Pencil, CornerUpLeft } from "lucide-react";
+import { format as formatDate, isSameMonth } from "date-fns";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import IdeaCreationDialog from "@/components/content/IdeaCreationDialog";
 import ContentCard from "@/components/content/ContentCard";
+import { cn } from "@/lib/utils";
 import { ContentItem as ContentItemType } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
 import { toast } from "sonner";
 import { restoreContentToIdeas } from "@/utils/contentRestoreUtils";
-import { cn } from "@/lib/utils";
-
-interface ContentItem {
-  id: string;
-  title: string;
-  description: string;
-  format?: string;
-  tags?: string[];
-  buckets?: string[];
-  platforms?: string[];
-  scheduledDate?: Date | null;
-  url?: string;
-  pillarId?: string;
-  dateCreated?: string;
-}
-
-const formatColors: Record<string, string> = {
-  "Video": "bg-purple-100 text-purple-800 border-purple-300",
-  "Blog Post": "bg-blue-100 text-blue-800 border-blue-300",
-  "Reel": "bg-pink-100 text-pink-800 border-pink-300",
-  "Story": "bg-amber-100 text-amber-800 border-amber-300",
-  "Podcast": "bg-emerald-100 text-emerald-800 border-emerald-300",
-  "Newsletter": "bg-indigo-100 text-indigo-800 border-indigo-300",
-  "Post": "bg-cyan-100 text-cyan-800 border-cyan-300",
-  "Vlog": "bg-purple-100 text-purple-800 border-purple-300"
-};
-
-const getPlatformIcon = (platform: string) => {
-  const lowercasePlatform = platform.toLowerCase();
-  
-  switch (lowercasePlatform) {
-    case 'instagram':
-      return <Instagram className="h-3 w-3" />;
-    case 'youtube':
-      return <Youtube className="h-3 w-3" />;
-    case 'twitter':
-    case 'x':
-      return <AtSign className="h-3 w-3" />;
-    default:
-      return <AtSign className="h-3 w-3" />;
-  }
-};
-
-const isWeekend = (date: Date) => {
-  const day = getDay(date);
-  return day === 0 || day === 6; // 0 is Sunday, 6 is Saturday
-};
+import CalendarDayCell from "@/components/content/calendar/CalendarDayCell";
+import { useCalendarState } from "@/hooks/useCalendarState";
+import { getCalendarDays, getContentForDate } from "@/utils/calendarUtils";
 
 const ContentCalendar = () => {
-  const getToday = () => {
-    return new Date();
-  };
+  const {
+    currentMonth,
+    selectedDate,
+    readyToScheduleContent,
+    scheduledContent,
+    draggedContent,
+    dropTarget,
+    setSelectedDate,
+    setReadyToScheduleContent,
+    setScheduledContent,
+    setDraggedContent,
+    setDropTarget,
+    nextMonth,
+    prevMonth,
+    goToToday,
+    handleDateChange
+  } = useCalendarState();
 
-  const [currentMonth, setCurrentMonth] = useState(getToday());
-  const [readyToScheduleContent, setReadyToScheduleContent] = useState<ContentItem[]>([]);
-  const [scheduledContent, setScheduledContent] = useState<ContentItem[]>([]);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(getToday());
-  const [showReadyContent, setShowReadyContent] = useState(true);
-  const [newContentDialogOpen, setNewContentDialogOpen] = useState(false);
+  const readyContentRef = useRef<HTMLDivElement>(null);
+  const [newContentDialogOpen, setNewContentDialogOpen] = React.useState(false);
+  const [editContentDialogOpen, setEditContentDialogOpen] = React.useState(false);
+  const [currentEditingContent, setCurrentEditingContent] = React.useState<ContentItemType | null>(null);
+  
   const [newContentTitle, setNewContentTitle] = useState("");
   const [newContentDescription, setNewContentDescription] = useState("");
   const [newContentFormat, setNewContentFormat] = useState("Post");
-  
-  const [editContentDialogOpen, setEditContentDialogOpen] = useState(false);
-  const [currentEditingContent, setCurrentEditingContent] = useState<ContentItem | null>(null);
 
   const [title, setTitle] = useState("");
   const [bucketId, setBucketId] = useState("");
@@ -124,136 +64,6 @@ const ContentCalendar = () => {
     { id: "2", name: "Pillar 2", content: [] },
     { id: "3", name: "Pillar 3", content: [] }
   ]);
-
-  const [animatingContent, setAnimatingContent] = useState<string | null>(null);
-  const [animationTarget, setAnimationTarget] = useState<{x: number, y: number} | null>(null);
-  const [draggedContent, setDraggedContent] = useState<ContentItem | null>(null);
-  const [dropTarget, setDropTarget] = useState<string | null>(null);
-  const readyContentRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    try {
-      const readyToScheduleData = localStorage.getItem('readyToScheduleContent');
-      if (readyToScheduleData) {
-        const parsedData = JSON.parse(readyToScheduleData);
-        const contentWithDates = parsedData.map((item: any) => ({
-          ...item,
-          scheduledDate: item.scheduledDate ? new Date(item.scheduledDate) : null,
-          dateCreated: item.dateCreated || new Date().toISOString()
-        }));
-        setReadyToScheduleContent(contentWithDates);
-      }
-
-      const scheduledData = localStorage.getItem('scheduledContent');
-      if (scheduledData) {
-        const parsedData = JSON.parse(scheduledData);
-        const contentWithDates = parsedData.map((item: any) => ({
-          ...item,
-          scheduledDate: item.scheduledDate ? new Date(item.scheduledDate) : null,
-          dateCreated: item.dateCreated || new Date().toISOString()
-        }));
-        setScheduledContent(contentWithDates);
-      }
-    } catch (error) {
-      console.error("Error loading content from localStorage:", error);
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('readyToScheduleContent', JSON.stringify(readyToScheduleContent));
-  }, [readyToScheduleContent]);
-
-  useEffect(() => {
-    localStorage.setItem('scheduledContent', JSON.stringify(scheduledContent));
-  }, [scheduledContent]);
-
-  const handleEditContent = (content: ContentItem) => {
-    setCurrentEditingContent(content);
-    
-    setTitle(content.title || "");
-    setTagsList(content.tags || []);
-    setPlatformsList(content.platforms || []);
-    
-    if (content.url) {
-      try {
-        const parsedContent = JSON.parse(content.url);
-        setTextContent(parsedContent.script || "");
-        setVisualNotes(parsedContent.visualNotes || "");
-        setShootDetails(parsedContent.shootDetails || "");
-        setCaptionText(parsedContent.caption || "");
-        setBucketId(parsedContent.bucketId || "");
-        setFormat(parsedContent.format || "Post");
-        setInspirationText(parsedContent.inspirationText || "");
-        setInspirationLinks(parsedContent.inspirationLinks || []);
-        setInspirationImages(parsedContent.inspirationImages || []);
-      } catch (error) {
-        console.error("Error parsing content URL:", error);
-      }
-    }
-    
-    setEditContentDialogOpen(true);
-  };
-
-  const handleUpdateContent = () => {
-    if (!currentEditingContent) return;
-    
-    const updatedContent: ContentItem = {
-      ...currentEditingContent,
-      title,
-      tags: tagsList,
-      platforms: platformsList,
-      format,
-      url: JSON.stringify({
-        script: textContent,
-        visualNotes,
-        shootDetails,
-        caption: captionText,
-        platforms: platformsList,
-        bucketId,
-        format,
-        inspirationText,
-        inspirationLinks,
-        inspirationImages
-      })
-    };
-    
-    if (currentEditingContent.scheduledDate === null) {
-      setReadyToScheduleContent(prev => 
-        prev.map(item => item.id === currentEditingContent.id ? updatedContent : item)
-      );
-    } 
-    else {
-      setScheduledContent(prev => 
-        prev.map(item => item.id === currentEditingContent.id ? updatedContent : item)
-      );
-    }
-    
-    setEditContentDialogOpen(false);
-    resetEditForm();
-  };
-
-  const resetEditForm = () => {
-    setCurrentEditingContent(null);
-    setTitle("");
-    setBucketId("");
-    setTextContent("");
-    setVisualNotes("");
-    setFormat("Post");
-    setShootDetails("");
-    setCaptionText("");
-    setCurrentTag("");
-    setTagsList([]);
-    setCurrentPlatform("");
-    setPlatformsList([]);
-    setInspirationText("");
-    setInspirationLinks([]);
-    setInspirationImages([]);
-  };
-
-  const handleCancelEdit = () => {
-    setEditContentDialogOpen(false);
-    resetEditForm();
-  };
 
   const handleAddTag = () => {
     if (currentTag.trim() && !tagsList.includes(currentTag.trim())) {
@@ -297,73 +107,108 @@ const ContentCalendar = () => {
     setInspirationImages(inspirationImages.filter((_, i) => i !== index));
   };
 
-  const handleDateChange = (contentId: string, newDate: Date | undefined) => {
-    if (!newDate) return;
+  const handleEditContent = (content: ContentItemType) => {
+    setCurrentEditingContent(content);
     
-    const contentItem = readyToScheduleContent.find(item => item.id === contentId);
-    if (!contentItem) return;
+    setTitle(content.title || "");
+    setTagsList(content.tags || []);
+    setPlatformsList(content.platforms || []);
     
-    const targetDay = document.querySelector(`[data-date="${formatDate(newDate, 'yyyy-MM-dd')}"]`);
-    
-    if (targetDay) {
-      const contentRect = document.getElementById(`content-card-${contentId}`)?.getBoundingClientRect();
-      const targetRect = targetDay.getBoundingClientRect();
-      
-      if (contentRect) {
-        setAnimatingContent(contentId);
-        setAnimationTarget({
-          x: targetRect.left - contentRect.left,
-          y: targetRect.top - contentRect.top
-        });
-        
-        setTimeout(() => {
-          const scheduledItem = {
-            ...contentItem,
-            scheduledDate: newDate
-          };
-          
-          setReadyToScheduleContent(prev => prev.filter(item => item.id !== contentId));
-          setScheduledContent(prev => [...prev, scheduledItem]);
-          setAnimatingContent(null);
-          setAnimationTarget(null);
-          
-          toast.success(`"${contentItem.title}" scheduled for ${formatDate(newDate, "PPP")}`);
-        }, 500);
-      } else {
-        scheduleContent(contentId, newDate);
+    if (content.url) {
+      try {
+        const parsedContent = JSON.parse(content.url);
+        setTextContent(parsedContent.script || "");
+        setVisualNotes(parsedContent.visualNotes || "");
+        setShootDetails(parsedContent.shootDetails || "");
+        setCaptionText(parsedContent.caption || "");
+        setBucketId(parsedContent.bucketId || "");
+        setFormat(parsedContent.format || "Post");
+        setInspirationText(parsedContent.inspirationText || "");
+        setInspirationLinks(parsedContent.inspirationLinks || []);
+        setInspirationImages(parsedContent.inspirationImages || []);
+      } catch (error) {
+        console.error("Error parsing content URL:", error);
       }
-    } else {
-      scheduleContent(contentId, newDate);
     }
+    
+    setEditContentDialogOpen(true);
   };
 
-  const scheduleContent = (contentId: string, date: Date) => {
-    const contentItem = readyToScheduleContent.find(item => item.id === contentId);
+  const handleUpdateContent = () => {
+    if (!currentEditingContent) return;
     
-    if (!contentItem) return;
-    
-    const scheduledItem = {
-      ...contentItem,
-      scheduledDate: date
+    const updatedContent: ContentItemType = {
+      ...currentEditingContent,
+      title,
+      tags: tagsList,
+      platforms: platformsList,
+      format,
+      url: JSON.stringify({
+        script: textContent,
+        visualNotes,
+        shootDetails,
+        caption: captionText,
+        platforms: platformsList,
+        bucketId,
+        format,
+        inspirationText,
+        inspirationLinks,
+        inspirationImages
+      }),
+      dateCreated: currentEditingContent.dateCreated || new Date()
     };
     
-    setReadyToScheduleContent(prev => prev.filter(item => item.id !== contentId));
-    setScheduledContent(prev => [...prev, scheduledItem]);
+    if (currentEditingContent.scheduledDate === null) {
+      setReadyToScheduleContent(prev => 
+        prev.map(item => item.id === currentEditingContent.id ? updatedContent : item)
+      );
+    } 
+    else {
+      setScheduledContent(prev => 
+        prev.map(item => item.id === currentEditingContent.id ? updatedContent : item)
+      );
+    }
     
-    toast.success(`"${contentItem.title}" scheduled for ${formatDate(date, "PPP")}`);
+    setEditContentDialogOpen(false);
+    resetEditForm();
+  };
+
+  const resetEditForm = () => {
+    setCurrentEditingContent(null);
+    setTitle("");
+    setBucketId("");
+    setTextContent("");
+    setVisualNotes("");
+    setFormat("Post");
+    setShootDetails("");
+    setCaptionText("");
+    setCurrentTag("");
+    setTagsList([]);
+    setCurrentPlatform("");
+    setPlatformsList([]);
+    setInspirationText("");
+    setInspirationLinks([]);
+    setInspirationImages([]);
+  };
+
+  const handleCancelEdit = () => {
+    setEditContentDialogOpen(false);
+    resetEditForm();
   };
 
   const createNewContent = () => {
     if (!newContentTitle.trim()) return;
     
-    const newItem: ContentItem = {
+    const newItem: ContentItemType = {
       id: Math.random().toString(36).substring(2, 9),
       title: newContentTitle,
       description: newContentDescription,
       format: newContentFormat,
       tags: [],
       platforms: [],
-      scheduledDate: selectedDate
+      scheduledDate: selectedDate,
+      url: "",
+      dateCreated: new Date()
     };
     
     setScheduledContent(prev => [...prev, newItem]);
@@ -380,43 +225,6 @@ const ContentCalendar = () => {
   const deleteScheduledContent = (contentId: string) => {
     setScheduledContent(prev => prev.filter(item => item.id !== contentId));
   };
-
-  const getContentFormat = (content: ContentItem) => {
-    if (content.format && content.format !== 'text') {
-      return content.format;
-    }
-    
-    return "Post";
-  };
-
-  const getContentForDate = (date: Date) => {
-    return scheduledContent.filter(content => {
-      if (!content.scheduledDate) return false;
-      
-      const contentDate = new Date(content.scheduledDate);
-      return (
-        contentDate.getDate() === date.getDate() &&
-        contentDate.getMonth() === date.getMonth() &&
-        contentDate.getFullYear() === date.getFullYear()
-      );
-    });
-  };
-
-  const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
-  const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
-  const goToToday = () => setCurrentMonth(getToday());
-
-  const monthStart = startOfMonth(currentMonth);
-  const monthEnd = endOfMonth(currentMonth);
-  const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
-
-  const calendarStart = startOfWeek(monthStart);
-  const calendarEnd = endOfWeek(monthEnd);
-  
-  const calendarDays = eachDayOfInterval({ 
-    start: calendarStart, 
-    end: calendarEnd 
-  });
 
   const handleRestoreToIdeas = (content: ContentItemType, originalPillarId?: string) => {
     try {
@@ -460,7 +268,7 @@ const ContentCalendar = () => {
     }
   };
 
-  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, content: ContentItem) => {
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, content: ContentItemType) => {
     e.dataTransfer.setData("contentId", content.id);
     e.dataTransfer.setData("source", content.scheduledDate ? "calendar" : "ready");
     setDraggedContent(content);
@@ -543,6 +351,8 @@ const ContentCalendar = () => {
     setDraggedContent(null);
   };
 
+  const calendarDays = getCalendarDays(currentMonth);
+
   return (
     <Layout>
       <div className="space-y-4">
@@ -554,31 +364,17 @@ const ContentCalendar = () => {
             </p>
           </div>
           <div className="flex items-center space-x-2">
-            <Button 
-              variant="outline" 
-              onClick={prevMonth}
-              className="h-8 w-8 p-0"
-            >
+            <Button variant="outline" onClick={prevMonth} className="h-8 w-8 p-0">
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Button 
-              variant="outline" 
-              onClick={goToToday}
-              className="h-8"
-            >
-              Today
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={nextMonth}
-              className="h-8 w-8 p-0"
-            >
+            <Button variant="outline" onClick={goToToday} className="h-8">Today</Button>
+            <Button variant="outline" onClick={nextMonth} className="h-8 w-8 p-0">
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </div>
-        
-        <Card 
+
+        <Card
           className={cn(
             "overflow-hidden",
             dropTarget === "ready-content" ? "ring-2 ring-blue-400 bg-blue-50" : ""
@@ -610,48 +406,25 @@ const ContentCalendar = () => {
                     description: content.description || "",
                   };
                   
-                  const isAnimating = animatingContent === content.id;
-                  const isDragging = draggedContent?.id === content.id;
-                  
                   return (
-                    <div 
-                      id={`content-card-${content.id}`}
+                    <ContentCard
                       key={content.id}
-                      className={cn(
-                        "transition-all duration-500",
-                        isAnimating && "fixed z-50",
-                        isDragging && "opacity-50"
-                      )}
-                      style={
-                        isAnimating && animationTarget
-                          ? { 
-                              transform: `translate(${animationTarget.x}px, ${animationTarget.y}px) scale(0.5)`,
-                              opacity: 0.8
-                            }
-                          : {}
-                      }
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, content)}
-                    >
-                      <ContentCard
-                        key={content.id}
-                        content={contentItem}
-                        index={index}
-                        pillar={{ id: content.pillarId || "default", name: "Default Pillar", content: [] }}
-                        pillars={[
-                          { id: "1", name: "Pillar 1", content: [] },
-                          { id: "2", name: "Pillar 2", content: [] },
-                          { id: "3", name: "Pillar 3", content: [] }
-                        ]}
-                        onDeleteContent={deleteContent}
-                        onEditContent={() => handleEditContent(content)}
-                        onRestoreToIdeas={handleRestoreToIdeas}
-                        originalPillarId={content.pillarId}
-                        isInCalendarView={true}
-                        onScheduleContent={(contentId, date) => handleDateChange(contentId, date)}
-                        isDraggable={true}
-                      />
-                    </div>
+                      content={contentItem}
+                      index={index}
+                      pillar={{ id: content.pillarId || "default", name: "Default Pillar", content: [] }}
+                      pillars={[
+                        { id: "1", name: "Pillar 1", content: [] },
+                        { id: "2", name: "Pillar 2", content: [] },
+                        { id: "3", name: "Pillar 3", content: [] }
+                      ]}
+                      onDeleteContent={deleteContent}
+                      onEditContent={() => handleEditContent(content)}
+                      onRestoreToIdeas={(content) => handleRestoreToIdeas(content, content.originalPillarId)}
+                      originalPillarId={content.pillarId}
+                      isInCalendarView={true}
+                      onScheduleContent={(contentId, date) => handleDateChange(contentId, date)}
+                      isDraggable={true}
+                    />
                   );
                 })}
               </div>
@@ -665,11 +438,11 @@ const ContentCalendar = () => {
             )}
           </CardContent>
         </Card>
-        
+
         <div className="text-center text-2xl font-semibold mb-4">
           {formatDate(currentMonth, 'MMMM yyyy')}
         </div>
-        
+
         <div className="border rounded-md bg-white overflow-hidden">
           <div className="grid grid-cols-7 border-b">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
@@ -678,159 +451,31 @@ const ContentCalendar = () => {
               </div>
             ))}
           </div>
-          
+
           <div className="grid grid-cols-7 min-h-[70vh]">
-            {calendarDays.map((day, i) => {
-              const isCurrentMonth = isSameMonth(day, currentMonth);
-              const isCurrentDay = isToday(day);
-              const dayContent = getContentForDate(day);
-              const isWeekendDay = isWeekend(day);
-              const dateStr = formatDate(day, 'yyyy-MM-dd');
-              const isDropTarget = dropTarget === dateStr;
-              
-              return (
-                <div 
-                  key={i} 
-                  data-date={dateStr}
-                  className={cn(
-                    "border-t border-l min-h-[120px] p-1",
-                    !isCurrentMonth ? "bg-gray-50 text-gray-400" : "",
-                    isCurrentDay ? "bg-blue-50" : "",
-                    isWeekendDay && isCurrentMonth ? "bg-gray-100" : "",
-                    isDropTarget ? "ring-2 ring-inset ring-blue-400 bg-blue-50" : ""
-                  )}
-                  onClick={() => {
-                    setSelectedDate(day);
-                    if (isCurrentMonth && dayContent.length === 0) {
-                      setNewContentDialogOpen(true);
-                    }
-                  }}
-                  onDragOver={(e) => isCurrentMonth && handleDragOver(e, dateStr)}
-                  onDragLeave={handleDragLeave}
-                  onDrop={(e) => isCurrentMonth && handleDrop(e, day)}
-                >
-                  <div className="flex justify-between items-start p-1">
-                    <div className={cn(
-                      "text-sm font-medium",
-                      isCurrentDay ? "bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center" : ""
-                    )}>
-                      {formatDate(day, 'd')}
-                    </div>
-                    {isCurrentMonth && (
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-5 w-5"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedDate(day);
-                          setNewContentDialogOpen(true);
-                        }}
-                      >
-                        <PlusCircle className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-1 mt-1 max-h-[90px] overflow-y-auto">
-                    {dayContent.map((content) => (
-                      <div 
-                        key={content.id} 
-                        className={cn(
-                          "group cursor-grab border rounded",
-                          draggedContent?.id === content.id ? "opacity-50" : "",
-                          content.format && formatColors[getContentFormat(content)] 
-                            ? formatColors[getContentFormat(content)] 
-                            : "bg-gray-100 text-gray-800 border-gray-300"
-                        )}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, content)}
-                      >
-                        <div 
-                          className="text-xs p-1 cursor-pointer flex items-center"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEditContent(content);
-                          }}
-                        >
-                          <div className="flex-1 flex items-center justify-between">
-                            <span className="truncate">{content.title}</span>
-                            <div className="flex">
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-4 w-4 opacity-0 group-hover:opacity-100"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleEditContent(content);
-                                }}
-                              >
-                                <Pencil className="h-3 w-3" />
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-4 w-4 opacity-0 group-hover:opacity-100"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  deleteScheduledContent(content.id);
-                                }}
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {content.platforms && content.platforms.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1 ml-1">
-                            {content.platforms.slice(0, 2).map((platform, idx) => (
-                              <Badge
-                                key={`cal-platform-${content.id}-${idx}`}
-                                className="bg-purple-100 text-purple-800 text-xs px-1.5 py-0 rounded-full flex items-center gap-0.5"
-                              >
-                                {getPlatformIcon(platform)}
-                                <span className="text-[9px]">{platform}</span>
-                              </Badge>
-                            ))}
-                            {content.platforms.length > 2 && (
-                              <Badge className="bg-purple-100 text-purple-800 text-[9px]">
-                                +{content.platforms.length - 2}
-                              </Badge>
-                            )}
-                          </div>
-                        )}
-                        
-                        {content.tags && content.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1 ml-1 pb-1">
-                            {content.tags.slice(0, 2).map((tag, idx) => (
-                              <Badge
-                                key={`cal-status-${content.id}-${idx}`}
-                                variant="outline"
-                                className="bg-white/50 border-purple-200 text-purple-700 text-[9px] px-1.5 py-0 rounded-full"
-                              >
-                                {tag}
-                              </Badge>
-                            ))}
-                            {content.tags.length > 2 && (
-                              <Badge 
-                                variant="outline"
-                                className="bg-white/50 border-purple-200 text-purple-700 text-[9px]"
-                              >
-                                +{content.tags.length - 2}
-                              </Badge>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+            {calendarDays.map((day, i) => (
+              <CalendarDayCell
+                key={i}
+                day={day}
+                currentMonth={currentMonth}
+                dayContent={getContentForDate(scheduledContent, day)}
+                onDayClick={(day) => {
+                  setSelectedDate(day);
+                  setNewContentDialogOpen(true);
+                }}
+                onEditContent={handleEditContent}
+                onDeleteContent={deleteScheduledContent}
+                draggedContent={draggedContent}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                dropTarget={dropTarget}
+              />
+            ))}
           </div>
         </div>
-        
+
         <Dialog open={newContentDialogOpen} onOpenChange={setNewContentDialogOpen}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
