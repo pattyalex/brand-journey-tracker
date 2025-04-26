@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { ContentItem } from "@/types/content";
 import { 
@@ -79,8 +78,7 @@ export const ContentCardActions = ({
             <TooltipContent 
               side="bottom" 
               align="center" 
-              sideOffset={12}
-              className="bg-white text-black border border-gray-200 px-4 py-2 text-sm font-medium z-[9999] shadow-lg rounded-md opacity-100 pointer-events-none"
+              className="bg-[#1A1F2C] text-white border border-gray-200 px-4 py-2 text-sm font-medium shadow-lg rounded-md"
             >
               Send to Content Calendar
             </TooltipContent>
@@ -88,7 +86,7 @@ export const ContentCardActions = ({
         </TooltipProvider>
       </div>
       
-      <div className="flex gap-2 z-20 relative">
+      <div className="flex gap-2 z-30 relative">
         <Button 
           variant="ghost" 
           size="sm"
@@ -148,4 +146,3 @@ export const ContentCardActions = ({
     </>
   );
 };
-
