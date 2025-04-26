@@ -24,6 +24,7 @@ const WeeklyContentTasks = lazy(() => import('./pages/WeeklyContentTasks'));
 const SocialMediaScheduler = lazy(() => import('./pages/SocialMediaScheduler'));
 const Index = lazy(() => import('./pages/Index'));
 const PartnershipsManagement = lazy(() => import('./pages/PartnershipsManagement'));
+const CollabManagement = lazy(() => import('./pages/CollabManagement'));
 
 // Loading component
 const PageLoader = () => (
@@ -59,6 +60,7 @@ function App() {
             <Route path="/social-media-scheduler" element={<SocialMediaScheduler />} />
             <Route path="/partnerships-management" element={<PartnershipsManagement />} />
             <Route path="/trending" element={<TrendingContent />} />
+            <Route path="/collab-management" element={<CollabManagement />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
