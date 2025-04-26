@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
@@ -180,18 +181,24 @@ const ContentPillar = ({
             
             <div 
               ref={scrollContainerRef} 
-              className="overflow-x-auto pb-4"
+              className="overflow-x-auto pb-4 relative"
               style={{ scrollbarWidth: 'thin' }}
             >
-              <Droppable droppableId="content-cards" direction="horizontal">
-                {(provided) => (
+              <Droppable 
+                droppableId="content-cards" 
+                direction="horizontal"
+                mode="standard"
+              >
+                {(provided, snapshot) => (
                   <motion.div 
                     {...provided.droppableProps}
                     ref={provided.innerRef}
-                    className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4 min-w-min px-2"
+                    className={`grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4 min-w-min px-2 ${
+                      snapshot.isDraggingOver ? 'ring-2 ring-blue-200 rounded-lg' : ''
+                    }`}
                     variants={containerVariants}
                   >
-                    <AnimatePresence>
+                    <AnimatePresence mode="popLayout">
                       {filteredContent.map((content, index) => (
                         <Draggable
                           key={content.id}
@@ -203,14 +210,32 @@ const ContentPillar = ({
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
-                              className={`${snapshot.isDragging ? 'opacity-70' : 'opacity-100'} max-w-[360px]`}
+                              className={`${
+                                snapshot.isDragging ? 'z-50' : ''
+                              } max-w-[360px]`}
                               style={{
                                 ...provided.draggableProps.style,
+                                transition: snapshot.isDragging
+                                  ? 'all 0.2s cubic-bezier(0.2, 0, 0, 1)'
+                                  : 'all 0.25s cubic-bezier(0.2, 0, 0, 1)',
+                                transformOrigin: 'center',
+                                zIndex: snapshot.isDragging ? 50 : 'auto'
                               }}
                               variants={itemVariants}
-                              layout
-                              whileHover={{ scale: 1.01 }}
-                              transition={{ duration: 0.2 }}
+                              layout="position"
+                              initial={{ scale: 1, opacity: 1 }}
+                              animate={{
+                                scale: snapshot.isDragging ? 1.02 : 1,
+                                opacity: snapshot.isDragging ? 0.9 : 1,
+                                boxShadow: snapshot.isDragging
+                                  ? '0 8px 24px rgba(0, 0, 0, 0.15)'
+                                  : 'none'
+                              }}
+                              exit={{ scale: 0.95, opacity: 0 }}
+                              transition={{
+                                layout: { duration: 0.2, ease: "easeOut" },
+                                opacity: { duration: 0.15 }
+                              }}
                             >
                               <ContentCard
                                 content={content}
