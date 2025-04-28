@@ -17,6 +17,7 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
   
   // Parse the current value
   const isYes = value.toLowerCase().startsWith('yes');
+  const isNA = value.toLowerCase() === 'n/a';
   const amount = isYes 
     ? value.match(/\$[\d,.]+/) 
       ? value.match(/\$[\d,.]+/)?.[0] || ''
@@ -32,8 +33,10 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
     if (val === "yes") {
       const amountStr = amount ? ` - ${amount}` : '';
       onChange(`Yes${amountStr}`);
-    } else {
+    } else if (val === "no") {
       onChange("No");
+    } else if (val === "n/a") {
+      onChange("N/A");
     }
   };
 
@@ -59,7 +62,7 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
       <PopoverContent className="w-60 p-4" side="bottom">
         <form className="space-y-4" onSubmit={handleSubmit}>
           <RadioGroup 
-            value={isYes ? "yes" : "no"}
+            value={isNA ? "n/a" : (isYes ? "yes" : "no")}
             onValueChange={handleRadioChange}
           >
             <div className="flex items-center space-x-2">
@@ -69,6 +72,10 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="no" id="no" />
               <Label htmlFor="no">No</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="n/a" id="n/a" />
+              <Label htmlFor="n/a">N/A</Label>
             </div>
           </RadioGroup>
           
