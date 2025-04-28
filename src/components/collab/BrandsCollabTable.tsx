@@ -34,60 +34,65 @@ const BrandsCollabTable = ({
             <Plus className="h-4 w-4" /> Add Brand
           </Button>
         </div>
-        <ScrollArea className="h-[400px] w-full">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <th className="w-[50px]"></th> {/* Empty header for delete column */}
-                {columns.map((column, index) => (
-                  <EditableColumnHeader
-                    key={column.key}
-                    title={column.title}
-                    onChange={(newTitle) => handleUpdateColumnTitle(index, newTitle)}
-                  />
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {brands.map((brand) => (
-                <TableRow key={brand.id} className="group">
-                  <TableCell>
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      onClick={() => handleDeleteBrand(brand.id)} 
-                      className="h-8 w-8 text-gray-400 hover:text-red-600 hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                  {columns.map((column) => (
-                    <TableCell key={`${brand.id}-${column.key}`}>
-                      {column.key === 'status' ? (
-                        <StatusBadge 
-                          status={brand[column.key]} 
-                          onChange={(value) => handleUpdateBrand(brand.id, column.key, value)} 
-                        />
-                      ) : (
-                        <EditableTableCell 
-                          value={brand[column.key]} 
-                          onChange={(value) => handleUpdateBrand(brand.id, column.key, value)} 
-                        />
-                      )}
-                    </TableCell>
+        <div className="flex">
+          <div className="w-12 pt-12"> {/* Space for delete buttons, aligned with table content */}
+            {brands.map((brand) => (
+              <div key={`delete-${brand.id}`} className="h-[53px] flex items-center justify-center">
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={() => handleDeleteBrand(brand.id)} 
+                  className="h-8 w-8 text-gray-400 hover:text-red-600 hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+          <ScrollArea className="h-[400px] w-full">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {columns.map((column, index) => (
+                    <EditableColumnHeader
+                      key={column.key}
+                      title={column.title}
+                      onChange={(newTitle) => handleUpdateColumnTitle(index, newTitle)}
+                    />
                   ))}
                 </TableRow>
-              ))}
-              {brands.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={columns.length + 1} className="text-center py-8 text-gray-500">
-                    No brands found. Add your first brand to get started.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </ScrollArea>
+              </TableHeader>
+              <TableBody>
+                {brands.map((brand) => (
+                  <TableRow key={brand.id} className="group">
+                    {columns.map((column) => (
+                      <TableCell key={`${brand.id}-${column.key}`}>
+                        {column.key === 'status' ? (
+                          <StatusBadge 
+                            status={brand[column.key]} 
+                            onChange={(value) => handleUpdateBrand(brand.id, column.key, value)} 
+                          />
+                        ) : (
+                          <EditableTableCell 
+                            value={brand[column.key]} 
+                            onChange={(value) => handleUpdateBrand(brand.id, column.key, value)} 
+                          />
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+                {brands.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={columns.length} className="text-center py-8 text-gray-500">
+                      No brands found. Add your first brand to get started.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </ScrollArea>
+        </div>
       </div>
     </div>
   );
