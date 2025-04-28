@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
+import { Check, X } from "lucide-react";
 
 interface DepositPaidCellProps {
   value: string;
@@ -83,11 +83,17 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="yes" id="yes" />
-              <Label htmlFor="yes">Yes</Label>
+              <Label htmlFor="yes" className="flex items-center">
+                <Check className="mr-1 h-4 w-4 text-green-500" />
+                Yes
+              </Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="no" id="no" />
-              <Label htmlFor="no">No</Label>
+              <Label htmlFor="no" className="flex items-center">
+                <X className="mr-1 h-4 w-4 text-red-500" />
+                No
+              </Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="n/a" id="n/a" />
