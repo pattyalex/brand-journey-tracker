@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { format } from "date-fns";
-import { PhoneCall } from "lucide-react"; // Changed from CalendarIcon to PhoneCall
+import { PhoneCall } from "lucide-react"; 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -38,12 +38,12 @@ const PostDateCell = ({ value, onChange }: PostDateCellProps) => {
           variant="ghost" 
           className="h-8 w-full justify-start text-left font-normal"
         >
-          <span className="flex items-center justify-start">
-            <PhoneCall className="h-4 w-4 mr-2 text-blue-500 flex-shrink-0" />
+          <div className="flex items-center gap-2">
+            <PhoneCall className="h-4 w-4 text-blue-500 flex-shrink-0" />
             <span className="truncate">
               {date ? format(date, "MMM d, yyyy") : "Not set"}
             </span>
-          </span>
+          </div>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" side="bottom">
