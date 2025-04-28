@@ -38,11 +38,12 @@ const PostDateCell = ({ value, onChange }: PostDateCellProps) => {
           className="h-8 w-full justify-start text-left font-normal"
         >
           <div className="flex items-center gap-2">
-            {/* Better iPhone-style icon */}
-            <div className="relative h-5 w-3 bg-transparent flex-shrink-0">
-              <div className="absolute inset-0 rounded-lg border-2 border-blue-500"></div>
-              <div className="absolute top-[2px] left-[0.5px] right-[0.5px] h-[2px] bg-blue-500 rounded"></div>
-              <div className="absolute bottom-[3px] left-1/2 h-[2px] w-[2px] bg-blue-500 rounded-full transform -translate-x-1/2"></div>
+            {/* Improved iPhone-style icon */}
+            <div className="relative h-5 w-3 flex-shrink-0">
+              <div className="absolute inset-0 rounded-xl border-[1.5px] border-blue-500"></div>
+              <div className="absolute top-[2px] left-1/2 h-[1px] w-[1.5px] bg-blue-500 rounded-full transform -translate-x-1/2"></div>
+              <div className="absolute bottom-[3px] left-1/2 h-[1.5px] w-[1.5px] bg-blue-500 rounded-full transform -translate-x-1/2"></div>
+              <div className="absolute inset-y-[5px] inset-x-0 border-r-[1px] border-l-[1px] border-blue-500 opacity-30"></div>
             </div>
             <span className="truncate">
               {date ? format(date, "MMM d, yyyy") : "Not set"}
