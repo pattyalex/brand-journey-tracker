@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { CollabBrand, TableColumn } from "@/types/collab";
@@ -13,6 +12,7 @@ const DEFAULT_COLUMNS: TableColumn[] = [
   { key: 'depositPaid', title: 'Deposit Paid', editable: true },
   { key: 'finalPaymentDueDate', title: 'Final Payment Due Date', editable: true },
   { key: 'invoiceSent', title: 'Invoice Sent', editable: true },
+  { key: 'paymentReceived', title: 'Payment Received', editable: true },
 ];
 
 export function useCollabBrands() {
@@ -25,10 +25,11 @@ export function useCollabBrands() {
     const savedBrands = localStorage.getItem('collabBrands');
     if (savedBrands) {
       const parsedBrands = JSON.parse(savedBrands);
-      // Add invoiceSent field if it doesn't exist
+      // Add invoiceSent and paymentReceived fields if they don't exist
       const updatedBrands = parsedBrands.map((brand: CollabBrand) => ({
         ...brand,
-        invoiceSent: brand.invoiceSent || "No"
+        invoiceSent: brand.invoiceSent || "No",
+        paymentReceived: brand.paymentReceived || "Unpaid"
       }));
       setBrands(updatedBrands);
     } else {
@@ -45,6 +46,7 @@ export function useCollabBrands() {
           depositPaid: 'No',
           finalPaymentDueDate: 'Not set',
           invoiceSent: 'No',
+          paymentReceived: 'Unpaid',
         }
       ]);
     }
@@ -53,22 +55,41 @@ export function useCollabBrands() {
     const savedColumns = localStorage.getItem('collabColumns');
     if (savedColumns) {
       const parsedColumns = JSON.parse(savedColumns);
-      // Check if invoiceSent column already exists
-      const invoiceSentColumnExists = parsedColumns.some((col: TableColumn) => col.key === 'invoiceSent');
       
-      if (!invoiceSentColumnExists) {
-        // Find the index of finalPaymentDueDate to insert the new column after it
-        const finalPaymentIndex = parsedColumns.findIndex(
-          (col: TableColumn) => col.key === 'finalPaymentDueDate'
-        );
+      // Check if both required columns already exist
+      const invoiceSentColumnExists = parsedColumns.some((col: TableColumn) => col.key === 'invoiceSent');
+      const paymentReceivedColumnExists = parsedColumns.some((col: TableColumn) => col.key === 'paymentReceived');
+      
+      if (!invoiceSentColumnExists || !paymentReceivedColumnExists) {
+        let newColumns = [...parsedColumns];
         
-        // Insert the new column after finalPaymentDueDate
-        const newColumns = [...parsedColumns];
-        newColumns.splice(finalPaymentIndex + 1, 0, { 
-          key: 'invoiceSent', 
-          title: 'Invoice Sent', 
-          editable: true 
-        });
+        // Add invoiceSent column if it doesn't exist
+        if (!invoiceSentColumnExists) {
+          const finalPaymentIndex = newColumns.findIndex(
+            (col: TableColumn) => col.key === 'finalPaymentDueDate'
+          );
+          
+          newColumns.splice(finalPaymentIndex + 1, 0, { 
+            key: 'invoiceSent', 
+            title: 'Invoice Sent', 
+            editable: true 
+          });
+        }
+        
+        // Add paymentReceived column if it doesn't exist
+        if (!paymentReceivedColumnExists) {
+          const invoiceSentIndex = newColumns.findIndex(
+            (col: TableColumn) => col.key === 'invoiceSent'
+          );
+          
+          if (invoiceSentIndex !== -1) {
+            newColumns.splice(invoiceSentIndex + 1, 0, { 
+              key: 'paymentReceived', 
+              title: 'Payment Received', 
+              editable: true 
+            });
+          }
+        }
         
         setColumns(newColumns);
       } else {
@@ -110,6 +131,7 @@ export function useCollabBrands() {
       depositPaid: 'No',
       finalPaymentDueDate: 'Not set',
       invoiceSent: 'No',
+      paymentReceived: 'Unpaid',
     };
     
     setBrands([...brands, newBrand]);

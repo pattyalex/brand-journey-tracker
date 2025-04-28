@@ -8,6 +8,7 @@ import StatusBadge from "@/components/collab/StatusBadge";
 import DepositPaidCell from "@/components/collab/DepositPaidCell";
 import FinalPaymentDueDateCell from "@/components/collab/FinalPaymentDueDateCell";
 import InvoiceSentCell from "@/components/collab/InvoiceSentCell";
+import PaymentReceivedCell from "@/components/collab/PaymentReceivedCell";
 import { CollabBrand, TableColumn } from "@/types/collab";
 import EditableColumnHeader from "./EditableColumnHeader";
 
@@ -109,6 +110,11 @@ const BrandsCollabTable = ({
                             />
                           ) : column.key === 'invoiceSent' ? (
                             <InvoiceSentCell
+                              value={brand[column.key]} 
+                              onChange={(value) => handleUpdateBrand(brand.id, column.key, value)}
+                            />
+                          ) : column.key === 'paymentReceived' ? (
+                            <PaymentReceivedCell
                               value={brand[column.key]} 
                               onChange={(value) => handleUpdateBrand(brand.id, column.key, value)}
                             />
