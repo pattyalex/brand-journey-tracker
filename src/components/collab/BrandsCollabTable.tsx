@@ -27,14 +27,6 @@ const BrandsCollabTable = ({
 }: BrandsCollabTableProps) => {
   return (
     <div className="space-y-4">
-      <Button 
-        variant="ghost" 
-        size="icon"
-        className="h-8 w-8 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors ml-1"
-      >
-        <Trash2 className="h-4 w-4" />
-      </Button>
-      
       <div className="bg-white rounded-lg shadow-sm border">
         <div className="p-4 border-b flex justify-between items-center">
           <h2 className="font-medium">Brand Collaborations</h2>
@@ -46,6 +38,7 @@ const BrandsCollabTable = ({
           <Table>
             <TableHeader>
               <TableRow>
+                <th className="w-[50px]"></th> {/* Empty header for delete column */}
                 {columns.map((column, index) => (
                   <EditableColumnHeader
                     key={column.key}
@@ -53,12 +46,21 @@ const BrandsCollabTable = ({
                     onChange={(newTitle) => handleUpdateColumnTitle(index, newTitle)}
                   />
                 ))}
-                <th className="w-[50px]">Actions</th>
               </TableRow>
             </TableHeader>
             <TableBody>
               {brands.map((brand) => (
                 <TableRow key={brand.id}>
+                  <TableCell>
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => handleDeleteBrand(brand.id)} 
+                      className="h-8 w-8 text-gray-400 hover:text-red-600 hover:bg-gray-100"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
                   {columns.map((column) => (
                     <TableCell key={`${brand.id}-${column.key}`}>
                       {column.key === 'status' ? (
@@ -74,16 +76,6 @@ const BrandsCollabTable = ({
                       )}
                     </TableCell>
                   ))}
-                  <TableCell>
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      onClick={() => handleDeleteBrand(brand.id)} 
-                      className="h-8 w-8 text-red-600 hover:text-red-800 hover:bg-red-100"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
                 </TableRow>
               ))}
               {brands.length === 0 && (
