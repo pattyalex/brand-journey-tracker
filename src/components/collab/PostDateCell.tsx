@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { PhoneCall } from "lucide-react"; // Changed from CalendarIcon to PhoneCall
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -39,7 +39,7 @@ const PostDateCell = ({ value, onChange }: PostDateCellProps) => {
           className="h-8 w-full justify-start text-left font-normal"
         >
           <span className="flex items-center">
-            <CalendarIcon className="h-4 w-4 mr-2 text-blue-500" />
+            <PhoneCall className="h-4 w-4 mr-2 text-blue-500" /> {/* Changed from CalendarIcon to PhoneCall */}
             {date ? (
               format(date, "MMM d, yyyy")
             ) : (
