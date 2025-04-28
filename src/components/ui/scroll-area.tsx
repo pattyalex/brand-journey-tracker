@@ -18,7 +18,7 @@ const ScrollArea = React.forwardRef<
     >
       {children}
     </ScrollAreaPrimitive.Viewport>
-    <ScrollBar className="invisible" />
+    <ScrollBar />
     <ScrollAreaPrimitive.Corner />
   </ScrollAreaPrimitive.Root>
 ))
