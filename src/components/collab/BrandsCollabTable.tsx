@@ -29,18 +29,18 @@ const BrandsCollabTable = ({
     <div className="bg-white rounded-lg shadow-sm border">
       <div className="p-4 border-b flex justify-between items-center">
         <h2 className="font-medium">Brand Collaborations</h2>
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            className="h-8 w-8 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-          <Button onClick={handleAddBrand} size="sm" className="flex items-center gap-1">
-            <Plus className="h-4 w-4" /> Add Brand
-          </Button>
-        </div>
+        <Button onClick={handleAddBrand} size="sm" className="flex items-center gap-1">
+          <Plus className="h-4 w-4" /> Add Brand
+        </Button>
+      </div>
+      <div className="flex items-center ml-4 mb-2 mt-3">
+        <Button 
+          variant="ghost" 
+          size="icon"
+          className="h-8 w-8 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
       </div>
       <ScrollArea className="h-[400px] w-full">
         <Table>
