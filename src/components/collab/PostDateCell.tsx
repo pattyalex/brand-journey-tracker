@@ -9,7 +9,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { Smartphone } from "lucide-react";
 
 interface PostDateCellProps {
   value: string;
@@ -38,12 +37,9 @@ const PostDateCell = ({ value, onChange }: PostDateCellProps) => {
           variant="ghost" 
           className="h-8 w-full justify-start text-left font-normal pl-0 pr-2"
         >
-          <div className="flex items-center w-full">
-            <Smartphone size={16} className="text-blue-500 mr-2 flex-shrink-0 ml-0" />
-            <span className="truncate text-left">
-              {date ? format(date, "MMM d, yyyy") : "Not set"}
-            </span>
-          </div>
+          <span className="truncate text-left">
+            {date ? format(date, "MMM d, yyyy") : "Not set"}
+          </span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" side="bottom">
