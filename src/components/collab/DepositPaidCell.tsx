@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Check, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface DepositPaidCellProps {
   value: string;
@@ -68,9 +69,9 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
   // Function to render the status icon based on the value
   const renderStatusIcon = () => {
     if (isYes) {
-      return <span className="inline-block mr-1">✅</span>;
+      return <Check className="h-4 w-4 mr-2 text-green-600" />;
     } else if (isNo) {
-      return <span className="inline-block mr-1">❌</span>;
+      return <X className="h-4 w-4 mr-2 text-red-500" />;
     }
     return null;
   };
@@ -80,10 +81,15 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
       <PopoverTrigger asChild>
         <Button 
           variant="ghost" 
-          className="h-8 w-full justify-start text-left font-normal"
+          className={cn(
+            "h-8 w-full justify-start text-left font-normal",
+            isYes ? "text-green-600" : (isNo ? "text-red-500" : "text-gray-500")
+          )}
         >
-          {renderStatusIcon()}
-          {value || "No"}
+          <span className="flex items-center">
+            {renderStatusIcon()}
+            {value || "No"}
+          </span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-60 p-4" side="bottom">
@@ -94,14 +100,16 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="yes" id="yes" />
-              <Label htmlFor="yes" className="flex items-center">
-                <span className="mr-1">✅</span> Yes
+              <Label htmlFor="yes" className="flex items-center text-green-600">
+                <Check className="h-4 w-4 mr-2 text-green-600" />
+                Yes
               </Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="no" id="no" />
-              <Label htmlFor="no" className="flex items-center">
-                <span className="mr-1">❌</span> No
+              <Label htmlFor="no" className="flex items-center text-red-500">
+                <X className="h-4 w-4 mr-2 text-red-500" />
+                No
               </Label>
             </div>
             <div className="flex items-center space-x-2">
