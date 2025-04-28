@@ -38,13 +38,11 @@ const PostDateCell = ({ value, onChange }: PostDateCellProps) => {
           variant="ghost" 
           className="h-8 w-full justify-start text-left font-normal"
         >
-          <span className="flex items-center">
-            <PhoneCall className="h-4 w-4 mr-2 text-blue-500" /> {/* Changed from CalendarIcon to PhoneCall */}
-            {date ? (
-              format(date, "MMM d, yyyy")
-            ) : (
-              "Not set"
-            )}
+          <span className="flex items-center justify-start">
+            <PhoneCall className="h-4 w-4 mr-2 text-blue-500 flex-shrink-0" />
+            <span className="truncate">
+              {date ? format(date, "MMM d, yyyy") : "Not set"}
+            </span>
           </span>
         </Button>
       </PopoverTrigger>
