@@ -68,9 +68,9 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
   // Function to render the status icon based on the value
   const renderStatusIcon = () => {
     if (isYes) {
-      return <Check className="inline-block mr-1 h-4 w-4 text-green-500" />;
+      return <span className="inline-block mr-1">✅</span>;
     } else if (isNo) {
-      return <X className="inline-block mr-1 h-4 w-4 text-red-500" />;
+      return <span className="inline-block mr-1">❌</span>;
     }
     return null;
   };
@@ -95,15 +95,13 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="yes" id="yes" />
               <Label htmlFor="yes" className="flex items-center">
-                <Check className="mr-1 h-4 w-4 text-green-500" />
-                Yes
+                <span className="mr-1">✅</span> Yes
               </Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="no" id="no" />
               <Label htmlFor="no" className="flex items-center">
-                <X className="mr-1 h-4 w-4 text-red-500" />
-                No
+                <span className="mr-1">❌</span> No
               </Label>
             </div>
             <div className="flex items-center space-x-2">
