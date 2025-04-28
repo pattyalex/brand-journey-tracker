@@ -15,7 +15,7 @@ interface BrandsCollabTableProps {
   handleAddBrand: () => void;
   handleDeleteBrand: (id: string) => void;
   handleUpdateColumnTitle: (index: number, newTitle: string) => void;
-  handleAddColumn?: () => void; // Add this new prop
+  handleAddColumn?: () => void;
 }
 
 const BrandsCollabTable = ({
@@ -37,7 +37,12 @@ const BrandsCollabTable = ({
               <Plus className="h-4 w-4" /> Add Brand
             </Button>
             {handleAddColumn && (
-              <Button onClick={handleAddColumn} size="sm" className="flex items-center gap-1">
+              <Button 
+                onClick={handleAddColumn} 
+                size="sm" 
+                variant="outline"
+                className="flex items-center gap-1 text-gray-500 border-gray-200 hover:bg-gray-50"
+              >
                 <Columns className="h-4 w-4" /> Add Column
               </Button>
             )}
