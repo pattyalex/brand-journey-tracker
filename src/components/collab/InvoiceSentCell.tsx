@@ -25,14 +25,14 @@ const InvoiceSentCell = ({ value, onChange }: InvoiceSentCellProps) => {
           variant="ghost" 
           className={cn(
             "h-8 w-full justify-start text-left font-normal",
-            isYes ? "text-green-600" : "text-gray-500"
+            isYes ? "text-green-600" : "text-red-500"
           )}
         >
           <span className="flex items-center">
             {isYes ? (
               <Check className="h-4 w-4 mr-2 text-green-600" />
             ) : (
-              <X className="h-4 w-4 mr-2 text-gray-500" />
+              <X className="h-4 w-4 mr-2 text-red-500" />
             )}
             {value || "No"}
           </span>
@@ -44,8 +44,8 @@ const InvoiceSentCell = ({ value, onChange }: InvoiceSentCellProps) => {
           <span>Yes</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => onChange("No")}>
-          <X className="h-4 w-4 mr-2 text-gray-500" />
-          <span>No</span>
+          <X className="h-4 w-4 mr-2 text-red-500" />
+          <span className="text-red-500">No</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
