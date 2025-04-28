@@ -39,7 +39,11 @@ const PostDateCell = ({ value, onChange }: PostDateCellProps) => {
           className="h-8 w-full justify-start text-left font-normal"
         >
           <div className="flex items-center gap-2">
-            <Smartphone className="h-4 w-4 text-blue-500 flex-shrink-0" />
+            {/* Custom iPhone-style icon */}
+            <div className="relative h-4 w-[3.5px] bg-blue-500 flex-shrink-0 rounded-sm">
+              <div className="absolute top-[-1px] left-[-3px] h-[18px] w-[9.5px] border-2 border-blue-500 rounded-[3px]"></div>
+              <div className="absolute top-[-3px] left-[-1.5px] h-[1.5px] w-[4.5px] bg-blue-500 rounded-t-sm"></div>
+            </div>
             <span className="truncate">
               {date ? format(date, "MMM d, yyyy") : "Not set"}
             </span>
