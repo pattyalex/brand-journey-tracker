@@ -8,8 +8,8 @@ import { useCollabBrands } from "@/hooks/useCollabBrands";
 
 const CollabManagement = () => {
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>("all");
   const { 
     brands, 
     columns,

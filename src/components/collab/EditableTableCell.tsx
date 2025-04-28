@@ -26,6 +26,10 @@ const EditableTableCell = ({
     }
   }, [isEditing]);
 
+  useEffect(() => {
+    setEditValue(value);
+  }, [value]);
+
   const handleDoubleClick = () => {
     setIsEditing(true);
   };
