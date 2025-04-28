@@ -26,8 +26,8 @@ interface CollabBrand {
 const CollabManagement = () => {
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
   const [brands, setBrands] = useState<CollabBrand[]>([]);
-  const [statusFilter, setStatusFilter] = useState<string>('');
-  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all');
   const { toast } = useToast();
   
   useEffect(() => {
@@ -99,7 +99,7 @@ const CollabManagement = () => {
   };
 
   const filteredBrands = brands.filter(brand => {
-    if (statusFilter && brand.status !== statusFilter) return false;
+    if (statusFilter && statusFilter !== 'all' && brand.status !== statusFilter) return false;
     // We would implement payment status filter here if we had that field
     return true;
   });
@@ -115,7 +115,7 @@ const CollabManagement = () => {
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Statuses</SelectItem>
+              <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value="Sent">Sent</SelectItem>
               <SelectItem value="Negotiation">Negotiation</SelectItem>
               <SelectItem value="Accepted">Accepted</SelectItem>
@@ -128,7 +128,7 @@ const CollabManagement = () => {
               <SelectValue placeholder="Payment Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All</SelectItem>
+              <SelectItem value="all">All</SelectItem>
               <SelectItem value="paid">Paid</SelectItem>
               <SelectItem value="unpaid">Unpaid</SelectItem>
               <SelectItem value="overdue">Overdue</SelectItem>
