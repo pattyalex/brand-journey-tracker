@@ -7,6 +7,7 @@ export interface CollabBrand {
   status: string;
   deliverables: string;
   rate: string;
+  postDate: string;
   depositPaid: string;
   finalPaymentDueDate: string;
   invoiceSent: string;

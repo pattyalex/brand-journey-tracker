@@ -9,6 +9,7 @@ const DEFAULT_COLUMNS: TableColumn[] = [
   { key: 'status', title: 'Status', editable: true },
   { key: 'deliverables', title: 'Deliverables', editable: true },
   { key: 'rate', title: 'Rate', editable: true },
+  { key: 'postDate', title: 'Post Date', editable: true },
   { key: 'depositPaid', title: 'Deposit Paid', editable: true },
   { key: 'finalPaymentDueDate', title: 'Final Payment Due Date', editable: true },
   { key: 'invoiceSent', title: 'Invoice Sent', editable: true },
@@ -25,11 +26,12 @@ export function useCollabBrands() {
     const savedBrands = localStorage.getItem('collabBrands');
     if (savedBrands) {
       const parsedBrands = JSON.parse(savedBrands);
-      // Add invoiceSent and paymentReceived fields if they don't exist
+      // Add required fields if they don't exist
       const updatedBrands = parsedBrands.map((brand: CollabBrand) => ({
         ...brand,
         invoiceSent: brand.invoiceSent || "No",
-        paymentReceived: brand.paymentReceived || "Unpaid"
+        paymentReceived: brand.paymentReceived || "Unpaid",
+        postDate: brand.postDate || "Not set"
       }));
       setBrands(updatedBrands);
     } else {
@@ -43,6 +45,7 @@ export function useCollabBrands() {
           status: 'Pitched',
           deliverables: '3 Posts + 1 Story',
           rate: '$2,500',
+          postDate: 'Not set',
           depositPaid: 'No',
           finalPaymentDueDate: 'Not set',
           invoiceSent: 'No',
@@ -56,41 +59,63 @@ export function useCollabBrands() {
     if (savedColumns) {
       const parsedColumns = JSON.parse(savedColumns);
       
-      // Check if both required columns already exist
+      // Check if required columns already exist
+      const postDateColumnExists = parsedColumns.some((col: TableColumn) => col.key === 'postDate');
       const invoiceSentColumnExists = parsedColumns.some((col: TableColumn) => col.key === 'invoiceSent');
       const paymentReceivedColumnExists = parsedColumns.some((col: TableColumn) => col.key === 'paymentReceived');
       
-      if (!invoiceSentColumnExists || !paymentReceivedColumnExists) {
-        let newColumns = [...parsedColumns];
+      let newColumns = [...parsedColumns];
+      let columnsUpdated = false;
+      
+      // Add postDate column if it doesn't exist
+      if (!postDateColumnExists) {
+        const rateIndex = newColumns.findIndex(
+          (col: TableColumn) => col.key === 'rate'
+        );
         
-        // Add invoiceSent column if it doesn't exist
-        if (!invoiceSentColumnExists) {
-          const finalPaymentIndex = newColumns.findIndex(
-            (col: TableColumn) => col.key === 'finalPaymentDueDate'
-          );
-          
+        if (rateIndex !== -1) {
+          newColumns.splice(rateIndex + 1, 0, { 
+            key: 'postDate', 
+            title: 'Post Date', 
+            editable: true 
+          });
+          columnsUpdated = true;
+        }
+      }
+      
+      // Add invoiceSent column if it doesn't exist
+      if (!invoiceSentColumnExists) {
+        const finalPaymentIndex = newColumns.findIndex(
+          (col: TableColumn) => col.key === 'finalPaymentDueDate'
+        );
+        
+        if (finalPaymentIndex !== -1) {
           newColumns.splice(finalPaymentIndex + 1, 0, { 
             key: 'invoiceSent', 
             title: 'Invoice Sent', 
             editable: true 
           });
+          columnsUpdated = true;
         }
+      }
+      
+      // Add paymentReceived column if it doesn't exist
+      if (!paymentReceivedColumnExists) {
+        const invoiceSentIndex = newColumns.findIndex(
+          (col: TableColumn) => col.key === 'invoiceSent'
+        );
         
-        // Add paymentReceived column if it doesn't exist
-        if (!paymentReceivedColumnExists) {
-          const invoiceSentIndex = newColumns.findIndex(
-            (col: TableColumn) => col.key === 'invoiceSent'
-          );
-          
-          if (invoiceSentIndex !== -1) {
-            newColumns.splice(invoiceSentIndex + 1, 0, { 
-              key: 'paymentReceived', 
-              title: 'Payment Received', 
-              editable: true 
-            });
-          }
+        if (invoiceSentIndex !== -1) {
+          newColumns.splice(invoiceSentIndex + 1, 0, { 
+            key: 'paymentReceived', 
+            title: 'Payment Received', 
+            editable: true 
+          });
+          columnsUpdated = true;
         }
-        
+      }
+      
+      if (columnsUpdated) {
         setColumns(newColumns);
       } else {
         setColumns(parsedColumns);
@@ -128,6 +153,7 @@ export function useCollabBrands() {
       status: 'Pitched',
       deliverables: 'TBD',
       rate: '$0',
+      postDate: 'Not set',
       depositPaid: 'No',
       finalPaymentDueDate: 'Not set',
       invoiceSent: 'No',
