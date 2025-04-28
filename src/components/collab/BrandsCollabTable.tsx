@@ -38,12 +38,18 @@ const BrandsCollabTable = ({
           {/* Trash icon column - completely outside the table */}
           <div className="w-12 relative">
             {brands.map((brand, index) => (
-              <div key={`trash-${brand.id}`} className="absolute h-[53px] flex items-center justify-center w-full" style={{ top: `${index * 53}px` }}>
+              <div 
+                key={`trash-${brand.id}`} 
+                className="absolute h-[53px] flex items-center justify-center w-full" 
+                style={{ top: `${index * 53}px` }}
+                data-trash-for={brand.id}
+              >
                 <Button 
                   variant="ghost" 
                   size="icon"
                   onClick={() => handleDeleteBrand(brand.id)} 
                   className="h-8 w-8 text-gray-400 hover:text-red-600 hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  aria-label={`Delete ${brand.brandName}`}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -67,7 +73,19 @@ const BrandsCollabTable = ({
                 </TableHeader>
                 <TableBody>
                   {brands.map((brand) => (
-                    <TableRow key={brand.id} className="group relative">
+                    <TableRow 
+                      key={brand.id} 
+                      className="group hover:bg-gray-50 transition-colors duration-200"
+                      data-row-id={brand.id}
+                      onMouseEnter={() => {
+                        const trashIcon = document.querySelector(`[data-trash-for="${brand.id}"] button`);
+                        if (trashIcon) (trashIcon as HTMLElement).classList.add('opacity-100');
+                      }}
+                      onMouseLeave={() => {
+                        const trashIcon = document.querySelector(`[data-trash-for="${brand.id}"] button`);
+                        if (trashIcon) (trashIcon as HTMLElement).classList.remove('opacity-100');
+                      }}
+                    >
                       {columns.map((column) => (
                         <TableCell key={`${brand.id}-${column.key}`}>
                           {column.key === 'status' ? (
