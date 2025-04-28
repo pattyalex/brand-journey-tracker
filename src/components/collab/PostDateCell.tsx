@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { format } from "date-fns";
-import { PhoneCall } from "lucide-react"; 
+import { Smartphone } from "lucide-react"; 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -39,7 +39,7 @@ const PostDateCell = ({ value, onChange }: PostDateCellProps) => {
           className="h-8 w-full justify-start text-left font-normal"
         >
           <div className="flex items-center gap-2">
-            <PhoneCall className="h-4 w-4 text-blue-500 flex-shrink-0" />
+            <Smartphone className="h-4 w-4 text-blue-500 flex-shrink-0" />
             <span className="truncate">
               {date ? format(date, "MMM d, yyyy") : "Not set"}
             </span>
