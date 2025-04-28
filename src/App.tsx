@@ -1,3 +1,4 @@
+
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from "@/components/theme-provider"
@@ -6,6 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
 import GetStarted from './pages/GetStarted';
+import CollabManagement from './pages/CollabManagement';  // Import eagerly instead of lazily
 
 // Lazy load all other pages
 const TrendingContent = lazy(() => import('./pages/TrendingContent'));
@@ -24,7 +26,6 @@ const WeeklyContentTasks = lazy(() => import('./pages/WeeklyContentTasks'));
 const SocialMediaScheduler = lazy(() => import('./pages/SocialMediaScheduler'));
 const Index = lazy(() => import('./pages/Index'));
 const PartnershipsManagement = lazy(() => import('./pages/PartnershipsManagement'));
-const CollabManagement = lazy(() => import('./pages/CollabManagement'));
 
 // Loading component
 const PageLoader = () => (
