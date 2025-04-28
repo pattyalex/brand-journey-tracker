@@ -33,14 +33,14 @@ const BrandsCollabTable = ({
         <div className="p-4 border-b flex justify-between items-center">
           <h2 className="font-medium">Brand Collaborations</h2>
           <div className="flex gap-2">
+            <Button onClick={handleAddBrand} size="sm" className="flex items-center gap-1">
+              <Plus className="h-4 w-4" /> Add Brand
+            </Button>
             {handleAddColumn && (
               <Button onClick={handleAddColumn} size="sm" className="flex items-center gap-1">
                 <Columns className="h-4 w-4" /> Add Column
               </Button>
             )}
-            <Button onClick={handleAddBrand} size="sm" className="flex items-center gap-1">
-              <Plus className="h-4 w-4" /> Add Brand
-            </Button>
           </div>
         </div>
         
