@@ -3,6 +3,7 @@ export interface CollabBrand {
   id: string;
   brandName: string;
   contact: string;
+  product: string;
   status: string;
   deliverables: string;
   rate: string;

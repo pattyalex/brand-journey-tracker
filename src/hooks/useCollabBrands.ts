@@ -6,6 +6,7 @@ import { CollabBrand, TableColumn } from "@/types/collab";
 const DEFAULT_COLUMNS: TableColumn[] = [
   { key: 'brandName', title: 'Brand Name', editable: true },
   { key: 'contact', title: 'Contact', editable: true },
+  { key: 'product', title: 'Product', editable: true },
   { key: 'status', title: 'Status', editable: true },
   { key: 'deliverables', title: 'Deliverables', editable: true },
   { key: 'rate', title: 'Rate', editable: true },
@@ -28,6 +29,7 @@ export function useCollabBrands() {
           id: '1',
           brandName: 'Brand X',
           contact: 'contact@brandx.com',
+          product: 'Beauty Products',
           status: 'Pitched',
           deliverables: '3 Posts + 1 Story',
           rate: '$2,500',
@@ -68,6 +70,7 @@ export function useCollabBrands() {
       id: Date.now().toString(),
       brandName: 'New Brand',
       contact: 'email@example.com',
+      product: 'Product Details',
       status: 'Pitched',
       deliverables: 'TBD',
       rate: '$0',
