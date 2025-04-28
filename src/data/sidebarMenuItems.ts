@@ -1,3 +1,4 @@
+
 import { Home, FolderOpen, FileText, Settings, Database, CreditCard, Calendar, TrendingUp, BarChart, HelpCircle, CheckSquare, Clipboard, CheckCircle, Handshake } from 'lucide-react';
 import { MenuItem } from '@/types/sidebar';
 
@@ -22,7 +23,6 @@ export const defaultMenuItems: MenuItem[] = [
     url: '/strategy-growth', 
     isDeletable: false
   },
-  { title: 'Partnerships', icon: Handshake, url: '/partnerships-management', isDeletable: false },
   { title: 'Quick Notes', icon: Clipboard, url: '/quick-notes', isDeletable: false },
   { 
     title: 'Collab Management', 
