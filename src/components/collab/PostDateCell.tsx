@@ -36,10 +36,10 @@ const PostDateCell = ({ value, onChange }: PostDateCellProps) => {
       <PopoverTrigger asChild>
         <Button 
           variant="ghost" 
-          className="h-8 w-full justify-start text-left font-normal"
+          className="h-8 w-full justify-start text-left font-normal px-2"
         >
-          <div className="flex items-center gap-2">
-            <Smartphone size={16} className="text-blue-500" />
+          <div className="flex items-center gap-1.5">
+            <Smartphone size={16} className="text-blue-500 min-w-4" />
             <span className="truncate">
               {date ? format(date, "MMM d, yyyy") : "Not set"}
             </span>
