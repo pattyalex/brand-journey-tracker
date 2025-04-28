@@ -18,8 +18,8 @@ const ScrollArea = React.forwardRef<
     >
       {children}
     </ScrollAreaPrimitive.Viewport>
-    <ScrollBar />
-    <ScrollBar orientation="horizontal" />
+    <ScrollBar className="invisible" />
+    <ScrollBar orientation="horizontal" className="invisible" />
     <ScrollAreaPrimitive.Corner />
   </ScrollAreaPrimitive.Root>
 ))
