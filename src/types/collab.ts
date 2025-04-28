@@ -9,3 +9,9 @@ export interface CollabBrand {
   rate: string;
   nextReminder: string;
 }
+
+export interface TableColumn {
+  key: keyof CollabBrand;
+  title: string;
+  editable: boolean;
+}

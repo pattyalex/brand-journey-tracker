@@ -1,24 +1,29 @@
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, Trash2 } from "lucide-react";
 import EditableTableCell from "@/components/collab/EditableTableCell";
 import StatusBadge from "@/components/collab/StatusBadge";
-import { CollabBrand } from "@/types/collab";
+import { CollabBrand, TableColumn } from "@/types/collab";
+import EditableColumnHeader from "./EditableColumnHeader";
 
 interface BrandsCollabTableProps {
   brands: CollabBrand[];
+  columns: TableColumn[];
   handleUpdateBrand: (id: string, field: keyof CollabBrand, value: string) => void;
   handleAddBrand: () => void;
   handleDeleteBrand: (id: string) => void;
+  handleUpdateColumnTitle: (index: number, newTitle: string) => void;
 }
 
 const BrandsCollabTable = ({
   brands,
+  columns,
   handleUpdateBrand,
   handleAddBrand,
   handleDeleteBrand,
+  handleUpdateColumnTitle,
 }: BrandsCollabTableProps) => {
   return (
     <div className="bg-white rounded-lg shadow-sm border">
@@ -32,61 +37,34 @@ const BrandsCollabTable = ({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Brand Name</TableHead>
-              <TableHead>Contact</TableHead>
-              <TableHead>Last Follow-Up</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Deliverables</TableHead>
-              <TableHead>Rate</TableHead>
-              <TableHead>Next Reminder</TableHead>
-              <TableHead className="w-[50px]">Actions</TableHead>
+              {columns.map((column, index) => (
+                <EditableColumnHeader
+                  key={column.key}
+                  title={column.title}
+                  onChange={(newTitle) => handleUpdateColumnTitle(index, newTitle)}
+                />
+              ))}
+              <th className="w-[50px]">Actions</th>
             </TableRow>
           </TableHeader>
           <TableBody>
             {brands.map((brand) => (
               <TableRow key={brand.id}>
-                <TableCell>
-                  <EditableTableCell 
-                    value={brand.brandName} 
-                    onChange={(value) => handleUpdateBrand(brand.id, 'brandName', value)} 
-                  />
-                </TableCell>
-                <TableCell>
-                  <EditableTableCell 
-                    value={brand.contact} 
-                    onChange={(value) => handleUpdateBrand(brand.id, 'contact', value)} 
-                  />
-                </TableCell>
-                <TableCell>
-                  <EditableTableCell 
-                    value={brand.lastFollowUp} 
-                    onChange={(value) => handleUpdateBrand(brand.id, 'lastFollowUp', value)} 
-                  />
-                </TableCell>
-                <TableCell>
-                  <StatusBadge 
-                    status={brand.status} 
-                    onChange={(value) => handleUpdateBrand(brand.id, 'status', value)} 
-                  />
-                </TableCell>
-                <TableCell>
-                  <EditableTableCell 
-                    value={brand.deliverables} 
-                    onChange={(value) => handleUpdateBrand(brand.id, 'deliverables', value)} 
-                  />
-                </TableCell>
-                <TableCell>
-                  <EditableTableCell 
-                    value={brand.rate} 
-                    onChange={(value) => handleUpdateBrand(brand.id, 'rate', value)} 
-                  />
-                </TableCell>
-                <TableCell>
-                  <EditableTableCell 
-                    value={brand.nextReminder} 
-                    onChange={(value) => handleUpdateBrand(brand.id, 'nextReminder', value)} 
-                  />
-                </TableCell>
+                {columns.map((column) => (
+                  <TableCell key={`${brand.id}-${column.key}`}>
+                    {column.key === 'status' ? (
+                      <StatusBadge 
+                        status={brand[column.key]} 
+                        onChange={(value) => handleUpdateBrand(brand.id, column.key, value)} 
+                      />
+                    ) : (
+                      <EditableTableCell 
+                        value={brand[column.key]} 
+                        onChange={(value) => handleUpdateBrand(brand.id, column.key, value)} 
+                      />
+                    )}
+                  </TableCell>
+                ))}
                 <TableCell>
                   <Button 
                     variant="ghost" 
@@ -101,7 +79,7 @@ const BrandsCollabTable = ({
             ))}
             {brands.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                <TableCell colSpan={columns.length + 1} className="text-center py-8 text-gray-500">
                   No brands found. Add your first brand to get started.
                 </TableCell>
               </TableRow>

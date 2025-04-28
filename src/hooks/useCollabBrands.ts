@@ -1,10 +1,21 @@
 
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { CollabBrand } from "@/types/collab";
+import { CollabBrand, TableColumn } from "@/types/collab";
+
+const DEFAULT_COLUMNS: TableColumn[] = [
+  { key: 'brandName', title: 'Brand Name', editable: true },
+  { key: 'contact', title: 'Contact', editable: true },
+  { key: 'lastFollowUp', title: 'Last Follow-Up', editable: true },
+  { key: 'status', title: 'Status', editable: true },
+  { key: 'deliverables', title: 'Deliverables', editable: true },
+  { key: 'rate', title: 'Rate', editable: true },
+  { key: 'nextReminder', title: 'Next Reminder', editable: true },
+];
 
 export function useCollabBrands() {
   const [brands, setBrands] = useState<CollabBrand[]>([]);
+  const [columns, setColumns] = useState<TableColumn[]>(DEFAULT_COLUMNS);
   const { toast } = useToast();
   
   useEffect(() => {
@@ -27,12 +38,23 @@ export function useCollabBrands() {
         }
       ]);
     }
+
+    // Load saved columns if available
+    const savedColumns = localStorage.getItem('collabColumns');
+    if (savedColumns) {
+      setColumns(JSON.parse(savedColumns));
+    }
   }, []);
   
   // Save brands to localStorage when they change
   useEffect(() => {
     localStorage.setItem('collabBrands', JSON.stringify(brands));
   }, [brands]);
+
+  // Save columns to localStorage when they change
+  useEffect(() => {
+    localStorage.setItem('collabColumns', JSON.stringify(columns));
+  }, [columns]);
 
   const handleUpdateBrand = (id: string, field: keyof CollabBrand, value: string) => {
     setBrands(brands.map(brand => 
@@ -75,10 +97,23 @@ export function useCollabBrands() {
     });
   };
 
+  const handleUpdateColumnTitle = (index: number, newTitle: string) => {
+    const updatedColumns = [...columns];
+    updatedColumns[index] = { ...updatedColumns[index], title: newTitle };
+    setColumns(updatedColumns);
+    
+    toast({
+      title: "Column renamed",
+      description: "Column name has been updated",
+    });
+  };
+
   return {
     brands,
+    columns,
     handleUpdateBrand,
     handleAddBrand,
     handleDeleteBrand,
+    handleUpdateColumnTitle,
   };
 }
