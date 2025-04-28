@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { CollabBrand, TableColumn } from "@/types/collab";
@@ -31,7 +30,7 @@ export function useCollabBrands() {
           brandName: 'Brand X',
           contact: 'contact@brandx.com',
           lastFollowUp: 'April 20, 2025',
-          status: 'Negotiation',
+          status: 'Pitched',
           deliverables: '3 Posts + 1 Story',
           rate: '$2,500',
           nextReminder: 'April 25, 2025',
@@ -73,7 +72,7 @@ export function useCollabBrands() {
       brandName: 'New Brand',
       contact: 'email@example.com',
       lastFollowUp: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-      status: 'Sent',
+      status: 'Pitched',
       deliverables: 'TBD',
       rate: '$0',
       nextReminder: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
@@ -144,6 +143,6 @@ export function useCollabBrands() {
     handleAddBrand,
     handleDeleteBrand,
     handleUpdateColumnTitle,
-    handleAddColumn, // Export the new function
+    handleAddColumn,
   };
 }

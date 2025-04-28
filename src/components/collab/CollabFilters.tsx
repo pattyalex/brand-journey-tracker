@@ -22,10 +22,12 @@ const CollabFilters = ({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Statuses</SelectItem>
-          <SelectItem value="Sent">Sent</SelectItem>
-          <SelectItem value="Negotiation">Negotiation</SelectItem>
-          <SelectItem value="Accepted">Accepted</SelectItem>
-          <SelectItem value="Rejected">Rejected</SelectItem>
+          <SelectItem value="Pitched">Pitched</SelectItem>
+          <SelectItem value="In Negotiation">In Negotiation</SelectItem>
+          <SelectItem value="Contract Signed">Contract Signed</SelectItem>
+          <SelectItem value="Content Submitted">Content Submitted</SelectItem>
+          <SelectItem value="Posted">Posted</SelectItem>
+          <SelectItem value="Paid">Paid</SelectItem>
         </SelectContent>
       </Select>
 
