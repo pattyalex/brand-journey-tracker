@@ -8,17 +8,9 @@ import { useCollabBrands } from "@/hooks/useCollabBrands";
 
 const CollabManagement = () => {
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>("all");
-  const { 
-    brands, 
-    columns,
-    handleUpdateBrand, 
-    handleAddBrand, 
-    handleDeleteBrand,
-    handleAddColumn,
-    handleDeleteColumn
-  } = useCollabBrands();
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all');
+  const { brands, handleUpdateBrand, handleAddBrand, handleDeleteBrand } = useCollabBrands();
 
   const filteredBrands = brands.filter(brand => {
     if (statusFilter && statusFilter !== 'all' && brand.status !== statusFilter) return false;
@@ -40,12 +32,9 @@ const CollabManagement = () => {
 
       <BrandsCollabTable
         brands={filteredBrands}
-        columns={columns}
         handleUpdateBrand={handleUpdateBrand}
         handleAddBrand={handleAddBrand}
         handleDeleteBrand={handleDeleteBrand}
-        handleAddColumn={handleAddColumn}
-        handleDeleteColumn={handleDeleteColumn}
       />
 
       <CampaignCardSection
