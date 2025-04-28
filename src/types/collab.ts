@@ -6,13 +6,14 @@ export interface CollabBrand {
   product: string;
   status: string;
   deliverables: string;
-  briefContract: string;  // Added new field
+  briefContract: string;  
   rate: string;
   postDate: string;
   depositPaid: string;
   finalPaymentDueDate: string;
   invoiceSent: string;
   paymentReceived: string;
+  notes: string;  // Added new field for notes
   [key: string]: string; // Allow for dynamic columns
 }
 

@@ -15,6 +15,7 @@ const DEFAULT_COLUMNS: TableColumn[] = [
   { key: 'finalPaymentDueDate', title: 'Final Payment Due Date', editable: true },
   { key: 'invoiceSent', title: 'Invoice Sent', editable: true },
   { key: 'paymentReceived', title: 'Payment Received', editable: true },
+  { key: 'notes', title: 'Notes', editable: true },
 ];
 
 export function useCollabBrands() {
@@ -33,7 +34,8 @@ export function useCollabBrands() {
         invoiceSent: brand.invoiceSent || "No",
         paymentReceived: brand.paymentReceived || "Unpaid",
         postDate: brand.postDate || "Not set",
-        briefContract: brand.briefContract || "None"
+        briefContract: brand.briefContract || "None",
+        notes: brand.notes || "None"
       }));
       setBrands(updatedBrands);
     } else {
@@ -53,6 +55,7 @@ export function useCollabBrands() {
           finalPaymentDueDate: 'Not set',
           invoiceSent: 'No',
           paymentReceived: 'Unpaid',
+          notes: 'None',
         }
       ]);
     }
@@ -67,6 +70,7 @@ export function useCollabBrands() {
       const invoiceSentColumnExists = parsedColumns.some((col: TableColumn) => col.key === 'invoiceSent');
       const paymentReceivedColumnExists = parsedColumns.some((col: TableColumn) => col.key === 'paymentReceived');
       const briefContractColumnExists = parsedColumns.some((col: TableColumn) => col.key === 'briefContract');
+      const notesColumnExists = parsedColumns.some((col: TableColumn) => col.key === 'notes');
       
       let newColumns = [...parsedColumns];
       let columnsUpdated = false;
@@ -135,6 +139,22 @@ export function useCollabBrands() {
         }
       }
       
+      // Add notes column if it doesn't exist
+      if (!notesColumnExists) {
+        const paymentReceivedIndex = newColumns.findIndex(
+          (col: TableColumn) => col.key === 'paymentReceived'
+        );
+        
+        if (paymentReceivedIndex !== -1) {
+          newColumns.splice(paymentReceivedIndex + 1, 0, { 
+            key: 'notes', 
+            title: 'Notes', 
+            editable: true 
+          });
+          columnsUpdated = true;
+        }
+      }
+      
       if (columnsUpdated) {
         setColumns(newColumns);
       } else {
@@ -143,12 +163,10 @@ export function useCollabBrands() {
     }
   }, []);
   
-  // Save brands to localStorage when they change
   useEffect(() => {
     localStorage.setItem('collabBrands', JSON.stringify(brands));
   }, [brands]);
 
-  // Save columns to localStorage when they change
   useEffect(() => {
     localStorage.setItem('collabColumns', JSON.stringify(columns));
   }, [columns]);
@@ -179,6 +197,7 @@ export function useCollabBrands() {
       finalPaymentDueDate: 'Not set',
       invoiceSent: 'No',
       paymentReceived: 'Unpaid',
+      notes: 'None',
     };
     
     setBrands([...brands, newBrand]);
@@ -211,11 +230,9 @@ export function useCollabBrands() {
   };
 
   const handleAddColumn = () => {
-    // Create a unique key for the new column
     const timestamp = Date.now().toString();
     const newColumnKey = `column${timestamp}` as keyof CollabBrand;
     
-    // Add the new column to the columns array
     const newColumn: TableColumn = {
       key: newColumnKey,
       title: "New Column",
@@ -224,7 +241,6 @@ export function useCollabBrands() {
     
     setColumns([...columns, newColumn]);
     
-    // Add the new column property to all existing brands
     const updatedBrands = brands.map(brand => ({
       ...brand,
       [newColumnKey]: ""

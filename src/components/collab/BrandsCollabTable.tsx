@@ -11,6 +11,7 @@ import InvoiceSentCell from "@/components/collab/InvoiceSentCell";
 import PaymentReceivedCell from "@/components/collab/PaymentReceivedCell";
 import PostDateCell from "@/components/collab/PostDateCell";
 import BriefContractCell from "@/components/collab/BriefContractCell";
+import NotesCell from "@/components/collab/NotesCell";
 import { CollabBrand, TableColumn } from "@/types/collab";
 import EditableColumnHeader from "./EditableColumnHeader";
 
@@ -127,6 +128,11 @@ const BrandsCollabTable = ({
                             />
                           ) : column.key === 'briefContract' ? (
                             <BriefContractCell
+                              value={brand[column.key]} 
+                              onChange={(value) => handleUpdateBrand(brand.id, column.key, value)}
+                            />
+                          ) : column.key === 'notes' ? (
+                            <NotesCell
                               value={brand[column.key]} 
                               onChange={(value) => handleUpdateBrand(brand.id, column.key, value)}
                             />
