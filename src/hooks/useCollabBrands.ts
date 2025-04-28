@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { CollabBrand, TableColumn } from "@/types/collab";
@@ -5,11 +6,9 @@ import { CollabBrand, TableColumn } from "@/types/collab";
 const DEFAULT_COLUMNS: TableColumn[] = [
   { key: 'brandName', title: 'Brand Name', editable: true },
   { key: 'contact', title: 'Contact', editable: true },
-  { key: 'lastFollowUp', title: 'Last Follow-Up', editable: true },
   { key: 'status', title: 'Status', editable: true },
   { key: 'deliverables', title: 'Deliverables', editable: true },
   { key: 'rate', title: 'Rate', editable: true },
-  { key: 'nextReminder', title: 'Next Reminder', editable: true },
 ];
 
 export function useCollabBrands() {
@@ -29,11 +28,9 @@ export function useCollabBrands() {
           id: '1',
           brandName: 'Brand X',
           contact: 'contact@brandx.com',
-          lastFollowUp: 'April 20, 2025',
           status: 'Pitched',
           deliverables: '3 Posts + 1 Story',
           rate: '$2,500',
-          nextReminder: 'April 25, 2025',
         }
       ]);
     }
@@ -71,11 +68,9 @@ export function useCollabBrands() {
       id: Date.now().toString(),
       brandName: 'New Brand',
       contact: 'email@example.com',
-      lastFollowUp: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
       status: 'Pitched',
       deliverables: 'TBD',
       rate: '$0',
-      nextReminder: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
     };
     
     setBrands([...brands, newBrand]);
@@ -107,7 +102,6 @@ export function useCollabBrands() {
     });
   };
 
-  // New function to add a column
   const handleAddColumn = () => {
     // Create a unique key for the new column
     const timestamp = Date.now().toString();
