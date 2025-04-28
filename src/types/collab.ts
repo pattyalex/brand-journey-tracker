@@ -6,6 +6,7 @@ export interface CollabBrand {
   product: string;
   status: string;
   deliverables: string;
+  briefContract: string;  // Added new field
   rate: string;
   postDate: string;
   depositPaid: string;

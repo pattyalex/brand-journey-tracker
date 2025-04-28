@@ -8,6 +8,7 @@ const DEFAULT_COLUMNS: TableColumn[] = [
   { key: 'product', title: 'Product', editable: true },
   { key: 'status', title: 'Status', editable: true },
   { key: 'deliverables', title: 'Deliverables', editable: true },
+  { key: 'briefContract', title: 'Brief/Contract Terms', editable: true },
   { key: 'rate', title: 'Rate', editable: true },
   { key: 'postDate', title: 'Post Date', editable: true },
   { key: 'depositPaid', title: 'Deposit Paid', editable: true },
@@ -31,7 +32,8 @@ export function useCollabBrands() {
         ...brand,
         invoiceSent: brand.invoiceSent || "No",
         paymentReceived: brand.paymentReceived || "Unpaid",
-        postDate: brand.postDate || "Not set"
+        postDate: brand.postDate || "Not set",
+        briefContract: brand.briefContract || "None"
       }));
       setBrands(updatedBrands);
     } else {
@@ -44,6 +46,7 @@ export function useCollabBrands() {
           product: 'Beauty Products',
           status: 'Pitched',
           deliverables: '3 Posts + 1 Story',
+          briefContract: 'None',
           rate: '$2,500',
           postDate: 'Not set',
           depositPaid: 'No',
@@ -63,9 +66,26 @@ export function useCollabBrands() {
       const postDateColumnExists = parsedColumns.some((col: TableColumn) => col.key === 'postDate');
       const invoiceSentColumnExists = parsedColumns.some((col: TableColumn) => col.key === 'invoiceSent');
       const paymentReceivedColumnExists = parsedColumns.some((col: TableColumn) => col.key === 'paymentReceived');
+      const briefContractColumnExists = parsedColumns.some((col: TableColumn) => col.key === 'briefContract');
       
       let newColumns = [...parsedColumns];
       let columnsUpdated = false;
+      
+      // Add briefContract column if it doesn't exist
+      if (!briefContractColumnExists) {
+        const deliverablesIndex = newColumns.findIndex(
+          (col: TableColumn) => col.key === 'deliverables'
+        );
+        
+        if (deliverablesIndex !== -1) {
+          newColumns.splice(deliverablesIndex + 1, 0, { 
+            key: 'briefContract', 
+            title: 'Brief/Contract Terms', 
+            editable: true 
+          });
+          columnsUpdated = true;
+        }
+      }
       
       // Add postDate column if it doesn't exist
       if (!postDateColumnExists) {
@@ -152,6 +172,7 @@ export function useCollabBrands() {
       product: 'Product Details',
       status: 'Pitched',
       deliverables: 'TBD',
+      briefContract: 'None',
       rate: '$0',
       postDate: 'Not set',
       depositPaid: 'No',
