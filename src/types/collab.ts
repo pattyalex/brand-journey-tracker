@@ -9,6 +9,7 @@ export interface CollabBrand {
   rate: string;
   depositPaid: string;
   finalPaymentDueDate: string;
+  invoiceSent: string;
   [key: string]: string; // Allow for dynamic columns
 }
 

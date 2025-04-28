@@ -12,6 +12,7 @@ const DEFAULT_COLUMNS: TableColumn[] = [
   { key: 'rate', title: 'Rate', editable: true },
   { key: 'depositPaid', title: 'Deposit Paid', editable: true },
   { key: 'finalPaymentDueDate', title: 'Final Payment Due Date', editable: true },
+  { key: 'invoiceSent', title: 'Invoice Sent', editable: true },
 ];
 
 export function useCollabBrands() {
@@ -23,7 +24,13 @@ export function useCollabBrands() {
     // Load initial data or from localStorage
     const savedBrands = localStorage.getItem('collabBrands');
     if (savedBrands) {
-      setBrands(JSON.parse(savedBrands));
+      const parsedBrands = JSON.parse(savedBrands);
+      // Add invoiceSent field if it doesn't exist
+      const updatedBrands = parsedBrands.map((brand: CollabBrand) => ({
+        ...brand,
+        invoiceSent: brand.invoiceSent || "No"
+      }));
+      setBrands(updatedBrands);
     } else {
       // Set default brand if no saved data
       setBrands([
@@ -37,6 +44,7 @@ export function useCollabBrands() {
           rate: '$2,500',
           depositPaid: 'No',
           finalPaymentDueDate: 'Not set',
+          invoiceSent: 'No',
         }
       ]);
     }
@@ -44,7 +52,28 @@ export function useCollabBrands() {
     // Load saved columns if available
     const savedColumns = localStorage.getItem('collabColumns');
     if (savedColumns) {
-      setColumns(JSON.parse(savedColumns));
+      const parsedColumns = JSON.parse(savedColumns);
+      // Check if invoiceSent column already exists
+      const invoiceSentColumnExists = parsedColumns.some((col: TableColumn) => col.key === 'invoiceSent');
+      
+      if (!invoiceSentColumnExists) {
+        // Find the index of finalPaymentDueDate to insert the new column after it
+        const finalPaymentIndex = parsedColumns.findIndex(
+          (col: TableColumn) => col.key === 'finalPaymentDueDate'
+        );
+        
+        // Insert the new column after finalPaymentDueDate
+        const newColumns = [...parsedColumns];
+        newColumns.splice(finalPaymentIndex + 1, 0, { 
+          key: 'invoiceSent', 
+          title: 'Invoice Sent', 
+          editable: true 
+        });
+        
+        setColumns(newColumns);
+      } else {
+        setColumns(parsedColumns);
+      }
     }
   }, []);
   
@@ -80,6 +109,7 @@ export function useCollabBrands() {
       rate: '$0',
       depositPaid: 'No',
       finalPaymentDueDate: 'Not set',
+      invoiceSent: 'No',
     };
     
     setBrands([...brands, newBrand]);
