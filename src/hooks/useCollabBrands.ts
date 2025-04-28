@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { CollabBrand, TableColumn } from "@/types/collab";
@@ -10,6 +11,7 @@ const DEFAULT_COLUMNS: TableColumn[] = [
   { key: 'deliverables', title: 'Deliverables', editable: true },
   { key: 'rate', title: 'Rate', editable: true },
   { key: 'depositPaid', title: 'Deposit Paid', editable: true },
+  { key: 'finalPaymentDueDate', title: 'Final Payment Due Date', editable: true },
 ];
 
 export function useCollabBrands() {
@@ -34,6 +36,7 @@ export function useCollabBrands() {
           deliverables: '3 Posts + 1 Story',
           rate: '$2,500',
           depositPaid: 'No',
+          finalPaymentDueDate: 'Not set',
         }
       ]);
     }
@@ -76,6 +79,7 @@ export function useCollabBrands() {
       deliverables: 'TBD',
       rate: '$0',
       depositPaid: 'No',
+      finalPaymentDueDate: 'Not set',
     };
     
     setBrands([...brands, newBrand]);
