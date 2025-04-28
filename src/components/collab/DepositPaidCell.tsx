@@ -65,6 +65,16 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
     }
   };
 
+  // Function to render the status icon based on the value
+  const renderStatusIcon = () => {
+    if (isYes) {
+      return <Check className="inline-block mr-1 h-4 w-4 text-green-500" />;
+    } else if (isNo) {
+      return <X className="inline-block mr-1 h-4 w-4 text-red-500" />;
+    }
+    return null;
+  };
+
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
@@ -72,6 +82,7 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
           variant="ghost" 
           className="h-8 w-full justify-start text-left font-normal"
         >
+          {renderStatusIcon()}
           {value || "No"}
         </Button>
       </PopoverTrigger>
