@@ -53,7 +53,7 @@ const BrandsCollabTable = ({
         
         {/* Table content with horizontal scrolling */}
         <div className="overflow-x-auto">
-          <ScrollArea className="h-[400px]" orientation="both">
+          <ScrollArea className="h-[400px]">
             <div className="min-w-full w-max">
               <Table>
                 <TableHeader>
