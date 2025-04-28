@@ -108,6 +108,35 @@ export function useCollabBrands() {
     });
   };
 
+  // New function to add a column
+  const handleAddColumn = () => {
+    // Create a unique key for the new column
+    const timestamp = Date.now().toString();
+    const newColumnKey = `column${timestamp}` as keyof CollabBrand;
+    
+    // Add the new column to the columns array
+    const newColumn: TableColumn = {
+      key: newColumnKey,
+      title: "New Column",
+      editable: true,
+    };
+    
+    setColumns([...columns, newColumn]);
+    
+    // Add the new column property to all existing brands
+    const updatedBrands = brands.map(brand => ({
+      ...brand,
+      [newColumnKey]: ""
+    }));
+    
+    setBrands(updatedBrands);
+    
+    toast({
+      title: "Column added",
+      description: "New column has been added to the table",
+    });
+  };
+
   return {
     brands,
     columns,
@@ -115,5 +144,6 @@ export function useCollabBrands() {
     handleAddBrand,
     handleDeleteBrand,
     handleUpdateColumnTitle,
+    handleAddColumn, // Export the new function
   };
 }

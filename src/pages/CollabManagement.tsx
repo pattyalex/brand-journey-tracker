@@ -16,7 +16,8 @@ const CollabManagement = () => {
     handleUpdateBrand, 
     handleAddBrand, 
     handleDeleteBrand,
-    handleUpdateColumnTitle
+    handleUpdateColumnTitle,
+    handleAddColumn
   } = useCollabBrands();
 
   const filteredBrands = brands.filter(brand => {
@@ -44,6 +45,7 @@ const CollabManagement = () => {
         handleAddBrand={handleAddBrand}
         handleDeleteBrand={handleDeleteBrand}
         handleUpdateColumnTitle={handleUpdateColumnTitle}
+        handleAddColumn={handleAddColumn}
       />
 
       <CampaignCardSection

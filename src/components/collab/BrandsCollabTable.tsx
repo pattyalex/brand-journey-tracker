@@ -2,7 +2,7 @@
 import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Columns } from "lucide-react";
 import EditableTableCell from "@/components/collab/EditableTableCell";
 import StatusBadge from "@/components/collab/StatusBadge";
 import { CollabBrand, TableColumn } from "@/types/collab";
@@ -15,6 +15,7 @@ interface BrandsCollabTableProps {
   handleAddBrand: () => void;
   handleDeleteBrand: (id: string) => void;
   handleUpdateColumnTitle: (index: number, newTitle: string) => void;
+  handleAddColumn?: () => void; // Add this new prop
 }
 
 const BrandsCollabTable = ({
@@ -24,15 +25,23 @@ const BrandsCollabTable = ({
   handleAddBrand,
   handleDeleteBrand,
   handleUpdateColumnTitle,
+  handleAddColumn,
 }: BrandsCollabTableProps) => {
   return (
     <div className="space-y-4">
       <div className="bg-white rounded-lg shadow-sm border">
         <div className="p-4 border-b flex justify-between items-center">
           <h2 className="font-medium">Brand Collaborations</h2>
-          <Button onClick={handleAddBrand} size="sm" className="flex items-center gap-1">
-            <Plus className="h-4 w-4" /> Add Brand
-          </Button>
+          <div className="flex gap-2">
+            {handleAddColumn && (
+              <Button onClick={handleAddColumn} size="sm" className="flex items-center gap-1">
+                <Columns className="h-4 w-4" /> Add Column
+              </Button>
+            )}
+            <Button onClick={handleAddBrand} size="sm" className="flex items-center gap-1">
+              <Plus className="h-4 w-4" /> Add Brand
+            </Button>
+          </div>
         </div>
         
         {/* Table content */}

@@ -8,6 +8,7 @@ export interface CollabBrand {
   deliverables: string;
   rate: string;
   nextReminder: string;
+  [key: string]: string; // Allow for dynamic columns
 }
 
 export interface TableColumn {
