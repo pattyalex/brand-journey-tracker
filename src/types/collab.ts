@@ -7,6 +7,7 @@ export interface CollabBrand {
   status: string;
   deliverables: string;
   rate: string;
+  depositPaid: string;
   [key: string]: string; // Allow for dynamic columns
 }
 

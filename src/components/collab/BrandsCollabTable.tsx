@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, Trash2, Columns } from "lucide-react";
 import EditableTableCell from "@/components/collab/EditableTableCell";
 import StatusBadge from "@/components/collab/StatusBadge";
+import DepositPaidCell from "@/components/collab/DepositPaidCell";
 import { CollabBrand, TableColumn } from "@/types/collab";
 import EditableColumnHeader from "./EditableColumnHeader";
 
@@ -91,6 +92,11 @@ const BrandsCollabTable = ({
                         <StatusBadge 
                           status={brand[column.key]} 
                           onChange={(value) => handleUpdateBrand(brand.id, column.key, value)} 
+                        />
+                      ) : column.key === 'depositPaid' ? (
+                        <DepositPaidCell
+                          value={brand[column.key]} 
+                          onChange={(value) => handleUpdateBrand(brand.id, column.key, value)}
                         />
                       ) : (
                         <EditableTableCell 
