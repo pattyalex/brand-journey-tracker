@@ -17,13 +17,19 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
   
   // Parse the current value
   const isYes = value.toLowerCase().startsWith('yes');
+  const isNo = value.toLowerCase().startsWith('no');
   const isNA = value.toLowerCase() === 'n/a';
-  const amount = isYes 
-    ? value.match(/\$[\d,.]+/) 
-      ? value.match(/\$[\d,.]+/)?.[0] || ''
-      : ''
-    : '';
-
+  
+  // Parse amounts from the value string
+  const amountMatch = value.match(/\$[\d,.]+/);
+  const amount = isYes && amountMatch ? amountMatch[0] : '';
+  
+  // Extract the "should pay" amount when No is selected
+  const shouldPayMatch = isNo && value.includes('Should pay:') ? 
+    value.match(/Should pay:\s*\$[\d,.]+/) : null;
+  const shouldPayAmount = shouldPayMatch ? 
+    shouldPayMatch[0].replace('Should pay:', '').trim() : '';
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsOpen(false);
@@ -34,7 +40,8 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
       const amountStr = amount ? ` - ${amount}` : '';
       onChange(`Yes${amountStr}`);
     } else if (val === "no") {
-      onChange("No");
+      const shouldPayStr = shouldPayAmount ? ` - Should pay: ${shouldPayAmount}` : '';
+      onChange(`No${shouldPayStr}`);
     } else if (val === "n/a") {
       onChange("N/A");
     }
@@ -46,6 +53,15 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
       onChange(`Yes - ${newAmount.startsWith('$') ? newAmount : `$${newAmount}`}`);
     } else {
       onChange("Yes");
+    }
+  };
+  
+  const handleShouldPayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newShouldPay = e.target.value;
+    if (newShouldPay) {
+      onChange(`No - Should pay: ${newShouldPay.startsWith('$') ? newShouldPay : `$${newShouldPay}`}`);
+    } else {
+      onChange("No");
     }
   };
 
@@ -87,6 +103,18 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
                 placeholder="$0.00"
                 value={amount}
                 onChange={handleAmountChange}
+              />
+            </div>
+          )}
+          
+          {isNo && (
+            <div className="space-y-2">
+              <Label htmlFor="shouldPayAmount">Should Pay</Label>
+              <Input 
+                id="shouldPayAmount"
+                placeholder="$0.00"
+                value={shouldPayAmount}
+                onChange={handleShouldPayChange}
               />
             </div>
           )}
