@@ -50,13 +50,13 @@ const BrandsCollabTable = ({
             </TableHeader>
             <TableBody>
               {brands.map((brand) => (
-                <TableRow key={brand.id}>
+                <TableRow key={brand.id} className="group">
                   <TableCell>
                     <Button 
                       variant="ghost" 
                       size="icon"
                       onClick={() => handleDeleteBrand(brand.id)} 
-                      className="h-8 w-8 text-gray-400 hover:text-red-600 hover:bg-gray-100"
+                      className="h-8 w-8 text-gray-400 hover:text-red-600 hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
