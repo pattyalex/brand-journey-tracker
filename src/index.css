@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -89,6 +90,11 @@
   /* Add styling for brief/contract terms header to add more space */
   th[data-key="briefContract"] {
     padding-right: 35px;
+  }
+  
+  /* Add styling for deposit-paid column to add more space after it */
+  th[data-key="depositPaid"] {
+    padding-right: 30px;
   }
 }
 
