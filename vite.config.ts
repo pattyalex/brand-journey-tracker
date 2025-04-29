@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => ({
     hmr: {
       // Enable WebSocket connection on Replit
       clientPort: 443,
-      host: process.env.REPL_SLUG ? `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` : "localhost"
+      host: process.env.REPL_SLUG ? `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` : 'localhost'
     }
   },
   resolve: {
@@ -23,13 +23,12 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src")
     }
   }
-}));
+}))
 
-// Dummy function to prevent build errors while the package is being installed
 function componentTagger() {
   return {
-    name: "dummy-component-tagger"
+    name: 'dummy-component-tagger',
     // This is a dummy function to prevent build errors
     // while we install the actual package
-  };
+  }
 }
