@@ -117,12 +117,12 @@ const BrandsCollabTable = ({
                       key={brand.id} 
                       className="group hover:bg-gray-50 transition-colors duration-200"
                     >
-                      <TableCell className="w-8 p-0 sticky left-0 z-10 bg-white">
+                      <TableCell className="w-4 p-0 pr-0 sticky left-0 z-10 bg-white">
                         <Button 
                           variant="ghost" 
                           size="icon"
                           onClick={() => handleDeleteBrand(brand.id)} 
-                          className="h-4 w-4 p-0 m-0 text-gray-400 hover:text-red-600 hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                          className="h-4 w-4 p-0 m-0 mr-0 text-gray-400 hover:text-red-600 hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                           aria-label={`Delete ${brand.brandName}`}
                         >
                           <Trash2 className="h-3 w-3" />
