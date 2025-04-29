@@ -1,3 +1,4 @@
+
 import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -34,6 +35,17 @@ const BrandsCollabTable = ({
   handleUpdateColumnTitle,
   handleAddColumn,
 }: BrandsCollabTableProps) => {
+  // Function to determine if a column header should be editable
+  const isHeaderEditable = (columnKey: string): boolean => {
+    const nonEditableKeys = [
+      'brandName', 'contact', 'product', 'status', 'deliverables',
+      'briefContract', 'rate', 'postDate', 'depositPaid',
+      'finalPaymentDueDate', 'invoiceSent', 'paymentReceived'
+    ];
+    
+    return !nonEditableKeys.includes(columnKey);
+  };
+
   return (
     <div className="space-y-4">
       <div className="bg-white rounded-lg shadow-sm border">
@@ -64,15 +76,27 @@ const BrandsCollabTable = ({
                   <TableRow>
                     <TableHead className="w-12 sticky left-0 z-10 bg-white"></TableHead>
                     {columns.map((column, index) => (
-                      <EditableColumnHeader
-                        key={column.key}
-                        title={column.title}
-                        onChange={(newTitle) => handleUpdateColumnTitle(index, newTitle)}
-                        className={cn(
-                          column.key === 'notes' ? 'notes-header' : '',
-                          column.key === 'depositPaid' ? 'deposit-paid' : ''
-                        )}
-                      />
+                      isHeaderEditable(column.key) ? (
+                        <EditableColumnHeader
+                          key={column.key}
+                          title={column.title}
+                          onChange={(newTitle) => handleUpdateColumnTitle(index, newTitle)}
+                          className={cn(
+                            column.key === 'notes' ? 'notes-header' : '',
+                            column.key === 'depositPaid' ? 'deposit-paid' : ''
+                          )}
+                        />
+                      ) : (
+                        <TableHead 
+                          key={column.key}
+                          className={cn(
+                            column.key === 'notes' ? 'notes-header' : '',
+                            column.key === 'depositPaid' ? 'deposit-paid' : ''
+                          )}
+                        >
+                          {column.title}
+                        </TableHead>
+                      )
                     ))}
                   </TableRow>
                 </TableHeader>
