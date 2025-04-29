@@ -31,14 +31,17 @@ const NotesCell = ({ value, onChange }: NotesCellProps) => {
     return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
   };
 
+  // Determine if there are actual notes (not empty or "None")
+  const hasNotes = value && value !== "None";
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button 
           variant="ghost" 
-          className="h-8 w-full justify-start text-left font-normal"
+          className={`h-8 w-full justify-start text-left font-normal ${hasNotes ? 'border-l-4 border-l-purple-400 pl-2' : ''}`}
         >
-          <span className="truncate">
+          <span className={`truncate ${hasNotes ? 'text-gray-700' : 'text-gray-400 italic'}`}>
             {truncateText(value || "None")}
           </span>
         </Button>
@@ -53,7 +56,7 @@ const NotesCell = ({ value, onChange }: NotesCellProps) => {
             value={noteText}
             onChange={(e) => setNoteText(e.target.value)}
             placeholder="Add your notes here..."
-            className="min-h-[200px] border rounded-md"
+            className="min-h-[200px] border rounded-md focus:border-purple-400 focus:ring focus:ring-purple-100"
           />
         </div>
         
@@ -61,7 +64,7 @@ const NotesCell = ({ value, onChange }: NotesCellProps) => {
           <Button variant="outline" onClick={() => setIsOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave}>
+          <Button onClick={handleSave} className="bg-purple-500 hover:bg-purple-600">
             Save Notes
           </Button>
         </DialogFooter>
