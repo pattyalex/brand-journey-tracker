@@ -38,7 +38,7 @@ const NotesCell = ({ value, onChange }: NotesCellProps) => {
           variant="ghost" 
           className="h-8 w-full justify-center text-center font-normal"
         >
-          <span className="truncate">
+          <span className="truncate text-center w-full">
             {truncateText(value || "None")}
           </span>
         </Button>
