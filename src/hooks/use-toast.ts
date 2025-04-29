@@ -199,4 +199,15 @@ export function showMaxAgeRangesSelectedToast() {
   });
 }
 
+/**
+ * Shows a toast notification indicating that maximum tones have been selected
+ */
+export function showMaxTonesSelectedToast() {
+  toast({
+    title: "Selection limit reached",
+    description: "Maximum of 3 tones selected",
+    variant: "default"
+  });
+}
+
 export { useToast, toast }
