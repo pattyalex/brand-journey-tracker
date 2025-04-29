@@ -54,7 +54,7 @@ const EditableColumnHeader = ({
           "flex items-center",
           "justify-start w-full space-x-2"
         )}>
-          <span>{title}</span>
+          <span className="pl-8">{title}</span>
           <div className={cn(
             "flex items-center opacity-0 group-hover:opacity-100 transition-opacity duration-200",
             isNotesColumn ? "ml-2" : "ml-1"
