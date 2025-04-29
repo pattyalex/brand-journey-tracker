@@ -97,22 +97,22 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
           <RadioGroup 
             value={isNA ? "n/a" : (isYes ? "yes" : "no")}
             onValueChange={handleRadioChange}
-            className="flex flex-col items-start"
+            className="flex flex-col items-start pl-0"
           >
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 pl-0">
               <RadioGroupItem value="n/a" id="n/a" />
-              <Label htmlFor="n/a">N/A</Label>
+              <Label htmlFor="n/a" className="ml-0">N/A</Label>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 pl-0">
               <RadioGroupItem value="yes" id="yes" />
-              <Label htmlFor="yes" className="flex items-center text-green-600">
+              <Label htmlFor="yes" className="flex items-center text-green-600 ml-0">
                 <Check className="h-4 w-4 mr-2 text-green-600" />
                 Yes
               </Label>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 pl-0">
               <RadioGroupItem value="no" id="no" />
-              <Label htmlFor="no" className="flex items-center text-red-500">
+              <Label htmlFor="no" className="flex items-center text-red-500 ml-0">
                 <X className="h-4 w-4 mr-2 text-red-500" />
                 No
               </Label>
@@ -121,26 +121,26 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
           
           {isYes && (
             <div className="space-y-2">
-              <Label htmlFor="depositAmount" className="block">Amount</Label>
+              <Label htmlFor="depositAmount" className="block ml-0 pl-0 text-left">Amount</Label>
               <Input 
                 id="depositAmount"
                 placeholder="$0.00"
                 value={amount}
                 onChange={handleAmountChange}
-                className="text-left"
+                className="text-left pl-2"
               />
             </div>
           )}
           
           {isNo && (
             <div className="space-y-2">
-              <Label htmlFor="shouldPayAmount" className="block">Should Pay</Label>
+              <Label htmlFor="shouldPayAmount" className="block ml-0 pl-0 text-left">Should Pay</Label>
               <Input 
                 id="shouldPayAmount"
                 placeholder="$0.00"
                 value={shouldPayAmount}
                 onChange={handleShouldPayChange}
-                className="text-left"
+                className="text-left pl-2"
               />
             </div>
           )}
