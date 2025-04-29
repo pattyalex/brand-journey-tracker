@@ -99,6 +99,7 @@
   .brand-collab-table td > div,
   .brand-collab-table td * {
     text-align: left !important;
+    padding-left: 4px;
   }
   
   /* Add styling for brief/contract terms header to add more space */

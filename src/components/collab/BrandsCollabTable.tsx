@@ -133,7 +133,7 @@ const BrandsCollabTable = ({
                         <TableCell 
                           key={`${brand.id}-${column.key}`} 
                           className={cn(
-                            "min-w-[120px] px-3 text-left" // Set minimum width, reduced padding and explicit left alignment
+                            "min-w-[120px] px-1 text-left" // Reduced padding from px-3 to px-1
                           )}
                           data-key={column.key}
                         >
