@@ -188,4 +188,15 @@ function useToast() {
   }
 }
 
+/**
+ * Shows a toast notification indicating that maximum age ranges have been selected
+ */
+export function showMaxAgeRangesSelectedToast() {
+  toast({
+    title: "Selection limit reached",
+    description: "Maximum of 3 age ranges selected",
+    variant: "default"
+  });
+}
+
 export { useToast, toast }
