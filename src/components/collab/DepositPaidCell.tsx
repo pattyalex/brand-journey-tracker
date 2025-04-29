@@ -92,7 +92,7 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
           </span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-60 p-4" side="bottom">
+      <PopoverContent className="w-60 p-4 !bg-white !border !border-gray-200 !shadow-md" side="bottom">
         <form className="space-y-4" onSubmit={handleSubmit}>
           <RadioGroup 
             value={isNA ? "n/a" : (isYes ? "yes" : "no")}

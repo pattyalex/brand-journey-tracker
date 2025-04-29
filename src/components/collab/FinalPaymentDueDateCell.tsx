@@ -36,7 +36,7 @@ const FinalPaymentDueDateCell = ({ value, onChange }: FinalPaymentDueDateCellPro
       <PopoverTrigger asChild>
         <Button 
           variant="ghost" 
-          className="h-8 w-full justify-start text-left font-normal"
+          className="h-8 w-full justify-center text-center font-normal"
         >
           {date ? (
             format(date, "MMM d, yyyy")
@@ -45,7 +45,7 @@ const FinalPaymentDueDateCell = ({ value, onChange }: FinalPaymentDueDateCellPro
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" side="bottom">
+      <PopoverContent className="w-auto p-0 !bg-white !border !border-gray-200 !shadow-md" side="bottom">
         <Calendar
           mode="single"
           selected={date}

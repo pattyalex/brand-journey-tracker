@@ -38,7 +38,7 @@ const InvoiceSentCell = ({ value, onChange }: InvoiceSentCellProps) => {
           </span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-[120px]">
+      <DropdownMenuContent className="w-[120px] !bg-white !border !border-gray-200 !shadow-md">
         <DropdownMenuItem onClick={() => onChange("Yes")}>
           <Check className="h-4 w-4 mr-2 text-green-600" />
           <span>Yes</span>
