@@ -10,7 +10,6 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { FileText } from "lucide-react";
 
 interface NotesCellProps {
   value: string;
@@ -39,12 +38,9 @@ const NotesCell = ({ value, onChange }: NotesCellProps) => {
           variant="ghost" 
           className="h-8 w-full justify-start text-left font-normal"
         >
-          <div className="flex items-center">
-            <FileText size={16} className="text-gray-500 mr-2" />
-            <span className="truncate">
-              {truncateText(value || "None")}
-            </span>
-          </div>
+          <span className="truncate">
+            {truncateText(value || "None")}
+          </span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
