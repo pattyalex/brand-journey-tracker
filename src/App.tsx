@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
 import GetStarted from './pages/GetStarted';
 import CollabManagement from './pages/CollabManagement';  // Import eagerly instead of lazily
+import StrategyDemo from './pages/StrategyDemo';
 
 // Lazy load all other pages
 const TrendingContent = lazy(() => import('./pages/TrendingContent'));
