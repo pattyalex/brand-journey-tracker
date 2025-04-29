@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CollabFilters from "@/components/collab/CollabFilters";
@@ -29,14 +28,14 @@ const CollabManagement = () => {
   const filteredBrands = brands.filter(brand => {
     // Apply status filter if not 'all'
     if (statusFilter && statusFilter !== 'all' && brand.status !== statusFilter) return false;
-    
+
     // Apply payment status filter if not 'all'
     if (paymentStatusFilter && paymentStatusFilter !== 'all') {
       if (paymentStatusFilter === 'paid' && brand.paymentReceived !== 'Paid') return false;
       if (paymentStatusFilter === 'unpaid' && brand.paymentReceived !== 'Unpaid') return false;
       if (paymentStatusFilter === 'overdue' && brand.paymentReceived !== 'Overdue') return false;
     }
-    
+
     return true;
   });
 
@@ -52,7 +51,7 @@ const CollabManagement = () => {
           Back
         </Button>
       </div>
-      
+
       <header className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-semibold">Partnerships Management</h1>
         <CollabFilters
