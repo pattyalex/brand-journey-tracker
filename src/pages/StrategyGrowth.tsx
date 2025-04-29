@@ -233,7 +233,7 @@ const StrategyGrowth = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="age-range">Age Range (select up to 2)</Label>
+                    <Label htmlFor="age-range">Age Range</Label>
                     <div className="grid grid-cols-2 gap-2">
                       {["18-24", "25-34", "35-44", "45-54", "55+"].map((range) => (
                         <div
@@ -241,7 +241,7 @@ const StrategyGrowth = () => {
                           onClick={() => {
                             if (audienceAgeRanges.includes(range)) {
                               setAudienceAgeRanges(audienceAgeRanges.filter(r => r !== range));
-                            } else if (audienceAgeRanges.length < 2) {
+                            } else if (audienceAgeRanges.length < 3) {
                               setAudienceAgeRanges([...audienceAgeRanges, range]);
                             }
                           }}
@@ -255,8 +255,8 @@ const StrategyGrowth = () => {
                         </div>
                       ))}
                     </div>
-                    {audienceAgeRanges.length === 2 && (
-                      <p className="text-xs text-amber-600 mt-1">Maximum of 2 age ranges selected</p>
+                    {audienceAgeRanges.length === 3 && (
+                      <p className="text-xs text-amber-600 mt-1">Maximum of 3 age ranges selected</p>
                     )}
                   </div>
                   <div className="space-y-2">
