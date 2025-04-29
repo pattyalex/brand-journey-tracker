@@ -36,9 +36,9 @@ const NotesCell = ({ value, onChange }: NotesCellProps) => {
       <DialogTrigger asChild>
         <Button 
           variant="ghost" 
-          className="h-8 w-full justify-center text-center font-normal"
+          className="h-8 w-full justify-start text-left font-normal"
         >
-          <span className="truncate text-center w-full">
+          <span className="truncate">
             {truncateText(value || "None")}
           </span>
         </Button>
