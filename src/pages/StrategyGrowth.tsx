@@ -255,9 +255,9 @@ const StrategyGrowth = () => {
                         </div>
                       ))}
                     </div>
-                    {audienceAgeRanges.length === 3 && (
+                    {audienceAgeRanges.length === 3 ? (
                       <p className="text-xs text-amber-600 mt-1">Maximum of 3 age ranges selected</p>
-                    )}
+                    ) : null}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="lifestyle">Lifestyle</Label>
