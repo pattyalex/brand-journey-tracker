@@ -35,7 +35,7 @@ const CollabManagement = () => {
   return (
     <div className="container mx-auto p-6 space-y-8">
       <header className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-semibold">Collab & Brand Management</h1>
+        <h1 className="text-3xl font-semibold">Partnerships Management</h1>
         <CollabFilters
           statusFilter={statusFilter}
           setStatusFilter={setStatusFilter}

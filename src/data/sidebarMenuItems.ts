@@ -25,7 +25,7 @@ export const defaultMenuItems: MenuItem[] = [
   },
   { title: 'Quick Notes', icon: Clipboard, url: '/quick-notes', isDeletable: false },
   { 
-    title: 'Collab Management', 
+    title: 'Partnerships', 
     icon: Handshake, 
     url: '/collab-management', 
     isDeletable: false 
