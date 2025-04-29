@@ -97,8 +97,12 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
           <RadioGroup 
             value={isNA ? "n/a" : (isYes ? "yes" : "no")}
             onValueChange={handleRadioChange}
-            className="flex flex-col items-center"
+            className="flex flex-col items-start"
           >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="n/a" id="n/a" />
+              <Label htmlFor="n/a">N/A</Label>
+            </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="yes" id="yes" />
               <Label htmlFor="yes" className="flex items-center text-green-600">
@@ -113,34 +117,30 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
                 No
               </Label>
             </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="n/a" id="n/a" />
-              <Label htmlFor="n/a">N/A</Label>
-            </div>
           </RadioGroup>
           
           {isYes && (
             <div className="space-y-2">
-              <Label htmlFor="depositAmount" className="text-center block">Amount</Label>
+              <Label htmlFor="depositAmount" className="block">Amount</Label>
               <Input 
                 id="depositAmount"
                 placeholder="$0.00"
                 value={amount}
                 onChange={handleAmountChange}
-                className="text-center"
+                className="text-left"
               />
             </div>
           )}
           
           {isNo && (
             <div className="space-y-2">
-              <Label htmlFor="shouldPayAmount" className="text-center block">Should Pay</Label>
+              <Label htmlFor="shouldPayAmount" className="block">Should Pay</Label>
               <Input 
                 id="shouldPayAmount"
                 placeholder="$0.00"
                 value={shouldPayAmount}
                 onChange={handleShouldPayChange}
-                className="text-center"
+                className="text-left"
               />
             </div>
           )}
