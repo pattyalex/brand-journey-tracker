@@ -2,7 +2,6 @@
 import { useState } from "react";
 import CollabFilters from "@/components/collab/CollabFilters";
 import BrandsCollabTable from "@/components/collab/BrandsCollabTable";
-import CampaignCardSection from "@/components/collab/CampaignCardSection";
 import { useCollabBrands } from "@/hooks/useCollabBrands";
 
 const CollabManagement = () => {
@@ -45,8 +44,6 @@ const CollabManagement = () => {
         handleUpdateColumnTitle={handleUpdateColumnTitle}
         handleAddColumn={handleAddColumn}
       />
-
-      <CampaignCardSection />
     </div>
   );
 };
