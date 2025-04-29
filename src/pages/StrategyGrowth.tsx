@@ -308,12 +308,8 @@ const StrategyGrowth = () => {
                             selectedTones.includes(tone) ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300"
                           }`}
                         >
-                          <div className="flex justify-between items-center">
+                          <div>
                             <p className="font-medium capitalize">{tone}</p>
-                            {selectedTones.includes(tone) && (
-                              <div className="h-4 w-4 rounded-full bg-primary flex items-center justify-center">
-                              </div>
-                            )}
                           </div>
                         </div>
                       ))}
