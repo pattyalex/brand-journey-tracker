@@ -56,14 +56,12 @@ const BrandsCollabTable = ({
           </div>
         </div>
         
-        {/* Table content with horizontal scrolling */}
         <div className="overflow-x-auto">
           <ScrollArea className="h-[400px]">
             <div className="min-w-full w-max">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    {/* Empty header cell for the trash icon column */}
                     <TableHead className="w-12 sticky left-0 z-10 bg-white"></TableHead>
                     {columns.map((column, index) => (
                       <EditableColumnHeader
@@ -72,7 +70,7 @@ const BrandsCollabTable = ({
                         onChange={(newTitle) => handleUpdateColumnTitle(index, newTitle)}
                         className={cn(
                           column.key === 'notes' ? 'notes-header' : '',
-                          column.key === 'depositPaid' ? 'text-center' : ''
+                          column.key === 'depositPaid' ? 'deposit-paid' : ''
                         )}
                       />
                     ))}
@@ -84,7 +82,6 @@ const BrandsCollabTable = ({
                       key={brand.id} 
                       className="group hover:bg-gray-50 transition-colors duration-200"
                     >
-                      {/* Trash icon cell as the first cell in the row - make it sticky */}
                       <TableCell className="w-12 p-0 text-center sticky left-0 z-10 bg-white">
                         <Button 
                           variant="ghost" 
@@ -97,13 +94,12 @@ const BrandsCollabTable = ({
                         </Button>
                       </TableCell>
                       
-                      {/* Regular data cells */}
                       {columns.map((column) => (
                         <TableCell 
                           key={`${brand.id}-${column.key}`} 
                           className={cn(
                             "min-w-[150px]",
-                            column.key === 'depositPaid' ? 'text-center' : ''
+                            column.key === 'depositPaid' ? 'deposit-paid' : ''
                           )}
                         >
                           {column.key === 'status' ? (

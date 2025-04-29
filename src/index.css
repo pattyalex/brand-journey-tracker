@@ -75,6 +75,11 @@
   th.notes-header {
     padding-left: 10px;
   }
+
+  /* Add styling for deposit-paid column */
+  th.deposit-paid, td.deposit-paid {
+    text-align: center;
+  }
 }
 
 @layer utilities {
