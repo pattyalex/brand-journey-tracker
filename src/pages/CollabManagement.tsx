@@ -45,17 +45,6 @@ export default function CollabManagement() {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="flex items-center gap-1 bg-white shadow-sm hover:bg-gray-100"
-            onClick={handleGoBack}
-          >
-            ← Back to Partnerships
-          </Button>
-        </div>
-
         <header className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-semibold">Partnerships Management</h1>
           <CollabFilters
