@@ -14,8 +14,7 @@ const CollabManagement = () => {
     handleAddBrand, 
     handleDeleteBrand,
     handleUpdateColumnTitle,
-    handleAddColumn,
-    handleDeleteColumn
+    handleAddColumn
   } = useCollabBrands();
 
   const filteredBrands = brands.filter(brand => {
@@ -44,7 +43,6 @@ const CollabManagement = () => {
         handleDeleteBrand={handleDeleteBrand}
         handleUpdateColumnTitle={handleUpdateColumnTitle}
         handleAddColumn={handleAddColumn}
-        handleDeleteColumn={handleDeleteColumn}
       />
     </div>
   );

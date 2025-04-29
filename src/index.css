@@ -1,3 +1,5 @@
+
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -101,11 +103,6 @@
   /* Add spacing between deposit-paid and finalPaymentDueDate */
   th[data-key="depositPaid"] {
     padding-right: 30px;
-  }
-  
-  /* Add button feedback styles for better click indication */
-  button:active {
-    transform: translateY(1px);
   }
 }
 
