@@ -308,9 +308,7 @@ const StrategyGrowth = () => {
                               setAudienceAgeRanges([...audienceAgeRanges, range]);
                             } else {
                               // Show toast notification when maximum selections reached
-                              import("@/hooks/use-toast").then(({ showMaxAgeRangesSelectedToast }) => {
-                                showMaxAgeRangesSelectedToast();
-                              });
+                              alert("You can select up to 3 age ranges");
                             }
                           }}
                           className={`p-2 border rounded-md cursor-pointer transition-all ${
@@ -382,9 +380,7 @@ const StrategyGrowth = () => {
                               setSelectedTones([...selectedTones, tone]);
                             } else {
                               // Show toast notification when maximum selections reached
-                              import("@/hooks/use-toast").then(({ showMaxAgeRangesSelectedToast }) => {
-                                showMaxAgeRangesSelectedToast();
-                              });
+                              alert("You can select up to 3 tones");
                             }
                           }}
                           className={`p-3 border rounded-md cursor-pointer transition-all ${
