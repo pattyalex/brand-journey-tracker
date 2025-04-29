@@ -1,3 +1,4 @@
+
 import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -80,7 +81,8 @@ const BrandsCollabTable = ({
                           title={column.title}
                           onChange={(newTitle) => handleUpdateColumnTitle(index, newTitle)}
                           className={cn(
-                            column.key === 'notes' ? 'notes-header pr-24' : ''
+                            column.key === 'notes' ? 'notes-header' : '',
+                            "min-w-[120px]" // Set minimum width for all columns
                           )}
                         />
                       ) : (
@@ -88,8 +90,9 @@ const BrandsCollabTable = ({
                           key={column.key}
                           data-key={column.key}
                           className={cn(
-                            column.key === 'notes' ? 'notes-header pr-24' : '',
-                            column.key === 'depositPaid' ? 'deposit-paid' : ''
+                            column.key === 'notes' ? 'notes-header' : '',
+                            column.key === 'depositPaid' ? 'deposit-paid' : '',
+                            "min-w-[120px]" // Set minimum width for all columns
                           )}
                         >
                           {column.title}
@@ -120,10 +123,11 @@ const BrandsCollabTable = ({
                         <TableCell 
                           key={`${brand.id}-${column.key}`} 
                           className={cn(
-                            "min-w-[150px]",
                             column.key === 'depositPaid' ? 'deposit-paid' : '',
-                            column.key === 'notes' ? 'pr-24' : ''
+                            column.key === 'notes' ? '' : '',
+                            "min-w-[120px] px-3" // Set minimum width and reduced padding for all cells
                           )}
+                          data-key={column.key}
                         >
                           {column.key === 'status' ? (
                             <StatusBadge 

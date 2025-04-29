@@ -1,5 +1,3 @@
-
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -73,16 +71,16 @@
     width: 100%;
   }
 
-  /* Add styling for Notes header - increase right padding to push column to right */
+  /* Add styling for Notes header - REDUCED right padding */
   th.notes-header {
-    padding-left: 20px; /* Increased left padding for "Notes" text */
-    padding-right: 100px; /* Added more padding to push notes column to the right */
+    padding-left: 20px; /* Keep the left padding for "Notes" text */
+    padding-right: 30px; /* Reduced from 100px to 30px to decrease the gap */
   }
 
-  /* Increase left padding for Notes cells to match header alignment */
+  /* Reduce right padding for Notes cells to match header alignment */
   [data-key="notes"] {
     padding-left: 30px;
-    padding-right: 100px;
+    padding-right: 30px; /* Reduced from 100px to 30px */
   }
 
   /* Add styling for deposit-paid column */
