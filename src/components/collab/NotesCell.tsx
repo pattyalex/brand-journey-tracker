@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 import { 
   Dialog,
   DialogContent, 
@@ -23,6 +24,16 @@ const NotesCell = ({ value, onChange }: NotesCellProps) => {
   const handleSave = () => {
     onChange(noteText);
     setIsOpen(false);
+    
+    // Show a success toast
+    toast({
+      title: "Notes saved",
+      description: "Your notes have been updated successfully",
+    });
+  };
+  
+  const handleClear = () => {
+    setNoteText("");
   };
   
   // Truncate the notes for display in the table cell
@@ -48,7 +59,7 @@ const NotesCell = ({ value, onChange }: NotesCellProps) => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-right">Notes</DialogTitle>
+          <DialogTitle className="text-right text-purple-500">Notes</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4 py-4">
@@ -56,15 +67,28 @@ const NotesCell = ({ value, onChange }: NotesCellProps) => {
             value={noteText}
             onChange={(e) => setNoteText(e.target.value)}
             placeholder="Add your notes here..."
-            className="min-h-[200px] border rounded-md focus:border-purple-400 focus:ring focus:ring-purple-100"
+            className="min-h-[200px] border rounded-md focus:border-purple-400 focus:ring focus:ring-purple-100 shadow-sm"
+            autoFocus
           />
         </div>
         
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setIsOpen(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave} className="bg-purple-500 hover:bg-purple-600">
+        <DialogFooter className="flex justify-between sm:justify-between">
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setIsOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={handleClear}
+              className="text-red-500 hover:text-red-600 hover:bg-red-50"
+            >
+              Clear
+            </Button>
+          </div>
+          <Button 
+            onClick={handleSave} 
+            className="bg-purple-500 hover:bg-purple-600 transition-all duration-200"
+          >
             Save Notes
           </Button>
         </DialogFooter>
