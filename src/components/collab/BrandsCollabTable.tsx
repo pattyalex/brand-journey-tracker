@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -115,7 +114,7 @@ const BrandsCollabTable = ({
                         className={cn(
                           column.key === 'notes' ? 'notes-header pr-24' : '',
                           column.key === 'depositPaid' ? 'deposit-paid' : '',
-                          "group relative" // Add group and relative for the delete button position
+                          "group relative"
                         )}
                       >
                         <div className="flex items-center space-x-2 pr-8">
@@ -135,7 +134,7 @@ const BrandsCollabTable = ({
                             <Button 
                               variant="ghost" 
                               size="icon"
-                              onClick={() => handleDeleteColumnClick(column.key)}
+                              onClick={() => handleDeleteColumnClick(String(column.key))}
                               className="h-6 w-6 p-1 text-gray-400 hover:text-red-600 hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity absolute right-2 top-1/2 -translate-y-1/2"
                               aria-label={`Delete ${column.title} column`}
                             >
