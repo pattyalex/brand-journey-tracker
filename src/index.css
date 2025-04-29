@@ -1,4 +1,5 @@
 
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -74,7 +75,7 @@
 
   /* Add styling for Notes header - increase right padding to push column to right */
   th.notes-header {
-    padding-left: 10px;
+    padding-left: 20px; /* Increased left padding for "Notes" text */
     padding-right: 100px; /* Added more padding to push notes column to the right */
   }
 
