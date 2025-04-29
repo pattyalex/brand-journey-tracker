@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -94,6 +95,7 @@
   /* Add styling for finalPaymentDueDate column */
   th[data-key="finalPaymentDueDate"] {
     text-align: center;
+    padding-right: 80px; /* Add significant right padding to create more space */
   }
   
   /* Add spacing between deposit-paid and finalPaymentDueDate */
