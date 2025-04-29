@@ -52,7 +52,7 @@ const EditableColumnHeader = ({
       ) : (
         <div className={cn(
           "flex items-center",
-          isNotesColumn ? "justify-center w-full" : "space-x-2"
+          "justify-start w-full space-x-2"
         )}>
           <span>{title}</span>
           <div className={cn(
