@@ -1,8 +1,6 @@
-
 import React, { useState } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,6 +32,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Switch } from "@/components/ui/switch";
 
 const StrategyGrowth = () => {
+  const [activeTab, setActiveTab] = useState("brand-identity");
+  const [missionStatement, setMissionStatement] = useState("");
   // Brand Identity states
   const [brandKeywords, setBrandKeywords] = useState<string[]>([]);
   const [keywordInput, setKeywordInput] = useState("");
@@ -43,78 +43,7 @@ const StrategyGrowth = () => {
   const [audienceDesires, setAudienceDesires] = useState("");
   const [selectedTones, setSelectedTones] = useState<string[]>(["relatable"]);
   const [colorPalette, setColorPalette] = useState<string[]>(["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#0088fe"]);
-  
-  // Content Strategy states
-  const [contentPillars, setContentPillars] = useState([
-    { name: "Food", value: "Teaches followers healthy recipes" },
-    { name: "Fitness", value: "Motivates followers to live a healthy lifestyle" },
-    { name: "Entertainment", value: "Provides fun and engaging content" }
-  ]);
-  const [pillarInput, setPillarInput] = useState({ name: "", value: "" });
-  const [monthlyThemes, setMonthlyThemes] = useState([
-    { month: "January", theme: "New Beginnings" },
-    { month: "February", theme: "Self-Love" }
-  ]);
-  const [newThemeMonth, setNewThemeMonth] = useState("");
-  const [newThemeContent, setNewThemeContent] = useState("");
-  
-  const handleAddTheme = () => {
-    if (newThemeMonth && newThemeContent) {
-      // Check if the month already exists
-      const monthExists = monthlyThemes.some(item => item.month === newThemeMonth);
-      
-      if (monthExists) {
-        // If the month exists, update its theme
-        setMonthlyThemes(monthlyThemes.map(item => 
-          item.month === newThemeMonth 
-            ? { ...item, theme: newThemeContent } 
-            : item
-        ));
-      } else {
-        // If the month doesn't exist, add a new entry
-        setMonthlyThemes([...monthlyThemes, { month: newThemeMonth, theme: newThemeContent }]);
-      }
-      
-      // Reset input fields
-      setNewThemeMonth("");
-      setNewThemeContent("");
-    }
-  };
-  const [contentFormats, setContentFormats] = useState([
-    { name: "Tutorial Reels", selected: true },
-    { name: "Carousel Tips", selected: true },
-    { name: "Behind-the-scenes", selected: false },
-    { name: "Q&A Stories", selected: true }
-  ]);
-  
-  // Competitor Tracker states
-  const [competitors, setCompetitors] = useState([
-    { 
-      handle: "@competitor1", 
-      niche: "Lifestyle", 
-      platform: "Instagram",
-      strengths: "Consistent aesthetic, high engagement on tutorials",
-      notes: "Great use of carousel posts for tutorials" 
-    }
-  ]);
-  const [newCompetitor, setNewCompetitor] = useState({ 
-    handle: "", 
-    niche: "", 
-    platform: "Instagram",
-    strengths: "",
-    notes: "" 
-  });
-  
-  // Growth Goals states
-  const [goals, setGoals] = useState([
-    { metric: "Followers", current: 5000, target: 10000, timeframe: "3 months" },
-    { metric: "Engagement Rate", current: 3.5, target: 5, timeframe: "2 months" },
-    { metric: "Brand Deals", current: 1, target: 3, timeframe: "6 months" },
-    { metric: "Monthly Income", current: 800, target: 2500, timeframe: "6 months" }
-  ]);
-  
-  // New state to track active tab
-  const [activeTab, setActiveTab] = useState("brand-identity");
+
 
   // Handlers
   const handleAddKeyword = () => {
@@ -128,49 +57,6 @@ const StrategyGrowth = () => {
     setBrandKeywords(brandKeywords.filter(k => k !== keyword));
   };
 
-  const handleAddPillar = () => {
-    if (pillarInput.name.trim() !== "" && pillarInput.value.trim() !== "") {
-      setContentPillars([...contentPillars, { name: pillarInput.name, value: pillarInput.value }]);
-      setPillarInput({ name: "", value: "" });
-    }
-  };
-
-  const handleRemovePillar = (index: number) => {
-    setContentPillars(contentPillars.filter((_, i) => i !== index));
-  };
-
-  const handleFormatToggle = (index: number) => {
-    const updatedFormats = [...contentFormats];
-    updatedFormats[index].selected = !updatedFormats[index].selected;
-    setContentFormats(updatedFormats);
-  };
-
-  const handleAddCompetitor = () => {
-    if (newCompetitor.handle.trim() !== "") {
-      setCompetitors([...competitors, newCompetitor]);
-      setNewCompetitor({ 
-        handle: "", 
-        niche: "", 
-        platform: "Instagram",
-        strengths: "",
-        notes: "" 
-      });
-    }
-  };
-
-  const handleRemoveCompetitor = (index: number) => {
-    setCompetitors(competitors.filter((_, i) => i !== index));
-  };
-  
-  // Helper function to calculate goal progress percentage
-  const calculateProgress = (current: number, target: number) => {
-    return Math.min(Math.round((current / target) * 100), 100);
-  };
-
-  // Handler for tab changes
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-  };
 
   return (
     <Layout>
@@ -181,8 +67,8 @@ const StrategyGrowth = () => {
             Define your brand identity, plan your content strategy, and track your growth
           </p>
         </div>
-        
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="mb-6 grid grid-cols-4 gap-4">
             <TabsTrigger value="brand-identity" className="flex items-center gap-2">
               <PenTool className="w-4 h-4" />
@@ -201,7 +87,7 @@ const StrategyGrowth = () => {
               <span>Growth Goals</span>
             </TabsTrigger>
           </TabsList>
-          
+
           {/* Brand Identity Tab */}
           <TabsContent value="brand-identity" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -216,10 +102,12 @@ const StrategyGrowth = () => {
                     Remind yourself why you're building your brand. Return to this when you feel lost, distracted, or overwhelmed. It's your why.
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <Textarea 
+                <CardContent className="pt-2">
+                  <Textarea
                     className="min-h-[150px] resize-none"
                     placeholder="Write your mission here — what you're here to do, what matters to you, and why you started this journey."
+                    value={missionStatement}
+                    onChange={(e) => setMissionStatement(e.target.value)}
                   />
                 </CardContent>
               </Card>
@@ -236,13 +124,12 @@ const StrategyGrowth = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Textarea 
+                  <Textarea
                     className="min-h-[150px] resize-none"
                     placeholder="Add daily affirmations that remind you of your purpose and values as a content creator."
                   />
                 </CardContent>
               </Card>
-              
               {/* Brand Keywords */}
               <Card>
                 <CardHeader>
@@ -256,8 +143,8 @@ const StrategyGrowth = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex gap-2">
-                    <Input 
-                      value={keywordInput} 
+                    <Input
+                      value={keywordInput}
                       onChange={(e) => setKeywordInput(e.target.value)}
                       placeholder="Add a keyword (e.g., elegant, relatable)"
                       onKeyDown={(e) => e.key === 'Enter' && handleAddKeyword()}
@@ -268,8 +155,8 @@ const StrategyGrowth = () => {
                     {brandKeywords.map((keyword, index) => (
                       <Badge key={index} variant="secondary" className="px-3 py-1">
                         {keyword}
-                        <button 
-                          onClick={() => handleRemoveKeyword(keyword)} 
+                        <button
+                          onClick={() => handleRemoveKeyword(keyword)}
                           className="ml-2 text-muted-foreground hover:text-foreground"
                         >
                           <Trash2 className="h-3 w-3" />
@@ -503,470 +390,20 @@ const StrategyGrowth = () => {
               </Card>
             </div>
           </TabsContent>
-          
+
           {/* Content Strategy Tab */}
           <TabsContent value="content-strategy" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Value Map */}
-              <Card className="md:col-span-2">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <PieChart className="w-5 h-5 text-primary" />
-                    Value Map
-                  </CardTitle>
-                  <CardDescription>
-                    Define what value each content pillar delivers to your audience
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex flex-col gap-4">
-                      {contentPillars.map((pillar, index) => (
-                        <div key={index} className="flex flex-col gap-2 p-4 border rounded-md">
-                          <div className="flex justify-between items-center">
-                            <h4 className="font-medium">{pillar.name}</h4>
-                            <Button 
-                              variant="ghost" 
-                              size="icon"
-                              onClick={() => handleRemovePillar(index)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          <p className="text-muted-foreground text-sm">{pillar.value}</p>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="flex gap-2 pt-4">
-                      <div className="grid grid-cols-2 gap-2 flex-1">
-                        <Input
-                          placeholder="Pillar name"
-                          value={pillarInput.name}
-                          onChange={(e) => setPillarInput({ ...pillarInput, name: e.target.value })}
-                        />
-                        <Input
-                          placeholder="Value it provides"
-                          value={pillarInput.value}
-                          onChange={(e) => setPillarInput({ ...pillarInput, value: e.target.value })}
-                        />
-                      </div>
-                      <Button onClick={handleAddPillar}>Add Pillar</Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Monthly Themes */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-primary" />
-                    Monthly Themes
-                  </CardTitle>
-                  <CardDescription>
-                    Plan content themes for upcoming months
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="border rounded-md overflow-hidden">
-                      <table className="w-full">
-                        <thead className="bg-muted">
-                          <tr>
-                            <th className="px-4 py-2 text-left font-medium">Month</th>
-                            <th className="px-4 py-2 text-left font-medium">Theme</th>
-                            <th className="px-4 py-2 text-left font-medium w-24">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {monthlyThemes.map((item, index) => (
-                            <tr key={index} className="border-t">
-                              <td className="px-4 py-3">{item.month}</td>
-                              <td className="px-4 py-3">{item.theme}</td>
-                              <td className="px-4 py-3">
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon"
-                                  onClick={() => {
-                                    setMonthlyThemes(monthlyThemes.filter((_, i) => i !== index));
-                                  }}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <select 
-                        className="p-2 border rounded-md bg-white" 
-                        value={newThemeMonth} 
-                        onChange={(e) => setNewThemeMonth(e.target.value)}
-                      >
-                        <option value="">Select Month</option>
-                        <option value="January">January</option>
-                        <option value="February">February</option>
-                        <option value="March">March</option>
-                        <option value="April">April</option>
-                        <option value="May">May</option>
-                        <option value="June">June</option>
-                        <option value="July">July</option>
-                        <option value="August">August</option>
-                        <option value="September">September</option>
-                        <option value="October">October</option>
-                        <option value="November">November</option>
-                        <option value="December">December</option>
-                      </select>
-                      <Input 
-                        placeholder="Theme (e.g., Self-Love)" 
-                        value={newThemeContent}
-                        onChange={(e) => setNewThemeContent(e.target.value)}
-                      />
-                    </div>
-                    <Button 
-                      className="w-full"
-                      onClick={handleAddTheme}
-                      disabled={!newThemeMonth || !newThemeContent}
-                    >
-                      Add Theme
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Content Formats */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Video className="w-5 h-5 text-primary" />
-                    Content Formats
-                  </CardTitle>
-                  <CardDescription>
-                    Select the formats you want to create
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {contentFormats.map((format, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 border rounded-md">
-                        <span>{format.name}</span>
-                        <Switch 
-                          checked={format.selected}
-                          onCheckedChange={() => handleFormatToggle(index)}
-                        />
-                      </div>
-                    ))}
-                    <div className="flex gap-2 pt-2">
-                      <Input placeholder="New format (e.g., Day-in-life Vlogs)" className="flex-1" />
-                      <Button>Add</Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              
-            </div>
+            <p>Content strategy content will go here</p>
           </TabsContent>
-          
+
           {/* Competitor Tracker Tab */}
           <TabsContent value="competitor-tracker" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Eye className="w-5 h-5 text-primary" />
-                  Competitor & Inspiration Tracker
-                </CardTitle>
-                <CardDescription>
-                  Keep tabs on creators who inspire you or compete in your niche
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Input 
-                      placeholder="@handle" 
-                      value={newCompetitor.handle}
-                      onChange={(e) => setNewCompetitor({...newCompetitor, handle: e.target.value})}
-                    />
-                    <Input 
-                      placeholder="Niche (e.g., Beauty, Fitness)" 
-                      value={newCompetitor.niche}
-                      onChange={(e) => setNewCompetitor({...newCompetitor, niche: e.target.value})}
-                    />
-                    <select 
-                      className="p-2 border rounded-md"
-                      value={newCompetitor.platform}
-                      onChange={(e) => setNewCompetitor({...newCompetitor, platform: e.target.value})}
-                    >
-                      <option value="Instagram">Instagram</option>
-                      <option value="TikTok">TikTok</option>
-                      <option value="YouTube">YouTube</option>
-                      <option value="Pinterest">Pinterest</option>
-                      <option value="LinkedIn">LinkedIn</option>
-                    </select>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input 
-                      placeholder="What do they do well?" 
-                      value={newCompetitor.strengths}
-                      onChange={(e) => setNewCompetitor({...newCompetitor, strengths: e.target.value})}
-                    />
-                    <Input 
-                      placeholder="Notes (trends, strategies to try)" 
-                      value={newCompetitor.notes}
-                      onChange={(e) => setNewCompetitor({...newCompetitor, notes: e.target.value})}
-                    />
-                  </div>
-                  <Button onClick={handleAddCompetitor} className="w-full">Add Creator</Button>
-                </div>
-
-                <div className="mt-6 border rounded-md overflow-hidden">
-                  <table className="w-full">
-                    <thead className="bg-muted">
-                      <tr>
-                        <th className="px-4 py-2 text-left font-medium">Handle</th>
-                        <th className="px-4 py-2 text-left font-medium">Niche</th>
-                        <th className="px-4 py-2 text-left font-medium">Platform</th>
-                        <th className="px-4 py-2 text-left font-medium">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {competitors.map((competitor, index) => (
-                        <tr key={index} className="border-t">
-                          <td className="px-4 py-3 font-medium">{competitor.handle}</td>
-                          <td className="px-4 py-3">{competitor.niche}</td>
-                          <td className="px-4 py-3">{competitor.platform}</td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
-                              <Button variant="ghost" size="sm">View</Button>
-                              <Button 
-                                variant="ghost" 
-                                size="icon"
-                                onClick={() => handleRemoveCompetitor(index)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Card className="bg-muted/40">
-                    <CardHeader className="py-4">
-                      <CardTitle className="text-base">Differentiation Analysis</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <Label>What makes you different?</Label>
-                        <Textarea 
-                          placeholder="How is your content/approach unique compared to competitors?"
-                          className="h-24 resize-none"
-                        />
-                      </div>
-                      <div className="space-y-2 mt-4">
-                        <Label>Unique selling points</Label>
-                        <Input placeholder="e.g., Insider industry knowledge" className="mb-2" />
-                        <Input placeholder="e.g., Authentic behind-the-scenes" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card className="bg-muted/40">
-                    <CardHeader className="py-4">
-                      <CardTitle className="text-base">Performance Tracking</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">Auto-track competitor growth</span>
-                          <Switch />
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">Get alerts about top content</span>
-                          <Switch />
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">Compare engagement rates</span>
-                          <Switch />
-                        </div>
-                        <Button variant="outline" className="w-full">Import Analytics</Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </CardContent>
-            </Card>
+            <p>Competitor tracker content will go here</p>
           </TabsContent>
-          
+
           {/* Growth Goals Tab */}
           <TabsContent value="growth-goals" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Growth Goals Card */}
-              <Card className="md:col-span-2">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Target className="w-5 h-5 text-primary" />
-                    SMART Goals
-                  </CardTitle>
-                  <CardDescription>
-                    Set specific, measurable, achievable, relevant, and time-bound goals
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    {goals.map((goal, index) => (
-                      <div key={index} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-medium">{goal.metric}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              Goal: {goal.target} in {goal.timeframe}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-medium">{goal.current}</p>
-                            <p className="text-sm text-muted-foreground">Current</p>
-                          </div>
-                        </div>
-                        <div className="space-y-1">
-                          <Progress value={calculateProgress(goal.current, goal.target)} className="h-2" />
-                          <p className="text-xs text-right text-muted-foreground">
-                            {calculateProgress(goal.current, goal.target)}% of goal
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <div className="mt-8 border-t pt-6">
-                    <h3 className="font-medium mb-4">Add New Goal</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label>Metric</Label>
-                        <select className="w-full p-2 border rounded-md">
-                          <option value="">Select Metric</option>
-                          <option value="Followers">Followers</option>
-                          <option value="Engagement Rate">Engagement Rate</option>
-                          <option value="Brand Deals">Brand Deals</option>
-                          <option value="Monthly Income">Monthly Income</option>
-                          <option value="Video Views">Video Views</option>
-                          <option value="Email Subscribers">Email Subscribers</option>
-                        </select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Current Value</Label>
-                        <Input type="number" placeholder="e.g., 1000" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Target Value</Label>
-                        <Input type="number" placeholder="e.g., 5000" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Timeframe</Label>
-                        <Input placeholder="e.g., 3 months" />
-                      </div>
-                      <div className="md:col-span-2 flex items-end">
-                        <Button className="w-full">Add Goal</Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Vision Card */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-primary" />
-                    Vision Card
-                  </CardTitle>
-                  <CardDescription>
-                    Remind yourself why you're building your brand
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Purpose Statement</Label>
-                      <Textarea 
-                        placeholder="Why did you start creating content? What impact do you want to have?"
-                        className="h-32 resize-none"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Inspiration Images</Label>
-                      <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
-                        <ImageIcon className="mx-auto h-10 w-10 text-gray-300" />
-                        <h3 className="mt-2 text-sm font-medium">Upload inspiration</h3>
-                        <p className="mt-1 text-xs text-gray-500">Vision board, dream life images</p>
-                        <div className="mt-4">
-                          <Button variant="outline" size="sm" className="relative">
-                            Upload
-                            <input type="file" className="absolute inset-0 w-full opacity-0 cursor-pointer" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Favorite Quote</Label>
-                      <Input placeholder="A quote that motivates you" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Milestone Tracker */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Award className="w-5 h-5 text-primary" />
-                    Milestone Tracker
-                  </CardTitle>
-                  <CardDescription>
-                    Celebrate your wins along the way
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="border rounded-md overflow-hidden">
-                      <table className="w-full">
-                        <thead className="bg-muted">
-                          <tr>
-                            <th className="px-4 py-2 text-left font-medium">Milestone</th>
-                            <th className="px-4 py-2 text-left font-medium">Date</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr className="border-t">
-                            <td className="px-4 py-3">First 1K followers</td>
-                            <td className="px-4 py-3">Jan 15, 2023</td>
-                          </tr>
-                          <tr className="border-t">
-                            <td className="px-4 py-3">First brand deal</td>
-                            <td className="px-4 py-3">Mar 22, 2023</td>
-                          </tr>
-                          <tr className="border-t">
-                            <td className="px-4 py-3">5K follower milestone</td>
-                            <td className="px-4 py-3">June 10, 2023</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Input placeholder="Milestone name" />
-                      <Input type="date" />
-                    </div>
-                    <Button className="w-full">Add Milestone</Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <p>Growth goals content will go here</p>
           </TabsContent>
         </Tabs>
       </div>
