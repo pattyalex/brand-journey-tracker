@@ -1,20 +1,32 @@
+
 import { useState } from "react";
-import { ChevronLeft } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import CollabFilters from "@/components/collab/CollabFilters";
 import BrandsCollabTable from "@/components/collab/BrandsCollabTable";
 import { useCollabBrands } from "@/hooks/useCollabBrands";
 import Layout from "@/components/Layout";
 
 export default function CollabManagement() {
+  const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all');
   const { 
     brands, 
+    columns,
     loading, 
     error,
     handleAddNewBrand,
+    handleUpdateBrand,
+    handleDeleteBrand,
+    handleUpdateColumnTitle,
+    handleAddColumn,
+    handleDeleteColumn
   } = useCollabBrands();
+
+  const handleGoBack = () => {
+    navigate('/partnerships-management');
+  };
 
   const filteredBrands = brands.filter(brand => {
     // Apply status filter if not 'all'
@@ -33,12 +45,24 @@ export default function CollabManagement() {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="flex items-center gap-1 bg-white shadow-sm hover:bg-gray-100"
+            onClick={handleGoBack}
+          >
+            ← Back to Partnerships
+          </Button>
+        </div>
+
         <header className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-semibold">Partnerships Management</h1>
           <CollabFilters
-            onStatusChange={setStatusFilter} 
-            onPaymentStatusChange={setPaymentStatusFilter}
-            onAddNewBrand={handleAddNewBrand}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter} 
+            paymentStatusFilter={paymentStatusFilter}
+            setPaymentStatusFilter={setPaymentStatusFilter}
           />
         </header>
 
@@ -47,7 +71,16 @@ export default function CollabManagement() {
         ) : error ? (
           <div className="text-center py-8 text-red-500">{error}</div>
         ) : (
-          <BrandsCollabTable brands={filteredBrands} />
+          <BrandsCollabTable 
+            brands={filteredBrands} 
+            columns={columns || []}
+            handleUpdateBrand={handleUpdateBrand}
+            handleAddBrand={handleAddNewBrand}
+            handleDeleteBrand={handleDeleteBrand}
+            handleUpdateColumnTitle={handleUpdateColumnTitle}
+            handleAddColumn={handleAddColumn}
+            handleDeleteColumn={handleDeleteColumn}
+          />
         )}
       </div>
     </Layout>
