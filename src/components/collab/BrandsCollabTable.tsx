@@ -34,7 +34,6 @@ const BrandsCollabTable = ({
   handleUpdateColumnTitle,
   handleAddColumn,
 }: BrandsCollabTableProps) => {
-  // Function to determine if a column header should be editable
   const isHeaderEditable = (columnKey: keyof CollabBrand): boolean => {
     const nonEditableKeys: (keyof CollabBrand)[] = [
       'brandName', 'contact', 'product', 'status', 'deliverables',

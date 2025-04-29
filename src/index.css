@@ -90,6 +90,11 @@
   th[data-key="briefContract"] {
     padding-right: 35px;
   }
+  
+  /* Add spacing between deposit-paid and finalPaymentDueDate */
+  th[data-key="depositPaid"] {
+    padding-right: 30px;
+  }
 }
 
 @layer utilities {
