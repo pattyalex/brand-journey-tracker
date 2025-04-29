@@ -55,6 +55,31 @@ const StrategyGrowth = () => {
     { month: "January", theme: "New Beginnings" },
     { month: "February", theme: "Self-Love" }
   ]);
+  const [newThemeMonth, setNewThemeMonth] = useState("");
+  const [newThemeContent, setNewThemeContent] = useState("");
+  
+  const handleAddTheme = () => {
+    if (newThemeMonth && newThemeContent) {
+      // Check if the month already exists
+      const monthExists = monthlyThemes.some(item => item.month === newThemeMonth);
+      
+      if (monthExists) {
+        // If the month exists, update its theme
+        setMonthlyThemes(monthlyThemes.map(item => 
+          item.month === newThemeMonth 
+            ? { ...item, theme: newThemeContent } 
+            : item
+        ));
+      } else {
+        // If the month doesn't exist, add a new entry
+        setMonthlyThemes([...monthlyThemes, { month: newThemeMonth, theme: newThemeContent }]);
+      }
+      
+      // Reset input fields
+      setNewThemeMonth("");
+      setNewThemeContent("");
+    }
+  };
   const [contentFormats, setContentFormats] = useState([
     { name: "Tutorial Reels", selected: true },
     { name: "Carousel Tips", selected: true },
@@ -554,6 +579,7 @@ const StrategyGrowth = () => {
                           <tr>
                             <th className="px-4 py-2 text-left font-medium">Month</th>
                             <th className="px-4 py-2 text-left font-medium">Theme</th>
+                            <th className="px-4 py-2 text-left font-medium w-24">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -561,13 +587,28 @@ const StrategyGrowth = () => {
                             <tr key={index} className="border-t">
                               <td className="px-4 py-3">{item.month}</td>
                               <td className="px-4 py-3">{item.theme}</td>
+                              <td className="px-4 py-3">
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  onClick={() => {
+                                    setMonthlyThemes(monthlyThemes.filter((_, i) => i !== index));
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
-                      <select className="p-2 border rounded-md">
+                      <select 
+                        className="p-2 border rounded-md bg-white" 
+                        value={newThemeMonth} 
+                        onChange={(e) => setNewThemeMonth(e.target.value)}
+                      >
                         <option value="">Select Month</option>
                         <option value="January">January</option>
                         <option value="February">February</option>
@@ -582,9 +623,19 @@ const StrategyGrowth = () => {
                         <option value="November">November</option>
                         <option value="December">December</option>
                       </select>
-                      <Input placeholder="Theme (e.g., Self-Love February)" />
+                      <Input 
+                        placeholder="Theme (e.g., Self-Love)" 
+                        value={newThemeContent}
+                        onChange={(e) => setNewThemeContent(e.target.value)}
+                      />
                     </div>
-                    <Button className="w-full">Add Theme</Button>
+                    <Button 
+                      className="w-full"
+                      onClick={handleAddTheme}
+                      disabled={!newThemeMonth || !newThemeContent}
+                    >
+                      Add Theme
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
