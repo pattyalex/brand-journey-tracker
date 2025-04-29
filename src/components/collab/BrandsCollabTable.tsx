@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -36,8 +35,8 @@ const BrandsCollabTable = ({
   handleAddColumn,
 }: BrandsCollabTableProps) => {
   // Function to determine if a column header should be editable
-  const isHeaderEditable = (columnKey: string): boolean => {
-    const nonEditableKeys = [
+  const isHeaderEditable = (columnKey: keyof CollabBrand): boolean => {
+    const nonEditableKeys: (keyof CollabBrand)[] = [
       'brandName', 'contact', 'product', 'status', 'deliverables',
       'briefContract', 'rate', 'postDate', 'depositPaid',
       'finalPaymentDueDate', 'invoiceSent', 'paymentReceived'
