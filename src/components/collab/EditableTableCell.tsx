@@ -58,7 +58,7 @@ const EditableTableCell = ({
   ) : (
     <div 
       onDoubleClick={handleDoubleClick} 
-      className={cn("cursor-pointer hover:bg-gray-50 p-1 rounded", className)}
+      className={cn("cursor-pointer hover:bg-gray-50 p-1 rounded text-left w-full", className)}
     >
       {value}
     </div>
