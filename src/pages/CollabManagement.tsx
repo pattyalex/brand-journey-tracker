@@ -19,8 +19,16 @@ const CollabManagement = () => {
   } = useCollabBrands();
 
   const filteredBrands = brands.filter(brand => {
+    // Apply status filter if not 'all'
     if (statusFilter && statusFilter !== 'all' && brand.status !== statusFilter) return false;
-    // We would implement payment status filter here if we had that field
+    
+    // Apply payment status filter if not 'all'
+    if (paymentStatusFilter && paymentStatusFilter !== 'all') {
+      if (paymentStatusFilter === 'paid' && brand.paymentReceived !== 'Paid') return false;
+      if (paymentStatusFilter === 'unpaid' && brand.paymentReceived !== 'Unpaid') return false;
+      if (paymentStatusFilter === 'overdue' && brand.paymentReceived !== 'Overdue') return false;
+    }
+    
     return true;
   });
 

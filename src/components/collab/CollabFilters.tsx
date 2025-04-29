@@ -1,5 +1,11 @@
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 
 interface CollabFiltersProps {
   statusFilter: string;
@@ -36,7 +42,7 @@ const CollabFilters = ({
           <SelectValue placeholder="Payment Status" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All</SelectItem>
+          <SelectItem value="all">All Payment Statuses</SelectItem>
           <SelectItem value="paid">Paid</SelectItem>
           <SelectItem value="unpaid">Unpaid</SelectItem>
           <SelectItem value="overdue">Overdue</SelectItem>
