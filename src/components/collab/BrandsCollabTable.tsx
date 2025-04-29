@@ -1,3 +1,4 @@
+
 import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -14,6 +15,7 @@ import NotesCell from "@/components/collab/NotesCell";
 import { CollabBrand, TableColumn } from "@/types/collab";
 import EditableColumnHeader from "./EditableColumnHeader";
 import { cn } from "@/lib/utils";
+import { toast } from "@/hooks/use-toast";
 
 interface BrandsCollabTableProps {
   brands: CollabBrand[];
@@ -44,6 +46,17 @@ const BrandsCollabTable = ({
     return !nonEditableKeys.includes(columnKey);
   };
 
+  const handleAddColumnClick = () => {
+    if (handleAddColumn) {
+      handleAddColumn();
+      // Show a toast notification to confirm action
+      toast({
+        title: "New column added",
+        description: "You can now edit the column title",
+      });
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="bg-white rounded-lg shadow-sm border">
@@ -55,10 +68,10 @@ const BrandsCollabTable = ({
             </Button>
             {handleAddColumn && (
               <Button 
-                onClick={handleAddColumn} 
+                onClick={handleAddColumnClick}
                 size="sm" 
                 variant="outline"
-                className="flex items-center gap-1 text-gray-500 border-gray-200 hover:bg-gray-50"
+                className="flex items-center gap-1 text-gray-500 border-gray-200 hover:bg-gray-50 active:bg-gray-100 transition-colors"
               >
                 <Columns className="h-4 w-4" /> Add Column
               </Button>
