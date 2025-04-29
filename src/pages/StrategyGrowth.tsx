@@ -87,6 +87,9 @@ const StrategyGrowth = () => {
     { metric: "Brand Deals", current: 1, target: 3, timeframe: "6 months" },
     { metric: "Monthly Income", current: 800, target: 2500, timeframe: "6 months" }
   ]);
+  
+  // New state to track active tab
+  const [activeTab, setActiveTab] = useState("brand-identity");
 
   // Handlers
   const handleAddKeyword = () => {
@@ -139,6 +142,11 @@ const StrategyGrowth = () => {
     return Math.min(Math.round((current / target) * 100), 100);
   };
 
+  // Handler for tab changes
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+  };
+
   return (
     <Layout>
       <div className="container mx-auto p-4 space-y-8 fade-in">
@@ -149,7 +157,7 @@ const StrategyGrowth = () => {
           </p>
         </div>
         
-        <Tabs defaultValue="brand-identity" className="w-full">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="mb-6 grid grid-cols-4 gap-4">
             <TabsTrigger value="brand-identity" className="flex items-center gap-2">
               <PenTool className="w-4 h-4" />
@@ -316,7 +324,7 @@ const StrategyGrowth = () => {
                     <h3 className="mt-2 text-sm font-medium">Upload images</h3>
                     <p className="mt-1 text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
                     <div className="mt-4">
-                      <Button variant="outline" className="flex items-center gap-2">
+                      <Button variant="outline" className="flex items-center gap-2 relative">
                         <Upload className="h-4 w-4" />
                         <span>Upload files</span>
                         <input type="file" className="absolute inset-0 w-full opacity-0 cursor-pointer" multiple />
@@ -806,7 +814,10 @@ const StrategyGrowth = () => {
                         <h3 className="mt-2 text-sm font-medium">Upload inspiration</h3>
                         <p className="mt-1 text-xs text-gray-500">Vision board, dream life images</p>
                         <div className="mt-4">
-                          <Button variant="outline" size="sm">Upload</Button>
+                          <Button variant="outline" size="sm" className="relative">
+                            Upload
+                            <input type="file" className="absolute inset-0 w-full opacity-0 cursor-pointer" />
+                          </Button>
                         </div>
                       </div>
                     </div>
