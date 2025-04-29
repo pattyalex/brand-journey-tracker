@@ -36,7 +36,7 @@ const NotesCell = ({ value, onChange }: NotesCellProps) => {
       <DialogTrigger asChild>
         <Button 
           variant="ghost" 
-          className="h-8 w-full justify-start text-left font-normal"
+          className="h-8 w-full justify-center text-center font-normal"
         >
           <span className="truncate">
             {truncateText(value || "None")}
@@ -45,7 +45,7 @@ const NotesCell = ({ value, onChange }: NotesCellProps) => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Notes</DialogTitle>
+          <DialogTitle className="text-center">Notes</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4 py-4">
