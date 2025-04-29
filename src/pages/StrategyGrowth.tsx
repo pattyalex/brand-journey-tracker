@@ -238,7 +238,7 @@ const StrategyGrowth = () => {
                       id="age-range"
                       value={audienceAge}
                       onChange={(e) => setAudienceAge(e.target.value)}
-                      className="w-full p-2 border rounded-md"
+                      className="w-full p-2 border rounded-md bg-background text-foreground"
                     >
                       <option value="18-24">18-24</option>
                       <option value="25-34">25-34</option>
