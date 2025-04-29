@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -75,6 +76,7 @@
   th.notes-header {
     padding-left: 20px; /* Keep the left padding for "Notes" text */
     padding-right: 30px; /* Reduced from 100px to 30px to decrease the gap */
+    text-align: center; /* Center the text */
   }
 
   /* Reduce right padding for Notes cells to match header alignment */

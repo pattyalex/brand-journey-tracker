@@ -35,6 +35,9 @@ const EditableColumnHeader = ({
     }
   };
 
+  // Determine if this is the Notes column to apply special styling
+  const isNotesColumn = title === 'Notes';
+  
   return (
     <TableHead className={cn("group", className)}>
       {editing ? (
@@ -47,7 +50,10 @@ const EditableColumnHeader = ({
           className="h-8 py-0 px-2 text-sm"
         />
       ) : (
-        <div className="flex items-center space-x-2">
+        <div className={cn(
+          "flex items-center space-x-2",
+          isNotesColumn ? "justify-center w-full" : ""
+        )}>
           <span>{title}</span>
           <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <Pencil
