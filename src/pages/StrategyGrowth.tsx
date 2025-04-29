@@ -540,7 +540,7 @@ const StrategyGrowth = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Calendar className="w-5 h-5 text-primary" />
-                    Weekly/Monthly Themes
+                    Monthly Themes
                   </CardTitle>
                   <CardDescription>
                     Plan content themes for upcoming months
