@@ -18,18 +18,18 @@ export const defaultMenuItems: MenuItem[] = [
     ]
   },
   { 
+    title: 'Partnerships', 
+    icon: Handshake, 
+    url: '/collab-management', 
+    isDeletable: false 
+  },
+  { 
     title: 'Strategy and Growth', 
     icon: TrendingUp, 
     url: '/strategy-growth', 
     isDeletable: false
   },
   { title: 'Quick Notes', icon: Clipboard, url: '/quick-notes', isDeletable: false },
-  { 
-    title: 'Partnerships', 
-    icon: Handshake, 
-    url: '/collab-management', 
-    isDeletable: false 
-  },
 ];
 
 export const settingsItem: MenuItem = { title: 'Settings', icon: Settings, url: '/settings', isDeletable: false };
