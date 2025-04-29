@@ -42,7 +42,7 @@ const BrandsCollabTable = ({
       'briefContract', 'rate', 'postDate', 'depositPaid',
       'finalPaymentDueDate', 'invoiceSent', 'paymentReceived'
     ];
-    
+
     return !nonEditableKeys.includes(columnKey);
   };
 
@@ -74,7 +74,7 @@ const BrandsCollabTable = ({
             )}
           </div>
         </div>
-        
+
         <div className="overflow-x-auto">
           <ScrollArea className="h-[400px]">
             <div className="min-w-full w-max">
@@ -128,14 +128,14 @@ const BrandsCollabTable = ({
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </TableCell>
-                      
+
                       {columns.map((column) => (
                         <TableCell 
                           key={`${brand.id}-${column.key}`} 
                           className={cn(
                             column.key === 'depositPaid' ? 'deposit-paid' : '',
                             column.key === 'notes' ? '' : '',
-                            "min-w-[120px] px-3" // Set minimum width and reduced padding for all cells
+                            "min-w-[120px] px-3 text-left" // Set minimum width and reduced padding for all cells, added text-left
                           )}
                           data-key={column.key}
                         >
