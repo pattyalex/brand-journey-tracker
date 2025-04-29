@@ -97,7 +97,7 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
           <RadioGroup 
             value={isNA ? "n/a" : (isYes ? "yes" : "no")}
             onValueChange={handleRadioChange}
-            className="flex flex-col items-start pl-0"
+            className="flex flex-col items-start p-0 text-left"
           >
             <div className="flex items-center space-x-2 pl-0">
               <RadioGroupItem value="n/a" id="n/a" />
