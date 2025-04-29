@@ -1,30 +1,22 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { ChevronLeft } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 import CollabFilters from "@/components/collab/CollabFilters";
 import BrandsCollabTable from "@/components/collab/BrandsCollabTable";
 import { useCollabBrands } from "@/hooks/useCollabBrands";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft } from "lucide-react";
+import { useSidebar } from "@/components/ui/sidebar";
 
-const CollabManagement = () => {
+export default function CollabManagement() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all');
-  const navigate = useNavigate();
   const { 
     brands, 
-    columns, 
-    handleUpdateBrand, 
-    handleAddBrand, 
-    handleDeleteBrand,
-    handleUpdateColumnTitle,
-    handleAddColumn,
-    handleDeleteColumn
+    loading, 
+    error,
+    handleAddNewBrand,
   } = useCollabBrands();
 
-  const handleGoBack = () => {
-    // Navigate to the partnerships management page explicitly
-    navigate('/partnerships-management');
-  };
+  const { state, toggleSidebar } = useSidebar();
 
   const filteredBrands = brands.filter(brand => {
     // Apply status filter if not 'all'
@@ -41,40 +33,35 @@ const CollabManagement = () => {
   });
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
+    <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
-        <Button 
-          variant="ghost" 
-          onClick={handleGoBack} 
-          className="flex items-center text-gray-600 hover:text-gray-900"
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full bg-white shadow-md hover:bg-white"
+          onClick={toggleSidebar}
+          aria-label={state === "collapsed" ? "Expand sidebar" : "Collapse sidebar"}
         >
-          <ChevronLeft className="h-5 w-5 mr-1" />
-          Back
+          <ChevronLeft className={`h-5 w-5 transition-transform duration-200 ${state === 'collapsed' ? 'rotate-180' : ''}`} />
         </Button>
       </div>
 
       <header className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-semibold">Partnerships Management</h1>
         <CollabFilters
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
-          paymentStatusFilter={paymentStatusFilter}
-          setPaymentStatusFilter={setPaymentStatusFilter}
+          onStatusChange={setStatusFilter} 
+          onPaymentStatusChange={setPaymentStatusFilter}
+          onAddNewBrand={handleAddNewBrand}
         />
       </header>
 
-      <BrandsCollabTable
-        brands={filteredBrands}
-        columns={columns}
-        handleUpdateBrand={handleUpdateBrand}
-        handleAddBrand={handleAddBrand}
-        handleDeleteBrand={handleDeleteBrand}
-        handleUpdateColumnTitle={handleUpdateColumnTitle}
-        handleAddColumn={handleAddColumn}
-        handleDeleteColumn={handleDeleteColumn}
-      />
+      {loading ? (
+        <div className="text-center py-8">Loading partnerships data...</div>
+      ) : error ? (
+        <div className="text-center py-8 text-red-500">{error}</div>
+      ) : (
+        <BrandsCollabTable brands={filteredBrands} />
+      )}
     </div>
   );
-};
-
-export default CollabManagement;
+}
