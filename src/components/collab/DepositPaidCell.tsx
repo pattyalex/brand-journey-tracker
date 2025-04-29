@@ -82,7 +82,7 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
         <Button 
           variant="ghost" 
           className={cn(
-            "h-8 w-full justify-start text-left font-normal",
+            "h-8 w-full justify-center text-center font-normal",
             isYes ? "text-green-600" : (isNo ? "text-red-500" : "text-gray-500")
           )}
         >
@@ -97,6 +97,7 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
           <RadioGroup 
             value={isNA ? "n/a" : (isYes ? "yes" : "no")}
             onValueChange={handleRadioChange}
+            className="flex flex-col items-center"
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="yes" id="yes" />
@@ -120,24 +121,26 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
           
           {isYes && (
             <div className="space-y-2">
-              <Label htmlFor="depositAmount">Amount</Label>
+              <Label htmlFor="depositAmount" className="text-center block">Amount</Label>
               <Input 
                 id="depositAmount"
                 placeholder="$0.00"
                 value={amount}
                 onChange={handleAmountChange}
+                className="text-center"
               />
             </div>
           )}
           
           {isNo && (
             <div className="space-y-2">
-              <Label htmlFor="shouldPayAmount">Should Pay</Label>
+              <Label htmlFor="shouldPayAmount" className="text-center block">Should Pay</Label>
               <Input 
                 id="shouldPayAmount"
                 placeholder="$0.00"
                 value={shouldPayAmount}
                 onChange={handleShouldPayChange}
+                className="text-center"
               />
             </div>
           )}
