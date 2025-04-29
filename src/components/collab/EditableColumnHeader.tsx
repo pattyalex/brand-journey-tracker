@@ -2,16 +2,24 @@
 import React, { useState } from 'react';
 import { TableHead } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface EditableColumnHeaderProps {
   title: string;
   onChange: (value: string) => void;
-  className?: string; // Added className prop
+  className?: string;
+  canDelete?: boolean;
+  onDelete?: () => void;
 }
 
-const EditableColumnHeader = ({ title, onChange, className }: EditableColumnHeaderProps) => {
+const EditableColumnHeader = ({ 
+  title, 
+  onChange, 
+  className,
+  canDelete = false,
+  onDelete
+}: EditableColumnHeaderProps) => {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(title);
 
@@ -41,10 +49,18 @@ const EditableColumnHeader = ({ title, onChange, className }: EditableColumnHead
       ) : (
         <div className="flex items-center space-x-2">
           <span>{title}</span>
-          <Pencil
-            className="h-3.5 w-3.5 text-gray-400 opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity duration-200"
-            onClick={() => setEditing(true)}
-          />
+          <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <Pencil
+              className="h-3.5 w-3.5 text-gray-400 cursor-pointer hover:text-gray-600"
+              onClick={() => setEditing(true)}
+            />
+            {canDelete && onDelete && (
+              <Trash2
+                className="h-3.5 w-3.5 text-gray-400 cursor-pointer hover:text-red-500"
+                onClick={onDelete}
+              />
+            )}
+          </div>
         </div>
       )}
     </TableHead>

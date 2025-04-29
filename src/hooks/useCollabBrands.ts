@@ -24,11 +24,9 @@ export function useCollabBrands() {
   const { toast } = useToast();
   
   useEffect(() => {
-    // Load initial data or from localStorage
     const savedBrands = localStorage.getItem('collabBrands');
     if (savedBrands) {
       const parsedBrands = JSON.parse(savedBrands);
-      // Add required fields if they don't exist
       const updatedBrands = parsedBrands.map((brand: CollabBrand) => ({
         ...brand,
         invoiceSent: brand.invoiceSent || "No",
@@ -39,7 +37,6 @@ export function useCollabBrands() {
       }));
       setBrands(updatedBrands);
     } else {
-      // Set default brand if no saved data
       setBrands([
         {
           id: '1',
@@ -60,12 +57,10 @@ export function useCollabBrands() {
       ]);
     }
 
-    // Load saved columns if available
     const savedColumns = localStorage.getItem('collabColumns');
     if (savedColumns) {
       const parsedColumns = JSON.parse(savedColumns);
       
-      // Check if required columns already exist
       const postDateColumnExists = parsedColumns.some((col: TableColumn) => col.key === 'postDate');
       const invoiceSentColumnExists = parsedColumns.some((col: TableColumn) => col.key === 'invoiceSent');
       const paymentReceivedColumnExists = parsedColumns.some((col: TableColumn) => col.key === 'paymentReceived');
@@ -75,7 +70,6 @@ export function useCollabBrands() {
       let newColumns = [...parsedColumns];
       let columnsUpdated = false;
       
-      // Add briefContract column if it doesn't exist
       if (!briefContractColumnExists) {
         const deliverablesIndex = newColumns.findIndex(
           (col: TableColumn) => col.key === 'deliverables'
@@ -91,7 +85,6 @@ export function useCollabBrands() {
         }
       }
       
-      // Add postDate column if it doesn't exist
       if (!postDateColumnExists) {
         const rateIndex = newColumns.findIndex(
           (col: TableColumn) => col.key === 'rate'
@@ -107,7 +100,6 @@ export function useCollabBrands() {
         }
       }
       
-      // Add invoiceSent column if it doesn't exist
       if (!invoiceSentColumnExists) {
         const finalPaymentIndex = newColumns.findIndex(
           (col: TableColumn) => col.key === 'finalPaymentDueDate'
@@ -123,7 +115,6 @@ export function useCollabBrands() {
         }
       }
       
-      // Add paymentReceived column if it doesn't exist
       if (!paymentReceivedColumnExists) {
         const invoiceSentIndex = newColumns.findIndex(
           (col: TableColumn) => col.key === 'invoiceSent'
@@ -139,7 +130,6 @@ export function useCollabBrands() {
         }
       }
       
-      // Add notes column if it doesn't exist
       if (!notesColumnExists) {
         const paymentReceivedIndex = newColumns.findIndex(
           (col: TableColumn) => col.key === 'paymentReceived'
@@ -254,6 +244,30 @@ export function useCollabBrands() {
     });
   };
 
+  const handleDeleteColumn = (columnKey: string) => {
+    const protectedColumns = ['brandName', 'contact', 'product', 'status', 'deliverables',
+      'briefContract', 'rate', 'postDate', 'depositPaid', 'finalPaymentDueDate', 
+      'invoiceSent', 'paymentReceived'];
+      
+    if (protectedColumns.includes(columnKey)) {
+      toast({
+        title: "Cannot delete column",
+        description: "This is a required column and cannot be deleted",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const updatedColumns = columns.filter(col => col.key !== columnKey);
+    setColumns(updatedColumns);
+    
+    toast({
+      title: "Column deleted",
+      description: "Column has been removed from the table",
+      variant: "destructive",
+    });
+  };
+
   return {
     brands,
     columns,
@@ -262,5 +276,6 @@ export function useCollabBrands() {
     handleDeleteBrand,
     handleUpdateColumnTitle,
     handleAddColumn,
+    handleDeleteColumn,
   };
 }

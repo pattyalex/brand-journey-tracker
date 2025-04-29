@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -24,6 +23,7 @@ interface BrandsCollabTableProps {
   handleDeleteBrand: (id: string) => void;
   handleUpdateColumnTitle: (index: number, newTitle: string) => void;
   handleAddColumn?: () => void;
+  handleDeleteColumn?: (columnKey: string) => void;
 }
 
 const BrandsCollabTable = ({
@@ -34,6 +34,7 @@ const BrandsCollabTable = ({
   handleDeleteBrand,
   handleUpdateColumnTitle,
   handleAddColumn,
+  handleDeleteColumn,
 }: BrandsCollabTableProps) => {
   const isHeaderEditable = (columnKey: keyof CollabBrand): boolean => {
     const nonEditableKeys: (keyof CollabBrand)[] = [
@@ -43,6 +44,13 @@ const BrandsCollabTable = ({
     ];
     
     return !nonEditableKeys.includes(columnKey);
+  };
+
+  const canDeleteColumn = (columnKey: keyof CollabBrand): boolean => {
+    // Only allow deletion from 'notes' column onwards or custom columns
+    const notesIndex = columns.findIndex(col => col.key === 'notes');
+    const currentIndex = columns.findIndex(col => col.key === columnKey);
+    return currentIndex >= notesIndex;
   };
 
   return (
@@ -80,6 +88,8 @@ const BrandsCollabTable = ({
                           key={column.key}
                           title={column.title}
                           onChange={(newTitle) => handleUpdateColumnTitle(index, newTitle)}
+                          canDelete={canDeleteColumn(column.key)}
+                          onDelete={handleDeleteColumn ? () => handleDeleteColumn(String(column.key)) : undefined}
                           className={cn(
                             column.key === 'notes' ? 'notes-header' : '',
                             "min-w-[120px]" // Set minimum width for all columns
