@@ -33,7 +33,6 @@ const CollabFilters = ({
           <SelectItem value="Contract Signed">Contract Signed</SelectItem>
           <SelectItem value="Content Submitted">Content Submitted</SelectItem>
           <SelectItem value="Posted">Posted</SelectItem>
-          <SelectItem value="Paid">Paid</SelectItem>
         </SelectContent>
       </Select>
 
@@ -43,6 +42,7 @@ const CollabFilters = ({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Payment Statuses</SelectItem>
+          <SelectItem value="paid">Paid</SelectItem>
           <SelectItem value="unpaid">Unpaid</SelectItem>
           <SelectItem value="overdue">Overdue</SelectItem>
         </SelectContent>
