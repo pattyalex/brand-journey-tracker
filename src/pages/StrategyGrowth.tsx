@@ -311,8 +311,7 @@ const StrategyGrowth = () => {
                           <div className="flex justify-between items-center">
                             <p className="font-medium capitalize">{tone}</p>
                             {selectedTones.includes(tone) && (
-                              <div className="h-4 w-4 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">
-                                {selectedTones.indexOf(tone) + 1}
+                              <div className="h-4 w-4 rounded-full bg-primary flex items-center justify-center">
                               </div>
                             )}
                           </div>
