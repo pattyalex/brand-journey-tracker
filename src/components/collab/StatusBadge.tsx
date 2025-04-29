@@ -22,8 +22,6 @@ const StatusBadge = ({ status, onChange }: StatusBadgeProps) => {
         return 'bg-purple-100 text-purple-800';
       case 'posted':
         return 'bg-cyan-100 text-cyan-800';
-      case 'paid':
-        return 'bg-emerald-100 text-emerald-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -47,7 +45,6 @@ const StatusBadge = ({ status, onChange }: StatusBadgeProps) => {
       <option value="Contract Signed">Contract Signed</option>
       <option value="Content Submitted">Content Submitted</option>
       <option value="Posted">Posted</option>
-      <option value="Paid">Paid</option>
     </select>
   ) : (
     <span 
