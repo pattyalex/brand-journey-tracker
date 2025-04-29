@@ -81,7 +81,7 @@ const BrandsCollabTable = ({
               <Table className="brand-collab-table">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-6 sticky left-0 z-10 bg-white p-0"></TableHead>
+                    <TableHead className="w-3 sticky left-0 z-10 bg-white p-0"></TableHead>
                     {columns.map((column, index) => (
                       isHeaderEditable(column.key) ? (
                         <EditableColumnHeader
@@ -117,7 +117,7 @@ const BrandsCollabTable = ({
                       key={brand.id} 
                       className="group hover:bg-gray-50 transition-colors duration-200"
                     >
-                      <TableCell className="w-6 p-0 sticky left-0 z-10 bg-white">
+                      <TableCell className="w-3 p-0 sticky left-0 z-10 bg-white">
                         <Button 
                           variant="ghost" 
                           size="icon"
