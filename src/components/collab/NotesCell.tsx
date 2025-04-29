@@ -50,7 +50,7 @@ const NotesCell = ({ value, onChange }: NotesCellProps) => {
       <DialogTrigger asChild>
         <Button 
           variant="ghost" 
-          className={`h-8 w-full justify-start text-left font-normal ${hasNotes ? 'border-l-4 border-l-purple-400 pl-2' : ''}`}
+          className={`h-8 w-full justify-start text-left font-normal pl-6 ${hasNotes ? 'border-l-4 border-l-purple-400 pl-8' : ''}`}
         >
           <span className={`truncate ${hasNotes ? 'text-gray-700' : 'text-gray-400 italic'}`}>
             {truncateText(value || "None")}

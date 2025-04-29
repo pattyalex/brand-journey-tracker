@@ -80,7 +80,7 @@ const BrandsCollabTable = ({
                           title={column.title}
                           onChange={(newTitle) => handleUpdateColumnTitle(index, newTitle)}
                           className={cn(
-                            column.key === 'notes' ? 'notes-header' : ''
+                            column.key === 'notes' ? 'notes-header pr-24' : ''
                           )}
                         />
                       ) : (
@@ -88,7 +88,7 @@ const BrandsCollabTable = ({
                           key={column.key}
                           data-key={column.key}
                           className={cn(
-                            column.key === 'notes' ? 'notes-header' : '',
+                            column.key === 'notes' ? 'notes-header pr-24' : '',
                             column.key === 'depositPaid' ? 'deposit-paid' : ''
                           )}
                         >
@@ -121,7 +121,8 @@ const BrandsCollabTable = ({
                           key={`${brand.id}-${column.key}`} 
                           className={cn(
                             "min-w-[150px]",
-                            column.key === 'depositPaid' ? 'deposit-paid' : ''
+                            column.key === 'depositPaid' ? 'deposit-paid' : '',
+                            column.key === 'notes' ? 'pr-24' : ''
                           )}
                         >
                           {column.key === 'status' ? (
