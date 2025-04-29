@@ -2,7 +2,7 @@
 import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, Trash2, Columns } from "lucide-react";
+import { Plus, Trash2, Columns, X } from "lucide-react";
 import EditableTableCell from "@/components/collab/EditableTableCell";
 import StatusBadge from "@/components/collab/StatusBadge";
 import DepositPaidCell from "@/components/collab/DepositPaidCell";
@@ -25,6 +25,7 @@ interface BrandsCollabTableProps {
   handleDeleteBrand: (id: string) => void;
   handleUpdateColumnTitle: (index: number, newTitle: string) => void;
   handleAddColumn?: () => void;
+  handleDeleteColumn?: (columnKey: string) => void;
 }
 
 const BrandsCollabTable = ({
@@ -35,6 +36,7 @@ const BrandsCollabTable = ({
   handleDeleteBrand,
   handleUpdateColumnTitle,
   handleAddColumn,
+  handleDeleteColumn,
 }: BrandsCollabTableProps) => {
   const isHeaderEditable = (columnKey: keyof CollabBrand): boolean => {
     const nonEditableKeys: (keyof CollabBrand)[] = [
@@ -46,6 +48,16 @@ const BrandsCollabTable = ({
     return !nonEditableKeys.includes(columnKey);
   };
 
+  const isColumnDeletable = (columnKey: keyof CollabBrand): boolean => {
+    const nonDeletableKeys: (keyof CollabBrand)[] = [
+      'brandName', 'contact', 'product', 'status', 'deliverables',
+      'briefContract', 'rate', 'postDate', 'depositPaid',
+      'finalPaymentDueDate', 'invoiceSent', 'paymentReceived', 'notes'
+    ];
+    
+    return !nonDeletableKeys.includes(columnKey);
+  };
+
   const handleAddColumnClick = () => {
     if (handleAddColumn) {
       handleAddColumn();
@@ -53,6 +65,16 @@ const BrandsCollabTable = ({
       toast({
         title: "New column added",
         description: "You can now edit the column title",
+      });
+    }
+  };
+
+  const handleDeleteColumnClick = (columnKey: string) => {
+    if (handleDeleteColumn) {
+      handleDeleteColumn(columnKey);
+      toast({
+        title: "Column deleted",
+        description: "The column has been removed from the table",
       });
     }
   };
@@ -87,27 +109,41 @@ const BrandsCollabTable = ({
                   <TableRow>
                     <TableHead className="w-12 sticky left-0 z-10 bg-white"></TableHead>
                     {columns.map((column, index) => (
-                      isHeaderEditable(column.key) ? (
-                        <EditableColumnHeader
-                          key={column.key}
-                          title={column.title}
-                          onChange={(newTitle) => handleUpdateColumnTitle(index, newTitle)}
-                          className={cn(
-                            column.key === 'notes' ? 'notes-header pr-24' : ''
+                      <TableHead 
+                        key={column.key}
+                        data-key={column.key}
+                        className={cn(
+                          column.key === 'notes' ? 'notes-header pr-24' : '',
+                          column.key === 'depositPaid' ? 'deposit-paid' : '',
+                          "group relative" // Add group and relative for the delete button position
+                        )}
+                      >
+                        <div className="flex items-center space-x-2 pr-8">
+                          {isHeaderEditable(column.key) ? (
+                            <EditableColumnHeader
+                              title={column.title}
+                              onChange={(newTitle) => handleUpdateColumnTitle(index, newTitle)}
+                              className={cn(
+                                column.key === 'notes' ? 'w-full' : ''
+                              )}
+                            />
+                          ) : (
+                            <span>{column.title}</span>
                           )}
-                        />
-                      ) : (
-                        <TableHead 
-                          key={column.key}
-                          data-key={column.key}
-                          className={cn(
-                            column.key === 'notes' ? 'notes-header pr-24' : '',
-                            column.key === 'depositPaid' ? 'deposit-paid' : ''
+                          
+                          {isColumnDeletable(column.key) && handleDeleteColumn && (
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => handleDeleteColumnClick(column.key)}
+                              className="h-6 w-6 p-1 text-gray-400 hover:text-red-600 hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity absolute right-2 top-1/2 -translate-y-1/2"
+                              aria-label={`Delete ${column.title} column`}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
                           )}
-                        >
-                          {column.title}
-                        </TableHead>
-                      )
+                        </div>
+                      </TableHead>
                     ))}
                   </TableRow>
                 </TableHeader>
