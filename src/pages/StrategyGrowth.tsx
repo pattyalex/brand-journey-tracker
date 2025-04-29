@@ -37,7 +37,7 @@ const StrategyGrowth = () => {
   // Brand Identity states
   const [brandKeywords, setBrandKeywords] = useState<string[]>([]);
   const [keywordInput, setKeywordInput] = useState("");
-  const [audienceAge, setAudienceAge] = useState("25-34");
+  const [audienceAgeRanges, setAudienceAgeRanges] = useState<string[]>(["25-34"]);
   const [audienceLifestyle, setAudienceLifestyle] = useState("");
   const [audienceStruggles, setAudienceStruggles] = useState("");
   const [audienceDesires, setAudienceDesires] = useState("");
@@ -233,19 +233,31 @@ const StrategyGrowth = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="age-range">Age Range</Label>
-                    <select
-                      id="age-range"
-                      value={audienceAge}
-                      onChange={(e) => setAudienceAge(e.target.value)}
-                      className="w-full p-2 border rounded-md bg-background text-foreground"
-                    >
-                      <option value="18-24">18-24</option>
-                      <option value="25-34">25-34</option>
-                      <option value="35-44">35-44</option>
-                      <option value="45-54">45-54</option>
-                      <option value="55+">55+</option>
-                    </select>
+                    <Label htmlFor="age-range">Age Range (select up to 2)</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {["18-24", "25-34", "35-44", "45-54", "55+"].map((range) => (
+                        <div
+                          key={range}
+                          onClick={() => {
+                            if (audienceAgeRanges.includes(range)) {
+                              setAudienceAgeRanges(audienceAgeRanges.filter(r => r !== range));
+                            } else if (audienceAgeRanges.length < 2) {
+                              setAudienceAgeRanges([...audienceAgeRanges, range]);
+                            }
+                          }}
+                          className={`p-2 border rounded-md cursor-pointer transition-all ${
+                            audienceAgeRanges.includes(range) ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300"
+                          }`}
+                        >
+                          <div className="flex justify-between items-center">
+                            <p className="font-medium">{range}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {audienceAgeRanges.length === 2 && (
+                      <p className="text-xs text-amber-600 mt-1">Maximum of 2 age ranges selected</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="lifestyle">Lifestyle</Label>
