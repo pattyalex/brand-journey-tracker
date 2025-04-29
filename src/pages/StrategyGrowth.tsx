@@ -180,6 +180,44 @@ const StrategyGrowth = () => {
           {/* Brand Identity Tab */}
           <TabsContent value="brand-identity" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Mission Statement */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="w-5 h-5 text-primary" />
+                    Mission Statement
+                  </CardTitle>
+                  <CardDescription>
+                    This is your anchor. Return to this when you feel lost, distracted, or overwhelmed. It's your why.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Textarea 
+                    className="min-h-[150px] resize-none"
+                    placeholder="Write your mission here — what you're here to do, what matters to you, and why you started this journey."
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Affirmation & Reminders */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Award className="w-5 h-5 text-primary" />
+                    Affirmation & Reminders
+                  </CardTitle>
+                  <CardDescription>
+                    Write down affirmations or thoughts that help you stay grounded and focused on your bigger picture.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Textarea 
+                    className="min-h-[150px] resize-none"
+                    placeholder="Add daily affirmations that remind you of your purpose and values as a content creator."
+                  />
+                </CardContent>
+              </Card>
+              
               {/* Brand Keywords */}
               <Card>
                 <CardHeader>
