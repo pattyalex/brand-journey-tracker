@@ -1,0 +1,59 @@
+
+.strategy-section {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  transition: all 0.2s ease;
+}
+
+.strategy-section:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.section-subtitle {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.text-area {
+  width: 100%;
+  min-height: 150px;
+  padding: 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #333;
+  background-color: #fafafa;
+  transition: border-color 0.2s ease;
+  resize: vertical;
+}
+
+.text-area:focus {
+  outline: none;
+  border-color: #d4af37;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.1);
+}
+
+.text-area::placeholder {
+  color: #aaa;
+  font-style: italic;
+}
+
+.mission-section {
+  border-left: 4px solid #d4af37;
+}
+
+.affirmation-section {
+  border-left: 4px solid #f0b6bc;
+}

@@ -62,7 +62,8 @@ function App() {
             <Route path="/partnerships-management" element={<PartnershipsManagement />} />
             <Route path="/trending" element={<TrendingContent />} />
             <Route path="/collab-management" element={<CollabManagement />} />
-            <Route path="*" element={<NotFound />} />
+            <Route path="/strategy-demo" element={<StrategyDemo />} />
+<Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
       </Router>
