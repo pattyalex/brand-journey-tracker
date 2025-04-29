@@ -180,6 +180,56 @@ const StrategyGrowth = () => {
           {/* Brand Identity Tab */}
           <TabsContent value="brand-identity" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Mission Statement */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="w-5 h-5 text-primary" />
+                    Mission Statement
+                  </CardTitle>
+                  <CardDescription>
+                    Your purpose and reason for creating content
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <Textarea 
+                      placeholder="Define your mission statement - this is your north star to return to whenever you feel lost or overwhelmed. Why do you create content? What impact do you want to have on your audience?"
+                      className="min-h-[120px] resize-none"
+                    />
+                    <p className="text-sm text-muted-foreground italic">
+                      Your mission statement serves as a foundation for all your content decisions. When in doubt, come back to this.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* Daily Affirmations */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MessageSquare className="w-5 h-5 text-primary" />
+                    Daily Affirmations
+                  </CardTitle>
+                  <CardDescription>
+                    Reminders that guide your content creation mindset
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <Textarea 
+                      placeholder='"It's not what you know, it's who you know." This affirmation reminds me to focus on networking as I build my content and business.
+
+"My beauty is the least interesting thing about me." This helps me create content that showcases my depth, intelligence, and passions rather than just appearances.'
+                      className="min-h-[120px] resize-none"
+                    />
+                    <p className="text-sm text-muted-foreground italic">
+                      These personal mantras help you stay grounded in your values and focused on what truly matters in your content journey.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              
               {/* Brand Keywords */}
               <Card>
                 <CardHeader>
