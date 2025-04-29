@@ -51,18 +51,21 @@ const EditableColumnHeader = ({
         />
       ) : (
         <div className={cn(
-          "flex items-center space-x-2",
-          isNotesColumn ? "justify-center w-full" : ""
+          "flex items-center",
+          isNotesColumn ? "justify-center w-full" : "space-x-2"
         )}>
           <span>{title}</span>
-          <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <div className={cn(
+            "flex items-center opacity-0 group-hover:opacity-100 transition-opacity duration-200",
+            isNotesColumn ? "ml-2" : "ml-1"
+          )}>
             <Pencil
               className="h-3.5 w-3.5 text-gray-400 cursor-pointer hover:text-gray-600"
               onClick={() => setEditing(true)}
             />
             {canDelete && onDelete && (
               <Trash2
-                className="h-3.5 w-3.5 text-gray-400 cursor-pointer hover:text-red-500"
+                className="h-3.5 w-3.5 text-gray-400 cursor-pointer hover:text-red-500 ml-1"
                 onClick={onDelete}
               />
             )}
