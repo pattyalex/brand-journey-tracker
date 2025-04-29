@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -14,6 +13,7 @@ import BriefContractCell from "@/components/collab/BriefContractCell";
 import NotesCell from "@/components/collab/NotesCell";
 import { CollabBrand, TableColumn } from "@/types/collab";
 import EditableColumnHeader from "./EditableColumnHeader";
+import { cn } from "@/lib/utils";
 
 interface BrandsCollabTableProps {
   brands: CollabBrand[];
@@ -70,7 +70,10 @@ const BrandsCollabTable = ({
                         key={column.key}
                         title={column.title}
                         onChange={(newTitle) => handleUpdateColumnTitle(index, newTitle)}
-                        className={column.key === 'notes' ? 'notes-header' : ''}
+                        className={cn(
+                          column.key === 'notes' ? 'notes-header' : '',
+                          column.key === 'depositPaid' ? 'text-center' : ''
+                        )}
                       />
                     ))}
                   </TableRow>
@@ -96,7 +99,13 @@ const BrandsCollabTable = ({
                       
                       {/* Regular data cells */}
                       {columns.map((column) => (
-                        <TableCell key={`${brand.id}-${column.key}`} className="min-w-[150px]">
+                        <TableCell 
+                          key={`${brand.id}-${column.key}`} 
+                          className={cn(
+                            "min-w-[150px]",
+                            column.key === 'depositPaid' ? 'text-center' : ''
+                          )}
+                        >
                           {column.key === 'status' ? (
                             <StatusBadge 
                               status={brand[column.key]} 

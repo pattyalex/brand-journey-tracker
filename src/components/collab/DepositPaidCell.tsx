@@ -86,7 +86,7 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
             isYes ? "text-green-600" : (isNo ? "text-red-500" : "text-gray-500")
           )}
         >
-          <span className="flex items-center">
+          <span className="flex items-center justify-center w-full">
             {renderStatusIcon()}
             {value || "No"}
           </span>
