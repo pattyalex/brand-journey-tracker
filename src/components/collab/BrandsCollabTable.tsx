@@ -70,6 +70,7 @@ const BrandsCollabTable = ({
                         key={column.key}
                         title={column.title}
                         onChange={(newTitle) => handleUpdateColumnTitle(index, newTitle)}
+                        className={column.key === 'notes' ? 'notes-header' : ''}
                       />
                     ))}
                   </TableRow>

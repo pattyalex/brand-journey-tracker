@@ -1,79 +1,50 @@
 
-import React, { useState, useRef, useEffect } from "react";
-import { Input } from "@/components/ui/input";
+import React, { useState } from 'react';
 import { TableHead } from "@/components/ui/table";
-import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 import { Pencil } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface EditableColumnHeaderProps {
   title: string;
   onChange: (value: string) => void;
-  className?: string;
+  className?: string; // Added className prop
 }
 
-const EditableColumnHeader = ({ 
-  title, 
-  onChange, 
-  className 
-}: EditableColumnHeaderProps) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState(title);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isEditing]);
-
-  useEffect(() => {
-    setEditValue(title);
-  }, [title]);
-
-  const handleClick = () => {
-    setIsEditing(true);
-  };
+const EditableColumnHeader = ({ title, onChange, className }: EditableColumnHeaderProps) => {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(title);
 
   const handleBlur = () => {
-    setIsEditing(false);
-    if (editValue.trim() && editValue !== title) {
-      onChange(editValue);
-    } else {
-      setEditValue(title); // Reset to original value if empty
-    }
+    setEditing(false);
+    onChange(value);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      setIsEditing(false);
-      if (editValue.trim() && editValue !== title) {
-        onChange(editValue);
-      }
-    } else if (e.key === "Escape") {
-      setIsEditing(false);
-      setEditValue(title); // Reset to original value
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      setEditing(false);
+      onChange(value);
     }
   };
 
   return (
     <TableHead className={cn("group", className)}>
-      {isEditing ? (
+      {editing ? (
         <Input
-          ref={inputRef}
-          type="text"
-          value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
-          className="m-0 h-8 min-w-[100px]"
+          autoFocus
+          className="h-8 py-0 px-2 text-sm"
         />
       ) : (
-        <div 
-          onClick={handleClick} 
-          className="flex items-center cursor-pointer"
-        >
+        <div className="flex items-center space-x-2">
           <span>{title}</span>
-          <Pencil className="h-3.5 w-3.5 ml-1 opacity-0 group-hover:opacity-70" />
+          <Pencil
+            className="h-3.5 w-3.5 text-gray-400 opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity duration-200"
+            onClick={() => setEditing(true)}
+          />
         </div>
       )}
     </TableHead>
