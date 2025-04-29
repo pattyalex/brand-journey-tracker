@@ -243,6 +243,11 @@ const StrategyGrowth = () => {
                               setAudienceAgeRanges(audienceAgeRanges.filter(r => r !== range));
                             } else if (audienceAgeRanges.length < 3) {
                               setAudienceAgeRanges([...audienceAgeRanges, range]);
+                            } else {
+                              // Show toast notification when maximum selections reached
+                              import("@/hooks/use-toast").then(({ showMaxAgeRangesSelectedToast }) => {
+                                showMaxAgeRangesSelectedToast();
+                              });
                             }
                           }}
                           className={`p-2 border rounded-md cursor-pointer transition-all ${
@@ -255,9 +260,7 @@ const StrategyGrowth = () => {
                         </div>
                       ))}
                     </div>
-                    {audienceAgeRanges.length === 3 ? (
-                      <p className="text-xs text-amber-600 mt-1">Maximum of 3 age ranges selected</p>
-                    ) : null}
+                    {/* Toast notification will be shown instead of static text */}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="lifestyle">Lifestyle</Label>
@@ -314,6 +317,11 @@ const StrategyGrowth = () => {
                               setSelectedTones(selectedTones.filter(t => t !== tone));
                             } else if (selectedTones.length < 3) {
                               setSelectedTones([...selectedTones, tone]);
+                            } else {
+                              // Show toast notification when maximum selections reached
+                              import("@/hooks/use-toast").then(({ showMaxAgeRangesSelectedToast }) => {
+                                showMaxAgeRangesSelectedToast();
+                              });
                             }
                           }}
                           className={`p-3 border rounded-md cursor-pointer transition-all ${
@@ -326,9 +334,7 @@ const StrategyGrowth = () => {
                         </div>
                       ))}
                     </div>
-                    {selectedTones.length === 3 && (
-                      <p className="text-xs text-amber-600 mt-2">Maximum of 3 tones selected</p>
-                    )}
+                    {/* Toast notification will be shown instead of static text */}
                   </div>
                 </CardContent>
               </Card>
