@@ -30,6 +30,7 @@ import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 
 const StrategyGrowth = () => {
   const [activeTab, setActiveTab] = useState("brand-identity");
