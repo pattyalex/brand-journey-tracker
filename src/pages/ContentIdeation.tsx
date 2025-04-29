@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -101,7 +100,7 @@ const ContentIdeation = () => {
     setCustomColumns([...customColumns, newColumn]);
     setNewColumnName("");
     setIsAddingColumn(false);
-    
+
     toast({
       title: "Column added",
       description: `"${newColumnName}" column has been added to your table`
@@ -110,7 +109,7 @@ const ContentIdeation = () => {
 
   const handleRemoveCustomColumn = (columnId: string) => {
     setCustomColumns(customColumns.filter(col => col.id !== columnId));
-    
+
     // Remove the column data from all content ideas
     setContentIdeas(contentIdeas.map(idea => {
       const updatedCustomValues = { ...idea.customValues };
@@ -120,7 +119,7 @@ const ContentIdeation = () => {
         customValues: updatedCustomValues
       };
     }));
-    
+
     toast({
       title: "Column removed",
       description: "The custom column has been removed"
@@ -154,9 +153,9 @@ const ContentIdeation = () => {
       caption: "",
       customValues: {}
     };
-    
+
     setContentIdeas([...contentIdeas, newIdea]);
-    
+
     toast({
       title: "New idea added",
       description: "Start filling in the details"
@@ -173,9 +172,9 @@ const ContentIdeation = () => {
       });
       return;
     }
-    
+
     setContentIdeas(contentIdeas.filter(idea => idea.id !== ideaId));
-    
+
     toast({
       title: "Idea deleted",
       description: "The content idea has been removed",
@@ -203,7 +202,7 @@ const ContentIdeation = () => {
       });
       return;
     }
-    
+
     // Prevent deletion of the "Idea" column as it's required
     if (columnId === "idea") {
       toast({
@@ -213,10 +212,10 @@ const ContentIdeation = () => {
       });
       return;
     }
-    
+
     // Hide the column instead of deleting it
     setHiddenStandardColumns([...hiddenStandardColumns, columnId]);
-    
+
     toast({
       title: "Column removed",
       description: `The ${standardColumns.find(col => col.id === columnId)?.name} column has been hidden`,
@@ -260,7 +259,7 @@ const ContentIdeation = () => {
                 <p className="text-muted-foreground mb-6">
                   Organize your content ideas into categories and refine them for future content creation.
                 </p>
-                
+
                 <div className="bg-white border border-gray-100 rounded-md overflow-hidden">
                   <div className="overflow-x-auto relative">
                     {/* Trash icons positioned outside the table on the left for rows */}
@@ -284,7 +283,7 @@ const ContentIdeation = () => {
                         </div>
                       ))}
                     </div>
-                    
+
                     {/* Column delete buttons positioned above the table header */}
                     <div className="absolute top-0 left-10 right-10 h-8 z-20">
                       {standardColumns.filter(col => !hiddenStandardColumns.includes(col.id)).map((column, index) => {
@@ -298,8 +297,8 @@ const ContentIdeation = () => {
                           }
                         }
                         // Center in the column
-                        leftPosition += column.id === "hook" || column.id === "script" || column.id === "caption" ? 100 : 60;
-                        
+                        leftPosition += column.id === "hook" || column.id === "script" || col.id === "caption" ? 100 : 60;
+
                         return (
                           <div
                             key={`col-delete-${column.id}`}
@@ -325,7 +324,7 @@ const ContentIdeation = () => {
                         );
                       })}
                     </div>
-                    
+
                     {/* Drag handles positioned outside the table on the right */}
                     <div className="absolute right-0 top-0 bottom-0 w-10 flex flex-col pt-[53px] z-10">
                       {contentIdeas.map((idea) => (
@@ -343,7 +342,7 @@ const ContentIdeation = () => {
                         </div>
                       ))}
                     </div>
-                    
+
                     <table className="w-full border-collapse ml-10 mr-10 group">
                       <thead className="bg-gray-800 text-white">
                         <tr>
@@ -357,7 +356,7 @@ const ContentIdeation = () => {
                                 {column.id === "idea" && <Lightbulb className="h-3 w-3" />}
                                 <span>{column.name}</span>
                               </div>
-                              
+
                               {/* Add hover trash icon inside the column header */}
                               {column.id !== "idea" && (
                                 <Button
@@ -373,7 +372,7 @@ const ContentIdeation = () => {
                               )}
                             </th>
                           ))}
-                          
+
                           {/* Custom Columns */}
                           {customColumns.map(column => (
                             <th 
@@ -395,7 +394,7 @@ const ContentIdeation = () => {
                               </div>
                             </th>
                           ))}
-                          
+
                           {/* Add Custom Column */}
                           <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider min-w-[140px] bg-gray-700">
                             {isAddingColumn ? (
@@ -465,7 +464,7 @@ const ContentIdeation = () => {
                                 />
                               </td>
                             ))}
-                            
+
                             {/* Custom Column Values */}
                             {customColumns.map(column => (
                               <td 
@@ -480,7 +479,7 @@ const ContentIdeation = () => {
                                 />
                               </td>
                             ))}
-                            
+
                             {/* Empty cell for the "Add Column" header */}
                             <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200 bg-gray-50">
                             </td>
@@ -533,7 +532,7 @@ const ContentIdeation = () => {
                         Add Image
                       </Button>
                     </div>
-                    
+
                     {/* Example Vision Board Items */}
                     <div className="rounded-md overflow-hidden h-48 relative group">
                       <img 
@@ -552,7 +551,7 @@ const ContentIdeation = () => {
                         </Button>
                       </div>
                     </div>
-                    
+
                     {/* Text Card */}
                     <div className="rounded-md h-48 bg-purple-100 flex flex-col p-4 relative group">
                       <h3 className="text-lg font-medium text-purple-800">Brand Voice</h3>
@@ -565,7 +564,7 @@ const ContentIdeation = () => {
                         </Button>
                       </div>
                     </div>
-                    
+
                     {/* Color Palette Card */}
                     <div className="rounded-md h-48 bg-white border border-gray-200 p-4 flex flex-col">
                       <h3 className="text-lg font-medium text-gray-800 mb-2">Brand Colors</h3>
@@ -577,7 +576,89 @@ const ContentIdeation = () => {
                         <div className="w-10 h-10 rounded-full bg-rose-400" title="#FB7185"></div>
                       </div>
                     </div>
-                    
+
+                    {/* External Link Card */}
+                    <div className="rounded-md h-48 bg-gray-50 border border-gray-200 p-4 flex flex-col">
+                      <div className="flex items-center">
+                        <Globe className="h-4 w-4 text-gray-600 mr-2" />
+                        <h3 className="text-lg font-medium text-gray-800">Inspiration Link</h3>
+                      </div>
+                      <a href="https://example.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-2">
+                        Visual Mood Board Examples
+                      </a>
+                      <p className="text-sm text-gray-600 mt-2">
+                        Collection of visual styles that align with our brand aesthetic.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="vision-board" className="space-y-4">
+            <Card>
+              <CardContent className="pt-6">
+                <h2 className="text-2xl font-semibold mb-4">Vision Board</h2>
+                <p className="text-muted-foreground mb-6">
+                  Create visual boards to represent your brand identity, goals, and aesthetics.
+                </p>
+                <div className="bg-white border border-gray-100 rounded-md p-8 min-h-[400px]">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* Add Image Card */}
+                    <div className="border border-dashed border-gray-300 rounded-md h-48 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer">
+                      <ImageIcon className="h-8 w-8 text-gray-400 mb-2" />
+                      <p className="text-gray-500 text-sm">Add images to your vision board</p>
+                      <Button variant="ghost" size="sm" className="mt-2">
+                        <Plus className="h-4 w-4 mr-1" />
+                        Add Image
+                      </Button>
+                    </div>
+
+                    {/* Example Vision Board Items */}
+                    <div className="rounded-md overflow-hidden h-48 relative group">
+                      <img 
+                        src="public/lovable-uploads/89b44c46-3bcc-4440-a4a6-be3b515f53e0.png" 
+                        alt="Vision board example"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                        <Button variant="secondary" size="sm" className="mr-2">
+                          <FileEdit className="h-4 w-4 mr-1" />
+                          Edit
+                        </Button>
+                        <Button variant="destructive" size="sm">
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Remove
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Text Card */}
+                    <div className="rounded-md h-48 bg-purple-100 flex flex-col p-4 relative group">
+                      <h3 className="text-lg font-medium text-purple-800">Brand Voice</h3>
+                      <p className="text-sm text-purple-700 mt-2">
+                        Authentic, inspiring, and approachable. Our voice should make people feel motivated and understood.
+                      </p>
+                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <FileEdit className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Color Palette Card */}
+                    <div className="rounded-md h-48 bg-white border border-gray-200 p-4 flex flex-col">
+                      <h3 className="text-lg font-medium text-gray-800 mb-2">Brand Colors</h3>
+                      <div className="flex flex-wrap gap-2 mt-auto">
+                        <div className="w-10 h-10 rounded-full bg-purple-500" title="#8B5CF6"></div>
+                        <div className="w-10 h-10 rounded-full bg-blue-400" title="#60A5FA"></div>
+                        <div className="w-10 h-10 rounded-full bg-emerald-400" title="#34D399"></div>
+                        <div className="w-10 h-10 rounded-full bg-amber-300" title="#FCD34D"></div>
+                        <div className="w-10 h-10 rounded-full bg-rose-400" title="#FB7185"></div>
+                      </div>
+                    </div>
+
                     {/* External Link Card */}
                     <div className="rounded-md h-48 bg-gray-50 border border-gray-200 p-4 flex flex-col">
                       <div className="flex items-center">
