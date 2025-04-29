@@ -41,7 +41,7 @@ const StrategyGrowth = () => {
   const [audienceLifestyle, setAudienceLifestyle] = useState("");
   const [audienceStruggles, setAudienceStruggles] = useState("");
   const [audienceDesires, setAudienceDesires] = useState("");
-  const [toneOfVoice, setToneOfVoice] = useState("relatable");
+  const [selectedTones, setSelectedTones] = useState<string[]>(["relatable"]);
   const [colorPalette, setColorPalette] = useState<string[]>(["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#0088fe"]);
   
   // Content Strategy states
@@ -291,18 +291,37 @@ const StrategyGrowth = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-3">
-                    {["playful", "luxury", "educational", "relatable", "motivational", "bossy big sis", "authoritative", "casual"].map((tone) => (
-                      <div
-                        key={tone}
-                        onClick={() => setToneOfVoice(tone)}
-                        className={`p-3 border rounded-md cursor-pointer transition-all ${
-                          toneOfVoice === tone ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300"
-                        }`}
-                      >
-                        <p className="font-medium capitalize">{tone}</p>
-                      </div>
-                    ))}
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground mb-2">Select up to 3 tones that represent your brand voice</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {["playful", "luxury", "educational", "relatable", "motivational", "bossy big sis", "authoritative", "casual"].map((tone) => (
+                        <div
+                          key={tone}
+                          onClick={() => {
+                            if (selectedTones.includes(tone)) {
+                              setSelectedTones(selectedTones.filter(t => t !== tone));
+                            } else if (selectedTones.length < 3) {
+                              setSelectedTones([...selectedTones, tone]);
+                            }
+                          }}
+                          className={`p-3 border rounded-md cursor-pointer transition-all ${
+                            selectedTones.includes(tone) ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300"
+                          }`}
+                        >
+                          <div className="flex justify-between items-center">
+                            <p className="font-medium capitalize">{tone}</p>
+                            {selectedTones.includes(tone) && (
+                              <div className="h-4 w-4 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">
+                                {selectedTones.indexOf(tone) + 1}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {selectedTones.length === 3 && (
+                      <p className="text-xs text-amber-600 mt-2">Maximum of 3 tones selected</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
