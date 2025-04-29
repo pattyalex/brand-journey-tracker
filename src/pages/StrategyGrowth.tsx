@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -43,7 +42,8 @@ const StrategyGrowth = () => {
   const [audienceDesires, setAudienceDesires] = useState("");
   const [selectedTones, setSelectedTones] = useState<string[]>(["relatable"]);
   const [colorPalette, setColorPalette] = useState<string[]>(["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#0088fe"]);
-  
+  const [missionStatement, setMissionStatement] = useState<string>("");
+
   // Content Strategy states
   const [contentPillars, setContentPillars] = useState([
     { name: "Food", value: "Teaches followers healthy recipes" },
@@ -57,12 +57,12 @@ const StrategyGrowth = () => {
   ]);
   const [newThemeMonth, setNewThemeMonth] = useState("");
   const [newThemeContent, setNewThemeContent] = useState("");
-  
+
   const handleAddTheme = () => {
     if (newThemeMonth && newThemeContent) {
       // Check if the month already exists
       const monthExists = monthlyThemes.some(item => item.month === newThemeMonth);
-      
+
       if (monthExists) {
         // If the month exists, update its theme
         setMonthlyThemes(monthlyThemes.map(item => 
@@ -74,7 +74,7 @@ const StrategyGrowth = () => {
         // If the month doesn't exist, add a new entry
         setMonthlyThemes([...monthlyThemes, { month: newThemeMonth, theme: newThemeContent }]);
       }
-      
+
       // Reset input fields
       setNewThemeMonth("");
       setNewThemeContent("");
@@ -86,7 +86,7 @@ const StrategyGrowth = () => {
     { name: "Behind-the-scenes", selected: false },
     { name: "Q&A Stories", selected: true }
   ]);
-  
+
   // Competitor Tracker states
   const [competitors, setCompetitors] = useState([
     { 
@@ -104,7 +104,7 @@ const StrategyGrowth = () => {
     strengths: "",
     notes: "" 
   });
-  
+
   // Growth Goals states
   const [goals, setGoals] = useState([
     { metric: "Followers", current: 5000, target: 10000, timeframe: "3 months" },
@@ -112,7 +112,7 @@ const StrategyGrowth = () => {
     { metric: "Brand Deals", current: 1, target: 3, timeframe: "6 months" },
     { metric: "Monthly Income", current: 800, target: 2500, timeframe: "6 months" }
   ]);
-  
+
   // New state to track active tab
   const [activeTab, setActiveTab] = useState("brand-identity");
 
@@ -161,7 +161,7 @@ const StrategyGrowth = () => {
   const handleRemoveCompetitor = (index: number) => {
     setCompetitors(competitors.filter((_, i) => i !== index));
   };
-  
+
   // Helper function to calculate goal progress percentage
   const calculateProgress = (current: number, target: number) => {
     return Math.min(Math.round((current / target) * 100), 100);
@@ -181,7 +181,7 @@ const StrategyGrowth = () => {
             Define your brand identity, plan your content strategy, and track your growth
           </p>
         </div>
-        
+
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="mb-6 grid grid-cols-4 gap-4">
             <TabsTrigger value="brand-identity" className="flex items-center gap-2">
@@ -201,7 +201,7 @@ const StrategyGrowth = () => {
               <span>Growth Goals</span>
             </TabsTrigger>
           </TabsList>
-          
+
           {/* Brand Identity Tab */}
           <TabsContent value="brand-identity" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -220,6 +220,8 @@ const StrategyGrowth = () => {
                   <Textarea 
                     className="min-h-[150px] resize-none"
                     placeholder="Write your mission here — what you're here to do, what matters to you, and why you started this journey."
+                    value={missionStatement}
+                    onChange={(e) => setMissionStatement(e.target.value)}
                   />
                 </CardContent>
               </Card>
@@ -242,7 +244,7 @@ const StrategyGrowth = () => {
                   />
                 </CardContent>
               </Card>
-              
+
               {/* Brand Keywords */}
               <Card>
                 <CardHeader>
@@ -503,7 +505,7 @@ const StrategyGrowth = () => {
               </Card>
             </div>
           </TabsContent>
-          
+
           {/* Content Strategy Tab */}
           <TabsContent value="content-strategy" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -666,10 +668,10 @@ const StrategyGrowth = () => {
                 </CardContent>
               </Card>
 
-              
+
             </div>
           </TabsContent>
-          
+
           {/* Competitor Tracker Tab */}
           <TabsContent value="competitor-tracker" className="space-y-6">
             <Card>
@@ -776,7 +778,7 @@ const StrategyGrowth = () => {
                       </div>
                     </CardContent>
                   </Card>
-                  
+
                   <Card className="bg-muted/40">
                     <CardHeader className="py-4">
                       <CardTitle className="text-base">Performance Tracking</CardTitle>
@@ -803,7 +805,7 @@ const StrategyGrowth = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           {/* Growth Goals Tab */}
           <TabsContent value="growth-goals" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -826,8 +828,7 @@ const StrategyGrowth = () => {
                           <div>
                             <h4 className="font-medium">{goal.metric}</h4>
                             <p className="text-sm text-muted-foreground">
-                              Goal: {goal.target} in {goal.timeframe}
-                            </p>
+                              Goal: {goal.target} in {goal.timeframe}                            </p>
                           </div>
                           <div className="text-right">
                             <p className="font-medium">{goal.current}</p>
@@ -843,7 +844,7 @@ const StrategyGrowth = () => {
                       </div>
                     ))}
                   </div>
-                  
+
                   <div className="mt-8 border-t pt-6">
                     <h3 className="font-medium mb-4">Add New Goal</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -878,7 +879,7 @@ const StrategyGrowth = () => {
                   </div>
                 </CardContent>
               </Card>
-              
+
               {/* Vision Card */}
               <Card>
                 <CardHeader>
@@ -920,7 +921,7 @@ const StrategyGrowth = () => {
                   </div>
                 </CardContent>
               </Card>
-              
+
               {/* Milestone Tracker */}
               <Card>
                 <CardHeader>
