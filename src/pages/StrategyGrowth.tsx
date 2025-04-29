@@ -180,50 +180,6 @@ const StrategyGrowth = () => {
           {/* Brand Identity Tab */}
           <TabsContent value="brand-identity" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Your Mission */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Target className="w-5 h-5 text-primary" />
-                    Your Mission
-                  </CardTitle>
-                  <CardDescription>
-                    This is your anchor. Return to this when you feel lost, distracted, or overwhelmed. It's your why.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <Textarea 
-                      placeholder="Write your mission here — what you're here to do, what matters to you, and why you started this journey."
-                      className="min-h-[150px] resize-none"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Your Daily Reminders */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MessageSquare className="w-5 h-5 text-primary" />
-                    Your Daily Reminders
-                  </CardTitle>
-                  <CardDescription>
-                    Write down affirmations or thoughts that help you stay grounded and focused on your bigger picture.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <Textarea 
-                      placeholder='"It's not what you know, it's who you know." This affirmation reminds me to focus on networking as I build my content and business.
-
-"My beauty is the least interesting thing about me." This helps me create content that showcases my depth, intelligence, and passions rather than just appearances.'
-                      className="min-h-[150px] resize-none"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-              
               {/* Brand Keywords */}
               <Card>
                 <CardHeader>
