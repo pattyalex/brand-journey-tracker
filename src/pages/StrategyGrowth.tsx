@@ -619,32 +619,7 @@ const StrategyGrowth = () => {
                 </CardContent>
               </Card>
 
-              {/* AI Prompt Helper */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-primary" />
-                    Content Idea Generator
-                  </CardTitle>
-                  <CardDescription>
-                    Get AI suggestions based on your content pillars
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <Textarea 
-                      placeholder="Based on my pillars, suggest 5 post ideas for each this month."
-                      className="h-32 resize-none"
-                    />
-                    <Button className="w-full">Generate Ideas</Button>
-                    <div className="p-4 bg-muted rounded-md">
-                      <p className="text-sm text-muted-foreground italic">
-                        AI-generated ideas will appear here. Press the button above to get started.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              
             </div>
           </TabsContent>
           
