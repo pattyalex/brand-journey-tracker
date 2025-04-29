@@ -93,7 +93,7 @@
   
   /* Add spacing between deposit-paid and finalPaymentDueDate */
   th[data-key="depositPaid"] {
-    padding-right: 30px;
+    padding-right: 60px;
   }
 }
 
