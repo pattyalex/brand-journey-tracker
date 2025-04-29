@@ -48,7 +48,7 @@ const NotesCell = ({ value, onChange }: NotesCellProps) => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-center">Notes</DialogTitle>
+          <DialogTitle className="text-right">Notes</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4 py-4">
