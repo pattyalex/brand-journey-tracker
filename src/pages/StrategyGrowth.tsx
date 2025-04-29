@@ -213,7 +213,7 @@ const StrategyGrowth = () => {
                     Mission Statement
                   </CardTitle>
                   <CardDescription>
-                    This is your anchor. Return to this when you feel lost, distracted, or overwhelmed. It's your why.
+                    Remind yourself WHY you're building your brand. Return to this when you feel lost, distracted, or overwhelmed.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
