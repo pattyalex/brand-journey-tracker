@@ -82,11 +82,11 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
         <Button 
           variant="ghost" 
           className={cn(
-            "h-8 w-full justify-center text-center font-normal",
+            "h-8 w-full justify-center font-normal",
             isYes ? "text-green-600" : (isNo ? "text-red-500" : "text-gray-500")
           )}
         >
-          <span className="flex items-center justify-center w-full">
+          <span className="flex items-center justify-center">
             {renderStatusIcon()}
             {value || "No"}
           </span>
