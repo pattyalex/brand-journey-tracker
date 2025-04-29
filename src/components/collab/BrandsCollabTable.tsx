@@ -78,7 +78,7 @@ const BrandsCollabTable = ({
         <div className="overflow-x-auto">
           <ScrollArea className="h-[400px]">
             <div className="min-w-full w-max">
-              <Table>
+              <Table className="brand-collab-table">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-12 sticky left-0 z-10 bg-white"></TableHead>

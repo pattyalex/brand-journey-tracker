@@ -74,18 +74,31 @@
 
   /* Table styles with consistent left alignment */
   th, td {
-    text-align: left;
+    text-align: left !important;
+  }
+  
+  table th, table td {
+    text-align: left !important;
   }
   
   th.notes-header {
     padding-left: 20px;
     padding-right: 30px;
-    text-align: left;
+    text-align: left !important;
   }
 
   [data-key="notes"] {
     padding-left: 30px;
     padding-right: 30px;
+    text-align: left !important;
+  }
+  
+  /* Force left alignment for all table cells and their contents */
+  .brand-collab-table th,
+  .brand-collab-table td,
+  .brand-collab-table td > div,
+  .brand-collab-table td * {
+    text-align: left !important;
   }
   
   /* Add styling for brief/contract terms header to add more space */
