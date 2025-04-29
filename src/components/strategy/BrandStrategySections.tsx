@@ -6,7 +6,7 @@ export const MissionStatementSection = () => {
     <div className="strategy-section mission-section">
       <h2 className="section-title">Your Mission</h2>
       <p className="section-subtitle">
-        This is your anchor. Return to this when you feel lost, distracted, or overwhelmed. It's your why.
+        Remind yourself why you're building your brand. Return to this when you feel lost, distracted, or overwhelmed. It's your why.
       </p>
       <textarea
         className="text-area"
