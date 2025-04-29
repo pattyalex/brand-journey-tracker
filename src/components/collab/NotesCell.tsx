@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -59,7 +58,7 @@ const NotesCell = ({ value, onChange }: NotesCellProps) => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-right text-purple-500">Notes</DialogTitle>
+          <DialogTitle className="text-left text-purple-500">Notes</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4 py-4">
