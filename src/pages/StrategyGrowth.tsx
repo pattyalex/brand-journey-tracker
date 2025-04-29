@@ -46,8 +46,8 @@ const StrategyGrowth = () => {
   
   // Content Strategy states
   const [contentPillars, setContentPillars] = useState([
-    { name: "Education", value: "Educates followers on industry topics" },
-    { name: "Inspiration", value: "Motivates followers with success stories" },
+    { name: "Food", value: "Teaches followers healthy recipes" },
+    { name: "Fitness", value: "Motivates followers to live a healthy lifestyle" },
     { name: "Entertainment", value: "Provides fun and engaging content" }
   ]);
   const [pillarInput, setPillarInput] = useState({ name: "", value: "" });
