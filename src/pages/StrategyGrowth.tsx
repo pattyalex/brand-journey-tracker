@@ -216,7 +216,13 @@ const StrategyGrowth = () => {
                     Remind yourself why you're building your brand. Return to this when you feel lost, distracted, or overwhelmed. It's your why.
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-2">
+                  <div className="relative">
+                    <Textarea
+                      placeholder="Write your mission here — what you're here to do, what matters to you, and why you started this journey."
+                      className="min-h-[120px] resize-none"
+                    />
+                  </div>
                   <Textarea 
                     className="min-h-[150px] resize-none"
                     placeholder="Write your mission here — what you're here to do, what matters to you, and why you started this journey."
