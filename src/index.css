@@ -85,6 +85,11 @@
   td.deposit-paid {
     text-align: center;
   }
+  
+  /* Add styling for brief/contract terms header to add more space */
+  th[data-key="briefContract"] {
+    padding-right: 35px;
+  }
 }
 
 @layer utilities {

@@ -81,13 +81,13 @@ const BrandsCollabTable = ({
                           title={column.title}
                           onChange={(newTitle) => handleUpdateColumnTitle(index, newTitle)}
                           className={cn(
-                            column.key === 'notes' ? 'notes-header' : '',
-                            column.key === 'depositPaid' ? 'deposit-paid' : ''
+                            column.key === 'notes' ? 'notes-header' : ''
                           )}
                         />
                       ) : (
                         <TableHead 
                           key={column.key}
+                          data-key={column.key}
                           className={cn(
                             column.key === 'notes' ? 'notes-header' : '',
                             column.key === 'depositPaid' ? 'deposit-paid' : ''
