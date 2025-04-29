@@ -3,11 +3,9 @@ import { useState } from "react";
 import CollabFilters from "@/components/collab/CollabFilters";
 import BrandsCollabTable from "@/components/collab/BrandsCollabTable";
 import CampaignCardSection from "@/components/collab/CampaignCardSection";
-import CampaignWorkspace from "@/components/collab/CampaignWorkspace";
 import { useCollabBrands } from "@/hooks/useCollabBrands";
 
 const CollabManagement = () => {
-  const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all');
   const { 
@@ -48,14 +46,7 @@ const CollabManagement = () => {
         handleAddColumn={handleAddColumn}
       />
 
-      <CampaignCardSection
-        selectedCampaign={selectedCampaign}
-        setSelectedCampaign={setSelectedCampaign}
-      />
-
-      {selectedCampaign && (
-        <CampaignWorkspace campaignName={selectedCampaign} />
-      )}
+      <CampaignCardSection />
     </div>
   );
 };
