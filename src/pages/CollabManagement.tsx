@@ -22,7 +22,8 @@ const CollabManagement = () => {
   } = useCollabBrands();
 
   const handleGoBack = () => {
-    navigate(-1);
+    // Navigate to the partnerships management page explicitly
+    navigate('/partnerships-management');
   };
 
   const filteredBrands = brands.filter(brand => {
