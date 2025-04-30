@@ -976,7 +976,7 @@ const StrategyGrowth = () => {
                     </div>
                   </div>
                 </CardContent>
-                <div className="pb-16"></div>
+                <div className="pb-8"></div>
               </Card>
 
 
