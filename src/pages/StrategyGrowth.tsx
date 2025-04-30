@@ -120,9 +120,9 @@ const StrategyGrowth = () => {
 
   // State for milestones
   const [milestones, setMilestones] = useState([
-    { name: "First 1K followers", date: "Jan 15, 2023" },
-    { name: "First brand deal", date: "Mar 22, 2023" },
-    { name: "5K follower milestone", date: "June 10, 2023" }
+    { name: "First 1K followers", date: "Jan 15, 2023", completed: false },
+    { name: "First brand deal", date: "Mar 22, 2023", completed: false },
+    { name: "5K follower milestone", date: "June 10, 2023", completed: false }
   ]);
   const [newMilestoneName, setNewMilestoneName] = useState("");
   const [newMilestoneDate, setNewMilestoneDate] = useState("");
@@ -223,13 +223,24 @@ const StrategyGrowth = () => {
 
       setMilestones([...milestones, { 
         name: newMilestoneName, 
-        date: formattedDate 
+        date: formattedDate,
+        completed: false
       }]);
 
       // Reset input fields
       setNewMilestoneName("");
       setNewMilestoneDate("");
     }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones[index] = {
+      ...updatedMilestones[index],
+      completed: !updatedMilestones[index].completed
+    };
+    setMilestones(updatedMilestones);
   };
 
   // Handler for deleting a milestone
@@ -1000,6 +1011,7 @@ const StrategyGrowth = () => {
                       <table className="w-full">
                         <thead className="bg-muted">
                           <tr>
+                            <th className="px-4 py-2 text-left font-medium w-10">Done</th>
                             <th className="px-4 py-2 text-left font-medium">Milestone</th>
                             <th className="px-4 py-2 text-left font-medium">Date</th>
                             <th className="px-4 py-2 text-left font-medium w-16"></th>
@@ -1007,8 +1019,18 @@ const StrategyGrowth = () => {
                         </thead>
                         <tbody>
                           {milestones.map((milestone, index) => (
-                            <tr key={index} className="border-t group">
-                              <td className="px-4 py-3">{milestone.name}</td>
+                            <tr key={index} className={`border-t group ${milestone.completed ? "bg-muted/20" : ""}`}>
+                              <td className="px-4 py-3">
+                                <Checkbox 
+                                  checked={milestone.completed}
+                                  onCheckedChange={() => handleToggleMilestoneCompletion(index)}
+                                />
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className={milestone.completed ? "line-through text-muted-foreground" : ""}>
+                                  {milestone.name}
+                                </span>
+                              </td>
                               <td className="px-4 py-3">{milestone.date}</td>
                               <td className="px-4 py-3">
                                 <Button 
