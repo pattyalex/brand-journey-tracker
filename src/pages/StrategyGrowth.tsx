@@ -884,7 +884,7 @@ const StrategyGrowth = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Target className="w-5 h-5 text-primary" />
-                    LONG-TERM GOALS
+                    SMART Goals
                   </CardTitle>
                   <CardDescription>
                     Set specific, measurable, achievable, relevant, and time-bound goals
