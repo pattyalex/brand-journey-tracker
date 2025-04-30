@@ -983,7 +983,7 @@ const StrategyGrowth = () => {
               {/* Add more space between sections */}
               <div className="mt-20"></div>
               
-              <h2 className="text-2xl font-bold mb-4 text-left">SHORT-TERM GOALS</h2>
+              <h2 className="text-2xl font-bold mb-4 text-left ml-[-24px]">SHORT-TERM GOALS</h2>
               
               {/* Milestone Tracker */}
               <Card>
