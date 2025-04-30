@@ -1000,7 +1000,7 @@ const StrategyGrowth = () => {
                     Short-Term Goals
                   </CardTitle>
                   <CardDescription>
-                    Celebrate your wins along the way
+                    List the things you want to accomplish soon
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
