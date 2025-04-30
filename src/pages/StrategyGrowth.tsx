@@ -113,6 +113,12 @@ const StrategyGrowth = () => {
     { metric: "Monthly Income", current: 800, target: 2500, timeframe: "6 months" }
   ]);
   
+  // State for new goal
+  const [newMetric, setNewMetric] = useState("");
+  const [currentValue, setCurrentValue] = useState<number>(0);
+  const [targetValue, setTargetValue] = useState<number>(0);
+  const [timeframe, setTimeframe] = useState("");
+  
   // New state to track active tab
   const [activeTab, setActiveTab] = useState("brand-identity");
 
@@ -170,6 +176,23 @@ const StrategyGrowth = () => {
   // Handler for tab changes
   const handleTabChange = (value: string) => {
     setActiveTab(value);
+  };
+  
+  // Handler for adding a new goal
+  const handleAddGoal = () => {
+    if (newMetric && currentValue > 0 && targetValue > 0 && timeframe) {
+      setGoals([...goals, {
+        metric: newMetric,
+        current: currentValue,
+        target: targetValue,
+        timeframe: timeframe
+      }]);
+      // Reset form after adding
+      setNewMetric("");
+      setCurrentValue(0);
+      setTargetValue(0);
+      setTimeframe("");
+    }
   };
 
   return (
@@ -852,83 +875,57 @@ const StrategyGrowth = () => {
                     <h3 className="font-medium mb-4">Add New Goal</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {/* State for new goal inputs */}
-                      {React.useMemo(() => {
-                        const [newGoal, setNewGoal] = useState({
-                          metric: "",
-                          current: 0,
-                          target: 0,
-                          timeframe: ""
-                        });
-                        
-                        const handleAddGoal = () => {
-                          if (newGoal.metric && newGoal.current > 0 && newGoal.target > 0 && newGoal.timeframe) {
-                            setGoals([...goals, newGoal]);
-                            // Reset form after adding
-                            setNewGoal({
-                              metric: "",
-                              current: 0,
-                              target: 0,
-                              timeframe: ""
-                            });
-                          }
-                        };
-                        
-                        return (
-                          <>
-                            <div className="space-y-2">
-                              <Label>Metric</Label>
-                              <select 
-                                className="w-full p-2 border rounded-md bg-background text-foreground"
-                                value={newGoal.metric}
-                                onChange={(e) => setNewGoal({...newGoal, metric: e.target.value})}
-                              >
-                                <option value="">Select Metric</option>
-                                <option value="Followers">Followers</option>
-                                <option value="Engagement Rate">Engagement Rate</option>
-                                <option value="Brand Deals">Brand Deals</option>
-                                <option value="Monthly Income">Monthly Income</option>
-                                <option value="Video Views">Video Views</option>
-                                <option value="Email Subscribers">Email Subscribers</option>
-                              </select>
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Current Value</Label>
-                              <Input 
-                                type="number" 
-                                placeholder="e.g., 1000" 
-                                value={newGoal.current || ""}
-                                onChange={(e) => setNewGoal({...newGoal, current: Number(e.target.value)})}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Target Value</Label>
-                              <Input 
-                                type="number" 
-                                placeholder="e.g., 5000" 
-                                value={newGoal.target || ""}
-                                onChange={(e) => setNewGoal({...newGoal, target: Number(e.target.value)})}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Timeframe</Label>
-                              <Input 
-                                placeholder="e.g., 3 months" 
-                                value={newGoal.timeframe}
-                                onChange={(e) => setNewGoal({...newGoal, timeframe: e.target.value})}
-                              />
-                            </div>
-                            <div className="md:col-span-2 flex items-end">
-                              <Button 
-                                className="w-full"
-                                onClick={handleAddGoal}
-                                disabled={!newGoal.metric || !newGoal.current || !newGoal.target || !newGoal.timeframe}
-                              >
-                                Add Goal
-                              </Button>
-                            </div>
-                          </>
-                        );
-                      }, [])}
+                      <div className="space-y-2">
+                        <Label>Metric</Label>
+                        <select 
+                          className="w-full p-2 border rounded-md bg-background text-foreground"
+                          value={newMetric}
+                          onChange={(e) => setNewMetric(e.target.value)}
+                        >
+                          <option value="">Select Metric</option>
+                          <option value="Followers">Followers</option>
+                          <option value="Engagement Rate">Engagement Rate</option>
+                          <option value="Brand Deals">Brand Deals</option>
+                          <option value="Monthly Income">Monthly Income</option>
+                          <option value="Video Views">Video Views</option>
+                          <option value="Email Subscribers">Email Subscribers</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Current Value</Label>
+                        <Input 
+                          type="number" 
+                          placeholder="e.g., 1000" 
+                          value={currentValue || ""}
+                          onChange={(e) => setCurrentValue(Number(e.target.value))}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Target Value</Label>
+                        <Input 
+                          type="number" 
+                          placeholder="e.g., 5000" 
+                          value={targetValue || ""}
+                          onChange={(e) => setTargetValue(Number(e.target.value))}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Timeframe</Label>
+                        <Input 
+                          placeholder="e.g., 3 months" 
+                          value={timeframe}
+                          onChange={(e) => setTimeframe(e.target.value)}
+                        />
+                      </div>
+                      <div className="md:col-span-2 flex items-end">
+                        <Button 
+                          className="w-full"
+                          onClick={handleAddGoal}
+                          disabled={!newMetric || !currentValue || !targetValue || !timeframe}
+                        >
+                          Add Goal
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
