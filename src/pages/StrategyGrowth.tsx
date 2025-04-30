@@ -247,13 +247,13 @@ const StrategyGrowth = () => {
     const updatedMilestones = [...milestones];
     const milestone = updatedMilestones[index];
     const newCompletionStatus = !milestone.completed;
-    
+
     updatedMilestones[index] = {
       ...milestone,
       completed: newCompletionStatus
     };
     setMilestones(updatedMilestones);
-    
+
     // Update corresponding long-term goal if this milestone is linked to one
     if (milestone.linkedGoal) {
       const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
@@ -276,7 +276,2046 @@ const StrategyGrowth = () => {
           };
         }
         setGoals(updatedGoals);
-        
+
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
+  };
+
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
+  };
+
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
+  // Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate,
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
+      }]);
+
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
+    }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+
+    updatedMilestones[index] = {
+      ...milestone,
+      completed: newCompletionStatus
+    };
+    setMilestones(updatedMilestones);
+
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
+  };
+
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
+  };
+
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
+  // Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate,
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
+      }]);
+
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
+    }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+
+    updatedMilestones[index] = {
+      ...milestone,
+      completed: newCompletionStatus
+    };
+    setMilestones(updatedMilestones);
+
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
+  };
+
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
+  };
+
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
+  // Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate,
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
+      }]);
+
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
+    }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+
+    updatedMilestones[index] = {
+      ...milestone,
+      completed: newCompletionStatus
+    };
+    setMilestones(updatedMilestones);
+
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
+  };
+
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
+  };
+
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
+  // Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate,
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
+      }]);
+
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
+    }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+
+    updatedMilestones[index] = {
+      ...milestone,
+      completed: newCompletionStatus
+    };
+    setMilestones(updatedMilestones);
+
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
+  };
+
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
+  };
+
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
+  // Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate,
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
+      }]);
+
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
+    }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+
+    updatedMilestones[index] = {
+      ...milestone,
+      completed: newCompletionStatus
+    };
+    setMilestones(updatedMilestones);
+
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
+  };
+
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
+  };
+
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
+  // Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate,
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
+      }]);
+
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
+    }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+
+    updatedMilestones[index] = {
+      ...milestone,
+      completed: newCompletionStatus
+    };
+    setMilestones(updatedMilestones);
+
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
+  };
+
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
+  };
+
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
+  // Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate,
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
+      }]);
+
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
+    }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+
+    updatedMilestones[index] = {
+      ...milestone,
+      completed: newCompletionStatus
+    };
+    setMilestones(updatedMilestones);
+
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
+  };
+
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
+  };
+
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
+  //// Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate,
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
+      }]);
+
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
+    }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+
+    updatedMilestones[index] = {
+      ...milestone,
+      completed: newCompletionStatus
+    };
+    setMilestones(updatedMilestones);
+
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
+  };
+
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
+  };
+
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
+  // Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate,
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
+      }]);
+
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
+    }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+
+    updatedMilestones[index] = {
+      ...milestone,
+      completed: newCompletionStatus
+    };
+    setMilestones(updatedMilestones);
+
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
+  };
+
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
+  };
+
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
+  // Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate,
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
+      }]);
+
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
+    }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+
+    updatedMilestones[index] = {
+      ...milestone,
+      completed: newCompletionStatus
+    };
+    setMilestones(updatedMilestones);
+
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
+  };
+
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
+  };
+
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
+  // Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate,
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
+      }]);
+
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
+    }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+
+    updatedMilestones[index] = {
+      ...milestone,
+      completed: newCompletionStatus
+    };
+    setMilestones(updatedMilestones);
+
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
+  };
+
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
+  };
+
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
+  // Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate,
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
+      }]);
+
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
+    }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+
+    updatedMilestones[index] = {
+      ...milestone,
+      completed: newCompletionStatus
+    };
+    setMilestones(updatedMilestones);
+
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
+  };
+
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
+  };
+
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
+  // Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate,
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
+      }]);
+
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
+    }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+
+    updatedMilestones[index] = {
+      ...milestone,
+      completed: newCompletionStatus
+    };
+    setMilestones(updatedMilestones);
+
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
+  };
+
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
+  };
+
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
+  // Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate,
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
+      }]);
+
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
+    }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+
+    updatedMilestones[index] = {
+      ...milestone,
+      completed: newCompletionStatus
+    };
+    setMilestones(updatedMilestones);
+
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
+  };
+
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
+  };
+
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
+  // Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate,
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
+      }]);
+
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
+    }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+
+    updatedMilestones[index] = {
+      ...milestone,
+      completed: newCompletionStatus
+    };
+    setMilestones(updatedMilestones);
+
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
+  };
+
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
+  };
+
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
+  // Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate,
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
+      }]);
+
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
+    }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+
+    updatedMilestones[index] = {
+      ...milestone,
+      completed: newCompletionStatus
+    };
+    setMilestones(updatedMilestones);
+
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
+  };
+
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
+  };
+
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
+  // Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate,
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
+      }]);
+
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
+    }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+
+    updatedMilestones[index] = {
+      ...milestone,
+      completed: newCompletionStatus
+    };
+    setMilestones(updatedMilestones);
+
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
+  };
+
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
+  };
+
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
+  // Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate,
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
+      }]);
+
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
+    }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+
+    updatedMilestones[index] = {
+      ...milestone,
+      completed: newCompletionStatus
+    };
+    setMilestones(updatedMilestones);
+
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
+  };
+
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
+  };
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
+  // Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate,
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
+      }]);
+
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
+    }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+
+    updatedMilestones[index] = {
+      ...milestone,
+      completed: newCompletionStatus
+    };
+    setMilestones(updatedMilestones);
+
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
+  };
+
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
+  };
+
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
+  // Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate,
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
+      }]);
+
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
+    }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+
+    updatedMilestones[index] = {
+      ...milestone,
+      completed: newCompletionStatus
+    };
+    setMilestones(updatedMilestones);
+
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
+  };
+
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
+  };
+
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
+  // Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate,
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
+      }]);
+
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
+    }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+
+    updatedMilestones[index] = {
+      ...milestone,
+      completed: newCompletionStatus
+    };
+    setMilestones(updatedMilestones);
+
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
+  };
+
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
+  };
+
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
+  // Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate,
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
+      }]);
+
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
+    }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+
+    updatedMilestones[index] = {
+      ...milestone,
+      completed: newCompletionStatus
+    };
+    setMilestones(updatedMilestones);
+
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
+  };
+
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
+  };
+
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
+  // Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate,
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
+      }]);
+
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
+    }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+
+    updatedMilestones[index] = {
+      ...milestone,
+      completed: newCompletionStatus
+    };
+    setMilestones(updatedMilestones);
+
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
+  };
+
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
+  };
+
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
+  // Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate,
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
+      }]);
+
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
+    }
+  };
+
+  // Handler for toggling milestone completion status
+  const handleToggleMilestoneCompletion = (index: number) => {
+    const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+
+    updatedMilestones[index] = {
+      ...milestone,
+      completed: newCompletionStatus
+    };
+    setMilestones(updatedMilestones);
+
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+
         // Show success toast
         import("@/hooks/use-toast").then(({ toast }) => {
           toast({
@@ -342,7 +2381,7 @@ const StrategyGrowth = () => {
                 </CardHeader>
                 <CardContent>
                   <Textarea 
-                    className="min-h-[150px] resize-none"
+                    className="min-h-[150px] resize-none text-lg"
                     placeholder="Write your mission here — what you're here to do, what matters to you, and why you started this journey."
                   />
                 </CardContent>
@@ -666,7 +2705,7 @@ const StrategyGrowth = () => {
                       ))}
                     </div>
                     <div className="flex gap-2 pt-4">
-                      <div className="grid grid-cols-2 gap-2 flex-1">
+                      <div className="grid grid-cols-2 gap-2flex-1">
                         <Input
                           placeholder="Pillar name"
                           value={pillarInput.name}
