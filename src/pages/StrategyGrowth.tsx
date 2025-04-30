@@ -940,47 +940,7 @@ const StrategyGrowth = () => {
                 </CardContent>
               </Card>
               
-              {/* Vision Card */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-primary" />
-                    Vision Card
-                  </CardTitle>
-                  <CardDescription>
-                    Remind yourself why you're building your brand
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Purpose Statement</Label>
-                      <Textarea 
-                        placeholder="Why did you start creating content? What impact do you want to have?"
-                        className="h-32 resize-none"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Inspiration Images</Label>
-                      <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
-                        <ImageIcon className="mx-auto h-10 w-10 text-gray-300" />
-                        <h3 className="mt-2 text-sm font-medium">Upload inspiration</h3>
-                        <p className="mt-1 text-xs text-gray-500">Vision board, dream life images</p>
-                        <div className="mt-4">
-                          <Button variant="outline" size="sm" className="relative">
-                            Upload
-                            <input type="file" className="absolute inset-0 w-full opacity-0 cursor-pointer" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Favorite Quote</Label>
-                      <Input placeholder="A quote that motivates you" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              
               
               {/* Milestone Tracker */}
               <Card>
