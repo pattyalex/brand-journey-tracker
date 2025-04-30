@@ -343,7 +343,7 @@ const StrategyGrowth = () => {
                 <CardContent>
                   <Textarea 
                     className="min-h-[150px] resize-none"
-                    placeholder="Write your mission here — what you're here to do, what matters to you, and why you started this journey."
+                    placeholder=""
                   />
                 </CardContent>
               </Card>
