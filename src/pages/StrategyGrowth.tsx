@@ -855,7 +855,7 @@ const StrategyGrowth = () => {
                 <CardContent>
                   <div className="space-y-6">
                     {goals.map((goal, index) => (
-                      <div key={index} className="space-y-2">
+                      <div key={index} className="space-y-2 group">
                         <div className="flex items-center justify-between">
                           <div>
                             <h4 className="font-medium">{goal.metric}</h4>
@@ -872,7 +872,7 @@ const StrategyGrowth = () => {
                               variant="ghost"
                               size="icon"
                               onClick={() => handleDeleteGoal(index)}
-                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
