@@ -232,7 +232,7 @@ const StrategyGrowth = () => {
                     Affirmation & Reminders
                   </CardTitle>
                   <CardDescription>
-                    Write down affirmations or thoughts that help you stay grounded and focused on your bigger picture.
+                    Write down affirmations, reminders or quotes that help you stay grounded and focused on your bigger picture.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
