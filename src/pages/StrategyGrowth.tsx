@@ -1048,7 +1048,7 @@ const StrategyGrowth = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <Input 
-                        placeholder="Milestone name" 
+                        placeholder="Goal name" 
                         value={newMilestoneName}
                         onChange={(e) => setNewMilestoneName(e.target.value)}
                       />
@@ -1063,7 +1063,7 @@ const StrategyGrowth = () => {
                       onClick={handleAddMilestone}
                       disabled={!newMilestoneName || !newMilestoneDate}
                     >
-                      Add Milestone
+                      Add Goal
                     </Button>
                   </div>
                 </CardContent>
