@@ -824,7 +824,7 @@ const StrategyGrowth = () => {
                       onChange={(e) => setNewCompetitor({...newCompetitor, niche: e.target.value})}
                     />
                     <select 
-                      className="p-2 border rounded-md"
+                      className="p-2 border rounded-md bg-background"
                       value={newCompetitor.platform}
                       onChange={(e) => setNewCompetitor({...newCompetitor, platform: e.target.value})}
                     >
