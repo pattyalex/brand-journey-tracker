@@ -899,7 +899,7 @@ const StrategyGrowth = () => {
                     Long-Term Goals
                   </CardTitle>
                   <CardDescription>
-                    Set specific, measurable, achievable, relevant, and time-bound goals
+                    Set the goals you want to accomplish within the next few months to a year
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
