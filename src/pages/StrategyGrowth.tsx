@@ -894,19 +894,11 @@ const StrategyGrowth = () => {
                       {/* State for new goal inputs */}
                       <div className="space-y-2">
                         <Label>Metric</Label>
-                        <select 
-                          className="w-full p-2 border rounded-md bg-background text-foreground"
+                        <Input
+                          placeholder="Enter any metric (e.g., Followers, Video Views)"
                           value={newMetric}
                           onChange={(e) => setNewMetric(e.target.value)}
-                        >
-                          <option value="">Select Metric</option>
-                          <option value="Followers">Followers</option>
-                          <option value="Engagement Rate">Engagement Rate</option>
-                          <option value="Brand Deals">Brand Deals</option>
-                          <option value="Monthly Income">Monthly Income</option>
-                          <option value="Video Views">Video Views</option>
-                          <option value="Email Subscribers">Email Subscribers</option>
-                        </select>
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label>Current Value</Label>
