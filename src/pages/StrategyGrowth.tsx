@@ -943,7 +943,7 @@ const StrategyGrowth = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {/* State for new goal inputs */}
                       <div className="space-y-2">
-                        <Label>Metric</Label>
+                        <Label>Add New Goal</Label>
                         <Input
                           placeholder="Enter any metric (e.g., Followers, Video Views)"
                           value={newMetric}
