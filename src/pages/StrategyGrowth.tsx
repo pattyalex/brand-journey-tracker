@@ -1004,7 +1004,7 @@ const StrategyGrowth = () => {
                         </thead>
                         <tbody>
                           {milestones.map((milestone, index) => (
-                            <tr key={index} className="border-t">
+                            <tr key={index} className="border-t group">
                               <td className="px-4 py-3">{milestone.name}</td>
                               <td className="px-4 py-3">{milestone.date}</td>
                               <td className="px-4 py-3">
@@ -1012,7 +1012,7 @@ const StrategyGrowth = () => {
                                   variant="ghost" 
                                   size="icon"
                                   onClick={() => handleDeleteMilestone(index)}
-                                  className="h-8 w-8 hover:text-destructive"
+                                  className="h-8 w-8 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
