@@ -121,9 +121,9 @@ const StrategyGrowth = () => {
 
   // State for milestones
   const [milestones, setMilestones] = useState([
-    { name: "First 1K followers", date: "Jan 15, 2023", completed: false },
-    { name: "First brand deal", date: "Mar 22, 2023", completed: false },
-    { name: "5K follower milestone", date: "June 10, 2023", completed: false }
+    { name: "First 1K followers", date: "Jan 15, 2023", completed: false, linkedGoal: "Followers", incrementValue: 1000 },
+    { name: "First brand deal", date: "Mar 22, 2023", completed: false, linkedGoal: "Brand Deals", incrementValue: 1 },
+    { name: "5K follower milestone", date: "June 10, 2023", completed: false, linkedGoal: "Followers", incrementValue: 5000 }
   ]);
   const [newMilestoneName, setNewMilestoneName] = useState("");
   const [newMilestoneDate, setNewMilestoneDate] = useState("");
@@ -211,6 +211,10 @@ const StrategyGrowth = () => {
     setGoals(updatedGoals);
   };
 
+  // State for linking new milestone to goal
+  const [selectedGoalLink, setSelectedGoalLink] = useState("");
+  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
+
   // Handler for adding a milestone
   const handleAddMilestone = () => {
     if (newMilestoneName && newMilestoneDate) {
@@ -225,23 +229,64 @@ const StrategyGrowth = () => {
       setMilestones([...milestones, { 
         name: newMilestoneName, 
         date: formattedDate,
-        completed: false
+        completed: false,
+        linkedGoal: selectedGoalLink || undefined,
+        incrementValue: milestoneIncrementValue || undefined
       }]);
 
       // Reset input fields
       setNewMilestoneName("");
       setNewMilestoneDate("");
+      setSelectedGoalLink("");
+      setMilestoneIncrementValue(0);
     }
   };
 
   // Handler for toggling milestone completion status
   const handleToggleMilestoneCompletion = (index: number) => {
     const updatedMilestones = [...milestones];
+    const milestone = updatedMilestones[index];
+    const newCompletionStatus = !milestone.completed;
+    
     updatedMilestones[index] = {
-      ...updatedMilestones[index],
-      completed: !updatedMilestones[index].completed
+      ...milestone,
+      completed: newCompletionStatus
     };
     setMilestones(updatedMilestones);
+    
+    // Update corresponding long-term goal if this milestone is linked to one
+    if (milestone.linkedGoal) {
+      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
+      if (goalIndex !== -1) {
+        const updatedGoals = [...goals];
+        // If completing the milestone, increment the current value
+        if (newCompletionStatus) {
+          // Increment by a fixed amount or percentage based on milestone weight
+          const incrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
+          };
+        } else {
+          // If un-checking, decrement the current value
+          const decrementAmount = milestone.incrementValue || 1;
+          updatedGoals[goalIndex] = {
+            ...updatedGoals[goalIndex],
+            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
+          };
+        }
+        setGoals(updatedGoals);
+        
+        // Show success toast
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
+            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
+            variant: "default",
+          });
+        });
+      }
+    }
   };
 
   // Handler for deleting a milestone
@@ -1011,6 +1056,7 @@ const StrategyGrowth = () => {
                             <th className="px-4 py-2 text-left font-medium w-10">Done</th>
                             <th className="px-4 py-2 text-left font-medium">Goal</th>
                             <th className="px-4 py-2 text-left font-medium">Date</th>
+                            <th className="px-4 py-2 text-left font-medium">Linked Goal</th>
                             <th className="px-4 py-2 text-left font-medium w-16"></th>
                           </tr>
                         </thead>
@@ -1030,6 +1076,22 @@ const StrategyGrowth = () => {
                               </td>
                               <td className="px-4 py-3">{milestone.date}</td>
                               <td className="px-4 py-3">
+                                {milestone.linkedGoal ? (
+                                  <div className="flex items-center gap-1">
+                                    <Badge variant="outline" className="text-xs">
+                                      {milestone.linkedGoal}
+                                    </Badge>
+                                    {milestone.incrementValue && (
+                                      <span className="text-xs text-muted-foreground">
+                                        +{milestone.incrementValue}
+                                      </span>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground">Not linked</span>
+                                )}
+                              </td>
+                              <td className="px-4 py-3">
                                 <Button 
                                   variant="ghost" 
                                   size="icon"
@@ -1044,7 +1106,7 @@ const StrategyGrowth = () => {
                         </tbody>
                       </table>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-2 mb-2">
                       <Input 
                         placeholder="Goal name" 
                         value={newMilestoneName}
@@ -1055,6 +1117,32 @@ const StrategyGrowth = () => {
                         value={newMilestoneDate}
                         onChange={(e) => setNewMilestoneDate(e.target.value)}
                       />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 mb-2">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Link to Long-Term Goal</Label>
+                        <select
+                          className="w-full p-2 border rounded-md"
+                          value={selectedGoalLink}
+                          onChange={(e) => setSelectedGoalLink(e.target.value)}
+                        >
+                          <option value="">Not linked</option>
+                          {goals.map((goal, idx) => (
+                            <option key={idx} value={goal.metric}>{goal.metric}</option>
+                          ))}
+                        </select>
+                      </div>
+                      {selectedGoalLink && (
+                        <div className="space-y-1">
+                          <Label className="text-xs">Progress Value</Label>
+                          <Input
+                            type="number"
+                            placeholder="e.g., 1000"
+                            value={milestoneIncrementValue || ""}
+                            onChange={(e) => setMilestoneIncrementValue(Number(e.target.value))}
+                          />
+                        </div>
+                      )}
                     </div>
                     <Button 
                       className="w-full"
