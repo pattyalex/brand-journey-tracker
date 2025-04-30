@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -43,7 +42,7 @@ const StrategyGrowth = () => {
   const [audienceDesires, setAudienceDesires] = useState("");
   const [selectedTones, setSelectedTones] = useState<string[]>(["relatable"]);
   const [colorPalette, setColorPalette] = useState<string[]>(["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#0088fe"]);
-  
+
   // Content Strategy states
   const [contentPillars, setContentPillars] = useState([
     { name: "Education", value: "Educates followers on industry topics" },
@@ -57,12 +56,12 @@ const StrategyGrowth = () => {
   ]);
   const [newThemeMonth, setNewThemeMonth] = useState("");
   const [newThemeContent, setNewThemeContent] = useState("");
-  
+
   const handleAddTheme = () => {
     if (newThemeMonth && newThemeContent) {
       // Check if the month already exists
       const monthExists = monthlyThemes.some(item => item.month === newThemeMonth);
-      
+
       if (monthExists) {
         // If the month exists, update its theme
         setMonthlyThemes(monthlyThemes.map(item => 
@@ -74,7 +73,7 @@ const StrategyGrowth = () => {
         // If the month doesn't exist, add a new entry
         setMonthlyThemes([...monthlyThemes, { month: newThemeMonth, theme: newThemeContent }]);
       }
-      
+
       // Reset input fields
       setNewThemeMonth("");
       setNewThemeContent("");
@@ -86,7 +85,7 @@ const StrategyGrowth = () => {
     { name: "Behind-the-scenes", selected: false },
     { name: "Q&A Stories", selected: true }
   ]);
-  
+
   // Competitor Tracker states
   const [competitors, setCompetitors] = useState([
     { 
@@ -104,7 +103,7 @@ const StrategyGrowth = () => {
     strengths: "",
     notes: "" 
   });
-  
+
   // Growth Goals states
   const [goals, setGoals] = useState([
     { metric: "Followers", current: 5000, target: 10000, timeframe: "3 months" },
@@ -112,13 +111,13 @@ const StrategyGrowth = () => {
     { metric: "Brand Deals", current: 1, target: 3, timeframe: "6 months" },
     { metric: "Monthly Income", current: 800, target: 2500, timeframe: "6 months" }
   ]);
-  
+
   // State for new goal
   const [newMetric, setNewMetric] = useState("");
   const [currentValue, setCurrentValue] = useState<number>(0);
   const [targetValue, setTargetValue] = useState<number>(0);
   const [timeframe, setTimeframe] = useState("");
-  
+
   // State for milestones
   const [milestones, setMilestones] = useState([
     { name: "First 1K followers", date: "Jan 15, 2023" },
@@ -127,7 +126,7 @@ const StrategyGrowth = () => {
   ]);
   const [newMilestoneName, setNewMilestoneName] = useState("");
   const [newMilestoneDate, setNewMilestoneDate] = useState("");
-  
+
   // New state to track active tab
   const [activeTab, setActiveTab] = useState("brand-identity");
 
@@ -176,7 +175,7 @@ const StrategyGrowth = () => {
   const handleRemoveCompetitor = (index: number) => {
     setCompetitors(competitors.filter((_, i) => i !== index));
   };
-  
+
   // Helper function to calculate goal progress percentage
   const calculateProgress = (current: number, target: number) => {
     return Math.min(Math.round((current / target) * 100), 100);
@@ -186,7 +185,7 @@ const StrategyGrowth = () => {
   const handleTabChange = (value: string) => {
     setActiveTab(value);
   };
-  
+
   // Handler for adding a new goal
   const handleAddGoal = () => {
     if (newMetric && currentValue > 0 && targetValue > 0 && timeframe) {
@@ -203,14 +202,14 @@ const StrategyGrowth = () => {
       setTimeframe("");
     }
   };
-  
+
   // Handler for deleting a goal
   const handleDeleteGoal = (index: number) => {
     const updatedGoals = [...goals];
     updatedGoals.splice(index, 1);
     setGoals(updatedGoals);
   };
-  
+
   // Handler for adding a milestone
   const handleAddMilestone = () => {
     if (newMilestoneName && newMilestoneDate) {
@@ -221,18 +220,18 @@ const StrategyGrowth = () => {
         month: 'short', 
         day: 'numeric' 
       });
-      
+
       setMilestones([...milestones, { 
         name: newMilestoneName, 
         date: formattedDate 
       }]);
-      
+
       // Reset input fields
       setNewMilestoneName("");
       setNewMilestoneDate("");
     }
   };
-  
+
   // Handler for deleting a milestone
   const handleDeleteMilestone = (index: number) => {
     const updatedMilestones = [...milestones];
@@ -249,7 +248,7 @@ const StrategyGrowth = () => {
             Define your brand identity, plan your content strategy, and track your growth
           </p>
         </div>
-        
+
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="mb-6 grid grid-cols-4 gap-4">
             <TabsTrigger value="brand-identity" className="flex items-center gap-2">
@@ -269,7 +268,7 @@ const StrategyGrowth = () => {
               <span>Growth Goals</span>
             </TabsTrigger>
           </TabsList>
-          
+
           {/* Brand Identity Tab */}
           <TabsContent value="brand-identity" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -310,7 +309,7 @@ const StrategyGrowth = () => {
                   />
                 </CardContent>
               </Card>
-              
+
               {/* Brand Keywords */}
               <Card>
                 <CardHeader>
@@ -575,7 +574,7 @@ const StrategyGrowth = () => {
               </Card>
             </div>
           </TabsContent>
-          
+
           {/* Content Strategy Tab */}
           <TabsContent value="content-strategy" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -738,10 +737,10 @@ const StrategyGrowth = () => {
                 </CardContent>
               </Card>
 
-              
+
             </div>
           </TabsContent>
-          
+
           {/* Competitor Tracker Tab */}
           <TabsContent value="competitor-tracker" className="space-y-6">
             <Card>
@@ -848,7 +847,7 @@ const StrategyGrowth = () => {
                       </div>
                     </CardContent>
                   </Card>
-                  
+
                   <Card className="bg-muted/40">
                     <CardHeader className="py-4">
                       <CardTitle className="text-base">Performance Tracking</CardTitle>
@@ -875,7 +874,7 @@ const StrategyGrowth = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           {/* Growth Goals Tab */}
           <TabsContent value="growth-goals" className="space-y-6">
             <h2 className="text-2xl font-bold mb-4">LONG-TERM GOALS</h2>
@@ -926,7 +925,7 @@ const StrategyGrowth = () => {
                       </div>
                     ))}
                   </div>
-                  
+
                   <div className="mt-8 border-t pt-6">
                     <h3 className="font-medium mb-4">Add New Goal</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -977,18 +976,16 @@ const StrategyGrowth = () => {
                     </div>
                   </div>
                 </CardContent>
+                <div className="pb-8"></div>
               </Card>
-              
-              
-              {/* Add more space between sections */}
-              <div className="mt-20"></div>
-              
+
+
+
+              <h2 className="text-2xl font-bold mb-4">SHORT-TERM GOALS</h2>
+
               {/* Milestone Tracker */}
               <Card>
-                <CardHeader className="relative">
-                  <div className="absolute top-[-40px] left-[-24px]">
-                    <h2 className="text-2xl font-bold mb-4 text-left">SHORT-TERM GOALS</h2>
-                  </div>
+                <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Award className="w-5 h-5 text-primary" />
                     Milestone Tracker
