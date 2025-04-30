@@ -983,11 +983,12 @@ const StrategyGrowth = () => {
               {/* Add more space between sections */}
               <div className="mt-20"></div>
               
-              <h2 className="text-2xl font-bold mb-4 text-left ml-[-24px]">SHORT-TERM GOALS</h2>
-              
               {/* Milestone Tracker */}
               <Card>
-                <CardHeader>
+                <CardHeader className="relative">
+                  <div className="absolute top-[-40px] left-[-24px]">
+                    <h2 className="text-2xl font-bold mb-4 text-left">SHORT-TERM GOALS</h2>
+                  </div>
                   <CardTitle className="flex items-center gap-2">
                     <Award className="w-5 h-5 text-primary" />
                     Milestone Tracker
