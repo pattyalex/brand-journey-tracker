@@ -1122,7 +1122,7 @@ const StrategyGrowth = () => {
                       <div className="space-y-1">
                         <Label className="text-xs">Link to Long-Term Goal</Label>
                         <select
-                          className="w-full p-2 border rounded-md bg-background"
+                          className="w-full p-2 border rounded-md bg-background text-sm font-medium"
                           value={selectedGoalLink}
                           onChange={(e) => setSelectedGoalLink(e.target.value)}
                         >
