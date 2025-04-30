@@ -841,8 +841,7 @@ const StrategyGrowth = () => {
 
                 <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Card className="bg-muted/40">
-                    <CardHeader className="py-4">
-                      <CardTitle className="text-base">Differentiation Analysis</CardTitle>
+                    <CardHeader className="py-4"><CardTitle className="text-base">Differentiation Analysis</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
@@ -945,7 +944,7 @@ const StrategyGrowth = () => {
                       <div className="space-y-2">
                         <Label>Add New Goal</Label>
                         <Input
-                          placeholder="Enter any metric (e.g., Followers, Video Views)"
+                          placeholder="Followers"
                           value={newMetric}
                           onChange={(e) => setNewMetric(e.target.value)}
                         />
