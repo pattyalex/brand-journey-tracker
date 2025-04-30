@@ -950,7 +950,7 @@ const StrategyGrowth = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Current Value</Label>
+                        <Label>Current Status</Label>
                         <Input 
                           type="number" 
                           placeholder="e.g., 1000" 
