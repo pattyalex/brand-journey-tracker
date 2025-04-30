@@ -981,6 +981,8 @@ const StrategyGrowth = () => {
               
               
               
+              <h2 className="text-2xl font-bold mb-4">SHORT-TERM GOALS</h2>
+              
               {/* Milestone Tracker */}
               <Card>
                 <CardHeader>
