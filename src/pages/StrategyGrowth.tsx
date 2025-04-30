@@ -851,33 +851,84 @@ const StrategyGrowth = () => {
                   <div className="mt-8 border-t pt-6">
                     <h3 className="font-medium mb-4">Add New Goal</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label>Metric</Label>
-                        <select className="w-full p-2 border rounded-md bg-background text-foreground">
-                          <option value="">Select Metric</option>
-                          <option value="Followers">Followers</option>
-                          <option value="Engagement Rate">Engagement Rate</option>
-                          <option value="Brand Deals">Brand Deals</option>
-                          <option value="Monthly Income">Monthly Income</option>
-                          <option value="Video Views">Video Views</option>
-                          <option value="Email Subscribers">Email Subscribers</option>
-                        </select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Current Value</Label>
-                        <Input type="number" placeholder="e.g., 1000" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Target Value</Label>
-                        <Input type="number" placeholder="e.g., 5000" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Timeframe</Label>
-                        <Input placeholder="e.g., 3 months" />
-                      </div>
-                      <div className="md:col-span-2 flex items-end">
-                        <Button className="w-full">Add Goal</Button>
-                      </div>
+                      {/* State for new goal inputs */}
+                      {React.useMemo(() => {
+                        const [newGoal, setNewGoal] = useState({
+                          metric: "",
+                          current: 0,
+                          target: 0,
+                          timeframe: ""
+                        });
+                        
+                        const handleAddGoal = () => {
+                          if (newGoal.metric && newGoal.current > 0 && newGoal.target > 0 && newGoal.timeframe) {
+                            setGoals([...goals, newGoal]);
+                            // Reset form after adding
+                            setNewGoal({
+                              metric: "",
+                              current: 0,
+                              target: 0,
+                              timeframe: ""
+                            });
+                          }
+                        };
+                        
+                        return (
+                          <>
+                            <div className="space-y-2">
+                              <Label>Metric</Label>
+                              <select 
+                                className="w-full p-2 border rounded-md bg-background text-foreground"
+                                value={newGoal.metric}
+                                onChange={(e) => setNewGoal({...newGoal, metric: e.target.value})}
+                              >
+                                <option value="">Select Metric</option>
+                                <option value="Followers">Followers</option>
+                                <option value="Engagement Rate">Engagement Rate</option>
+                                <option value="Brand Deals">Brand Deals</option>
+                                <option value="Monthly Income">Monthly Income</option>
+                                <option value="Video Views">Video Views</option>
+                                <option value="Email Subscribers">Email Subscribers</option>
+                              </select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Current Value</Label>
+                              <Input 
+                                type="number" 
+                                placeholder="e.g., 1000" 
+                                value={newGoal.current || ""}
+                                onChange={(e) => setNewGoal({...newGoal, current: Number(e.target.value)})}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Target Value</Label>
+                              <Input 
+                                type="number" 
+                                placeholder="e.g., 5000" 
+                                value={newGoal.target || ""}
+                                onChange={(e) => setNewGoal({...newGoal, target: Number(e.target.value)})}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Timeframe</Label>
+                              <Input 
+                                placeholder="e.g., 3 months" 
+                                value={newGoal.timeframe}
+                                onChange={(e) => setNewGoal({...newGoal, timeframe: e.target.value})}
+                              />
+                            </div>
+                            <div className="md:col-span-2 flex items-end">
+                              <Button 
+                                className="w-full"
+                                onClick={handleAddGoal}
+                                disabled={!newGoal.metric || !newGoal.current || !newGoal.target || !newGoal.timeframe}
+                              >
+                                Add Goal
+                              </Button>
+                            </div>
+                          </>
+                        );
+                      }, [])}
                     </div>
                   </div>
                 </CardContent>
