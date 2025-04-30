@@ -953,7 +953,7 @@ const StrategyGrowth = () => {
                         <Label>Current Status</Label>
                         <Input 
                           type="number" 
-                          placeholder="e.g., 1000" 
+                          placeholder="e.g., 1000 followers" 
                           value={currentValue || ""}
                           onChange={(e) => setCurrentValue(Number(e.target.value))}
                         />
