@@ -194,6 +194,13 @@ const StrategyGrowth = () => {
       setTimeframe("");
     }
   };
+  
+  // Handler for deleting a goal
+  const handleDeleteGoal = (index: number) => {
+    const updatedGoals = [...goals];
+    updatedGoals.splice(index, 1);
+    setGoals(updatedGoals);
+  };
 
   return (
     <Layout>
@@ -856,9 +863,19 @@ const StrategyGrowth = () => {
                               Goal: {goal.target} in {goal.timeframe}
                             </p>
                           </div>
-                          <div className="text-right">
-                            <p className="font-medium">{goal.current}</p>
-                            <p className="text-sm text-muted-foreground">Current</p>
+                          <div className="flex items-center gap-4">
+                            <div className="text-right">
+                              <p className="font-medium">{goal.current}</p>
+                              <p className="text-sm text-muted-foreground">Current</p>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteGoal(index)}
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
                         <div className="space-y-1">
