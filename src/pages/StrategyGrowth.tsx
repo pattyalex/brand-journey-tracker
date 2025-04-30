@@ -1011,7 +1011,7 @@ const StrategyGrowth = () => {
                         <thead className="bg-muted">
                           <tr>
                             <th className="px-4 py-2 text-left font-medium w-10">Done</th>
-                            <th className="px-4 py-2 text-left font-medium">Milestone</th>
+                            <th className="px-4 py-2 text-left font-medium">Goal</th>
                             <th className="px-4 py-2 text-left font-medium">Date</th>
                             <th className="px-4 py-2 text-left font-medium w-16"></th>
                           </tr>
