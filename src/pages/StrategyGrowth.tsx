@@ -944,7 +944,7 @@ const StrategyGrowth = () => {
                       <div className="space-y-2">
                         <Label>Add New Goal</Label>
                         <Input
-                          placeholder="Followers"
+                          placeholder="for example, followers, income, subscribers, and so on"
                           value={newMetric}
                           onChange={(e) => setNewMetric(e.target.value)}
                         />
