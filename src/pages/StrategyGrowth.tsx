@@ -889,7 +889,8 @@ const StrategyGrowth = () => {
 
           {/* Growth Goals Tab */}
           <TabsContent value="growth-goals" className="space-y-6">
-            <h2 className="text-2xl font-bold mb-4">SMART Goals</h2>
+            <h2 className="text-2xl font-bold mb-2">SMART Goals</h2>
+            <p className="text-muted-foreground mb-4">Set specific, measurable, achievable, relevant, and time-bound goals</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Growth Goals Card */}
               <Card className="md:col-span-2">
