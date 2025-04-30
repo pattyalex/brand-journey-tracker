@@ -119,6 +119,15 @@ const StrategyGrowth = () => {
   const [targetValue, setTargetValue] = useState<number>(0);
   const [timeframe, setTimeframe] = useState("");
   
+  // State for milestones
+  const [milestones, setMilestones] = useState([
+    { name: "First 1K followers", date: "Jan 15, 2023" },
+    { name: "First brand deal", date: "Mar 22, 2023" },
+    { name: "5K follower milestone", date: "June 10, 2023" }
+  ]);
+  const [newMilestoneName, setNewMilestoneName] = useState("");
+  const [newMilestoneDate, setNewMilestoneDate] = useState("");
+  
   // New state to track active tab
   const [activeTab, setActiveTab] = useState("brand-identity");
 
@@ -200,6 +209,35 @@ const StrategyGrowth = () => {
     const updatedGoals = [...goals];
     updatedGoals.splice(index, 1);
     setGoals(updatedGoals);
+  };
+  
+  // Handler for adding a milestone
+  const handleAddMilestone = () => {
+    if (newMilestoneName && newMilestoneDate) {
+      // Format the date for display
+      const dateObj = new Date(newMilestoneDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+      
+      setMilestones([...milestones, { 
+        name: newMilestoneName, 
+        date: formattedDate 
+      }]);
+      
+      // Reset input fields
+      setNewMilestoneName("");
+      setNewMilestoneDate("");
+    }
+  };
+  
+  // Handler for deleting a milestone
+  const handleDeleteMilestone = (index: number) => {
+    const updatedMilestones = [...milestones];
+    updatedMilestones.splice(index, 1);
+    setMilestones(updatedMilestones);
   };
 
   return (
@@ -961,29 +999,48 @@ const StrategyGrowth = () => {
                           <tr>
                             <th className="px-4 py-2 text-left font-medium">Milestone</th>
                             <th className="px-4 py-2 text-left font-medium">Date</th>
+                            <th className="px-4 py-2 text-left font-medium w-16">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
-                          <tr className="border-t">
-                            <td className="px-4 py-3">First 1K followers</td>
-                            <td className="px-4 py-3">Jan 15, 2023</td>
-                          </tr>
-                          <tr className="border-t">
-                            <td className="px-4 py-3">First brand deal</td>
-                            <td className="px-4 py-3">Mar 22, 2023</td>
-                          </tr>
-                          <tr className="border-t">
-                            <td className="px-4 py-3">5K follower milestone</td>
-                            <td className="px-4 py-3">June 10, 2023</td>
-                          </tr>
+                          {milestones.map((milestone, index) => (
+                            <tr key={index} className="border-t">
+                              <td className="px-4 py-3">{milestone.name}</td>
+                              <td className="px-4 py-3">{milestone.date}</td>
+                              <td className="px-4 py-3">
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  onClick={() => handleDeleteMilestone(index)}
+                                  className="h-8 w-8 hover:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
                         </tbody>
                       </table>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
-                      <Input placeholder="Milestone name" />
-                      <Input type="date" />
+                      <Input 
+                        placeholder="Milestone name" 
+                        value={newMilestoneName}
+                        onChange={(e) => setNewMilestoneName(e.target.value)}
+                      />
+                      <Input 
+                        type="date" 
+                        value={newMilestoneDate}
+                        onChange={(e) => setNewMilestoneDate(e.target.value)}
+                      />
                     </div>
-                    <Button className="w-full">Add Milestone</Button>
+                    <Button 
+                      className="w-full"
+                      onClick={handleAddMilestone}
+                      disabled={!newMilestoneName || !newMilestoneDate}
+                    >
+                      Add Milestone
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
