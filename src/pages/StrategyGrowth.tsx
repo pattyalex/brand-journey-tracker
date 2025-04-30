@@ -853,7 +853,7 @@ const StrategyGrowth = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
                         <Label>Metric</Label>
-                        <select className="w-full p-2 border rounded-md">
+                        <select className="w-full p-2 border rounded-md bg-background text-foreground">
                           <option value="">Select Metric</option>
                           <option value="Followers">Followers</option>
                           <option value="Engagement Rate">Engagement Rate</option>
