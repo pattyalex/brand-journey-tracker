@@ -786,35 +786,7 @@ const StrategyGrowth = () => {
                 </CardContent>
               </Card>
 
-              {/* Content Formats */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Video className="w-5 h-5 text-primary" />
-                    Content Formats
-                  </CardTitle>
-                  <CardDescription>
-                    Select the formats you want to create
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {contentFormats.map((format, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 border rounded-md">
-                        <span>{format.name}</span>
-                        <Switch 
-                          checked={format.selected}
-                          onCheckedChange={() => handleFormatToggle(index)}
-                        />
-                      </div>
-                    ))}
-                    <div className="flex gap-2 pt-2">
-                      <Input placeholder="New format (e.g., Day-in-life Vlogs)" className="flex-1" />
-                      <Button>Add</Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              
 
 
             </div>
