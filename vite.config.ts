@@ -1,3 +1,4 @@
+
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import path from 'path'
@@ -13,9 +14,9 @@ export default defineConfig(({ mode }) => ({
     port: 5000,
     strictPort: true,
     hmr: {
-      // Enable WebSocket connection on Replit
       clientPort: 443,
-      host: process.env.REPL_SLUG ? `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` : 'localhost'
+      host: process.env.REPL_SLUG ? `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` : 'localhost',
+      protocol: 'wss'
     }
   },
   resolve: {
