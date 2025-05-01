@@ -58,7 +58,7 @@ const BrandsCollabTable = ({
       <div className="bg-white rounded-lg shadow-sm border">
         <div className="p-4 border-b flex justify-between items-center">
           <h2 className="font-medium">Brand Collaborations</h2>
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2 md:flex-row md:gap-2"> {/* Changed to flex-col for mobile */}
             <Button onClick={handleAddBrand} size="sm" className="flex items-center gap-1">
               <Plus className="h-4 w-4" /> Add Brand
             </Button>
@@ -76,7 +76,7 @@ const BrandsCollabTable = ({
         </div>
 
         <div className="overflow-x-auto">
-          <ScrollArea className="h-[400px]">
+          <ScrollArea className="h-[400px] overflow-x-auto"> {/* Added overflow-x-auto */}
             <div className="min-w-full w-max">
               <Table className="brand-collab-table">
                 <TableHeader>
