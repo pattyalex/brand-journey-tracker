@@ -80,7 +80,7 @@ const PillarTabs = ({
   return (
     <div className="flex items-center justify-between mb-6">
       <div className="flex items-center">
-        <TabsList className="bg-background border overflow-x-auto flex items-center h-12 relative shadow-sm rounded-t-md gap-1">
+        <TabsList className="bg-background border overflow-x-auto flex items-center h-12 relative">
           {pillars.map((pillar) => (
             <div key={pillar.id} className="relative flex items-center">
               {editingPillarId === pillar.id ? (
@@ -115,19 +115,16 @@ const PillarTabs = ({
                 <div className="flex items-center">
                   <TabsTrigger 
                     value={pillar.id}
-                    className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white data-[state=active]:shadow-md px-5 py-2 text-base ${
-                      pillar.id === "1" && activeTab === "1" ? "bg-[#8B6B4E] text-white shadow-md" : ""
-                    } transition-all duration-300 relative overflow-hidden rounded-t-md border-b-0 ${
-                      activeTab === pillar.id ? "font-semibold" : "hover:bg-gray-100"
-                    }`}
+                    className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white px-5 py-2 text-base ${
+                      pillar.id === "1" && activeTab === "1" ? "bg-[#8B6B4E] text-white" : ""
+                    } transition-all duration-300 relative overflow-hidden`}
                     onClick={() => onTabChange(pillar.id)}
                   >
-                    <span className="relative z-10 flex items-center">
-                      <span className={`w-2 h-2 rounded-full mr-2 ${
-                        activeTab === pillar.id ? "bg-white" : "bg-gray-400"
-                      }`}></span>
+                    <span className="relative z-10">
                       {pillar.name}
                     </span>
+                    
+                    {/* Removed the white underline div that was here */}
                   </TabsTrigger>
                   
                   <DropdownMenu>

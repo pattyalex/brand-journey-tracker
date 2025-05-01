@@ -61,14 +61,6 @@ const cardVariants = {
 };
 
 const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) => {
-  // Apply pillar-specific styling
-  const bucketStyle = {
-    borderColor: `var(--pillar-color, #8B6B4E)`,
-    borderOpacity: 0.2
-  };
-  
-  // Apply pillar-specific classes to each card
-  const bucketCardClass = `border rounded-lg p-4 shadow-sm transition-all duration-200 hover:shadow-md pillar-${pillarId}-theme`;
   const { toast } = useToast();
   const [contentTypes, setContentTypes] = useState<ContentType[]>([
     { id: "blog", name: "Blog Posts", description: "Long-form written content", items: [] },

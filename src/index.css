@@ -89,39 +89,6 @@
 
   [data-key="notes"] {
     padding-left: 30px;
-
-/* Pillar-specific theme classes */
-.pillar-1-theme {
-  --pillar-color: #8B6B4E;
-  --pillar-light: #f8f5f1;
-  --pillar-gradient: linear-gradient(to right, #8B6B4E, #b39b85);
-}
-
-.pillar-2-theme {
-  --pillar-color: #4E6E8B;
-  --pillar-light: #f1f5f8;
-  --pillar-gradient: linear-gradient(to right, #4E6E8B, #85a3b3);
-}
-
-.pillar-3-theme {
-  --pillar-color: #8B4E6E;
-  --pillar-light: #f8f1f5;
-  --pillar-gradient: linear-gradient(to right, #8B4E6E, #b385a3);
-}
-
-.pillar-theme {
-  background-color: var(--pillar-light);
-  transition: all 0.3s ease;
-}
-
-.pillar-header {
-  color: var(--pillar-color);
-  background: var(--pillar-gradient);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
     padding-right: 30px;
     text-align: left !important;
   }
