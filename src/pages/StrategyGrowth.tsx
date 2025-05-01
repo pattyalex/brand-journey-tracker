@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   PenTool,
   Users,
@@ -26,7 +27,8 @@ import {
   PieChart,
   Plus,
   Trash2,
-  Upload
+  Upload,
+  ExternalLink
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
@@ -175,6 +177,26 @@ const StrategyGrowth = () => {
 
   const handleRemoveCompetitor = (index: number) => {
     setCompetitors(competitors.filter((_, i) => i !== index));
+  };
+
+  // State for viewing competitor details
+  const [viewingCompetitor, setViewingCompetitor] = useState<null | {
+    handle: string;
+    niche: string;
+    platform: string;
+    strengths: string;
+    notes: string;
+  }>(null);
+
+  // Handler for viewing competitor details
+  const handleViewCompetitor = (competitor: {
+    handle: string;
+    niche: string;
+    platform: string;
+    strengths: string;
+    notes: string;
+  }) => {
+    setViewingCompetitor(competitor);
   };
 
   // Helper function to calculate goal progress percentage
@@ -868,7 +890,13 @@ const StrategyGrowth = () => {
                           <td className="px-4 py-3">{competitor.platform}</td>
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-2">
-                              <Button variant="ghost" size="sm">View</Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleViewCompetitor(competitor)}
+                              >
+                                View
+                              </Button>
                               <Button 
                                 variant="ghost" 
                                 size="icon"
@@ -1157,6 +1185,56 @@ const StrategyGrowth = () => {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Dialog for viewing competitor details */}
+        {viewingCompetitor && (
+          <Dialog open={!!viewingCompetitor} onOpenChange={(open) => !open && setViewingCompetitor(null)}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-xl">{viewingCompetitor.handle}</DialogTitle>
+                <DialogDescription>
+                  Detailed information about this competitor or inspiration.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">Platform:</span>
+                  <Badge variant="outline">{viewingCompetitor.platform}</Badge>
+                </div>
+                <div>
+                  <span className="font-medium">Niche:</span>
+                  <p className="mt-1">{viewingCompetitor.niche}</p>
+                </div>
+                <div>
+                  <span className="font-medium">Strengths:</span>
+                  <p className="mt-1">{viewingCompetitor.strengths || "No strengths recorded"}</p>
+                </div>
+                <div>
+                  <span className="font-medium">Notes:</span>
+                  <p className="mt-1">{viewingCompetitor.notes || "No notes recorded"}</p>
+                </div>
+                
+                {/* Placeholder for analytics comparison - could be expanded in future */}
+                <div className="mt-6 border-t pt-4">
+                  <h4 className="font-medium mb-2">Actions</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button variant="outline" size="sm" className="w-full">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Visit Profile
+                    </Button>
+                    <Button variant="outline" size="sm" className="w-full">
+                      <BarChart className="h-4 w-4 mr-2" />
+                      Compare Stats
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setViewingCompetitor(null)}>Close</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     </Layout>
   );
