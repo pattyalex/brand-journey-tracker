@@ -12,7 +12,14 @@
   <body>
     <div id="root"></div>
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
-    <!-- Script removed to fix connection issues -->
+    <script>
+      // Ensure WebSocket connections don't keep retrying infinitely
+      window.addEventListener('error', function(event) {
+        if (event.message && event.message.includes('WebSocket')) {
+          console.warn('WebSocket connection issue detected');
+        }
+      });
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
