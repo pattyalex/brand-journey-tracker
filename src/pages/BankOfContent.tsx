@@ -356,8 +356,12 @@ const BankOfContent = () => {
             pillarId={activeTab}
           />
           {pillars.map((pillar) => (
-            <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <TabsContent key={pillar.id} value={pillar.id} className={`space-y-4 pillar-theme pillar-${pillar.id}-theme`}>
+              <div className="relative pb-1 mb-3">
+                <h2 className="text-2xl font-bold pillar-header">{pillar.name}</h2>
+                <div className="absolute bottom-0 left-0 w-full h-1" style={{ background: 'var(--pillar-gradient)' }}></div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gradient-to-b from-[var(--pillar-light)] to-white p-4 rounded-lg border border-1 shadow-sm" style={{ borderColor: 'var(--pillar-color)', borderOpacity: 0.2 }}>
                 <WritingSpace 
                   value={writingText}
                   onChange={updateWritingSpace}

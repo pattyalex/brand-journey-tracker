@@ -46,6 +46,10 @@ const WritingSpace = ({
   const [expandedClass, setExpandedClass] = useState("");
   const [isMeganOpen, setIsMeganOpen] = useState(false);
   const editorRef = useRef<RichTextEditorRef>(null);
+  // Get the current pillar ID from the URL or context to style appropriately
+  const pillarId = window.location.hash.includes('pillar=') 
+    ? window.location.hash.split('pillar=')[1].split('&')[0]
+    : '1';
 
   useEffect(() => {
     setExpandedClass(state === "collapsed" ? "writing-expanded" : "");
@@ -59,7 +63,7 @@ const WritingSpace = ({
 
   return (
     <motion.div 
-      className={`space-y-4 pr-2 transition-all duration-300 ${expandedClass}`}
+      className={`space-y-4 pr-2 transition-all duration-300 ${expandedClass} pillar-${pillarId}-theme`} // Added pillar-theme class
       variants={containerVariants}
       initial="hidden"
       animate="visible"
