@@ -269,6 +269,16 @@ const HomePage = () => {
                         className="min-h-[80px] resize-none"
                       />
                     </div>
+                    
+                    <div>
+                      <h3 className="font-medium mb-2 text-sm">Three things I'm grateful for:</h3>
+                      <Textarea 
+                        placeholder="List three things you're grateful for today..."
+                        value={journalEntries.threeThingsImGratefulFor}
+                        onChange={(e) => handleJournalChange('threeThingsImGratefulFor', e.target.value)}
+                        className="min-h-[80px] resize-none"
+                      />
+                    </div>
                   </CardContent>
                 </Card>
               </section>
