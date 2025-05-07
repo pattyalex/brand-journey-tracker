@@ -44,8 +44,9 @@ function App() {
       <Router>
         <Suspense fallback={<PageLoader />}>
           <Routes>
-            <Route path="/" element={<HomePage />} /> {/*Added Home Page Route*/}
-            <Route path="/dashboard" element={<Dashboard />} /> {/*Modified Dashboard Route*/}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/home-page" element={<HomePage />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/index" element={<Index />} />
             <Route path="/bank-of-content" element={<BankOfContent />} />
             <Route path="/content-ideation" element={<ContentIdeation />} />
