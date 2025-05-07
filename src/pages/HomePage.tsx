@@ -13,6 +13,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Calendar, 
   CheckSquare, 
@@ -66,6 +67,11 @@ const HomePage = () => {
     const savedEntries = localStorage.getItem('journalEntries');
     if (savedEntries) {
       setJournalEntries(JSON.parse(savedEntries));
+    }
+    
+    // Initialize the homeTasks localStorage if it doesn't exist
+    if (!localStorage.getItem('homeTasks')) {
+      localStorage.setItem('homeTasks', JSON.stringify([]));
     }
   }, []);
 
@@ -286,19 +292,40 @@ const HomePage = () => {
                 <Card className="border border-gray-100 shadow-sm">
                   <CardContent className="p-4">
                     <div className="space-y-3">
-                      <div className="flex items-start">
-                        <div className="h-5 w-5 rounded border border-gray-300 mr-3 mt-0.5 flex-shrink-0"></div>
-                        <span className="text-sm">Finish editing weekend vlog</span>
+                    {[
+                      { id: 1, text: "Finish editing weekend vlog" },
+                      { id: 2, text: "Respond to brand email" },
+                      { id: 3, text: "Draft caption for tomorrow's post" }
+                    ].map((task) => (
+                      <div key={task.id} className="flex items-start group">
+                        <Checkbox 
+                          id={`task-${task.id}`}
+                          className="h-5 w-5 rounded mr-3 mt-0.5 flex-shrink-0 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-300"
+                          onCheckedChange={(checked) => {
+                            const tasks = JSON.parse(localStorage.getItem('homeTasks') || '[]');
+                            if (checked) {
+                              if (!tasks.includes(task.id)) {
+                                tasks.push(task.id);
+                              }
+                            } else {
+                              const index = tasks.indexOf(task.id);
+                              if (index > -1) {
+                                tasks.splice(index, 1);
+                              }
+                            }
+                            localStorage.setItem('homeTasks', JSON.stringify(tasks));
+                          }}
+                          defaultChecked={JSON.parse(localStorage.getItem('homeTasks') || '[]').includes(task.id)}
+                        />
+                        <label 
+                          htmlFor={`task-${task.id}`} 
+                          className="text-sm cursor-pointer peer-data-[state=checked]:line-through peer-data-[state=checked]:text-gray-500"
+                        >
+                          {task.text}
+                        </label>
                       </div>
-                      <div className="flex items-start">
-                        <div className="h-5 w-5 rounded border border-gray-300 mr-3 mt-0.5 flex-shrink-0"></div>
-                        <span className="text-sm">Respond to brand email</span>
-                      </div>
-                      <div className="flex items-start">
-                        <div className="h-5 w-5 rounded border border-gray-300 mr-3 mt-0.5 flex-shrink-0"></div>
-                        <span className="text-sm">Draft caption for tomorrow's post</span>
-                      </div>
-                    </div>
+                    ))}
+                  </div>
                   </CardContent>
                 </Card>
               </section>
