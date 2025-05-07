@@ -1,4 +1,3 @@
-
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from "@/components/theme-provider"
@@ -9,6 +8,7 @@ import NotFound from './pages/NotFound';
 import GetStarted from './pages/GetStarted';
 import CollabManagement from './pages/CollabManagement';  // Import eagerly instead of lazily
 import StrategyDemo from './pages/StrategyDemo';
+import HomePage from './pages/HomePage'; // Added import for HomePage
 
 // Lazy load all other pages
 const TrendingContent = lazy(() => import('./pages/TrendingContent'));
@@ -44,7 +44,8 @@ function App() {
       <Router>
         <Suspense fallback={<PageLoader />}>
           <Routes>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/" element={<HomePage />} /> {/*Added Home Page Route*/}
+            <Route path="/dashboard" element={<Dashboard />} /> {/*Modified Dashboard Route*/}
             <Route path="/index" element={<Index />} />
             <Route path="/bank-of-content" element={<BankOfContent />} />
             <Route path="/content-ideation" element={<ContentIdeation />} />
@@ -64,7 +65,7 @@ function App() {
             <Route path="/trending" element={<TrendingContent />} />
             <Route path="/collab-management" element={<CollabManagement />} />
             <Route path="/strategy-demo" element={<StrategyDemo />} />
-<Route path="*" element={<NotFound />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
       </Router>
