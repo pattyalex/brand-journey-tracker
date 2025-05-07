@@ -270,10 +270,10 @@ const HomePage = () => {
 
             {/* Right Column - 1/3 width */}
             <div className="space-y-8">
-              {/* Today's Tasks Section */}
+              {/* Today's Top Priority Tasks Section */}
               <section className="fade-in">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-bold">Today's Tasks</h2>
+                  <h2 className="text-xl font-bold">Today's Top Priority Tasks</h2>
                   <Button 
                     variant="ghost" 
                     size="sm"
