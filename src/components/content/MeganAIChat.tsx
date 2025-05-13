@@ -1,10 +1,10 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SendIcon, XIcon } from "lucide-react";
 import { toast } from "sonner";
-import { OpenAIService } from "@/utils/OpenAIService";
 
 interface Message {
   id: string;
@@ -32,7 +32,7 @@ const MeganAIChat = ({ onClose, contextData }: MeganAIChatProps) => {
       timestamp: new Date(),
     },
   ]);
-
+  
   const [inputValue, setInputValue] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiKey, setApiKey] = useState<string | null>(localStorage.getItem("openai_api_key"));
@@ -57,7 +57,7 @@ const MeganAIChat = ({ onClose, contextData }: MeganAIChatProps) => {
 
   const generateSystemPrompt = () => {
     let systemPrompt = "You are Megan, an AI content creation assistant. You help creators with content ideas, scripts, format suggestions, and filming/production advice.";
-
+    
     if (contextData) {
       systemPrompt += " The user is currently working on content with the following details:";
       if (contextData.title) systemPrompt += `\nTitle: ${contextData.title}`;
@@ -65,9 +65,9 @@ const MeganAIChat = ({ onClose, contextData }: MeganAIChatProps) => {
       if (contextData.format) systemPrompt += `\nFormat: ${contextData.format}`;
       if (contextData.shootDetails) systemPrompt += `\nShoot Details: ${contextData.shootDetails}`;
     }
-
+    
     systemPrompt += "\nProvide concise, specific, and actionable advice. Focus on content creation best practices, engagement tips, and practical suggestions.";
-
+    
     return systemPrompt;
   };
 
@@ -95,7 +95,7 @@ const MeganAIChat = ({ onClose, contextData }: MeganAIChatProps) => {
         role: msg.role,
         content: msg.content
       }));
-
+      
       // Add user's new message
       conversationHistory.push({
         role: "user" as const,
@@ -120,12 +120,12 @@ const MeganAIChat = ({ onClose, contextData }: MeganAIChatProps) => {
       });
 
       const data = await response.json();
-
+      
       if (!response.ok) {
         console.error("OpenAI API error:", data);
         throw new Error(data.error?.message || "Error calling OpenAI API");
       }
-
+      
       return data.choices[0].message.content;
     } catch (error) {
       console.error("Error calling OpenAI API:", error);
@@ -135,31 +135,31 @@ const MeganAIChat = ({ onClose, contextData }: MeganAIChatProps) => {
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-
+    
     if (!inputValue.trim() || isSubmitting) return;
-
+    
     const userMessage: Message = {
       id: Date.now().toString(),
       content: inputValue.trim(),
       role: "user",
       timestamp: new Date(),
     };
-
+    
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
     setIsSubmitting(true);
-
+    
     try {
       // Get AI response from OpenAI
       const aiResponse = await callOpenAiApi(userMessage.content);
-
+      
       const assistantMessage: Message = {
         id: Date.now().toString(),
         content: aiResponse,
         role: "assistant",
         timestamp: new Date(),
       };
-
+      
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error("Error getting AI response:", error);
@@ -184,7 +184,7 @@ const MeganAIChat = ({ onClose, contextData }: MeganAIChatProps) => {
           <XIcon className="h-4 w-4" />
         </Button>
       </div>
-
+      
       <div className="flex-1 overflow-hidden">
         <ScrollArea className="h-[calc(90vh-220px)]">
           <div className="p-3 space-y-4">
@@ -216,7 +216,7 @@ const MeganAIChat = ({ onClose, contextData }: MeganAIChatProps) => {
           </div>
         </ScrollArea>
       </div>
-
+      
       <div className="p-3 border-t border-gray-200">
         {!apiKey ? (
           <div className="flex flex-col gap-3 items-center justify-center py-2">
