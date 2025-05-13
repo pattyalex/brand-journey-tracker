@@ -192,7 +192,7 @@ const HomePage = () => {
               <section className="space-y-4 fade-in">
                 <Card className="border border-gray-100 shadow-sm">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-xl font-medium">Your Journal</CardTitle>
+                    <CardTitle className="text-xl font-bold">Your Journal</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-8">
                     <div>
