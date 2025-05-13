@@ -190,10 +190,8 @@ const HomePage = () => {
             <div className="lg:col-span-2 space-y-8">
               {/* Journaling Section */}
               <section className="space-y-4 fade-in">
+                <h2 className="text-xl font-bold mb-4">Your Journal</h2>
                 <Card className="border border-gray-100 shadow-sm">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xl font-bold">Your Journal</CardTitle>
-                  </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
                       <h3 className="font-medium mb-2 text-sm">What would make today great?</h3>
