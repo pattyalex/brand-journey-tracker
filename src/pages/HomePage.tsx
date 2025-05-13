@@ -193,7 +193,6 @@ const HomePage = () => {
                 <Card className="border border-gray-100 shadow-sm">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-xl font-medium">Your Journal</CardTitle>
-                    <CardDescription>Set your intentions for the day</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
