@@ -499,10 +499,7 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
-
-
-      {/* Add Priority Dialog */}
+{/* Add Priority Dialog */}
       <Dialog open={isAddPriorityOpen} onOpenChange={setIsAddPriorityOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -529,3 +526,8 @@ export default HomePage;
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </Layout>
+  );
+};
+
+export default HomePage;
