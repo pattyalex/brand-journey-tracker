@@ -192,8 +192,8 @@ const HomePage = () => {
               <section className="space-y-4 fade-in">
                 <h2 className="text-xl font-bold mb-4">Your Journal</h2>
                 <Card className="border border-gray-100 shadow-sm">
-                  <CardContent className="space-y-4">
-                    <div>
+                  <CardContent className="space-y-6">
+                    <div className="pt-4">
                       <h3 className="font-medium mb-2 text-sm">What would make today great?</h3>
                       <Textarea 
                         placeholder="List 1-3 things that would make today wonderful..."
@@ -203,7 +203,7 @@ const HomePage = () => {
                       />
                     </div>
                     
-                    <div>
+                    <div className="pt-4">
                       <h3 className="font-medium mb-2 text-sm">Today's affirmations:</h3>
                       <Textarea 
                         placeholder="Write your daily affirmations..."
@@ -213,7 +213,7 @@ const HomePage = () => {
                       />
                     </div>
                     
-                    <div>
+                    <div className="pt-4">
                       <h3 className="font-medium mb-2 text-sm">Three things I'm grateful for:</h3>
                       <Textarea 
                         placeholder="List three things you're grateful for today..."
