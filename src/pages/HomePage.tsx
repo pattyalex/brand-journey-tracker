@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -14,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { 
@@ -79,12 +78,12 @@ const HomePage = () => {
     if (savedEntries) {
       setJournalEntries(JSON.parse(savedEntries));
     }
-    
+
     // Initialize the homeTasks localStorage if it doesn't exist
     if (!localStorage.getItem('homeTasks')) {
       localStorage.setItem('homeTasks', JSON.stringify([]));
     }
-    
+
     // Load saved priorities if they exist
     const savedPriorities = localStorage.getItem('homePriorities');
     if (savedPriorities) {
@@ -108,7 +107,7 @@ const HomePage = () => {
         ]);
       }
     };
-    
+
     loadGoals();
   }, []);
 
@@ -139,14 +138,14 @@ const HomePage = () => {
         id: Math.max(0, ...priorities.map(p => p.id)) + 1,
         text: newPriorityText.trim()
       };
-      
+
       const updatedPriorities = [...priorities, newPriority];
       setPriorities(updatedPriorities);
-      
+
       // Reset state and close dialog
       setNewPriorityText("");
       setIsAddPriorityOpen(false);
-      
+
       // Store in localStorage for persistence
       const homeTasks = JSON.parse(localStorage.getItem('homeTasks') || '[]');
       localStorage.setItem('homePriorities', JSON.stringify(updatedPriorities));
@@ -205,6 +204,7 @@ const HomePage = () => {
     }
   ];
 
+  // Add Priority Dialog component is moved inside the main component
   return (
     <Layout>
       <ScrollArea className="h-screen">
@@ -240,7 +240,7 @@ const HomePage = () => {
                         className="min-h-[80px] resize-none"
                       />
                     </div>
-                    
+
                     <div className="pt-4">
                       <h3 className="font-medium mb-2 text-sm">Today's affirmations:</h3>
                       <Textarea 
@@ -250,7 +250,7 @@ const HomePage = () => {
                         className="min-h-[80px] resize-none"
                       />
                     </div>
-                    
+
                     <div className="pt-4">
                       <h3 className="font-medium mb-2 text-sm">Three things I'm grateful for:</h3>
                       <Textarea 
@@ -263,7 +263,7 @@ const HomePage = () => {
                   </CardContent>
                 </Card>
               </section>
-              
+
               {/* Quick Access Section - Grid of Cards */}
               <section className="fade-in">
                 <h2 className="text-xl font-bold mb-4">Quick Access</h2>
@@ -377,7 +377,7 @@ const HomePage = () => {
                               tasks.splice(index, 1);
                             }
                             localStorage.setItem('homeTasks', JSON.stringify(tasks));
-                            
+
                             // For a real app, this would trigger a state update to remove the task from the UI
                             // For demo purposes, we'll reload the page to show the changes
                             window.location.reload();
@@ -404,7 +404,7 @@ const HomePage = () => {
                     View All
                   </Button>
                 </div>
-                
+
                 <div className="space-y-3">
                   {goals.map((goal: any, index: number) => (
                     <Card key={index} className="border border-gray-100 shadow-sm">
@@ -442,7 +442,7 @@ const HomePage = () => {
                     Edit
                   </Button>
                 </div>
-                
+
                 <Card className="border border-gray-100 shadow-sm overflow-hidden">
                   <CardContent className="p-2">
                     <div className="grid grid-cols-3 gap-2">
@@ -495,15 +495,15 @@ const HomePage = () => {
           </section>
         </div>
       </ScrollArea>
-    </Layout>
-  );
-};
 
 {/* Add Priority Dialog */}
       <Dialog open={isAddPriorityOpen} onOpenChange={setIsAddPriorityOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Add New Priority</DialogTitle>
+            <DialogDescription>
+              Add a new priority to your list
+            </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
