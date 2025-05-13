@@ -14,6 +14,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { 
   Calendar, 
   CheckSquare, 
@@ -41,6 +44,13 @@ const HomePage = () => {
   });
   const [goals, setGoals] = useState([]);
   const [moodboardImages, setMoodboardImages] = useState<string[]>([]);
+  const [priorities, setPriorities] = useState<{id: number, text: string}[]>([
+    { id: 1, text: "Finish editing weekend vlog" },
+    { id: 2, text: "Respond to brand email" },
+    { id: 3, text: "Draft caption for tomorrow's post" }
+  ]);
+  const [isAddPriorityOpen, setIsAddPriorityOpen] = useState(false);
+  const [newPriorityText, setNewPriorityText] = useState("");
 
   // Set greeting based on time of day
   useEffect(() => {
@@ -63,7 +73,7 @@ const HomePage = () => {
     getCurrentGreeting();
   }, []);
 
-  // Load journal entries from localStorage
+  // Load journal entries and priorities from localStorage
   useEffect(() => {
     const savedEntries = localStorage.getItem('journalEntries');
     if (savedEntries) {
@@ -73,6 +83,12 @@ const HomePage = () => {
     // Initialize the homeTasks localStorage if it doesn't exist
     if (!localStorage.getItem('homeTasks')) {
       localStorage.setItem('homeTasks', JSON.stringify([]));
+    }
+    
+    // Load saved priorities if they exist
+    const savedPriorities = localStorage.getItem('homePriorities');
+    if (savedPriorities) {
+      setPriorities(JSON.parse(savedPriorities));
     }
   }, []);
 
@@ -114,6 +130,27 @@ const HomePage = () => {
     };
     setJournalEntries(updatedEntries);
     localStorage.setItem('journalEntries', JSON.stringify(updatedEntries));
+  };
+
+  // Handle adding new priority task
+  const handleAddPriority = () => {
+    if (newPriorityText.trim()) {
+      const newPriority = {
+        id: Math.max(0, ...priorities.map(p => p.id)) + 1,
+        text: newPriorityText.trim()
+      };
+      
+      const updatedPriorities = [...priorities, newPriority];
+      setPriorities(updatedPriorities);
+      
+      // Reset state and close dialog
+      setNewPriorityText("");
+      setIsAddPriorityOpen(false);
+      
+      // Store in localStorage for persistence
+      const homeTasks = JSON.parse(localStorage.getItem('homeTasks') || '[]');
+      localStorage.setItem('homePriorities', JSON.stringify(updatedPriorities));
+    }
   };
 
   // Navigation shortcuts
@@ -291,7 +328,7 @@ const HomePage = () => {
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    onClick={() => navigate('/task-board')}
+                    onClick={() => setIsAddPriorityOpen(true)}
                   >
                     <PlusCircle className="h-4 w-4" />
                   </Button>
@@ -299,11 +336,7 @@ const HomePage = () => {
                 <Card className="border border-gray-100 shadow-sm">
                   <CardContent className="p-4">
                     <div className="space-y-3">
-                    {[
-                      { id: 1, text: "Finish editing weekend vlog" },
-                      { id: 2, text: "Respond to brand email" },
-                      { id: 3, text: "Draft caption for tomorrow's post" }
-                    ].map((task) => (
+                    {priorities.map((task) => (
                       <div key={task.id} className="flex items-start group justify-between">
                         <div className="flex items-start">
                           <Checkbox 
@@ -467,3 +500,32 @@ const HomePage = () => {
 };
 
 export default HomePage;
+
+
+      {/* Add Priority Dialog */}
+      <Dialog open={isAddPriorityOpen} onOpenChange={setIsAddPriorityOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Add New Priority</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="priority-text">Priority Task</Label>
+              <Input
+                id="priority-text"
+                value={newPriorityText}
+                onChange={(e) => setNewPriorityText(e.target.value)}
+                placeholder="Enter your priority task"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddPriorityOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddPriority} disabled={!newPriorityText.trim()}>
+              Add Priority
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
