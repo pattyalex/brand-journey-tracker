@@ -26,7 +26,8 @@ import {
   Coffee,
   Sun,
   Moon,
-  PlusCircle
+  PlusCircle,
+  Trash2
 } from "lucide-react";
 
 const HomePage = () => {
@@ -304,32 +305,54 @@ const HomePage = () => {
                       { id: 2, text: "Respond to brand email" },
                       { id: 3, text: "Draft caption for tomorrow's post" }
                     ].map((task) => (
-                      <div key={task.id} className="flex items-start group">
-                        <Checkbox 
-                          id={`task-${task.id}`}
-                          className="h-5 w-5 rounded mr-3 mt-0.5 flex-shrink-0 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-300"
-                          onCheckedChange={(checked) => {
+                      <div key={task.id} className="flex items-start group justify-between">
+                        <div className="flex items-start">
+                          <Checkbox 
+                            id={`task-${task.id}`}
+                            className="h-5 w-5 rounded mr-3 mt-0.5 flex-shrink-0 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-300"
+                            onCheckedChange={(checked) => {
+                              const tasks = JSON.parse(localStorage.getItem('homeTasks') || '[]');
+                              if (checked) {
+                                if (!tasks.includes(task.id)) {
+                                  tasks.push(task.id);
+                                }
+                              } else {
+                                const index = tasks.indexOf(task.id);
+                                if (index > -1) {
+                                  tasks.splice(index, 1);
+                                }
+                              }
+                              localStorage.setItem('homeTasks', JSON.stringify(tasks));
+                            }}
+                            defaultChecked={JSON.parse(localStorage.getItem('homeTasks') || '[]').includes(task.id)}
+                          />
+                          <label 
+                            htmlFor={`task-${task.id}`} 
+                            className="text-sm cursor-pointer peer-data-[state=checked]:line-through peer-data-[state=checked]:text-gray-500"
+                          >
+                            {task.text}
+                          </label>
+                        </div>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => {
+                            // Remove task from localStorage
                             const tasks = JSON.parse(localStorage.getItem('homeTasks') || '[]');
-                            if (checked) {
-                              if (!tasks.includes(task.id)) {
-                                tasks.push(task.id);
-                              }
-                            } else {
-                              const index = tasks.indexOf(task.id);
-                              if (index > -1) {
-                                tasks.splice(index, 1);
-                              }
+                            const index = tasks.indexOf(task.id);
+                            if (index > -1) {
+                              tasks.splice(index, 1);
                             }
                             localStorage.setItem('homeTasks', JSON.stringify(tasks));
+                            
+                            // For a real app, this would trigger a state update to remove the task from the UI
+                            // For demo purposes, we'll reload the page to show the changes
+                            window.location.reload();
                           }}
-                          defaultChecked={JSON.parse(localStorage.getItem('homeTasks') || '[]').includes(task.id)}
-                        />
-                        <label 
-                          htmlFor={`task-${task.id}`} 
-                          className="text-sm cursor-pointer peer-data-[state=checked]:line-through peer-data-[state=checked]:text-gray-500"
                         >
-                          {task.text}
-                        </label>
+                          <Trash2 size={14} className="text-gray-400 hover:text-red-500" />
+                        </Button>
                       </div>
                     ))}
                   </div>
