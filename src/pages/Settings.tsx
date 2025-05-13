@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import APIKeySettings from "@/components/settings/APIKeySettings";
+import OpenAISettings from "@/components/settings/OpenAISettings";
 
 const Settings = () => {
   return (
@@ -37,6 +38,9 @@ const Settings = () => {
 
         {/* API Integration Settings */}
         <APIKeySettings />
+        
+        {/* OpenAI API Integration */}
+        <OpenAISettings />
 
         {/* Notifications Card */}
         <Card>

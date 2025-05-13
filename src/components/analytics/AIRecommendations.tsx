@@ -27,8 +27,19 @@ const AIRecommendations: React.FC<AIRecommendationsProps> = ({
     const fetchRecommendations = async () => {
       setIsLoading(true);
       try {
+        // Check if OpenAI API key is set
+        const hasOpenAIKey = localStorage.getItem("openai_key_set") === "true";
+        
         const data = await AIRecommendationService.getRecommendations(connectedPlatforms, platformUsername);
         setRecommendations(data);
+        
+        // If we don't have an API key, show a notification
+        if (!hasOpenAIKey && connectedPlatforms.length > 0) {
+          toast.info(
+            "Add your OpenAI API key in Settings to get personalized AI recommendations based on your content.",
+            { duration: 5000 }
+          );
+        }
       } catch (error) {
         console.error("Failed to fetch recommendations:", error);
         // Set default recommendations on error

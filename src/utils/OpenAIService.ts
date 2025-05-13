@@ -7,11 +7,14 @@ export interface OpenAIResponse {
 }
 
 export class OpenAIService {
-  private static API_KEY_ENV = "OPENAI_API_KEY";
-  
   // Check if the API key is available
   static hasApiKey(): boolean {
-    return !!process.env[this.API_KEY_ENV];
+    return localStorage.getItem("openai_key_set") === "true";
+  }
+  
+  // Get the API key from local storage
+  static getApiKey(): string | null {
+    return localStorage.getItem("openai_api_key");
   }
   
   // Generate content recommendations based on platform and handle
@@ -21,7 +24,7 @@ export class OpenAIService {
     count: number = 3
   ): Promise<OpenAIResponse> {
     try {
-      const apiKey = process.env[this.API_KEY_ENV];
+      const apiKey = this.getApiKey();
       
       if (!apiKey) {
         return {
@@ -83,7 +86,7 @@ Format as a numbered list. Be specific, actionable, and platform-appropriate.`;
     handle: string
   ): Promise<OpenAIResponse> {
     try {
-      const apiKey = process.env[this.API_KEY_ENV];
+      const apiKey = this.getApiKey();
       
       if (!apiKey) {
         return {
