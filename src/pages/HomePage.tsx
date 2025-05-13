@@ -337,8 +337,8 @@ const HomePage = () => {
                   <CardContent className="p-4">
                     <div className="space-y-3">
                     {priorities.map((task) => (
-                      <div key={task.id} className="flex items-start group justify-between">
-                        <div className="flex items-start">
+                      <div key={task.id} className="flex items-start group justify-between hover:bg-gray-50 rounded-sm p-1">
+                        <div className="flex items-start flex-1">
                           <Checkbox 
                             id={`task-${task.id}`}
                             className="h-5 w-5 rounded mr-3 mt-0.5 flex-shrink-0 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-300"
@@ -368,19 +368,22 @@ const HomePage = () => {
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                           onClick={() => {
-                            // Remove task from localStorage
+                            // Create a new array without this task
+                            const updatedPriorities = priorities.filter(p => p.id !== task.id);
+                            setPriorities(updatedPriorities);
+                            
+                            // Save to localStorage
+                            localStorage.setItem('homePriorities', JSON.stringify(updatedPriorities));
+                            
+                            // Also remove from completed tasks if present
                             const tasks = JSON.parse(localStorage.getItem('homeTasks') || '[]');
                             const index = tasks.indexOf(task.id);
                             if (index > -1) {
                               tasks.splice(index, 1);
+                              localStorage.setItem('homeTasks', JSON.stringify(tasks));
                             }
-                            localStorage.setItem('homeTasks', JSON.stringify(tasks));
-
-                            // For a real app, this would trigger a state update to remove the task from the UI
-                            // For demo purposes, we'll reload the page to show the changes
-                            window.location.reload();
                           }}
                         >
                           <Trash2 size={14} className="text-gray-400 hover:text-red-500" />
