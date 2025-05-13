@@ -74,21 +74,60 @@ const HomePage = () => {
 
   // Load journal entries and priorities from localStorage
   useEffect(() => {
-    const savedEntries = localStorage.getItem('journalEntries');
-    if (savedEntries) {
-      setJournalEntries(JSON.parse(savedEntries));
-    }
-
+    // Check if it's a new day - reset journal entries and priorities if needed
+    const checkNewDay = () => {
+      const lastAccessDate = localStorage.getItem('lastAccessDate');
+      const currentDate = new Date().toDateString();
+      
+      if (lastAccessDate !== currentDate) {
+        // It's a new day, reset journal entries
+        const emptyJournalEntries = {
+          whatWouldMakeTodayGreat: "",
+          todaysAffirmations: "",
+          threeThingsImGratefulFor: ""
+        };
+        
+        setJournalEntries(emptyJournalEntries);
+        localStorage.setItem('journalEntries', JSON.stringify(emptyJournalEntries));
+        
+        // Keep priorities but reset their completion status
+        const savedPriorities = localStorage.getItem('homePriorities');
+        if (savedPriorities) {
+          // Keep the priority items but reset completion status
+          localStorage.setItem('homeTasks', JSON.stringify([]));
+        }
+        
+        // Save current date as last access date
+        localStorage.setItem('lastAccessDate', currentDate);
+      } else {
+        // Same day, load existing entries
+        const savedEntries = localStorage.getItem('journalEntries');
+        if (savedEntries) {
+          setJournalEntries(JSON.parse(savedEntries));
+        }
+      }
+    };
+    
     // Initialize the homeTasks localStorage if it doesn't exist
     if (!localStorage.getItem('homeTasks')) {
       localStorage.setItem('homeTasks', JSON.stringify([]));
     }
-
+    
     // Load saved priorities if they exist
     const savedPriorities = localStorage.getItem('homePriorities');
     if (savedPriorities) {
       setPriorities(JSON.parse(savedPriorities));
     }
+    
+    // Run the day change check
+    checkNewDay();
+    
+    // Set up an interval to check for day change if user keeps app open overnight
+    const midnightCheckInterval = setInterval(() => {
+      checkNewDay();
+    }, 60000); // Check every minute
+    
+    return () => clearInterval(midnightCheckInterval);
   }, []);
 
   // Load goals from localStorage (these would be fetched from the Goals page in a real app)
@@ -147,8 +186,10 @@ const HomePage = () => {
       setIsAddPriorityOpen(false);
 
       // Store in localStorage for persistence
-      const homeTasks = JSON.parse(localStorage.getItem('homeTasks') || '[]');
       localStorage.setItem('homePriorities', JSON.stringify(updatedPriorities));
+      
+      // Update the last access date to today to ensure proper day tracking
+      localStorage.setItem('lastAccessDate', new Date().toDateString());
     }
   };
 
