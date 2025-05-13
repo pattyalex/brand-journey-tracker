@@ -194,7 +194,7 @@ const HomePage = () => {
                   <CardHeader className="pb-2">
                     <CardTitle className="text-xl font-medium">Your Journal</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-8">
                     <div>
                       <h3 className="font-medium mb-2 text-sm">What would make today great?</h3>
                       <Textarea 
