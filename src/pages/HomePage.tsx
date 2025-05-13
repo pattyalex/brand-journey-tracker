@@ -293,8 +293,7 @@ const HomePage = () => {
                     size="sm"
                     onClick={() => navigate('/task-board')}
                   >
-                    <PlusCircle className="h-4 w-4 mr-0.5" />
-                    <span className="text-xs">Add</span>
+                    <PlusCircle className="h-4 w-4" />
                   </Button>
                 </div>
                 <Card className="border border-gray-100 shadow-sm">
