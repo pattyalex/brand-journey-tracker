@@ -188,6 +188,47 @@ const HomePage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column - 2/3 width */}
             <div className="lg:col-span-2 space-y-8">
+              {/* Journaling Section */}
+              <section className="space-y-4 fade-in">
+                <Card className="border border-gray-100 shadow-sm">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xl font-medium">Your Journal</CardTitle>
+                    <CardDescription>Set your intentions for the day</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <h3 className="font-medium mb-2 text-sm">What would make today great?</h3>
+                      <Textarea 
+                        placeholder="List 1-3 things that would make today wonderful..."
+                        value={journalEntries.whatWouldMakeTodayGreat}
+                        onChange={(e) => handleJournalChange('whatWouldMakeTodayGreat', e.target.value)}
+                        className="min-h-[80px] resize-none"
+                      />
+                    </div>
+                    
+                    <div>
+                      <h3 className="font-medium mb-2 text-sm">Today's affirmations:</h3>
+                      <Textarea 
+                        placeholder="Write your daily affirmations..."
+                        value={journalEntries.todaysAffirmations}
+                        onChange={(e) => handleJournalChange('todaysAffirmations', e.target.value)}
+                        className="min-h-[80px] resize-none"
+                      />
+                    </div>
+                    
+                    <div>
+                      <h3 className="font-medium mb-2 text-sm">Three things I'm grateful for:</h3>
+                      <Textarea 
+                        placeholder="List three things you're grateful for today..."
+                        value={journalEntries.threeThingsImGratefulFor}
+                        onChange={(e) => handleJournalChange('threeThingsImGratefulFor', e.target.value)}
+                        className="min-h-[80px] resize-none"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              </section>
+              
               {/* Quick Access Section - Grid of Cards */}
               <section className="fade-in">
                 <h2 className="text-xl font-bold mb-4">Quick Access</h2>
@@ -240,47 +281,6 @@ const HomePage = () => {
                     </CardContent>
                   </Card>
                 </div>
-              </section>
-
-              {/* Journaling Section */}
-              <section className="space-y-4 fade-in">
-                <Card className="border border-gray-100 shadow-sm">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xl font-medium">Your Journal</CardTitle>
-                    <CardDescription>Set your intentions for the day</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <h3 className="font-medium mb-2 text-sm">What would make today great?</h3>
-                      <Textarea 
-                        placeholder="List 1-3 things that would make today wonderful..."
-                        value={journalEntries.whatWouldMakeTodayGreat}
-                        onChange={(e) => handleJournalChange('whatWouldMakeTodayGreat', e.target.value)}
-                        className="min-h-[80px] resize-none"
-                      />
-                    </div>
-                    
-                    <div>
-                      <h3 className="font-medium mb-2 text-sm">Today's affirmations:</h3>
-                      <Textarea 
-                        placeholder="Write your daily affirmations..."
-                        value={journalEntries.todaysAffirmations}
-                        onChange={(e) => handleJournalChange('todaysAffirmations', e.target.value)}
-                        className="min-h-[80px] resize-none"
-                      />
-                    </div>
-                    
-                    <div>
-                      <h3 className="font-medium mb-2 text-sm">Three things I'm grateful for:</h3>
-                      <Textarea 
-                        placeholder="List three things you're grateful for today..."
-                        value={journalEntries.threeThingsImGratefulFor}
-                        onChange={(e) => handleJournalChange('threeThingsImGratefulFor', e.target.value)}
-                        className="min-h-[80px] resize-none"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
               </section>
             </div>
 
