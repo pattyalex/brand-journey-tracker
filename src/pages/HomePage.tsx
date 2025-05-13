@@ -31,6 +31,7 @@ import {
   PlusCircle,
   Trash2
 } from "lucide-react";
+import AIRecommendations from '@/components/analytics/AIRecommendations';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -50,6 +51,9 @@ const HomePage = () => {
   ]);
   const [isAddPriorityOpen, setIsAddPriorityOpen] = useState(false);
   const [newPriorityText, setNewPriorityText] = useState("");
+
+  // State to track connected social media platforms
+  const [connectedPlatforms, setConnectedPlatforms] = useState<string[]>(["Instagram"]);
 
   // Set greeting based on time of day
   useEffect(() => {
@@ -78,7 +82,7 @@ const HomePage = () => {
     const checkNewDay = () => {
       const lastAccessDate = localStorage.getItem('lastAccessDate');
       const currentDate = new Date().toDateString();
-      
+
       if (lastAccessDate !== currentDate) {
         // It's a new day, reset journal entries
         const emptyJournalEntries = {
@@ -86,17 +90,17 @@ const HomePage = () => {
           todaysAffirmations: "",
           threeThingsImGratefulFor: ""
         };
-        
+
         setJournalEntries(emptyJournalEntries);
         localStorage.setItem('journalEntries', JSON.stringify(emptyJournalEntries));
-        
+
         // Keep priorities but reset their completion status
         const savedPriorities = localStorage.getItem('homePriorities');
         if (savedPriorities) {
           // Keep the priority items but reset completion status
           localStorage.setItem('homeTasks', JSON.stringify([]));
         }
-        
+
         // Save current date as last access date
         localStorage.setItem('lastAccessDate', currentDate);
       } else {
@@ -107,26 +111,26 @@ const HomePage = () => {
         }
       }
     };
-    
+
     // Initialize the homeTasks localStorage if it doesn't exist
     if (!localStorage.getItem('homeTasks')) {
       localStorage.setItem('homeTasks', JSON.stringify([]));
     }
-    
+
     // Load saved priorities if they exist
     const savedPriorities = localStorage.getItem('homePriorities');
     if (savedPriorities) {
       setPriorities(JSON.parse(savedPriorities));
     }
-    
+
     // Run the day change check
     checkNewDay();
-    
+
     // Set up an interval to check for day change if user keeps app open overnight
     const midnightCheckInterval = setInterval(() => {
       checkNewDay();
     }, 60000); // Check every minute
-    
+
     return () => clearInterval(midnightCheckInterval);
   }, []);
 
@@ -187,7 +191,7 @@ const HomePage = () => {
 
       // Store in localStorage for persistence
       localStorage.setItem('homePriorities', JSON.stringify(updatedPriorities));
-      
+
       // Update the last access date to today to ensure proper day tracking
       localStorage.setItem('lastAccessDate', new Date().toDateString());
     }
@@ -250,6 +254,38 @@ const HomePage = () => {
     <Layout>
       <ScrollArea className="h-screen">
         <div className="container px-4 md:px-6 py-6 md:py-10">
+          {/* Social Media Platforms */}
+          <section className="mb-6 fade-in">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-medium">Connected Platforms</CardTitle>
+                <CardDescription>Connect your social accounts to get personalized AI recommendations</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-3">
+                  {['Instagram', 'TikTok', 'YouTube', 'LinkedIn'].map((platform) => (
+                    <Button
+                      key={platform}
+                      variant={connectedPlatforms.includes(platform) ? "default" : "outline"}
+                      size="sm"
+                      className={connectedPlatforms.includes(platform) ? "bg-primary" : ""}
+                      onClick={() => {
+                        if (connectedPlatforms.includes(platform)) {
+                          setConnectedPlatforms(connectedPlatforms.filter(p => p !== platform));
+                        } else {
+                          setConnectedPlatforms([...connectedPlatforms, platform]);
+                        }
+                      }}
+                    >
+                      {platform}
+                      {connectedPlatforms.includes(platform) ? " ✓" : ""}
+                    </Button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+
           {/* Greeting Section - Top Banner */}
           <section className="mb-8 fade-in">
             <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-6 flex items-center justify-between">
@@ -414,10 +450,10 @@ const HomePage = () => {
                             // Create a new array without this task
                             const updatedPriorities = priorities.filter(p => p.id !== task.id);
                             setPriorities(updatedPriorities);
-                            
+
                             // Save to localStorage
                             localStorage.setItem('homePriorities', JSON.stringify(updatedPriorities));
-                            
+
                             // Also remove from completed tasks if present
                             const tasks = JSON.parse(localStorage.getItem('homeTasks') || '[]');
                             const index = tasks.indexOf(task.id);
