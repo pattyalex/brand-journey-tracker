@@ -1,9 +1,16 @@
-
 import Layout from "@/components/Layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import APIKeySettings from "@/components/settings/APIKeySettings";
 
 const Settings = () => {
   return (
@@ -28,15 +35,43 @@ const Settings = () => {
           </CardContent>
         </Card>
 
+        {/* API Integration Settings */}
+        <APIKeySettings />
+
+        {/* Notifications Card */}
         <Card>
           <CardHeader>
             <CardTitle>Notifications</CardTitle>
+            <CardDescription>
+              Configure how you want to receive notifications
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Notification settings would go here */}
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">Email Notifications</p>
-                <p className="text-sm text-muted-foreground">Receive email updates about your projects</p>
+                <h4 className="font-medium">Email Notifications</h4>
+                <p className="text-sm text-muted-foreground">
+                  Get emails for important updates
+                </p>
+              </div>
+              <Switch />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium">Push Notifications</h4>
+                <p className="text-sm text-muted-foreground">
+                  Receive push notifications in browser
+                </p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium">Weekly Digest</h4>
+                <p className="text-sm text-muted-foreground">
+                  Get a weekly summary of your content performance
+                </p>
               </div>
               <Switch />
             </div>

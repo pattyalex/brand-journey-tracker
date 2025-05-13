@@ -53,7 +53,7 @@ const HomePage = () => {
   const [newPriorityText, setNewPriorityText] = useState("");
 
   // State to track connected social media platforms
-  const [connectedPlatforms, setConnectedPlatforms] = useState<string[]>(["Instagram"]);
+  const [connectedPlatforms, setConnectedPlatforms] = useState<string[]>([]);
 
   // Set greeting based on time of day
   useEffect(() => {

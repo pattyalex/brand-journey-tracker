@@ -8,19 +8,26 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 
 interface AIRecommendationsProps {
   connectedPlatforms: string[];
+  platformUsernames?: Record<string, string>;
 }
 
-const AIRecommendations: React.FC<AIRecommendationsProps> = ({ connectedPlatforms }) => {
+const AIRecommendations: React.FC<AIRecommendationsProps> = ({ 
+  connectedPlatforms,
+  platformUsernames = {} 
+}) => {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showMoreDialog, setShowMoreDialog] = useState(false);
   const [allRecommendations, setAllRecommendations] = useState<Recommendation[]>([]);
+  const [showUsernameDialog, setShowUsernameDialog] = useState(false);
+  const [platformUsername, setPlatformUsername] = useState<Record<string, string>>(platformUsernames);
+  const [selectedPlatform, setSelectedPlatform] = useState<string>("");
 
   useEffect(() => {
     const fetchRecommendations = async () => {
       setIsLoading(true);
       try {
-        const data = await AIRecommendationService.getRecommendations(connectedPlatforms);
+        const data = await AIRecommendationService.getRecommendations(connectedPlatforms, platformUsername);
         setRecommendations(data);
       } catch (error) {
         console.error("Failed to fetch recommendations:", error);
@@ -31,8 +38,14 @@ const AIRecommendations: React.FC<AIRecommendationsProps> = ({ connectedPlatform
       }
     };
 
-    fetchRecommendations();
-  }, [connectedPlatforms]);
+    // Only fetch if we have platforms connected
+    if (connectedPlatforms.length > 0) {
+      fetchRecommendations();
+    } else {
+      setRecommendations(AIRecommendationService.getDefaultRecommendations());
+      setIsLoading(false);
+    }
+  }, [connectedPlatforms, platformUsername]);
 
   const handleShowMore = async () => {
     try {
@@ -41,6 +54,27 @@ const AIRecommendations: React.FC<AIRecommendationsProps> = ({ connectedPlatform
       setShowMoreDialog(true);
     } catch (error) {
       console.error("Failed to fetch more recommendations:", error);
+    }
+  };
+  
+  const handleAddUsername = (platform: string) => {
+    setSelectedPlatform(platform);
+    setShowUsernameDialog(true);
+  };
+  
+  const saveUsername = (username: string) => {
+    if (selectedPlatform && username) {
+      setPlatformUsername(prev => ({
+        ...prev,
+        [selectedPlatform]: username
+      }));
+      setShowUsernameDialog(false);
+      // Local storage to persist usernames
+      const storedUsernames = JSON.parse(localStorage.getItem('platformUsernames') || '{}');
+      localStorage.setItem('platformUsernames', JSON.stringify({
+        ...storedUsernames,
+        [selectedPlatform]: username
+      }));
     }
   };
 
@@ -102,6 +136,64 @@ const AIRecommendations: React.FC<AIRecommendationsProps> = ({ connectedPlatform
           </div>
         </DialogContent>
       </Dialog>
+      
+      {/* Username Dialog */}
+      <Dialog open={showUsernameDialog} onOpenChange={setShowUsernameDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Add Your {selectedPlatform} Username</DialogTitle>
+            <DialogDescription>
+              This helps us generate more personalized recommendations for your content.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="username">Username (without @)</Label>
+              <Input 
+                id="username" 
+                defaultValue={platformUsername[selectedPlatform] || ""}
+                placeholder={`Enter your ${selectedPlatform} username`}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setShowUsernameDialog(false)} variant="outline">
+              Cancel
+            </Button>
+            <Button onClick={() => {
+              const input = document.getElementById('username') as HTMLInputElement;
+              saveUsername(input.value);
+            }}>
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Usernames display and edit buttons */}
+      {connectedPlatforms.length > 0 && (
+        <div className="mt-4 space-y-2">
+          <h4 className="text-sm font-medium">Connected Accounts</h4>
+          <div className="flex flex-wrap gap-2">
+            {connectedPlatforms.map(platform => (
+              <Button
+                key={platform}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-1"
+                onClick={() => handleAddUsername(platform)}
+              >
+                {platform}
+                {platformUsername[platform] ? (
+                  <span className="text-xs text-green-600">@{platformUsername[platform]}</span>
+                ) : (
+                  <span className="text-xs text-muted-foreground">Add username</span>
+                )}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
     </>
   );
 };
