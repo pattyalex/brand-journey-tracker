@@ -1,8 +1,9 @@
+
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Layout from "@/components/Layout";
-import { FolderOpen, Handshake, TrendingUp } from "lucide-react";
+import { FolderOpen, Handshake, TrendingUp, CheckCircle } from "lucide-react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -18,13 +19,24 @@ const Dashboard = () => {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             All-in-one platform for content creators to manage projects, track income, and grow their business
           </p>
-          <Button 
-            size="lg" 
-            className="bg-primary hover:bg-primary/90 text-white text-lg px-8 py-6"
-            onClick={() => navigate("/get-started")}
-          >
-            Get Started
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              size="lg" 
+              className="bg-primary hover:bg-primary/90 text-white text-lg px-8 py-6"
+              onClick={() => navigate("/get-started")}
+            >
+              Get Started
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline"
+              className="text-lg px-8 py-6 border-primary text-primary hover:bg-primary/10"
+              onClick={() => navigate("/auth")}
+            >
+              Start 7-Day Free Trial
+            </Button>
+          </div>
+          <p className="text-sm text-muted-foreground mt-2">No credit card required</p>
         </section>
 
         {/* Features Section */}
@@ -40,6 +52,86 @@ const Dashboard = () => {
               <p className="text-muted-foreground">{feature.description}</p>
             </Card>
           ))}
+        </section>
+
+        {/* Testimonials Section */}
+        <section className="py-10">
+          <h2 className="text-3xl font-bold text-center mb-10">What Our Users Say</h2>
+          <div className="grid md:grid-cols-2 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="p-6 border border-gray-100">
+                <div className="flex items-start mb-4">
+                  <div className="bg-gray-200 w-12 h-12 rounded-full mr-4"></div>
+                  <div>
+                    <h4 className="font-semibold">{testimonial.name}</h4>
+                    <p className="text-sm text-muted-foreground">{testimonial.title}</p>
+                  </div>
+                </div>
+                <p className="italic">"{testimonial.quote}"</p>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* Pricing Section */}
+        <section className="py-10">
+          <h2 className="text-3xl font-bold text-center mb-4">Simple, Transparent Pricing</h2>
+          <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto">
+            Start with our 7-day free trial and discover how our platform can transform your content creation workflow
+          </p>
+          
+          <div className="max-w-md mx-auto">
+            <Card className="border-2 border-primary p-8">
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold">Pro Plan</h3>
+                <div className="my-4">
+                  <span className="text-4xl font-bold">$19</span>
+                  <span className="text-muted-foreground">/month</span>
+                </div>
+              </div>
+              
+              <div className="space-y-3 mb-8">
+                {[
+                  "Complete content management tools",
+                  "Performance analytics",
+                  "Income tracking",
+                  "Brand deal management",
+                  "Content calendar",
+                  "Unlimited projects"
+                ].map((feature, index) => (
+                  <div key={index} className="flex items-center">
+                    <CheckCircle className="h-5 w-5 text-primary mr-2" />
+                    <span>{feature}</span>
+                  </div>
+                ))}
+              </div>
+              
+              <Button 
+                className="w-full py-6"
+                onClick={() => navigate("/auth")}
+              >
+                Start 7-Day Free Trial
+              </Button>
+              <p className="text-xs text-center text-muted-foreground mt-4">
+                No credit card required for trial. Cancel anytime.
+              </p>
+            </Card>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="bg-gray-50 p-10 rounded-xl text-center">
+          <h2 className="text-3xl font-bold mb-4">Ready to Transform Your Content Creation?</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
+            Join thousands of content creators who have simplified their workflow and boosted their productivity
+          </p>
+          <Button 
+            size="lg" 
+            className="bg-primary hover:bg-primary/90 text-white px-8 py-6"
+            onClick={() => navigate("/auth")}
+          >
+            Start Your Free Trial Today
+          </Button>
         </section>
       </div>
     </Layout>
@@ -65,6 +157,19 @@ const features = [
     icon: TrendingUp,
     path: "/analytics"
   },
+];
+
+const testimonials = [
+  {
+    name: "Sarah Johnson",
+    title: "Travel Content Creator",
+    quote: "This platform has completely transformed how I plan and create content. My productivity has doubled, and I'm finally staying ahead of my posting schedule!"
+  },
+  {
+    name: "Michael Chen",
+    title: "Tech YouTuber",
+    quote: "The analytics tools helped me understand what my audience really wants. Since using this platform, my engagement rates have increased by 40%."
+  }
 ];
 
 export default Dashboard;

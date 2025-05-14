@@ -44,10 +44,10 @@ function App() {
       <Router>
         <Suspense fallback={<PageLoader />}>
           <Routes>
-            <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/index" element={<Index />} />
             <Route path="/home-page" element={<HomePage />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/index" element={<Index />} />
             <Route path="/bank-of-content" element={<BankOfContent />} />
             <Route path="/content-ideation" element={<ContentIdeation />} />
             <Route path="/content-planning" element={<ContentPlanning />} />
