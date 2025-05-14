@@ -182,15 +182,6 @@ function App() {
               </ProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />
-            {/* Redirect from root to landing if not authenticated */}
-            <Route 
-              path="/" 
-              element={
-                isAuthenticated || isOnboardingComplete ? 
-                <HomePage /> : 
-                <Navigate to="/landing" replace />
-              } 
-            />
           </Routes>
         </Suspense>
         <Toaster position="top-right" />
