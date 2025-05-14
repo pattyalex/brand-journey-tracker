@@ -235,6 +235,9 @@ const OnboardingFlow: React.FC = () => {
                                 id="cardNumber"
                                 placeholder="1234 5678 9012 3456"
                                 autoComplete="cc-number"
+                                autoCorrect="off"
+                                autoCapitalize="off"
+                                spellCheck="false"
                                 pattern="[0-9\s]{13,19}"
                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                 value={field.value || ''}
@@ -242,6 +245,24 @@ const OnboardingFlow: React.FC = () => {
                                   // Only allow numbers and spaces
                                   const value = e.target.value.replace(/[^0-9\s]/g, '');
                                   field.onChange(value);
+                                }}
+                                onFocus={(e) => {
+                                  // Remove autocomplete attribute on focus
+                                  e.currentTarget.removeAttribute('autocomplete');
+                                  // Clear field if it contains an email
+                                  if (field.value && field.value.includes('@')) {
+                                    field.onChange('');
+                                  }
+                                }}
+                                ref={(input) => {
+                                  if (input) {
+                                    // Clear field if it contains an email on component mount/update
+                                    if (field.value && field.value.includes('@')) {
+                                      field.onChange('');
+                                      // Force focus to trigger clearing
+                                      setTimeout(() => input.focus(), 100);
+                                    }
+                                  }
                                 }}
                               />
                             </FormControl>
