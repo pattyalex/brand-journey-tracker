@@ -4,16 +4,10 @@ import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sid
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Toaster } from "@/components/ui/toaster";
-import { useLocation } from 'react-router-dom';
+import { Toaster } from "@/components/ui/toaster"; // Updated import statement
 
 const ToggleSidebarButton = () => {
   const { state, toggleSidebar } = useSidebar();
-  const hasCompletedOnboarding = localStorage.getItem('hasCompletedOnboarding') === 'true';
-
-  if (!hasCompletedOnboarding) {
-    return null;
-  }
 
   return (
     <TooltipProvider>
@@ -44,9 +38,6 @@ const ToggleSidebarButton = () => {
 const Layout = ({ children }: { children: React.ReactNode }) => {
   // Store sidebar state in localStorage
   const [sidebarKey, setSidebarKey] = useState(0);
-  const location = useLocation();
-  const hasCompletedOnboarding = localStorage.getItem('hasCompletedOnboarding') === 'true';
-  const isPublicRoute = location.pathname === '/' || location.pathname === '/dashboard' || location.pathname === '/onboarding';
 
   useEffect(() => {
     // Force a re-render after component mounts to ensure
@@ -54,17 +45,14 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     setSidebarKey(prev => prev + 1);
   }, []);
 
-  // Show sidebar only if user has completed onboarding and is not on a public route
-  const showSidebar = hasCompletedOnboarding && !isPublicRoute;
-
   return (
     <SidebarProvider key={sidebarKey}>
       <div className="min-h-screen flex w-full bg-background">
-        {showSidebar && <Sidebar />}
-        <main className={`flex-1 p-6 overflow-auto relative ${!showSidebar ? 'w-full' : ''}`}>
-          {showSidebar && <ToggleSidebarButton />}
+        <Sidebar />
+        <main className="flex-1 p-6 overflow-auto relative">
+          <ToggleSidebarButton />
           {children}
-          <Toaster/>
+          <Toaster/> {/* Added Toaster component */}
         </main>
       </div>
     </SidebarProvider>
