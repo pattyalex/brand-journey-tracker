@@ -23,9 +23,9 @@ const Dashboard = () => {
             <Button 
               size="lg" 
               className="bg-primary hover:bg-primary/90 text-white text-lg px-8 py-6"
-              onClick={() => navigate("/get-started")}
+              onClick={() => navigate("/auth")}
             >
-              Get Started
+              Sign Up
             </Button>
             <Button 
               size="lg" 

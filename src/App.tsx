@@ -46,7 +46,6 @@ function App() {
         <Suspense fallback={<PageLoader />}>
           <Routes>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/index" element={<Index />} />
             <Route path="/home-page" element={<HomePage />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/bank-of-content" element={<BankOfContent />} />
@@ -77,3 +76,4 @@ function App() {
 }
 
 export default App;
+```
