@@ -321,7 +321,7 @@ const OnboardingFlow: React.FC = () => {
                       )}
                     />
                   </div>
-</div>
+
                   <Button type="submit" className="w-full">Continue</Button>
                 </form>
               </Form>
