@@ -8,6 +8,10 @@
   counter-reset: step;
   margin: 0;
   padding: 0;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .step {
@@ -21,28 +25,29 @@
 .step::before {
   counter-increment: step;
   content: counter(step);
-  height: 24px;
-  width: 24px;
+  height: 32px;
+  width: 32px;
   border-radius: 50%;
   background-color: #e5e7eb;
   color: #4b5563;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   margin-bottom: 4px;
+  z-index: 1;
 }
 
 .step::after {
   content: "";
   position: absolute;
-  left: 50%;
-  top: 12px;
+  left: 0;
+  top: 16px;
   height: 2px;
   width: 100%;
   background-color: #e5e7eb;
-  z-index: -1;
+  z-index: 0;
 }
 
 .step:first-child::after {
@@ -64,23 +69,20 @@
   background-color: #3b82f6;
 }
 
-.steps-horizontal {
+/* Remove vertical styling entirely */
+.steps-horizontal, .steps-vertical {
   flex-direction: row;
 }
 
-.steps-vertical {
-  flex-direction: column;
-}
-
 .steps-vertical .step {
-  margin-bottom: 24px;
+  margin-bottom: 0;
 }
 
 .steps-vertical .step::after {
-  top: 24px;
-  left: 12px;
-  height: 100%;
-  width: 2px;
+  top: 16px;
+  left: 0;
+  height: 2px;
+  width: 100%;
 }
 
 .fade-in {

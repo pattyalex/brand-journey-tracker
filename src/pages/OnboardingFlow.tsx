@@ -549,14 +549,14 @@ const OnboardingFlow: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-white to-gray-100 py-12 px-4">
       <div className="w-full max-w-md mb-8">
-        <div className="flex justify-between mb-4">
-          <div className="w-full max-w-xs">
-            <ul className="steps steps-vertical md:steps-horizontal w-full">
-              <li className={`step ${currentStep === "account-creation" || currentStep === "payment-setup" || currentStep === "user-goals" || currentStep === "connect-social" || currentStep === "welcome" ? "step-primary" : ""}`}>1</li>
-              <li className={`step ${currentStep === "payment-setup" || currentStep === "user-goals" || currentStep === "connect-social" || currentStep === "welcome" ? "step-primary" : ""}`}>2</li>
-              <li className={`step ${currentStep === "user-goals" || currentStep === "connect-social" || currentStep === "welcome" ? "step-primary" : ""}`}>3</li>
-              <li className={`step ${currentStep === "connect-social" || currentStep === "welcome" ? "step-primary" : ""}`}>4</li>
-              <li className={`step ${currentStep === "welcome" ? "step-primary" : ""}`}>5</li>
+        <div className="mb-4">
+          <div className="w-full">
+            <ul className="steps w-full">
+              <li className={`step ${currentStep === "account-creation" || currentStep === "payment-setup" || currentStep === "user-goals" || currentStep === "connect-social" || currentStep === "welcome" ? "step-primary" : ""}`}></li>
+              <li className={`step ${currentStep === "payment-setup" || currentStep === "user-goals" || currentStep === "connect-social" || currentStep === "welcome" ? "step-primary" : ""}`}></li>
+              <li className={`step ${currentStep === "user-goals" || currentStep === "connect-social" || currentStep === "welcome" ? "step-primary" : ""}`}></li>
+              <li className={`step ${currentStep === "connect-social" || currentStep === "welcome" ? "step-primary" : ""}`}></li>
+              <li className={`step ${currentStep === "welcome" ? "step-primary" : ""}`}></li>
             </ul>
           </div>
         </div>
