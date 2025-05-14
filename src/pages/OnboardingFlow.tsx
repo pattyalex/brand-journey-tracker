@@ -178,6 +178,15 @@ const OnboardingFlow: React.FC = () => {
                     )}
                   />
                   <Button type="submit" className="w-full">Continue</Button>
+                  {/* Development bypass button */}
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="w-full mt-2" 
+                    onClick={() => setCurrentStep("payment-setup")}
+                  >
+                    Continue (Dev Skip)
+                  </Button>
                 </form>
               </Form>
             </CardContent>
@@ -280,11 +289,11 @@ const OnboardingFlow: React.FC = () => {
                                   if (input) {
                                     // Always clear field on mount to disconnect from any other forms
                                     field.onChange('');
-                                    
+
                                     // Add additional attributes to break any browser autofill heuristics
                                     input.setAttribute('autocomplete', 'new-password');
                                     input.setAttribute('data-lpignore', 'true');
-                                    
+
                                     // Force additional field clearing on mount
                                     setTimeout(() => {
                                       field.onChange('');
@@ -331,6 +340,15 @@ const OnboardingFlow: React.FC = () => {
                   </div>
 
                   <Button type="submit" className="w-full">Continue</Button>
+                  {/* Development bypass button */}
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="w-full mt-2" 
+                    onClick={() => setCurrentStep("payment-setup")}
+                  >
+                    Continue (Dev Skip)
+                  </Button>
                 </form>
               </Form>
             </CardContent>
@@ -405,6 +423,15 @@ const OnboardingFlow: React.FC = () => {
                   )}
 
                   <Button type="submit" className="w-full">Continue</Button>
+                  {/* Development bypass button */}
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="w-full mt-2" 
+                    onClick={() => setCurrentStep("payment-setup")}
+                  >
+                    Continue (Dev Skip)
+                  </Button>
                 </form>
               </Form>
             </CardContent>
@@ -521,6 +548,15 @@ const OnboardingFlow: React.FC = () => {
                   </div>
 
                   <Button type="submit" className="w-full">Continue</Button>
+                  {/* Development bypass button */}
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="w-full mt-2" 
+                    onClick={() => setCurrentStep("payment-setup")}
+                  >
+                    Continue (Dev Skip)
+                  </Button>
                 </form>
               </Form>
             </CardContent>
