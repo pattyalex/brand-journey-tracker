@@ -1,3 +1,4 @@
+
 import React, { Suspense, useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -36,17 +37,29 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is authenticated
-    const authStatus = localStorage.getItem('isLoggedIn') === 'true';
-    setIsAuthenticated(authStatus);
+    try {
+      // Check if user is authenticated
+      const authStatus = localStorage.getItem('isLoggedIn') === 'true';
+      setIsAuthenticated(authStatus);
 
-    // Check if onboarding is complete
-    const onboardingStatus = localStorage.getItem('onboardingComplete') === 'true';
-    setIsOnboardingComplete(onboardingStatus);
-    
-    // Set loading to false after checking auth status
-    setIsLoading(false);
+      // Check if onboarding is complete
+      const onboardingStatus = localStorage.getItem('onboardingComplete') === 'true';
+      setIsOnboardingComplete(onboardingStatus);
+    } catch (error) {
+      console.error("Error accessing localStorage:", error);
+      // Default to not authenticated if localStorage fails
+      setIsAuthenticated(false);
+      setIsOnboardingComplete(false);
+    } finally {
+      // Set loading to false after checking auth status, regardless of success/failure
+      setIsLoading(false);
+    }
   }, []);
+
+  // For debugging
+  useEffect(() => {
+    console.log("Auth state:", { isAuthenticated, isOnboardingComplete, isLoading });
+  }, [isAuthenticated, isOnboardingComplete, isLoading]);
 
   // Protected route component
   const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -55,6 +68,7 @@ function App() {
     }
     
     if (!isAuthenticated && !isOnboardingComplete) {
+      console.log("Redirecting to landing page from protected route");
       return <Navigate to="/landing" />;
     }
     return <>{children}</>;
@@ -66,16 +80,18 @@ function App() {
         <Suspense fallback={<div className="flex h-screen items-center justify-center">Loading...</div>}>
           <Routes>
             {/* Public routes */}
-            <Route key="landing" path="/landing" element={<Landing />} />
-            <Route key="onboarding" path="/onboarding" element={<Onboarding />} />
-            <Route key="login" path="/login" element={<Login />} />
+            <Route path="/landing" element={<Landing />} />
+            <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/login" element={<Login />} />
+
+            {/* Root route with conditional redirect */}
+            <Route path="/" element={
+              isAuthenticated || isOnboardingComplete ? 
+                <HomePage /> : 
+                <Navigate to="/landing" replace />
+            } />
 
             {/* Protected routes */}
-            <Route path="/" element={
-              <ProtectedRoute>
-                <HomePage />
-              </ProtectedRoute>
-            } />
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
