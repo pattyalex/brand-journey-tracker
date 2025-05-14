@@ -195,7 +195,15 @@ const OnboardingFlow: React.FC = () => {
             </CardHeader>
             <CardContent>
               <Form {...paymentForm}>
-                <form onSubmit={paymentForm.handleSubmit(onPaymentSubmit)} className="space-y-4">
+                <form 
+                  onSubmit={paymentForm.handleSubmit(onPaymentSubmit)} 
+                  className="space-y-4"
+                  autoComplete="off"
+                  data-lpignore="true"
+                  data-form-type="payment"
+                >
+                  {/* Hidden field to trick browsers into not autofilling payment fields with email */}
+                  <input type="text" name="email" style={{ display: 'none' }} />
                   <FormField
                     control={paymentForm.control}
                     name="billingPlan"
@@ -231,13 +239,15 @@ const OnboardingFlow: React.FC = () => {
                               <input
                                 type="tel"
                                 inputMode="numeric"
-                                name="cardNumber"
-                                id="cardNumber"
+                                name="cc-number" // Changed from cardNumber to break any connection
+                                id="cc-number-field" // Changed from cardNumber to break any connection
                                 placeholder="1234 5678 9012 3456"
-                                autoComplete="cc-number"
+                                autoComplete="off" // Disabling autocomplete completely
                                 autoCorrect="off"
                                 autoCapitalize="off"
                                 spellCheck="false"
+                                data-lpignore="true" // Ignore LastPass autofill
+                                data-form-type="payment" // Help browsers identify as payment form
                                 pattern="[0-9\s]{13,19}"
                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                 value={field.value || ''}
@@ -247,20 +257,30 @@ const OnboardingFlow: React.FC = () => {
                                   field.onChange(value);
                                 }}
                                 onFocus={(e) => {
-                                  // Remove autocomplete attribute on focus
-                                  e.currentTarget.removeAttribute('autocomplete');
-                                  // Clear field if it contains an email
-                                  if (field.value && field.value.includes('@')) {
+                                  // Aggressively clear on focus
+                                  if (field.value && (field.value.includes('@') || !field.value.match(/^[\d\s]*$/))) {
+                                    field.onChange('');
+                                  }
+                                }}
+                                onInput={(e) => {
+                                  // Extra check during input to prevent unwanted characters
+                                  const target = e.target as HTMLInputElement;
+                                  if (target.value.includes('@')) {
                                     field.onChange('');
                                   }
                                 }}
                                 ref={(input) => {
                                   if (input) {
                                     // Clear field if it contains an email on component mount/update
-                                    if (field.value && field.value.includes('@')) {
+                                    if (field.value && (field.value.includes('@') || !field.value.match(/^[\d\s]*$/))) {
                                       field.onChange('');
-                                      // Force focus to trigger clearing
-                                      setTimeout(() => input.focus(), 100);
+                                      input.setAttribute('autocomplete', 'off');
+                                      
+                                      // Force field clearing and focus
+                                      setTimeout(() => {
+                                        field.onChange('');
+                                        input.focus();
+                                      }, 100);
                                     }
                                   }
                                 }}
