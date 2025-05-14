@@ -60,8 +60,6 @@ const HomePage = () => {
     const getCurrentGreeting = () => {
       const hour = new Date().getHours();
       const userName = "Maria"; // This would be fetched from user data in a real app
-      const userName = "Alex"; // This would be fetched from user data in a real app
-
 
       if (hour >= 5 && hour < 12) {
         setGreeting(`Good morning, ${userName}!`);
@@ -70,7 +68,7 @@ const HomePage = () => {
         setGreeting(`Good afternoon, ${userName}!`);
         setGreetingIcon(<Sun className="h-10 w-10 text-yellow-500" />);
       } else {
-        setGreeting(`Good evening, Alex!`);
+        setGreeting(`Good evening, ${userName}!`);
         setGreetingIcon(<Moon className="h-10 w-10 text-indigo-400" />);
       }
     };
