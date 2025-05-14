@@ -32,10 +32,32 @@ const accountCreationSchema = z.object({
 });
 
 const paymentSetupSchema = z.object({
-  cardNumber: z.string().min(16, { message: "Please enter a valid card number" }),
-  expiryDate: z.string().regex(/^\d{2}\/\d{2}$/, { message: "Please use format MM/YY" }),
-  cvc: z.string().min(3, { message: "Please enter a valid CVC" }),
+  cardHolderName: z.string().min(2, { message: "Please enter the name on your card" }),
+  cardNumber: z.string()
+    .min(13, { message: "Card number must be at least 13 digits" })
+    .max(19, { message: "Card number must not exceed 19 digits" })
+    .regex(/^[0-9\s]+$/, { message: "Card number must contain only digits" }),
+  expiryDate: z.string().regex(/^\d{2}\/\d{2}$/, { message: "Please use format MM/YY" })
+    .refine((val) => {
+      const [month, year] = val.split('/').map(Number);
+      const now = new Date();
+      const currentYear = now.getFullYear() % 100;
+      const currentMonth = now.getMonth() + 1;
+      
+      return (
+        month >= 1 && 
+        month <= 12 && 
+        (year > currentYear || (year === currentYear && month >= currentMonth))
+      );
+    }, { message: "Expiry date cannot be in the past" }),
+  cvc: z.string()
+    .min(3, { message: "CVC must be at least 3 digits" })
+    .max(4, { message: "CVC must not exceed 4 digits" })
+    .regex(/^\d+$/, { message: "CVC must contain only digits" }),
   billingPlan: z.enum(["monthly", "annual"]),
+  termsAccepted: z.boolean().refine(val => val === true, {
+    message: "You must accept the terms and conditions"
+  })
 });
 
 const userGoalsSchema = z.object({
@@ -69,10 +91,12 @@ const OnboardingFlow: React.FC = () => {
   const paymentForm = useForm<z.infer<typeof paymentSetupSchema>>({
     resolver: zodResolver(paymentSetupSchema),
     defaultValues: {
+      cardHolderName: "",
       cardNumber: "",
       expiryDate: "",
       cvc: "",
-      billingPlan: "monthly"
+      billingPlan: "monthly",
+      termsAccepted: false
     },
     mode: "onChange"
   });
@@ -234,17 +258,44 @@ const OnboardingFlow: React.FC = () => {
                     name="billingPlan"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Billing Plan</FormLabel>
-                        <div className="border rounded-md p-4 my-2">
+                        <FormLabel>Select a Plan</FormLabel>
+                        <div className="space-y-3 my-2">
                           <RadioGroup
                             onValueChange={field.onChange}
                             defaultValue={field.value}
+                            className="space-y-3"
                           >
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="monthly" id="monthly" />
-                              <Label htmlFor="monthly" className="font-medium">
-                                Monthly billing: $17/month
-                              </Label>
+                            <div className="flex items-start space-x-2 border rounded-md p-4 hover:bg-muted/50 transition-colors">
+                              <RadioGroupItem value="monthly" id="monthly" className="mt-1" />
+                              <div className="flex-1">
+                                <Label htmlFor="monthly" className="font-medium text-lg">
+                                  Monthly Plan
+                                </Label>
+                                <p className="text-muted-foreground text-sm mt-1">
+                                  $17 per month, billed monthly
+                                </p>
+                                <div className="mt-2">
+                                  <span className="bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded-full">
+                                    Most popular
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-start space-x-2 border rounded-md p-4 hover:bg-muted/50 transition-colors">
+                              <RadioGroupItem value="annual" id="annual" className="mt-1" />
+                              <div className="flex-1">
+                                <Label htmlFor="annual" className="font-medium text-lg">
+                                  Annual Plan
+                                </Label>
+                                <p className="text-muted-foreground text-sm mt-1">
+                                  $14 per month, billed annually ($168)
+                                </p>
+                                <div className="mt-2">
+                                  <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
+                                    Save 18%
+                                  </span>
+                                </div>
+                              </div>
                             </div>
                           </RadioGroup>
                         </div>
@@ -253,64 +304,99 @@ const OnboardingFlow: React.FC = () => {
                     )}
                   />
 
+                  <div className="flex items-center justify-center gap-2 mt-2 mb-4">
+                    <svg className="h-6 w-6 text-muted-foreground" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M4,4h16c1.1,0,2,0.9,2,2v12c0,1.1-0.9,2-2,2H4c-1.1,0-2-0.9-2-2V6C2,4.9,2.9,4,4,4z" />
+                    </svg>
+                    <svg className="h-6 w-6 text-muted-foreground" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10" fill="#EB001B" opacity="0.6" />
+                      <circle cx="12" cy="12" r="10" fill="#F79E1B" opacity="0.6" style={{transform: 'translateX(4px)'}} />
+                    </svg>
+                    <svg className="h-6 w-6 text-muted-foreground" viewBox="0 0 24 24">
+                      <path d="M22,12c0,5.5-4.5,10-10,10S2,17.5,2,12S6.5,2,12,2S22,6.5,22,12z" fill="#006FCF" opacity="0.6" />
+                    </svg>
+                    <svg className="h-6 w-6 text-muted-foreground" viewBox="0 0 24 24">
+                      <path d="M2.5,10.5l2,-4.5h15l2,4.5" fill="#FF5F00" opacity="0.6" />
+                      <path d="M2.5,10.5v5.5h19v-5.5" fill="#EB001B" opacity="0.6" />
+                    </svg>
+                  </div>
+
                   <FormField
+                    control={paymentForm.control}
+                    name="cardHolderName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Name on Card</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="John Doe" 
+                            {...field}
+                            autoComplete="cc-name"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={paymentForm.control}
+                    name="cardNumber"
+                    render={({ field }) => {
+                      return (
+                        <FormItem>
+                          <FormLabel>Card Number</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="tel"
+                              inputMode="numeric"
+                              placeholder="1234 5678 9012 3456"
+                              autoComplete="cc-number"
+                              autoCorrect="off"
+                              autoCapitalize="off"
+                              spellCheck="false"
+                              data-lpignore="true" 
+                              aria-label="Card number input"
+                              value={field.value}
+                              onChange={(e) => {
+                                // Format with spaces every 4 digits
+                                const value = e.target.value.replace(/[^0-9]/g, '');
+                                const formatted = value.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
+                                field.onChange(formatted);
+                              }}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            We accept Visa, Mastercard, American Express, and Discover
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      );
+                    }}
+                  />
+
+                  <div className="flex space-x-4">
+                    <FormField
                       control={paymentForm.control}
-                      name="cardNumber"
+                      name="expiryDate"
                       render={({ field }) => {
                         return (
-                          <FormItem>
-                            <FormLabel>Card Number</FormLabel>
+                          <FormItem className="flex-1">
+                            <FormLabel>Expiry Date</FormLabel>
                             <FormControl>
-                              <input
-                                type="tel"
-                                inputMode="numeric"
-                                name="random-field-for-cc-input" 
-                                id="secure-credit-card-field" 
-                                placeholder="1234 5678 9012 3456"
-                                autoComplete="off" 
-                                autoCorrect="off"
-                                autoCapitalize="off"
-                                spellCheck="false"
-                                data-lpignore="true" 
-                                data-form-type="other"
-                                data-cc-field="true"
-                                aria-label="Card number input"
-                                pattern="[0-9\s]{13,19}"
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                value={field.value || ''}
+                              <Input 
+                                placeholder="MM/YY" 
+                                autoComplete="cc-exp"
+                                value={field.value}
                                 onChange={(e) => {
-                                  // Only allow numbers and spaces
-                                  const value = e.target.value.replace(/[^0-9\s]/g, '');
+                                  let value = e.target.value.replace(/[^0-9]/g, '');
+                                  
+                                  // Format as MM/YY
+                                  if (value.length > 2) {
+                                    value = value.slice(0, 2) + '/' + value.slice(2, 4);
+                                  }
+                                  
                                   field.onChange(value);
-                                }}
-                                onFocus={(e) => {
-                                  // Aggressively clear on focus
-                                  if (field.value && (field.value.includes('@') || !field.value.match(/^[\d\s]*$/))) {
-                                    field.onChange('');
-                                  }
-                                }}
-                                onInput={(e) => {
-                                  // Extra check during input to prevent unwanted characters
-                                  const target = e.target as HTMLInputElement;
-                                  if (target.value.includes('@')) {
-                                    field.onChange('');
-                                  }
-                                }}
-                                ref={(input) => {
-                                  if (input) {
-                                    // Always clear field on mount to disconnect from any other forms
-                                    field.onChange('');
-
-                                    // Add additional attributes to break any browser autofill heuristics
-                                    input.setAttribute('autocomplete', 'new-password');
-                                    input.setAttribute('data-lpignore', 'true');
-
-                                    // Force additional field clearing on mount
-                                    setTimeout(() => {
-                                      field.onChange('');
-                                      input.focus();
-                                    }, 100);
-                                  }
                                 }}
                               />
                             </FormControl>
@@ -320,35 +406,56 @@ const OnboardingFlow: React.FC = () => {
                       }}
                     />
 
-                  <div className="flex space-x-4">
-                    <FormField
-                      control={paymentForm.control}
-                      name="expiryDate"
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormLabel>Expiry Date</FormLabel>
-                          <FormControl>
-                            <Input placeholder="MM/YY" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
                     <FormField
                       control={paymentForm.control}
                       name="cvc"
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormLabel>CVC</FormLabel>
-                          <FormControl>
-                            <Input placeholder="123" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                      render={({ field }) => {
+                        return (
+                          <FormItem className="flex-1">
+                            <FormLabel>CVC</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="123" 
+                                autoComplete="cc-csc"
+                                maxLength={4}
+                                value={field.value}
+                                onChange={(e) => {
+                                  // Only allow numbers
+                                  const value = e.target.value.replace(/[^0-9]/g, '');
+                                  field.onChange(value);
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
                     />
                   </div>
+
+                  <FormField
+                    control={paymentForm.control}
+                    name="termsAccepted"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 mt-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>
+                            I agree to the <a href="#" className="text-primary hover:underline">Terms of Service</a> and <a href="#" className="text-primary hover:underline">Privacy Policy</a>
+                          </FormLabel>
+                          <FormDescription>
+                            Your card will not be charged until after your 7-day trial ends.
+                          </FormDescription>
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
 
                   <div className="flex justify-between mt-6">
                     <Button variant="ghost" size="sm" onClick={goToPreviousStep} className="flex items-center">
