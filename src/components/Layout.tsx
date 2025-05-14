@@ -1,26 +1,43 @@
-
-import React, { useEffect, useState } from 'react';
-import { SidebarProvider } from './ui/sidebar';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
-import ToggleSidebarButton from './sidebar/ToggleSidebarButton';
-import { Toaster } from 'sonner';
-import { useLocation } from 'react-router-dom';
+import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Toaster } from "@/components/ui/toaster"; // Updated import statement
+
+const ToggleSidebarButton = () => {
+  const { state, toggleSidebar } = useSidebar();
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="fixed top-4 z-50 rounded-full bg-white/90 shadow-md hover:bg-white"
+            style={{ left: state === "collapsed" ? "1rem" : "calc(240px + 1rem)" }}
+            onClick={toggleSidebar}
+          >
+            {state === "collapsed" ? (
+              <ChevronRight className="h-5 w-5" />
+            ) : (
+              <ChevronLeft className="h-5 w-5" />
+            )}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="right">
+          {state === "collapsed" ? "Expand sidebar" : "Collapse sidebar"}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   // Store sidebar state in localStorage
   const [sidebarKey, setSidebarKey] = useState(0);
-  const location = useLocation();
-
-  // Check if user is authenticated (has completed onboarding)
-  const isAuthenticated = () => {
-    return localStorage.getItem('userAuthenticated') === 'true';
-  };
-
-  // Check if current route is dashboard (landing page)
-  const isDashboard = location.pathname === '/';
-
-  // Only show sidebar for authenticated users and not on the main dashboard
-  const showSidebar = isAuthenticated() && !isDashboard;
 
   useEffect(() => {
     // Force a re-render after component mounts to ensure
@@ -31,9 +48,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
     <SidebarProvider key={sidebarKey}>
       <div className="min-h-screen flex w-full bg-background">
-        {showSidebar && <Sidebar />}
-        <main className={`flex-1 p-6 overflow-auto relative`}>
-          {showSidebar && <ToggleSidebarButton />}
+        <Sidebar />
+        <main className="flex-1 p-6 overflow-auto relative">
+          <ToggleSidebarButton />
           {children}
           <Toaster/> {/* Added Toaster component */}
         </main>

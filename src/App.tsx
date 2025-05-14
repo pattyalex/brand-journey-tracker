@@ -1,4 +1,3 @@
-
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from "@/components/theme-provider"
@@ -47,6 +46,7 @@ function App() {
         <Suspense fallback={<PageLoader />}>
           <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/index" element={<Index />} />
             <Route path="/home-page" element={<HomePage />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/bank-of-content" element={<BankOfContent />} />

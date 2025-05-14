@@ -43,7 +43,7 @@ const paymentSetupSchema = z.object({
       const now = new Date();
       const currentYear = now.getFullYear() % 100;
       const currentMonth = now.getMonth() + 1;
-
+      
       return (
         month >= 1 && 
         month <= 12 && 
@@ -162,8 +162,6 @@ const OnboardingFlow: React.FC = () => {
   };
 
   const goToHomePage = () => {
-    // Set authentication state in localStorage
-    localStorage.setItem('userAuthenticated', 'true');
     navigate("/home-page");
   };
 
@@ -233,7 +231,7 @@ const OnboardingFlow: React.FC = () => {
         return (
           <Card className="w-full max-w-md mx-auto">
             <CardHeader className="relative">
-
+              
               <CardTitle className="text-2xl">Enter your billing information</CardTitle>
               <CardDescription>
                 You won't be charged today. After 7 days, your trial will convert into a paid subscription.
@@ -392,12 +390,12 @@ const OnboardingFlow: React.FC = () => {
                                 value={field.value}
                                 onChange={(e) => {
                                   let value = e.target.value.replace(/[^0-9]/g, '');
-
+                                  
                                   // Format as MM/YY
                                   if (value.length > 2) {
                                     value = value.slice(0, 2) + '/' + value.slice(2, 4);
                                   }
-
+                                  
                                   field.onChange(value);
                                 }}
                               />
@@ -476,7 +474,7 @@ const OnboardingFlow: React.FC = () => {
         return (
           <Card className="w-full max-w-md mx-auto">
             <CardHeader className="relative">
-
+             
               <CardTitle className="text-2xl">We'd like to get to know you</CardTitle>
               <CardDescription>This helps us tailor the experience to your needs</CardDescription>
             </CardHeader>
@@ -557,7 +555,7 @@ const OnboardingFlow: React.FC = () => {
         return (
           <Card className="w-full max-w-md mx-auto">
             <CardHeader className="relative">
-
+              
               <CardTitle className="text-2xl">Add your social accounts</CardTitle>
               <CardDescription>
                 Connect your social media accounts to unlock analytics and recommendations
@@ -680,7 +678,7 @@ const OnboardingFlow: React.FC = () => {
         return (
           <Card className="w-full max-w-md mx-auto">
             <CardHeader className="relative">
-
+             
               <CardTitle className="text-2xl text-center">🎉 Let's get you into Hey Megan!</CardTitle>
               <CardDescription className="text-center">
                 Your account is all set up and ready to go.
