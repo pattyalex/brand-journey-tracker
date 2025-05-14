@@ -31,17 +31,23 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
     localStorage.setItem(`sidebar-expanded-${item.title}`, JSON.stringify(isExpanded));
   }, [isExpanded, item.title]);
   
-  // Only navigate when clicking the menu item text (not the arrow)
-  const handleMenuItemClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    navigate(item.url);
-  };
-  
   // Toggle expanded state when clicking the arrow
   const handleArrowClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation(); // Prevent any parent clicks from firing
     setIsExpanded(!isExpanded);
+  };
+  
+  // Handle click on the entire menu item
+  const handleMenuItemClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    // If the clicked element is part of the expand/collapse arrow, don't navigate
+    if ((e.target as HTMLElement).closest('[data-expand-arrow="true"]')) {
+      return;
+    }
+    
+    navigate(item.url);
   };
 
   return (
@@ -50,13 +56,15 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
         <a 
           href={item.url} 
           className="flex items-center gap-2"
+          onClick={handleMenuItemClick}
         >
           <item.icon size={20} />
-          <span onClick={handleMenuItemClick}>{item.title}</span>
+          <span>{item.title}</span>
           {item.subItems && item.subItems.length > 0 && (
             <span 
               className="ml-auto cursor-pointer" 
               onClick={handleArrowClick}
+              data-expand-arrow="true"
             >
               {isExpanded ? (
                 <ChevronDown size={16} />
