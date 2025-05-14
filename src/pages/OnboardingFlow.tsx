@@ -200,10 +200,15 @@ const OnboardingFlow: React.FC = () => {
                   className="space-y-4"
                   autoComplete="off"
                   data-lpignore="true"
-                  data-form-type="payment"
+                  data-form-type="other"
+                  id="payment-form-separate-from-auth"
                 >
-                  {/* Hidden field to trick browsers into not autofilling payment fields with email */}
-                  <input type="text" name="email" style={{ display: 'none' }} />
+                  {/* Add multiple decoy fields to break browser autofill algorithms */}
+                  <div style={{ display: 'none' }}>
+                    <input type="text" name="username" />
+                    <input type="email" name="hidden-email" />
+                    <input type="password" name="hidden-password" />
+                  </div>
                   <FormField
                     control={paymentForm.control}
                     name="billingPlan"
@@ -239,15 +244,17 @@ const OnboardingFlow: React.FC = () => {
                               <input
                                 type="tel"
                                 inputMode="numeric"
-                                name="cc-number" // Changed from cardNumber to break any connection
-                                id="cc-number-field" // Changed from cardNumber to break any connection
+                                name="random-field-for-cc-input" 
+                                id="secure-credit-card-field" 
                                 placeholder="1234 5678 9012 3456"
-                                autoComplete="off" // Disabling autocomplete completely
+                                autoComplete="off" 
                                 autoCorrect="off"
                                 autoCapitalize="off"
                                 spellCheck="false"
-                                data-lpignore="true" // Ignore LastPass autofill
-                                data-form-type="payment" // Help browsers identify as payment form
+                                data-lpignore="true" 
+                                data-form-type="other"
+                                data-cc-field="true"
+                                aria-label="Card number input"
                                 pattern="[0-9\s]{13,19}"
                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                 value={field.value || ''}
@@ -271,14 +278,16 @@ const OnboardingFlow: React.FC = () => {
                                 }}
                                 ref={(input) => {
                                   if (input) {
-                                    // Clear field if it contains an email on component mount/update
-                                    if (field.value && (field.value.includes('@') || !field.value.match(/^[\d\s]*$/))) {
+                                    // Always clear field on mount to disconnect from any other forms
+                                    field.onChange('');
+                                    
+                                    // Add additional attributes to break any browser autofill heuristics
+                                    input.setAttribute('autocomplete', 'new-password');
+                                    input.setAttribute('data-lpignore', 'true');
+                                    
+                                    // Force additional field clearing on mount
+                                    setTimeout(() => {
                                       field.onChange('');
-                                      input.setAttribute('autocomplete', 'off');
-
-                                      // Force field clearing and focus
-                                      setTimeout(() => {
-                                        field.onChange('');
                                         input.focus();
                                       }, 100);
                                     }
