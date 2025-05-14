@@ -117,6 +117,25 @@ const OnboardingFlow: React.FC = () => {
     console.log("Social accounts:", data);
     setCurrentStep("welcome");
   };
+  
+  const goToPreviousStep = () => {
+    switch (currentStep) {
+      case "payment-setup":
+        setCurrentStep("account-creation");
+        break;
+      case "user-goals":
+        setCurrentStep("payment-setup");
+        break;
+      case "connect-social":
+        setCurrentStep("user-goals");
+        break;
+      case "welcome":
+        setCurrentStep("connect-social");
+        break;
+      default:
+        break;
+    }
+  };
 
   const goToHomePage = () => {
     navigate("/home");
@@ -187,7 +206,13 @@ const OnboardingFlow: React.FC = () => {
       case "payment-setup":
         return (
           <Card className="w-full max-w-md mx-auto">
-            <CardHeader>
+            <CardHeader className="relative">
+              <div className="absolute left-0 top-4">
+                <Button variant="ghost" size="sm" onClick={goToPreviousStep} className="flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="m15 18-6-6 6-6"/></svg>
+                  Back
+                </Button>
+              </div>
               <CardTitle className="text-2xl">Enter your billing information</CardTitle>
               <CardDescription>
                 You won't be charged today. After 7 days, your trial will convert into a paid subscription.
@@ -340,7 +365,13 @@ const OnboardingFlow: React.FC = () => {
       case "user-goals":
         return (
           <Card className="w-full max-w-md mx-auto">
-            <CardHeader>
+            <CardHeader className="relative">
+              <div className="absolute left-0 top-4">
+                <Button variant="ghost" size="sm" onClick={goToPreviousStep} className="flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="m15 18-6-6 6-6"/></svg>
+                  Back
+                </Button>
+              </div>
               <CardTitle className="text-2xl">We'd like to get to know you</CardTitle>
               <CardDescription>This helps us tailor the experience to your needs</CardDescription>
             </CardHeader>
@@ -414,7 +445,13 @@ const OnboardingFlow: React.FC = () => {
       case "connect-social":
         return (
           <Card className="w-full max-w-md mx-auto">
-            <CardHeader>
+            <CardHeader className="relative">
+              <div className="absolute left-0 top-4">
+                <Button variant="ghost" size="sm" onClick={goToPreviousStep} className="flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="m15 18-6-6 6-6"/></svg>
+                  Back
+                </Button>
+              </div>
               <CardTitle className="text-2xl">Add your social accounts</CardTitle>
               <CardDescription>
                 Connect your social media accounts to unlock analytics and recommendations
@@ -530,7 +567,13 @@ const OnboardingFlow: React.FC = () => {
       case "welcome":
         return (
           <Card className="w-full max-w-md mx-auto">
-            <CardHeader>
+            <CardHeader className="relative">
+              <div className="absolute left-0 top-4">
+                <Button variant="ghost" size="sm" onClick={goToPreviousStep} className="flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="m15 18-6-6 6-6"/></svg>
+                  Back
+                </Button>
+              </div>
               <CardTitle className="text-2xl text-center">🎉 Let's get you into Hey Megan!</CardTitle>
               <CardDescription className="text-center">
                 Your account is all set up and ready to go.
