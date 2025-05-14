@@ -4,7 +4,6 @@ import { MenuItem } from '@/types/sidebar';
 
 export const defaultMenuItems: MenuItem[] = [
   { title: 'Home Page', icon: Home, url: '/home-page', isDeletable: false },
-  { title: 'Dashboard', icon: Home, url: '/dashboard', isDeletable: false },
   { title: 'Planner', icon: CheckCircle, url: '/task-board', isDeletable: false },
   { 
     title: 'Workflow', 
