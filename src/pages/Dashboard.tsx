@@ -19,18 +19,10 @@ const Dashboard = () => {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             All-in-one platform for content creators to manage projects, track income, and grow their business
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex justify-center">
             <Button 
               size="lg" 
               className="bg-primary hover:bg-primary/90 text-white text-lg px-8 py-6"
-              onClick={() => navigate("/get-started")}
-            >
-              Get Started
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              className="text-lg px-8 py-6 border-primary text-primary hover:bg-primary/10"
               onClick={() => navigate("/onboarding")}
             >
               Start 7-Day Free Trial
