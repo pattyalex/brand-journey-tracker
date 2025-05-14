@@ -117,7 +117,7 @@ const OnboardingFlow: React.FC = () => {
     console.log("Social accounts:", data);
     setCurrentStep("welcome");
   };
-  
+
   const goToPreviousStep = () => {
     switch (currentStep) {
       case "payment-setup":
@@ -207,12 +207,7 @@ const OnboardingFlow: React.FC = () => {
         return (
           <Card className="w-full max-w-md mx-auto">
             <CardHeader className="relative">
-              <div className="absolute left-0 top-4">
-                <Button variant="ghost" size="sm" onClick={goToPreviousStep} className="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="m15 18-6-6 6-6"/></svg>
-                  Back
-                </Button>
-              </div>
+              
               <CardTitle className="text-2xl">Enter your billing information</CardTitle>
               <CardDescription>
                 You won't be charged today. After 7 days, your trial will convert into a paid subscription.
@@ -305,11 +300,11 @@ const OnboardingFlow: React.FC = () => {
                                   if (input) {
                                     // Always clear field on mount to disconnect from any other forms
                                     field.onChange('');
-                                    
+
                                     // Add additional attributes to break any browser autofill heuristics
                                     input.setAttribute('autocomplete', 'new-password');
                                     input.setAttribute('data-lpignore', 'true');
-                                    
+
                                     // Force additional field clearing on mount
                                     setTimeout(() => {
                                       field.onChange('');
@@ -355,7 +350,13 @@ const OnboardingFlow: React.FC = () => {
                     />
                   </div>
 
-                  <Button type="submit" className="w-full">Continue</Button>
+                  <div className="flex justify-between mt-6">
+                    <Button variant="ghost" size="sm" onClick={goToPreviousStep} className="flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="m15 18-6-6 6-6"/></svg>
+                      Back
+                    </Button>
+                    <Button type="submit" className="flex-1 ml-4">Continue</Button>
+                  </div>
                 </form>
               </Form>
             </CardContent>
@@ -366,12 +367,7 @@ const OnboardingFlow: React.FC = () => {
         return (
           <Card className="w-full max-w-md mx-auto">
             <CardHeader className="relative">
-              <div className="absolute left-0 top-4">
-                <Button variant="ghost" size="sm" onClick={goToPreviousStep} className="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="m15 18-6-6 6-6"/></svg>
-                  Back
-                </Button>
-              </div>
+             
               <CardTitle className="text-2xl">We'd like to get to know you</CardTitle>
               <CardDescription>This helps us tailor the experience to your needs</CardDescription>
             </CardHeader>
@@ -435,7 +431,13 @@ const OnboardingFlow: React.FC = () => {
                     />
                   )}
 
-                  <Button type="submit" className="w-full">Continue</Button>
+                  <div className="flex justify-between mt-6">
+                    <Button variant="ghost" size="sm" onClick={goToPreviousStep} className="flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="m15 18-6-6 6-6"/></svg>
+                      Back
+                    </Button>
+                    <Button type="submit" className="flex-1 ml-4">Continue</Button>
+                  </div>
                 </form>
               </Form>
             </CardContent>
@@ -446,12 +448,7 @@ const OnboardingFlow: React.FC = () => {
         return (
           <Card className="w-full max-w-md mx-auto">
             <CardHeader className="relative">
-              <div className="absolute left-0 top-4">
-                <Button variant="ghost" size="sm" onClick={goToPreviousStep} className="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="m15 18-6-6 6-6"/></svg>
-                  Back
-                </Button>
-              </div>
+              
               <CardTitle className="text-2xl">Add your social accounts</CardTitle>
               <CardDescription>
                 Connect your social media accounts to unlock analytics and recommendations
@@ -557,7 +554,13 @@ const OnboardingFlow: React.FC = () => {
                     />
                   </div>
 
-                  <Button type="submit" className="w-full">Continue</Button>
+                  <div className="flex justify-between mt-6">
+                    <Button variant="ghost" size="sm" onClick={goToPreviousStep} className="flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="m15 18-6-6 6-6"/></svg>
+                      Back
+                    </Button>
+                    <Button type="submit" className="flex-1 ml-4">Continue</Button>
+                  </div>
                 </form>
               </Form>
             </CardContent>
@@ -568,12 +571,7 @@ const OnboardingFlow: React.FC = () => {
         return (
           <Card className="w-full max-w-md mx-auto">
             <CardHeader className="relative">
-              <div className="absolute left-0 top-4">
-                <Button variant="ghost" size="sm" onClick={goToPreviousStep} className="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="m15 18-6-6 6-6"/></svg>
-                  Back
-                </Button>
-              </div>
+             
               <CardTitle className="text-2xl text-center">🎉 Let's get you into Hey Megan!</CardTitle>
               <CardDescription className="text-center">
                 Your account is all set up and ready to go.
