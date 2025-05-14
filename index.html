@@ -19,30 +19,6 @@
           console.warn('WebSocket connection issue detected');
         }
       });
-      
-      // White screen detection - more aggressive approach
-      document.addEventListener('DOMContentLoaded', function() {
-        // Start a timer to check if the app has rendered properly
-        setTimeout(function() {
-          var root = document.getElementById('root');
-          // If the root element is empty or contains minimal content
-          if (root && (!root.innerHTML || root.innerHTML.trim() === '' || 
-              root.children.length === 0 || 
-              (root.children.length === 1 && root.children[0].tagName === 'SCRIPT'))) {
-            console.error('White screen detected - app failed to render');
-            document.body.innerHTML = `
-              <div style="padding: 20px; text-align: center; font-family: system-ui, sans-serif;">
-                <h1 style="color: #e11d48;">Application Failed to Load</h1>
-                <p>The application is taking too long to start.</p>
-                <button style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 20px;" 
-                        onclick="localStorage.clear(); window.location.reload();">
-                  Clear Data & Reload
-                </button>
-              </div>
-            `;
-          }
-        }, 10000); // 10 seconds timeout
-      });
     </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>

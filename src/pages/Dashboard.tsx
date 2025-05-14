@@ -32,7 +32,7 @@ const Dashboard = () => {
           {features.map((feature, index) => (
             <Card 
               key={index} 
-              className="p-6 hover:shadow-lg transition-all duration-300 border border-gray-100 cursor-pointer"
+              className="p-6 hover:shadow-lg transition-all duration-300 border border-gray-100"
               onClick={() => navigate(feature.path)}
             >
               <feature.icon className="w-10 h-10 mb-4 text-primary" />
