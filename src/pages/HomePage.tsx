@@ -59,7 +59,6 @@ const HomePage = () => {
   useEffect(() => {
     const getCurrentGreeting = () => {
       const hour = new Date().getHours();
-      const userName = "Maria"; // This would be fetched from user data in a real app
       const userName = "Alex"; // This would be fetched from user data in a real app
 
 
