@@ -11,9 +11,30 @@ window.addEventListener('error', (event) => {
   event.preventDefault();
 });
 
-// Improved unhandled promise rejection handling
+// Enhanced unhandled promise rejection handling
 window.addEventListener('unhandledrejection', (event) => {
   console.error('Unhandled Promise Rejection caught:', event.reason);
+  // Log additional details if available
+  if (event.reason && event.reason.stack) {
+    console.error('Stack trace:', event.reason.stack);
+  }
+  
+  // Try to show a more user-friendly error in the console
+  const rootElement = document.getElementById('root');
+  if (rootElement && rootElement.innerHTML === '') {
+    // If the root element is empty (white screen), try to render a fallback
+    rootElement.innerHTML = `
+      <div style="padding: 20px; text-align: center; font-family: system-ui, sans-serif;">
+        <h1 style="color: #e11d48;">Application Error</h1>
+        <p>The application encountered an error and will attempt to recover.</p>
+        <button style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 20px;" 
+                onclick="window.location.reload();">
+          Reload Application
+        </button>
+      </div>
+    `;
+  }
+  
   // Prevent the error from being swallowed
   event.preventDefault();
 });

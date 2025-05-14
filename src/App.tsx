@@ -26,11 +26,39 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   // Track initialization errors
   const [initError, setInitError] = useState<Error | null>(null);
+  // Track runtime errors
+  const [runtimeError, setRuntimeError] = useState<Error | null>(null);
+
+  // Global error handler
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      console.error("Global error caught in App:", event.error);
+      setRuntimeError(event.error || new Error("Unknown runtime error"));
+      // Prevent the default browser error handling
+      event.preventDefault();
+    };
+
+    window.addEventListener('error', handleError);
+    
+    return () => {
+      window.removeEventListener('error', handleError);
+    };
+  }, []);
 
   useEffect(() => {
     // Application initialization
     try {
-      // Perform any necessary initialization here
+      // Clear any localStorage that might be corrupted
+      try {
+        // Test localStorage access
+        const testKey = '__test_storage__';
+        localStorage.setItem(testKey, 'test');
+        localStorage.removeItem(testKey);
+      } catch (storageError) {
+        console.warn("LocalStorage error detected, clearing storage:", storageError);
+        localStorage.clear();
+      }
+      
       console.log("App initializing...");
       
       // Simulate loading time but with proper error handling
@@ -56,9 +84,39 @@ function App() {
           <p className="mb-4">{initError.message}</p>
           <button 
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            onClick={() => {
+              localStorage.clear(); // Clear potentially corrupted state
+              window.location.reload();
+            }}
+          >
+            Reload Application
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
+  // Handle runtime errors
+  if (runtimeError) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-background">
+        <div className="text-center max-w-md p-6 bg-white rounded-lg shadow-md">
+          <h2 className="text-xl font-bold text-red-600 mb-4">Application Error</h2>
+          <p className="mb-4">{runtimeError.message || "An unexpected error occurred"}</p>
+          <button 
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mb-2 w-full"
             onClick={() => window.location.reload()}
           >
             Reload Application
+          </button>
+          <button 
+            className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 w-full"
+            onClick={() => {
+              localStorage.clear();
+              window.location.href = '/landing';
+            }}
+          >
+            Reset & Go to Landing
           </button>
         </div>
       </div>
