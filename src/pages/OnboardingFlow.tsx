@@ -228,29 +228,20 @@ const OnboardingFlow: React.FC = () => {
                           <FormItem>
                             <FormLabel>Card Number</FormLabel>
                             <FormControl>
-                              <Input 
-                                type="tel" 
-                                inputMode="numeric" 
-                                pattern="[0-9\s]{13,19}"
-                                placeholder="1234 5678 9012 3456" 
+                              <input
+                                type="tel"
+                                inputMode="numeric"
+                                name="cardNumber"
+                                id="cardNumber"
+                                placeholder="1234 5678 9012 3456"
                                 autoComplete="cc-number"
-                                autoCapitalize="off"
-                                autoCorrect="off"
-                                spellCheck="false"
-                                aria-label="Credit Card Number"
+                                pattern="[0-9\s]{13,19}"
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                 value={field.value || ''}
                                 onChange={(e) => {
                                   // Only allow numbers and spaces
                                   const value = e.target.value.replace(/[^0-9\s]/g, '');
                                   field.onChange(value);
-                                }}
-                                // Clear the field on component mount
-                                ref={(input) => {
-                                  if (input && field.value && field.value.includes('@')) {
-                                    field.onChange('');
-                                    // This helps clear autofilled values
-                                    setTimeout(() => input.focus(), 100);
-                                  }
                                 }}
                               />
                             </FormControl>
