@@ -33,7 +33,7 @@ localPort = 8082
 externalPort = 3000
 
 [workflows]
-runButton = "Run Dev Server Fixed"
+runButton = "Fix and Run Dev Server"
 
 [[workflows.workflow]]
 name = "Run Dev Server"
@@ -75,6 +75,19 @@ args = "npm run dev -- --host 0.0.0.0 --port 8080"
 name = "Run Dev Server Fixed"
 author = 42062761
 mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "VITE_DISABLE_ESLINT_PLUGIN=true npm run dev -- --host 0.0.0.0 --port 8080"
+
+[[workflows.workflow]]
+name = "Fix and Run Dev Server"
+author = 42062761
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm cache clean --force"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"

@@ -56,18 +56,19 @@ function App() {
         localStorage.removeItem(testKey);
       } catch (storageError) {
         console.warn("LocalStorage error detected, clearing storage:", storageError);
-        localStorage.clear();
+        try {
+          localStorage.clear();
+        } catch (e) {
+          console.error("Failed to clear localStorage:", e);
+        }
       }
       
       console.log("App initializing...");
       
-      // Simulate loading time but with proper error handling
-      const timer = setTimeout(() => {
-        setIsLoading(false);
-        console.log("App initialization complete");
-      }, 1000);
+      // Immediately mark as loaded to avoid white screen issues
+      setIsLoading(false);
+      console.log("App initialization complete");
       
-      return () => clearTimeout(timer);
     } catch (error) {
       console.error("App initialization error:", error);
       setInitError(error instanceof Error ? error : new Error('Unknown initialization error'));

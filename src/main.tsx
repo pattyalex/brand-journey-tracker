@@ -25,32 +25,30 @@ window.addEventListener('unhandledrejection', (event) => {
     }
   }
   
-  // Try to show a more user-friendly error in the UI
-  const rootElement = document.getElementById('root');
-  if (rootElement && (rootElement.innerHTML === '' || rootElement.children.length === 0)) {
-    // If the root element is empty (white screen), render a fallback
-    rootElement.innerHTML = `
-      <div style="padding: 20px; text-align: center; font-family: system-ui, sans-serif;">
-        <h1 style="color: #e11d48;">Application Error</h1>
-        <p>The application encountered an error: ${errorMessage}</p>
-        <div style="margin: 20px 0; text-align: left; background: #f1f5f9; padding: 10px; border-radius: 4px;">
-          <p><strong>Troubleshooting:</strong></p>
-          <ul style="margin-left: 20px; list-style-type: disc;">
-            <li>This may be caused by corrupted browser data</li>
-            <li>Try clearing your browser cache and storage</li>
-          </ul>
-        </div>
-        <button style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 10px; width: 100%;" 
-                onclick="localStorage.clear(); sessionStorage.clear(); window.location.reload();">
-          Clear Storage & Reload
-        </button>
-        <button style="background: #4b5563; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 10px; width: 100%;" 
-                onclick="window.location.href='/landing';">
-          Go to Landing Page
-        </button>
+  // Force display an error UI regardless of the app state
+  // This is more aggressive, but ensures users see something instead of a white screen
+  document.body.innerHTML = `
+    <div style="padding: 20px; text-align: center; font-family: system-ui, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h1 style="color: #e11d48;">Application Error</h1>
+      <p>The application encountered an error: ${errorMessage}</p>
+      <div style="margin: 20px 0; text-align: left; background: #f1f5f9; padding: 10px; border-radius: 4px;">
+        <p><strong>Troubleshooting:</strong></p>
+        <ul style="margin-left: 20px; list-style-type: disc;">
+          <li>This may be caused by corrupted browser data</li>
+          <li>Try clearing your browser cache and storage</li>
+          <li>Multiple unhandled rejections were detected</li>
+        </ul>
       </div>
-    `;
-  }
+      <button style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 10px; width: 100%;" 
+              onclick="localStorage.clear(); sessionStorage.clear(); window.location.reload();">
+        Clear Storage & Reload
+      </button>
+      <button style="background: #4b5563; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 10px; width: 100%;" 
+              onclick="window.location.href='/landing';">
+        Go to Landing Page
+      </button>
+    </div>
+  `;
   
   // Prevent the error from being swallowed
   event.preventDefault();
