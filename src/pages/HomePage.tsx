@@ -255,38 +255,6 @@ const HomePage = () => {
     <Layout>
       <ScrollArea className="h-screen">
         <div className="container px-4 md:px-6 py-6 md:py-10">
-          {/* Social Media Platforms */}
-          <section className="mb-6 fade-in">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-medium">Connected Platforms</CardTitle>
-                <CardDescription>Connect your social accounts to get personalized AI recommendations</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-3">
-                  {['Instagram', 'TikTok', 'YouTube', 'LinkedIn'].map((platform) => (
-                    <Button
-                      key={platform}
-                      variant={connectedPlatforms.includes(platform) ? "default" : "outline"}
-                      size="sm"
-                      className={connectedPlatforms.includes(platform) ? "bg-primary" : ""}
-                      onClick={() => {
-                        if (connectedPlatforms.includes(platform)) {
-                          setConnectedPlatforms(connectedPlatforms.filter(p => p !== platform));
-                        } else {
-                          setConnectedPlatforms([...connectedPlatforms, platform]);
-                        }
-                      }}
-                    >
-                      {platform}
-                      {connectedPlatforms.includes(platform) ? " ✓" : ""}
-                    </Button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </section>
-
           {/* Greeting Section - Top Banner */}
           <section className="mb-8 fade-in">
             <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-6 flex items-center justify-between">
