@@ -20,11 +20,14 @@ class ErrorBoundary extends Component<Props, State> {
   };
 
   public static getDerivedStateFromError(error: Error): State {
+    // Update state so the next render will show the fallback UI
+    console.log("Error caught by ErrorBoundary:", error);
     return { hasError: true, error, errorInfo: null };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Uncaught error:", error, errorInfo);
+    console.error("Uncaught error:", error);
+    console.error("Error info:", errorInfo);
     this.setState({ errorInfo });
   }
 
@@ -34,12 +37,17 @@ class ErrorBoundary extends Component<Props, State> {
         <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50">
           <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
             <h2 className="text-xl font-bold text-red-600 mb-4">Something went wrong</h2>
-            <p className="mb-4 text-gray-700">
+            <p className="mb-2 text-gray-700">
               The application encountered an error. Please try one of the following options:
             </p>
-            <pre className="bg-gray-100 p-3 rounded text-sm overflow-auto max-h-40 mb-4">
-              {this.state.error?.message}
-            </pre>
+            <div className="bg-gray-100 p-3 rounded text-sm overflow-auto max-h-40 mb-4">
+              <strong>Error:</strong> {this.state.error?.message || "Unknown error"}
+              {this.state.error?.stack && (
+                <pre className="mt-2 text-xs overflow-x-auto">
+                  {this.state.error.stack}
+                </pre>
+              )}
+            </div>
             <div className="space-y-2">
               <Button 
                 onClick={() => window.location.reload()}
@@ -49,7 +57,6 @@ class ErrorBoundary extends Component<Props, State> {
               </Button>
               <Button 
                 onClick={() => {
-                  // Clear potentially corrupted state
                   localStorage.clear();
                   window.location.href = '/landing';
                 }}

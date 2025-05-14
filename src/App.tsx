@@ -35,6 +35,7 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     try {
@@ -50,6 +51,7 @@ function App() {
       // Default to not authenticated if localStorage fails
       setIsAuthenticated(false);
       setIsOnboardingComplete(false);
+      setError(error instanceof Error ? error : new Error('Unknown error accessing localStorage'));
     } finally {
       // Set loading to false after checking auth status, regardless of success/failure
       setIsLoading(false);
@@ -58,8 +60,12 @@ function App() {
 
   // For debugging
   useEffect(() => {
-    console.log("Auth state:", { isAuthenticated, isOnboardingComplete, isLoading });
-  }, [isAuthenticated, isOnboardingComplete, isLoading]);
+    console.log("Auth state:", { isAuthenticated, isOnboardingComplete, isLoading, hasError: !!error });
+    if (error) console.error("App initialization error:", error);
+  }, [isAuthenticated, isOnboardingComplete, isLoading, error]);
+  
+  // If there's an error during initialization, throw it to be caught by the ErrorBoundary
+  if (error) throw error;
 
   // Protected route component
   const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
