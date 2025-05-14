@@ -147,11 +147,23 @@ function App() {
             <Route path="/" element={
               (() => {
                 try {
+                  // First check if localStorage is available
+                  const testKey = '__test_storage__';
+                  localStorage.setItem(testKey, 'test');
+                  localStorage.removeItem(testKey);
+                  
+                  // Now safely access the onboarding state
                   return localStorage.getItem('onboardingComplete') === 'true'
                     ? <Navigate to="/dashboard" replace />
                     : <Navigate to="/landing" replace />;
                 } catch (error) {
                   console.error("Error accessing localStorage:", error);
+                  // Clear potentially corrupted localStorage
+                  try {
+                    localStorage.clear();
+                  } catch (e) {
+                    console.error("Failed to clear localStorage:", e);
+                  }
                   return <Navigate to="/landing" replace />;
                 }
               })()

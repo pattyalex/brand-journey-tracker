@@ -14,22 +14,39 @@ window.addEventListener('error', (event) => {
 // Enhanced unhandled promise rejection handling
 window.addEventListener('unhandledrejection', (event) => {
   console.error('Unhandled Promise Rejection caught:', event.reason);
-  // Log additional details if available
-  if (event.reason && event.reason.stack) {
-    console.error('Stack trace:', event.reason.stack);
+  
+  // Try to identify the source of the error
+  let errorMessage = 'Unknown error';
+  if (event.reason) {
+    errorMessage = event.reason.message || String(event.reason);
+    // Log additional details if available
+    if (event.reason.stack) {
+      console.error('Stack trace:', event.reason.stack);
+    }
   }
   
-  // Try to show a more user-friendly error in the console
+  // Try to show a more user-friendly error in the UI
   const rootElement = document.getElementById('root');
-  if (rootElement && rootElement.innerHTML === '') {
-    // If the root element is empty (white screen), try to render a fallback
+  if (rootElement && (rootElement.innerHTML === '' || rootElement.children.length === 0)) {
+    // If the root element is empty (white screen), render a fallback
     rootElement.innerHTML = `
       <div style="padding: 20px; text-align: center; font-family: system-ui, sans-serif;">
         <h1 style="color: #e11d48;">Application Error</h1>
-        <p>The application encountered an error and will attempt to recover.</p>
-        <button style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 20px;" 
-                onclick="window.location.reload();">
-          Reload Application
+        <p>The application encountered an error: ${errorMessage}</p>
+        <div style="margin: 20px 0; text-align: left; background: #f1f5f9; padding: 10px; border-radius: 4px;">
+          <p><strong>Troubleshooting:</strong></p>
+          <ul style="margin-left: 20px; list-style-type: disc;">
+            <li>This may be caused by corrupted browser data</li>
+            <li>Try clearing your browser cache and storage</li>
+          </ul>
+        </div>
+        <button style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 10px; width: 100%;" 
+                onclick="localStorage.clear(); sessionStorage.clear(); window.location.reload();">
+          Clear Storage & Reload
+        </button>
+        <button style="background: #4b5563; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 10px; width: 100%;" 
+                onclick="window.location.href='/landing';">
+          Go to Landing Page
         </button>
       </div>
     `;
