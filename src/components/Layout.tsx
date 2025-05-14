@@ -1,7 +1,4 @@
-The Layout component is updated to conditionally render the Sidebar and ToggleSidebarButton based on authentication status and the current route, using localStorage to persist authentication and react-router-dom for route detection.
-```
 
-```replit_final_file
 import React, { useEffect, useState } from 'react';
 import { SidebarProvider } from './ui/sidebar';
 import Sidebar from './Sidebar';
