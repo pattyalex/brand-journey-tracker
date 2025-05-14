@@ -33,6 +33,7 @@ import "./App.css";
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Check if user is authenticated
@@ -42,10 +43,17 @@ function App() {
     // Check if onboarding is complete
     const onboardingStatus = localStorage.getItem('onboardingComplete') === 'true';
     setIsOnboardingComplete(onboardingStatus);
+    
+    // Set loading to false after checking auth status
+    setIsLoading(false);
   }, []);
 
   // Protected route component
   const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+    if (isLoading) {
+      return <div className="flex h-screen items-center justify-center">Loading...</div>;
+    }
+    
     if (!isAuthenticated && !isOnboardingComplete) {
       return <Navigate to="/landing" />;
     }
@@ -55,12 +63,12 @@ function App() {
   return (
     <Router>
       <ThemeProvider>
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<div className="flex h-screen items-center justify-center">Loading...</div>}>
           <Routes>
             {/* Public routes */}
-            <Route path="/landing" element={<Landing />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/login" element={<Login />} />
+            <Route key="landing" path="/landing" element={<Landing />} />
+            <Route key="onboarding" path="/onboarding" element={<Onboarding />} />
+            <Route key="login" path="/login" element={<Login />} />
 
             {/* Protected routes */}
             <Route path="/" element={
@@ -174,6 +182,15 @@ function App() {
               </ProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />
+            {/* Redirect from root to landing if not authenticated */}
+            <Route 
+              path="/" 
+              element={
+                isAuthenticated || isOnboardingComplete ? 
+                <HomePage /> : 
+                <Navigate to="/landing" replace />
+              } 
+            />
           </Routes>
         </Suspense>
         <Toaster position="top-right" />
