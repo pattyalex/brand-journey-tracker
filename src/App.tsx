@@ -6,6 +6,8 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
+import Dashboard from "./pages/Dashboard";
+import HomePage from "./pages/HomePage";
 import "./App.css";
 
 // Simple loading component
