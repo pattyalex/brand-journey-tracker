@@ -224,31 +224,32 @@ const OnboardingFlow: React.FC = () => {
                       control={paymentForm.control}
                       name="cardNumber"
                       render={({ field }) => {
-                        // Immediately clear email if detected
-                        if (field.value && typeof field.value === 'string' && field.value.includes('@')) {
-                          // Use setTimeout to avoid React state update during render
-                          setTimeout(() => field.onChange(''), 0);
-                        }
-
                         return (
                           <FormItem>
                             <FormLabel>Card Number</FormLabel>
                             <FormControl>
                               <Input 
-                                type="text" 
+                                type="tel" 
                                 inputMode="numeric" 
                                 pattern="[0-9\s]{13,19}"
                                 placeholder="1234 5678 9012 3456" 
+                                autoComplete="cc-number"
+                                autoCapitalize="off"
+                                autoCorrect="off"
+                                spellCheck="false"
+                                aria-label="Credit Card Number"
                                 value={field.value || ''}
                                 onChange={(e) => {
                                   // Only allow numbers and spaces
                                   const value = e.target.value.replace(/[^0-9\s]/g, '');
                                   field.onChange(value);
                                 }}
-                                onFocus={() => {
-                                  // Always clear on focus for safety
-                                  if (field.value && field.value.includes('@')) {
+                                // Clear the field on component mount
+                                ref={(input) => {
+                                  if (input && field.value && field.value.includes('@')) {
                                     field.onChange('');
+                                    // This helps clear autofilled values
+                                    setTimeout(() => input.focus(), 100);
                                   }
                                 }}
                               />
