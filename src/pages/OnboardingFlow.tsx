@@ -288,9 +288,8 @@ const OnboardingFlow: React.FC = () => {
                                     // Force additional field clearing on mount
                                     setTimeout(() => {
                                       field.onChange('');
-                                        input.focus();
-                                      }, 100);
-                                    }
+                                      input.focus();
+                                    }, 100);
                                   }
                                 }}
                               />
