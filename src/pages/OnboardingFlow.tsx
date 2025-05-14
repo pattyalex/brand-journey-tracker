@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -220,34 +219,46 @@ const OnboardingFlow: React.FC = () => {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
-                    control={paymentForm.control}
-                    name="cardNumber"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Card Number</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="text" 
-                            inputMode="numeric" 
-                            pattern="[0-9\s]{13,19}"
-                            placeholder="1234 5678 9012 3456" 
-                            value={field.value}
-                            onChange={(e) => field.onChange(e.target.value)}
-                            onFocus={(e) => {
-                              // Clear the field if it contains an email format
-                              if (field.value && field.value.includes('@')) {
-                                field.onChange('');
-                              }
-                            }}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
+                      control={paymentForm.control}
+                      name="cardNumber"
+                      render={({ field }) => {
+                        // Immediately clear email if detected
+                        if (field.value && typeof field.value === 'string' && field.value.includes('@')) {
+                          // Use setTimeout to avoid React state update during render
+                          setTimeout(() => field.onChange(''), 0);
+                        }
+
+                        return (
+                          <FormItem>
+                            <FormLabel>Card Number</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="text" 
+                                inputMode="numeric" 
+                                pattern="[0-9\s]{13,19}"
+                                placeholder="1234 5678 9012 3456" 
+                                value={field.value || ''}
+                                onChange={(e) => {
+                                  // Only allow numbers and spaces
+                                  const value = e.target.value.replace(/[^0-9\s]/g, '');
+                                  field.onChange(value);
+                                }}
+                                onFocus={() => {
+                                  // Always clear on focus for safety
+                                  if (field.value && field.value.includes('@')) {
+                                    field.onChange('');
+                                  }
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
+
                   <div className="flex space-x-4">
                     <FormField
                       control={paymentForm.control}
@@ -262,7 +273,7 @@ const OnboardingFlow: React.FC = () => {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={paymentForm.control}
                       name="cvc"
@@ -277,7 +288,7 @@ const OnboardingFlow: React.FC = () => {
                       )}
                     />
                   </div>
-                  
+
                   <Button type="submit" className="w-full">Continue</Button>
                 </form>
               </Form>
@@ -336,7 +347,7 @@ const OnboardingFlow: React.FC = () => {
                       </FormItem>
                     )}
                   />
-                  
+
                   {goalForm.watch("goal") === "other" && (
                     <FormField
                       control={goalForm.control}
@@ -351,7 +362,7 @@ const OnboardingFlow: React.FC = () => {
                       )}
                     />
                   )}
-                  
+
                   <Button type="submit" className="w-full">Continue</Button>
                 </form>
               </Form>
@@ -390,7 +401,7 @@ const OnboardingFlow: React.FC = () => {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={socialForm.control}
                       name="tiktok"
@@ -409,7 +420,7 @@ const OnboardingFlow: React.FC = () => {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={socialForm.control}
                       name="youtube"
@@ -428,7 +439,7 @@ const OnboardingFlow: React.FC = () => {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={socialForm.control}
                       name="linkedin"
@@ -447,7 +458,7 @@ const OnboardingFlow: React.FC = () => {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={socialForm.control}
                       name="twitter"
@@ -467,7 +478,7 @@ const OnboardingFlow: React.FC = () => {
                       )}
                     />
                   </div>
-                  
+
                   <Button type="submit" className="w-full">Continue</Button>
                 </form>
               </Form>
@@ -509,7 +520,7 @@ const OnboardingFlow: React.FC = () => {
           </div>
         </div>
       </div>
-      
+
       {renderStep()}
     </div>
   );
