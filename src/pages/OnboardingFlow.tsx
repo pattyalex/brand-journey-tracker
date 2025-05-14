@@ -227,7 +227,13 @@ const OnboardingFlow: React.FC = () => {
                       <FormItem>
                         <FormLabel>Card Number</FormLabel>
                         <FormControl>
-                          <Input placeholder="1234 5678 9012 3456" {...field} />
+                          <Input 
+                            type="text" 
+                            inputMode="numeric" 
+                            pattern="[0-9\s]{13,19}"
+                            placeholder="1234 5678 9012 3456" 
+                            {...field} 
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
