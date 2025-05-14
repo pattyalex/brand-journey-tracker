@@ -74,7 +74,8 @@ const OnboardingFlow: React.FC = () => {
       expiryDate: "",
       cvc: "",
       billingPlan: "monthly"
-    }
+    },
+    mode: "onChange"
   });
 
   // User Goals Form
@@ -232,7 +233,14 @@ const OnboardingFlow: React.FC = () => {
                             inputMode="numeric" 
                             pattern="[0-9\s]{13,19}"
                             placeholder="1234 5678 9012 3456" 
-                            {...field} 
+                            value={field.value}
+                            onChange={(e) => field.onChange(e.target.value)}
+                            onFocus={(e) => {
+                              // Clear the field if it contains an email format
+                              if (field.value && field.value.includes('@')) {
+                                field.onChange('');
+                              }
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
