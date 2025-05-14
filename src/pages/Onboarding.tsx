@@ -128,7 +128,8 @@ const Onboarding = () => {
         email: formData.email,
         connectedPlatforms: formData.connectedPlatforms
       }));
-      navigate('/');
+      localStorage.setItem('isAuthenticated', 'true');
+      navigate('/dashboard');
     }
   };
 

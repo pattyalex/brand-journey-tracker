@@ -69,9 +69,17 @@ function App() {
             <Route path="/landing" element={<Landing />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/login" element={<Login />} />
-
-            {/* Root route with redirection to landing */}
-            <Route path="/" element={<Navigate to="/landing" replace />} />
+            
+            {/* Application routes */}
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/home" element={<HomePage />} />
+            
+            {/* Root route with conditional redirect based on authentication */}
+            <Route path="/" element={
+              localStorage.getItem('onboardingComplete') === 'true' 
+                ? <Navigate to="/dashboard" replace /> 
+                : <Navigate to="/landing" replace />
+            } />
 
             {/* Fallback route */}
             <Route path="*" element={<NotFound />} />
