@@ -1,7 +1,102 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Onboarding progress steps styling */
+.steps {
+  display: flex;
+  counter-reset: step;
+  margin: 0;
+  padding: 0;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+}
+
+.step::before {
+  counter-increment: step;
+  content: counter(step);
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+  background-color: #e5e7eb;
+  color: #4b5563;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.step::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 12px;
+  height: 2px;
+  width: 100%;
+  background-color: #e5e7eb;
+  z-index: -1;
+}
+
+.step:first-child::after {
+  left: 50%;
+  width: 50%;
+}
+
+.step:last-child::after {
+  width: 50%;
+  right: 50%;
+}
+
+.step-primary::before {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.step-primary::after {
+  background-color: #3b82f6;
+}
+
+.steps-horizontal {
+  flex-direction: row;
+}
+
+.steps-vertical {
+  flex-direction: column;
+}
+
+.steps-vertical .step {
+  margin-bottom: 24px;
+}
+
+.steps-vertical .step::after {
+  top: 24px;
+  left: 12px;
+  height: 100%;
+  width: 2px;
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 @layer base {
   :root {
@@ -57,7 +152,7 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
-  
+
   /* Add global label and checkbox styling */
   label {
     text-align: left;
@@ -65,7 +160,7 @@
     padding-left: 0;
     margin-left: 0;
   }
-  
+
   .checkbox-container {
     padding-left: 0;
     margin-left: 0;
@@ -76,11 +171,11 @@
   th, td {
     text-align: left !important;
   }
-  
+
   table th, table td {
     text-align: left !important;
   }
-  
+
   th.notes-header {
     padding-left: 20px;
     padding-right: 30px;
@@ -92,7 +187,7 @@
     padding-right: 30px;
     text-align: left !important;
   }
-  
+
   /* Force left alignment for all table cells and their contents */
   .brand-collab-table th,
   .brand-collab-table td,
@@ -101,12 +196,12 @@
     text-align: left !important;
     padding-left: 4px;
   }
-  
+
   /* Add styling for brief/contract terms header to add more space */
   th[data-key="briefContract"] {
     padding-right: 35px;
   }
-  
+
   /* Add spacing between deposit-paid and finalPaymentDueDate */
   th[data-key="depositPaid"] {
     padding-right: 30px;
@@ -117,12 +212,12 @@
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
   }
-  
+
   .hide-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   .touch-scroll {
     -webkit-overflow-scrolling: touch;
     overflow-y: auto;

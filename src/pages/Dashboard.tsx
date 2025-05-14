@@ -31,7 +31,7 @@ const Dashboard = () => {
               size="lg" 
               variant="outline"
               className="text-lg px-8 py-6 border-primary text-primary hover:bg-primary/10"
-              onClick={() => navigate("/auth")}
+              onClick={() => navigate("/onboarding")}
             >
               Start 7-Day Free Trial
             </Button>

@@ -9,6 +9,7 @@ import GetStarted from './pages/GetStarted';
 import CollabManagement from './pages/CollabManagement';  // Import eagerly instead of lazily
 import StrategyDemo from './pages/StrategyDemo';
 import HomePage from './pages/HomePage'; // Added import for HomePage
+import OnboardingFlow from "./pages/OnboardingFlow";
 
 // Lazy load all other pages
 const TrendingContent = lazy(() => import('./pages/TrendingContent'));
@@ -66,6 +67,7 @@ function App() {
             <Route path="/trending" element={<TrendingContent />} />
             <Route path="/collab-management" element={<CollabManagement />} />
             <Route path="/strategy-demo" element={<StrategyDemo />} />
+             <Route path="/onboarding" element={<OnboardingFlow />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
