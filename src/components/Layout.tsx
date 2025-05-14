@@ -1,61 +1,95 @@
-import React, { useState, useEffect } from 'react';
-import Sidebar from './Sidebar';
-import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Toaster } from "@/components/ui/toaster"; // Updated import statement
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import Sidebar from "./Sidebar";
+import { MobileMenuToggle } from "@/components/ui/sidebar";
+import { useMobile } from "@/hooks/use-mobile";
+import { Button } from "./ui/button";
+import { LogOut } from "lucide-react";
 
-const ToggleSidebarButton = () => {
-  const { state, toggleSidebar } = useSidebar();
+interface LayoutProps {
+  children: React.ReactNode;
+}
 
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="fixed top-4 z-50 rounded-full bg-white/90 shadow-md hover:bg-white"
-            style={{ left: state === "collapsed" ? "1rem" : "calc(240px + 1rem)" }}
-            onClick={toggleSidebar}
-          >
-            {state === "collapsed" ? (
-              <ChevronRight className="h-5 w-5" />
-            ) : (
-              <ChevronLeft className="h-5 w-5" />
-            )}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="right">
-          {state === "collapsed" ? "Expand sidebar" : "Collapse sidebar"}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-};
-
-const Layout = ({ children }: { children: React.ReactNode }) => {
-  // Store sidebar state in localStorage
-  const [sidebarKey, setSidebarKey] = useState(0);
+const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { isMobile } = useMobile();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Force a re-render after component mounts to ensure
-    // localStorage state is applied properly
-    setSidebarKey(prev => prev + 1);
+    // Check if user is authenticated
+    const authStatus = localStorage.getItem('isLoggedIn') === 'true' || 
+                      localStorage.getItem('onboardingComplete') === 'true';
+    setIsAuthenticated(authStatus);
   }, []);
 
-  return (
-    <SidebarProvider key={sidebarKey}>
-      <div className="min-h-screen flex w-full bg-background">
-        <Sidebar />
-        <main className="flex-1 p-6 overflow-auto relative">
-          <ToggleSidebarButton />
-          {children}
-          <Toaster/> {/* Added Toaster component */}
-        </main>
+  useEffect(() => {
+    // Close sidebar on mobile when navigating
+    if (isMobile) {
+      setIsSidebarOpen(false);
+    }
+  }, [location.pathname, isMobile]);
+
+  useEffect(() => {
+    setIsSidebarOpen(!isMobile);
+  }, [isMobile]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('isLoggedIn');
+    navigate('/landing');
+  };
+
+  // If not authenticated, show a simplified layout
+  if (!isAuthenticated) {
+    return (
+      <div className="h-screen overflow-y-auto bg-background">
+        <main>{children}</main>
       </div>
-    </SidebarProvider>
+    );
+  }
+
+  return (
+    <div className="relative flex h-screen overflow-hidden bg-background">
+      {/* Sidebar */}
+      <div
+        className={`overflow-y-auto transition-transform duration-300 ease-in-out ${
+          isSidebarOpen
+            ? "w-64 translate-x-0"
+            : "w-0 -translate-x-full md:w-20 md:translate-x-0"
+        }`}
+      >
+        <Sidebar collapsed={!isSidebarOpen && !isMobile} />
+      </div>
+
+      {/* Main Content */}
+      <div className="relative flex-1 overflow-y-auto">
+        {/* Mobile menu toggle and user menu */}
+        <div className="sticky top-0 z-10 flex h-12 items-center justify-between bg-background px-4 shadow-sm">
+          {isMobile && (
+            <MobileMenuToggle
+              isOpen={isSidebarOpen}
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            />
+          )}
+
+          <div className="ml-auto">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleLogout}
+              className="text-muted-foreground"
+            >
+              <LogOut className="h-4 w-4 mr-1" />
+              Logout
+            </Button>
+          </div>
+        </div>
+
+        {/* Page content */}
+        <main className="relative">{children}</main>
+      </div>
+    </div>
   );
 };
 
