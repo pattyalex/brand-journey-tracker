@@ -162,7 +162,7 @@ const OnboardingFlow: React.FC = () => {
   };
 
   const goToHomePage = () => {
-    navigate("/home");
+    navigate("/home-page");
   };
 
   // Render the current step
