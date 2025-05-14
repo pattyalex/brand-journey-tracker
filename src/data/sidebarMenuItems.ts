@@ -30,7 +30,6 @@ export const defaultMenuItems: MenuItem[] = [
     url: '/strategy-growth', 
     isDeletable: false
   },
-  { title: 'Quick Notes', icon: Clipboard, url: '/quick-notes', isDeletable: false },
 ];
 
 export const settingsItem: MenuItem = { title: 'Settings', icon: Settings, url: '/settings', isDeletable: false };
