@@ -275,7 +275,7 @@ const OnboardingFlow: React.FC = () => {
                                     if (field.value && (field.value.includes('@') || !field.value.match(/^[\d\s]*$/))) {
                                       field.onChange('');
                                       input.setAttribute('autocomplete', 'off');
-                                      
+
                                       // Force field clearing and focus
                                       setTimeout(() => {
                                         field.onChange('');
@@ -321,7 +321,7 @@ const OnboardingFlow: React.FC = () => {
                       )}
                     />
                   </div>
-
+</div>
                   <Button type="submit" className="w-full">Continue</Button>
                 </form>
               </Form>
