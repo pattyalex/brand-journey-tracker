@@ -21,13 +21,25 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    exclude: ['date-fns'] // Exclude date-fns from dependency optimization
+    exclude: ['date-fns', 'dayjs', 'luxon'] // Exclude date-related libraries
   },
-  // Add file system watcher options to reduce the number of watched files
-  fs: {
-    strict: false,
-    // Exclude node_modules and large directories from being watched
-    allow: ['.'],
-    ignore: ['**/node_modules/.cache/**', '**/dist/**', '**/.git/**']
+  server: {
+    watch: {
+      ignored: ['**/node_modules/**', '**/date-fns/**', '**/.git/**', '**/dist/**'],
+      usePolling: false
+    },
+    hmr: {
+      overlay: false
+    }
+  },
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom']
+        }
+      }
+    }
   }
 })
