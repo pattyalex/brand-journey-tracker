@@ -539,7 +539,7 @@ const HomePage = () => {
                 <Button variant="outline" size="sm" className="w-full">
                   Get More Recommendations
                 </Button>
-              </CardFooter>
+              </CardFooter>ter>
             </Card>
           </section>
         </div>

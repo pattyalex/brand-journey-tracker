@@ -13,6 +13,10 @@ export default defineConfig({
       clientPort: 443,
       host: process.env.REPL_SLUG ? `${process.env.REPL_OWNER}.replit.dev` : undefined,
       protocol: 'wss'
+    },
+    watch: {
+      ignored: ['**/node_modules/**', '**/date-fns/**', '**/.git/**', '**/dist/**'],
+      usePolling: false
     }
   },
   resolve: {
@@ -22,15 +26,6 @@ export default defineConfig({
   },
   optimizeDeps: {
     exclude: ['date-fns', 'dayjs', 'luxon'] // Exclude date-related libraries
-  },
-  server: {
-    watch: {
-      ignored: ['**/node_modules/**', '**/date-fns/**', '**/.git/**', '**/dist/**'],
-      usePolling: false
-    },
-    hmr: {
-      overlay: false
-    }
   },
   build: {
     chunkSizeWarningLimit: 1000,

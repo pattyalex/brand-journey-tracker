@@ -76,7 +76,7 @@ localPort = 8082
 externalPort = 3000
 
 [workflows]
-runButton = "Run Without Watchers"
+runButton = "Run Dev Server"
 
 [[workflows.workflow]]
 name = "Run Dev Server"
@@ -85,7 +85,7 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "PORT=3001 npm run dev"
+args = "npm run dev"
 
 [[workflows.workflow]]
 name = "Run Dev Server (Port 3002)"

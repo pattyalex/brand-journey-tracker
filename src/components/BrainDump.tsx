@@ -650,7 +650,7 @@ const BrainDump = () => {
                 >
                   <Quote className="h-4 w-4" />
                 </Button>
-              </div>
+              </div>v>
 
               <div className="flex items-center gap-1 mr-2 bg-purple-50 px-2 py-0.5 rounded-md">
                 <Button 
@@ -765,4 +765,4 @@ const BrainDump = () => {
   );
 };
 
-export default BrainDump;
+export default BrainDumpp;
