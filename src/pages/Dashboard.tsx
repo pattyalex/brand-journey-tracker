@@ -9,156 +9,115 @@ const Dashboard = () => {
 
   return (
     <Layout>
-      <div className="max-w-6xl mx-auto px-6 py-16 space-y-16 fade-in">
-        {/* Hero Section */}
-        <section className="text-center space-y-6">
-          <h1 className="text-5xl md:text-6xl font-bold mb-4 leading-tight">
-            Simplify Your Content <br />Creation Journey
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            All-in-one platform for content creators to manage projects, track income, and grow their business
-          </p>
-          <div className="flex justify-center">
-            <Button 
-              size="lg" 
-              className="bg-primary hover:bg-primary/90 text-white text-lg px-8 py-6"
-              onClick={() => navigate("/onboarding")}
-            >
-              Start 7-Day Free Trial
-            </Button>
-          </div>
-        </section>
+      <div className="max-w-6xl mx-auto px-6 py-8 fade-in">
+        <h1 className="text-3xl font-bold mb-6">Welcome to your Dashboard</h1>
 
-        {/* Features Section */}
-        <section className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {features.map((feature, index) => (
-            <Card 
-              key={index} 
-              className="p-6 hover:shadow-lg transition-all duration-300 border border-gray-100"
-              onClick={() => navigate(feature.path)}
-            >
-              <feature.icon className="w-10 h-10 mb-4 text-primary" />
-              <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-              <p className="text-muted-foreground">{feature.description}</p>
-            </Card>
-          ))}
-        </section>
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card className="p-6">
+            <h3 className="text-lg font-medium mb-2">Content Ideas</h3>
+            <div className="text-3xl font-bold">12</div>
+            <p className="text-sm text-muted-foreground mt-1">4 new this week</p>
+          </Card>
 
-        {/* Testimonials Section */}
-        <section className="py-10">
-          <h2 className="text-3xl font-bold text-center mb-10">What Our Users Say</h2>
-          <div className="grid md:grid-cols-2 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="p-6 border border-gray-100">
-                <div className="flex items-start mb-4">
-                  <div className="bg-gray-200 w-12 h-12 rounded-full mr-4"></div>
-                  <div>
-                    <h4 className="font-semibold">{testimonial.name}</h4>
-                    <p className="text-sm text-muted-foreground">{testimonial.title}</p>
+          <Card className="p-6">
+            <h3 className="text-lg font-medium mb-2">Scheduled Content</h3>
+            <div className="text-3xl font-bold">8</div>
+            <p className="text-sm text-muted-foreground mt-1">Next post in 2 days</p>
+          </Card>
+
+          <Card className="p-6">
+            <h3 className="text-lg font-medium mb-2">Active Brand Deals</h3>
+            <div className="text-3xl font-bold">3</div>
+            <p className="text-sm text-muted-foreground mt-1">1 pending approval</p>
+          </Card>
+        </div>
+
+        {/* Recent Activity */}
+        <section className="mb-8">
+          <h2 className="text-2xl font-bold mb-4">Recent Activity</h2>
+          <Card className="p-0 overflow-hidden">
+            <div className="divide-y">
+              {recentActivity.map((activity, index) => (
+                <div key={index} className="p-4 hover:bg-muted/50 transition-colors">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium">{activity.title}</p>
+                      <p className="text-sm text-muted-foreground">{activity.description}</p>
+                    </div>
+                    <span className="text-xs text-muted-foreground">{activity.time}</span>
                   </div>
                 </div>
-                <p className="italic">"{testimonial.quote}"</p>
-              </Card>
+              ))}
+            </div>
+          </Card>
+        </section>
+
+        {/* Quick Actions */}
+        <section>
+          <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {quickActions.map((action, index) => (
+              <Button 
+                key={index} 
+                variant="outline" 
+                className="h-auto p-4 flex flex-col items-center text-center"
+                onClick={() => navigate(action.link)}
+              >
+                <action.icon className="h-6 w-6 mb-2" />
+                <span>{action.label}</span>
+              </Button>
             ))}
           </div>
-        </section>
-
-        {/* Pricing Section */}
-        <section className="py-10">
-          <h2 className="text-3xl font-bold text-center mb-4">Simple, Transparent Pricing</h2>
-          <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto">
-            Start with our 7-day free trial and discover how our platform can transform your content creation workflow
-          </p>
-
-          <div className="max-w-md mx-auto">
-            <Card className="border-2 border-primary p-8">
-              <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold">Pro Plan</h3>
-                <div className="my-4">
-                  <span className="text-4xl font-bold">$19</span>
-                  <span className="text-muted-foreground">/month</span>
-                </div>
-              </div>
-
-              <div className="space-y-3 mb-8">
-                {[
-                  "Complete content management tools",
-                  "Performance analytics",
-                  "Income tracking",
-                  "Brand deal management",
-                  "Content calendar",
-                  "Unlimited projects"
-                ].map((feature, index) => (
-                  <div key={index} className="flex items-center">
-                    <CheckCircle className="h-5 w-5 text-primary mr-2" />
-                    <span>{feature}</span>
-                  </div>
-                ))}
-              </div>
-
-              <Button 
-                className="w-full py-6"
-                onClick={() => navigate("/auth")}
-              >
-                Start 7-Day Free Trial
-              </Button>
-              <p className="text-xs text-center text-muted-foreground mt-4">
-                Cancel anytime.
-              </p>
-            </Card>
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="bg-gray-50 p-10 rounded-xl text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to Transform Your Content Creation?</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
-            Join thousands of content creators who have simplified their workflow and boosted their productivity
-          </p>
-          <Button 
-            size="lg" 
-            className="bg-primary hover:bg-primary/90 text-white px-8 py-6"
-            onClick={() => navigate("/auth")}
-          >
-            Start Your Free Trial Today
-          </Button>
         </section>
       </div>
     </Layout>
   );
 };
 
-const features = [
+const recentActivity = [
   {
-    title: "Content Management",
-    description: "Plan, organize, and track your content creation workflow in one place",
-    icon: FolderOpen,
-    path: "/get-started"
+    title: "Content Idea Added",
+    description: "You added 'Summer Travel Tips' to your content ideas",
+    time: "2 hours ago"
   },
   {
-    title: "Revenue Growth",
-    description: "Track income from brand deals, sponsorships, and other revenue streams",
-    icon: Handshake,
-    path: "/income-tracker"
+    title: "Post Scheduled",
+    description: "Instagram post scheduled for May 20th at 9:00 AM",
+    time: "Yesterday"
   },
   {
-    title: "Performance Analytics",
-    description: "Monitor your growth and make data-driven content decisions",
-    icon: TrendingUp,
-    path: "/analytics"
+    title: "Brand Deal Updated",
+    description: "Contract approved for Skincare Brand collaboration",
+    time: "2 days ago"
   },
+  {
+    title: "Analytics Updated",
+    description: "April performance report is now available",
+    time: "3 days ago"
+  }
 ];
 
-const testimonials = [
+const quickActions = [
   {
-    name: "Sarah Johnson",
-    title: "Travel Content Creator",
-    quote: "This platform has completely transformed how I plan and create content. My productivity has doubled, and I'm finally staying ahead of my posting schedule!"
+    label: "New Content Idea",
+    icon: TrendingUp,
+    link: "/content-ideation"
   },
   {
-    name: "Michael Chen",
-    title: "Tech YouTuber",
-    quote: "The analytics tools helped me understand what my audience really wants. Since using this platform, my engagement rates have increased by 40%."
+    label: "Schedule Post",
+    icon: FolderOpen,
+    link: "/content-calendar"
+  },
+  {
+    label: "Manage Brand Deals",
+    icon: Handshake,
+    link: "/collab-management"
+  },
+  {
+    label: "View Analytics",
+    icon: CheckCircle,
+    link: "/analytics"
   }
 ];
 

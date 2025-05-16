@@ -1,15 +1,18 @@
-import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { ThemeProvider } from "@/components/theme-provider"
 
-// Eagerly load components with known issues
+import React, { Suspense, lazy } from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+
+// Eagerly load components
 import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
 import GetStarted from './pages/GetStarted';
-import CollabManagement from './pages/CollabManagement';  // Import eagerly instead of lazily
+import CollabManagement from './pages/CollabManagement';
 import StrategyDemo from './pages/StrategyDemo';
-import HomePage from './pages/HomePage'; // Added import for HomePage
-import OnboardingFlow from "./pages/OnboardingFlow";
+import HomePage from './pages/HomePage';
+import OnboardingFlow from './pages/OnboardingFlow';
+import LandingPage from './pages/LandingPage';
 
 // Lazy load all other pages
 const TrendingContent = lazy(() => import('./pages/TrendingContent'));
@@ -39,39 +42,148 @@ const PageLoader = () => (
   </div>
 );
 
+// Protected route component
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, hasCompletedOnboarding } = useAuth();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+  
+  if (isAuthenticated && !hasCompletedOnboarding) {
+    return <Navigate to="/onboarding" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
 function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="vite-react-theme">
-      <Router>
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/index" element={<Index />} />
-            <Route path="/home-page" element={<HomePage />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/bank-of-content" element={<BankOfContent />} />
-            <Route path="/content-ideation" element={<ContentIdeation />} />
-            <Route path="/content-planning" element={<ContentPlanning />} />
-            <Route path="/content-calendar" element={<ContentCalendar />} />
-            <Route path="/strategy-growth" element={<StrategyGrowth />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/quick-notes" element={<QuickNotes />} />
-            <Route path="/get-started" element={<GetStarted />} />
-            <Route path="/task-board" element={<TaskBoard />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/my-account" element={<MyAccount />} />
-            <Route path="/help" element={<Help />} />
-            <Route path="/weekly-content" element={<WeeklyContentTasks />} />
-            <Route path="/social-media-scheduler" element={<SocialMediaScheduler />} />
-            <Route path="/partnerships-management" element={<PartnershipsManagement />} />
-            <Route path="/trending" element={<TrendingContent />} />
-            <Route path="/collab-management" element={<CollabManagement />} />
-            <Route path="/strategy-demo" element={<StrategyDemo />} />
-             <Route path="/onboarding" element={<OnboardingFlow />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
-      </Router>
+      <AuthProvider>
+        <Router>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/onboarding" element={<OnboardingFlow />} />
+              
+              {/* Protected routes - require authentication */}
+              <Route path="/app" element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/home-page" element={
+                <ProtectedRoute>
+                  <HomePage />
+                </ProtectedRoute>
+              } />
+              <Route path="/bank-of-content" element={
+                <ProtectedRoute>
+                  <BankOfContent />
+                </ProtectedRoute>
+              } />
+              <Route path="/content-ideation" element={
+                <ProtectedRoute>
+                  <ContentIdeation />
+                </ProtectedRoute>
+              } />
+              <Route path="/content-planning" element={
+                <ProtectedRoute>
+                  <ContentPlanning />
+                </ProtectedRoute>
+              } />
+              <Route path="/content-calendar" element={
+                <ProtectedRoute>
+                  <ContentCalendar />
+                </ProtectedRoute>
+              } />
+              <Route path="/strategy-growth" element={
+                <ProtectedRoute>
+                  <StrategyGrowth />
+                </ProtectedRoute>
+              } />
+              <Route path="/analytics" element={
+                <ProtectedRoute>
+                  <Analytics />
+                </ProtectedRoute>
+              } />
+              <Route path="/quick-notes" element={
+                <ProtectedRoute>
+                  <QuickNotes />
+                </ProtectedRoute>
+              } />
+              <Route path="/get-started" element={
+                <ProtectedRoute>
+                  <GetStarted />
+                </ProtectedRoute>
+              } />
+              <Route path="/task-board" element={
+                <ProtectedRoute>
+                  <TaskBoard />
+                </ProtectedRoute>
+              } />
+              <Route path="/settings" element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              } />
+              <Route path="/my-account" element={
+                <ProtectedRoute>
+                  <MyAccount />
+                </ProtectedRoute>
+              } />
+              <Route path="/help" element={
+                <ProtectedRoute>
+                  <Help />
+                </ProtectedRoute>
+              } />
+              <Route path="/weekly-content" element={
+                <ProtectedRoute>
+                  <WeeklyContentTasks />
+                </ProtectedRoute>
+              } />
+              <Route path="/social-media-scheduler" element={
+                <ProtectedRoute>
+                  <SocialMediaScheduler />
+                </ProtectedRoute>
+              } />
+              <Route path="/partnerships-management" element={
+                <ProtectedRoute>
+                  <PartnershipsManagement />
+                </ProtectedRoute>
+              } />
+              <Route path="/trending" element={
+                <ProtectedRoute>
+                  <TrendingContent />
+                </ProtectedRoute>
+              } />
+              <Route path="/collab-management" element={
+                <ProtectedRoute>
+                  <CollabManagement />
+                </ProtectedRoute>
+              } />
+              <Route path="/strategy-demo" element={
+                <ProtectedRoute>
+                  <StrategyDemo />
+                </ProtectedRoute>
+              } />
+              <Route path="/index" element={
+                <ProtectedRoute>
+                  <Index />
+                </ProtectedRoute>
+              } />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </Router>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

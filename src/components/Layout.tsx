@@ -1,43 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import Sidebar from './Sidebar';
-import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Toaster } from "@/components/ui/toaster"; // Updated import statement
+import React, { useEffect, useState } from "react";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import Sidebar from "./Sidebar";
+import ToggleSidebarButton from "./sidebar/ToggleSidebarButton";
+import { Toaster } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLocation } from "react-router-dom";
 
-const ToggleSidebarButton = () => {
-  const { state, toggleSidebar } = useSidebar();
+interface LayoutProps {
+  children: React.ReactNode;
+  hideSidebar?: boolean;
+}
 
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="fixed top-4 z-50 rounded-full bg-white/90 shadow-md hover:bg-white"
-            style={{ left: state === "collapsed" ? "1rem" : "calc(240px + 1rem)" }}
-            onClick={toggleSidebar}
-          >
-            {state === "collapsed" ? (
-              <ChevronRight className="h-5 w-5" />
-            ) : (
-              <ChevronLeft className="h-5 w-5" />
-            )}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="right">
-          {state === "collapsed" ? "Expand sidebar" : "Collapse sidebar"}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-};
-
-const Layout = ({ children }: { children: React.ReactNode }) => {
+const Layout = ({ children, hideSidebar = false }: LayoutProps) => {
   // Store sidebar state in localStorage
   const [sidebarKey, setSidebarKey] = useState(0);
+  const { isAuthenticated, hasCompletedOnboarding } = useAuth();
+  const location = useLocation();
+
+  // Determine if sidebar should be shown
+  const shouldShowSidebar = !hideSidebar && 
+    (isAuthenticated && hasCompletedOnboarding || 
+    // Always hide sidebar on landing page
+    location.pathname !== "/");
 
   useEffect(() => {
     // Force a re-render after component mounts to ensure
@@ -48,11 +32,11 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
     <SidebarProvider key={sidebarKey}>
       <div className="min-h-screen flex w-full bg-background">
-        <Sidebar />
-        <main className="flex-1 p-6 overflow-auto relative">
-          <ToggleSidebarButton />
+        {shouldShowSidebar && <Sidebar />}
+        <main className={`flex-1 p-6 overflow-auto relative ${!shouldShowSidebar ? 'w-full' : ''}`}>
+          {shouldShowSidebar && <ToggleSidebarButton />}
           {children}
-          <Toaster/> {/* Added Toaster component */}
+          <Toaster/>
         </main>
       </div>
     </SidebarProvider>
