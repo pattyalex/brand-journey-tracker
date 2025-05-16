@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
-import { SidebarProvider, useSidebar } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
