@@ -19,7 +19,6 @@ externalPort = 3002
 [[ports]]
 localPort = 3003
 externalPort = 3003
-exposeLocalhost = true
 
 [[ports]]
 localPort = 3004
@@ -28,36 +27,6 @@ externalPort = 4200
 [[ports]]
 localPort = 3005
 externalPort = 5173
-
-[[ports]]
-localPort = 3006
-externalPort = 6000
-
-[[ports]]
-localPort = 3007
-externalPort = 6800
-
-[[ports]]
-localPort = 3008
-externalPort = 8000
-exposeLocalhost = true
-
-[[ports]]
-localPort = 3009
-externalPort = 8008
-
-[[ports]]
-localPort = 3010
-externalPort = 8080
-
-[[ports]]
-localPort = 3011
-externalPort = 8099
-exposeLocalhost = true
-
-[[ports]]
-localPort = 3012
-externalPort = 9000
 
 [[ports]]
 localPort = 5000
@@ -76,7 +45,7 @@ localPort = 8082
 externalPort = 3000
 
 [workflows]
-runButton = "Run Dev Server Fixed"
+runButton = "Run Dev Server (Port 3002)"
 
 [[workflows.workflow]]
 name = "Run Dev Server"
@@ -85,7 +54,7 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run dev"
+args = "PORT=3001 npm run dev"
 
 [[workflows.workflow]]
 name = "Run Dev Server (Port 3002)"
@@ -95,30 +64,3 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "PORT=3002 npm run dev"
-
-[[workflows.workflow]]
-name = "Run Dev Server Limited"
-author = 42062761
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "NODE_OPTIONS=\"--max-old-space-size=2048\" PORT=5000 npx vite --config vite.config.ts"
-
-[[workflows.workflow]]
-name = "Run Without Watchers"
-author = 42062761
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "NODE_OPTIONS=\"--max-old-space-size=2048\" npx vite --config vite.config.ts --force --no-watch"
-
-[[workflows.workflow]]
-name = "Run Dev Server Fixed"
-author = 42062761
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "NODE_OPTIONS=\"--max-old-space-size=2048\" npx vite --config vite.config.ts --force"

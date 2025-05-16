@@ -1,40 +1,61 @@
-
-import { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
-import ToggleSidebarButton from './sidebar/ToggleSidebarButton';
+import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Toaster } from "@/components/ui/toaster"; // Updated import statement
 
-const Layout = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
-    // Get sidebar state from localStorage or default to true
-    const savedState = localStorage.getItem('sidebarState');
-    return savedState ? savedState === 'open' : true;
-  });
-
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+const ToggleSidebarButton = () => {
+  const { state, toggleSidebar } = useSidebar();
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <div className={`${isSidebarOpen ? 'block' : 'hidden'} md:block`}>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="fixed top-4 z-50 rounded-full bg-white/90 shadow-md hover:bg-white"
+            style={{ left: state === "collapsed" ? "1rem" : "calc(240px + 1rem)" }}
+            onClick={toggleSidebar}
+          >
+            {state === "collapsed" ? (
+              <ChevronRight className="h-5 w-5" />
+            ) : (
+              <ChevronLeft className="h-5 w-5" />
+            )}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="right">
+          {state === "collapsed" ? "Expand sidebar" : "Collapse sidebar"}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
+
+const Layout = ({ children }: { children: React.ReactNode }) => {
+  // Store sidebar state in localStorage
+  const [sidebarKey, setSidebarKey] = useState(0);
+
+  useEffect(() => {
+    // Force a re-render after component mounts to ensure
+    // localStorage state is applied properly
+    setSidebarKey(prev => prev + 1);
+  }, []);
+
+  return (
+    <SidebarProvider key={sidebarKey}>
+      <div className="min-h-screen flex w-full bg-background">
         <Sidebar />
-      </div>
-      
-      <div className="flex-1 overflow-auto">
-        <div className="sticky top-0 z-10 p-4 bg-background border-b flex items-center md:hidden">
-          <ToggleSidebarButton 
-            isSidebarOpen={isSidebarOpen} 
-            toggleSidebar={toggleSidebar} 
-          />
-          <h1 className="text-xl font-playfair font-bold ml-2">HeyMegan</h1>
-        </div>
-        
-        <main className="p-6">
-          <Outlet />
+        <main className="flex-1 p-6 overflow-auto relative">
+          <ToggleSidebarButton />
+          {children}
+          <Toaster/> {/* Added Toaster component */}
         </main>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
