@@ -76,7 +76,7 @@ localPort = 8082
 externalPort = 3000
 
 [workflows]
-runButton = "Run Dev Server"
+runButton = "Run Dev Server Fixed"
 
 [[workflows.workflow]]
 name = "Run Dev Server"
@@ -113,3 +113,12 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "NODE_OPTIONS=\"--max-old-space-size=2048\" npx vite --config vite.config.ts --force --no-watch"
+
+[[workflows.workflow]]
+name = "Run Dev Server Fixed"
+author = 42062761
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "NODE_OPTIONS=\"--max-old-space-size=2048\" npx vite --config vite.config.ts --force"
