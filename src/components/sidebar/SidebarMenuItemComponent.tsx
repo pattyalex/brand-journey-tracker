@@ -2,7 +2,7 @@
 import { Trash2, ChevronDown, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { MenuItem } from '@/types/sidebar';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   SidebarMenuItem,
   SidebarMenuButton,
@@ -18,6 +18,10 @@ interface SidebarMenuItemProps {
 }
 
 const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
+  const location = useLocation();
+  const currentPath = location.pathname;
+  const isActive = currentPath === item.url;
+  
   // Initialize expanded state from localStorage or default to false
   const [isExpanded, setIsExpanded] = useState(() => {
     const savedState = localStorage.getItem(`sidebar-expanded-${item.title}`);
@@ -49,55 +53,52 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
     
     navigate(item.url);
   };
-
+  
   return (
-    <SidebarMenuItem key={item.title}>
-      <SidebarMenuButton asChild>
-        <a 
-          href={item.url} 
-          className="flex items-center gap-2"
-          onClick={handleMenuItemClick}
-        >
-          <item.icon size={20} />
-          <span>{item.title}</span>
-          {item.subItems && item.subItems.length > 0 && (
-            <span 
-              className="ml-auto cursor-pointer" 
-              onClick={handleArrowClick}
-              data-expand-arrow="true"
-            >
-              {isExpanded ? (
-                <ChevronDown size={16} />
-              ) : (
-                <ChevronRight size={16} />
-              )}
-            </span>
-          )}
-        </a>
+    <SidebarMenuItem>
+      <SidebarMenuButton 
+        onClick={handleMenuItemClick}
+        isActive={isActive}
+      >
+        {item.icon && <item.icon size={16} />}
+        <span>{item.title}</span>
+        
+        {item.isDeletable && (
+          <SidebarMenuAction onClick={(e) => {
+            e.stopPropagation();
+            onDelete(item.title);
+          }}>
+            <Trash2 size={14} />
+          </SidebarMenuAction>
+        )}
+        
+        {item.subItems && item.subItems.length > 0 && (
+          <span 
+            onClick={handleArrowClick}
+            data-expand-arrow="true"
+            className="ml-auto"
+          >
+            {isExpanded ? 
+              <ChevronDown size={14} /> : 
+              <ChevronRight size={14} />
+            }
+          </span>
+        )}
       </SidebarMenuButton>
-      
-      {item.isDeletable && (
-        <SidebarMenuAction 
-          onClick={() => onDelete(item.title)}
-          showOnHover={true}
-          title={`Delete ${item.title}`}
-        >
-          <Trash2 size={16} />
-        </SidebarMenuAction>
-      )}
       
       {item.subItems && item.subItems.length > 0 && isExpanded && (
         <SidebarMenuSub>
           {item.subItems.map((subItem) => (
             <SidebarMenuSubItem key={subItem.title}>
               <SidebarMenuSubButton 
-                asChild 
-                size="md"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate(subItem.url);
+                }}
+                isActive={currentPath === subItem.url}
               >
-                <a href={subItem.url} className="flex items-center gap-2">
-                  <subItem.icon size={16} />
-                  <span>{subItem.title}</span>
-                </a>
+                {subItem.icon && <subItem.icon size={14} />}
+                <span>{subItem.title}</span>
               </SidebarMenuSubButton>
             </SidebarMenuSubItem>
           ))}

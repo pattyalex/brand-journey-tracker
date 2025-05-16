@@ -1,166 +1,139 @@
-
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import Layout from "@/components/Layout";
-import { FolderOpen, Handshake, TrendingUp, CheckCircle } from "lucide-react";
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { BarChart, Calendar, TrendingUp, Users } from 'lucide-react';
 
 const Dashboard = () => {
-  const navigate = useNavigate();
-
   return (
-    <Layout>
-      <div className="max-w-6xl mx-auto px-6 py-16 space-y-16 fade-in">
-        {/* Hero Section */}
-        <section className="text-center space-y-6">
-          <h1 className="text-5xl md:text-6xl font-bold mb-4 leading-tight">
-            Simplify Your Content <br />Creation Journey
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            All-in-one platform for content creators to manage projects, track income, and grow their business
-          </p>
-          <div className="flex justify-center">
-            <Button 
-              size="lg" 
-              className="bg-primary hover:bg-primary/90 text-white text-lg px-8 py-6"
-              onClick={() => navigate("/onboarding")}
-            >
-              Start 7-Day Free Trial
-            </Button>
-          </div>
-        </section>
-
-        {/* Features Section */}
-        <section className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {features.map((feature, index) => (
-            <Card 
-              key={index} 
-              className="p-6 hover:shadow-lg transition-all duration-300 border border-gray-100"
-              onClick={() => navigate(feature.path)}
-            >
-              <feature.icon className="w-10 h-10 mb-4 text-primary" />
-              <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-              <p className="text-muted-foreground">{feature.description}</p>
-            </Card>
-          ))}
-        </section>
-
-        {/* Testimonials Section */}
-        <section className="py-10">
-          <h2 className="text-3xl font-bold text-center mb-10">What Our Users Say</h2>
-          <div className="grid md:grid-cols-2 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="p-6 border border-gray-100">
-                <div className="flex items-start mb-4">
-                  <div className="bg-gray-200 w-12 h-12 rounded-full mr-4"></div>
-                  <div>
-                    <h4 className="font-semibold">{testimonial.name}</h4>
-                    <p className="text-sm text-muted-foreground">{testimonial.title}</p>
-                  </div>
-                </div>
-                <p className="italic">"{testimonial.quote}"</p>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        {/* Pricing Section */}
-        <section className="py-10">
-          <h2 className="text-3xl font-bold text-center mb-4">Simple, Transparent Pricing</h2>
-          <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto">
-            Start with our 7-day free trial and discover how our platform can transform your content creation workflow
-          </p>
-          
-          <div className="max-w-md mx-auto">
-            <Card className="border-2 border-primary p-8">
-              <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold">Pro Plan</h3>
-                <div className="my-4">
-                  <span className="text-4xl font-bold">$19</span>
-                  <span className="text-muted-foreground">/month</span>
-                </div>
-              </div>
-              
-              <div className="space-y-3 mb-8">
-                {[
-                  "Complete content management tools",
-                  "Performance analytics",
-                  "Income tracking",
-                  "Brand deal management",
-                  "Content calendar",
-                  "Unlimited projects"
-                ].map((feature, index) => (
-                  <div key={index} className="flex items-center">
-                    <CheckCircle className="h-5 w-5 text-primary mr-2" />
-                    <span>{feature}</span>
-                  </div>
-                ))}
-              </div>
-              
-              <Button 
-                className="w-full py-6"
-                onClick={() => navigate("/auth")}
-              >
-                Start 7-Day Free Trial
-              </Button>
-              <p className="text-xs text-center text-muted-foreground mt-4">
-                No credit card required for trial. Cancel anytime.
-              </p>
-            </Card>
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="bg-gray-50 p-10 rounded-xl text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to Transform Your Content Creation?</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
-            Join thousands of content creators who have simplified their workflow and boosted their productivity
-          </p>
-          <Button 
-            size="lg" 
-            className="bg-primary hover:bg-primary/90 text-white px-8 py-6"
-            onClick={() => navigate("/auth")}
-          >
-            Start Your Free Trial Today
-          </Button>
-        </section>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Dashboard</h1>
       </div>
-    </Layout>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Total Followers</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">24,892</div>
+            <p className="text-xs text-muted-foreground">+2.5% from last month</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Engagement Rate</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">4.5%</div>
+            <p className="text-xs text-muted-foreground">+0.3% from last month</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Content Published</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">12</div>
+            <p className="text-xs text-muted-foreground">This month</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
+            <BarChart className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">$8,492</div>
+            <p className="text-xs text-muted-foreground">+12.3% from last month</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Top Performing Content</CardTitle>
+            <CardDescription>Your best content from the last 30 days</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-4">
+              <li className="flex justify-between items-center">
+                <div>
+                  <p className="font-medium">Summer Outfit Ideas 2025</p>
+                  <p className="text-sm text-muted-foreground">Instagram Reel</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-medium">125k views</p>
+                  <p className="text-sm text-muted-foreground">8.7% engagement</p>
+                </div>
+              </li>
+              <li className="flex justify-between items-center">
+                <div>
+                  <p className="font-medium">5-Minute Makeup Tutorial</p>
+                  <p className="text-sm text-muted-foreground">TikTok</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-medium">98k views</p>
+                  <p className="text-sm text-muted-foreground">7.2% engagement</p>
+                </div>
+              </li>
+              <li className="flex justify-between items-center">
+                <div>
+                  <p className="font-medium">Morning Routine 2025</p>
+                  <p className="text-sm text-muted-foreground">YouTube</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-medium">45k views</p>
+                  <p className="text-sm text-muted-foreground">6.4% engagement</p>
+                </div>
+              </li>
+            </ul>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Upcoming Content</CardTitle>
+            <CardDescription>Content scheduled for the next 7 days</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-4">
+              <li className="flex justify-between items-center">
+                <div>
+                  <p className="font-medium">Product Review: New Skincare Line</p>
+                  <p className="text-sm text-muted-foreground">Instagram Post • Tomorrow</p>
+                </div>
+              </li>
+              <li className="flex justify-between items-center">
+                <div>
+                  <p className="font-medium">Day in My Life as a Content Creator</p>
+                  <p className="text-sm text-muted-foreground">YouTube • Wednesday</p>
+                </div>
+              </li>
+              <li className="flex justify-between items-center">
+                <div>
+                  <p className="font-medium">Summer Fashion Haul 2025</p>
+                  <p className="text-sm text-muted-foreground">TikTok • Friday</p>
+                </div>
+              </li>
+              <li className="flex justify-between items-center">
+                <div>
+                  <p className="font-medium">Q&A Session: Creator Business Tips</p>
+                  <p className="text-sm text-muted-foreground">Instagram Stories • Sunday</p>
+                </div>
+              </li>
+            </ul>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 };
-
-const features = [
-  {
-    title: "Content Management",
-    description: "Plan, organize, and track your content creation workflow in one place",
-    icon: FolderOpen,
-    path: "/get-started"
-  },
-  {
-    title: "Revenue Growth",
-    description: "Track income from brand deals, sponsorships, and other revenue streams",
-    icon: Handshake,
-    path: "/income-tracker"
-  },
-  {
-    title: "Performance Analytics",
-    description: "Monitor your growth and make data-driven content decisions",
-    icon: TrendingUp,
-    path: "/analytics"
-  },
-];
-
-const testimonials = [
-  {
-    name: "Sarah Johnson",
-    title: "Travel Content Creator",
-    quote: "This platform has completely transformed how I plan and create content. My productivity has doubled, and I'm finally staying ahead of my posting schedule!"
-  },
-  {
-    name: "Michael Chen",
-    title: "Tech YouTuber",
-    quote: "The analytics tools helped me understand what my audience really wants. Since using this platform, my engagement rates have increased by 40%."
-  }
-];
 
 export default Dashboard;

@@ -1,44 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Sidebar from './Sidebar';
-import { SidebarProvider, useSidebar } from "@/components/ui/sidebar";
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-// Import the ToggleSidebarButton component
+import { useState, useEffect } from 'react';
+import { Outlet } from 'react-router-dom';
+import Sidebar from './Sidebar';
 import ToggleSidebarButton from './sidebar/ToggleSidebarButton';
 
-const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
+const Layout = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    // Get sidebar state from localStorage or default to true
+    const savedState = localStorage.getItem('sidebarState');
+    return savedState ? savedState === 'open' : true;
+  });
 
-  useEffect(() => {
-    // Check if user has completed onboarding
-    const hasCompletedOnboarding = localStorage.getItem('hasCompletedOnboarding') === 'true';
-
-    if (!hasCompletedOnboarding) {
-      navigate('/');
-    }
-
-    setLoading(false);
-  }, [navigate]);
-
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  }
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
 
   return (
-    <div className="min-h-screen">
-      <SidebarProvider>
-        <div className="flex">
-          <Sidebar />
-          <main className="flex-1 p-6">
-            <ToggleSidebarButton />
-            {children}
-          </main>
+    <div className="flex h-screen overflow-hidden bg-background">
+      <div className={`${isSidebarOpen ? 'block' : 'hidden'} md:block`}>
+        <Sidebar />
+      </div>
+      
+      <div className="flex-1 overflow-auto">
+        <div className="sticky top-0 z-10 p-4 bg-background border-b flex items-center md:hidden">
+          <ToggleSidebarButton 
+            isSidebarOpen={isSidebarOpen} 
+            toggleSidebar={toggleSidebar} 
+          />
+          <h1 className="text-xl font-playfair font-bold ml-2">HeyMegan</h1>
         </div>
-      </SidebarProvider>
+        
+        <main className="p-6">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 };
