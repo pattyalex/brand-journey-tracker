@@ -1,5 +1,5 @@
 
-import { useNavigate, useEffect } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Layout from "@/components/Layout";
@@ -7,13 +7,6 @@ import { FolderOpen, Handshake, TrendingUp, CheckCircle } from "lucide-react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  
-  useEffect(() => {
-    // If user has already completed onboarding, redirect to Home Page
-    if (localStorage.getItem('hasCompletedOnboarding') === 'true') {
-      navigate('/home-page');
-    }
-  }, [navigate]);
 
   return (
     <Layout>
@@ -35,7 +28,6 @@ const Dashboard = () => {
               Start 7-Day Free Trial
             </Button>
           </div>
-          <p className="text-sm text-muted-foreground mt-2">No credit card required</p>
         </section>
 
         {/* Features Section */}
