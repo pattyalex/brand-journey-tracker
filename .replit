@@ -19,6 +19,7 @@ externalPort = 3002
 [[ports]]
 localPort = 3003
 externalPort = 3003
+exposeLocalhost = true
 
 [[ports]]
 localPort = 3004
@@ -39,6 +40,7 @@ externalPort = 6800
 [[ports]]
 localPort = 3008
 externalPort = 8000
+exposeLocalhost = true
 
 [[ports]]
 localPort = 3009
@@ -51,6 +53,7 @@ externalPort = 8080
 [[ports]]
 localPort = 3011
 externalPort = 8099
+exposeLocalhost = true
 
 [[ports]]
 localPort = 3012
