@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -71,7 +70,7 @@ const Dashboard = () => {
           <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto">
             Start with our 7-day free trial and discover how our platform can transform your content creation workflow
           </p>
-          
+
           <div className="max-w-md mx-auto">
             <Card className="border-2 border-primary p-8">
               <div className="text-center mb-6">
@@ -81,7 +80,7 @@ const Dashboard = () => {
                   <span className="text-muted-foreground">/month</span>
                 </div>
               </div>
-              
+
               <div className="space-y-3 mb-8">
                 {[
                   "Complete content management tools",
@@ -97,7 +96,7 @@ const Dashboard = () => {
                   </div>
                 ))}
               </div>
-              
+
               <Button 
                 className="w-full py-6"
                 onClick={() => navigate("/auth")}
@@ -105,7 +104,7 @@ const Dashboard = () => {
                 Start 7-Day Free Trial
               </Button>
               <p className="text-xs text-center text-muted-foreground mt-4">
-                No credit card required for trial. Cancel anytime.
+                Cancel anytime.
               </p>
             </Card>
           </div>
