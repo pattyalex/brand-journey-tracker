@@ -166,7 +166,8 @@ const OnboardingFlow: React.FC = () => {
   };
 
   const finishOnboarding = () => {
-    navigate("/dashboard");
+    // Redirect to Home Page instead of Dashboard
+    navigate("/home-page");
   };
 
   // Render the current step
@@ -694,7 +695,7 @@ const OnboardingFlow: React.FC = () => {
                   className="w-full py-6" 
                   onClick={finishOnboarding}
                 >
-                  Go to Dashboard
+                  Go to Home Page
                 </Button>
               </div>
             </CardContent>
