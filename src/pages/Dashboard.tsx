@@ -28,7 +28,6 @@ const Dashboard = () => {
               Start 7-Day Free Trial
             </Button>
           </div>
-          <p className="text-sm text-muted-foreground mt-2">No credit card required</p>
         </section>
 
         {/* Features Section */}
