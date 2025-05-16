@@ -5,7 +5,7 @@ import { SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { sidebar } from '@/components/sidebar/ToggleSidebarButton';
+import ToggleSidebarButton from '@/components/sidebar/ToggleSidebarButton';
 
 const ToggleSidebarButton = () => {
   const { toggleSidebar, isOpen } = useSidebar();
