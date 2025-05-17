@@ -166,9 +166,11 @@ const OnboardingFlow: React.FC = () => {
     navigate("/home-page");
   };
 
+  // Get auth context at component level, not inside the function
+  const { login, completeOnboarding } = useAuth();
+  
   const finishOnboarding = () => {
-    // Make sure to mark the user as authenticated and having completed onboarding
-    const { login, completeOnboarding } = useAuth();
+    // Mark user as authenticated and having completed onboarding
     login(); // Mark user as authenticated
     completeOnboarding(); // Mark onboarding as completed
     
