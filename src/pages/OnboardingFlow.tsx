@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -166,7 +167,12 @@ const OnboardingFlow: React.FC = () => {
   };
 
   const finishOnboarding = () => {
-    // Redirect to Home Page instead of Dashboard
+    // Make sure to mark the user as authenticated and having completed onboarding
+    const { login, completeOnboarding } = useAuth();
+    login(); // Mark user as authenticated
+    completeOnboarding(); // Mark onboarding as completed
+    
+    // Then redirect to Home Page
     navigate("/home-page");
   };
 
