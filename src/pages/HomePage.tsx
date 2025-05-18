@@ -329,6 +329,75 @@ const HomePage = () => {
                 </div>
               </section>
 
+              {/* Quick Stats */}
+              <section className="fade-in mt-8">
+                <h2 className="text-xl font-bold mb-4">Quick Stats</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <Card className="p-6">
+                    <h3 className="text-lg font-medium mb-2">Content Ideas</h3>
+                    <div className="text-3xl font-bold">12</div>
+                    <p className="text-sm text-muted-foreground mt-1">4 new this week</p>
+                  </Card>
+
+                  <Card className="p-6">
+                    <h3 className="text-lg font-medium mb-2">Scheduled Content</h3>
+                    <div className="text-3xl font-bold">8</div>
+                    <p className="text-sm text-muted-foreground mt-1">Next post in 2 days</p>
+                  </Card>
+
+                  <Card className="p-6">
+                    <h3 className="text-lg font-medium mb-2">Active Brand Deals</h3>
+                    <div className="text-3xl font-bold">3</div>
+                    <p className="text-sm text-muted-foreground mt-1">1 pending approval</p>
+                  </Card>
+                </div>
+              </section>
+
+              {/* Recent Activity */}
+              <section className="fade-in mb-8">
+                <h2 className="text-2xl font-bold mb-4">Recent Activity</h2>
+                <Card className="p-0 overflow-hidden">
+                  <div className="divide-y">
+                    <div className="p-4 hover:bg-muted/50 transition-colors">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-medium">Content Idea Added</p>
+                          <p className="text-sm text-muted-foreground">You added 'Summer Travel Tips' to your content ideas</p>
+                        </div>
+                        <span className="text-xs text-muted-foreground">2 hours ago</span>
+                      </div>
+                    </div>
+                    <div className="p-4 hover:bg-muted/50 transition-colors">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-medium">Post Scheduled</p>
+                          <p className="text-sm text-muted-foreground">Instagram post scheduled for May 20th at 9:00 AM</p>
+                        </div>
+                        <span className="text-xs text-muted-foreground">Yesterday</span>
+                      </div>
+                    </div>
+                    <div className="p-4 hover:bg-muted/50 transition-colors">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-medium">Brand Deal Updated</p>
+                          <p className="text-sm text-muted-foreground">Contract approved for Skincare Brand collaboration</p>
+                        </div>
+                        <span className="text-xs text-muted-foreground">2 days ago</span>
+                      </div>
+                    </div>
+                    <div className="p-4 hover:bg-muted/50 transition-colors">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-medium">Analytics Updated</p>
+                          <p className="text-sm text-muted-foreground">April performance report is now available</p>
+                        </div>
+                        <span className="text-xs text-muted-foreground">3 days ago</span>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </section>
+
               {/* Recent Content Section */}
               <section className="fade-in">
                 <div className="flex justify-between items-center mb-4">
