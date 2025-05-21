@@ -115,11 +115,6 @@ const MyAccount = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex justify-end mb-2">
-                  <a href="/terms-and-conditions" className="text-sm text-primary hover:underline">
-                    Terms and Conditions
-                  </a>
-                </div>
                 <div className="space-y-6">
                   {/* Profile Information & Edit Section */}
                   <div className="bg-card p-6 rounded-lg border">

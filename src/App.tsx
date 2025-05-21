@@ -1,3 +1,4 @@
+
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { ThemeProvider } from "@/components/theme-provider";
@@ -26,7 +27,6 @@ const TaskBoard = lazy(() => import('./pages/TaskBoard'));
 const Settings = lazy(() => import('./pages/Settings'));
 const MyAccount = lazy(() => import('./pages/MyAccount'));
 const Help = lazy(() => import('./pages/Help'));
-const TermsAndConditions = lazy(() => import('./pages/TermsAndConditions'));
 const WeeklyContentTasks = lazy(() => import('./pages/WeeklyContentTasks'));
 const SocialMediaScheduler = lazy(() => import('./pages/SocialMediaScheduler'));
 const Index = lazy(() => import('./pages/Index'));
@@ -45,15 +45,15 @@ const PageLoader = () => (
 // Protected route component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, hasCompletedOnboarding } = useAuth();
-
+  
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;
   }
-
+  
   if (isAuthenticated && !hasCompletedOnboarding) {
     return <Navigate to="/onboarding" replace />;
   }
-
+  
   return <>{children}</>;
 };
 
@@ -68,7 +68,7 @@ function App() {
               {/* Public routes */}
               <Route path="/" element={<LandingPage />} />
               <Route path="/onboarding" element={<OnboardingFlow />} />
-
+              
               {/* Protected routes - require authentication */}
               <Route path="/app" element={
                 <ProtectedRoute>
@@ -143,11 +143,6 @@ function App() {
               <Route path="/help" element={
                 <ProtectedRoute>
                   <Help />
-                </ProtectedRoute>
-              } />
-              <Route path="/terms-and-conditions" element={
-                <ProtectedRoute>
-                  <TermsAndConditions />
                 </ProtectedRoute>
               } />
               <Route path="/weekly-content" element={
