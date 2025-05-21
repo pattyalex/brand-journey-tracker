@@ -202,12 +202,12 @@ const OnboardingFlow: React.FC = () => {
 
   // Get auth context at component level, not inside the function
   const { login, completeOnboarding } = useAuth();
-  
+
   const finishOnboarding = () => {
     // Mark user as authenticated and having completed onboarding
     login(); // Mark user as authenticated
     completeOnboarding(); // Mark onboarding as completed
-    
+
     // Then redirect to Home Page
     navigate("/home-page");
   };
@@ -532,32 +532,34 @@ const OnboardingFlow: React.FC = () => {
                     control={goalForm.control}
                     name="goal"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>What's your most important goal?</FormLabel>
+                      <FormItem className="mb-10">
+                        <FormLabel className="font-medium text-base">
+                          What's your most important goal?
+                        </FormLabel>
                         <div className="space-y-2 mt-2">
                           <RadioGroup
                             onValueChange={field.onChange}
                             defaultValue={field.value}
                           >
-                            <div className="flex items-center space-x-2 py-2">
+                            <div className="flex items-center space-x-2 py-3">
                               <RadioGroupItem value="organize" id="organize" />
                               <Label htmlFor="organize" className="font-medium">
                                 To organize my content creation work
                               </Label>
                             </div>
-                            <div className="flex items-center space-x-2 py-2">
+                            <div className="flex items-center space-x-2 py-3">
                               <RadioGroupItem value="guidance" id="guidance" />
                               <Label htmlFor="guidance" className="font-medium">
                                 To get guidance on content ideas
                               </Label>
                             </div>
-                            <div className="flex items-center space-x-2 py-2">
+                            <div className="flex items-center space-x-2 py-3">
                               <RadioGroupItem value="performance" id="performance" />
                               <Label htmlFor="performance" className="font-medium">
                                 To track and improve my social performance
                               </Label>
                             </div>
-                            <div className="flex items-center space-x-2 py-2">
+                            <div className="flex items-center space-x-2 py-3">
                               <RadioGroupItem value="other" id="other" />
                               <Label htmlFor="other" className="font-medium">
                                 Other
@@ -584,12 +586,12 @@ const OnboardingFlow: React.FC = () => {
                       )}
                     />
                   )}
-                  
+
                   <FormField
                     control={goalForm.control}
                     name="postFrequency"
                     render={({ field }) => (
-                      <FormItem className="mt-6">
+                      <FormItem className="mb-10 mt-10">
                         <FormLabel className="font-medium text-base">
                           How often do you want to create or post content?
                         </FormLabel>
@@ -598,25 +600,25 @@ const OnboardingFlow: React.FC = () => {
                             onValueChange={field.onChange}
                             defaultValue={field.value}
                           >
-                            <div className="flex items-center space-x-2 py-2">
+                            <div className="flex items-center space-x-2 py-3">
                               <RadioGroupItem value="several_times_a_day" id="several_times_a_day" />
                               <Label htmlFor="several_times_a_day" className="font-medium">
                                 Several times a day
                               </Label>
                             </div>
-                            <div className="flex items-center space-x-2 py-2">
+                            <div className="flex items-center space-x-2 py-3">
                               <RadioGroupItem value="daily" id="daily" />
                               <Label htmlFor="daily" className="font-medium">
                                 Daily
                               </Label>
                             </div>
-                            <div className="flex items-center space-x-2 py-2">
+                            <div className="flex items-center space-x-2 py-3">
                               <RadioGroupItem value="few_times_a_week" id="few_times_a_week" />
                               <Label htmlFor="few_times_a_week" className="font-medium">
                                 A few times a week
                               </Label>
                             </div>
-                            <div className="flex items-center space-x-2 py-2">
+                            <div className="flex items-center space-x-2 py-3">
                               <RadioGroupItem value="occasionally" id="occasionally" />
                               <Label htmlFor="occasionally" className="font-medium">
                                 Occasionally
@@ -628,12 +630,12 @@ const OnboardingFlow: React.FC = () => {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={goalForm.control}
                     name="platforms"
                     render={() => (
-                      <FormItem className="mt-6">
+                      <FormItem className="mb-10 mt-10">
                         <FormLabel className="font-medium text-base">
                           Which platforms do you want to focus on right now?
                         </FormLabel>
@@ -645,7 +647,7 @@ const OnboardingFlow: React.FC = () => {
                             control={goalForm.control}
                             name="platforms.instagram"
                             render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2 py-2">
+                              <FormItem className="flex items-center space-x-2 py-3">
                                 <FormControl>
                                   <Checkbox 
                                     checked={field.value}
@@ -662,7 +664,7 @@ const OnboardingFlow: React.FC = () => {
                             control={goalForm.control}
                             name="platforms.tiktok"
                             render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2 py-2">
+                              <FormItem className="flex items-center space-x-2 py-3">
                                 <FormControl>
                                   <Checkbox 
                                     checked={field.value}
@@ -679,7 +681,7 @@ const OnboardingFlow: React.FC = () => {
                             control={goalForm.control}
                             name="platforms.youtube"
                             render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2 py-2">
+                              <FormItem className="flex items-center space-x-2 py-3">
                                 <FormControl>
                                   <Checkbox 
                                     checked={field.value}
@@ -696,7 +698,7 @@ const OnboardingFlow: React.FC = () => {
                             control={goalForm.control}
                             name="platforms.other"
                             render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2 py-2">
+                              <FormItem className="flex items-center space-x-2 py-3">
                                 <FormControl>
                                   <Checkbox 
                                     checked={field.value}
@@ -710,7 +712,7 @@ const OnboardingFlow: React.FC = () => {
                             )}
                           />
                         </div>
-                        
+
                         {goalForm.watch("platforms.other") && (
                           <FormField
                             control={goalForm.control}
@@ -725,12 +727,12 @@ const OnboardingFlow: React.FC = () => {
                             )}
                           />
                         )}
-                        
+
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={goalForm.control}
                     name="stuckAreas"
@@ -747,7 +749,7 @@ const OnboardingFlow: React.FC = () => {
                             control={goalForm.control}
                             name="stuckAreas.consistency"
                             render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2 py-2">
+                              <FormItem className="flex items-center space-x-2 py-3">
                                 <FormControl>
                                   <Checkbox 
                                     checked={field.value}
@@ -764,7 +766,7 @@ const OnboardingFlow: React.FC = () => {
                             control={goalForm.control}
                             name="stuckAreas.overwhelmed"
                             render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2 py-2">
+                              <FormItem className="flex items-center space-x-2 py-3">
                                 <FormControl>
                                   <Checkbox 
                                     checked={field.value}
@@ -781,7 +783,7 @@ const OnboardingFlow: React.FC = () => {
                             control={goalForm.control}
                             name="stuckAreas.ideas"
                             render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2 py-2">
+                              <FormItem className="flex items-center space-x-2 py-3">
                                 <FormControl>
                                   <Checkbox 
                                     checked={field.value}
@@ -798,7 +800,7 @@ const OnboardingFlow: React.FC = () => {
                             control={goalForm.control}
                             name="stuckAreas.partnerships"
                             render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2 py-2">
+                              <FormItem className="flex items-center space-x-2 py-3">
                                 <FormControl>
                                   <Checkbox 
                                     checked={field.value}
@@ -815,7 +817,7 @@ const OnboardingFlow: React.FC = () => {
                             control={goalForm.control}
                             name="stuckAreas.analytics"
                             render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2 py-2">
+                              <FormItem className="flex items-center space-x-2 py-3">
                                 <FormControl>
                                   <Checkbox 
                                     checked={field.value}
@@ -832,7 +834,7 @@ const OnboardingFlow: React.FC = () => {
                             control={goalForm.control}
                             name="stuckAreas.organization"
                             render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2 py-2">
+                              <FormItem className="flex items-center space-x-2 py-3">
                                 <FormControl>
                                   <Checkbox 
                                     checked={field.value}
@@ -849,7 +851,7 @@ const OnboardingFlow: React.FC = () => {
                             control={goalForm.control}
                             name="stuckAreas.other"
                             render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2 py-2">
+                              <FormItem className="flex items-center space-x-2 py-3">
                                 <FormControl>
                                   <Checkbox 
                                     checked={field.value}
@@ -863,7 +865,7 @@ const OnboardingFlow: React.FC = () => {
                             )}
                           />
                         </div>
-                        
+
                         {goalForm.watch("stuckAreas.other") && (
                           <FormField
                             control={goalForm.control}
@@ -878,7 +880,7 @@ const OnboardingFlow: React.FC = () => {
                             )}
                           />
                         )}
-                        
+
                         <FormMessage />
                       </FormItem>
                     )}
