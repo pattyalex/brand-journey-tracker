@@ -43,15 +43,16 @@ const Contact = () => {
   return (
     <Layout hideSidebar={true}>
       <div className="max-w-5xl mx-auto px-6 py-12">
-        <div className="flex flex-col items-start mb-8">
-          <h1 className="text-3xl font-bold mb-4">Contact Us</h1>
+        <div className="relative mb-8">
           <Button 
             variant="ghost" 
-            className="flex items-center text-muted-foreground hover:text-primary transition-colors" 
+            className="absolute top-0 left-0 p-2 text-muted-foreground hover:text-primary transition-colors" 
             onClick={() => window.location.href = '/'}
+            aria-label="Go back"
           >
-            <span className="mr-1">←</span> Back to Home
+            ←
           </Button>
+          <h1 className="text-3xl font-bold text-center mt-10">Contact Us</h1>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
