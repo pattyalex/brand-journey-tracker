@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { CreditCard, User, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 import { getCurrentUser, updateUserProfile, updateUserPassword } from '@/lib/supabase';
+import SocialPlatformsManager from '@/components/settings/SocialPlatformsManager';
 
 const MyAccount = () => {
   // Profile state
@@ -157,6 +158,14 @@ const MyAccount = () => {
                         {updatingProfile ? 'Saving...' : 'Save Changes'}
                       </Button>
                     </form>
+                  </div>
+
+                  {/* Social Media Platforms Section */}
+                  <div className="bg-card p-6 rounded-lg border">
+                    <h3 className="text-lg font-medium mb-4">Connected Social Media Platforms</h3>
+                    <div className="space-y-4">
+                      <SocialPlatformsManager />
+                    </div>
                   </div>
                   
                   {/* Change Password Section */}
