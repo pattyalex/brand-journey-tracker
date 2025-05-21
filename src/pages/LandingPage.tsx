@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { FolderOpen, Handshake, TrendingUp, CheckCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "../supabaseClient";
+import { toast } from "sonner";
 // Keep the signUp import in case it's used elsewhere
 import { signUp } from "@/auth";
 import Layout from "@/components/Layout";
@@ -214,7 +215,17 @@ const LandingPage = () => {
             {loginError && (
               <p className="text-sm text-red-500">{loginError}</p>
             )}
-            <div className="flex justify-end">
+            <div className="flex justify-between items-center mt-2">
+              <Button 
+                type="button" 
+                variant="link" 
+                className="text-sm p-0 h-auto text-muted-foreground hover:text-primary"
+                onClick={() => {
+                  toast.info("This is a demo feature. Password reset would be sent to " + email);
+                }}
+              >
+                Forgot Password?
+              </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading ? "Logging in..." : "Log In (Mock)"}
               </Button>
