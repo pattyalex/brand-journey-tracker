@@ -5,15 +5,27 @@ import { Card } from "@/components/ui/card";
 import Layout from "@/components/Layout";
 import { FolderOpen, Handshake, TrendingUp, CheckCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { signUp } from "@/auth";
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   
   const handleStartFreeTrial = () => {
-    // Log in and navigate to onboarding
-    login();
-    navigate("/onboarding");
+    // Sign up with placeholder values
+    signUp("test@example.com", "password123", "Test User")
+      .then((result) => {
+        if (result.success) {
+          // Log in and navigate to onboarding
+          login();
+          navigate("/onboarding");
+        } else {
+          console.error("Signup failed:", result.error);
+        }
+      })
+      .catch((error) => {
+        console.error("Error during signup:", error);
+      });
   };
 
   return (
