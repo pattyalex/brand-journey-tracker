@@ -112,7 +112,7 @@ const Help = () => {
 
               <Button 
                 type="submit" 
-                className="w-full"
+                className="px-6"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Sending..." : "Send Message"}
