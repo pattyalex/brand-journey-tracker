@@ -12,19 +12,38 @@ const LandingPage = () => {
   const { login } = useAuth();
   
   const handleStartFreeTrial = () => {
+    console.log("Button clicked, attempting signup...");
+    
+    // Add a temp solution to move to onboarding while debugging
+    const bypassAuth = true; // Set to false when Supabase is fully configured
+    
+    if (bypassAuth) {
+      console.log("Bypassing auth for development");
+      login();
+      navigate("/onboarding");
+      return;
+    }
+    
     // Sign up with placeholder values
     signUp("test@example.com", "password123", "Test User")
       .then((result) => {
+        console.log("Sign up result:", result);
         if (result.success) {
           // Log in and navigate to onboarding
           login();
           navigate("/onboarding");
         } else {
           console.error("Signup failed:", result.error);
+          // Fall back to login and navigate anyway for development
+          login();
+          navigate("/onboarding");
         }
       })
       .catch((error) => {
         console.error("Error during signup:", error);
+        // Fall back to login and navigate anyway for development
+        login();
+        navigate("/onboarding");
       });
   };
 
