@@ -604,6 +604,7 @@ const OnboardingFlow: React.FC = () => {
                               onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                   e.preventDefault(); // Prevent form submission
+                                  e.currentTarget.blur(); // Blur input to save value
                                 }
                               }}
                             />
@@ -753,6 +754,7 @@ const OnboardingFlow: React.FC = () => {
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter') {
                                         e.preventDefault(); // Prevent form submission
+                                        e.currentTarget.blur(); // Blur input to save value
                                       }
                                     }}
                                   />
@@ -914,6 +916,7 @@ const OnboardingFlow: React.FC = () => {
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter') {
                                         e.preventDefault(); // Prevent form submission
+                                        e.currentTarget.blur(); // Blur input to save value
                                       }
                                     }}
                                   />
