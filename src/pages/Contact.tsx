@@ -41,7 +41,7 @@ const Contact = () => {
   };
 
   return (
-    <Layout>
+    <Layout hideSidebar={true}>
       <div className="max-w-5xl mx-auto px-6 py-12">
         <h1 className="text-3xl font-bold mb-6">Contact Us</h1>
 
