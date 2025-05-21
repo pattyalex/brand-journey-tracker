@@ -54,19 +54,59 @@ const MyAccount = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
+                  {/* Trial Status Banner */}
+                  <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-lg font-medium flex items-center gap-2">
+                          <span className="inline-block h-3 w-3 rounded-full bg-blue-500 animate-pulse"></span>
+                          Free Trial Active
+                        </h3>
+                        <p className="text-muted-foreground mt-2">
+                          Your 7-day free trial ends on <span className="font-medium">May 30, 2025</span>
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          You'll be automatically charged $17.00 on May 30, 2025 unless you cancel.
+                        </p>
+                      </div>
+                      <Button variant="outline" className="text-red-500 border-red-200 hover:bg-red-50">
+                        Cancel Trial
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {/* Current Plan Details */}
                   <div className="bg-primary/10 p-6 rounded-lg border border-primary/20">
-                    <h3 className="text-lg font-medium">Current Plan: Free</h3>
-                    <p className="text-muted-foreground mt-2">You're currently on the free plan with limited features.</p>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-lg font-medium">Current Plan: Premium Monthly</h3>
+                        <p className="text-muted-foreground mt-2">
+                          $17.00 per month, billed monthly
+                        </p>
+                        <p className="text-sm mt-2">
+                          Next billing date: <span className="font-medium">May 30, 2025</span>
+                        </p>
+                      </div>
+                      <Button variant="outline" className="text-red-500 border-red-200 hover:bg-red-50">
+                        Cancel Subscription
+                      </Button>
+                    </div>
                   </div>
                   
                   <div className="grid gap-4 sm:grid-cols-2">
+                    {/* Monthly Plan Card */}
                     <Card className="border-2 border-primary">
-                      <CardHeader>
-                        <CardTitle>Premium Plan</CardTitle>
-                        <CardDescription>Best for professionals</CardDescription>
+                      <CardHeader className="pb-2">
+                        <div className="flex justify-between items-center">
+                          <CardTitle>Monthly Plan</CardTitle>
+                          <span className="bg-blue-500 text-white text-xs font-medium px-2 py-1 rounded-full">
+                            Current Plan
+                          </span>
+                        </div>
+                        <CardDescription>Best for flexibility</CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-3xl font-bold">$9.99<span className="text-sm font-normal text-muted-foreground">/month</span></p>
+                        <p className="text-3xl font-bold">$17<span className="text-sm font-normal text-muted-foreground">/month</span></p>
                         <ul className="mt-4 space-y-2">
                           <li className="flex items-center">✓ Unlimited projects</li>
                           <li className="flex items-center">✓ Advanced features</li>
@@ -74,27 +114,36 @@ const MyAccount = () => {
                         </ul>
                       </CardContent>
                       <CardFooter>
-                        <Button className="w-full">Upgrade Now</Button>
+                        <Button className="w-full" disabled>Current Plan</Button>
                       </CardFooter>
                     </Card>
                     
+                    {/* Annual Plan Card */}
                     <Card>
-                      <CardHeader>
-                        <CardTitle>Business Plan</CardTitle>
-                        <CardDescription>For teams and organizations</CardDescription>
+                      <CardHeader className="pb-2">
+                        <CardTitle>Annual Plan</CardTitle>
+                        <CardDescription>Best savings</CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-3xl font-bold">$29.99<span className="text-sm font-normal text-muted-foreground">/month</span></p>
+                        <p className="text-3xl font-bold">$14<span className="text-sm font-normal text-muted-foreground">/month</span></p>
+                        <p className="text-xs text-muted-foreground mb-2">Billed annually ($168)</p>
                         <ul className="mt-4 space-y-2">
-                          <li className="flex items-center">✓ Team collaboration</li>
-                          <li className="flex items-center">✓ Advanced analytics</li>
-                          <li className="flex items-center">✓ Dedicated support</li>
+                          <li className="flex items-center">✓ Everything in monthly</li>
+                          <li className="flex items-center">✓ 18% savings</li>
+                          <li className="flex items-center">✓ Locked-in rate</li>
                         </ul>
                       </CardContent>
                       <CardFooter>
-                        <Button variant="outline" className="w-full">Contact Sales</Button>
+                        <Button variant="outline" className="w-full">Switch to Annual</Button>
                       </CardFooter>
                     </Card>
+                  </div>
+
+                  {/* Cancellation Policy */}
+                  <div className="mt-6 p-4 bg-muted/30 rounded-lg text-sm text-muted-foreground">
+                    <p>
+                      <strong>Cancellation Policy:</strong> If you cancel your subscription, you'll continue to have access until the end of your current billing period. No refunds are provided for unused portions of your subscription.
+                    </p>
                   </div>
                 </div>
               </CardContent>
