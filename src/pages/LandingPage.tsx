@@ -172,14 +172,7 @@ const LandingPage = () => {
 
   return (
     <Layout hideSidebar={true}>
-      <div className="absolute top-4 right-6 z-10 flex gap-3">
-        <Button 
-          variant="primary"
-          onClick={handleStartFreeTrial}
-          className="font-medium bg-primary hover:bg-primary/90 text-white"
-        >
-          Start 7-Day Free Trial
-        </Button>
+      <div className="absolute top-4 right-6 z-10">
         <Button 
           variant="outline" 
           onClick={() => setLoginOpen(true)}
