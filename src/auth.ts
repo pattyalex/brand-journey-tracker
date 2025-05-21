@@ -6,16 +6,28 @@ export async function signUp(email: string, password: string, fullName: string) 
   const emailToUse = email === "test@example.com" ? randomEmail : email;
   
   console.log(`Signing up with email: ${emailToUse}`);
+  console.log(`Using password: ${password.substring(0, 2)}${'*'.repeat(password.length - 2)}`);
+  console.log(`Supabase URL: ${import.meta.env.VITE_SUPABASE_URL}`);
   
   // Step 1: Sign the user up with Supabase Auth
-  const { data, error } = await supabase.auth.signUp({
-    email: emailToUse,
-    password
-  })
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email: emailToUse,
+      password
+    })
 
-  if (error) {
-    console.error('Signup failed:', error.message)
-    return { error }
+    if (error) {
+      console.error('Signup failed:', error);
+      console.error('Error message:', error.message);
+      console.error('Status code:', error.status);
+      return { error }
+    }
+    
+    console.log('Signup success data:', JSON.stringify(data, null, 2));
+    console.log('User ID:', data.user?.id);
+  } catch (err) {
+    console.error('Unexpected error during signup:', err);
+    return { error: err instanceof Error ? { message: err.message } : { message: 'Unknown error' } };
   }
 
   const userId = data.user?.id

@@ -38,6 +38,9 @@ const LandingPage = () => {
       const { supabase } = await import('../supabaseClient');
       
       // Sign up the user directly with Supabase client
+      console.log("Supabase URL being used:", import.meta.env.VITE_SUPABASE_URL);
+      console.log("Using supabaseClient to sign up user...");
+      
       const { data, error } = await supabase.auth.signUp({
         email: randomEmail,
         password: strongPassword
@@ -46,6 +49,11 @@ const LandingPage = () => {
       if (error) {
         console.error("Supabase signup failed:", error);
         console.error("Error details:", error.message);
+        console.error("Error status:", error.status);
+        
+        // Log auth API endpoint for debugging
+        console.log("Auth endpoint:", `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/signup`);
+        
         // Fall back to login and navigate anyway for development
         login();
         navigate("/onboarding");
