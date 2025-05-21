@@ -1,13 +1,105 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { CreditCard, User, Wallet } from 'lucide-react';
+import { toast } from 'sonner';
+import { getCurrentUser, updateUserProfile, updateUserPassword } from '@/lib/supabase';
 
 const MyAccount = () => {
+  // Profile state
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [createdAt, setCreatedAt] = useState('');
+  const [loading, setLoading] = useState(true);
+  
+  // Password change state
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [updatingProfile, setUpdatingProfile] = useState(false);
+  
+  useEffect(() => {
+    // Load user data
+    const loadUserData = async () => {
+      setLoading(true);
+      try {
+        const { user } = await getCurrentUser();
+        if (user) {
+          setName(user.user_metadata?.full_name || '');
+          setEmail(user.email || '');
+          // Format created_at date
+          if (user.created_at) {
+            const date = new Date(user.created_at);
+            setCreatedAt(date.toLocaleDateString('en-US', { 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        toast.error('Could not load profile information');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadUserData();
+  }, []);
+  
+  const handleProfileUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setUpdatingProfile(true);
+    
+    try {
+      await updateUserProfile({ full_name: name, email });
+      toast.success('Profile updated successfully');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error('Failed to update profile');
+    } finally {
+      setUpdatingProfile(false);
+    }
+  };
+  
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate password requirements
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.{10,})/;
+    if (!passwordRegex.test(newPassword)) {
+      toast.error('Password must be at least 10 characters and include at least one uppercase letter and one special character');
+      return;
+    }
+    
+    // Check if passwords match
+    if (newPassword !== confirmPassword) {
+      toast.error('New passwords do not match');
+      return;
+    }
+    
+    setChangingPassword(true);
+    
+    try {
+      await updateUserPassword(currentPassword, newPassword);
+      toast.success('Password changed successfully');
+      // Reset form
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error) {
+      console.error('Error changing password:', error);
+      toast.error('Failed to change password. Please check your current password and try again.');
+    } finally {
+      setChangingPassword(false);
+    }
+  };
   return (
     <Layout>
       <div className="flex flex-col gap-6">
@@ -32,11 +124,133 @@ const MyAccount = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="bg-muted/50 p-4 rounded-lg border">
-                    <p className="text-muted-foreground">Profile information will appear here.</p>
+                <div className="space-y-6">
+                  {/* Profile Information Display */}
+                  {/* Profile Information Display */}
+                  <div className="bg-card p-6 rounded-lg border">
+                    <div className="space-y-4">
+                      <div className="flex flex-col gap-1">
+                        <h3 className="text-sm font-medium text-muted-foreground">Full Name</h3>
+                        <p className="font-medium">{loading ? 'Loading...' : name || 'Not set'}</p>
+                      </div>
+                      
+                      <div className="flex flex-col gap-1">
+                        <h3 className="text-sm font-medium text-muted-foreground">Email Address</h3>
+                        <p className="font-medium">{loading ? 'Loading...' : email}</p>
+                      </div>
+                      
+                      <div className="flex flex-col gap-1">
+                        <h3 className="text-sm font-medium text-muted-foreground">Account Created</h3>
+                        <p className="font-medium">{loading ? 'Loading...' : createdAt || 'Unknown'}</p>
+                      </div>
+                    </div>
                   </div>
-                  <Button>Edit Profile</Button>
+                  
+                  {/* Edit Profile Section */}
+                  <div className="bg-card p-6 rounded-lg border">
+                    <h3 className="text-lg font-medium mb-4">Edit Profile</h3>
+                    <form onSubmit={handleProfileUpdate} className="space-y-4">
+                      <div className="grid gap-3">
+                        <label htmlFor="name" className="text-sm font-medium">
+                          Name
+                        </label>
+                        <input
+                          type="text"
+                          id="name"
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          disabled={loading}
+                        />
+                      </div>
+                      
+                      <div className="grid gap-3">
+                        <label htmlFor="email" className="text-sm font-medium">
+                          Email Address
+                        </label>
+                        <input
+                          type="email"
+                          id="email"
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          disabled={loading}
+                        />
+                      </div>
+                      
+                      <Button 
+                        type="submit" 
+                        className="mt-2"
+                        disabled={loading || updatingProfile}
+                      >
+                        {updatingProfile ? 'Saving...' : 'Save Changes'}
+                      </Button>
+                    </form>
+                  </div>
+                  
+                  {/* Change Password Section */}
+                  <div className="bg-card p-6 rounded-lg border">
+                    <h3 className="text-lg font-medium mb-4">Change Password</h3>
+                    <form onSubmit={handlePasswordChange} className="space-y-4">
+                      <div className="grid gap-3">
+                        <label htmlFor="current-password" className="text-sm font-medium">
+                          Current Password
+                        </label>
+                        <input
+                          type="password"
+                          id="current-password"
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                          placeholder="••••••••••"
+                          value={currentPassword}
+                          onChange={(e) => setCurrentPassword(e.target.value)}
+                          disabled={changingPassword}
+                        />
+                      </div>
+                      
+                      <div className="grid gap-3">
+                        <label htmlFor="new-password" className="text-sm font-medium">
+                          New Password
+                        </label>
+                        <input
+                          type="password"
+                          id="new-password"
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                          placeholder="••••••••••"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          disabled={changingPassword}
+                        />
+                      </div>
+                      
+                      <div className="grid gap-3">
+                        <label htmlFor="confirm-password" className="text-sm font-medium">
+                          Confirm New Password
+                        </label>
+                        <input
+                          type="password"
+                          id="confirm-password"
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                          placeholder="••••••••••"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          disabled={changingPassword}
+                        />
+                      </div>
+                      
+                      <div className="text-sm text-muted-foreground">
+                        <p>Password must be at least 10 characters and include at least one uppercase letter and one special character.</p>
+                      </div>
+                      
+                      <Button 
+                        type="submit" 
+                        className="mt-2" 
+                        variant="outline"
+                        disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword}
+                      >
+                        {changingPassword ? 'Changing...' : 'Change Password'}
+                      </Button>
+                    </form>
+                  </div>
                 </div>
               </CardContent>
             </Card>
