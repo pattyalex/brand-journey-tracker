@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -12,12 +11,6 @@ import { supabase } from "../supabaseClient";
 // Keep the signUp import in case it's used elsewhere
 import { signUp } from "@/auth";
 import Layout from "@/components/Layout";
-import { useAuth } from "@/contexts/AuthContext";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -27,12 +20,12 @@ const LandingPage = () => {
   const [password, setPassword] = useState("demopassword");
   const [loginError, setLoginError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const handleMockLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     console.log("Mock login with:", email);
-    
+
     // Simulate API call delay
     setTimeout(() => {
       login(); // Set auth context state
@@ -41,107 +34,59 @@ const LandingPage = () => {
       setIsLoading(false);
     }, 800);
   };
-  const { login } = useAuth();
-  const [loginOpen, setLoginOpen] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loginError, setLoginError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setLoginError("");
-    
-    try {
-      console.log("Attempting to sign in with:", email);
-      
-      // Check if we're in development mode with a bypass
-      if (import.meta.env.DEV && email === "dev@example.com" && password === "devpassword") {
-        console.log("Using development bypass login");
-        // Wait a moment to simulate API call
-        await new Promise(resolve => setTimeout(resolve, 500));
-        login(); // Set auth context state
-        setLoginOpen(false);
-        navigate("/home-page");
-        return;
-      }
-      
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-      
-      if (error) {
-        console.error("Login error:", error.message);
-        setLoginError(error.message);
-        setIsLoading(false);
-        return;
-      }
-      
-      console.log("Login successful:", data);
-      login(); // Set auth context state
-      setLoginOpen(false);
-      navigate("/home-page");
-    } catch (error) {
-      console.error("Unexpected error during login:", error);
-      setLoginError("An unexpected error occurred. Please try again.");
-      setIsLoading(false);
-    }
-  };
-  
+
   const handleStartFreeTrial = async () => {
     console.log("=== START: handleStartFreeTrial function started running ===");
-    
+
     // Set to false to enable Supabase authentication
     const bypassAuth = false;
-    
+
     if (bypassAuth) {
       console.log("Bypassing auth for development");
       login();
       navigate("/onboarding");
       return;
     }
-    
+
     console.log("Checking Supabase environment variables...");
     console.log("SUPABASE URL exists:", !!import.meta.env.VITE_SUPABASE_URL);
     console.log("SUPABASE ANON KEY exists:", !!import.meta.env.VITE_SUPABASE_ANON_KEY);
-    
+
     // Generate a random email with timestamp to ensure uniqueness
     const randomEmail = `user${Math.floor(Math.random() * 10000)}-${Date.now()}@example.com`;
     // Use a strong static password
     const strongPassword = "TestPassword123!";
     const fullName = "Test User";
-    
+
     console.log("=== CREDENTIALS BEING SENT TO SUPABASE ===");
     console.log(`Email: ${randomEmail}`);
     console.log(`Password: ${strongPassword}`);
     console.log(`Full Name: ${fullName}`);
-    
+
     try {
       console.log("Attempting to import supabaseClient...");
       // Import supabase client directly to ensure we're using the correct instance
       const { supabase } = await import('../supabaseClient');
-      
+
       if (!supabase) {
         console.error("Supabase client is undefined after import!");
         return;
       }
-      
+
       console.log("Supabase client imported successfully:", !!supabase);
       console.log("Supabase auth available:", !!(supabase && supabase.auth));
-      
+
       // Sign up the user directly with Supabase client
       console.log("=== SUPABASE CONFIG ===");
       console.log("Supabase URL being used:", import.meta.env.VITE_SUPABASE_URL);
       console.log("Auth endpoint:", `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/signup`);
       console.log("Using supabaseClient from supabaseClient.ts to sign up user...");
-      
+
       // Log the Supabase URL and Anon Key to ensure they're defined
       console.log("=== SUPABASE CREDENTIALS CHECK ===");
       console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
       console.log("Supabase Anon Key exists:", !!import.meta.env.VITE_SUPABASE_ANON_KEY);
-      
+
       // Make the signup request
       console.log("=== SENDING SIGNUP REQUEST TO SUPABASE ===");
       let signUpResponse;
@@ -159,7 +104,7 @@ const LandingPage = () => {
         navigate("/onboarding");
         return;
       }
-      
+
       // Log the full response
       console.log("=== FULL SUPABASE SIGNUP RESPONSE ===");
       try {
@@ -169,16 +114,16 @@ const LandingPage = () => {
         console.log("Response type:", typeof signUpResponse);
         console.log("Response keys:", signUpResponse ? Object.keys(signUpResponse) : "null response");
       }
-      
+
       if (!signUpResponse) {
         console.error("No response received from supabase.auth.signUp");
         login();
         navigate("/onboarding");
         return;
       }
-      
+
       const { data, error } = signUpResponse;
-      
+
       if (error) {
         console.error("=== SUPABASE SIGNUP ERROR ===");
         console.error("Error object:", error);
@@ -186,17 +131,17 @@ const LandingPage = () => {
         console.error("Error status:", error.status);
         console.error("Error name:", error.name);
         console.error("Error stack:", error.stack);
-        
+
         // Fall back to login and navigate anyway for development
         login();
         navigate("/onboarding");
         return;
       }
-      
+
       console.log("=== SUCCESS: SUPABASE SIGNUP SUCCESSFUL ===");
       console.log("Response data:", data);
       console.log(`User created with ID: ${data.user?.id}`);
-      
+
       // Create user profile
       const { error: profileError } = await supabase.from('profiles').insert([
         {
@@ -206,13 +151,13 @@ const LandingPage = () => {
           trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
         }
       ]);
-      
+
       if (profileError) {
         console.error("Profile creation failed:", profileError);
       } else {
         console.log("Profile created successfully for user:", data.user?.id);
       }
-      
+
       // Log in and navigate to onboarding
       login();
       navigate("/onboarding");
@@ -235,7 +180,7 @@ const LandingPage = () => {
           Log In
         </Button>
       </div>
-      
+
       <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -277,56 +222,7 @@ const LandingPage = () => {
           </form>
         </DialogContent>
       </Dialog>
-      <div className="absolute top-4 right-6 z-10">
-        <Button 
-          variant="outline" 
-          onClick={() => setLoginOpen(true)}
-          className="font-medium"
-        >
-          Log In
-        </Button>
-      </div>
-      
-      <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Log in to your account</DialogTitle>
-            <DialogDescription>
-              Enter your email and password to access your dashboard.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleLogin} className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="your@email.com" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input 
-                id="password" 
-                type="password" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            {loginError && (
-              <p className="text-sm text-red-500">{loginError}</p>
-            )}
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Logging in..." : "Log In"}
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
-      
+
       <div className="max-w-6xl mx-auto px-6 py-16 space-y-16 fade-in">
         {/* Hero Section */}
         <section className="text-center space-y-6">
