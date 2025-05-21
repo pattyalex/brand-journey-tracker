@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { CreditCard, User, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
-import { getCurrentUser, updateUserProfile, updateUserPassword } from '@/lib/supabase';
+import { getCurrentUser, updateUserProfile, updateUserPassword, logout } from '@/lib/supabase';
 import SocialPlatformsManager from '@/components/settings/SocialPlatformsManager';
 
 const MyAccount = () => {
@@ -150,13 +151,33 @@ const MyAccount = () => {
                         />
                       </div>
                       
-                      <Button 
-                        type="submit" 
-                        className="mt-2"
-                        disabled={loading || updatingProfile}
-                      >
-                        {updatingProfile ? 'Saving...' : 'Save Changes'}
-                      </Button>
+                      <div className="flex space-x-3">
+                        <Button 
+                          type="submit" 
+                          className="mt-2"
+                          disabled={loading || updatingProfile}
+                        >
+                          {updatingProfile ? 'Saving...' : 'Save Changes'}
+                        </Button>
+                        
+                        <Button 
+                          type="button"
+                          variant="destructive"
+                          className="mt-2"
+                          onClick={async () => {
+                            try {
+                              await logout();
+                              toast.success('Signed out successfully');
+                              navigate('/');
+                            } catch (error) {
+                              console.error('Error signing out:', error);
+                              toast.error('Failed to sign out');
+                            }
+                          }}
+                        >
+                          Sign Out
+                        </Button>
+                      </div>
                     </form>
                   </div>
 
