@@ -25,6 +25,10 @@ const LandingPage = () => {
       return;
     }
     
+    console.log("Checking Supabase environment variables...");
+    console.log("SUPABASE URL exists:", !!import.meta.env.VITE_SUPABASE_URL);
+    console.log("SUPABASE ANON KEY exists:", !!import.meta.env.VITE_SUPABASE_ANON_KEY);
+    
     // Generate a random email with timestamp to ensure uniqueness
     const randomEmail = `user${Math.floor(Math.random() * 10000)}-${Date.now()}@example.com`;
     // Use a strong static password
@@ -37,8 +41,17 @@ const LandingPage = () => {
     console.log(`Full Name: ${fullName}`);
     
     try {
+      console.log("Attempting to import supabaseClient...");
       // Import supabase client directly to ensure we're using the correct instance
       const { supabase } = await import('../supabaseClient');
+      
+      if (!supabase) {
+        console.error("Supabase client is undefined after import!");
+        return;
+      }
+      
+      console.log("Supabase client imported successfully:", !!supabase);
+      console.log("Supabase auth available:", !!(supabase && supabase.auth));
       
       // Sign up the user directly with Supabase client
       console.log("=== SUPABASE CONFIG ===");
@@ -48,14 +61,37 @@ const LandingPage = () => {
       
       // Make the signup request
       console.log("=== SENDING SIGNUP REQUEST TO SUPABASE ===");
-      const signUpResponse = await supabase.auth.signUp({
-        email: randomEmail,
-        password: strongPassword
-      });
+      let signUpResponse;
+      try {
+        signUpResponse = await supabase.auth.signUp({
+          email: randomEmail,
+          password: strongPassword
+        });
+        console.log("Raw signup response received");
+      } catch (signupErr) {
+        console.error("Exception thrown during supabase.auth.signUp call:", signupErr);
+        // Fall back to login for development
+        login();
+        navigate("/onboarding");
+        return;
+      }
       
       // Log the full response
       console.log("=== FULL SUPABASE SIGNUP RESPONSE ===");
-      console.log(JSON.stringify(signUpResponse, null, 2));
+      try {
+        console.log(JSON.stringify(signUpResponse, null, 2));
+      } catch (jsonErr) {
+        console.error("Could not stringify response:", jsonErr);
+        console.log("Response type:", typeof signUpResponse);
+        console.log("Response keys:", signUpResponse ? Object.keys(signUpResponse) : "null response");
+      }
+      
+      if (!signUpResponse) {
+        console.error("No response received from supabase.auth.signUp");
+        login();
+        navigate("/onboarding");
+        return;
+      }
       
       const { data, error } = signUpResponse;
       
