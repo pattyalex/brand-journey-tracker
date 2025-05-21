@@ -70,3 +70,59 @@ const Privacy = () => {
 };
 
 export default Privacy;
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+const Privacy = () => {
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <h1 className="text-3xl font-bold mb-6">Privacy Policy</h1>
+      
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>How We Protect Your Privacy</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <h2 className="text-xl font-semibold">1. Information We Collect</h2>
+          <p>
+            We collect information you provide directly to us, such as when you create an account, submit content, or contact us for support.
+          </p>
+          
+          <h2 className="text-xl font-semibold">2. How We Use Your Information</h2>
+          <p>
+            We use the information we collect to provide, maintain, and improve our services, to develop new features, and to protect our platform and users.
+          </p>
+          
+          <h2 className="text-xl font-semibold">3. Information Sharing</h2>
+          <p>
+            We do not share your personal information with third parties except as described in this privacy policy.
+          </p>
+          
+          <h2 className="text-xl font-semibold">4. Data Security</h2>
+          <p>
+            We take reasonable measures to help protect your personal information from loss, theft, misuse, unauthorized access, disclosure, alteration, and destruction.
+          </p>
+          
+          <h2 className="text-xl font-semibold">5. Your Choices</h2>
+          <p>
+            You may update, correct, or delete your account information at any time by logging into your account settings.
+          </p>
+          
+          <h2 className="text-xl font-semibold">6. Changes to This Policy</h2>
+          <p>
+            We may update this privacy policy from time to time. We will notify you of any changes by posting the new privacy policy on this page.
+          </p>
+        </CardContent>
+      </Card>
+      
+      <div className="text-center">
+        <Link to="/" className="text-blue-600 hover:underline">
+          Return to Home
+        </Link>
+      </div>
+    </div>
+  );
+};
+
+export default Privacy;
