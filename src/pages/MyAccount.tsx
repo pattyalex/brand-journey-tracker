@@ -151,33 +151,13 @@ const MyAccount = () => {
                         />
                       </div>
                       
-                      <div className="flex space-x-3">
-                        <Button 
-                          type="submit" 
-                          className="mt-2"
-                          disabled={loading || updatingProfile}
-                        >
-                          {updatingProfile ? 'Saving...' : 'Save Changes'}
-                        </Button>
-                        
-                        <Button 
-                          type="button"
-                          variant="destructive"
-                          className="mt-2"
-                          onClick={async () => {
-                            try {
-                              await logout();
-                              toast.success('Signed out successfully');
-                              navigate('/');
-                            } catch (error) {
-                              console.error('Error signing out:', error);
-                              toast.error('Failed to sign out');
-                            }
-                          }}
-                        >
-                          Sign Out
-                        </Button>
-                      </div>
+                      <Button 
+                        type="submit" 
+                        className="mt-2"
+                        disabled={loading || updatingProfile}
+                      >
+                        {updatingProfile ? 'Saving...' : 'Save Changes'}
+                      </Button>
                     </form>
                   </div>
 
@@ -517,6 +497,27 @@ const MyAccount = () => {
             </Card>
           </TabsContent>
         </Tabs>
+        
+        <div className="mt-8 pb-10 flex justify-center">
+          <Button 
+            type="button"
+            variant="outline"
+            size="lg"
+            className="w-full max-w-xs"
+            onClick={async () => {
+              try {
+                await logout();
+                toast.success('Signed out successfully');
+                navigate('/');
+              } catch (error) {
+                console.error('Error signing out:', error);
+                toast.error('Failed to sign out');
+              }
+            }}
+          >
+            Sign Out
+          </Button>
+        </div>
       </div>
     </Layout>
   );
