@@ -13,7 +13,7 @@ const LandingPage = () => {
   const { login } = useAuth();
   
   const handleStartFreeTrial = async () => {
-    console.log("Button clicked, attempting signup with Supabase...");
+    console.log("=== START: handleStartFreeTrial function started running ===");
     
     // Set to false to enable Supabase authentication
     const bypassAuth = false;
@@ -31,28 +31,41 @@ const LandingPage = () => {
     const strongPassword = "TestPassword123!";
     const fullName = "Test User";
     
-    console.log(`Attempting to create Supabase user with email: ${randomEmail}`);
+    console.log("=== CREDENTIALS BEING SENT TO SUPABASE ===");
+    console.log(`Email: ${randomEmail}`);
+    console.log(`Password: ${strongPassword}`);
+    console.log(`Full Name: ${fullName}`);
     
     try {
       // Import supabase client directly to ensure we're using the correct instance
       const { supabase } = await import('../supabaseClient');
       
       // Sign up the user directly with Supabase client
+      console.log("=== SUPABASE CONFIG ===");
       console.log("Supabase URL being used:", import.meta.env.VITE_SUPABASE_URL);
-      console.log("Using supabaseClient to sign up user...");
+      console.log("Auth endpoint:", `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/signup`);
+      console.log("Using supabaseClient from supabaseClient.ts to sign up user...");
       
-      const { data, error } = await supabase.auth.signUp({
+      // Make the signup request
+      console.log("=== SENDING SIGNUP REQUEST TO SUPABASE ===");
+      const signUpResponse = await supabase.auth.signUp({
         email: randomEmail,
         password: strongPassword
       });
       
+      // Log the full response
+      console.log("=== FULL SUPABASE SIGNUP RESPONSE ===");
+      console.log(JSON.stringify(signUpResponse, null, 2));
+      
+      const { data, error } = signUpResponse;
+      
       if (error) {
-        console.error("Supabase signup failed:", error);
-        console.error("Error details:", error.message);
+        console.error("=== SUPABASE SIGNUP ERROR ===");
+        console.error("Error object:", error);
+        console.error("Error message:", error.message);
         console.error("Error status:", error.status);
-        
-        // Log auth API endpoint for debugging
-        console.log("Auth endpoint:", `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/signup`);
+        console.error("Error name:", error.name);
+        console.error("Error stack:", error.stack);
         
         // Fall back to login and navigate anyway for development
         login();
@@ -60,7 +73,8 @@ const LandingPage = () => {
         return;
       }
       
-      console.log("SUCCESS: Supabase signup response:", data);
+      console.log("=== SUCCESS: SUPABASE SIGNUP SUCCESSFUL ===");
+      console.log("Response data:", data);
       console.log(`User created with ID: ${data.user?.id}`);
       
       // Create user profile
