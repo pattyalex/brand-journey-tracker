@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "../supabaseClient";
 // Keep the signUp import in case it's used elsewhere
 import { signUp } from "@/auth";
+import Layout from "@/components/Layout";
 
 const LandingPage = () => {
   const navigate = useNavigate();
