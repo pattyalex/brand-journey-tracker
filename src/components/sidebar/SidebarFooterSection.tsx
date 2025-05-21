@@ -1,4 +1,3 @@
-
 import {
   SidebarFooter,
   SidebarMenu,
@@ -17,15 +16,17 @@ const SidebarFooterSection = ({ settingsItem, myAccountItem, helpItem }: Sidebar
   return (
     <SidebarFooter className="mt-auto">
       <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton asChild>
-            <a href={settingsItem.url} className="flex items-center gap-2">
-              <settingsItem.icon size={20} />
-              <span>{settingsItem.title}</span>
-            </a>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-        
+        {!settingsItem.hidden && (
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <a href={settingsItem.url} className="flex items-center gap-2">
+                <settingsItem.icon size={20} />
+                <span>{settingsItem.title}</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        )}
+
         <SidebarMenuItem>
           <SidebarMenuButton asChild>
             <a href={myAccountItem.url} className="flex items-center gap-2">
