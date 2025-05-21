@@ -5,13 +5,14 @@ import { Card } from "@/components/ui/card";
 import Layout from "@/components/Layout";
 import { FolderOpen, Handshake, TrendingUp, CheckCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+// Keep the signUp import in case it's used elsewhere
 import { signUp } from "@/auth";
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   
-  const handleStartFreeTrial = () => {
+  const handleStartFreeTrial = async () => {
     console.log("Button clicked, attempting signup with Supabase...");
     
     // Set to false to enable Supabase authentication
@@ -24,36 +25,61 @@ const LandingPage = () => {
       return;
     }
     
-    // Use a randomly generated email (will be created in the signUp function)
-    // and a stronger password
-    const strongPassword = "Test1234!";
+    // Generate a random email with timestamp to ensure uniqueness
+    const randomEmail = `user${Math.floor(Math.random() * 10000)}-${Date.now()}@example.com`;
+    // Use a strong static password
+    const strongPassword = "TestPassword123!";
+    const fullName = "Test User";
     
-    console.log("Attempting to create Supabase user...");
+    console.log(`Attempting to create Supabase user with email: ${randomEmail}`);
     
-    // Sign up with the test email and stronger password
-    signUp("test@example.com", strongPassword, "Test User")
-      .then((result) => {
-        console.log("Supabase signup result:", result);
-        if (result.success) {
-          console.log(`SUCCESS: Created Supabase account with email: ${result.email}`);
-          // Log in and navigate to onboarding
-          login();
-          navigate("/onboarding");
-        } else {
-          console.error("Supabase signup failed:", result.error);
-          // Show the error in the console for debugging
-          console.error("Error details:", result.error);
-          // Fall back to login and navigate anyway for development
-          login();
-          navigate("/onboarding");
-        }
-      })
-      .catch((error) => {
-        console.error("Error during Supabase signup:", error);
+    try {
+      // Import supabase client directly to ensure we're using the correct instance
+      const { supabase } = await import('../supabaseClient');
+      
+      // Sign up the user directly with Supabase client
+      const { data, error } = await supabase.auth.signUp({
+        email: randomEmail,
+        password: strongPassword
+      });
+      
+      if (error) {
+        console.error("Supabase signup failed:", error);
+        console.error("Error details:", error.message);
         // Fall back to login and navigate anyway for development
         login();
         navigate("/onboarding");
-      });
+        return;
+      }
+      
+      console.log("SUCCESS: Supabase signup response:", data);
+      console.log(`User created with ID: ${data.user?.id}`);
+      
+      // Create user profile
+      const { error: profileError } = await supabase.from('profiles').insert([
+        {
+          id: data.user?.id,
+          full_name: fullName,
+          is_on_trial: true,
+          trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
+        }
+      ]);
+      
+      if (profileError) {
+        console.error("Profile creation failed:", profileError);
+      } else {
+        console.log("Profile created successfully for user:", data.user?.id);
+      }
+      
+      // Log in and navigate to onboarding
+      login();
+      navigate("/onboarding");
+    } catch (error) {
+      console.error("Unexpected error during Supabase signup:", error);
+      // Fall back to login and navigate anyway for development
+      login();
+      navigate("/onboarding");
+    }
   };
 
   return (
