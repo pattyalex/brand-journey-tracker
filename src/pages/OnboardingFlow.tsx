@@ -64,6 +64,24 @@ const paymentSetupSchema = z.object({
 const userGoalsSchema = z.object({
   goal: z.enum(["organize", "guidance", "performance", "other"]),
   otherGoal: z.string().optional(),
+  postFrequency: z.enum(["several_times_a_day", "daily", "few_times_a_week", "occasionally"]),
+  platforms: z.object({
+    instagram: z.boolean().default(false),
+    tiktok: z.boolean().default(false),
+    youtube: z.boolean().default(false),
+    other: z.boolean().default(false)
+  }),
+  otherPlatform: z.string().optional(),
+  stuckAreas: z.object({
+    consistency: z.boolean().default(false),
+    overwhelmed: z.boolean().default(false),
+    ideas: z.boolean().default(false),
+    partnerships: z.boolean().default(false),
+    analytics: z.boolean().default(false),
+    organization: z.boolean().default(false),
+    other: z.boolean().default(false)
+  }),
+  otherStuckArea: z.string().optional(),
 });
 
 const socialAccountsSchema = z.object({
@@ -106,7 +124,23 @@ const OnboardingFlow: React.FC = () => {
   const goalForm = useForm<z.infer<typeof userGoalsSchema>>({
     resolver: zodResolver(userGoalsSchema),
     defaultValues: {
-      goal: "organize"
+      goal: "organize",
+      postFrequency: "few_times_a_week",
+      platforms: {
+        instagram: false,
+        tiktok: false,
+        youtube: false,
+        other: false
+      },
+      stuckAreas: {
+        consistency: false,
+        overwhelmed: false,
+        ideas: false,
+        partnerships: false,
+        analytics: false,
+        organization: false,
+        other: false
+      }
     }
   });
 
@@ -550,6 +584,305 @@ const OnboardingFlow: React.FC = () => {
                       )}
                     />
                   )}
+                  
+                  <FormField
+                    control={goalForm.control}
+                    name="postFrequency"
+                    render={({ field }) => (
+                      <FormItem className="mt-6">
+                        <FormLabel className="font-medium text-base">
+                          How often do you want to create or post content?
+                        </FormLabel>
+                        <div className="space-y-2 mt-2">
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <div className="flex items-center space-x-2 py-2">
+                              <RadioGroupItem value="several_times_a_day" id="several_times_a_day" />
+                              <Label htmlFor="several_times_a_day" className="font-medium">
+                                Several times a day
+                              </Label>
+                            </div>
+                            <div className="flex items-center space-x-2 py-2">
+                              <RadioGroupItem value="daily" id="daily" />
+                              <Label htmlFor="daily" className="font-medium">
+                                Daily
+                              </Label>
+                            </div>
+                            <div className="flex items-center space-x-2 py-2">
+                              <RadioGroupItem value="few_times_a_week" id="few_times_a_week" />
+                              <Label htmlFor="few_times_a_week" className="font-medium">
+                                A few times a week
+                              </Label>
+                            </div>
+                            <div className="flex items-center space-x-2 py-2">
+                              <RadioGroupItem value="occasionally" id="occasionally" />
+                              <Label htmlFor="occasionally" className="font-medium">
+                                Occasionally
+                              </Label>
+                            </div>
+                          </RadioGroup>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={goalForm.control}
+                    name="platforms"
+                    render={() => (
+                      <FormItem className="mt-6">
+                        <FormLabel className="font-medium text-base">
+                          Which platforms do you want to focus on right now?
+                        </FormLabel>
+                        <FormDescription>
+                          Select all that apply
+                        </FormDescription>
+                        <div className="space-y-2 mt-2">
+                          <FormField
+                            control={goalForm.control}
+                            name="platforms.instagram"
+                            render={({ field }) => (
+                              <FormItem className="flex items-center space-x-2 py-2">
+                                <FormControl>
+                                  <Checkbox 
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <FormLabel className="font-medium">
+                                  Instagram
+                                </FormLabel>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={goalForm.control}
+                            name="platforms.tiktok"
+                            render={({ field }) => (
+                              <FormItem className="flex items-center space-x-2 py-2">
+                                <FormControl>
+                                  <Checkbox 
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <FormLabel className="font-medium">
+                                  TikTok
+                                </FormLabel>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={goalForm.control}
+                            name="platforms.youtube"
+                            render={({ field }) => (
+                              <FormItem className="flex items-center space-x-2 py-2">
+                                <FormControl>
+                                  <Checkbox 
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <FormLabel className="font-medium">
+                                  YouTube
+                                </FormLabel>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={goalForm.control}
+                            name="platforms.other"
+                            render={({ field }) => (
+                              <FormItem className="flex items-center space-x-2 py-2">
+                                <FormControl>
+                                  <Checkbox 
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <FormLabel className="font-medium">
+                                  Other
+                                </FormLabel>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        
+                        {goalForm.watch("platforms.other") && (
+                          <FormField
+                            control={goalForm.control}
+                            name="otherPlatform"
+                            render={({ field }) => (
+                              <FormItem className="mt-2">
+                                <FormControl>
+                                  <Input placeholder="Please specify other platforms" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
+                        
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={goalForm.control}
+                    name="stuckAreas"
+                    render={() => (
+                      <FormItem className="mt-6">
+                        <FormLabel className="font-medium text-base">
+                          Where do you feel most stuck in your content process?
+                        </FormLabel>
+                        <FormDescription>
+                          Select all that apply
+                        </FormDescription>
+                        <div className="space-y-2 mt-2">
+                          <FormField
+                            control={goalForm.control}
+                            name="stuckAreas.consistency"
+                            render={({ field }) => (
+                              <FormItem className="flex items-center space-x-2 py-2">
+                                <FormControl>
+                                  <Checkbox 
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <FormLabel className="font-medium">
+                                  Staying consistent
+                                </FormLabel>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={goalForm.control}
+                            name="stuckAreas.overwhelmed"
+                            render={({ field }) => (
+                              <FormItem className="flex items-center space-x-2 py-2">
+                                <FormControl>
+                                  <Checkbox 
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <FormLabel className="font-medium">
+                                  Feeling overwhelmed with planning and batching
+                                </FormLabel>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={goalForm.control}
+                            name="stuckAreas.ideas"
+                            render={({ field }) => (
+                              <FormItem className="flex items-center space-x-2 py-2">
+                                <FormControl>
+                                  <Checkbox 
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <FormLabel className="font-medium">
+                                  Coming up with ideas
+                                </FormLabel>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={goalForm.control}
+                            name="stuckAreas.partnerships"
+                            render={({ field }) => (
+                              <FormItem className="flex items-center space-x-2 py-2">
+                                <FormControl>
+                                  <Checkbox 
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <FormLabel className="font-medium">
+                                  Managing brand deals or partnerships
+                                </FormLabel>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={goalForm.control}
+                            name="stuckAreas.analytics"
+                            render={({ field }) => (
+                              <FormItem className="flex items-center space-x-2 py-2">
+                                <FormControl>
+                                  <Checkbox 
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <FormLabel className="font-medium">
+                                  Tracking growth and analytics
+                                </FormLabel>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={goalForm.control}
+                            name="stuckAreas.organization"
+                            render={({ field }) => (
+                              <FormItem className="flex items-center space-x-2 py-2">
+                                <FormControl>
+                                  <Checkbox 
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <FormLabel className="font-medium">
+                                  No centralized place to organize everything and forgetting where things are saved
+                                </FormLabel>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={goalForm.control}
+                            name="stuckAreas.other"
+                            render={({ field }) => (
+                              <FormItem className="flex items-center space-x-2 py-2">
+                                <FormControl>
+                                  <Checkbox 
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <FormLabel className="font-medium">
+                                  Other
+                                </FormLabel>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        
+                        {goalForm.watch("stuckAreas.other") && (
+                          <FormField
+                            control={goalForm.control}
+                            name="otherStuckArea"
+                            render={({ field }) => (
+                              <FormItem className="mt-2">
+                                <FormControl>
+                                  <Input placeholder="Please specify where else you feel stuck" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
+                        
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   <div className="flex justify-between mt-6">
                     <Button variant="ghost" size="sm" onClick={goToPreviousStep} className="flex items-center">
