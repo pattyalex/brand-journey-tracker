@@ -16,16 +16,20 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.error("Key empty:", !supabaseAnonKey);
 }
 
-// Create Supabase client with error handling
+// Log client creation attempt
+console.log("Attempting to create Supabase client");
+
+// Create a variable to hold our client
+let supabase;
+
 try {
   // Create Supabase client
-  const supabase = createClient(supabaseUrl, supabaseAnonKey)
+  supabase = createClient(supabaseUrl, supabaseAnonKey);
   console.log("Supabase client created successfully");
-  export { supabase }
 } catch (error) {
   console.error("Error creating Supabase client:", error);
   // Create a dummy client to prevent app crashes
-  const dummyClient = {
+  supabase = {
     auth: {
       signUp: () => Promise.resolve({ data: null, error: { message: "Supabase client initialization failed" } }),
       // Add other methods as needed
@@ -34,6 +38,8 @@ try {
       insert: () => Promise.resolve({ error: { message: "Supabase client initialization failed" } }),
       // Add other methods as needed
     }),
-  };
-  export const supabase = dummyClient as any;
+  } as any;
 }
+
+// Export the client
+export { supabase };

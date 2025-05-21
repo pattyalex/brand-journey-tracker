@@ -59,6 +59,11 @@ const LandingPage = () => {
       console.log("Auth endpoint:", `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/signup`);
       console.log("Using supabaseClient from supabaseClient.ts to sign up user...");
       
+      // Log the Supabase URL and Anon Key to ensure they're defined
+      console.log("=== SUPABASE CREDENTIALS CHECK ===");
+      console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
+      console.log("Supabase Anon Key exists:", !!import.meta.env.VITE_SUPABASE_ANON_KEY);
+      
       // Make the signup request
       console.log("=== SENDING SIGNUP REQUEST TO SUPABASE ===");
       let signUpResponse;
@@ -67,9 +72,10 @@ const LandingPage = () => {
           email: randomEmail,
           password: strongPassword
         });
+        console.log("Signup response:", signUpResponse);
         console.log("Raw signup response received");
-      } catch (signupErr) {
-        console.error("Exception thrown during supabase.auth.signUp call:", signupErr);
+      } catch (error) {
+        console.error("Signup failed:", error);
         // Fall back to login for development
         login();
         navigate("/onboarding");
