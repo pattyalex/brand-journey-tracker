@@ -1,9 +1,15 @@
 import { supabase } from './supabaseClient'
 
 export async function signUp(email: string, password: string, fullName: string) {
+  // Generate a random email if not provided
+  const randomEmail = `test-${Date.now()}@example.com`;
+  const emailToUse = email === "test@example.com" ? randomEmail : email;
+  
+  console.log(`Signing up with email: ${emailToUse}`);
+  
   // Step 1: Sign the user up with Supabase Auth
   const { data, error } = await supabase.auth.signUp({
-    email,
+    email: emailToUse,
     password
   })
 
@@ -29,5 +35,5 @@ export async function signUp(email: string, password: string, fullName: string) 
     return { error: insertError }
   }
 
-  return { success: true }
+  return { success: true, email: emailToUse }
 }
