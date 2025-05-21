@@ -169,6 +169,14 @@ const OnboardingFlow: React.FC = () => {
 
   const onGoalSubmit = (data: z.infer<typeof userGoalsSchema>) => {
     console.log("Goal data:", data);
+    
+    // Prevent accidental submissions if user was just trying to type in "Other" fields
+    const activeElement = document.activeElement as HTMLElement;
+    if (activeElement && activeElement.tagName === 'INPUT') {
+      // If user is currently focused on an input field, don't proceed
+      return;
+    }
+    
     setCurrentStep("connect-social");
   };
 
@@ -527,16 +535,27 @@ const OnboardingFlow: React.FC = () => {
             </CardHeader>
             <CardContent>
               <Form {...goalForm}>
-                <form onSubmit={goalForm.handleSubmit(onGoalSubmit)} className="space-y-4">
+                <form 
+                  onSubmit={(e) => {
+                    // Extra safeguard to prevent accidental submissions from "Enter" key
+                    const activeElement = document.activeElement as HTMLElement;
+                    if (activeElement && activeElement.tagName === 'INPUT') {
+                      e.preventDefault();
+                      return;
+                    }
+                    goalForm.handleSubmit(onGoalSubmit)(e);
+                  }} 
+                  className="space-y-4"
+                >
                   <FormField
                     control={goalForm.control}
                     name="goal"
                     render={({ field }) => (
-                      <FormItem className="mb-10">
-                        <FormLabel className="font-medium text-base">
+                      <FormItem className="mb-12">
+                        <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
                           What's your most important goal?
                         </FormLabel>
-                        <div className="space-y-2 mt-2">
+                        <div className="space-y-2 mt-4">
                           <RadioGroup
                             onValueChange={field.onChange}
                             defaultValue={field.value}
@@ -579,7 +598,15 @@ const OnboardingFlow: React.FC = () => {
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            <Input placeholder="Please specify your goal" {...field} />
+                            <Input 
+                              placeholder="Please specify your goal" 
+                              {...field} 
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault(); // Prevent form submission
+                                }
+                              }}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -591,11 +618,11 @@ const OnboardingFlow: React.FC = () => {
                     control={goalForm.control}
                     name="postFrequency"
                     render={({ field }) => (
-                      <FormItem className="mb-10 mt-10">
-                        <FormLabel className="font-medium text-base">
+                      <FormItem className="mb-12 mt-16">
+                        <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
                           How often do you want to create or post content?
                         </FormLabel>
-                        <div className="space-y-2 mt-2">
+                        <div className="space-y-2 mt-4">
                           <RadioGroup
                             onValueChange={field.onChange}
                             defaultValue={field.value}
@@ -635,11 +662,11 @@ const OnboardingFlow: React.FC = () => {
                     control={goalForm.control}
                     name="platforms"
                     render={() => (
-                      <FormItem className="mb-10 mt-10">
-                        <FormLabel className="font-medium text-base">
+                      <FormItem className="mb-12 mt-16">
+                        <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
                           Which platforms do you want to focus on right now?
                         </FormLabel>
-                        <FormDescription>
+                        <FormDescription className="mt-2 text-sm">
                           Select all that apply
                         </FormDescription>
                         <div className="space-y-2 mt-2">
@@ -720,7 +747,15 @@ const OnboardingFlow: React.FC = () => {
                             render={({ field }) => (
                               <FormItem className="mt-2">
                                 <FormControl>
-                                  <Input placeholder="Please specify other platforms" {...field} />
+                                  <Input 
+                                    placeholder="Please specify other platforms" 
+                                    {...field} 
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault(); // Prevent form submission
+                                      }
+                                    }}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -737,11 +772,11 @@ const OnboardingFlow: React.FC = () => {
                     control={goalForm.control}
                     name="stuckAreas"
                     render={() => (
-                      <FormItem className="mt-6">
-                        <FormLabel className="font-medium text-base">
+                      <FormItem className="mt-16">
+                        <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
                           Where do you feel most stuck in your content process?
                         </FormLabel>
-                        <FormDescription>
+                        <FormDescription className="mt-2 text-sm">
                           Select all that apply
                         </FormDescription>
                         <div className="space-y-2 mt-2">
@@ -873,7 +908,15 @@ const OnboardingFlow: React.FC = () => {
                             render={({ field }) => (
                               <FormItem className="mt-2">
                                 <FormControl>
-                                  <Input placeholder="Please specify where else you feel stuck" {...field} />
+                                  <Input 
+                                    placeholder="Please specify where else you feel stuck" 
+                                    {...field} 
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault(); // Prevent form submission
+                                      }
+                                    }}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
