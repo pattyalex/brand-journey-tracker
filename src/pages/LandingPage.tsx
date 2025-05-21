@@ -3,48 +3,59 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Layout from "@/components/Layout";
-import { FolderOpen, Handshake, TrendingUp, CheckCircle } from "lucide-react";
+import { FolderOpen, Handshake, TrendingUp, CheckCircle, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { signUp } from "@/auth";
+import { useState } from "react";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle,
+  DialogDescription
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   
+  const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  
   const handleStartFreeTrial = () => {
-    console.log("Button clicked, attempting signup...");
+    setIsSignupModalOpen(true);
+  };
+  
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
     
-    // Add a temp solution to move to onboarding while debugging
-    const bypassAuth = true; // Set to false when Supabase is fully configured
-    
-    if (bypassAuth) {
-      console.log("Bypassing auth for development");
-      login();
-      navigate("/onboarding");
-      return;
-    }
-    
-    // Sign up with placeholder values
-    signUp("test@example.com", "password123", "Test User")
-      .then((result) => {
-        console.log("Sign up result:", result);
-        if (result.success) {
-          // Log in and navigate to onboarding
-          login();
-          navigate("/onboarding");
-        } else {
-          console.error("Signup failed:", result.error);
-          // Fall back to login and navigate anyway for development
-          login();
-          navigate("/onboarding");
-        }
-      })
-      .catch((error) => {
-        console.error("Error during signup:", error);
-        // Fall back to login and navigate anyway for development
+    try {
+      console.log("Attempting signup with:", email, password, fullName);
+      const result = await signUp(email, password, fullName);
+      
+      if (result.success) {
+        console.log("Signup successful");
+        setIsSignupModalOpen(false);
         login();
         navigate("/onboarding");
-      });
+      } else {
+        console.error("Signup failed:", result.error);
+        setError(result.error?.message || "Failed to sign up. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error during signup:", error);
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -163,6 +174,68 @@ const LandingPage = () => {
           </Button>
         </section>
       </div>
+      
+      {/* Signup Dialog */}
+      <Dialog open={isSignupModalOpen} onOpenChange={setIsSignupModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Create Your Account</DialogTitle>
+            <DialogDescription>
+              Sign up to start your 7-day free trial. No credit card required.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={handleSignup} className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="fullName">Full Name</Label>
+              <Input 
+                id="fullName"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Enter your name"
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input 
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input 
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Create a secure password"
+                required
+                minLength={8}
+              />
+            </div>
+            
+            {error && (
+              <div className="text-red-500 text-sm">{error}</div>
+            )}
+            
+            <Button 
+              type="submit" 
+              className="w-full"
+              disabled={isLoading}
+            >
+              {isLoading ? "Signing up..." : "Start Free Trial"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };
