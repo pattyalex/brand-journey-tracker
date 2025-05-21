@@ -1,16 +1,55 @@
 
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import Layout from "@/components/Layout";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { FolderOpen, Handshake, TrendingUp, CheckCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "../supabaseClient";
 // Keep the signUp import in case it's used elsewhere
 import { signUp } from "@/auth";
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setLoginError("");
+    
+    try {
+      console.log("Attempting to sign in with:", email);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      if (error) {
+        console.error("Login error:", error.message);
+        setLoginError(error.message);
+        setIsLoading(false);
+        return;
+      }
+      
+      console.log("Login successful:", data);
+      login(); // Set auth context state
+      setLoginOpen(false);
+      navigate("/home-page");
+    } catch (error) {
+      console.error("Unexpected error during login:", error);
+      setLoginError("An unexpected error occurred. Please try again.");
+      setIsLoading(false);
+    }
+  };
   
   const handleStartFreeTrial = async () => {
     console.log("=== START: handleStartFreeTrial function started running ===");
@@ -148,6 +187,56 @@ const LandingPage = () => {
 
   return (
     <Layout hideSidebar={true}>
+      <div className="absolute top-4 right-6 z-10">
+        <Button 
+          variant="outline" 
+          onClick={() => setLoginOpen(true)}
+          className="font-medium"
+        >
+          Log In
+        </Button>
+      </div>
+      
+      <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Log in to your account</DialogTitle>
+            <DialogDescription>
+              Enter your email and password to access your dashboard.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleLogin} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input 
+                id="email" 
+                type="email" 
+                placeholder="your@email.com" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input 
+                id="password" 
+                type="password" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            {loginError && (
+              <p className="text-sm text-red-500">{loginError}</p>
+            )}
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Logging in..." : "Log In"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+      
       <div className="max-w-6xl mx-auto px-6 py-16 space-y-16 fade-in">
         {/* Hero Section */}
         <section className="text-center space-y-6">
