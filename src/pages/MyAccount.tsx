@@ -4,6 +4,7 @@ import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { CreditCard, User, Wallet } from 'lucide-react';
 
 const MyAccount = () => {
@@ -183,6 +184,61 @@ const MyAccount = () => {
                       <div className="flex items-center gap-2">
                         <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">Default</Badge>
                         <Button variant="ghost" size="sm">Remove</Button>
+                      </div>
+                    </div>
+                    
+                    {/* No Payment Methods State */}
+                    {false && (
+                      <div className="p-5 text-center">
+                        <p className="text-muted-foreground mb-4">No payment methods added yet.</p>
+                        <Button 
+                          variant="outline" 
+                          className="flex items-center gap-2 mx-auto"
+                          onClick={() => {
+                            // Open a dialog or form for adding a new payment method
+                          }}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus">
+                            <path d="M5 12h14" />
+                            <path d="M12 5v14" />
+                          </svg>
+                          Add Payment Method
+                        </Button>
+                      </div>
+                    )}
+                    
+                    {/* Example cards - in a real app, map through actual payment methods */}
+                    <div className="p-5 border-b flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-gradient-to-r from-blue-600 to-blue-800 w-12 h-8 rounded flex items-center justify-center text-white">
+                          <span className="text-xs font-bold">VISA</span>
+                        </div>
+                        <div>
+                          <p className="font-medium">•••• •••• •••• 4242</p>
+                          <p className="text-sm text-muted-foreground">Expires 05/28</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">Default</Badge>
+                        <Button variant="ghost" size="sm">Edit</Button>
+                        <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50">Remove</Button>
+                      </div>
+                    </div>
+                    
+                    <div className="p-5 border-b flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-gradient-to-r from-green-600 to-green-800 w-12 h-8 rounded flex items-center justify-center text-white">
+                          <span className="text-xs font-bold">MC</span>
+                        </div>
+                        <div>
+                          <p className="font-medium">•••• •••• •••• 8391</p>
+                          <p className="text-sm text-muted-foreground">Expires 11/27</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="sm">Make Default</Button>
+                        <Button variant="ghost" size="sm">Edit</Button>
+                        <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50">Remove</Button>
                       </div>
                     </div>
                     
