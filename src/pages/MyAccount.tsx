@@ -13,7 +13,6 @@ const MyAccount = () => {
   // Profile state
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [createdAt, setCreatedAt] = useState('');
   const [loading, setLoading] = useState(true);
   
   // Password change state
@@ -32,15 +31,6 @@ const MyAccount = () => {
         if (user) {
           setName(user.user_metadata?.full_name || '');
           setEmail(user.email || '');
-          // Format created_at date
-          if (user.created_at) {
-            const date = new Date(user.created_at);
-            setCreatedAt(date.toLocaleDateString('en-US', { 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            }));
-          }
         }
       } catch (error) {
         console.error('Error loading user data:', error);
@@ -125,34 +115,13 @@ const MyAccount = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {/* Profile Information Display */}
-                  {/* Profile Information Display */}
+                  {/* Profile Information & Edit Section */}
                   <div className="bg-card p-6 rounded-lg border">
-                    <div className="space-y-4">
-                      <div className="flex flex-col gap-1">
-                        <h3 className="text-sm font-medium text-muted-foreground">Full Name</h3>
-                        <p className="font-medium">{loading ? 'Loading...' : name || 'Not set'}</p>
-                      </div>
-                      
-                      <div className="flex flex-col gap-1">
-                        <h3 className="text-sm font-medium text-muted-foreground">Email Address</h3>
-                        <p className="font-medium">{loading ? 'Loading...' : email}</p>
-                      </div>
-                      
-                      <div className="flex flex-col gap-1">
-                        <h3 className="text-sm font-medium text-muted-foreground">Account Created</h3>
-                        <p className="font-medium">{loading ? 'Loading...' : createdAt || 'Unknown'}</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Edit Profile Section */}
-                  <div className="bg-card p-6 rounded-lg border">
-                    <h3 className="text-lg font-medium mb-4">Edit Profile</h3>
+                    <h3 className="text-lg font-medium mb-4">Profile Information</h3>
                     <form onSubmit={handleProfileUpdate} className="space-y-4">
                       <div className="grid gap-3">
                         <label htmlFor="name" className="text-sm font-medium">
-                          Name
+                          Full Name
                         </label>
                         <input
                           type="text"
@@ -161,6 +130,7 @@ const MyAccount = () => {
                           value={name}
                           onChange={(e) => setName(e.target.value)}
                           disabled={loading}
+                          placeholder="Enter your name"
                         />
                       </div>
                       
@@ -175,6 +145,7 @@ const MyAccount = () => {
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           disabled={loading}
+                          placeholder="Enter your email"
                         />
                       </div>
                       
