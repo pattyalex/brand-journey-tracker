@@ -348,6 +348,28 @@ const LandingPage = () => {
           </Button>
         </section>
       </div>
+      
+      {/* Footer */}
+      <footer className="border-t mt-16 py-6">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
+          <div className="text-sm text-muted-foreground mb-4 md:mb-0">
+            © {new Date().getFullYear()} Content Creator Platform. All rights reserved.
+          </div>
+          <div className="flex items-center space-x-4">
+            <a href="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              Terms
+            </a>
+            <span className="text-muted-foreground">|</span>
+            <a href="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              Privacy
+            </a>
+            <span className="text-muted-foreground">|</span>
+            <a href="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              Contact
+            </a>
+          </div>
+        </div>
+      </footer>
     </Layout>
   );
 };

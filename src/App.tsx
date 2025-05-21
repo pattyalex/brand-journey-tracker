@@ -1,4 +1,3 @@
-
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { ThemeProvider } from "@/components/theme-provider";
@@ -20,7 +19,11 @@ const BankOfContent = lazy(() => import('./pages/BankOfContent'));
 const ContentIdeation = lazy(() => import('./pages/ContentIdeation'));
 const ContentPlanning = lazy(() => import('./pages/ContentPlanning'));
 const ContentCalendar = lazy(() => import('./pages/ContentCalendar'));
-const StrategyGrowth = lazy(() => import('./pages/StrategyGrowth'));
+const StrategyGrowth from "./pages/StrategyGrowth";
+import TermsAndConditions from "./pages/TermsAndConditions";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import Contact from "./pages/Contact";
 const Analytics = lazy(() => import('./pages/Analytics'));
 const QuickNotes = lazy(() => import('./pages/QuickNotes'));
 const TaskBoard = lazy(() => import('./pages/TaskBoard'));
@@ -45,15 +48,15 @@ const PageLoader = () => (
 // Protected route component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, hasCompletedOnboarding } = useAuth();
-  
+
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;
   }
-  
+
   if (isAuthenticated && !hasCompletedOnboarding) {
     return <Navigate to="/onboarding" replace />;
   }
-  
+
   return <>{children}</>;
 };
 
@@ -68,7 +71,7 @@ function App() {
               {/* Public routes */}
               <Route path="/" element={<LandingPage />} />
               <Route path="/onboarding" element={<OnboardingFlow />} />
-              
+
               {/* Protected routes - require authentication */}
               <Route path="/app" element={
                 <ProtectedRoute>
@@ -180,6 +183,10 @@ function App() {
                   <Index />
                 </ProtectedRoute>
               } />
+                            <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/contact" element={<Contact />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
