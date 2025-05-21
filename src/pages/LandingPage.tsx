@@ -28,6 +28,18 @@ const LandingPage = () => {
     
     try {
       console.log("Attempting to sign in with:", email);
+      
+      // Check if we're in development mode with a bypass
+      if (import.meta.env.DEV && email === "dev@example.com" && password === "devpassword") {
+        console.log("Using development bypass login");
+        // Wait a moment to simulate API call
+        await new Promise(resolve => setTimeout(resolve, 500));
+        login(); // Set auth context state
+        setLoginOpen(false);
+        navigate("/home-page");
+        return;
+      }
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
