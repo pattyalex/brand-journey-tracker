@@ -19,7 +19,7 @@ const BankOfContent = lazy(() => import('./pages/BankOfContent'));
 const ContentIdeation = lazy(() => import('./pages/ContentIdeation'));
 const ContentPlanning = lazy(() => import('./pages/ContentPlanning'));
 const ContentCalendar = lazy(() => import('./pages/ContentCalendar'));
-const StrategyGrowth from "./pages/StrategyGrowth";
+const StrategyGrowth = lazy(() => import("./pages/StrategyGrowth"));
 import TermsAndConditions from "./pages/TermsAndConditions";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
