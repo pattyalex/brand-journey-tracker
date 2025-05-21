@@ -43,7 +43,16 @@ const Contact = () => {
   return (
     <Layout hideSidebar={true}>
       <div className="max-w-5xl mx-auto px-6 py-12">
-        <h1 className="text-3xl font-bold mb-6">Contact Us</h1>
+        <div className="flex items-center mb-6">
+          <Button 
+            variant="outline" 
+            className="mr-4" 
+            onClick={() => window.location.href = '/'}
+          >
+            ← Back to Home
+          </Button>
+          <h1 className="text-3xl font-bold">Contact Us</h1>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="md:col-span-3">
