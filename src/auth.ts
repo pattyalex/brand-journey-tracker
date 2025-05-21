@@ -1,8 +1,8 @@
 import { supabase } from './supabaseClient'
 
 export async function signUp(email: string, password: string, fullName: string) {
-  // Generate a random email if not provided
-  const randomEmail = `test-${Date.now()}@example.com`;
+  // Generate a random email using crypto.randomUUID
+  const randomEmail = `user-${crypto.randomUUID()}@example.com`;
   const emailToUse = email === "test@example.com" ? randomEmail : email;
   
   console.log(`Signing up with email: ${emailToUse}`);

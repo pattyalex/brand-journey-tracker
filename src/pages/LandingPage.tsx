@@ -12,7 +12,7 @@ const LandingPage = () => {
   const { login } = useAuth();
   
   const handleStartFreeTrial = () => {
-    console.log("Button clicked, attempting signup...");
+    console.log("Button clicked, attempting signup with Supabase...");
     
     // Set to false to enable Supabase authentication
     const bypassAuth = false;
@@ -24,24 +24,32 @@ const LandingPage = () => {
       return;
     }
     
-    // Sign up with placeholder values (email will be randomized in the signUp function)
-    signUp("test@example.com", "password123", "Test User")
+    // Use a randomly generated email (will be created in the signUp function)
+    // and a stronger password
+    const strongPassword = "Test1234!";
+    
+    console.log("Attempting to create Supabase user...");
+    
+    // Sign up with the test email and stronger password
+    signUp("test@example.com", strongPassword, "Test User")
       .then((result) => {
-        console.log("Sign up result:", result);
+        console.log("Supabase signup result:", result);
         if (result.success) {
-          console.log(`Successfully created account with email: ${result.email}`);
+          console.log(`SUCCESS: Created Supabase account with email: ${result.email}`);
           // Log in and navigate to onboarding
           login();
           navigate("/onboarding");
         } else {
-          console.error("Signup failed:", result.error);
+          console.error("Supabase signup failed:", result.error);
+          // Show the error in the console for debugging
+          console.error("Error details:", result.error);
           // Fall back to login and navigate anyway for development
           login();
           navigate("/onboarding");
         }
       })
       .catch((error) => {
-        console.error("Error during signup:", error);
+        console.error("Error during Supabase signup:", error);
         // Fall back to login and navigate anyway for development
         login();
         navigate("/onboarding");
