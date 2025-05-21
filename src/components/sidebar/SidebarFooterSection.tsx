@@ -1,10 +1,7 @@
-import {
-  SidebarFooter,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton
-} from "@/components/ui/sidebar";
+import { SidebarFooter, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton } from "@/components/ui/sidebar";
 import { MenuItem } from '@/types/sidebar';
+import { useState, useEffect } from 'react';
+import { ChevronDown, ChevronRight, FileText } from 'lucide-react';
 
 interface SidebarFooterSectionProps {
   settingsItem: MenuItem;
@@ -13,6 +10,21 @@ interface SidebarFooterSectionProps {
 }
 
 const SidebarFooterSection = ({ settingsItem, myAccountItem, helpItem }: SidebarFooterSectionProps) => {
+  const [expandAccount, setExpandAccount] = useState(() => {
+    const savedState = localStorage.getItem('sidebar-expand-account');
+    return savedState ? JSON.parse(savedState) : false;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('sidebar-expand-account', JSON.stringify(expandAccount));
+  }, [expandAccount]);
+
+  const handleAccountExpand = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setExpandAccount(!expandAccount);
+  };
+
   return (
     <SidebarFooter className="mt-auto">
       <SidebarMenu>
@@ -29,11 +41,43 @@ const SidebarFooterSection = ({ settingsItem, myAccountItem, helpItem }: Sidebar
 
         <SidebarMenuItem>
           <SidebarMenuButton asChild>
-            <a href={myAccountItem.url} className="flex items-center gap-2">
+            <a 
+              href={myAccountItem.url} 
+              className="flex items-center gap-2"
+              onClick={(e) => {
+                if ((e.target as HTMLElement).closest('[data-expand-arrow="true"]')) {
+                  return;
+                }
+              }}
+            >
               <myAccountItem.icon size={20} />
               <span>{myAccountItem.title}</span>
+              <span 
+                className="ml-auto cursor-pointer" 
+                onClick={handleAccountExpand}
+                data-expand-arrow="true"
+              >
+                {expandAccount ? (
+                  <ChevronDown size={16} />
+                ) : (
+                  <ChevronRight size={16} />
+                )}
+              </span>
             </a>
           </SidebarMenuButton>
+
+          {expandAccount && (
+            <SidebarMenuSub>
+              <SidebarMenuSubItem>
+                <SidebarMenuSubButton asChild size="md">
+                  <a href="/terms-and-conditions" className="flex items-center gap-2">
+                    <FileText size={16} />
+                    <span>Terms and Conditions</span>
+                  </a>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
+            </SidebarMenuSub>
+          )}
         </SidebarMenuItem>
 
         {helpItem && (
