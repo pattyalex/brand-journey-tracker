@@ -316,8 +316,8 @@ const features = [
     icon: Handshake,
   },
   {
-    title: "Performance Analytics",
-    description: "Monitor your growth and make data-driven content decisions",
+    title: "Get Ideas from Megan AI",
+    description: <><strong>Enjoy personalized recommendations.</strong><br /><br />This is your creative AI assistant who helps you brainstorm, plan, and slay the algorithm without the burnout.</>,
     icon: TrendingUp,
   },
 ];
