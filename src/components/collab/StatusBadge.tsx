@@ -14,6 +14,8 @@ const StatusBadge = ({ status, onChange }: StatusBadgeProps) => {
     switch (status.toLowerCase()) {
       case 'pitched':
         return 'bg-blue-100 text-blue-800';
+      case 'inbound':
+        return 'bg-teal-100 text-teal-800';
       case 'in negotiation':
         return 'bg-yellow-100 text-yellow-800';
       case 'contract signed':
@@ -41,6 +43,7 @@ const StatusBadge = ({ status, onChange }: StatusBadgeProps) => {
       autoFocus
     >
       <option value="Pitched">Pitched</option>
+      <option value="Inbound">Inbound</option>
       <option value="In Negotiation">In Negotiation</option>
       <option value="Contract Signed">Contract Signed</option>
       <option value="Content Submitted">Content Submitted</option>
