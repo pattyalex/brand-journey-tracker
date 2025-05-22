@@ -312,7 +312,7 @@ const features = [
   },
   {
     title: "Manage Your Brand Deals",
-    description: <><strong>Handle collaborations professionally.</strong><br /><br />Keep track of partnerships, deadlines, and payments without the chaos.</>,
+    description: <><strong>Handle collaborations with ease.</strong><br /><br />Keep track of partnerships, deadlines, and payments without the chaos.</>,
     icon: Handshake,
   },
   {
