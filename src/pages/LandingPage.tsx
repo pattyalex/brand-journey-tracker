@@ -307,7 +307,7 @@ const LandingPage = () => {
 const features = [
   {
     title: "Organize Your Workflow",
-    description: <><strong>Plan better. Post consistently.</strong><br /><br />Keep all your ideas, tasks, and content calendar in one place so you never get overwhelmed again.</>,
+    description: <><strong>Plan better. Post consistently.</strong><br /><br />Keep your ideas in flow, not in folders. Enjoy a better organization system for your creative brain.</>,
     icon: FolderOpen,
   },
   {
