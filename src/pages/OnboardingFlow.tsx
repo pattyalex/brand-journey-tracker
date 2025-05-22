@@ -602,7 +602,7 @@ const OnboardingFlow: React.FC = () => {
                     control={goalForm.control}
                     name="ideationMethod"
                     render={({ field }) => (
-                      <FormItem className="mb-8 mt-6">
+                      <FormItem className="mb-8 mt-0">
                         <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
                           How do you come up with content ideas today?
                         </FormLabel>
