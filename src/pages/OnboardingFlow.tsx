@@ -177,14 +177,14 @@ const OnboardingFlow: React.FC = () => {
 
   const onGoalSubmit = (data: z.infer<typeof userGoalsSchema>) => {
     console.log("Goal data:", data);
-    
+
     // Prevent accidental submissions if user was just trying to type in "Other" fields
     const activeElement = document.activeElement as HTMLElement;
     if (activeElement && activeElement.tagName === 'INPUT') {
       // If user is currently focused on an input field, don't proceed
       return;
     }
-    
+
     setCurrentStep("connect-social");
   };
 
@@ -602,7 +602,7 @@ const OnboardingFlow: React.FC = () => {
                     control={goalForm.control}
                     name="ideationMethod"
                     render={({ field }) => (
-                      <FormItem className="mb-8 mt-16">
+                      <FormItem className="mb-8 mt-8">
                         <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
                           How do you come up with content ideas today?
                         </FormLabel>
@@ -646,7 +646,7 @@ const OnboardingFlow: React.FC = () => {
                     control={goalForm.control}
                     name="teamStructure"
                     render={({ field }) => (
-                      <FormItem className="mb-8 mt-16">
+                      <FormItem className="mb-8 mt-8">
                         <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
                           Do you work alone or with a team?
                         </FormLabel>
@@ -681,7 +681,7 @@ const OnboardingFlow: React.FC = () => {
                             </div>
                           </RadioGroup>
                         </div>
-                        
+
                         {field.value === "other" && (
                           <FormField
                             control={goalForm.control}
@@ -714,7 +714,7 @@ const OnboardingFlow: React.FC = () => {
                     control={goalForm.control}
                     name="creatorDream"
                     render={({ field }) => (
-                      <FormItem className="mb-8 mt-16">
+                      <FormItem className="mb-8 mt-8">
                         <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
                           What's your biggest dream as a creator?
                         </FormLabel>
@@ -761,7 +761,7 @@ const OnboardingFlow: React.FC = () => {
                             </div>
                           </RadioGroup>
                         </div>
-                        
+
                         {field.value === "other" && (
                           <FormField
                             control={goalForm.control}
@@ -789,12 +789,12 @@ const OnboardingFlow: React.FC = () => {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={goalForm.control}
                     name="platforms"
                     render={() => (
-                      <FormItem className="mb-8 mt-16">
+                      <FormItem className="mb-8 mt-8">
                         <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
                           Which platforms do you want to focus on right now?
                         </FormLabel>
@@ -900,12 +900,12 @@ const OnboardingFlow: React.FC = () => {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={goalForm.control}
                     name="stuckAreas"
                     render={() => (
-                      <FormItem className="mb-8 mt-16">
+                      <FormItem className="mb-8 mt-8">
                         <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
                           Where do you feel most stuck in your content process?
                         </FormLabel>
@@ -1063,7 +1063,7 @@ const OnboardingFlow: React.FC = () => {
                     )}
                   />
 
-                  
+
 
                   <div className="flex justify-between mt-6">
                     <Button variant="ghost" size="sm" onClick={goToPreviousStep} className="flex items-center">
