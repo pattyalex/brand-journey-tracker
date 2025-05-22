@@ -528,12 +528,11 @@ const OnboardingFlow: React.FC = () => {
       case "user-goals":
         return (
           <Card className="w-full max-w-md mx-auto">
-            <CardHeader className="relative">
-
+            <CardHeader className="relative pb-2">
               <CardTitle className="text-2xl">We'd like to get to know you</CardTitle>
               <CardDescription>This helps us tailor the experience to your needs</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               <Form {...goalForm}>
                 <form 
                   onSubmit={(e) => {
@@ -545,13 +544,13 @@ const OnboardingFlow: React.FC = () => {
                     }
                     goalForm.handleSubmit(onGoalSubmit)(e);
                   }} 
-                  className="space-y-4"
+                  className="space-y-2"
                 >
                   <FormField
                     control={goalForm.control}
                     name="postFrequency"
                     render={({ field }) => (
-                      <FormItem className="mb-12 mt-16">
+                      <FormItem className="mb-8 mt-4">
                         <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
                           How often do you want to create or post content?
                         </FormLabel>
