@@ -47,6 +47,9 @@ const PageLoader = () => (
   </div>
 );
 
+// Import useAuth hook
+import { useAuth } from "./contexts/AuthContext";
+
 // Protected route component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, hasCompletedOnboarding } = useAuth();
