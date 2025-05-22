@@ -602,7 +602,7 @@ const OnboardingFlow: React.FC = () => {
                     control={goalForm.control}
                     name="ideationMethod"
                     render={({ field }) => (
-                      <FormItem className="mb-8 mt-8">
+                      <FormItem className="mb-8 mt-12">
                         <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
                           How do you come up with content ideas today?
                         </FormLabel>
@@ -646,7 +646,7 @@ const OnboardingFlow: React.FC = () => {
                     control={goalForm.control}
                     name="teamStructure"
                     render={({ field }) => (
-                      <FormItem className="mb-8 mt-8">
+                      <FormItem className="mb-8 mt-12">
                         <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
                           Do you work alone or with a team?
                         </FormLabel>
@@ -714,7 +714,7 @@ const OnboardingFlow: React.FC = () => {
                     control={goalForm.control}
                     name="creatorDream"
                     render={({ field }) => (
-                      <FormItem className="mb-8 mt-8">
+                      <FormItem className="mb-8 mt-12">
                         <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
                           What's your biggest dream as a creator?
                         </FormLabel>
@@ -794,7 +794,7 @@ const OnboardingFlow: React.FC = () => {
                     control={goalForm.control}
                     name="platforms"
                     render={() => (
-                      <FormItem className="mb-8 mt-8">
+                      <FormItem className="mb-8 mt-12">
                         <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
                           Which platforms do you want to focus on right now?
                         </FormLabel>
@@ -905,7 +905,7 @@ const OnboardingFlow: React.FC = () => {
                     control={goalForm.control}
                     name="stuckAreas"
                     render={() => (
-                      <FormItem className="mb-8 mt-8">
+                      <FormItem className="mb-8 mt-12">
                         <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
                           Where do you feel most stuck in your content process?
                         </FormLabel>
