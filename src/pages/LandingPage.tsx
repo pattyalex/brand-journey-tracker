@@ -278,7 +278,7 @@ const LandingPage = () => {
           </Button>
         </section>
       </div>
-      
+
       {/* Footer */}
       <footer className="border-t mt-16 py-6">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
@@ -307,7 +307,7 @@ const LandingPage = () => {
 const features = [
   {
     title: "Improve Your Workflow",
-    description: <><strong>Plan better. Post consistently.</strong><br /><br />Keep your ideas in flow, not in folders. Enjoy a better organization system for your creative brain.</>,
+    description: <><strong>Plan better. Post more consistently.</strong><br /><br />Keep your ideas in flow, not in folders. We developed a better organization system for your creative brain. Post more and work less!</>,
     icon: FolderOpen,
   },
   {
