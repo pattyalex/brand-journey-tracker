@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,6 +13,9 @@ import { getCurrentUser, updateUserProfile, updateUserPassword, logout } from '@
 import SocialPlatformsManager from '@/components/settings/SocialPlatformsManager';
 
 const MyAccount = () => {
+  const navigate = useNavigate();
+  const { openLoginModal } = useAuth();
+  
   // Profile state
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -507,28 +511,16 @@ const MyAccount = () => {
             onClick={async () => {
               try {
                 await logout();
-                // Create a custom sign out dialog instead of toast
-                const signOutDialog = document.createElement('div');
-                signOutDialog.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50';
-                signOutDialog.innerHTML = `
-                  <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full text-center">
-                    <h2 class="text-2xl font-bold mb-4">You've officially signed out.</h2>
-                    <button id="login-again-btn" class="bg-primary text-white px-6 py-2 rounded-md hover:bg-primary/90 font-medium mt-4">
-                      Log in again
-                    </button>
-                  </div>
-                `;
-                document.body.appendChild(signOutDialog);
                 
-                // Add event listener to the login button
-                document.getElementById('login-again-btn')?.addEventListener('click', () => {
-                  document.body.removeChild(signOutDialog);
-                  navigate('/');
-                });
+                // Navigate to home page
+                navigate('/');
                 
-                // Also navigate to home after a short delay
+                // Show success toast
+                toast.success("You've officially signed out");
+                
+                // Show login modal after a short delay
                 setTimeout(() => {
-                  navigate('/');
+                  openLoginModal();
                 }, 500);
               } catch (error) {
                 console.error('Error signing out:', error);

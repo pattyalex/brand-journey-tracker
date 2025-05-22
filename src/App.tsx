@@ -1,7 +1,9 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { ThemeProvider } from "@/components/theme-provider";
-import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "./contexts/AuthContext";
+import LoginModal from "./components/LoginModal";
 
 // Eagerly load components
 import Dashboard from './pages/Dashboard';
@@ -65,6 +67,7 @@ function App() {
     <ThemeProvider defaultTheme="system" storageKey="vite-react-theme">
       <ErrorBoundary>
         <AuthProvider>
+          <LoginModal />
           <Router>
             <Suspense fallback={<PageLoader />}>
               <Routes>

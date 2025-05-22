@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 
 interface AuthContextType {
@@ -7,6 +7,9 @@ interface AuthContextType {
   login: () => void;
   logout: () => void;
   completeOnboarding: () => void;
+  loginOpen: boolean;
+  openLoginModal: () => void;
+  closeLoginModal: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,6 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [loginOpen, setLoginOpen] = useState(false);
 
   // Use localStorage to persist auth state
   useEffect(() => {
@@ -66,10 +70,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initAuth();
   }, []);
 
-  const login = () => {
+  const login = useCallback(() => {
     setIsAuthenticated(true);
-    localStorage.setItem('isAuthenticated', 'true');
-  };
+    setLoginOpen(false);
+  }, []);
 
   const logout = async () => {
     try {
@@ -94,6 +98,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('hasCompletedOnboarding', 'true');
   };
 
+    const openLoginModal = useCallback(() => {
+    setLoginOpen(true);
+  }, []);
+
+  const closeLoginModal = useCallback(() => {
+    setLoginOpen(false);
+  }, []);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -106,7 +118,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, hasCompletedOnboarding, login, logout, completeOnboarding }}>
+    <AuthContext.Provider value={{ isAuthenticated, hasCompletedOnboarding, login, logout, completeOnboarding, loginOpen, openLoginModal, closeLoginModal }}>
       {children}
     </AuthContext.Provider>
   );
