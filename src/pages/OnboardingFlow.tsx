@@ -1063,73 +1063,7 @@ const OnboardingFlow: React.FC = () => {
                     )}
                   />
 
-                  <FormField
-                    control={goalForm.control}
-                    name="goal"
-                    render={({ field }) => (
-                      <FormItem className="mb-12 mt-16">
-                        <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
-                          What's your most important goal?
-                        </FormLabel>
-                        <div className="space-y-2 mt-4">
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <div className="flex items-center space-x-2 py-3">
-                              <RadioGroupItem value="organize" id="organize" />
-                              <Label htmlFor="organize" className="font-medium">
-                                To organize my content creation work
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2 py-3">
-                              <RadioGroupItem value="guidance" id="guidance" />
-                              <Label htmlFor="guidance" className="font-medium">
-                                To get guidance on content ideas
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2 py-3">
-                              <RadioGroupItem value="performance" id="performance" />
-                              <Label htmlFor="performance" className="font-medium">
-                                To track and improve my social performance
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2 py-3">
-                              <RadioGroupItem value="other" id="other" />
-                              <Label htmlFor="other" className="font-medium">
-                                Other
-                              </Label>
-                            </div>
-                          </RadioGroup>
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {goalForm.watch("goal") === "other" && (
-                    <FormField
-                      control={goalForm.control}
-                      name="otherGoal"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Input 
-                              placeholder="Please specify your goal" 
-                              {...field} 
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  e.preventDefault(); // Prevent form submission
-                                  e.currentTarget.blur(); // Blur input to save value
-                                }
-                              }}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
+                  
 
                   <div className="flex justify-between mt-6">
                     <Button variant="ghost" size="sm" onClick={goToPreviousStep} className="flex items-center">
