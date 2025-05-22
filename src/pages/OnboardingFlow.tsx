@@ -82,6 +82,11 @@ const userGoalsSchema = z.object({
     other: z.boolean().default(false)
   }),
   otherStuckArea: z.string().optional(),
+  ideationMethod: z.enum(["plan_ahead", "wing_it", "follow_trends", "struggle"]),
+  teamStructure: z.enum(["solo", "has_assistant", "team_agency", "other"]),
+  creatorDream: z.enum(["quit_job", "grow_followers", "build_brand", "launch_products", "inspire_others", "other"]),
+  otherTeamStructure: z.string().optional(),
+  otherCreatorDream: z.string().optional(),
 });
 
 const socialAccountsSchema = z.object({
@@ -140,7 +145,10 @@ const OnboardingFlow: React.FC = () => {
         analytics: false,
         organization: false,
         other: false
-      }
+      },
+      ideationMethod: "plan_ahead",
+      teamStructure: "solo",
+      creatorDream: "grow_followers"
     }
   });
 
@@ -703,6 +711,118 @@ const OnboardingFlow: React.FC = () => {
 
                   <FormField
                     control={goalForm.control}
+                    name="ideationMethod"
+                    render={({ field }) => (
+                      <FormItem className="mb-12 mt-16">
+                        <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
+                          How do you come up with content ideas today?
+                        </FormLabel>
+                        <div className="space-y-2 mt-4">
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <div className="flex items-center space-x-2 py-3">
+                              <RadioGroupItem value="plan_ahead" id="plan_ahead" />
+                              <Label htmlFor="plan_ahead" className="font-medium">
+                                I plan them ahead
+                              </Label>
+                            </div>
+                            <div className="flex items-center space-x-2 py-3">
+                              <RadioGroupItem value="wing_it" id="wing_it" />
+                              <Label htmlFor="wing_it" className="font-medium">
+                                I wing it day by day
+                              </Label>
+                            </div>
+                            <div className="flex items-center space-x-2 py-3">
+                              <RadioGroupItem value="follow_trends" id="follow_trends" />
+                              <Label htmlFor="follow_trends" className="font-medium">
+                                I follow trends and repost
+                              </Label>
+                            </div>
+                            <div className="flex items-center space-x-2 py-3">
+                              <RadioGroupItem value="struggle" id="struggle" />
+                              <Label htmlFor="struggle" className="font-medium">
+                                I struggle to come up with ideas
+                              </Label>
+                            </div>
+                          </RadioGroup>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={goalForm.control}
+                    name="teamStructure"
+                    render={({ field }) => (
+                      <FormItem className="mb-12 mt-16">
+                        <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
+                          Do you work alone or with a team?
+                        </FormLabel>
+                        <div className="space-y-2 mt-4">
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <div className="flex items-center space-x-2 py-3">
+                              <RadioGroupItem value="solo" id="solo" />
+                              <Label htmlFor="solo" className="font-medium">
+                                Just me
+                              </Label>
+                            </div>
+                            <div className="flex items-center space-x-2 py-3">
+                              <RadioGroupItem value="has_assistant" id="has_assistant" />
+                              <Label htmlFor="has_assistant" className="font-medium">
+                                I have an assistant / editor
+                              </Label>
+                            </div>
+                            <div className="flex items-center space-x-2 py-3">
+                              <RadioGroupItem value="team_agency" id="team_agency" />
+                              <Label htmlFor="team_agency" className="font-medium">
+                                I'm part of a team or agency
+                              </Label>
+                            </div>
+                            <div className="flex items-center space-x-2 py-3">
+                              <RadioGroupItem value="other" id="other_team" />
+                              <Label htmlFor="other_team" className="font-medium">
+                                Other
+                              </Label>
+                            </div>
+                          </RadioGroup>
+                        </div>
+                        
+                        {field.value === "other" && (
+                          <FormField
+                            control={goalForm.control}
+                            name="otherTeamStructure"
+                            render={({ field }) => (
+                              <FormItem className="mt-2">
+                                <FormControl>
+                                  <Input 
+                                    placeholder="Please specify your team structure" 
+                                    {...field} 
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        e.currentTarget.blur();
+                                      }
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={goalForm.control}
                     name="stuckAreas"
                     render={() => (
                       <FormItem className="mt-16">
@@ -858,6 +978,86 @@ const OnboardingFlow: React.FC = () => {
                           />
                         )}
 
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={goalForm.control}
+                    name="creatorDream"
+                    render={({ field }) => (
+                      <FormItem className="mb-12 mt-16">
+                        <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
+                          What's your biggest dream as a creator?
+                        </FormLabel>
+                        <div className="space-y-2 mt-4">
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <div className="flex items-center space-x-2 py-3">
+                              <RadioGroupItem value="quit_job" id="quit_job" />
+                              <Label htmlFor="quit_job" className="font-medium">
+                                Quitting my job and going full-time
+                              </Label>
+                            </div>
+                            <div className="flex items-center space-x-2 py-3">
+                              <RadioGroupItem value="grow_followers" id="grow_followers" />
+                              <Label htmlFor="grow_followers" className="font-medium">
+                                Growing my followers and engagement
+                              </Label>
+                            </div>
+                            <div className="flex items-center space-x-2 py-3">
+                              <RadioGroupItem value="build_brand" id="build_brand" />
+                              <Label htmlFor="build_brand" className="font-medium">
+                                Building a personal brand that gets me brand deals
+                              </Label>
+                            </div>
+                            <div className="flex items-center space-x-2 py-3">
+                              <RadioGroupItem value="launch_products" id="launch_products" />
+                              <Label htmlFor="launch_products" className="font-medium">
+                                Launching my own products or business
+                              </Label>
+                            </div>
+                            <div className="flex items-center space-x-2 py-3">
+                              <RadioGroupItem value="inspire_others" id="inspire_others" />
+                              <Label htmlFor="inspire_others" className="font-medium">
+                                Inspiring others / making impact
+                              </Label>
+                            </div>
+                            <div className="flex items-center space-x-2 py-3">
+                              <RadioGroupItem value="other" id="other_dream" />
+                              <Label htmlFor="other_dream" className="font-medium">
+                                Other
+                              </Label>
+                            </div>
+                          </RadioGroup>
+                        </div>
+                        
+                        {field.value === "other" && (
+                          <FormField
+                            control={goalForm.control}
+                            name="otherCreatorDream"
+                            render={({ field }) => (
+                              <FormItem className="mt-2">
+                                <FormControl>
+                                  <Input 
+                                    placeholder="Please specify your creator dream" 
+                                    {...field} 
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        e.currentTarget.blur();
+                                      }
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}
