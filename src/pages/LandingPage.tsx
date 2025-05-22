@@ -311,8 +311,8 @@ const features = [
     icon: FolderOpen,
   },
   {
-    title: "Revenue Growth",
-    description: "Track income from brand deals, sponsorships, and other revenue streams",
+    title: "Manage Your Brand Deals",
+    description: <><strong>Handle collaborations professionally.</strong><br /><br />Keep track of partnerships, deadlines, and payments without the chaos.</>,
     icon: Handshake,
   },
   {
