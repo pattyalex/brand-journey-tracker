@@ -317,7 +317,7 @@ const features = [
   },
   {
     title: "Get Ideas from Megan AI",
-    description: <><strong>Enjoy personalized recommendations.</strong><br /><br />This is your creative AI assistant who helps you brainstorm, plan, and slay the algorithm without the burnout.</>,
+    description: <><strong>So you never run out of content ideas.</strong><br /><br />This is your creative AI assistant who helps you brainstorm, plan, and slay the algorithm without the burnout.</>,
     icon: TrendingUp,
   },
 ];
