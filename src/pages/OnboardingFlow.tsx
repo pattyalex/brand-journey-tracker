@@ -646,7 +646,7 @@ const OnboardingFlow: React.FC = () => {
                     control={goalForm.control}
                     name="teamStructure"
                     render={({ field }) => (
-                      <FormItem className="mb-8 mt-12">
+                      <FormItem className="mb-8 mt-20">
                         <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
                           Do you work alone or with a team?
                         </FormLabel>
