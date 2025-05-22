@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { FolderOpen, Handshake, TrendingUp, CheckCircle } from "lucide-react";
+import { Wind, Handshake, TrendingUp, CheckCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "../supabaseClient";
 import { toast } from "sonner";
@@ -299,7 +299,7 @@ const features = [
   {
     title: "Improve Your Workflow",
     description: <><strong>Plan better. Post consistently.</strong><br /><br />Keep your ideas in flow, not in folders. We developed a better organization system for your creative brain. Work less and post more!</>,
-    icon: FolderOpen,
+    icon: Wind,
   },
   {
     title: "Manage Your Brand Deals",
