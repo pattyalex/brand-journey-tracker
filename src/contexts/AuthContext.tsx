@@ -75,11 +75,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // Try to sign out from Supabase
       await supabase.auth.signOut();
-    } catch (error) {
-      console.error("Error signing out:", error);
-    } finally {
+      // Clear any user data from local storage
+      localStorage.removeItem('hasCompletedOnboarding');
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('user');
+      // Set auth states
       setIsAuthenticated(false);
       localStorage.setItem('isAuthenticated', 'false');
+      return true;
+    } catch (error) {
+      console.error("Error signing out:", error);
+      return false;
     }
   };
 

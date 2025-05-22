@@ -53,6 +53,20 @@ interface State {
   toasts: ToasterToast[]
 }
 
+// Custom function to show logout success toast with login button
+export const showLogoutSuccessToast = () => {
+  // Implementation will depend on your toast library
+  toast({
+    title: "You've officially signed out",
+    description: "Thank you for using our platform!",
+    action: {
+      label: "Log in again",
+      onClick: () => window.location.href = "/"
+    },
+    duration: 5000,
+  });
+};
+
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
 
 const addToRemoveQueue = (toastId: string) => {

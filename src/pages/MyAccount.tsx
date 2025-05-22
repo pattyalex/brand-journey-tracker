@@ -507,8 +507,29 @@ const MyAccount = () => {
             onClick={async () => {
               try {
                 await logout();
-                toast.success('Signed out successfully');
-                navigate('/');
+                // Create a custom sign out dialog instead of toast
+                const signOutDialog = document.createElement('div');
+                signOutDialog.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50';
+                signOutDialog.innerHTML = `
+                  <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full text-center">
+                    <h2 class="text-2xl font-bold mb-4">You've officially signed out.</h2>
+                    <button id="login-again-btn" class="bg-primary text-white px-6 py-2 rounded-md hover:bg-primary/90 font-medium mt-4">
+                      Log in again
+                    </button>
+                  </div>
+                `;
+                document.body.appendChild(signOutDialog);
+                
+                // Add event listener to the login button
+                document.getElementById('login-again-btn')?.addEventListener('click', () => {
+                  document.body.removeChild(signOutDialog);
+                  navigate('/');
+                });
+                
+                // Also navigate to home after a short delay
+                setTimeout(() => {
+                  navigate('/');
+                }, 500);
               } catch (error) {
                 console.error('Error signing out:', error);
                 toast.error('Failed to sign out');
