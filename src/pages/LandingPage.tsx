@@ -201,7 +201,7 @@ const LandingPage = () => {
         {/* Brand Message Section */}
         <section className="py-10">
           <div className="text-center max-w-3xl mx-auto">
-            <h2 className="text-3xl font-bold mb-6">Whether you're an influencer or a founder, your content is your brand.</h2>
+            <h2 className="text-3xl font-bold mb-6">Whether you're an influencer, a founder, or just getting started, your content is your brand.</h2>
             <p className="text-xl text-muted-foreground">
               HeyMegan is your AI-powered creative workspace. It's built for people who want to grow their personal brand through content that actually converts.
             </p>
