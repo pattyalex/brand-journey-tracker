@@ -171,7 +171,7 @@ const LandingPage = () => {
             Simplify Your Content <br />Creation Journey
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            All-in-one platform for content creators to manage projects, track income, and grow their business
+            AI-powered workspace for content creators to manage projects, track income, and grow their business
           </p>
           <div className="flex justify-center">
             <Button 
