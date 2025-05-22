@@ -316,7 +316,7 @@ const features = [
     icon: Handshake,
   },
   {
-    title: "Get Ideas From Megan AI",
+    title: "Get Help From Megan AI",
     description: <><strong>Never run out of content ideas.</strong><br /><br />This is your creative AI assistant who helps you brainstorm, plan, and slay the algorithm without the burnout.</>,
     icon: TrendingUp,
   },
