@@ -198,22 +198,13 @@ const LandingPage = () => {
           ))}
         </section>
 
-        {/* Testimonials Section */}
+        {/* Brand Message Section */}
         <section className="py-10">
-          <h2 className="text-3xl font-bold text-center mb-10">What Our Users Say</h2>
-          <div className="grid md:grid-cols-2 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="p-6 border border-gray-100">
-                <div className="flex items-start mb-4">
-                  <div className="bg-gray-200 w-12 h-12 rounded-full mr-4"></div>
-                  <div>
-                    <h4 className="font-semibold">{testimonial.name}</h4>
-                    <p className="text-sm text-muted-foreground">{testimonial.title}</p>
-                  </div>
-                </div>
-                <p className="italic">"{testimonial.quote}"</p>
-              </Card>
-            ))}
+          <div className="text-center max-w-3xl mx-auto">
+            <h2 className="text-3xl font-bold mb-6">Whether you're an influencer or a founder, your content is your brand.</h2>
+            <p className="text-xl text-muted-foreground">
+              HeyMegan is your AI-powered creative workspace. It's built for people who want to grow their personal brand through content that actually converts.
+            </p>
           </div>
         </section>
 
