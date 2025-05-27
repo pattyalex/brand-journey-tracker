@@ -154,13 +154,6 @@ const LandingPage = () => {
 
   return (
     <Layout hideSidebar={true}>
-      <div className="absolute top-4 left-6 z-10 flex items-center gap-2">
-        <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg p-2 shadow-lg">
-          <Sparkles className="h-6 w-6 text-white" />
-        </div>
-        <span className="text-xl font-bold text-foreground">HeyMegan</span>
-      </div>
-      
       <div className="absolute top-4 right-6 z-10">
         <Button 
           variant="outline" 
