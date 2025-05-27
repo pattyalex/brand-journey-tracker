@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { RotateCw, Handshake, Lightbulb, CheckCircle } from "lucide-react";
+import { RotateCw, Handshake, Lightbulb, CheckCircle, Brain } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "../supabaseClient";
 import { toast } from "sonner";
@@ -154,6 +154,13 @@ const LandingPage = () => {
 
   return (
     <Layout hideSidebar={true}>
+      <div className="absolute top-4 left-6 z-10 flex items-center gap-2">
+        <div className="bg-primary rounded-lg p-2">
+          <Brain className="h-6 w-6 text-white" />
+        </div>
+        <span className="text-xl font-bold text-foreground">HeyMegan</span>
+      </div>
+      
       <div className="absolute top-4 right-6 z-10">
         <Button 
           variant="outline" 
