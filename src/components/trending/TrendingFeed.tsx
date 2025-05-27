@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Search, TrendingUp } from 'lucide-react';
+import { Search, RotateCcw } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -408,7 +408,7 @@ const TrendingFeed = () => {
               "Loading..."
             ) : (
               <>
-                <TrendingUp className="w-4 h-4 mr-2" />
+                <RotateCcw className="w-4 h-4 mr-2" />
                 More
               </>
             )}
