@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { RotateCw, Handshake, RotateCcw, CheckCircle } from "lucide-react";
+import { RotateCw, Handshake, Lightbulb, CheckCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "../supabaseClient";
 import { toast } from "sonner";
@@ -309,7 +309,7 @@ const features = [
   {
     title: "Get Help From Megan AI",
     description: <><strong>Never run out of content ideas.</strong><br /><br />Megan is your creative AI assistant who helps you brainstorm, plan, and slay the algorithm without the burnout.</>,
-    icon: RotateCcw,
+    icon: Lightbulb,
   },
 ];
 
