@@ -1,5 +1,5 @@
-
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ const LoginModal = () => {
   const [password, setPassword] = useState("demopassword");
   const [loginError, setLoginError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleMockLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,6 +24,8 @@ const LoginModal = () => {
     setTimeout(() => {
       login(); // Set auth context state
       toast.success("Successfully logged in");
+	  closeLoginModal();
+      navigate('/home');
       setIsLoading(false);
     }, 800);
   };
