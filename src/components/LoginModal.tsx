@@ -23,7 +23,7 @@ const LoginModal = () => {
       login(); // Set auth context state
       toast.success("Successfully logged in");
       closeLoginModal();
-      window.location.href = '/home';
+      window.location.href = '/dashboard';
       setIsLoading(false);
     }, 800);
   };
