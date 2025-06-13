@@ -34,4 +34,13 @@ try {
   throw error;
 }
 
+// Add global error handler for unhandled promise rejections
+if (typeof window !== 'undefined') {
+  window.addEventListener('unhandledrejection', (event) => {
+    console.error('Unhandled promise rejection caught:', event.reason);
+    // Prevent the default behavior (which logs to console)
+    event.preventDefault();
+  });
+}
+
 export { supabase };
