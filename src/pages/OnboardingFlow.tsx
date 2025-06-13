@@ -167,9 +167,83 @@ const OnboardingFlow: React.FC = () => {
   });
 
   // Handle form submissions
-  const onAccountSubmit = (data: z.infer<typeof accountCreationSchema>) => {
+  const onAccountSubmit = async (data: z.infer<typeof accountCreationSchema>) => {
     console.log("Account data:", data);
-    setCurrentStep("payment-setup");
+    
+    try {
+      console.log("=== CREATING SUPABASE USER ===");
+      console.log(`Email: ${data.email}`);
+      console.log(`Name: ${data.name}`);
+      
+      // Step 1: Create Supabase Auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            full_name: data.name
+          }
+        }
+      });
+
+      if (authError) {
+        console.error('Auth signup failed:', authError);
+        alert(`Account creation failed: ${authError.message}`);
+        return;
+      }
+
+      if (!authData.user?.id) {
+        console.error('No user ID returned from signup');
+        alert('Account creation failed: No user ID returned');
+        return;
+      }
+
+      const userId = authData.user.id;
+      console.log('✅ Supabase Auth user created successfully:', userId);
+
+      // Step 2: Insert into users table
+      const { error: usersInsertError } = await supabase.from('users').insert([
+        {
+          id: userId,
+          email: data.email
+        }
+      ]);
+
+      if (usersInsertError) {
+        console.error('Users table insert failed:', usersInsertError);
+        alert(`Failed to create user record: ${usersInsertError.message}`);
+        return;
+      }
+
+      console.log('✅ User record created successfully in users table');
+
+      // Step 3: Insert into profiles table
+      const { error: profileInsertError } = await supabase.from('profiles').insert([
+        {
+          id: userId,
+          full_name: data.name,
+          email: data.email,
+          is_on_trial: true,
+          trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
+        }
+      ]);
+
+      if (profileInsertError) {
+        console.error('Profile insert failed:', profileInsertError);
+        alert(`Failed to create user profile: ${profileInsertError.message}`);
+        return;
+      }
+
+      console.log('✅ Profile created successfully');
+      console.log('=== USER CREATION COMPLETE ===');
+
+      // Only proceed to payment setup if everything succeeded
+      setCurrentStep("payment-setup");
+      
+    } catch (error) {
+      console.error('Unexpected error during user creation:', error);
+      alert(`Account creation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
 
   const onPaymentSubmit = async (values: z.infer<typeof paymentSetupSchema>) => {
@@ -181,11 +255,13 @@ const OnboardingFlow: React.FC = () => {
 
       const accountData = accountForm.getValues();
 
-      // Step 1: Get the current authenticated user
+      // Step 1: Get the current authenticated user (should already exist from account creation step)
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) {
-        throw new Error(`Failed to get user: ${authError?.message || 'No user found'}`);
+        throw new Error(`Failed to get authenticated user: ${authError?.message || 'No user found. Please try creating your account again.'}`);
       }
+
+      console.log('Using existing authenticated user:', user.id);
 
       // Step 2: Create Stripe customer
       console.log("Creating Stripe customer...");
@@ -265,7 +341,7 @@ const OnboardingFlow: React.FC = () => {
       const { subscription } = await subscriptionResponse.json();
       console.log("Subscription created:", subscription.id);
 
-      // Step 6: Update user profile in Supabase with Stripe data
+      // Step 6: Update existing user profile with Stripe data
       const { error: updateError } = await supabase
         .from('profiles')
         .update({
