@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 
@@ -104,16 +103,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.warn("Supabase signout failed:", supabaseError);
         }
       }
-      
+
       // Clear local storage regardless
       localStorage.removeItem('hasCompletedOnboarding');
       localStorage.removeItem('isAuthenticated');
       localStorage.removeItem('user');
-      
+
       // Set auth states
       setIsAuthenticated(false);
       setHasCompletedOnboarding(false);
-      
+
       return true;
     } catch (error) {
       console.error("Error signing out:", error);
@@ -142,13 +141,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse flex flex-col items-center">
-          <div className="w-20 h-20 bg-muted rounded-full mb-4"></div>
-          <div className="h-4 w-32 bg-muted rounded"></div>
+      <>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-pulse flex flex-col items-center">
+            <div className="w-20 h-20 bg-muted rounded-full mb-4"></div>
+            <div className="h-4 w-32 bg-muted rounded"></div>
+          </div>
         </div>
-      );
-    }
+      </>
+    );
   }
 
   return (
