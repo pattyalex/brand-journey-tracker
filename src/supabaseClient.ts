@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 
 // Get environment variables with proper fallbacks
@@ -24,6 +25,7 @@ try {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
+      detectSessionInUrl: true
     }
   });
   console.log('✅ Supabase client created successfully');
@@ -34,23 +36,51 @@ try {
   throw error;
 }
 
-// Add global error handler for unhandled promise rejections
+// Enhanced global error handler for unhandled promise rejections
 if (typeof window !== 'undefined') {
-  window.addEventListener('unhandledrejection', (event) => {
-    console.error('=== UNHANDLED PROMISE REJECTION ===');
+  // Remove any existing handlers first
+  window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+  
+  function handleUnhandledRejection(event) {
+    console.error('=== UNHANDLED PROMISE REJECTION CAUGHT ===');
+    console.error('Event:', event);
     console.error('Reason:', event.reason);
     console.error('Promise:', event.promise);
     
     // Check if it's a Supabase-related error
     if (event.reason && typeof event.reason === 'object') {
-      if (event.reason.message && event.reason.message.includes('supabase')) {
-        console.error('This appears to be a Supabase-related error');
+      if (event.reason.message) {
+        console.error('Error message:', event.reason.message);
+        
+        if (event.reason.message.toLowerCase().includes('supabase') || 
+            event.reason.message.toLowerCase().includes('postgrest') ||
+            event.reason.message.toLowerCase().includes('auth')) {
+          console.error('🔍 This appears to be a Supabase-related error');
+          console.error('Supabase error details:', {
+            message: event.reason.message,
+            details: event.reason.details,
+            hint: event.reason.hint,
+            code: event.reason.code,
+            status: event.reason.status
+          });
+        }
+      }
+      
+      // Log the full error object
+      try {
+        console.error('Full error object:', JSON.stringify(event.reason, null, 2));
+      } catch (stringifyError) {
+        console.error('Could not stringify error object:', event.reason);
       }
     }
     
-    // Prevent the default behavior (which logs to console)
+    // Prevent the default behavior but don't stop propagation completely
+    // This allows us to see the error while preventing browser console spam
     event.preventDefault();
-  });
+  }
+  
+  window.addEventListener('unhandledrejection', handleUnhandledRejection);
+  console.log('✅ Enhanced unhandled rejection handler installed');
 }
 
 export { supabase };

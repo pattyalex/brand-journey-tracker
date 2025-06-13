@@ -171,31 +171,63 @@ const OnboardingFlow: React.FC = () => {
     console.log("=== ACCOUNT FORM SUBMITTED ===");
     console.log("Account data:", data);
     
+    let signUpResult;
+    
     try {
       console.log("=== USING DEDICATED SIGNUP FUNCTION ===");
       
-      // Import and use the dedicated signUp function
+      // Import and use the dedicated signUp function with promise handling
       const { signUp } = await import('@/auth');
-      const result = await signUp(data.email, data.password, data.name);
       
-      if (result.error) {
-        console.error('❌ Signup failed:', result.error);
-        alert(`Account creation failed: ${result.error.message}`);
+      console.log("Calling signUp function...");
+      signUpResult = await signUp(data.email, data.password, data.name)
+        .catch(signUpError => {
+          console.error('❌ SignUp function threw error:', signUpError);
+          return {
+            success: false,
+            error: {
+              message: signUpError instanceof Error ? signUpError.message : 'SignUp function error',
+              type: 'SIGNUP_FUNCTION_ERROR'
+            }
+          };
+        });
+      
+      console.log("SignUp function completed, result:", signUpResult);
+      
+      if (!signUpResult) {
+        console.error('❌ No result returned from signUp function');
+        alert('Account creation failed: No response from signup function');
         return;
       }
       
-      if (result.success) {
+      if (signUpResult.error) {
+        console.error('❌ Signup failed:', signUpResult.error);
+        alert(`Account creation failed: ${signUpResult.error.message}`);
+        return;
+      }
+      
+      if (signUpResult.success) {
         console.log('✅ Account creation successful');
+        console.log('User data:', signUpResult.userData);
+        console.log('Profile data:', signUpResult.profileData);
         console.log('=== PROCEEDING TO PAYMENT SETUP ===');
         setCurrentStep("payment-setup");
       } else {
-        console.error('❌ Unexpected signup response:', result);
-        alert('Account creation failed: Unexpected response');
+        console.error('❌ Unexpected signup response:', signUpResult);
+        alert('Account creation failed: Unexpected response format');
       }
       
-    } catch (error) {
-      console.error('❌ Unexpected error during account creation:', error);
-      alert(`Account creation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } catch (outerError) {
+      console.error('❌ Outer catch - Unexpected error during account creation:', outerError);
+      console.error('Error type:', typeof outerError);
+      console.error('Error constructor:', outerError?.constructor?.name);
+      console.error('Error stack:', outerError instanceof Error ? outerError.stack : 'No stack');
+      
+      const errorMessage = outerError instanceof Error 
+        ? outerError.message 
+        : 'Unknown error during account creation';
+      
+      alert(`Account creation failed: ${errorMessage}`);
     }
   };
 
