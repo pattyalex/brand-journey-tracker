@@ -1,55 +1,107 @@
 
-// This would typically be in a backend service, but for demo purposes
-// we'll create the structure here. In production, move this to a secure backend.
+// Client-side Stripe service that calls our backend endpoints
 
-const STRIPE_SECRET_KEY = import.meta.env.STRIPE_SECRET_KEY;
-
-// Note: This is a client-side example. In production, these should be server-side endpoints
 export const createPaymentIntent = async (amount: number, currency: string = 'usd') => {
-  // This should be called from your backend server
-  const response = await fetch('https://api.stripe.com/v1/payment_intents', {
+  const response = await fetch('/api/create-payment-intent', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${STRIPE_SECRET_KEY}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/json',
     },
-    body: new URLSearchParams({
-      amount: (amount * 100).toString(),
+    body: JSON.stringify({
+      amount: amount * 100, // Convert to cents
       currency,
     }),
   });
+
+  if (!response.ok) {
+    throw new Error('Failed to create payment intent');
+  }
 
   return response.json();
 };
 
 export const createCustomer = async (email: string, name: string) => {
-  const response = await fetch('https://api.stripe.com/v1/customers', {
+  const response = await fetch('/api/create-customer', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${STRIPE_SECRET_KEY}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/json',
     },
-    body: new URLSearchParams({
+    body: JSON.stringify({
       email,
       name,
     }),
   });
 
+  if (!response.ok) {
+    throw new Error('Failed to create customer');
+  }
+
   return response.json();
 };
 
 export const createSubscription = async (customerId: string, priceId: string) => {
-  const response = await fetch('https://api.stripe.com/v1/subscriptions', {
+  const response = await fetch('/api/create-subscription', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${STRIPE_SECRET_KEY}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/json',
     },
-    body: new URLSearchParams({
-      customer: customerId,
-      'items[0][price]': priceId,
+    body: JSON.stringify({
+      customerId,
+      priceId,
     }),
   });
+
+  if (!response.ok) {
+    throw new Error('Failed to create subscription');
+  }
+
+  return response.json();
+};
+
+export const getSubscription = async (customerId: string) => {
+  const response = await fetch(`/api/subscription?customerId=${customerId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to get subscription');
+  }
+
+  return response.json();
+};
+
+export const cancelSubscription = async (subscriptionId: string) => {
+  const response = await fetch(`/api/subscription/${subscriptionId}/cancel`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to cancel subscription');
+  }
+
+  return response.json();
+};
+
+export const updateSubscription = async (subscriptionId: string, priceId: string) => {
+  const response = await fetch(`/api/subscription/${subscriptionId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      priceId,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to update subscription');
+  }
 
   return response.json();
 };

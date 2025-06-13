@@ -92,3 +92,12 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "PORT=3002 npm run dev"
+
+[[workflows.workflow]]
+name = "Run Stripe Server"
+author = 42062761
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd server && node stripe-webhook.js"
