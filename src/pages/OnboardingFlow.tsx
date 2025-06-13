@@ -248,7 +248,10 @@ const OnboardingFlow: React.FC = () => {
 
   const onPaymentSubmit = async (values: z.infer<typeof paymentSetupSchema>) => {
     console.log("Payment form submitted:", values);
+    console.log("STRIPE FUNCTIONALITY COMMENTED OUT - SKIPPING TO NEXT STEP");
 
+    // TODO: Re-enable Stripe functionality later
+    /*
     try {
       const stripe = await stripePromise;
       if (!stripe) throw new Error('Stripe not loaded');
@@ -368,6 +371,10 @@ const OnboardingFlow: React.FC = () => {
       console.error("Payment setup error:", error);
       alert(`Payment setup failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
+    */
+
+    // For now, just proceed to the next step without payment processing
+    setCurrentStep("user-goals");
   };
 
   const onGoalSubmit = (data: z.infer<typeof userGoalsSchema>) => {
