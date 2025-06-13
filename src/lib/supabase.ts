@@ -1,37 +1,93 @@
+
 import { createClient } from '@supabase/supabase-js'
 
-// Supabase configuration - reads from Replit Secrets
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || ''
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || ''
+// Supabase configuration - reads from environment variables
+// Check both VITE_ prefixed and non-prefixed versions for flexibility
+const supabaseUrl = 
+  import.meta.env.VITE_SUPABASE_URL || 
+  import.meta.env.SUPABASE_URL || 
+  process.env.VITE_SUPABASE_URL || 
+  process.env.SUPABASE_URL || 
+  ''
 
-// Create Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+const supabaseAnonKey = 
+  import.meta.env.VITE_SUPABASE_ANON_KEY || 
+  import.meta.env.SUPABASE_ANON_KEY || 
+  process.env.VITE_SUPABASE_ANON_KEY || 
+  process.env.SUPABASE_ANON_KEY || 
+  ''
 
-// Auth helper functions
-export const signUpUser = async (email: string, password: string) => {
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
+// Validate that we have the required credentials
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.warn('Supabase credentials missing:', {
+    hasUrl: !!supabaseUrl,
+    hasKey: !!supabaseAnonKey,
+    envVars: {
+      VITE_SUPABASE_URL: !!import.meta.env.VITE_SUPABASE_URL,
+      VITE_SUPABASE_ANON_KEY: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
+      SUPABASE_URL: !!import.meta.env.SUPABASE_URL,
+      SUPABASE_ANON_KEY: !!import.meta.env.SUPABASE_ANON_KEY
+    }
   })
-  return { data, error }
+}
+
+// Create Supabase client with error handling
+let supabase;
+try {
+  supabase = createClient(supabaseUrl, supabaseAnonKey)
+  console.log('Supabase client initialized successfully')
+} catch (error) {
+  console.error('Failed to initialize Supabase client:', error)
+  throw error
+}
+
+export { supabase }
+
+// Auth helper functions with better error handling
+export const signUpUser = async (email: string, password: string) => {
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    })
+    return { data, error }
+  } catch (err) {
+    console.error('SignUp error:', err)
+    return { data: null, error: { message: 'Network error during signup' } }
+  }
 }
 
 export const signInUser = async (email: string, password: string) => {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  })
-  return { data, error }
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+    return { data, error }
+  } catch (err) {
+    console.error('SignIn error:', err)
+    return { data: null, error: { message: 'Network error during signin' } }
+  }
 }
 
 export const signOutUser = async () => {
-  const { error } = await supabase.auth.signOut()
-  return { error }
+  try {
+    const { error } = await supabase.auth.signOut()
+    return { error }
+  } catch (err) {
+    console.error('SignOut error:', err)
+    return { error: { message: 'Network error during signout' } }
+  }
 }
 
 export const getCurrentUser = async () => {
-  const { data, error } = await supabase.auth.getUser()
-  return { user: data.user, error }
+  try {
+    const { data, error } = await supabase.auth.getUser()
+    return { user: data.user, error }
+  } catch (err) {
+    console.error('GetUser error:', err)
+    return { user: null, error: { message: 'Network error getting user' } }
+  }
 }
 
 export const updateUserProfile = async (userMetadata: { full_name?: string; email?: string }) => {
@@ -47,40 +103,52 @@ export const updateUserProfile = async (userMetadata: { full_name?: string; emai
     updateData.email = userMetadata.email
   }
 
-  const { data, error } = await supabase.auth.updateUser(updateData)
+  try {
+    const { data, error } = await supabase.auth.updateUser(updateData)
 
-  if (error) {
-    throw error
+    if (error) {
+      throw error
+    }
+
+    return data
+  } catch (err) {
+    console.error('UpdateProfile error:', err)
+    throw err
   }
-
-  return data
 }
 
 export const updateUserPassword = async (currentPassword: string, newPassword: string) => {
-  // Note: Supabase doesn't have a direct "change password" with old password verification
-  // In a real app, you might want to verify the old password first
+  try {
+    const { data, error } = await supabase.auth.updateUser({
+      password: newPassword
+    })
 
-  const { data, error } = await supabase.auth.updateUser({
-    password: newPassword
-  })
+    if (error) {
+      throw error
+    }
 
-  if (error) {
-    throw error
+    return data
+  } catch (err) {
+    console.error('UpdatePassword error:', err)
+    throw err
   }
-
-  return data
 }
 
 /**
  * Logs out the current user
  */
 export async function logout() {
-  const { error } = await supabase.auth.signOut();
+  try {
+    const { error } = await supabase.auth.signOut();
 
-  if (error) {
-    console.error('Error during logout:', error);
-    throw error;
+    if (error) {
+      console.error('Error during logout:', error);
+      throw error;
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error('Logout error:', err)
+    throw err
   }
-
-  return { success: true };
 }
