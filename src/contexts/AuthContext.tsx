@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 
@@ -32,13 +33,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // Check for Supabase session first
-        const { data: { session } } = await supabase.auth.getSession();
-
-        // Fallback to localStorage if no active session
-        if (session) {
-          setIsAuthenticated(true);
+        // Check for Supabase session first if available
+        if (supabase && typeof supabase.auth?.getSession === 'function') {
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+              setIsAuthenticated(true);
+              localStorage.setItem('isAuthenticated', 'true');
+            } else {
+              // Fallback to localStorage
+              const storedAuth = localStorage.getItem('isAuthenticated');
+              if (storedAuth) {
+                setIsAuthenticated(storedAuth === 'true');
+              }
+            }
+          } catch (supabaseError) {
+            console.warn("Supabase session check failed:", supabaseError);
+            // Fallback to localStorage
+            const storedAuth = localStorage.getItem('isAuthenticated');
+            if (storedAuth) {
+              setIsAuthenticated(storedAuth === 'true');
+            }
+          }
         } else {
+          // No Supabase available, use localStorage only
           const storedAuth = localStorage.getItem('isAuthenticated');
           if (storedAuth) {
             setIsAuthenticated(storedAuth === 'true');
@@ -51,7 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       } catch (error) {
         console.error("Auth initialization error:", error);
-        // Fall back to localStorage on error
+        // Fall back to localStorage on any error
         const storedAuth = localStorage.getItem('isAuthenticated');
         const storedOnboarding = localStorage.getItem('hasCompletedOnboarding');
 
@@ -73,22 +91,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = useCallback(() => {
     setIsAuthenticated(true);
     setLoginOpen(false);
+    localStorage.setItem('isAuthenticated', 'true');
   }, []);
 
   const logout = async () => {
     try {
-      // Try to sign out from Supabase
-      await supabase.auth.signOut();
-      // Clear any user data from local storage
+      // Try to sign out from Supabase if available
+      if (supabase && typeof supabase.auth?.signOut === 'function') {
+        try {
+          await supabase.auth.signOut();
+        } catch (supabaseError) {
+          console.warn("Supabase signout failed:", supabaseError);
+        }
+      }
+      
+      // Clear local storage regardless
       localStorage.removeItem('hasCompletedOnboarding');
       localStorage.removeItem('isAuthenticated');
       localStorage.removeItem('user');
+      
       // Set auth states
       setIsAuthenticated(false);
-      localStorage.setItem('isAuthenticated', 'false');
+      setHasCompletedOnboarding(false);
+      
       return true;
     } catch (error) {
       console.error("Error signing out:", error);
+      // Still clear local state even if Supabase fails
+      localStorage.removeItem('hasCompletedOnboarding');
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('user');
+      setIsAuthenticated(false);
+      setHasCompletedOnboarding(false);
       return false;
     }
   };
@@ -98,7 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('hasCompletedOnboarding', 'true');
   };
 
-    const openLoginModal = useCallback(() => {
+  const openLoginModal = useCallback(() => {
     setLoginOpen(true);
   }, []);
 
@@ -113,8 +147,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           <div className="w-20 h-20 bg-muted rounded-full mb-4"></div>
           <div className="h-4 w-32 bg-muted rounded"></div>
         </div>
-      </div>
-    );
+      );
+    }
   }
 
   return (
