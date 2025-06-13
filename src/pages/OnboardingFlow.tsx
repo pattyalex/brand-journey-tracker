@@ -170,9 +170,48 @@ const OnboardingFlow: React.FC = () => {
     setCurrentStep("payment-setup");
   };
 
-  const onPaymentSubmit = (data: z.infer<typeof paymentSetupSchema>) => {
-    console.log("Payment data:", data);
-    setCurrentStep("user-goals");
+  const onPaymentSubmit = async (values: z.infer<typeof paymentSetupSchema>) => {
+    console.log("Payment form submitted:", values);
+
+    try {
+      // Create Stripe customer
+      const customer = await fetch('/api/create-customer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: accountForm.getValues().email,
+          name: values.cardHolderName,
+        }),
+      }).then(res => res.json());
+
+      // Get the price ID based on selected plan
+      const priceId = values.billingPlan === 'annual' 
+        ? 'price_annual_plan_id' // Replace with your actual Stripe price ID
+        : 'price_monthly_plan_id'; // Replace with your actual Stripe price ID
+
+      // Create subscription
+      const subscription = await fetch('/api/create-subscription', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customerId: customer.id,
+          priceId,
+        }),
+      }).then(res => res.json());
+
+      console.log('Subscription created:', subscription);
+
+      // Store subscription info in your database here
+
+      setCurrentStep("user-goals");
+    } catch (error) {
+      console.error('Payment setup failed:', error);
+      //toast.error('Payment setup failed. Please try again.'); // Make sure toast is imported from a library like react-toastify
+    }
   };
 
   const onGoalSubmit = (data: z.infer<typeof userGoalsSchema>) => {
@@ -810,8 +849,7 @@ const OnboardingFlow: React.FC = () => {
                                 <FormControl>
                                   <Checkbox 
                                     checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
+                                    onCheckedChange={field.onChange/>
                                 </FormControl>
                                 <FormLabel className="font-medium">
                                   Instagram
