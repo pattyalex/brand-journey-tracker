@@ -1,7 +1,7 @@
 
-import express from 'express';
-import cors from 'cors';
-import Stripe from 'stripe';
+const express = require('express');
+const cors = require('cors');
+const Stripe = require('stripe');
 
 const app = express();
 const port = 3001;
