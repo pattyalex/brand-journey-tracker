@@ -9,12 +9,37 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { CreditCard, User, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
-import { getCurrentUser, updateUserProfile, updateUserPassword, logout } from '@/lib/supabase';
+import { supabase } from '@/supabaseClient';
 import SocialPlatformsManager from '@/components/settings/SocialPlatformsManager';
+
+const getCurrentUser = async () => {
+  const { data, error } = await supabase.auth.getUser();
+  if (error) throw error;
+  return data.user;
+};
+
+const updateUserProfile = async (userMetadata: { full_name?: string; email?: string }) => {
+  const updateData: any = {};
+  if (userMetadata.full_name !== undefined) {
+    updateData.data = { full_name: userMetadata.full_name };
+  }
+  if (userMetadata.email !== undefined) {
+    updateData.email = userMetadata.email;
+  }
+  const { data, error } = await supabase.auth.updateUser(updateData);
+  if (error) throw error;
+  return data;
+};
+
+const updateUserPassword = async (_currentPassword: string, newPassword: string) => {
+  const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) throw error;
+  return data;
+};
 
 const MyAccount = () => {
   const navigate = useNavigate();
-  const { openLoginModal } = useAuth();
+  const { openLoginModal, logout: authLogout } = useAuth();
   
   // Profile state
   const [name, setName] = useState('');
@@ -33,7 +58,7 @@ const MyAccount = () => {
     const loadUserData = async () => {
       setLoading(true);
       try {
-        const { user } = await getCurrentUser();
+        const user = await getCurrentUser();
         if (user) {
           setName(user.user_metadata?.full_name || '');
           setEmail(user.email || '');
@@ -510,7 +535,7 @@ const MyAccount = () => {
             className="w-full max-w-xs"
             onClick={async () => {
               try {
-                await logout();
+                await authLogout();
                 
                 // Navigate to home page
                 navigate('/');

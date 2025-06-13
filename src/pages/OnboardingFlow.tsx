@@ -244,7 +244,6 @@ const OnboardingFlow: React.FC = () => {
       console.log("Payment method attached to customer");
 
       // Step 5: Create subscription
-      const planData = paymentForm.getValues();
       const priceId = values.billingPlan === 'annual' ? 'price_annual' : 'price_monthly';
 
       const subscriptionResponse = await fetch('/api/create-subscription', {
