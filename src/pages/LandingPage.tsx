@@ -18,8 +18,36 @@ const LandingPage = () => {
   const { login, openLoginModal } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
+  // Test Supabase connection
+  const testSupabaseConnection = async () => {
+    console.log("=== TESTING SUPABASE CONNECTION ===");
+    try {
+      const { data, error } = await supabase.from('users').select('*');
+      console.log('Supabase test:', data, error);
+      
+      if (error) {
+        console.error("=== SUPABASE TEST ERROR ===");
+        console.error("Error object:", error);
+        console.error("Error message:", error.message);
+        console.error("Error code:", error.code);
+        console.error("Error details:", error.details);
+        console.error("Error hint:", error.hint);
+      } else {
+        console.log("=== SUPABASE TEST SUCCESS ===");
+        console.log("Data returned:", data);
+        console.log("Number of records:", data?.length || 0);
+      }
+    } catch (err) {
+      console.error("=== SUPABASE TEST UNEXPECTED ERROR ===");
+      console.error("Caught error:", err);
+    }
+  };
+
   const handleStartFreeTrial = async () => {
     console.log("=== START: handleStartFreeTrial function started running ===");
+
+    // Test Supabase connection first
+    await testSupabaseConnection();
 
     // Set to false to enable Supabase authentication
     const bypassAuth = false;
@@ -154,7 +182,14 @@ const LandingPage = () => {
 
   return (
     <Layout hideSidebar={true}>
-      <div className="absolute top-4 right-6 z-10">
+      <div className="absolute top-4 right-6 z-10 flex gap-2">
+        <Button 
+          variant="outline" 
+          onClick={testSupabaseConnection}
+          className="font-medium"
+        >
+          Test DB
+        </Button>
         <Button 
           variant="outline" 
           onClick={openLoginModal}
