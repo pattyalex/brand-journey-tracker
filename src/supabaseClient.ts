@@ -1,66 +1,20 @@
-
 import { createClient } from '@supabase/supabase-js';
 
-// Read from environment variables - check both VITE_ prefixed and non-prefixed
-const supabaseUrl = 
-  import.meta.env.VITE_SUPABASE_URL || 
-  import.meta.env.SUPABASE_URL || 
-  process.env.VITE_SUPABASE_URL || 
-  process.env.SUPABASE_URL || 
-  '';
+// Get environment variables with proper fallbacks
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://rhpngznnnulxvggddpgq.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJocG5nem5ubnVseHZnZ2RkcGdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3ODMxMDgsImV4cCI6MjA2MzM1OTEwOH0.4F6EZcxQI4iwEhykTo-YesNy_Hmb_qCKiv_-ZUWKZdc';
 
-const supabaseAnonKey = 
-  import.meta.env.VITE_SUPABASE_ANON_KEY || 
-  import.meta.env.SUPABASE_ANON_KEY || 
-  process.env.VITE_SUPABASE_ANON_KEY || 
-  process.env.SUPABASE_ANON_KEY || 
-  '';
+console.log('Supabase URL:', supabaseUrl);
+console.log('Supabase Anon Key (first 20 chars):', supabaseAnonKey?.substring(0, 20));
 
-let supabase;
-
-try {
-  if (supabaseUrl && supabaseAnonKey) {
-    supabase = createClient(supabaseUrl, supabaseAnonKey);
-    console.log("Supabase client initialized successfully");
-  } else {
-    console.warn("Supabase credentials missing - creating fallback client");
-    // Create a mock client that won't throw errors
-    supabase = {
-      auth: {
-        signUp: async () => ({ data: null, error: { message: "Supabase not configured" } }),
-        signInWithPassword: async () => ({ data: null, error: { message: "Supabase not configured" } }),
-        signOut: async () => ({ error: null }),
-        getSession: async () => ({ data: { session: null }, error: null }),
-        getUser: async () => ({ data: { user: null }, error: null }),
-        updateUser: async () => ({ data: null, error: { message: "Supabase not configured" } })
-      },
-      from: () => ({
-        insert: async () => ({ error: { message: "Supabase not configured" } }),
-        select: async () => ({ data: [], error: null }),
-        update: async () => ({ error: { message: "Supabase not configured" } }),
-        delete: async () => ({ error: { message: "Supabase not configured" } })
-      })
-    };
-  }
-} catch (error) {
-  console.error("Failed to initialize Supabase client:", error);
-  // Create a mock client that won't throw errors
-  supabase = {
-    auth: {
-      signUp: async () => ({ data: null, error: { message: "Supabase initialization failed" } }),
-      signInWithPassword: async () => ({ data: null, error: { message: "Supabase initialization failed" } }),
-      signOut: async () => ({ error: null }),
-      getSession: async () => ({ data: { session: null }, error: null }),
-      getUser: async () => ({ data: { user: null }, error: null }),
-      updateUser: async () => ({ data: null, error: { message: "Supabase initialization failed" } })
-    },
-    from: () => ({
-      insert: async () => ({ error: { message: "Supabase initialization failed" } }),
-      select: async () => ({ data: [], error: null }),
-      update: async () => ({ error: { message: "Supabase initialization failed" } }),
-      delete: async () => ({ error: { message: "Supabase initialization failed" } })
-    })
-  };
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Missing Supabase environment variables');
+  throw new Error('Missing Supabase environment variables');
 }
 
-export { supabase };
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  }
+});

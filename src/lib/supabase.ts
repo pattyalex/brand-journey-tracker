@@ -1,47 +1,20 @@
+import { createClient } from '@supabase/supabase-js';
 
-import { createClient } from '@supabase/supabase-js'
+// Get environment variables with proper fallbacks
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://rhpngznnnulxvggddpgq.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJocG5nem5ubnVseHZnZ2RkcGdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3ODMxMDgsImV4cCI6MjA2MzM1OTEwOH0.4F6EZcxQI4iwEhykTo-YesNy_Hmb_qCKiv_-ZUWKZdc';
 
-// Supabase configuration - reads from environment variables
-// Check both VITE_ prefixed and non-prefixed versions for flexibility
-const supabaseUrl = 
-  import.meta.env.VITE_SUPABASE_URL || 
-  import.meta.env.SUPABASE_URL || 
-  process.env.VITE_SUPABASE_URL || 
-  process.env.SUPABASE_URL || 
-  ''
-
-const supabaseAnonKey = 
-  import.meta.env.VITE_SUPABASE_ANON_KEY || 
-  import.meta.env.SUPABASE_ANON_KEY || 
-  process.env.VITE_SUPABASE_ANON_KEY || 
-  process.env.SUPABASE_ANON_KEY || 
-  ''
-
-// Validate that we have the required credentials
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase credentials missing:', {
-    hasUrl: !!supabaseUrl,
-    hasKey: !!supabaseAnonKey,
-    envVars: {
-      VITE_SUPABASE_URL: !!import.meta.env.VITE_SUPABASE_URL,
-      VITE_SUPABASE_ANON_KEY: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
-      SUPABASE_URL: !!import.meta.env.SUPABASE_URL,
-      SUPABASE_ANON_KEY: !!import.meta.env.SUPABASE_ANON_KEY
-    }
-  })
+  console.error('Missing Supabase environment variables');
+  throw new Error('Missing Supabase environment variables');
 }
 
-// Create Supabase client with error handling
-let supabase;
-try {
-  supabase = createClient(supabaseUrl, supabaseAnonKey)
-  console.log('Supabase client initialized successfully')
-} catch (error) {
-  console.error('Failed to initialize Supabase client:', error)
-  throw error
-}
-
-export { supabase }
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  }
+});
 
 // Auth helper functions with better error handling
 export const signUpUser = async (email: string, password: string) => {
