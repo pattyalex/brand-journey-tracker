@@ -168,80 +168,33 @@ const OnboardingFlow: React.FC = () => {
 
   // Handle form submissions
   const onAccountSubmit = async (data: z.infer<typeof accountCreationSchema>) => {
+    console.log("=== ACCOUNT FORM SUBMITTED ===");
     console.log("Account data:", data);
     
     try {
-      console.log("=== CREATING SUPABASE USER ===");
-      console.log(`Email: ${data.email}`);
-      console.log(`Name: ${data.name}`);
+      console.log("=== USING DEDICATED SIGNUP FUNCTION ===");
       
-      // Step 1: Create Supabase Auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-        options: {
-          data: {
-            full_name: data.name
-          }
-        }
-      });
-
-      if (authError) {
-        console.error('Auth signup failed:', authError);
-        alert(`Account creation failed: ${authError.message}`);
+      // Import and use the dedicated signUp function
+      const { signUp } = await import('@/auth');
+      const result = await signUp(data.email, data.password, data.name);
+      
+      if (result.error) {
+        console.error('❌ Signup failed:', result.error);
+        alert(`Account creation failed: ${result.error.message}`);
         return;
       }
-
-      if (!authData.user?.id) {
-        console.error('No user ID returned from signup');
-        alert('Account creation failed: No user ID returned');
-        return;
+      
+      if (result.success) {
+        console.log('✅ Account creation successful');
+        console.log('=== PROCEEDING TO PAYMENT SETUP ===');
+        setCurrentStep("payment-setup");
+      } else {
+        console.error('❌ Unexpected signup response:', result);
+        alert('Account creation failed: Unexpected response');
       }
-
-      const userId = authData.user.id;
-      console.log('✅ Supabase Auth user created successfully:', userId);
-
-      // Step 2: Insert into users table
-      const { error: usersInsertError } = await supabase.from('users').insert([
-        {
-          id: userId,
-          email: data.email
-        }
-      ]);
-
-      if (usersInsertError) {
-        console.error('Users table insert failed:', usersInsertError);
-        alert(`Failed to create user record: ${usersInsertError.message}`);
-        return;
-      }
-
-      console.log('✅ User record created successfully in users table');
-
-      // Step 3: Insert into profiles table
-      const { error: profileInsertError } = await supabase.from('profiles').insert([
-        {
-          id: userId,
-          full_name: data.name,
-          email: data.email,
-          is_on_trial: true,
-          trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
-        }
-      ]);
-
-      if (profileInsertError) {
-        console.error('Profile insert failed:', profileInsertError);
-        alert(`Failed to create user profile: ${profileInsertError.message}`);
-        return;
-      }
-
-      console.log('✅ Profile created successfully');
-      console.log('=== USER CREATION COMPLETE ===');
-
-      // Only proceed to payment setup if everything succeeded
-      setCurrentStep("payment-setup");
       
     } catch (error) {
-      console.error('Unexpected error during user creation:', error);
+      console.error('❌ Unexpected error during account creation:', error);
       alert(`Account creation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };

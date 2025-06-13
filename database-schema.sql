@@ -1,17 +1,19 @@
+
+-- Drop existing tables and policies to start fresh
+DROP POLICY IF EXISTS "Users can view own record" ON users;
+DROP POLICY IF EXISTS "Users can insert own record" ON users;  
+DROP POLICY IF EXISTS "Users can update own record" ON users;
+DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+DROP POLICY IF EXISTS "Allow anon inserts for new profile creation" ON profiles;
+
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
   id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
   email TEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
-
--- Enable RLS on users table
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-
--- Create policies for users table
-CREATE POLICY "Users can view own record" ON users FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "Users can insert own record" ON users FOR INSERT WITH CHECK (auth.uid() = id);
-CREATE POLICY "Users can update own record" ON users FOR UPDATE USING (auth.uid() = id);
 
 -- Create profiles table
 CREATE TABLE IF NOT EXISTS profiles (
@@ -28,11 +30,26 @@ CREATE TABLE IF NOT EXISTS profiles (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Enable RLS
+-- Enable RLS on both tables
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
--- Create policies for profiles table
-CREATE POLICY "Users can view own profile" ON profiles FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "Users can insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);  
-CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
-CREATE POLICY "Allow anon inserts for new profile creation" ON profiles FOR INSERT WITH CHECK (true);
+-- Users table policies
+CREATE POLICY "Enable insert for authenticated users only" ON users
+  FOR INSERT WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "Enable select for users based on user_id" ON users
+  FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Enable update for users based on user_id" ON users
+  FOR UPDATE USING (auth.uid() = id);
+
+-- Profiles table policies  
+CREATE POLICY "Enable insert for authenticated users only" ON profiles
+  FOR INSERT WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "Enable select for users based on user_id" ON profiles
+  FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Enable update for users based on user_id" ON profiles
+  FOR UPDATE USING (auth.uid() = id);

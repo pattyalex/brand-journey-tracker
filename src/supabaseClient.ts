@@ -37,7 +37,17 @@ try {
 // Add global error handler for unhandled promise rejections
 if (typeof window !== 'undefined') {
   window.addEventListener('unhandledrejection', (event) => {
-    console.error('Unhandled promise rejection caught:', event.reason);
+    console.error('=== UNHANDLED PROMISE REJECTION ===');
+    console.error('Reason:', event.reason);
+    console.error('Promise:', event.promise);
+    
+    // Check if it's a Supabase-related error
+    if (event.reason && typeof event.reason === 'object') {
+      if (event.reason.message && event.reason.message.includes('supabase')) {
+        console.error('This appears to be a Supabase-related error');
+      }
+    }
+    
     // Prevent the default behavior (which logs to console)
     event.preventDefault();
   });
