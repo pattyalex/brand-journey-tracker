@@ -55,6 +55,7 @@ export async function signUp(email: string, password: string, fullName: string) 
       {
         id: userId,
         full_name: fullName,
+        email: email,
         is_on_trial: true,
         trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
       }

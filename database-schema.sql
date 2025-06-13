@@ -1,4 +1,3 @@
-
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
   id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
@@ -32,7 +31,8 @@ CREATE TABLE IF NOT EXISTS profiles (
 -- Enable RLS
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
--- Create policy for users to access their own profile
+-- Create policies for profiles table
 CREATE POLICY "Users can view own profile" ON profiles FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "Users can insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "Users can insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);  
 CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Allow anon inserts for new profile creation" ON profiles FOR INSERT WITH CHECK (true);
