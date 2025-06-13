@@ -9,12 +9,30 @@ export default function SignupForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Basic validation
+    if (!email || !password || !fullName) {
+      setMessage('Please fill in all fields.')
+      return
+    }
+    
+    if (password.length < 6) {
+      setMessage('Password must be at least 6 characters long.')
+      return
+    }
+    
+    setMessage('Creating your account...')
+    
     const result = await signUp(email, password, fullName)
 
     if (result.success) {
       setMessage('Signup successful! Check your email for confirmation.')
+      // Clear form
+      setEmail('')
+      setPassword('')
+      setFullName('')
     } else {
-      setMessage(`Error: ${result.error.message}`)
+      setMessage(`Error: ${result.error?.message || 'Unknown error occurred'}`)
     }
   }
 
