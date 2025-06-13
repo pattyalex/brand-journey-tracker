@@ -244,4 +244,3 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
 }
 
 export default App;
-import SignupForm from './SignupForm'
