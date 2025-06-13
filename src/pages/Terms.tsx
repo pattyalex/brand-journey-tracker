@@ -1,4 +1,3 @@
-
 import Layout from "@/components/Layout";
 
 const Terms = () => {
@@ -6,7 +5,7 @@ const Terms = () => {
     <Layout>
       <div className="max-w-3xl mx-auto px-6 py-12">
         <h1 className="text-3xl font-bold mb-6">Terms and Conditions</h1>
-        
+
         <div className="space-y-6">
           <section>
             <h2 className="text-xl font-semibold mb-3">1. Introduction</h2>
@@ -66,57 +65,6 @@ const Terms = () => {
         </div>
       </div>
     </Layout>
-  );
-};
-
-export default Terms;
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-const Terms = () => {
-  return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-6">Terms of Service</h1>
-      
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Terms of Use</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <h2 className="text-xl font-semibold">1. Acceptance of Terms</h2>
-          <p>
-            By accessing and using this platform, you accept and agree to be bound by the terms and provision of this agreement.
-          </p>
-          
-          <h2 className="text-xl font-semibold">2. Use License</h2>
-          <p>
-            Permission is granted to temporarily use this software and platform for personal, non-commercial purposes only. This is the grant of a license, not a transfer of title.
-          </p>
-          
-          <h2 className="text-xl font-semibold">3. Disclaimer</h2>
-          <p>
-            The platform is provided on an 'as is' basis. The company makes no warranties, expressed or implied, and hereby disclaims all warranties.
-          </p>
-          
-          <h2 className="text-xl font-semibold">4. Limitations</h2>
-          <p>
-            In no event shall the company be liable for any damages arising out of the use or inability to use the materials on the platform.
-          </p>
-          
-          <h2 className="text-xl font-semibold">5. Privacy</h2>
-          <p>
-            Your use of this platform is also governed by our Privacy Policy, which is incorporated by reference into these Terms and Conditions.
-          </p>
-        </CardContent>
-      </Card>
-      
-      <div className="text-center">
-        <Link to="/" className="text-blue-600 hover:underline">
-          Return to Home
-        </Link>
-      </div>
-    </div>
   );
 };
 

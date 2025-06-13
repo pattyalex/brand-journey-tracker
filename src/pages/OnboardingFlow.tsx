@@ -849,7 +849,8 @@ const OnboardingFlow: React.FC = () => {
                                 <FormControl>
                                   <Checkbox 
                                     checked={field.value}
-                                    onCheckedChange={field.onChange/>
+                                    onCheckedChange={field.onChange}
+                                  />
                                 </FormControl>
                                 <FormLabel className="font-medium">
                                   Instagram
