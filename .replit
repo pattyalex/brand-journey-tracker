@@ -101,3 +101,12 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "cd server && node stripe-webhook.js"
+
+[[workflows.workflow]]
+name = "Run API Server"
+author = 42062761
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd server && node api-server.js"
