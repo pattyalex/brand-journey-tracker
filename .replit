@@ -109,4 +109,4 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd server && node api-server.js"
+args = "cd server && node api-server.cjs"
