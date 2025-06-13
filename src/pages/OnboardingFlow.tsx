@@ -187,10 +187,9 @@ const OnboardingFlow: React.FC = () => {
       }).then(res => res.json());
 
       // Get the price ID based on selected plan
-      // TODO: Replace these with your actual Stripe price IDs from your Stripe Dashboard
       const priceId = values.billingPlan === 'annual' 
-        ? 'price_1234567890' // Replace with your actual annual Stripe price ID
-        : 'price_0987654321'; // Replace with your actual monthly Stripe price ID
+        ? 'price_YOUR_ANNUAL_PRICE_ID' // Replace with your actual annual Stripe price ID
+        : 'price_YOUR_MONTHLY_PRICE_ID'; // Replace with your actual monthly Stripe price ID
 
       // Create subscription
       const subscription = await fetch('/api/create-subscription', {
