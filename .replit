@@ -73,6 +73,7 @@ localPort = 8082
 externalPort = 3000
 
 [workflows]
+runButton = "Run"
 
 [[workflows.workflow]]
 name = "Run Dev Server"
@@ -109,3 +110,12 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "cd server && node api-server.cjs"
+
+[[workflows.workflow]]
+name = "Run"
+author = 42062761
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
