@@ -84,6 +84,7 @@ function App() {
       <ThemeProvider defaultTheme="system" storageKey="vite-react-theme">
         <AuthProvider>
           <LoginModal />
+          <Toaster />
           <Router>
             <Suspense fallback={<PageLoader />}>
               <Routes>
@@ -211,8 +212,8 @@ function App() {
           </Suspense>
         </Router>
       </AuthProvider>
-      </ErrorBoundary>
-    </ThemeProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 
