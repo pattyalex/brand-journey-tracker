@@ -35,8 +35,23 @@ export async function signUp(email: string, password: string, fullName: string) 
 
   const userId = data.user.id;
 
-    // Step 2: Insert the profile into your profiles table
-    const { error: insertError } = await supabase.from('profiles').insert([
+    // Step 2: Insert into users table
+    const { error: usersInsertError } = await supabase.from('users').insert([
+      {
+        id: userId,
+        email: email
+      }
+    ])
+
+    if (usersInsertError) {
+      console.error('Users table insert failed:', usersInsertError.message)
+      return { error: usersInsertError }
+    }
+
+    console.log('User record created successfully in users table:', userId);
+
+    // Step 3: Insert the profile into your profiles table
+    const { error: profileInsertError } = await supabase.from('profiles').insert([
       {
         id: userId,
         full_name: fullName,
@@ -45,9 +60,9 @@ export async function signUp(email: string, password: string, fullName: string) 
       }
     ])
 
-    if (insertError) {
-      console.error('Profile insert failed:', insertError.message)
-      return { error: insertError }
+    if (profileInsertError) {
+      console.error('Profile insert failed:', profileInsertError.message)
+      return { error: profileInsertError }
     }
 
     console.log('Profile created successfully for user:', userId);
