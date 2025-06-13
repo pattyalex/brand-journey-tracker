@@ -174,51 +174,41 @@ const OnboardingFlow: React.FC = () => {
 
   const onPaymentSubmit = async (values: z.infer<typeof paymentSetupSchema>) => {
     console.log("Payment form submitted:", values);
-    
+
     try {
       const stripe = await stripePromise;
       if (!stripe) throw new Error('Stripe not loaded');
 
       const accountData = accountForm.getValues();
-      
-      // Step 1: Create/signup user in Supabase
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: accountData.email,
-        password: accountData.password,
-        options: {
-          data: {
-            full_name: accountData.name,
-            is_on_trial: true,
-            trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-          }
-        }
-      });
 
-      if (authError && authError.message !== 'User already registered') {
-        throw new Error(`Supabase signup failed: ${authError.message}`);
+      // Step 1: Get the current authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        throw new Error(`Failed to get user: ${authError?.message || 'No user found'}`);
       }
 
       // Step 2: Create Stripe customer
+      console.log("Creating Stripe customer...");
       const customerResponse = await fetch('/api/create-customer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: accountData.email,
-          name: values.cardHolderName,
-          metadata: {
-            supabase_user_id: authData?.user?.id || 'unknown'
-          }
-        }),
+          email: user.email || accountData.email,
+          name: accountData.name,
+          userId: user.id
+        })
       });
 
       if (!customerResponse.ok) {
-        throw new Error('Failed to create Stripe customer');
+        const errorText = await customerResponse.text();
+        throw new Error(`Failed to create Stripe customer: ${errorText}`);
       }
-      
-      const customer = await customerResponse.json();
 
-      // Step 3: Create payment method from card details
-      const { error: paymentMethodError, paymentMethod } = await stripe.createPaymentMethod({
+      const { customerId } = await customerResponse.json();
+      console.log("Stripe customer created:", customerId);
+
+      // Step 3: Create payment method and attach to customer
+      const { paymentMethod, error: pmError } = await stripe.createPaymentMethod({
         type: 'card',
         card: {
           number: values.cardNumber.replace(/\s/g, ''),
@@ -228,13 +218,13 @@ const OnboardingFlow: React.FC = () => {
         },
         billing_details: {
           name: values.cardHolderName,
-          email: accountData.email,
+          email: user.email || accountData.email,
         },
       });
 
-      if (paymentMethodError) {
-        throw new Error(`Payment method creation failed: ${paymentMethodError.message}`);
-      }
+      if (pmError) throw new Error(`Payment method creation failed: ${pmError.message}`);
+
+      console.log("Payment method created:", paymentMethod.id);
 
       // Step 4: Attach payment method to customer
       const attachResponse = await fetch('/api/attach-payment-method', {
@@ -242,68 +232,65 @@ const OnboardingFlow: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           paymentMethodId: paymentMethod.id,
-          customerId: customer.id,
-        }),
+          customerId: customerId
+        })
       });
 
       if (!attachResponse.ok) {
-        throw new Error('Failed to attach payment method to customer');
+        const errorText = await attachResponse.text();
+        throw new Error(`Failed to attach payment method: ${errorText}`);
       }
 
-      // Step 5: Get the price ID based on selected plan
-      const priceId = values.billingPlan === 'annual' 
-        ? 'price_1RZXO3FS7AFxMYQCVPcKQbsd' // Annual subscription price ID
-        : 'price_1RZXNbFS7AFxMYQC8VqRJgM7'; // Monthly plan price ID
+      console.log("Payment method attached to customer");
 
-      // Step 6: Create subscription with trial period
+      // Step 5: Create subscription
+      const planData = paymentForm.getValues();
+      const priceId = values.billingPlan === 'annual' ? 'price_annual' : 'price_monthly';
+
       const subscriptionResponse = await fetch('/api/create-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          customerId: customer.id,
-          priceId,
-          paymentMethodId: paymentMethod.id,
-          trialPeriodDays: 7,
-        }),
+          customerId: customerId,
+          priceId: priceId,
+          paymentMethodId: paymentMethod.id
+        })
       });
 
       if (!subscriptionResponse.ok) {
-        throw new Error('Failed to create subscription');
+        const errorText = await subscriptionResponse.text();
+        throw new Error(`Failed to create subscription: ${errorText}`);
       }
 
-      const subscription = await subscriptionResponse.json();
-      console.log('Subscription created:', subscription);
+      const { subscription } = await subscriptionResponse.json();
+      console.log("Subscription created:", subscription.id);
 
-      // Step 7: Save subscription info to Supabase
-      if (authData?.user?.id) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .upsert({
-            id: authData.user.id,
-            full_name: accountData.name,
-            email: accountData.email,
-            stripe_customer_id: customer.id,
-            stripe_subscription_id: subscription.id,
-            subscription_status: subscription.status,
-            plan_type: values.billingPlan,
-            is_on_trial: true,
-            trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
+      // Step 6: Update user profile in Supabase with Stripe data
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          stripe_customer_id: customerId,
+          stripe_subscription_id: subscription.id,
+          subscription_status: subscription.status,
+          plan_type: values.billingPlan,
+          is_on_trial: subscription.status === 'trialing',
+          trial_ends_at: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null
+        })
+        .eq('id', user.id);
 
-        if (profileError) {
-          console.error('Profile creation/update failed:', profileError);
-        }
+      if (updateError) {
+        console.error("Failed to update user profile:", updateError);
+        // Don't throw here - subscription was created successfully
       }
 
-      // Step 8: Mark user as authenticated and continue
-      login();
+      console.log("Payment setup completed successfully!");
+
+      // Continue to next onboarding step
       setCurrentStep("user-goals");
 
     } catch (error) {
-      console.error('Payment setup failed:', error);
-      alert(`Payment setup failed: ${error.message}`);
+      console.error("Payment setup error:", error);
+      alert(`Payment setup failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -862,7 +849,7 @@ const OnboardingFlow: React.FC = () => {
                               </Label>
                             </div>
                             <div className="flex items-center space-x-2 py-3">
-                              <RadioGroupItem value="grow_followers" id="grow_followers" />
+<RadioGroupItem value="grow_followers" id="grow_followers" />
                               <Label htmlFor="grow_followers" className="font-medium">
                                 Growing my followers and engagement
                               </Label>
