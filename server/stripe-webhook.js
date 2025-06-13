@@ -1,6 +1,5 @@
-
 const express = require('express');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const Stripe = require('stripe');
 const cors = require('cors');
 
 const app = express();
@@ -9,133 +8,76 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// For webhook signature verification, we need raw body
-app.use('/webhook', express.raw({ type: 'application/json' }));
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// API endpoints
-app.post('/api/create-payment-intent', async (req, res) => {
-  try {
-    const { amount, currency = 'usd' } = req.body;
-
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount,
-      currency,
-    });
-
-    res.send({
-      client_secret: paymentIntent.client_secret,
-    });
-  } catch (error) {
-    console.error('Error creating payment intent:', error);
-    res.status(500).send({ error: error.message });
-  }
-});
-
+// Create customer endpoint
 app.post('/api/create-customer', async (req, res) => {
   try {
-    const { email, name } = req.body;
+    const { email, name, metadata } = req.body;
 
     const customer = await stripe.customers.create({
       email,
       name,
+      metadata: metadata || {},
     });
 
-    res.send(customer);
+    res.json(customer);
   } catch (error) {
     console.error('Error creating customer:', error);
-    res.status(500).send({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
 
+// Attach payment method endpoint
+app.post('/api/attach-payment-method', async (req, res) => {
+  try {
+    const { paymentMethodId, customerId } = req.body;
+
+    await stripe.paymentMethods.attach(paymentMethodId, {
+      customer: customerId,
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error attaching payment method:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create subscription endpoint
 app.post('/api/create-subscription', async (req, res) => {
   try {
-    const { customerId, priceId } = req.body;
+    const { customerId, priceId, paymentMethodId, trialPeriodDays = 7 } = req.body;
+
+    // Set the payment method as default
+    await stripe.customers.update(customerId, {
+      invoice_settings: {
+        default_payment_method: paymentMethodId,
+      },
+    });
 
     const subscription = await stripe.subscriptions.create({
       customer: customerId,
       items: [{ price: priceId }],
-      payment_behavior: 'default_incomplete',
-      payment_settings: { save_default_payment_method: 'on_subscription' },
+      default_payment_method: paymentMethodId,
+      trial_period_days: trialPeriodDays,
       expand: ['latest_invoice.payment_intent'],
     });
 
-    res.send({
-      subscriptionId: subscription.id,
-      clientSecret: subscription.latest_invoice.payment_intent.client_secret,
-    });
+    res.json(subscription);
   } catch (error) {
     console.error('Error creating subscription:', error);
-    res.status(500).send({ error: error.message });
-  }
-});
-
-app.get('/api/subscription', async (req, res) => {
-  try {
-    // In a real app, you'd get the customer ID from the authenticated user
-    const { customerId } = req.query;
-    
-    if (!customerId) {
-      return res.status(400).send({ error: 'Customer ID required' });
-    }
-
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customerId,
-      status: 'all',
-    });
-
-    const subscription = subscriptions.data[0]; // Get the first subscription
-    res.send({ subscription });
-  } catch (error) {
-    console.error('Error fetching subscription:', error);
-    res.status(500).send({ error: error.message });
-  }
-});
-
-app.post('/api/subscription/:id/cancel', async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    const subscription = await stripe.subscriptions.update(id, {
-      cancel_at_period_end: true,
-    });
-
-    res.send(subscription);
-  } catch (error) {
-    console.error('Error cancelling subscription:', error);
-    res.status(500).send({ error: error.message });
-  }
-});
-
-app.patch('/api/subscription/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { priceId } = req.body;
-
-    const subscription = await stripe.subscriptions.retrieve(id);
-    
-    const updatedSubscription = await stripe.subscriptions.update(id, {
-      items: [{
-        id: subscription.items.data[0].id,
-        price: priceId,
-      }],
-    });
-
-    res.send(updatedSubscription);
-  } catch (error) {
-    console.error('Error updating subscription:', error);
-    res.status(500).send({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
 
 // Webhook endpoint for Stripe events
-app.post('/webhook', (req, res) => {
+app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
   const sig = req.headers['stripe-signature'];
-  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
     console.log(`Webhook signature verification failed.`, err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
@@ -143,30 +85,20 @@ app.post('/webhook', (req, res) => {
 
   // Handle the event
   switch (event.type) {
-    case 'payment_intent.succeeded':
-      const paymentIntent = event.data.object;
-      console.log('PaymentIntent was successful!');
-      // Handle successful payment
-      break;
     case 'customer.subscription.created':
-      const subscription = event.data.object;
-      console.log('Subscription created:', subscription.id);
-      // Handle new subscription
+      console.log('Subscription created:', event.data.object);
+      break;
+    case 'customer.subscription.updated':
+      console.log('Subscription updated:', event.data.object);
       break;
     case 'customer.subscription.deleted':
-      const deletedSubscription = event.data.object;
-      console.log('Subscription cancelled:', deletedSubscription.id);
-      // Handle cancelled subscription
+      console.log('Subscription canceled:', event.data.object);
       break;
     case 'invoice.payment_succeeded':
-      const invoice = event.data.object;
-      console.log('Invoice payment succeeded:', invoice.id);
-      // Handle successful payment
+      console.log('Payment succeeded:', event.data.object);
       break;
     case 'invoice.payment_failed':
-      const failedInvoice = event.data.object;
-      console.log('Invoice payment failed:', failedInvoice.id);
-      // Handle failed payment
+      console.log('Payment failed:', event.data.object);
       break;
     default:
       console.log(`Unhandled event type ${event.type}`);
@@ -175,7 +107,7 @@ app.post('/webhook', (req, res) => {
   res.json({ received: true });
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Stripe server running on port ${PORT}`);
 });

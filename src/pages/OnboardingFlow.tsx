@@ -12,6 +12,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Instagram, Youtube, Linkedin, Twitter, Music } from "lucide-react";
+import { stripePromise } from "@/lib/stripe";
+import { supabase } from "@/supabaseClient";
 
 // Define the steps in the onboarding flow
 type OnboardingStep = 
@@ -172,45 +174,136 @@ const OnboardingFlow: React.FC = () => {
 
   const onPaymentSubmit = async (values: z.infer<typeof paymentSetupSchema>) => {
     console.log("Payment form submitted:", values);
-
+    
     try {
-      // Create Stripe customer
-      const customer = await fetch('/api/create-customer', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: accountForm.getValues().email,
-          name: values.cardHolderName,
-        }),
-      }).then(res => res.json());
+      const stripe = await stripePromise;
+      if (!stripe) throw new Error('Stripe not loaded');
 
-      // Get the price ID based on selected plan
+      const accountData = accountForm.getValues();
+      
+      // Step 1: Create/signup user in Supabase
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: accountData.email,
+        password: accountData.password,
+        options: {
+          data: {
+            full_name: accountData.name,
+            is_on_trial: true,
+            trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+          }
+        }
+      });
+
+      if (authError && authError.message !== 'User already registered') {
+        throw new Error(`Supabase signup failed: ${authError.message}`);
+      }
+
+      // Step 2: Create Stripe customer
+      const customerResponse = await fetch('/api/create-customer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: accountData.email,
+          name: values.cardHolderName,
+          metadata: {
+            supabase_user_id: authData?.user?.id || 'unknown'
+          }
+        }),
+      });
+
+      if (!customerResponse.ok) {
+        throw new Error('Failed to create Stripe customer');
+      }
+      
+      const customer = await customerResponse.json();
+
+      // Step 3: Create payment method from card details
+      const { error: paymentMethodError, paymentMethod } = await stripe.createPaymentMethod({
+        type: 'card',
+        card: {
+          number: values.cardNumber.replace(/\s/g, ''),
+          exp_month: parseInt(values.expiryDate.split('/')[0]),
+          exp_year: parseInt('20' + values.expiryDate.split('/')[1]),
+          cvc: values.cvc,
+        },
+        billing_details: {
+          name: values.cardHolderName,
+          email: accountData.email,
+        },
+      });
+
+      if (paymentMethodError) {
+        throw new Error(`Payment method creation failed: ${paymentMethodError.message}`);
+      }
+
+      // Step 4: Attach payment method to customer
+      const attachResponse = await fetch('/api/attach-payment-method', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          paymentMethodId: paymentMethod.id,
+          customerId: customer.id,
+        }),
+      });
+
+      if (!attachResponse.ok) {
+        throw new Error('Failed to attach payment method to customer');
+      }
+
+      // Step 5: Get the price ID based on selected plan
       const priceId = values.billingPlan === 'annual' 
         ? 'price_1RZXO3FS7AFxMYQCVPcKQbsd' // Annual subscription price ID
         : 'price_1RZXNbFS7AFxMYQC8VqRJgM7'; // Monthly plan price ID
 
-      // Create subscription
-      const subscription = await fetch('/api/create-subscription', {
+      // Step 6: Create subscription with trial period
+      const subscriptionResponse = await fetch('/api/create-subscription', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           customerId: customer.id,
           priceId,
+          paymentMethodId: paymentMethod.id,
+          trialPeriodDays: 7,
         }),
-      }).then(res => res.json());
+      });
 
+      if (!subscriptionResponse.ok) {
+        throw new Error('Failed to create subscription');
+      }
+
+      const subscription = await subscriptionResponse.json();
       console.log('Subscription created:', subscription);
 
-      // Store subscription info in your database here
+      // Step 7: Save subscription info to Supabase
+      if (authData?.user?.id) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: authData.user.id,
+            full_name: accountData.name,
+            email: accountData.email,
+            stripe_customer_id: customer.id,
+            stripe_subscription_id: subscription.id,
+            subscription_status: subscription.status,
+            plan_type: values.billingPlan,
+            is_on_trial: true,
+            trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
 
+        if (profileError) {
+          console.error('Profile creation/update failed:', profileError);
+        }
+      }
+
+      // Step 8: Mark user as authenticated and continue
+      login();
       setCurrentStep("user-goals");
+
     } catch (error) {
       console.error('Payment setup failed:', error);
-      //toast.error('Payment setup failed. Please try again.'); // Make sure toast is imported from a library like react-toastify
+      alert(`Payment setup failed: ${error.message}`);
     }
   };
 
