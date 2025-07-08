@@ -296,19 +296,17 @@ export async function signUp(email: string, password: string, fullName: string) 
   console.log(`Session ID: ${signupSessionId}`);
   
   // Store user-entered email in dedicated variable - FIRST PRIORITY
-  let userEnteredEmail = email;
-  
-  // Normalize email to handle potential encoding issues
-  userEnteredEmail = userEnteredEmail.trim().toLowerCase().normalize('NFC');
-  
+  const userEnteredEmail = email;
   console.log(`=== DEDICATED USER ENTERED EMAIL VARIABLE ===`);
+  console.log(`🎯 userEnteredEmail assigned: "${userEnteredEmail}"`);
   console.log(`🎯 Original email parameter: "${email}"`);
-  console.log(`🎯 Normalized userEnteredEmail: "${userEnteredEmail}"`);
-  console.log(`🎯 Email normalization applied: ${userEnteredEmail !== email}`);
+  console.log(`🎯 Email preservation verified: ${userEnteredEmail === email}`);
+  console.log(`🎯 Memory reference identical: ${Object.is(userEnteredEmail, email)}`);
+  console.log(`🎯 String comparison identical: ${String(userEnteredEmail) === String(email)}`);
+  console.log(`🎯 Character length identical: ${userEnteredEmail.length === email.length}`);
   console.log(`🎯 Email type: ${typeof userEnteredEmail}`);
   console.log(`🎯 Email length: ${userEnteredEmail?.length || 'undefined'}`);
   console.log(`🎯 Email is valid format: ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEnteredEmail)}`);
-  console.log(`🎯 Email RFC 5322 test: ${/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(userEnteredEmail)}`);
   console.log(`🎯 Email contains @ symbol: ${userEnteredEmail?.includes('@')}`);
   console.log(`🎯 Email contains domain: ${userEnteredEmail?.includes('.')}`);
   console.log(`🎯 Email is NOT a test email: ${!userEnteredEmail?.includes('test-rate-limit')}`);
@@ -316,7 +314,7 @@ export async function signUp(email: string, password: string, fullName: string) 
   console.log(`🎯 Name: ${fullName}`);
   console.log(`🎯 Start timestamp: ${new Date().toISOString()}`);
   console.log(`🎯 Start timestamp (epoch): ${Date.now()}`);
-  console.log(`🎯 Normalized userEnteredEmail will be used for ALL Supabase calls`);
+  console.log(`🎯 userEnteredEmail will be used for ALL Supabase calls - NO MODIFICATIONS ALLOWED`);
 
   try {
     // Step 1: Sign the user up with Supabase Auth
@@ -435,49 +433,9 @@ export async function signUp(email: string, password: string, fullName: string) 
         message: authError.message,
         status: authError.status,
         statusCode: authError.status,
-        code: authError.code,
         timestamp: new Date().toISOString(),
         sessionId: signupSessionId
       });
-      
-      // Handle specific email validation errors
-      if (authError.code === 'email_address_invalid' || authError.message?.includes('Email address') && authError.message?.includes('is invalid')) {
-        console.error(`🚨 SUPABASE EMAIL VALIDATION ERROR:`, {
-          originalEmail: email,
-          normalizedEmail: userEnteredEmail,
-          errorCode: authError.code,
-          errorMessage: authError.message,
-          suggestion: 'This appears to be a Supabase server-side email validation issue'
-        });
-        
-        // Try alternative email normalization
-        const alternativeEmail = email.trim().toLowerCase().replace(/\s+/g, '');
-        console.log(`🔄 Attempting with alternative normalization: "${alternativeEmail}"`);
-        
-        if (alternativeEmail !== userEnteredEmail) {
-          console.log(`🔄 Retrying signup with alternative email normalization...`);
-          const { data: retryData, error: retryError } = await supabase.auth.signUp({
-            email: alternativeEmail,
-            password: password,
-            options: {
-              data: {
-                full_name: fullName
-              }
-            }
-          });
-          
-          if (!retryError && retryData.user?.id) {
-            console.log(`✅ Retry successful with alternative email: "${alternativeEmail}"`);
-            userEnteredEmail = alternativeEmail; // Update for consistency
-            return await continueWithUser(retryData, alternativeEmail, fullName, signupSessionId);
-          } else {
-            console.error(`❌ Retry also failed:`, retryError);
-          }
-        }
-        
-        throw new Error(`Email validation failed: Supabase rejected "${userEnteredEmail}" as invalid. This may be a server-side configuration issue. Please try a different email address or contact support.`);
-      }
-      
       throw new Error(`Auth signup failed: ${authError.message}`);
     }
 
@@ -486,7 +444,82 @@ export async function signUp(email: string, password: string, fullName: string) 
       throw new Error('No user ID returned from signup');
     }
 
-    return await continueWithUser(authData, userEnteredEmail, fullName, signupSessionId);
+    const userId = authData.user.id;
+    console.log('✅ Supabase Auth user created successfully:', userId);
+
+    // Wait for auth state to settle
+    console.log('Waiting for auth state to settle...');
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // Verify we're authenticated before proceeding
+    const { data: { user }, error: sessionError } = await supabase.auth.getUser();
+    if (sessionError || !user) {
+      console.error('❌ Auth session not established:', sessionError);
+      throw new Error('Authentication session not established');
+    }
+    console.log('✅ Auth session confirmed for user:', user.id);
+
+    // Step 2: Insert into users table
+    console.log('Step 2: Creating user record in users table...');
+    console.log(`Inserting user record with email: "${userEnteredEmail}"`);
+    const { data: userData, error: usersInsertError } = await supabase
+      .from('users')
+      .insert([{
+        id: userId,
+        email: userEnteredEmail  // Use preserved user input
+      }])
+      .select();
+
+    if (usersInsertError) {
+      console.error('❌ Users table insert failed:', usersInsertError);
+      console.error('Users insert error details:', {
+        message: usersInsertError.message,
+        details: usersInsertError.details,
+        hint: usersInsertError.hint,
+        code: usersInsertError.code
+      });
+      throw new Error(`Failed to create user record: ${usersInsertError.message}`);
+    }
+
+    console.log('✅ User record created successfully:', userData);
+
+    // Step 3: Insert into profiles table
+    console.log('Step 3: Creating user profile...');
+    console.log(`Creating profile with email: "${userEnteredEmail}"`);
+    const trialEndDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const { data: profileData, error: profileInsertError } = await supabase
+      .from('profiles')
+      .insert([{
+        id: userId,
+        full_name: fullName,
+        email: userEnteredEmail,  // Use preserved user input
+        is_on_trial: true,
+        trial_ends_at: trialEndDate.toISOString()
+      }])
+      .select();
+
+    if (profileInsertError) {
+      console.error('❌ Profile insert failed:', profileInsertError);
+      console.error('Profile insert error details:', {
+        message: profileInsertError.message,
+        details: profileInsertError.details,
+        hint: profileInsertError.hint,
+        code: profileInsertError.code
+      });
+      throw new Error(`Failed to create user profile: ${profileInsertError.message}`);
+    }
+
+    console.log('✅ Profile created successfully:', profileData);
+    console.log('=== SIGNUP PROCESS COMPLETE ===');
+
+    return { 
+      success: true, 
+      email: userEnteredEmail,  // Return the preserved user input
+      user: authData.user,
+      userId: userId,
+      userData: userData,
+      profileData: profileData
+    };
 
   } catch (error) {
     console.error('❌ Signup process failed:', error);
@@ -501,84 +534,4 @@ export async function signUp(email: string, password: string, fullName: string) 
       }
     };
   }
-}
-
-// Helper function to continue user creation process after successful auth
-async function continueWithUser(authData: any, userEnteredEmail: string, fullName: string, signupSessionId: string) {
-  const userId = authData.user.id;
-  console.log('✅ Supabase Auth user created successfully:', userId);
-
-  // Wait for auth state to settle
-  console.log('Waiting for auth state to settle...');
-  await new Promise(resolve => setTimeout(resolve, 2000));
-
-  // Verify we're authenticated before proceeding
-  const { data: { user }, error: sessionError } = await supabase.auth.getUser();
-  if (sessionError || !user) {
-    console.error('❌ Auth session not established:', sessionError);
-    throw new Error('Authentication session not established');
-  }
-  console.log('✅ Auth session confirmed for user:', user.id);
-
-  // Step 2: Insert into users table
-  console.log('Step 2: Creating user record in users table...');
-  console.log(`Inserting user record with email: "${userEnteredEmail}"`);
-  const { data: userData, error: usersInsertError } = await supabase
-    .from('users')
-    .insert([{
-      id: userId,
-      email: userEnteredEmail  // Use preserved user input
-    }])
-    .select();
-
-  if (usersInsertError) {
-    console.error('❌ Users table insert failed:', usersInsertError);
-    console.error('Users insert error details:', {
-      message: usersInsertError.message,
-      details: usersInsertError.details,
-      hint: usersInsertError.hint,
-      code: usersInsertError.code
-    });
-    throw new Error(`Failed to create user record: ${usersInsertError.message}`);
-  }
-
-  console.log('✅ User record created successfully:', userData);
-
-  // Step 3: Insert into profiles table
-  console.log('Step 3: Creating user profile...');
-  console.log(`Creating profile with email: "${userEnteredEmail}"`);
-  const trialEndDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  const { data: profileData, error: profileInsertError } = await supabase
-    .from('profiles')
-    .insert([{
-      id: userId,
-      full_name: fullName,
-      email: userEnteredEmail,  // Use preserved user input
-      is_on_trial: true,
-      trial_ends_at: trialEndDate.toISOString()
-    }])
-    .select();
-
-  if (profileInsertError) {
-    console.error('❌ Profile insert failed:', profileInsertError);
-    console.error('Profile insert error details:', {
-      message: profileInsertError.message,
-      details: profileInsertError.details,
-      hint: profileInsertError.hint,
-      code: profileInsertError.code
-    });
-    throw new Error(`Failed to create user profile: ${profileInsertError.message}`);
-  }
-
-  console.log('✅ Profile created successfully:', profileData);
-  console.log('=== SIGNUP PROCESS COMPLETE ===');
-
-  return { 
-    success: true, 
-    email: userEnteredEmail,  // Return the preserved user input
-    user: authData.user,
-    userId: userId,
-    userData: userData,
-    profileData: profileData
-  };
 }

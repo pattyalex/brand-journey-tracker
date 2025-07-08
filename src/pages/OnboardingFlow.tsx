@@ -126,22 +126,26 @@ const accountCreationSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   email: z.string()
     .min(1, { message: "Email is required" })
-    .transform((email) => email.trim().toLowerCase()) // Normalize email
     .refine((email) => {
-      // More comprehensive email validation
-      const basicFormat = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-      const rfc5322Format = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(email);
+      // Very permissive email validation - just check for @ and .
+      const hasAt = email.includes('@');
+      const hasDot = email.includes('.');
+      const atIndex = email.indexOf('@');
+      const lastDotIndex = email.lastIndexOf('.');
+      const isBasicFormat = hasAt && hasDot && atIndex > 0 && lastDotIndex > atIndex;
       
       console.log('Client-side email validation:', {
         email,
-        basicFormat,
-        rfc5322Format,
+        hasAt,
+        hasDot,
+        atIndex,
+        lastDotIndex,
+        isBasicFormat,
         emailLength: email.length,
-        hasValidChars: !/[<>()[\]\\,;:\s@"]/.test(email.split('@')[0]),
-        domainValid: email.split('@')[1]?.includes('.') && email.split('@')[1]?.length > 3
+        trimmedEquals: email.trim() === email
       });
       
-      return basicFormat && rfc5322Format;
+      return isBasicFormat;
     }, { message: "Please enter a valid email address" }),
   password: z
     .string()
