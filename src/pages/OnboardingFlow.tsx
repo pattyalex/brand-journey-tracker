@@ -157,9 +157,7 @@ const OnboardingFlow: React.FC = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<OnboardingStep>("account-creation");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [retryStatus, setRetryStatus] = useState({ isWaiting: false, secondsRemaining: 0 });
-  const [cooldownTimer, setCooldownTimer] = useState(0);
-  const [lastSubmissionTime, setLastSubmissionTime] = useState<number>(0);
+  const [message, setMessage] = useState<string>('');
 
   // Account Creation Form
   const accountForm = useForm<z.infer<typeof accountCreationSchema>>({
@@ -226,106 +224,31 @@ const OnboardingFlow: React.FC = () => {
 
   // Handle form submissions
   const onAccountSubmit = async (data: z.infer<typeof accountCreationSchema>) => {
-    const now = Date.now();
-    const timeSinceLastSubmission = now - lastSubmissionTime;
-    const minCooldownMs = 5000; // 5 second minimum cooldown
-
-    // Prevent multiple submissions and enforce cooldown
-    if (isSubmitting || retryStatus.isWaiting || cooldownTimer > 0) {
-      console.log('⚠️ Account creation blocked:', {
-        isSubmitting,
-        isWaitingForRetry: retryStatus.isWaiting,
-        cooldownTimer,
-        timeSinceLastSubmission
-      });
-      return;
-    }
-
-    // Check if enough time has passed since last submission
-    if (timeSinceLastSubmission < minCooldownMs) {
-      const remainingCooldown = Math.ceil((minCooldownMs - timeSinceLastSubmission) / 1000);
-      console.log(`⏳ Cooldown active: ${remainingCooldown} seconds remaining`);
-      setCooldownTimer(remainingCooldown);
-      
-      // Start cooldown countdown
-      const cooldownInterval = setInterval(() => {
-        setCooldownTimer(prev => {
-          if (prev <= 1) {
-            clearInterval(cooldownInterval);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      
+    // Prevent multiple submissions immediately
+    if (isSubmitting) {
+      console.log('⚠️ Account creation already in progress, ignoring duplicate submission');
       return;
     }
 
     setIsSubmitting(true);
-    setLastSubmissionTime(now);
-    let signUpResult;
+    setRetryStatus({ isWaiting: false }); // Clear any previous retry status
 
     try {
       console.log("=== ONBOARDING FORM SUBMISSION ===");
-      console.log("=== COMPREHENSIVE EMAIL CAPTURE ===");
       console.log(`🎯 User form input email: "${data.email}"`);
       console.log(`🎯 User form input name: "${data.name}"`);
-      console.log(`🎯 Email type: ${typeof data.email}`);
-      console.log(`🎯 Email length: ${data.email?.length}`);
-      console.log(`🎯 Email contains @: ${data.email?.includes('@')}`);
-      console.log(`🎯 Email contains domain: ${data.email?.includes('.')}`);
-      console.log(`🎯 Email is NOT test email: ${!data.email?.includes('testuser')}`);
-      console.log(`🎯 Email is NOT auto-generated: ${!data.email?.includes('user') || !data.email?.includes('example.com')}`);
-      console.log(`🎯 Email is NOT rate-limit test: ${!data.email?.includes('test-rate-limit')}`);
-      console.log(`🎯 Email validation passed: ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)}`);
       console.log(`🎯 Form submission timestamp: ${new Date().toISOString()}`);
-      console.log(`🎯 Form submission epoch: ${Date.now()}`);
 
-      // Store exact user input for verification - CRITICAL TRACKING
+      // Store exact user input for verification
       const userEnteredEmail = data.email;
-      console.log(`=== USER ENTERED EMAIL TRACKING (ONBOARDING) ===`);
       console.log(`🎯 userEnteredEmail variable: "${userEnteredEmail}"`);
-      console.log(`🎯 Original data.email: "${data.email}"`);
-      console.log(`🎯 Values are identical: ${userEnteredEmail === data.email}`);
-      console.log(`🎯 Reference check: ${Object.is(userEnteredEmail, data.email)}`);
-      console.log(`🎯 String length match: ${userEnteredEmail.length === data.email.length}`);
-      console.log(`🎯 Character-by-character match: ${userEnteredEmail.split('').every((char, index) => char === data.email[index])}`);
-      console.log(`🎯 JSON stringify match: ${JSON.stringify(userEnteredEmail) === JSON.stringify(data.email)}`);
-      console.log(`🎯 Character codes: ${Array.from(userEnteredEmail).map(c => c.charCodeAt(0)).join(',')}`);
-      console.log(`🎯 Hex representation: ${Array.from(userEnteredEmail).map(c => c.charCodeAt(0).toString(16)).join(' ')}`);
-      console.log(`🎯 This email will be passed unchanged to auth.ts`);
-      console.log(`=== EMAIL TRACKING COMPLETE ===`);
 
-      // Import and use the dedicated signUp function with promise handling
-      const { signUpWithRetry } = await import('../auth');
+      // Import the simplified signUp function (no retry logic)
+      const { signUp } = await import('../auth');
 
-      console.log("=== FINAL VERIFICATION BEFORE SIGNUP CALL ===");
-      console.log(`🚀 Email about to be passed to signUpWithRetry: "${userEnteredEmail}"`);
-      console.log(`🚀 Password length: ${data.password?.length}`);
-      console.log(`🚀 Name: "${data.name}"`);
-      console.log(`🚀 Using userEnteredEmail variable: "${userEnteredEmail}"`);
-      console.log(`🚀 Email unchanged from form: ${userEnteredEmail === data.email}`);
-      console.log(`🚀 Final verification timestamp: ${new Date().toISOString()}`);
-      console.log(`🚀 Confirming NO usage of data.email in signup call`);
-      console.log(`🚀 Only userEnteredEmail will be used: "${userEnteredEmail}"`);
+      console.log(`🚀 Calling signUp with email: "${userEnteredEmail}"`);
       
-      signUpResult = await signUpWithRetry(userEnteredEmail, data.password, data.name, 3, (status) => {
-        console.log('Retry status update:', {
-          ...status,
-          timestamp: new Date().toISOString()
-        });
-        setRetryStatus(status);
-      })
-        .catch(signUpError => {
-          console.error('❌ SignUp function threw error:', signUpError);
-          return {
-            success: false,
-            error: {
-              message: signUpError instanceof Error ? signUpError.message : 'SignUp function error',
-              type: 'SIGNUP_FUNCTION_ERROR'
-            }
-          };
-        });
+      const signUpResult = await signUp(userEnteredEmail, data.password, data.name);
 
       console.log("SignUp function completed, result:", signUpResult);
 
@@ -337,6 +260,14 @@ const OnboardingFlow: React.FC = () => {
 
       if (signUpResult.error) {
         console.error('❌ Signup failed:', signUpResult.error);
+        
+        // Handle rate limiting specifically
+        if (signUpResult.error.isRateLimit) {
+          alert('Signup in progress, please check your email or try again shortly');
+          return;
+        }
+        
+        // Handle other errors
         alert(`Account creation failed: ${signUpResult.error.message}`);
         return;
       }
@@ -353,10 +284,7 @@ const OnboardingFlow: React.FC = () => {
       }
 
     } catch (outerError) {
-      console.error('❌ Outer catch - Unexpected error during account creation:', outerError);
-      console.error('Error type:', typeof outerError);
-      console.error('Error constructor:', outerError?.constructor?.name);
-      console.error('Error stack:', outerError instanceof Error ? outerError.stack : 'No stack');
+      console.error('❌ Unexpected error during account creation:', outerError);
 
       const errorMessage = outerError instanceof Error 
         ? outerError.message 
@@ -366,17 +294,6 @@ const OnboardingFlow: React.FC = () => {
     } finally {
       setIsSubmitting(false);
       setRetryStatus({ isWaiting: false });
-      // Start a brief cooldown after completion to prevent immediate re-submission
-      setCooldownTimer(3);
-      const finalCooldownInterval = setInterval(() => {
-        setCooldownTimer(prev => {
-          if (prev <= 1) {
-            clearInterval(finalCooldownInterval);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
     }
   };
 
@@ -573,20 +490,7 @@ const OnboardingFlow: React.FC = () => {
             <CardHeader>
               <CardTitle className="text-2xl">Let's set up your account</CardTitle>
               <CardDescription>Create your account to get started</CardDescription>
-              {/* Test button for UI rate limit testing */}
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={async () => {
-                  const { testUIRateLimit } = await import('../auth');
-                  await testUIRateLimit((status) => {
-                    setRetryStatus(status);
-                  });
-                }}
-                className="mt-2"
-              >
-                Test UI Rate Limit
-              </Button>
+              
               {/* Enhanced Network monitoring helper */}
               <Button 
                 variant="outline" 
@@ -774,42 +678,9 @@ const OnboardingFlow: React.FC = () => {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={isSubmitting || retryStatus.isWaiting || cooldownTimer > 0}>
-                    {cooldownTimer > 0
-                      ? `Cooldown ${cooldownTimer}s`
-                      : retryStatus.isWaiting 
-                        ? `Please wait ${retryStatus.secondsRemaining || '...'}s` 
-                        : isSubmitting 
-                          ? 'Creating Account...' 
-                          : 'Continue'
-                    }
+                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    {isSubmitting ? 'Creating Account...' : 'Continue'}
                   </Button>
-                  {(retryStatus.isWaiting || cooldownTimer > 0) && (
-                    <div style={{ 
-                      padding: '12px', 
-                      backgroundColor: cooldownTimer > 0 ? '#e0f2fe' : '#fef3c7', 
-                      border: `1px solid ${cooldownTimer > 0 ? '#0288d1' : '#f59e0b'}`, 
-                      borderRadius: '6px',
-                      marginTop: '12px',
-                      fontSize: '14px'
-                    }}>
-                      {cooldownTimer > 0 ? (
-                        <div>
-                          <strong>⏳ Cooldown Active:</strong> Please wait {cooldownTimer} seconds before trying again.
-                        </div>
-                      ) : (
-                        <div>
-                          <strong>⏱️ Rate Limited:</strong> Supabase requires a {retryStatus.secondsRemaining} second wait. 
-                          Retrying automatically...
-                          {retryStatus.sessionId && (
-                            <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
-                              Session: {retryStatus.sessionId}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </form>
               </Form>
             </CardContent>
