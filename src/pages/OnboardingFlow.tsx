@@ -481,14 +481,25 @@ const OnboardingFlow: React.FC = () => {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? 'Creating Account...' : 'Continue'}
+                  <Button type="submit" className="w-full" disabled={isSubmitting || retryStatus.isWaiting}>
+                    {retryStatus.isWaiting 
+                      ? `Please wait ${retryStatus.secondsRemaining || '...'}s` 
+                      : isSubmitting 
+                        ? 'Creating Account...' 
+                        : 'Continue'
+                    }
                   </Button>
                   {retryStatus.isWaiting && (
-                      <div>
-                        <p>Too many attempts. Please wait {retryStatus.secondsRemaining} seconds before retrying.</p>
-                      </div>
-                    )}
+                    <div style={{ 
+                      padding: '10px', 
+                      backgroundColor: '#fef3c7', 
+                      border: '1px solid #f59e0b', 
+                      borderRadius: '4px',
+                      marginTop: '10px'
+                    }}>
+                      <strong>⏱️ Rate Limited:</strong> Please wait {retryStatus.secondsRemaining} seconds before the next attempt.
+                    </div>
+                  )}
                 </form>
               </Form>
             </CardContent>

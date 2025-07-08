@@ -35,11 +35,14 @@ export async function signUpWithRetry(
     
     // Enhanced rate limit detection
     const errorMessage = result.error?.message?.toLowerCase() || '';
+    const errorCode = (result.error as any)?.code || '';
     const isRateLimited = errorMessage.includes('can only request this after') || 
                          errorMessage.includes('rate limit') ||
                          errorMessage.includes('for security purposes') ||
                          errorMessage.includes('over_email_send_rate_limit') ||
-                         (result.error as any)?.code === 'over_email_send_rate_limit';
+                         errorCode === 'over_email_send_rate_limit' ||
+                         errorCode === '429' ||
+                         (result.error as any)?.status === 429;
     
     console.log(`Rate limit check for attempt ${attempt}:`, {
       errorMessage: result.error?.message,
@@ -129,7 +132,12 @@ export async function testSignUpRetry() {
 // Make test function available on window for console testing
 if (typeof window !== 'undefined') {
   (window as any).testSignUpRetry = testSignUpRetry;
+  (window as any).testAuth = {
+    testSignUpRetry: testSignUpRetry,
+    signUpWithRetry: signUpWithRetry
+  };
   console.log('✅ testSignUpRetry() function available in console for testing');
+  console.log('✅ Also available: window.testAuth.testSignUpRetry()');
 }
 
 export async function signUp(email: string, password: string, fullName: string) {
