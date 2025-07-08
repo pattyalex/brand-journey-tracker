@@ -9,6 +9,30 @@ export async function signUp(email: string, password: string, fullName: string) 
   try {
     // Step 1: Sign the user up with Supabase Auth
     console.log('Step 1: Creating Supabase Auth user...');
+    
+    // Test direct fetch to Supabase auth endpoint first
+    const authUrl = `${supabase.supabaseUrl}/auth/v1/signup`;
+    console.log('Testing direct auth endpoint:', authUrl);
+    
+    try {
+      const testResponse = await fetch(authUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': supabase.supabaseKey
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+          data: { full_name: fullName }
+        })
+      });
+      console.log('Direct fetch test response status:', testResponse.status);
+      console.log('Direct fetch test response headers:', Object.fromEntries(testResponse.headers.entries()));
+    } catch (fetchError) {
+      console.error('Direct fetch test failed:', fetchError);
+    }
+    
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: email,
       password: password,
