@@ -294,35 +294,27 @@ export async function signUp(email: string, password: string, fullName: string) 
   const signupSessionId = Math.random().toString(36).substring(2, 15);
   console.log(`=== STARTING SIGNUP PROCESS ===`);
   console.log(`Session ID: ${signupSessionId}`);
-  console.log(`=== COMPREHENSIVE EMAIL VERIFICATION ===`);
-  console.log(`Original email parameter: "${email}"`);
-  console.log(`Email type: ${typeof email}`);
-  console.log(`Email length: ${email?.length || 'undefined'}`);
-  console.log(`Email is valid format: ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)}`);
-  console.log(`Email contains @ symbol: ${email?.includes('@')}`);
-  console.log(`Email contains domain: ${email?.includes('.')}`);
-  console.log(`Email is NOT a test email: ${!email?.includes('test-rate-limit')}`);
-  console.log(`Email is NOT auto-generated: ${!email?.includes('user') || !email?.includes('example.com')}`);
-  console.log(`Name: ${fullName}`);
-  console.log(`Start timestamp: ${new Date().toISOString()}`);
-  console.log(`Start timestamp (epoch): ${Date.now()}`);
-
-  // Store user-entered email in dedicated variable - NO MODIFICATIONS ALLOWED
+  
+  // Store user-entered email in dedicated variable - FIRST PRIORITY
   const userEnteredEmail = email;
-  console.log(`=== USER ENTERED EMAIL STORED ===`);
-  console.log(`userEnteredEmail variable: "${userEnteredEmail}"`);
-  console.log(`Email preservation check: ${userEnteredEmail === email}`);
-  console.log(`Memory reference check: ${Object.is(userEnteredEmail, email)}`);
-  console.log(`String comparison check: ${String(userEnteredEmail) === String(email)}`);
-  console.log(`No modifications applied: ${userEnteredEmail.length === email.length}`);
-  console.log(`userEnteredEmail will be used for ALL Supabase calls`);
-  console.log(`=== EMAIL TRACKING ESTABLISHED ===`);
-  console.log(`=== USER INPUT EMAIL PRESERVATION ===`);
-  console.log(`User entered email (preserved): "${userEnteredEmail}"`);
-  console.log(`Original email parameter: "${email}"`);
-  console.log(`Email values are identical: ${userEnteredEmail === email}`);
-  console.log(`Email reference check: ${Object.is(userEnteredEmail, email)}`);
-  console.log(`Email string comparison: ${String(userEnteredEmail) === String(email)}`);
+  console.log(`=== DEDICATED USER ENTERED EMAIL VARIABLE ===`);
+  console.log(`🎯 userEnteredEmail assigned: "${userEnteredEmail}"`);
+  console.log(`🎯 Original email parameter: "${email}"`);
+  console.log(`🎯 Email preservation verified: ${userEnteredEmail === email}`);
+  console.log(`🎯 Memory reference identical: ${Object.is(userEnteredEmail, email)}`);
+  console.log(`🎯 String comparison identical: ${String(userEnteredEmail) === String(email)}`);
+  console.log(`🎯 Character length identical: ${userEnteredEmail.length === email.length}`);
+  console.log(`🎯 Email type: ${typeof userEnteredEmail}`);
+  console.log(`🎯 Email length: ${userEnteredEmail?.length || 'undefined'}`);
+  console.log(`🎯 Email is valid format: ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEnteredEmail)}`);
+  console.log(`🎯 Email contains @ symbol: ${userEnteredEmail?.includes('@')}`);
+  console.log(`🎯 Email contains domain: ${userEnteredEmail?.includes('.')}`);
+  console.log(`🎯 Email is NOT a test email: ${!userEnteredEmail?.includes('test-rate-limit')}`);
+  console.log(`🎯 Email is NOT auto-generated: ${!userEnteredEmail?.includes('user') || !userEnteredEmail?.includes('example.com')}`);
+  console.log(`🎯 Name: ${fullName}`);
+  console.log(`🎯 Start timestamp: ${new Date().toISOString()}`);
+  console.log(`🎯 Start timestamp (epoch): ${Date.now()}`);
+  console.log(`🎯 userEnteredEmail will be used for ALL Supabase calls - NO MODIFICATIONS ALLOWED`);
 
   try {
     // Step 1: Sign the user up with Supabase Auth
@@ -371,11 +363,11 @@ export async function signUp(email: string, password: string, fullName: string) 
     }
 
     console.log(`=== FINAL VERIFICATION BEFORE SUPABASE CALL ===`);
-    console.log(`Email being passed to supabase.auth.signUp: "${userEnteredEmail}"`);
-    console.log(`Email verification complete - calling Supabase now`);
-    console.log(`Supabase call timestamp: ${new Date().toISOString()}`);
+    console.log(`🚀 Email being passed to supabase.auth.signUp: "${userEnteredEmail}"`);
+    console.log(`🚀 Email verification complete - calling Supabase now`);
+    console.log(`🚀 Supabase call timestamp: ${new Date().toISOString()}`);
     
-    // CRITICAL: Log the exact email value right before Supabase call
+    // CRITICAL: Comprehensive logging right before Supabase call
     console.log(`🔥 CRITICAL: EMAIL ABOUT TO BE SENT TO SUPABASE: "${userEnteredEmail}"`);
     console.log(`🔥 EMAIL TYPE: ${typeof userEnteredEmail}`);
     console.log(`🔥 EMAIL LENGTH: ${userEnteredEmail.length}`);
@@ -384,6 +376,10 @@ export async function signUp(email: string, password: string, fullName: string) 
     console.log(`🔥 NO TEST EMAIL: ${!userEnteredEmail.includes('test-rate-limit')}`);
     console.log(`🔥 NO AUTO-GENERATED: ${!userEnteredEmail.includes('user') || !userEnteredEmail.includes('example.com')}`);
     console.log(`🔥 EXACT VALUE: ${JSON.stringify(userEnteredEmail)}`);
+    console.log(`🔥 CHARACTER CODES: ${Array.from(userEnteredEmail).map(c => c.charCodeAt(0)).join(',')}`);
+    console.log(`🔥 HEX REPRESENTATION: ${Array.from(userEnteredEmail).map(c => c.charCodeAt(0).toString(16)).join(' ')}`);
+    console.log(`🔥 DIRECT VALUE CHECK: userEnteredEmail = "${userEnteredEmail}"`);
+    console.log(`🔥 SESSION ID: ${signupSessionId}`);
     console.log(`🔥 CALLING SUPABASE.AUTH.SIGNUP NOW...`);
     
     const { data: authData, error: authError } = await supabase.auth.signUp({

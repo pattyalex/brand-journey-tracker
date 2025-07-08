@@ -214,22 +214,22 @@ const OnboardingFlow: React.FC = () => {
     try {
       console.log("=== ONBOARDING FORM SUBMISSION ===");
       console.log("=== COMPREHENSIVE EMAIL CAPTURE ===");
-      console.log(`User form input email: "${data.email}"`);
-      console.log(`User form input name: "${data.name}"`);
-      console.log(`Email type: ${typeof data.email}`);
-      console.log(`Email length: ${data.email?.length}`);
-      console.log(`Email contains @: ${data.email?.includes('@')}`);
-      console.log(`Email contains domain: ${data.email?.includes('.')}`);
-      console.log(`Email is NOT test email: ${!data.email?.includes('testuser')}`);
-      console.log(`Email is NOT auto-generated: ${!data.email?.includes('user') || !data.email?.includes('example.com')}`);
-      console.log(`Email is NOT rate-limit test: ${!data.email?.includes('test-rate-limit')}`);
-      console.log(`Email validation passed: ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)}`);
-      console.log(`Form submission timestamp: ${new Date().toISOString()}`);
-      console.log(`Form submission epoch: ${Date.now()}`);
+      console.log(`🎯 User form input email: "${data.email}"`);
+      console.log(`🎯 User form input name: "${data.name}"`);
+      console.log(`🎯 Email type: ${typeof data.email}`);
+      console.log(`🎯 Email length: ${data.email?.length}`);
+      console.log(`🎯 Email contains @: ${data.email?.includes('@')}`);
+      console.log(`🎯 Email contains domain: ${data.email?.includes('.')}`);
+      console.log(`🎯 Email is NOT test email: ${!data.email?.includes('testuser')}`);
+      console.log(`🎯 Email is NOT auto-generated: ${!data.email?.includes('user') || !data.email?.includes('example.com')}`);
+      console.log(`🎯 Email is NOT rate-limit test: ${!data.email?.includes('test-rate-limit')}`);
+      console.log(`🎯 Email validation passed: ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)}`);
+      console.log(`🎯 Form submission timestamp: ${new Date().toISOString()}`);
+      console.log(`🎯 Form submission epoch: ${Date.now()}`);
 
       // Store exact user input for verification - CRITICAL TRACKING
       const userEnteredEmail = data.email;
-      console.log(`=== USER ENTERED EMAIL TRACKING ===`);
+      console.log(`=== USER ENTERED EMAIL TRACKING (ONBOARDING) ===`);
       console.log(`🎯 userEnteredEmail variable: "${userEnteredEmail}"`);
       console.log(`🎯 Original data.email: "${data.email}"`);
       console.log(`🎯 Values are identical: ${userEnteredEmail === data.email}`);
@@ -237,6 +237,8 @@ const OnboardingFlow: React.FC = () => {
       console.log(`🎯 String length match: ${userEnteredEmail.length === data.email.length}`);
       console.log(`🎯 Character-by-character match: ${userEnteredEmail.split('').every((char, index) => char === data.email[index])}`);
       console.log(`🎯 JSON stringify match: ${JSON.stringify(userEnteredEmail) === JSON.stringify(data.email)}`);
+      console.log(`🎯 Character codes: ${Array.from(userEnteredEmail).map(c => c.charCodeAt(0)).join(',')}`);
+      console.log(`🎯 Hex representation: ${Array.from(userEnteredEmail).map(c => c.charCodeAt(0).toString(16)).join(' ')}`);
       console.log(`🎯 This email will be passed unchanged to auth.ts`);
       console.log(`=== EMAIL TRACKING COMPLETE ===`);
 
@@ -250,6 +252,8 @@ const OnboardingFlow: React.FC = () => {
       console.log(`🚀 Using userEnteredEmail variable: "${userEnteredEmail}"`);
       console.log(`🚀 Email unchanged from form: ${userEnteredEmail === data.email}`);
       console.log(`🚀 Final verification timestamp: ${new Date().toISOString()}`);
+      console.log(`🚀 Confirming NO usage of data.email in signup call`);
+      console.log(`🚀 Only userEnteredEmail will be used: "${userEnteredEmail}"`);
       
       signUpResult = await signUpWithRetry(userEnteredEmail, data.password, data.name, 3, (status) => {
         console.log('Retry status update:', {
@@ -535,6 +539,7 @@ const OnboardingFlow: React.FC = () => {
                 size="sm" 
                 onClick={async () => {
                   try {
+                    console.log('🔍 Attempting to enable network monitoring...');
                     // Import the auth module to ensure monitorSignupRequests is available
                     await import('../auth');
                     
@@ -542,14 +547,16 @@ const OnboardingFlow: React.FC = () => {
                       const result = (window as any).monitorSignupRequests();
                       console.log('✅ NETWORK MONITORING ENABLED');
                       console.log(result);
-                      alert('✅ Network monitoring enabled!\n\n📍 Instructions:\n1. Open DevTools Network tab\n2. Filter by "signup" or "auth"\n3. Fill and submit the form\n4. Check Request payload\n5. Verify email matches your input\n\nCheck console for detailed logs.');
+                      alert('✅ Network monitoring enabled!\n\n📍 Instructions:\n1. Open DevTools Console tab (F12)\n2. Open DevTools Network tab\n3. Filter by "signup" or "auth"\n4. Fill and submit the form with a REAL email\n5. Check Request payload in Network tab\n6. Verify email matches your input exactly\n\n📋 Console will show:\n🎯 Form email tracking\n🚀 Final verification logs\n🔥 Exact email sent to Supabase\n\nAll requests will be intercepted and logged!');
                     } else {
                       console.error('❌ monitorSignupRequests not found on window object');
-                      alert('❌ Network monitoring not available. Please refresh the page and try again.');
+                      console.error('Available window functions:', Object.keys(window).filter(key => key.includes('monitor') || key.includes('test')));
+                      alert('❌ Network monitoring not available. Please:\n1. Refresh the page\n2. Try again\n3. Check console for errors');
                     }
                   } catch (error) {
                     console.error('❌ Error enabling network monitoring:', error);
-                    alert('❌ Error enabling network monitoring. Please refresh the page.');
+                    console.error('Error details:', error);
+                    alert('❌ Error enabling network monitoring:\n\n' + (error instanceof Error ? error.message : 'Unknown error') + '\n\nPlease:\n1. Refresh the page\n2. Check console for details\n3. Try again');
                   }
                 }}
                 className="mt-2 ml-2"
