@@ -213,11 +213,18 @@ const OnboardingFlow: React.FC = () => {
 
     try {
       console.log("=== USING DEDICATED SIGNUP FUNCTION ===");
+      console.log("=== ONBOARDING EMAIL VERIFICATION ===");
+      console.log(`Form data email: "${data.email}"`);
+      console.log(`Form data name: "${data.name}"`);
+      console.log(`Email type: ${typeof data.email}`);
+      console.log(`Email length: ${data.email?.length}`);
+      console.log(`Email contains @: ${data.email?.includes('@')}`);
+      console.log(`Email is not test email: ${!data.email?.includes('testuser')}`);
 
       // Import and use the dedicated signUp function with promise handling
       const { signUpWithRetry } = await import('../auth');
 
-      console.log("Calling signUp function...");
+      console.log("Calling signUp function with verified email...");
       signUpResult = await signUpWithRetry(data.email, data.password, data.name, 3, (status) => {
         console.log('Retry status update:', {
           ...status,
