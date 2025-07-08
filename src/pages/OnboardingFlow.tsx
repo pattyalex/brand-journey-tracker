@@ -26,7 +26,29 @@ type OnboardingStep =
 // Form validation schemas
 const accountCreationSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
-  email: z.string().email({ message: "Please enter a valid email address" }),
+  email: z.string()
+    .min(1, { message: "Email is required" })
+    .refine((email) => {
+      // Very permissive email validation - just check for @ and .
+      const hasAt = email.includes('@');
+      const hasDot = email.includes('.');
+      const atIndex = email.indexOf('@');
+      const lastDotIndex = email.lastIndexOf('.');
+      const isBasicFormat = hasAt && hasDot && atIndex > 0 && lastDotIndex > atIndex;
+      
+      console.log('Client-side email validation:', {
+        email,
+        hasAt,
+        hasDot,
+        atIndex,
+        lastDotIndex,
+        isBasicFormat,
+        emailLength: email.length,
+        trimmedEquals: email.trim() === email
+      });
+      
+      return isBasicFormat;
+    }, { message: "Please enter a valid email address" }),
   password: z
     .string()
     .min(10, { message: "Password must be at least 10 characters" })
@@ -562,6 +584,58 @@ const OnboardingFlow: React.FC = () => {
                 className="mt-2 ml-2"
               >
                 🔍 Monitor Network
+              </Button>
+              {/* Direct email validation test */}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={async () => {
+                  const testEmail = prompt('Enter email to test Supabase validation directly:') || 'test@example.com';
+                  console.log('=== DIRECT SUPABASE EMAIL VALIDATION TEST ===');
+                  console.log('Testing email:', testEmail);
+                  
+                  try {
+                    const { supabase } = await import('../supabaseClient');
+                    const authUrl = `${supabase.supabaseUrl}/auth/v1/signup`;
+                    
+                    const testPayload = {
+                      email: testEmail,
+                      password: 'TempPassword123!',
+                      data: { full_name: 'Test User' }
+                    };
+                    
+                    console.log('Test payload:', testPayload);
+                    console.log('Email char codes:', Array.from(testEmail).map(c => c.charCodeAt(0)));
+                    
+                    const response = await fetch(authUrl, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': supabase.supabaseKey,
+                        'Authorization': `Bearer ${supabase.supabaseKey}`
+                      },
+                      body: JSON.stringify(testPayload)
+                    });
+                    
+                    console.log('Direct test response status:', response.status);
+                    const responseText = await response.text();
+                    console.log('Direct test response body:', responseText);
+                    
+                    if (response.status === 400) {
+                      alert('❌ Email validation failed!\n\nStatus: ' + response.status + '\nResponse: ' + responseText);
+                    } else if (response.ok) {
+                      alert('✅ Email passed validation!\n\nStatus: ' + response.status);
+                    } else {
+                      alert('⚠️ Unexpected response!\n\nStatus: ' + response.status + '\nResponse: ' + responseText);
+                    }
+                  } catch (error) {
+                    console.error('Direct test error:', error);
+                    alert('❌ Direct test failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
+                  }
+                }}
+                className="mt-2 ml-2"
+              >
+                🧪 Test Email
               </Button>
             </CardHeader>
             <CardContent>

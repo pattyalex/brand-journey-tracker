@@ -342,12 +342,24 @@ export async function signUp(email: string, password: string, fullName: string) 
     console.log(`Payload being sent to: ${authUrl}`);
     console.log(`Request timestamp: ${new Date().toISOString()}`);
 
+    // Enhanced email debugging
+    console.log(`=== ENHANCED EMAIL DEBUGGING ===`);
+    console.log(`Email raw string: "${userEnteredEmail}"`);
+    console.log(`Email char codes: [${Array.from(userEnteredEmail).map(c => c.charCodeAt(0)).join(', ')}]`);
+    console.log(`Email hex dump: ${Array.from(userEnteredEmail).map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join(' ')}`);
+    console.log(`Email trimmed equals original: ${userEnteredEmail.trim() === userEnteredEmail}`);
+    console.log(`Email normalized: "${userEnteredEmail.normalize()}"`);
+    console.log(`Email has invisible chars: ${/[\u200B-\u200D\uFEFF]/.test(userEnteredEmail)}`);
+    console.log(`Email standard regex test: ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEnteredEmail)}`);
+    console.log(`Email RFC compliant test: ${/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(userEnteredEmail)}`);
+
     try {
       const testResponse = await fetch(authUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': supabase.supabaseKey
+          'apikey': supabase.supabaseKey,
+          'Authorization': `Bearer ${supabase.supabaseKey}`
         },
         body: JSON.stringify(signupPayload)
       });
@@ -357,6 +369,19 @@ export async function signUp(email: string, password: string, fullName: string) 
       if (testResponse.status === 400) {
         const errorResponse = await testResponse.text();
         console.log('Direct fetch 400 error response:', errorResponse);
+        try {
+          const errorJson = JSON.parse(errorResponse);
+          console.log('Parsed error details:', errorJson);
+          console.log('Error code:', errorJson.error_code || errorJson.code);
+          console.log('Error message:', errorJson.msg || errorJson.message);
+        } catch (parseError) {
+          console.log('Could not parse error as JSON');
+        }
+      }
+      
+      if (testResponse.ok) {
+        const successResponse = await testResponse.text();
+        console.log('Direct fetch success response:', successResponse);
       }
     } catch (fetchError) {
       console.error('Direct fetch test failed:', fetchError);
