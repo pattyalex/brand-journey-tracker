@@ -1,6 +1,53 @@
 
 import { supabase } from './supabaseClient'
 
+export async function signUpWithRetry(email: string, password: string, fullName: string, maxRetries: number = 3) {
+  console.log(`=== STARTING SIGNUP WITH RETRY (max ${maxRetries} attempts) ===`);
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    console.log(`=== SIGNUP ATTEMPT ${attempt}/${maxRetries} ===`);
+    
+    const result = await signUp(email, password, fullName);
+    
+    if (result.success) {
+      console.log(`✅ Signup successful on attempt ${attempt}`);
+      return result;
+    }
+    
+    // Check if the error is rate limiting
+    const isRateLimited = result.error?.message?.includes('can only request this after') || 
+                         result.error?.message?.includes('rate limit') ||
+                         result.error?.message?.includes('For security purposes');
+    
+    if (!isRateLimited) {
+      console.log(`❌ Non-rate-limit error on attempt ${attempt}, not retrying:`, result.error?.message);
+      return result;
+    }
+    
+    if (attempt < maxRetries) {
+      console.log(`⏳ Rate limited on attempt ${attempt}, waiting 60 seconds before retry...`);
+      console.log(`Rate limit error: ${result.error?.message}`);
+      
+      // Wait 60 seconds before retry
+      await new Promise(resolve => setTimeout(resolve, 60000));
+      
+      console.log(`🔄 Retrying signup after 60 second wait...`);
+    } else {
+      console.log(`❌ Max retries (${maxRetries}) reached, giving up`);
+      return result;
+    }
+  }
+  
+  // This should never be reached, but just in case
+  return { 
+    success: false, 
+    error: { 
+      message: 'Maximum retry attempts exceeded', 
+      type: 'RETRY_EXHAUSTED' 
+    } 
+  };
+}
+
 export async function signUp(email: string, password: string, fullName: string) {
   console.log(`=== STARTING SIGNUP PROCESS ===`);
   console.log(`Email: ${email}`);

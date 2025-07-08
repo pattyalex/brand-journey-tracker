@@ -170,17 +170,17 @@ const OnboardingFlow: React.FC = () => {
   const onAccountSubmit = async (data: z.infer<typeof accountCreationSchema>) => {
     console.log("=== ACCOUNT FORM SUBMITTED ===");
     console.log("Account data:", data);
-    
+
     let signUpResult;
-    
+
     try {
       console.log("=== USING DEDICATED SIGNUP FUNCTION ===");
-      
+
       // Import and use the dedicated signUp function with promise handling
-      const { signUp } = await import('@/auth');
-      
+      const { signUpWithRetry } = await import('../auth');
+
       console.log("Calling signUp function...");
-      signUpResult = await signUp(data.email, data.password, data.name)
+      signUpResult = await signUpWithRetry(data.email, data.password, data.name)
         .catch(signUpError => {
           console.error('❌ SignUp function threw error:', signUpError);
           return {
@@ -191,21 +191,21 @@ const OnboardingFlow: React.FC = () => {
             }
           };
         });
-      
+
       console.log("SignUp function completed, result:", signUpResult);
-      
+
       if (!signUpResult) {
         console.error('❌ No result returned from signUp function');
         alert('Account creation failed: No response from signup function');
         return;
       }
-      
+
       if (signUpResult.error) {
         console.error('❌ Signup failed:', signUpResult.error);
         alert(`Account creation failed: ${signUpResult.error.message}`);
         return;
       }
-      
+
       if (signUpResult.success) {
         console.log('✅ Account creation successful');
         console.log('User data:', signUpResult.userData);
@@ -216,17 +216,17 @@ const OnboardingFlow: React.FC = () => {
         console.error('❌ Unexpected signup response:', signUpResult);
         alert('Account creation failed: Unexpected response format');
       }
-      
+
     } catch (outerError) {
       console.error('❌ Outer catch - Unexpected error during account creation:', outerError);
       console.error('Error type:', typeof outerError);
       console.error('Error constructor:', outerError?.constructor?.name);
       console.error('Error stack:', outerError instanceof Error ? outerError.stack : 'No stack');
-      
+
       const errorMessage = outerError instanceof Error 
         ? outerError.message 
         : 'Unknown error during account creation';
-      
+
       alert(`Account creation failed: ${errorMessage}`);
     }
   };

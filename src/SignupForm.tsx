@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { signUp } from './auth'
+import { signUpWithRetry } from './auth'
 
 export default function SignupForm() {
   const [email, setEmail] = useState('')
@@ -23,7 +23,7 @@ export default function SignupForm() {
     
     setMessage('Creating your account...')
     
-    const result = await signUp(email, password, fullName)
+    const result = await signUpWithRetry(email, password, fullName)
 
     if (result.success) {
       setMessage('Signup successful! Check your email for confirmation.')
