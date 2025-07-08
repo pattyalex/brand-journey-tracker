@@ -309,6 +309,14 @@ export async function signUp(email: string, password: string, fullName: string) 
 
   // Store user-entered email in dedicated variable - NO MODIFICATIONS ALLOWED
   const userEnteredEmail = email;
+  console.log(`=== USER ENTERED EMAIL STORED ===`);
+  console.log(`userEnteredEmail variable: "${userEnteredEmail}"`);
+  console.log(`Email preservation check: ${userEnteredEmail === email}`);
+  console.log(`Memory reference check: ${Object.is(userEnteredEmail, email)}`);
+  console.log(`String comparison check: ${String(userEnteredEmail) === String(email)}`);
+  console.log(`No modifications applied: ${userEnteredEmail.length === email.length}`);
+  console.log(`userEnteredEmail will be used for ALL Supabase calls`);
+  console.log(`=== EMAIL TRACKING ESTABLISHED ===`);
   console.log(`=== USER INPUT EMAIL PRESERVATION ===`);
   console.log(`User entered email (preserved): "${userEnteredEmail}"`);
   console.log(`Original email parameter: "${email}"`);
@@ -366,6 +374,17 @@ export async function signUp(email: string, password: string, fullName: string) 
     console.log(`Email being passed to supabase.auth.signUp: "${userEnteredEmail}"`);
     console.log(`Email verification complete - calling Supabase now`);
     console.log(`Supabase call timestamp: ${new Date().toISOString()}`);
+    
+    // CRITICAL: Log the exact email value right before Supabase call
+    console.log(`🔥 CRITICAL: EMAIL ABOUT TO BE SENT TO SUPABASE: "${userEnteredEmail}"`);
+    console.log(`🔥 EMAIL TYPE: ${typeof userEnteredEmail}`);
+    console.log(`🔥 EMAIL LENGTH: ${userEnteredEmail.length}`);
+    console.log(`🔥 EMAIL INCLUDES @: ${userEnteredEmail.includes('@')}`);
+    console.log(`🔥 EMAIL IS VALID: ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEnteredEmail)}`);
+    console.log(`🔥 NO TEST EMAIL: ${!userEnteredEmail.includes('test-rate-limit')}`);
+    console.log(`🔥 NO AUTO-GENERATED: ${!userEnteredEmail.includes('user') || !userEnteredEmail.includes('example.com')}`);
+    console.log(`🔥 EXACT VALUE: ${JSON.stringify(userEnteredEmail)}`);
+    console.log(`🔥 CALLING SUPABASE.AUTH.SIGNUP NOW...`);
     
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: userEnteredEmail,  // Use the preserved user input

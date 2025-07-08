@@ -227,22 +227,31 @@ const OnboardingFlow: React.FC = () => {
       console.log(`Form submission timestamp: ${new Date().toISOString()}`);
       console.log(`Form submission epoch: ${Date.now()}`);
 
-      // Store exact user input for verification
-      const exactUserInput = data.email;
-      console.log(`=== EXACT USER INPUT PRESERVATION ===`);
-      console.log(`Preserved user input: "${exactUserInput}"`);
-      console.log(`Input preservation check: ${exactUserInput === data.email}`);
+      // Store exact user input for verification - CRITICAL TRACKING
+      const userEnteredEmail = data.email;
+      console.log(`=== USER ENTERED EMAIL TRACKING ===`);
+      console.log(`🎯 userEnteredEmail variable: "${userEnteredEmail}"`);
+      console.log(`🎯 Original data.email: "${data.email}"`);
+      console.log(`🎯 Values are identical: ${userEnteredEmail === data.email}`);
+      console.log(`🎯 Reference check: ${Object.is(userEnteredEmail, data.email)}`);
+      console.log(`🎯 String length match: ${userEnteredEmail.length === data.email.length}`);
+      console.log(`🎯 Character-by-character match: ${userEnteredEmail.split('').every((char, index) => char === data.email[index])}`);
+      console.log(`🎯 JSON stringify match: ${JSON.stringify(userEnteredEmail) === JSON.stringify(data.email)}`);
+      console.log(`🎯 This email will be passed unchanged to auth.ts`);
+      console.log(`=== EMAIL TRACKING COMPLETE ===`);
 
       // Import and use the dedicated signUp function with promise handling
       const { signUpWithRetry } = await import('../auth');
 
       console.log("=== FINAL VERIFICATION BEFORE SIGNUP CALL ===");
-      console.log(`Email about to be passed to signUpWithRetry: "${data.email}"`);
-      console.log(`Password length: ${data.password?.length}`);
-      console.log(`Name: "${data.name}"`);
-      console.log(`Final verification timestamp: ${new Date().toISOString()}`);
+      console.log(`🚀 Email about to be passed to signUpWithRetry: "${userEnteredEmail}"`);
+      console.log(`🚀 Password length: ${data.password?.length}`);
+      console.log(`🚀 Name: "${data.name}"`);
+      console.log(`🚀 Using userEnteredEmail variable: "${userEnteredEmail}"`);
+      console.log(`🚀 Email unchanged from form: ${userEnteredEmail === data.email}`);
+      console.log(`🚀 Final verification timestamp: ${new Date().toISOString()}`);
       
-      signUpResult = await signUpWithRetry(data.email, data.password, data.name, 3, (status) => {
+      signUpResult = await signUpWithRetry(userEnteredEmail, data.password, data.name, 3, (status) => {
         console.log('Retry status update:', {
           ...status,
           timestamp: new Date().toISOString()
@@ -520,22 +529,32 @@ const OnboardingFlow: React.FC = () => {
               >
                 Test UI Rate Limit
               </Button>
-              {/* Network monitoring helper */}
+              {/* Enhanced Network monitoring helper */}
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={() => {
-                  if (typeof window !== 'undefined' && (window as any).monitorSignupRequests) {
-                    const result = (window as any).monitorSignupRequests();
-                    console.log(result);
-                    alert('Network monitoring enabled! Check console for details.');
-                  } else {
-                    alert('Network monitoring not available. Please refresh the page.');
+                onClick={async () => {
+                  try {
+                    // Import the auth module to ensure monitorSignupRequests is available
+                    await import('../auth');
+                    
+                    if (typeof window !== 'undefined' && (window as any).monitorSignupRequests) {
+                      const result = (window as any).monitorSignupRequests();
+                      console.log('✅ NETWORK MONITORING ENABLED');
+                      console.log(result);
+                      alert('✅ Network monitoring enabled!\n\n📍 Instructions:\n1. Open DevTools Network tab\n2. Filter by "signup" or "auth"\n3. Fill and submit the form\n4. Check Request payload\n5. Verify email matches your input\n\nCheck console for detailed logs.');
+                    } else {
+                      console.error('❌ monitorSignupRequests not found on window object');
+                      alert('❌ Network monitoring not available. Please refresh the page and try again.');
+                    }
+                  } catch (error) {
+                    console.error('❌ Error enabling network monitoring:', error);
+                    alert('❌ Error enabling network monitoring. Please refresh the page.');
                   }
                 }}
                 className="mt-2 ml-2"
               >
-                Monitor Network
+                🔍 Monitor Network
               </Button>
             </CardHeader>
             <CardContent>
