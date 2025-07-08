@@ -28,28 +28,58 @@ const accountCreationSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   email: z.string()
     .min(1, { message: "Email is required" })
-    .transform((email) => email.trim().toLowerCase()) // Clean the email
+    .transform((email) => {
+      // Comprehensive email cleaning
+      const cleaned = email
+        .trim() // Remove whitespace
+        .toLowerCase() // Convert to lowercase
+        .normalize(); // Unicode normalization
+      
+      console.log('=== CLIENT-SIDE EMAIL CLEANING ===');
+      console.log(`Original: "${email}"`);
+      console.log(`Cleaned: "${cleaned}"`);
+      console.log(`Cleaning changed email: ${email !== cleaned}`);
+      console.log(`Original length: ${email.length}`);
+      console.log(`Cleaned length: ${cleaned.length}`);
+      console.log(`Original char codes: [${Array.from(email).map(c => c.charCodeAt(0)).join(', ')}]`);
+      console.log(`Cleaned char codes: [${Array.from(cleaned).map(c => c.charCodeAt(0)).join(', ')}]`);
+      
+      return cleaned;
+    })
     .refine((email) => {
-      // Very permissive email validation - just check for @ and .
+      // Enhanced email validation with detailed logging
       const hasAt = email.includes('@');
       const hasDot = email.includes('.');
       const atIndex = email.indexOf('@');
       const lastDotIndex = email.lastIndexOf('.');
-      const isBasicFormat = hasAt && hasDot && atIndex > 0 && lastDotIndex > atIndex;
+      const atCount = (email.match(/@/g) || []).length;
+      const isBasicFormat = hasAt && hasDot && atIndex > 0 && lastDotIndex > atIndex && atCount === 1;
       
-      console.log('Client-side email validation:', {
+      // RFC 5322 compliant regex (more permissive)
+      const rfcCompliant = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(email);
+      
+      // Domain-specific checks
+      const domain = email.split('@')[1] || '';
+      const isHeyMeganDomain = domain.includes('heymegan.com');
+      const hasValidTLD = domain.includes('.') && domain.split('.').pop().length >= 2;
+      
+      console.log('=== CLIENT-SIDE EMAIL VALIDATION ===', {
         email,
         hasAt,
         hasDot,
         atIndex,
         lastDotIndex,
+        atCount,
         isBasicFormat,
+        rfcCompliant,
         emailLength: email.length,
-        trimmedEquals: email.trim() === email,
-        isHeyMeganDomain: email.includes('heymegan.com')
+        domain,
+        isHeyMeganDomain,
+        hasValidTLD,
+        finalValidation: isBasicFormat && rfcCompliant && hasValidTLD
       });
       
-      return isBasicFormat;
+      return isBasicFormat && rfcCompliant && hasValidTLD;
     }, { message: "Please enter a valid email address" }),
   password: z
     .string()
@@ -644,12 +674,54 @@ const OnboardingFlow: React.FC = () => {
                 size="sm" 
                 onClick={async () => {
                   try {
+                    console.log('🔍 Starting comprehensive email validation diagnostics...');
                     const { diagnoseSupabaseEmailValidation } = await import('../supabase-diagnostics');
-                    await diagnoseSupabaseEmailValidation();
-                    alert('✅ Email validation diagnostics completed!\n\nCheck the console for detailed results and recommendations.');
+                    
+                    // Show loading state
+                    const originalText = document.activeElement?.textContent;
+                    if (document.activeElement) {
+                      (document.activeElement as HTMLElement).textContent = '🔄 Diagnosing...';
+                    }
+                    
+                    const results = await diagnoseSupabaseEmailValidation();
+                    
+                    // Restore button text
+                    if (document.activeElement && originalText) {
+                      (document.activeElement as HTMLElement).textContent = originalText;
+                    }
+                    
+                    // Analyze results for alert
+                    const totalTests = results.length;
+                    const validEmails = results.filter(r => r.isValid).length;
+                    const heymeganTests = results.filter(r => r.email.toLowerCase().includes('heymegan.com'));
+                    const heymeganValid = heymeganTests.filter(r => r.isValid).length;
+                    
+                    let alertMessage = `✅ Diagnostic completed!\n\n`;
+                    alertMessage += `📊 Results: ${validEmails}/${totalTests} emails passed validation\n`;
+                    alertMessage += `🏢 HeyMegan.com: ${heymeganValid}/${heymeganTests.length} passed\n\n`;
+                    
+                    if (heymeganTests.length > 0 && heymeganValid === 0) {
+                      alertMessage += `🚨 CRITICAL ISSUE: All heymegan.com emails failed!\n`;
+                      alertMessage += `This indicates a domain restriction in Supabase.\n\n`;
+                      alertMessage += `📋 Next steps:\n`;
+                      alertMessage += `1. Check Supabase Dashboard > Auth > Settings\n`;
+                      alertMessage += `2. Look for domain restrictions\n`;
+                      alertMessage += `3. Add heymegan.com to allowed domains\n\n`;
+                    } else if (validEmails === 0) {
+                      alertMessage += `🚨 CRITICAL: All emails failed validation!\n`;
+                      alertMessage += `This suggests a configuration issue.\n\n`;
+                    } else {
+                      alertMessage += `✅ Some emails passed - check console for patterns\n\n`;
+                    }
+                    
+                    alertMessage += `📊 Full diagnostic results are in the browser console.\n`;
+                    alertMessage += `🔍 Run window.emailDiagnosticResults to see raw data.`;
+                    
+                    alert(alertMessage);
+                    
                   } catch (error) {
-                    console.error('Diagnostic error:', error);
-                    alert('❌ Diagnostic failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
+                    console.error('❌ Diagnostic error:', error);
+                    alert('❌ Diagnostic failed!\n\nError: ' + (error instanceof Error ? error.message : 'Unknown error') + '\n\nCheck console for details.');
                   }
                 }}
                 className="mt-2 ml-2"

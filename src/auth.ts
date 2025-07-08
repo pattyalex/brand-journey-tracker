@@ -316,9 +316,51 @@ export async function signUp(email: string, password: string, fullName: string) 
   console.log(`🎯 Start timestamp (epoch): ${Date.now()}`);
   console.log(`🎯 userEnteredEmail will be used for ALL Supabase calls - NO MODIFICATIONS ALLOWED`);
 
+  // Enhanced email debugging function
+  function debugEmail(emailToDebug: string, label: string) {
+    console.log(`=== ${label} EMAIL DEBUGGING ===`);
+    console.log(`Email raw string: "${emailToDebug}"`);
+    console.log(`Email char codes: [${Array.from(emailToDebug).map(c => c.charCodeAt(0)).join(', ')}]`);
+    console.log(`Email hex dump: ${Array.from(emailToDebug).map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join(' ')}`);
+    console.log(`Email trimmed equals original: ${emailToDebug.trim() === emailToDebug}`);
+    console.log(`Email normalized: "${emailToDebug.normalize()}"`);
+    console.log(`Email has invisible chars: ${/[\u200B-\u200D\uFEFF]/.test(emailToDebug)}`);
+    console.log(`Email standard regex test: ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailToDebug)}`);
+    console.log(`Email RFC compliant test: ${/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(emailToDebug)}`);
+    console.log(`Email domain: "${emailToDebug.split('@')[1] || 'no domain'}"`);
+    console.log(`Email local part: "${emailToDebug.split('@')[0] || 'no local part'}"`);
+    console.log(`Email length: ${emailToDebug.length}`);
+    console.log(`Email starts/ends with whitespace: ${emailToDebug !== emailToDebug.trim()}`);
+    console.log(`Email has multiple @ symbols: ${(emailToDebug.match(/@/g) || []).length !== 1}`);
+    console.log(`Is heymegan.com domain: ${emailToDebug.toLowerCase().includes('heymegan.com')}`);
+  }
+
+  // Debug original email
+  debugEmail(userEnteredEmail, 'ORIGINAL USER');
+
+  // Create cleaned email variants for fallback attempts
+  const emailVariants = [
+    userEnteredEmail, // Original first
+    userEnteredEmail.trim(), // Trimmed
+    userEnteredEmail.toLowerCase(), // Lowercase
+    userEnteredEmail.trim().toLowerCase(), // Trimmed and lowercase
+    userEnteredEmail.normalize().trim().toLowerCase(), // Full normalization
+  ];
+
+  // Remove duplicates while preserving order
+  const uniqueEmailVariants = emailVariants.filter((email, index, self) => 
+    self.indexOf(email) === index
+  );
+
+  console.log(`=== EMAIL VARIANTS FOR FALLBACK ===`);
+  uniqueEmailVariants.forEach((variant, index) => {
+    console.log(`Variant ${index + 1}: "${variant}"`);
+    debugEmail(variant, `VARIANT ${index + 1}`);
+  });
+
   try {
     // Step 1: Sign the user up with Supabase Auth
-    console.log('Step 1: Creating Supabase Auth user...');
+    console.log('Step 1: Creating Supabase Auth user with fallback attempts...');
 
     // Test direct fetch to Supabase auth endpoint first
     const authUrl = `${supabase.supabaseUrl}/auth/v1/signup`;
@@ -460,45 +502,120 @@ export async function signUp(email: string, password: string, fullName: string) 
     console.log(`🔥 SESSION ID: ${signupSessionId}`);
     console.log(`🔥 CALLING SUPABASE.AUTH.SIGNUP NOW...`);
     
-    // First attempt with original email
-    let { data: authData, error: authError } = await supabase.auth.signUp({
-      email: userEnteredEmail,  // Use the preserved user input
-      password: password,
-      options: {
-        data: {
-          full_name: fullName
-        }
-      }
-    });
-    
-    // If first attempt fails with email validation error, try with cleaned email
-    if (authError && authError.message && authError.message.includes('invalid')) {
-      console.log(`🔄 FIRST ATTEMPT FAILED - TRYING WITH CLEANED EMAIL`);
-      const cleanedEmail = userEnteredEmail.trim().toLowerCase();
+    // Attempt signup with each email variant until one succeeds
+    let authData = null;
+    let authError = null;
+    let successfulEmail = null;
+    let attemptResults = [];
+
+    for (let i = 0; i < uniqueEmailVariants.length; i++) {
+      const emailVariant = uniqueEmailVariants[i];
+      const attemptNumber = i + 1;
       
-      if (cleanedEmail !== userEnteredEmail) {
-        console.log(`Original email: "${userEnteredEmail}"`);
-        console.log(`Cleaned email: "${cleanedEmail}"`);
-        
-        const cleanedAttempt = await supabase.auth.signUp({
-          email: cleanedEmail,
-          password: password,
-          options: {
-            data: {
-              full_name: fullName
-            }
+      console.log(`=== SIGNUP ATTEMPT ${attemptNumber}/${uniqueEmailVariants.length} ===`);
+      console.log(`🔄 Attempting signup with email variant: "${emailVariant}"`);
+      console.log(`🔄 Email variant ${attemptNumber} type: ${typeof emailVariant}`);
+      console.log(`🔄 Email variant ${attemptNumber} length: ${emailVariant.length}`);
+      console.log(`🔄 Email variant ${attemptNumber} char codes: [${Array.from(emailVariant).map(c => c.charCodeAt(0)).join(', ')}]`);
+      
+      // Create exact payload for this attempt
+      const attemptPayload = {
+        email: emailVariant,
+        password: password,
+        options: {
+          data: {
+            full_name: fullName
           }
+        }
+      };
+      
+      console.log(`🚀 Attempt ${attemptNumber} payload:`, JSON.stringify(attemptPayload, null, 2));
+      console.log(`🚀 Attempt ${attemptNumber} email field: "${attemptPayload.email}"`);
+      console.log(`🚀 Calling supabase.auth.signUp for attempt ${attemptNumber}...`);
+      
+      try {
+        const attemptResult = await supabase.auth.signUp(attemptPayload);
+        
+        console.log(`📬 Attempt ${attemptNumber} response received:`, {
+          hasData: !!attemptResult.data,
+          hasUser: !!attemptResult.data?.user,
+          hasError: !!attemptResult.error,
+          errorMessage: attemptResult.error?.message,
+          errorCode: attemptResult.error?.status
         });
         
-        if (!cleanedAttempt.error) {
-          console.log(`✅ SUCCESS WITH CLEANED EMAIL`);
-          authData = cleanedAttempt.data;
-          authError = cleanedAttempt.error;
+        // Store attempt result for analysis
+        attemptResults.push({
+          attempt: attemptNumber,
+          email: emailVariant,
+          success: !attemptResult.error,
+          error: attemptResult.error,
+          data: attemptResult.data
+        });
+        
+        if (!attemptResult.error) {
+          console.log(`✅ SUCCESS ON ATTEMPT ${attemptNumber} with email: "${emailVariant}"`);
+          authData = attemptResult.data;
+          authError = null;
+          successfulEmail = emailVariant;
+          break;
         } else {
-          console.log(`❌ CLEANED EMAIL ALSO FAILED:`, cleanedAttempt.error);
+          console.log(`❌ ATTEMPT ${attemptNumber} FAILED:`, {
+            email: emailVariant,
+            error: attemptResult.error.message,
+            code: attemptResult.error.status
+          });
+          
+          // Check if this is an email validation error
+          const isEmailValidationError = attemptResult.error.message && 
+            (attemptResult.error.message.toLowerCase().includes('invalid') ||
+             attemptResult.error.message.toLowerCase().includes('email'));
+          
+          if (!isEmailValidationError) {
+            console.log(`🛑 NON-EMAIL ERROR detected on attempt ${attemptNumber}, stopping fallback attempts`);
+            authError = attemptResult.error;
+            break;
+          }
+          
+          // If this is the last attempt, store the error
+          if (i === uniqueEmailVariants.length - 1) {
+            authError = attemptResult.error;
+          }
+        }
+        
+      } catch (attemptException) {
+        console.error(`❌ ATTEMPT ${attemptNumber} EXCEPTION:`, attemptException);
+        attemptResults.push({
+          attempt: attemptNumber,
+          email: emailVariant,
+          success: false,
+          error: attemptException,
+          data: null
+        });
+        
+        // If this is the last attempt, store the error
+        if (i === uniqueEmailVariants.length - 1) {
+          authError = { message: `Signup exception: ${attemptException.message}` };
         }
       }
     }
+
+    // Log comprehensive attempt summary
+    console.log(`=== SIGNUP ATTEMPTS SUMMARY ===`);
+    console.log(`Total attempts: ${attemptResults.length}`);
+    console.log(`Successful email: ${successfulEmail || 'NONE'}`);
+    console.log(`Final authData exists: ${!!authData}`);
+    console.log(`Final authError exists: ${!!authError}`);
+    
+    attemptResults.forEach((result, index) => {
+      console.log(`Attempt ${result.attempt}: "${result.email}" - ${result.success ? '✅ SUCCESS' : '❌ FAILED'}`);
+      if (!result.success && result.error) {
+        console.log(`  Error: ${result.error.message || 'Unknown error'}`);
+      }
+    });
+
+    // Use the successful email for the rest of the process
+    const finalEmailToUse = successfulEmail || userEnteredEmail;
     
     console.log(`=== SUPABASE RESPONSE RECEIVED ===`);
     console.log(`Auth data:`, authData ? { user: authData.user?.id, email: authData.user?.email } : null);
@@ -538,12 +655,12 @@ export async function signUp(email: string, password: string, fullName: string) 
 
     // Step 2: Insert into users table
     console.log('Step 2: Creating user record in users table...');
-    console.log(`Inserting user record with email: "${userEnteredEmail}"`);
+    console.log(`Inserting user record with email: "${finalEmailToUse}"`);
     const { data: userData, error: usersInsertError } = await supabase
       .from('users')
       .insert([{
         id: userId,
-        email: userEnteredEmail  // Use preserved user input
+        email: finalEmailToUse  // Use the email that worked for signup
       }])
       .select();
 
@@ -562,14 +679,14 @@ export async function signUp(email: string, password: string, fullName: string) 
 
     // Step 3: Insert into profiles table
     console.log('Step 3: Creating user profile...');
-    console.log(`Creating profile with email: "${userEnteredEmail}"`);
+    console.log(`Creating profile with email: "${finalEmailToUse}"`);
     const trialEndDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     const { data: profileData, error: profileInsertError } = await supabase
       .from('profiles')
       .insert([{
         id: userId,
         full_name: fullName,
-        email: userEnteredEmail,  // Use preserved user input
+        email: finalEmailToUse,  // Use the email that worked for signup
         is_on_trial: true,
         trial_ends_at: trialEndDate.toISOString()
       }])
@@ -591,11 +708,14 @@ export async function signUp(email: string, password: string, fullName: string) 
 
     return { 
       success: true, 
-      email: userEnteredEmail,  // Return the preserved user input
+      email: finalEmailToUse,  // Return the email that successfully worked
+      originalEmail: userEnteredEmail,  // Also return original for reference
       user: authData.user,
       userId: userId,
       userData: userData,
-      profileData: profileData
+      profileData: profileData,
+      emailVariantsAttempted: attemptResults.length,
+      successfulAttempt: attemptResults.find(r => r.success)?.attempt || null
     };
 
   } catch (error) {
