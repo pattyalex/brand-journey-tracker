@@ -407,6 +407,11 @@ export async function signUp(email: string, password: string, fullName: string) 
     console.log(`🔥 SESSION ID: ${signupSessionId}`);
     console.log(`🔥 CALLING SUPABASE.AUTH.SIGNUP NOW...`);
     
+    // Additional pre-signup debugging
+    console.log("🔥 Signup attempt with email:", JSON.stringify(userEnteredEmail), "length:", userEnteredEmail.length);
+    console.log("🔥 Supabase URL:", supabase.supabaseUrl);
+    console.log("🔥 Auth endpoint:", `${supabase.supabaseUrl}/auth/v1/signup`);
+    
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: userEnteredEmail,  // Use the preserved user input
       password: password,
@@ -418,8 +423,9 @@ export async function signUp(email: string, password: string, fullName: string) 
     });
     
     console.log(`=== SUPABASE RESPONSE RECEIVED ===`);
+    console.log("🔥 Signup response error:", authError);
     console.log(`Auth data:`, authData ? { user: authData.user?.id, email: authData.user?.email } : null);
-    console.log(`Auth error:`, authError ? { message: authError.message, status: authError.status } : null);
+    console.log(`Auth error:`, authError ? { message: authError.message, status: authError.status, code: authError.code } : null);
 
     if (authError) {
       console.error(`❌ Auth signup failed (Session: ${signupSessionId}):`, authError);

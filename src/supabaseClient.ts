@@ -45,6 +45,7 @@ try {
       detectSessionInUrl: true
     }
   });
+  console.log('🔧 Supabase client initialized with:', { SUPABASE_URL: supabaseUrl, SUPABASE_ANON_KEY: supabaseAnonKey ? supabaseAnonKey.substring(0, 20) + '...' : 'MISSING' });
   console.log('✅ Supabase client created successfully');
   console.log('Supabase client configuration:', {
     url: supabaseUrl,
