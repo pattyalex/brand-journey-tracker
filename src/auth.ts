@@ -134,6 +134,10 @@ export async function testUIRateLimit(onRetryStatus?: (status: { isWaiting: bool
 
   // Simulate first attempt failure
   console.log('Simulating first signup attempt...');
+  onRetryStatus?.({ 
+    isWaiting: false, 
+    message: 'Testing signup process...'
+  });
   await new Promise(resolve => setTimeout(resolve, 1000));
 
   // Simulate rate limit error
@@ -144,7 +148,7 @@ export async function testUIRateLimit(onRetryStatus?: (status: { isWaiting: bool
     message: 'Rate limited. Retrying in 10 seconds...'
   });
 
-  // Short countdown for testing
+  // Short countdown for testing (10 seconds for quick testing)
   for (let i = 10; i > 0; i--) {
     onRetryStatus?.({ 
       isWaiting: true, 
@@ -157,7 +161,10 @@ export async function testUIRateLimit(onRetryStatus?: (status: { isWaiting: bool
 
   // Simulate success
   console.log('Simulating successful retry...');
-  onRetryStatus?.({ isWaiting: false, message: 'Test completed successfully!' });
+  onRetryStatus?.({ 
+    isWaiting: false, 
+    message: 'Test completed successfully!'
+  });
 
   return { 
     success: true, 
@@ -165,11 +172,53 @@ export async function testUIRateLimit(onRetryStatus?: (status: { isWaiting: bool
   };
 }
 
+// Global test function for OnboardingFlow UI testing
+export async function testOnboardingUIRateLimit() {
+  console.log('=== TESTING ONBOARDING UI RATE LIMIT ===');
+  
+  // Find the onboarding form in the DOM
+  const continueButton = document.querySelector('button[type="submit"]') as HTMLButtonElement;
+  
+  if (!continueButton) {
+    console.error('Could not find continue button for testing');
+    return;
+  }
+
+  console.log('Found continue button:', continueButton.textContent);
+  
+  // Create a mock onRetryStatus function to simulate UI updates
+  const mockOnRetryStatus = (status: { isWaiting: boolean; secondsRemaining?: number; message?: string }) => {
+    console.log('Mock UI Status Update:', status);
+    
+    // Update button text and disabled state
+    if (status.isWaiting) {
+      continueButton.textContent = `Please wait ${status.secondsRemaining || '...'}s`;
+      continueButton.disabled = true;
+      continueButton.style.opacity = '0.5';
+      continueButton.style.cursor = 'not-allowed';
+    } else {
+      continueButton.textContent = 'Continue';
+      continueButton.disabled = false;
+      continueButton.style.opacity = '1';
+      continueButton.style.cursor = 'pointer';
+    }
+  };
+
+  // Run the UI test
+  await testUIRateLimit(mockOnRetryStatus);
+  
+  console.log('✅ Onboarding UI rate limit test completed');
+}
+
 // Make test functions available on window for console testing
 if (typeof window !== 'undefined') {
   (window as any).testSignUpRetry = testSignUpRetry;
   (window as any).testUIRateLimit = testUIRateLimit;
-  console.log('✅ testSignUpRetry() and testUIRateLimit() functions available in console for testing');
+  (window as any).testOnboardingUIRateLimit = testOnboardingUIRateLimit;
+  console.log('✅ Test functions available in console:');
+  console.log('  - testSignUpRetry() - Tests actual signup with retry logic');
+  console.log('  - testUIRateLimit() - Tests UI rate limit behavior (needs callback)');
+  console.log('  - testOnboardingUIRateLimit() - Tests onboarding UI rate limit behavior');
 }
 
 export async function signUp(email: string, password: string, fullName: string) {

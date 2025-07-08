@@ -435,6 +435,20 @@ const OnboardingFlow: React.FC = () => {
             <CardHeader>
               <CardTitle className="text-2xl">Let's set up your account</CardTitle>
               <CardDescription>Create your account to get started</CardDescription>
+              {/* Test button for UI rate limit testing */}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={async () => {
+                  const { testUIRateLimit } = await import('../auth');
+                  await testUIRateLimit((status) => {
+                    setRetryStatus(status);
+                  });
+                }}
+                className="mt-2"
+              >
+                Test UI Rate Limit
+              </Button>
             </CardHeader>
             <CardContent>
               <Form {...accountForm}>
