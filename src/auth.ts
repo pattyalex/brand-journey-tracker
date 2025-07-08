@@ -3,49 +3,95 @@ import { supabase } from './supabaseClient'
 
 export async function signUpWithRetry(email: string, password: string, fullName: string, maxRetries: number = 3) {
   console.log(`=== STARTING SIGNUP WITH RETRY (max ${maxRetries} attempts) ===`);
+  console.log(`Target email: ${email}`);
+  console.log(`Target name: ${fullName}`);
+  console.log(`Timestamp: ${new Date().toISOString()}`);
   
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    console.log(`=== SIGNUP ATTEMPT ${attempt}/${maxRetries} ===`);
+    console.log(`\n=== SIGNUP ATTEMPT ${attempt}/${maxRetries} ===`);
+    console.log(`Attempt started at: ${new Date().toISOString()}`);
     
     const result = await signUp(email, password, fullName);
     
+    console.log(`Attempt ${attempt} completed at: ${new Date().toISOString()}`);
+    console.log(`Attempt ${attempt} result:`, {
+      success: result.success,
+      errorMessage: result.error?.message,
+      errorType: result.error?.type
+    });
+    
     if (result.success) {
       console.log(`✅ Signup successful on attempt ${attempt}`);
+      console.log(`Final success result:`, result);
       return result;
     }
     
-    // Check if the error is rate limiting
-    const isRateLimited = result.error?.message?.includes('can only request this after') || 
-                         result.error?.message?.includes('rate limit') ||
-                         result.error?.message?.includes('For security purposes');
+    // Enhanced rate limit detection
+    const errorMessage = result.error?.message?.toLowerCase() || '';
+    const isRateLimited = errorMessage.includes('can only request this after') || 
+                         errorMessage.includes('rate limit') ||
+                         errorMessage.includes('for security purposes') ||
+                         errorMessage.includes('over_email_send_rate_limit') ||
+                         (result.error as any)?.code === 'over_email_send_rate_limit';
+    
+    console.log(`Rate limit check for attempt ${attempt}:`, {
+      errorMessage: result.error?.message,
+      errorCode: (result.error as any)?.code,
+      isRateLimited: isRateLimited
+    });
     
     if (!isRateLimited) {
-      console.log(`❌ Non-rate-limit error on attempt ${attempt}, not retrying:`, result.error?.message);
+      console.log(`❌ Non-rate-limit error on attempt ${attempt}, not retrying`);
+      console.log(`Error details:`, result.error);
       return result;
     }
     
     if (attempt < maxRetries) {
-      console.log(`⏳ Rate limited on attempt ${attempt}, waiting 60 seconds before retry...`);
-      console.log(`Rate limit error: ${result.error?.message}`);
+      const waitTime = 60; // seconds
+      console.log(`⏳ Rate limited on attempt ${attempt}/${maxRetries}`);
+      console.log(`Rate limit error message: "${result.error?.message}"`);
+      console.log(`Waiting ${waitTime} seconds before retry...`);
+      console.log(`Wait started at: ${new Date().toISOString()}`);
       
-      // Wait 60 seconds before retry
-      await new Promise(resolve => setTimeout(resolve, 60000));
+      // Count down the wait time
+      for (let i = waitTime; i > 0; i -= 10) {
+        console.log(`⏰ ${i} seconds remaining...`);
+        await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 10 seconds
+      }
       
-      console.log(`🔄 Retrying signup after 60 second wait...`);
+      console.log(`⏰ Wait completed at: ${new Date().toISOString()}`);
+      console.log(`🔄 Starting retry attempt ${attempt + 1}...`);
     } else {
       console.log(`❌ Max retries (${maxRetries}) reached, giving up`);
+      console.log(`Final error after all retries:`, result.error);
       return result;
     }
   }
   
   // This should never be reached, but just in case
-  return { 
+  const exhaustedResult = { 
     success: false, 
     error: { 
       message: 'Maximum retry attempts exceeded', 
       type: 'RETRY_EXHAUSTED' 
     } 
   };
+  console.log(`❌ Returning exhausted result:`, exhaustedResult);
+  return exhaustedResult;
+}
+
+// Manual testing function for rate limit behavior
+export async function testSignUpRetry() {
+  console.log('=== MANUAL TESTING SIGNUP RETRY ===');
+  const testEmail = `test-${Date.now()}@example.com`;
+  const testPassword = 'TestPassword123!';
+  const testName = 'Test User';
+  
+  console.log('Testing with:', { testEmail, testPassword, testName });
+  
+  const result = await signUpWithRetry(testEmail, testPassword, testName, 2);
+  console.log('Manual test result:', result);
+  return result;
 }
 
 export async function signUp(email: string, password: string, fullName: string) {

@@ -102,6 +102,7 @@ const socialAccountsSchema = z.object({
 const OnboardingFlow: React.FC = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<OnboardingStep>("account-creation");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Account Creation Form
   const accountForm = useForm<z.infer<typeof accountCreationSchema>>({
@@ -171,6 +172,13 @@ const OnboardingFlow: React.FC = () => {
     console.log("=== ACCOUNT FORM SUBMITTED ===");
     console.log("Account data:", data);
 
+    // Prevent multiple submissions
+    if (isSubmitting) {
+      console.log('⚠️ Account creation already in progress, ignoring duplicate submission');
+      return;
+    }
+
+    setIsSubmitting(true);
     let signUpResult;
 
     try {
@@ -228,6 +236,8 @@ const OnboardingFlow: React.FC = () => {
         : 'Unknown error during account creation';
 
       alert(`Account creation failed: ${errorMessage}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -470,7 +480,9 @@ const OnboardingFlow: React.FC = () => {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full">Continue</Button>
+                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    {isSubmitting ? 'Creating Account...' : 'Continue'}
+                  </Button>
                 </form>
               </Form>
             </CardContent>

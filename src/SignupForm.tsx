@@ -6,9 +6,16 @@ export default function SignupForm() {
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
   const [message, setMessage] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Prevent multiple submissions
+    if (isLoading) {
+      console.log('⚠️ Signup already in progress, ignoring duplicate submission');
+      return;
+    }
     
     // Basic validation
     if (!email || !password || !fullName) {
@@ -21,18 +28,27 @@ export default function SignupForm() {
       return
     }
     
+    setIsLoading(true)
     setMessage('Creating your account...')
+    console.log('🚀 Starting signup process from SignupForm');
     
-    const result = await signUpWithRetry(email, password, fullName)
+    try {
+      const result = await signUpWithRetry(email, password, fullName)
 
-    if (result.success) {
-      setMessage('Signup successful! Check your email for confirmation.')
-      // Clear form
-      setEmail('')
-      setPassword('')
-      setFullName('')
-    } else {
-      setMessage(`Error: ${result.error?.message || 'Unknown error occurred'}`)
+      if (result.success) {
+        setMessage('Signup successful! Check your email for confirmation.')
+        // Clear form
+        setEmail('')
+        setPassword('')
+        setFullName('')
+      } else {
+        setMessage(`Error: ${result.error?.message || 'Unknown error occurred'}`)
+      }
+    } catch (error) {
+      console.error('Unexpected error in SignupForm:', error);
+      setMessage('Unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -57,7 +73,9 @@ export default function SignupForm() {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
-      <button type="submit">Sign Up</button>
+      <button type="submit" disabled={isLoading}>
+        {isLoading ? 'Creating Account...' : 'Sign Up'}
+      </button>
       <p>{message}</p>
     </form>
   )
