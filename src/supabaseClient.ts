@@ -45,43 +45,7 @@ try {
       detectSessionInUrl: true
     }
   });
-  console.log('🔧 Supabase client initialized with:', { SUPABASE_URL: supabaseUrl, SUPABASE_ANON_KEY: supabaseAnonKey ? supabaseAnonKey.substring(0, 20) + '...' : 'MISSING' });
   console.log('✅ Supabase client created successfully');
-  console.log('Supabase client configuration:', {
-    url: supabaseUrl,
-    keyPrefix: supabaseAnonKey?.substring(0, 20),
-    authConfig: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  });
-  
-  // Test Supabase auth endpoint accessibility
-  console.log('=== TESTING SUPABASE AUTH ENDPOINT ===');
-  fetch(`${supabaseUrl}/auth/v1/settings`, {
-    headers: {
-      'apikey': supabaseAnonKey,
-      'Authorization': `Bearer ${supabaseAnonKey}`
-    }
-  })
-  .then(response => {
-    console.log('Auth settings endpoint response status:', response.status);
-    if (response.ok) {
-      return response.json();
-    }
-    throw new Error(`HTTP ${response.status}`);
-  })
-  .then(settings => {
-    console.log('Supabase auth settings:', settings);
-    if (settings.email_validation) {
-      console.log('Email validation settings:', settings.email_validation);
-    }
-  })
-  .catch(error => {
-    console.log('Could not fetch auth settings:', error.message);
-  });
-  
 } catch (error) {
   console.error('❌ SUPABASE CLIENT CREATION ERROR:', error);
   console.error('Error message:', error.message);

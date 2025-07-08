@@ -19,104 +19,6 @@ import { supabase } from "@/supabaseClient";
 type OnboardingStep = 
   | "account-creation" 
   | "payment-setup" 
-
-// Direct signup testing function for comprehensive email debugging
-async function testDirectSignup(email: string) {
-  console.log("🧪 COMPREHENSIVE EMAIL TEST STARTING");
-  console.log("🧪 Testing signup for email:", email);
-  console.log("🧪 Email type:", typeof email);
-  console.log("🧪 Email length:", email.length);
-  console.log("🧪 Email char codes:", Array.from(email).map(c => c.charCodeAt(0)));
-  console.log("🧪 Email hex dump:", Array.from(email).map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join(' '));
-  console.log("🧪 Email trimmed equals original:", email.trim() === email);
-  console.log("🧪 Email has invisible chars:", /[\u200B-\u200D\uFEFF]/.test(email));
-  console.log("🧪 Email basic regex test:", /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
-  console.log("🧪 Email RFC compliant test:", /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(email));
-  
-  try {
-    const { supabase } = await import('../supabaseClient');
-    console.log("🧪 Supabase client imported successfully");
-    console.log("🧪 Supabase URL:", supabase.supabaseUrl);
-    console.log("🧪 Supabase key exists:", !!supabase.supabaseKey);
-    
-    // Test 1: Direct Supabase Auth API call
-    console.log("🧪 TEST 1: Direct supabase.auth.signUp call");
-    const authResult = await supabase.auth.signUp({ 
-      email, 
-      password: "TestPassword123!",
-      options: {
-        data: { full_name: "Test User" }
-      }
-    });
-    console.log("🧪 Auth result:", authResult);
-    console.log("🧪 Auth error details:", authResult.error);
-    
-    // Test 2: Direct fetch to auth endpoint
-    console.log("🧪 TEST 2: Direct fetch to auth endpoint");
-    const authUrl = `${supabase.supabaseUrl}/auth/v1/signup`;
-    const testPayload = {
-      email: email,
-      password: "TestPassword123!",
-      data: { full_name: "Test User" }
-    };
-    
-    console.log("🧪 Auth URL:", authUrl);
-    console.log("🧪 Test payload:", testPayload);
-    console.log("🧪 Payload JSON:", JSON.stringify(testPayload, null, 2));
-    
-    const response = await fetch(authUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': supabase.supabaseKey,
-        'Authorization': `Bearer ${supabase.supabaseKey}`
-      },
-      body: JSON.stringify(testPayload)
-    });
-    
-    console.log("🧪 Direct fetch response status:", response.status);
-    console.log("🧪 Direct fetch response headers:", Object.fromEntries(response.headers.entries()));
-    
-    const responseText = await response.text();
-    console.log("🧪 Direct fetch response body:", responseText);
-    
-    let alertMessage = "🧪 EMAIL TEST RESULTS:\n\n";
-    alertMessage += `Email: ${email}\n`;
-    alertMessage += `Length: ${email.length}\n`;
-    alertMessage += `Basic validation: ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? '✅ PASS' : '❌ FAIL'}\n`;
-    alertMessage += `RFC validation: ${/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(email) ? '✅ PASS' : '❌ FAIL'}\n\n`;
-    
-    if (authResult.error) {
-      alertMessage += `Supabase Auth Error: ${authResult.error.message}\n`;
-      alertMessage += `Error Code: ${(authResult.error as any).code || 'N/A'}\n`;
-    } else {
-      alertMessage += `Supabase Auth: ✅ SUCCESS\n`;
-    }
-    
-    if (response.status === 400) {
-      try {
-        const errorJson = JSON.parse(responseText);
-        alertMessage += `\nDirect API Error: ${errorJson.msg || errorJson.message}\n`;
-        alertMessage += `Error Code: ${errorJson.error_code || errorJson.code || 'N/A'}\n`;
-      } catch (parseError) {
-        alertMessage += `\nDirect API Error: ${responseText}\n`;
-      }
-    } else if (response.ok) {
-      alertMessage += `\nDirect API: ✅ SUCCESS\n`;
-    } else {
-      alertMessage += `\nDirect API: ⚠️ Status ${response.status}\n`;
-    }
-    
-    alertMessage += `\n🔍 Check console for detailed logs`;
-    alert(alertMessage);
-    
-  } catch (error) {
-    console.error("🧪 Test error:", error);
-    alert(`🧪 Test failed: ${error instanceof Error ? error.message : 'Unknown error'}\n\nCheck console for details.`);
-  }
-}
-
-
   | "user-goals" 
   | "connect-social" 
   | "welcome";
@@ -683,7 +585,7 @@ const OnboardingFlow: React.FC = () => {
               >
                 🔍 Monitor Network
               </Button>
-              {/* Enhanced direct email validation test */}
+              {/* Direct email validation test */}
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -692,30 +594,48 @@ const OnboardingFlow: React.FC = () => {
                   console.log('=== DIRECT SUPABASE EMAIL VALIDATION TEST ===');
                   console.log('Testing email:', testEmail);
                   
-                  // Use the new testDirectSignup function
-                  await testDirectSignup(testEmail);
+                  try {
+                    const { supabase } = await import('../supabaseClient');
+                    const authUrl = `${supabase.supabaseUrl}/auth/v1/signup`;
+                    
+                    const testPayload = {
+                      email: testEmail,
+                      password: 'TempPassword123!',
+                      data: { full_name: 'Test User' }
+                    };
+                    
+                    console.log('Test payload:', testPayload);
+                    console.log('Email char codes:', Array.from(testEmail).map(c => c.charCodeAt(0)));
+                    
+                    const response = await fetch(authUrl, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': supabase.supabaseKey,
+                        'Authorization': `Bearer ${supabase.supabaseKey}`
+                      },
+                      body: JSON.stringify(testPayload)
+                    });
+                    
+                    console.log('Direct test response status:', response.status);
+                    const responseText = await response.text();
+                    console.log('Direct test response body:', responseText);
+                    
+                    if (response.status === 400) {
+                      alert('❌ Email validation failed!\n\nStatus: ' + response.status + '\nResponse: ' + responseText);
+                    } else if (response.ok) {
+                      alert('✅ Email passed validation!\n\nStatus: ' + response.status);
+                    } else {
+                      alert('⚠️ Unexpected response!\n\nStatus: ' + response.status + '\nResponse: ' + responseText);
+                    }
+                  } catch (error) {
+                    console.error('Direct test error:', error);
+                    alert('❌ Direct test failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
+                  }
                 }}
                 className="mt-2 ml-2"
               >
                 🧪 Test Email
-              </Button>
-              {/* Test form input email directly */}
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={async () => {
-                  const currentFormEmail = accountForm.getValues().email;
-                  if (!currentFormEmail) {
-                    alert('Please enter an email in the form first');
-                    return;
-                  }
-                  console.log('=== TESTING CURRENT FORM EMAIL ===');
-                  console.log('Form email value:', currentFormEmail);
-                  await testDirectSignup(currentFormEmail);
-                }}
-                className="mt-2 ml-2"
-              >
-                🧪 Test Form Email
               </Button>
             </CardHeader>
             <CardContent>
