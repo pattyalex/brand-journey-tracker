@@ -13,6 +13,23 @@ console.log('Resolved supabaseAnonKey (first 20 chars):', supabaseAnonKey?.subst
 console.log('supabaseUrl type:', typeof supabaseUrl);
 console.log('supabaseAnonKey type:', typeof supabaseAnonKey);
 
+// Validate URL format
+if (supabaseUrl && !supabaseUrl.endsWith('.co')) {
+  console.error('❌ INVALID SUPABASE URL - Missing .co domain suffix!');
+  console.error('Current URL:', supabaseUrl);
+  console.error('Expected format: https://[project-id].supabase.co');
+}
+
+// Test URL reachability
+console.log('Testing Supabase URL reachability...');
+fetch(supabaseUrl + '/rest/v1/')
+  .then(response => {
+    console.log('✅ Supabase URL is reachable, status:', response.status);
+  })
+  .catch(error => {
+    console.error('❌ Supabase URL is not reachable:', error.message);
+  });
+
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Missing Supabase environment variables');
   throw new Error('Missing Supabase environment variables');
