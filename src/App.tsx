@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -81,12 +81,12 @@ window.addEventListener('error', (event) => {
 
 function App() {
   return (
-    <ErrorBoundary>
-      <ThemeProvider defaultTheme="system" storageKey="vite-react-theme">
-        <AuthProvider>
-          <LoginModal />
-          <Toaster />
-          <Router>
+    <BrowserRouter>
+      <ErrorBoundary>
+        <ThemeProvider defaultTheme="system" storageKey="vite-react-theme">
+          <AuthProvider>
+            <LoginModal />
+            <Toaster />
             <Suspense fallback={<PageLoader />}>
               <Routes>
               {/* Public routes */}
@@ -212,10 +212,10 @@ function App() {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
-        </Router>
-      </AuthProvider>
+        </AuthProvider>
       </ThemeProvider>
-    </ErrorBoundary>
+      </ErrorBoundary>
+    </BrowserRouter>
   );
 }
 
