@@ -1,4 +1,3 @@
-
 import { supabase } from './supabaseClient'
 
 export async function signUpWithRetry(
@@ -12,27 +11,27 @@ export async function signUpWithRetry(
   console.log(`Target email: ${email}`);
   console.log(`Target name: ${fullName}`);
   console.log(`Timestamp: ${new Date().toISOString()}`);
-  
+
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     console.log(`\n=== SIGNUP ATTEMPT ${attempt}/${maxRetries} ===`);
     console.log(`Attempt started at: ${new Date().toISOString()}`);
-    
+
     const result = await signUp(email, password, fullName);
-    
+
     console.log(`Attempt ${attempt} completed at: ${new Date().toISOString()}`);
     console.log(`Attempt ${attempt} result:`, {
       success: result.success,
       errorMessage: result.error?.message,
       errorType: result.error?.type
     });
-    
+
     if (result.success) {
       console.log(`✅ Signup successful on attempt ${attempt}`);
       console.log(`Final success result:`, result);
       onRetryStatus?.({ isWaiting: false, message: 'Signup successful!' });
       return result;
     }
-    
+
     // Enhanced rate limit detection
     const errorMessage = result.error?.message?.toLowerCase() || '';
     const errorCode = (result.error as any)?.code || '';
@@ -43,34 +42,34 @@ export async function signUpWithRetry(
                          errorCode === 'over_email_send_rate_limit' ||
                          errorCode === '429' ||
                          (result.error as any)?.status === 429;
-    
+
     console.log(`Rate limit check for attempt ${attempt}:`, {
       errorMessage: result.error?.message,
       errorCode: (result.error as any)?.code,
       isRateLimited: isRateLimited
     });
-    
+
     if (!isRateLimited) {
       console.log(`❌ Non-rate-limit error on attempt ${attempt}, not retrying`);
       console.log(`Error details:`, result.error);
       onRetryStatus?.({ isWaiting: false, message: `Error: ${result.error?.message}` });
       return result;
     }
-    
+
     if (attempt < maxRetries) {
       const waitTime = 61; // Slightly longer than 60 seconds to be safe
       console.log(`⏳ Rate limited on attempt ${attempt}/${maxRetries}`);
       console.log(`Rate limit error message: "${result.error?.message}"`);
       console.log(`Waiting ${waitTime} seconds before retry...`);
       console.log(`Wait started at: ${new Date().toISOString()}`);
-      
+
       // Update UI with countdown
       onRetryStatus?.({ 
         isWaiting: true, 
         secondsRemaining: waitTime,
         message: `Rate limited. Retrying in ${waitTime} seconds...`
       });
-      
+
       // Count down the wait time with more frequent updates for UI
       for (let i = waitTime; i > 0; i--) {
         onRetryStatus?.({ 
@@ -78,14 +77,14 @@ export async function signUpWithRetry(
           secondsRemaining: i,
           message: `Rate limited. Retrying in ${i} seconds...`
         });
-        
+
         if (i % 10 === 0 || i <= 10) {
           console.log(`⏰ ${i} seconds remaining...`);
         }
-        
+
         await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second for more precise countdown
       }
-      
+
       console.log(`⏰ Wait completed at: ${new Date().toISOString()}`);
       console.log(`🔄 Starting retry attempt ${attempt + 1}...`);
       onRetryStatus?.({ 
@@ -99,7 +98,7 @@ export async function signUpWithRetry(
       return result;
     }
   }
-  
+
   // This should never be reached, but just in case
   const exhaustedResult = { 
     success: false, 
@@ -119,9 +118,9 @@ export async function testSignUpRetry() {
   const testEmail = `test-${Date.now()}@example.com`;
   const testPassword = 'TestPassword123!';
   const testName = 'Test User';
-  
+
   console.log('Testing with:', { testEmail, testPassword, testName });
-  
+
   const result = await signUpWithRetry(testEmail, testPassword, testName, 2, (status) => {
     console.log('Test retry status:', status);
   });
@@ -129,30 +128,63 @@ export async function testSignUpRetry() {
   return result;
 }
 
-// Make test function available on window for console testing
+// UI Test function that simulates rate limiting without hitting Supabase
+export async function testUIRateLimit(onRetryStatus?: (status: { isWaiting: boolean; secondsRemaining?: number; message?: string }) => void) {
+  console.log('=== TESTING UI RATE LIMIT BEHAVIOR ===');
+
+  // Simulate first attempt failure
+  console.log('Simulating first signup attempt...');
+  await new Promise(resolve => setTimeout(resolve, 1000));
+
+  // Simulate rate limit error
+  console.log('Simulating rate limit error...');
+  onRetryStatus?.({ 
+    isWaiting: true, 
+    secondsRemaining: 10,
+    message: 'Rate limited. Retrying in 10 seconds...'
+  });
+
+  // Short countdown for testing
+  for (let i = 10; i > 0; i--) {
+    onRetryStatus?.({ 
+      isWaiting: true, 
+      secondsRemaining: i,
+      message: `Rate limited. Retrying in ${i} seconds...`
+    });
+    console.log(`⏰ UI Test: ${i} seconds remaining...`);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+
+  // Simulate success
+  console.log('Simulating successful retry...');
+  onRetryStatus?.({ isWaiting: false, message: 'Test completed successfully!' });
+
+  return { 
+    success: true, 
+    message: 'UI rate limit test completed successfully'
+  };
+}
+
+// Make test functions available on window for console testing
 if (typeof window !== 'undefined') {
   (window as any).testSignUpRetry = testSignUpRetry;
-  (window as any).testAuth = {
-    testSignUpRetry: testSignUpRetry,
-    signUpWithRetry: signUpWithRetry
-  };
-  console.log('✅ testSignUpRetry() function available in console for testing');
-  console.log('✅ Also available: window.testAuth.testSignUpRetry()');
+  (window as any).testUIRateLimit = testUIRateLimit;
+  console.log('✅ testSignUpRetry() and testUIRateLimit() functions available in console for testing');
 }
 
 export async function signUp(email: string, password: string, fullName: string) {
   console.log(`=== STARTING SIGNUP PROCESS ===`);
   console.log(`Email: ${email}`);
   console.log(`Name: ${fullName}`);
-  
+
   try {
     // Step 1: Sign the user up with Supabase Auth
     console.log('Step 1: Creating Supabase Auth user...');
-    
+
     // Test direct fetch to Supabase auth endpoint first
     const authUrl = `${supabase.supabaseUrl}/auth/v1/signup`;
     console.log('Testing direct auth endpoint:', authUrl);
-    
+
     try {
       const testResponse = await fetch(authUrl, {
         method: 'POST',
@@ -171,7 +203,7 @@ export async function signUp(email: string, password: string, fullName: string) 
     } catch (fetchError) {
       console.error('Direct fetch test failed:', fetchError);
     }
-    
+
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: email,
       password: password,
@@ -271,11 +303,11 @@ export async function signUp(email: string, password: string, fullName: string) 
       userData: userData,
       profileData: profileData
     };
-    
+
   } catch (error) {
     console.error('❌ Signup process failed:', error);
     console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
-    
+
     // Return structured error response
     return { 
       success: false,
