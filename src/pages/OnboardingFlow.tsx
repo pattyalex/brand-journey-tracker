@@ -28,6 +28,7 @@ const accountCreationSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   email: z.string()
     .min(1, { message: "Email is required" })
+    .transform((email) => email.trim().toLowerCase()) // Clean the email
     .refine((email) => {
       // Very permissive email validation - just check for @ and .
       const hasAt = email.includes('@');
@@ -44,7 +45,8 @@ const accountCreationSchema = z.object({
         lastDotIndex,
         isBasicFormat,
         emailLength: email.length,
-        trimmedEquals: email.trim() === email
+        trimmedEquals: email.trim() === email,
+        isHeyMeganDomain: email.includes('heymegan.com')
       });
       
       return isBasicFormat;
@@ -636,6 +638,23 @@ const OnboardingFlow: React.FC = () => {
                 className="mt-2 ml-2"
               >
                 🧪 Test Email
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={async () => {
+                  try {
+                    const { diagnoseSupabaseEmailValidation } = await import('../supabase-diagnostics');
+                    await diagnoseSupabaseEmailValidation();
+                    alert('✅ Email validation diagnostics completed!\n\nCheck the console for detailed results and recommendations.');
+                  } catch (error) {
+                    console.error('Diagnostic error:', error);
+                    alert('❌ Diagnostic failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
+                  }
+                }}
+                className="mt-2 ml-2"
+              >
+                🔍 Diagnose
               </Button>
             </CardHeader>
             <CardContent>

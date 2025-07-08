@@ -352,6 +352,22 @@ export async function signUp(email: string, password: string, fullName: string) 
     console.log(`Email has invisible chars: ${/[\u200B-\u200D\uFEFF]/.test(userEnteredEmail)}`);
     console.log(`Email standard regex test: ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEnteredEmail)}`);
     console.log(`Email RFC compliant test: ${/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(userEnteredEmail)}`);
+    
+    // Check for common problematic patterns
+    console.log(`Email domain: "${userEnteredEmail.split('@')[1] || 'no domain'}"`);
+    console.log(`Email local part: "${userEnteredEmail.split('@')[0] || 'no local part'}"`);
+    console.log(`Email length: ${userEnteredEmail.length}`);
+    console.log(`Email starts/ends with whitespace: ${userEnteredEmail !== userEnteredEmail.trim()}`);
+    console.log(`Email has multiple @ symbols: ${(userEnteredEmail.match(/@/g) || []).length !== 1}`);
+    
+    // Test email validation specifically for heymegan.com domain
+    const isHeyMeganDomain = userEnteredEmail.toLowerCase().includes('heymegan.com');
+    console.log(`Is heymegan.com domain: ${isHeyMeganDomain}`);
+    
+    // Clean the email to remove any potential issues
+    const cleanedEmail = userEnteredEmail.trim().toLowerCase();
+    console.log(`Cleaned email: "${cleanedEmail}"`);
+    console.log(`Original vs cleaned: ${userEnteredEmail === cleanedEmail ? 'IDENTICAL' : 'DIFFERENT'}`);
 
     try {
       const testResponse = await fetch(authUrl, {
@@ -374,6 +390,17 @@ export async function signUp(email: string, password: string, fullName: string) 
           console.log('Parsed error details:', errorJson);
           console.log('Error code:', errorJson.error_code || errorJson.code);
           console.log('Error message:', errorJson.msg || errorJson.message);
+          
+          // Check for specific email validation errors
+          if (errorJson.msg && errorJson.msg.includes('invalid')) {
+            console.log('=== EMAIL VALIDATION ERROR DETECTED ===');
+            console.log('This appears to be a Supabase email validation issue');
+            console.log('Possible causes:');
+            console.log('1. Domain restriction in Supabase Auth settings');
+            console.log('2. Custom email validation rules');
+            console.log('3. Email provider blocking/flagging');
+            console.log('4. Rate limiting or security measures');
+          }
         } catch (parseError) {
           console.log('Could not parse error as JSON');
         }
@@ -382,6 +409,32 @@ export async function signUp(email: string, password: string, fullName: string) 
       if (testResponse.ok) {
         const successResponse = await testResponse.text();
         console.log('Direct fetch success response:', successResponse);
+      }
+      
+      // Test with cleaned email if original fails
+      if (testResponse.status === 400 && userEnteredEmail !== cleanedEmail) {
+        console.log('=== TESTING WITH CLEANED EMAIL ===');
+        const cleanedPayload = {
+          email: cleanedEmail,
+          password: password,
+          data: { full_name: fullName }
+        };
+        
+        const cleanedResponse = await fetch(authUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': supabase.supabaseKey,
+            'Authorization': `Bearer ${supabase.supabaseKey}`
+          },
+          body: JSON.stringify(cleanedPayload)
+        });
+        
+        console.log('Cleaned email test response status:', cleanedResponse.status);
+        if (cleanedResponse.status === 400) {
+          const cleanedErrorResponse = await cleanedResponse.text();
+          console.log('Cleaned email error response:', cleanedErrorResponse);
+        }
       }
     } catch (fetchError) {
       console.error('Direct fetch test failed:', fetchError);
@@ -407,7 +460,8 @@ export async function signUp(email: string, password: string, fullName: string) 
     console.log(`🔥 SESSION ID: ${signupSessionId}`);
     console.log(`🔥 CALLING SUPABASE.AUTH.SIGNUP NOW...`);
     
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    // First attempt with original email
+    let { data: authData, error: authError } = await supabase.auth.signUp({
       email: userEnteredEmail,  // Use the preserved user input
       password: password,
       options: {
@@ -416,6 +470,35 @@ export async function signUp(email: string, password: string, fullName: string) 
         }
       }
     });
+    
+    // If first attempt fails with email validation error, try with cleaned email
+    if (authError && authError.message && authError.message.includes('invalid')) {
+      console.log(`🔄 FIRST ATTEMPT FAILED - TRYING WITH CLEANED EMAIL`);
+      const cleanedEmail = userEnteredEmail.trim().toLowerCase();
+      
+      if (cleanedEmail !== userEnteredEmail) {
+        console.log(`Original email: "${userEnteredEmail}"`);
+        console.log(`Cleaned email: "${cleanedEmail}"`);
+        
+        const cleanedAttempt = await supabase.auth.signUp({
+          email: cleanedEmail,
+          password: password,
+          options: {
+            data: {
+              full_name: fullName
+            }
+          }
+        });
+        
+        if (!cleanedAttempt.error) {
+          console.log(`✅ SUCCESS WITH CLEANED EMAIL`);
+          authData = cleanedAttempt.data;
+          authError = cleanedAttempt.error;
+        } else {
+          console.log(`❌ CLEANED EMAIL ALSO FAILED:`, cleanedAttempt.error);
+        }
+      }
+    }
     
     console.log(`=== SUPABASE RESPONSE RECEIVED ===`);
     console.log(`Auth data:`, authData ? { user: authData.user?.id, email: authData.user?.email } : null);
