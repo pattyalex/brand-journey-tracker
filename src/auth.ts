@@ -119,18 +119,18 @@ export async function signUpWithRetry(
   return exhaustedResult;
 }
 
-// Manual testing function for rate limit behavior - DISABLED TO PREVENT INVALID EMAILS
+// Manual testing function for rate limit behavior - COMPLETELY DISABLED
 export async function testSignUpRetry() {
-  console.warn('=== TEST FUNCTION DISABLED ===');
-  console.warn('testSignUpRetry() is disabled to prevent auto-generated test emails from being sent to Supabase.');
-  console.warn('Use real user input instead of generated test emails.');
-  console.warn('If you need to test, use the onboarding form with a real email address.');
+  console.error('=== TEST FUNCTION PERMANENTLY DISABLED ===');
+  console.error('testSignUpRetry() is permanently disabled to prevent any auto-generated test emails.');
+  console.error('This function will never send emails to Supabase.');
+  console.error('Use the onboarding form with real email addresses only.');
   
   return {
     success: false,
     error: {
-      message: 'Test function disabled - use real user input',
-      type: 'TEST_DISABLED'
+      message: 'Test function permanently disabled - use real user input only',
+      type: 'TEST_PERMANENTLY_DISABLED'
     }
   };
 }
@@ -223,37 +223,64 @@ if (typeof window !== 'undefined') {
   (window as any).testUIRateLimit = testUIRateLimit;
   (window as any).testOnboardingUIRateLimit = testOnboardingUIRateLimit;
   
-  // Add network monitoring helper
+  // Enhanced network monitoring helper
   (window as any).monitorSignupRequests = function() {
-    console.log('🔍 NETWORK MONITORING: Watching for signup requests...');
-    console.log('📋 To verify emails in network requests:');
+    console.log('🔍 COMPREHENSIVE NETWORK MONITORING ENABLED');
+    console.log('📋 Instructions for email verification:');
     console.log('1. Open DevTools > Network tab');
     console.log('2. Filter by "signup" or "auth"');
-    console.log('3. Attempt signup');
+    console.log('3. Attempt signup with your real email');
     console.log('4. Click on the signup request');
     console.log('5. Check Request payload in the "Payload" or "Request" tab');
     console.log('6. Verify the email field matches your form input exactly');
+    console.log('7. Check console logs for detailed email tracking');
     
-    // Override fetch to log all auth requests
+    // Store original fetch
     const originalFetch = window.fetch;
+    
+    // Enhanced fetch override
     window.fetch = function(url, options) {
+      const startTime = Date.now();
+      
       if (typeof url === 'string' && url.includes('/auth/v1/signup')) {
         console.log('🚀 INTERCEPTED SIGNUP REQUEST:');
-        console.log('URL:', url);
+        console.log('📍 URL:', url);
+        console.log('⏰ Request timestamp:', new Date().toISOString());
+        console.log('🔢 Request epoch:', startTime);
+        
         if (options && options.body) {
           try {
             const body = JSON.parse(options.body);
-            console.log('📧 EMAIL IN REQUEST:', body.email);
-            console.log('👤 NAME IN REQUEST:', body.data?.full_name);
+            console.log('📧 EMAIL IN REQUEST PAYLOAD:', body.email);
+            console.log('👤 NAME IN REQUEST PAYLOAD:', body.data?.full_name);
+            console.log('🔍 EMAIL TYPE:', typeof body.email);
+            console.log('📏 EMAIL LENGTH:', body.email?.length);
+            console.log('✅ EMAIL CONTAINS @:', body.email?.includes('@'));
+            console.log('🚫 EMAIL NOT TEST:', !body.email?.includes('test-rate-limit'));
+            console.log('🚫 EMAIL NOT AUTO-GENERATED:', !body.email?.includes('user') || !body.email?.includes('example.com'));
+            console.log('📦 FULL REQUEST BODY:', JSON.stringify(body, null, 2));
           } catch (e) {
-            console.log('Body:', options.body);
+            console.log('⚠️ Could not parse request body:', options.body);
           }
         }
+        
+        console.log('🔧 REQUEST HEADERS:', options?.headers);
+        console.log('🔍 REQUEST METHOD:', options?.method);
       }
-      return originalFetch.apply(this, arguments);
+      
+      return originalFetch.apply(this, arguments).then(response => {
+        if (typeof url === 'string' && url.includes('/auth/v1/signup')) {
+          const endTime = Date.now();
+          console.log('📬 SIGNUP RESPONSE RECEIVED:');
+          console.log('📊 Response status:', response.status);
+          console.log('⏱️ Response time:', endTime - startTime, 'ms');
+          console.log('📅 Response timestamp:', new Date().toISOString());
+        }
+        return response;
+      });
     };
     
-    return 'Network monitoring enabled. Check console for signup request details.';
+    return 'Enhanced network monitoring enabled. All signup requests will be logged with detailed email tracking.';
   };
   
   console.log('✅ Test functions available in console:');
@@ -267,20 +294,27 @@ export async function signUp(email: string, password: string, fullName: string) 
   const signupSessionId = Math.random().toString(36).substring(2, 15);
   console.log(`=== STARTING SIGNUP PROCESS ===`);
   console.log(`Session ID: ${signupSessionId}`);
-  console.log(`=== EMAIL VERIFICATION ===`);
+  console.log(`=== COMPREHENSIVE EMAIL VERIFICATION ===`);
   console.log(`Original email parameter: "${email}"`);
   console.log(`Email type: ${typeof email}`);
   console.log(`Email length: ${email?.length || 'undefined'}`);
   console.log(`Email is valid format: ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)}`);
+  console.log(`Email contains @ symbol: ${email?.includes('@')}`);
+  console.log(`Email contains domain: ${email?.includes('.')}`);
+  console.log(`Email is NOT a test email: ${!email?.includes('test-rate-limit')}`);
+  console.log(`Email is NOT auto-generated: ${!email?.includes('user') || !email?.includes('example.com')}`);
   console.log(`Name: ${fullName}`);
   console.log(`Start timestamp: ${new Date().toISOString()}`);
   console.log(`Start timestamp (epoch): ${Date.now()}`);
 
-  // Ensure email is exactly what the user entered - no modifications
-  const userEnteredEmail = email; // Preserve original user input
-  console.log(`=== FINAL EMAIL VERIFICATION BEFORE SUPABASE ===`);
-  console.log(`Email being sent to Supabase: "${userEnteredEmail}"`);
-  console.log(`Email === original parameter: ${userEnteredEmail === email}`);
+  // Store user-entered email in dedicated variable - NO MODIFICATIONS ALLOWED
+  const userEnteredEmail = email;
+  console.log(`=== USER INPUT EMAIL PRESERVATION ===`);
+  console.log(`User entered email (preserved): "${userEnteredEmail}"`);
+  console.log(`Original email parameter: "${email}"`);
+  console.log(`Email values are identical: ${userEnteredEmail === email}`);
+  console.log(`Email reference check: ${Object.is(userEnteredEmail, email)}`);
+  console.log(`Email string comparison: ${String(userEnteredEmail) === String(email)}`);
 
   try {
     // Step 1: Sign the user up with Supabase Auth
@@ -297,9 +331,16 @@ export async function signUp(email: string, password: string, fullName: string) 
       data: { full_name: fullName }
     };
     
-    console.log(`=== EXACT PAYLOAD BEING SENT TO SUPABASE ===`);
-    console.log(`Payload:`, JSON.stringify(signupPayload, null, 2));
+    console.log(`=== COMPREHENSIVE PAYLOAD VERIFICATION ===`);
+    console.log(`Payload object:`, signupPayload);
+    console.log(`Payload JSON string:`, JSON.stringify(signupPayload, null, 2));
     console.log(`Payload email field: "${signupPayload.email}"`);
+    console.log(`Payload email === user input: ${signupPayload.email === userEnteredEmail}`);
+    console.log(`Payload email === original param: ${signupPayload.email === email}`);
+    console.log(`Payload email type: ${typeof signupPayload.email}`);
+    console.log(`Payload email length: ${signupPayload.email?.length}`);
+    console.log(`Payload being sent to: ${authUrl}`);
+    console.log(`Request timestamp: ${new Date().toISOString()}`);
 
     try {
       const testResponse = await fetch(authUrl, {
@@ -321,8 +362,10 @@ export async function signUp(email: string, password: string, fullName: string) 
       console.error('Direct fetch test failed:', fetchError);
     }
 
-    console.log(`=== CALLING SUPABASE AUTH SIGNUP ===`);
-    console.log(`About to call supabase.auth.signUp with email: "${userEnteredEmail}"`);
+    console.log(`=== FINAL VERIFICATION BEFORE SUPABASE CALL ===`);
+    console.log(`Email being passed to supabase.auth.signUp: "${userEnteredEmail}"`);
+    console.log(`Email verification complete - calling Supabase now`);
+    console.log(`Supabase call timestamp: ${new Date().toISOString()}`);
     
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: userEnteredEmail,  // Use the preserved user input

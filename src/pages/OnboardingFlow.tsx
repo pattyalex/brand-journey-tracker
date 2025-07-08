@@ -212,19 +212,36 @@ const OnboardingFlow: React.FC = () => {
     let signUpResult;
 
     try {
-      console.log("=== USING DEDICATED SIGNUP FUNCTION ===");
-      console.log("=== ONBOARDING EMAIL VERIFICATION ===");
-      console.log(`Form data email: "${data.email}"`);
-      console.log(`Form data name: "${data.name}"`);
+      console.log("=== ONBOARDING FORM SUBMISSION ===");
+      console.log("=== COMPREHENSIVE EMAIL CAPTURE ===");
+      console.log(`User form input email: "${data.email}"`);
+      console.log(`User form input name: "${data.name}"`);
       console.log(`Email type: ${typeof data.email}`);
       console.log(`Email length: ${data.email?.length}`);
       console.log(`Email contains @: ${data.email?.includes('@')}`);
-      console.log(`Email is not test email: ${!data.email?.includes('testuser')}`);
+      console.log(`Email contains domain: ${data.email?.includes('.')}`);
+      console.log(`Email is NOT test email: ${!data.email?.includes('testuser')}`);
+      console.log(`Email is NOT auto-generated: ${!data.email?.includes('user') || !data.email?.includes('example.com')}`);
+      console.log(`Email is NOT rate-limit test: ${!data.email?.includes('test-rate-limit')}`);
+      console.log(`Email validation passed: ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)}`);
+      console.log(`Form submission timestamp: ${new Date().toISOString()}`);
+      console.log(`Form submission epoch: ${Date.now()}`);
+
+      // Store exact user input for verification
+      const exactUserInput = data.email;
+      console.log(`=== EXACT USER INPUT PRESERVATION ===`);
+      console.log(`Preserved user input: "${exactUserInput}"`);
+      console.log(`Input preservation check: ${exactUserInput === data.email}`);
 
       // Import and use the dedicated signUp function with promise handling
       const { signUpWithRetry } = await import('../auth');
 
-      console.log("Calling signUp function with verified email...");
+      console.log("=== FINAL VERIFICATION BEFORE SIGNUP CALL ===");
+      console.log(`Email about to be passed to signUpWithRetry: "${data.email}"`);
+      console.log(`Password length: ${data.password?.length}`);
+      console.log(`Name: "${data.name}"`);
+      console.log(`Final verification timestamp: ${new Date().toISOString()}`);
+      
       signUpResult = await signUpWithRetry(data.email, data.password, data.name, 3, (status) => {
         console.log('Retry status update:', {
           ...status,
@@ -502,6 +519,23 @@ const OnboardingFlow: React.FC = () => {
                 className="mt-2"
               >
                 Test UI Rate Limit
+              </Button>
+              {/* Network monitoring helper */}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  if (typeof window !== 'undefined' && (window as any).monitorSignupRequests) {
+                    const result = (window as any).monitorSignupRequests();
+                    console.log(result);
+                    alert('Network monitoring enabled! Check console for details.');
+                  } else {
+                    alert('Network monitoring not available. Please refresh the page.');
+                  }
+                }}
+                className="mt-2 ml-2"
+              >
+                Monitor Network
               </Button>
             </CardHeader>
             <CardContent>
