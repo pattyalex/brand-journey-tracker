@@ -14,10 +14,12 @@ import * as z from "zod";
 import { Instagram, Youtube, Linkedin, Twitter, Music } from "lucide-react";
 import { stripePromise } from "@/lib/stripe";
 import { supabase } from "@/supabaseClient";
+import EmailVerificationStatus from "@/components/EmailVerificationStatus";
 
 // Define the steps in the onboarding flow
 type OnboardingStep = 
   | "account-creation" 
+  | "email-verification"
   | "payment-setup" 
   | "user-goals" 
   | "connect-social" 
@@ -158,6 +160,7 @@ const OnboardingFlow: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<OnboardingStep>("account-creation");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<string>('');
+  const [pendingVerificationEmail, setPendingVerificationEmail] = useState<string>('');
 
   // Account Creation Form
   const accountForm = useForm<z.infer<typeof accountCreationSchema>>({
@@ -231,7 +234,6 @@ const OnboardingFlow: React.FC = () => {
     }
 
     setIsSubmitting(true);
-    setRetryStatus({ isWaiting: false }); // Clear any previous retry status
 
     try {
       console.log("=== ONBOARDING FORM SUBMISSION ===");
@@ -274,10 +276,16 @@ const OnboardingFlow: React.FC = () => {
 
       if (signUpResult.success) {
         console.log('✅ Account creation successful');
-        console.log('User data:', signUpResult.userData);
-        console.log('Profile data:', signUpResult.profileData);
-        console.log('=== PROCEEDING TO PAYMENT SETUP ===');
-        setCurrentStep("payment-setup");
+        
+        // Check if email verification is needed
+        if (signUpResult.needsVerification) {
+          console.log('📧 Email verification required');
+          setPendingVerificationEmail(userEnteredEmail);
+          setCurrentStep("email-verification");
+        } else {
+          console.log('✅ Account verified, proceeding to payment setup');
+          setCurrentStep("payment-setup");
+        }
       } else {
         console.error('❌ Unexpected signup response:', signUpResult);
         alert('Account creation failed: Unexpected response format');
@@ -293,7 +301,6 @@ const OnboardingFlow: React.FC = () => {
       alert(`Account creation failed: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
-      setRetryStatus({ isWaiting: false });
     }
   };
 
@@ -446,8 +453,17 @@ const OnboardingFlow: React.FC = () => {
     setCurrentStep("welcome");
   };
 
+  const handleEmailVerificationComplete = () => {
+    console.log('✅ Email verification completed');
+    setPendingVerificationEmail('');
+    setCurrentStep("payment-setup");
+  };
+
   const goToPreviousStep = () => {
     switch (currentStep) {
+      case "email-verification":
+        setCurrentStep("account-creation");
+        break;
       case "payment-setup":
         setCurrentStep("account-creation");
         break;
@@ -484,6 +500,15 @@ const OnboardingFlow: React.FC = () => {
   // Render the current step
   const renderStep = () => {
     switch (currentStep) {
+      case "email-verification":
+        return (
+          <EmailVerificationStatus
+            email={pendingVerificationEmail}
+            onVerificationComplete={handleEmailVerificationComplete}
+            onBack={() => setCurrentStep("account-creation")}
+          />
+        );
+
       case "account-creation":
         return (
           <Card className="w-full max-w-md mx-auto">
@@ -1629,11 +1654,12 @@ const OnboardingFlow: React.FC = () => {
         <div className="mb-4">
           <div className="w-full">
             <ul className="steps w-full">
-              <li className={`step ${currentStep === "account-creation" || currentStep === "payment-setup" || currentStep === "user-goals" || currentStep === "connect-social" || currentStep === "welcome" ? "step-primary" : ""}`}></li>
-              <li className={`step ${currentStep === "payment-setup" || currentStep === "user-goals" || currentStep === "connect-social" || currentStep === "welcome" ? "step-primary" : ""}`}></li>
-              <li className={`step ${currentStep === "user-goals" || currentStep === "connect-social" || currentStep === "welcome" ? "step-primary" : ""}`}></li>
-              <li className={`step ${currentStep === "connect-social" || currentStep === "welcome" ? "step-primary" : ""}`}></li>
-              <li className={`step ${currentStep === "welcome" ? "step-primary" : ""}`}></li>
+              <li className={`step ${["account-creation", "email-verification", "payment-setup", "user-goals", "connect-social", "welcome"].includes(currentStep) ? "step-primary" : ""}`}></li>
+              <li className={`step ${["email-verification", "payment-setup", "user-goals", "connect-social", "welcome"].includes(currentStep) ? "step-primary" : ""}`}></li>
+              <li className={`step ${["payment-setup", "user-goals", "connect-social", "welcome"].includes(currentStep) ? "step-primary" : ""}`}></li>
+              <li className={`step ${["user-goals", "connect-social", "welcome"].includes(currentStep) ? "step-primary" : ""}`}></li>
+              <li className={`step ${["connect-social", "welcome"].includes(currentStep) ? "step-primary" : ""}`}></li>
+              <li className={`step ${["welcome"].includes(currentStep) ? "step-primary" : ""}`}></li>
             </ul>
           </div>
         </div>

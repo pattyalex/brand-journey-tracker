@@ -32,6 +32,7 @@ import {
   Trash2
 } from "lucide-react";
 import AIRecommendations from '@/components/analytics/AIRecommendations';
+import VerificationGuard from '@/components/VerificationGuard';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -252,399 +253,401 @@ const HomePage = () => {
 
   // Add Priority Dialog component is moved inside the main component
   return (
-    <Layout>
-      <ScrollArea className="h-screen">
-        <div className="container px-4 md:px-6 py-6 md:py-10">
-          {/* Greeting Section - Top Banner */}
-          <section className="mb-8 fade-in">
-            <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-6 flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl md:text-4xl font-bold mb-2">{greeting}</h1>
-                <p className="text-muted-foreground">Welcome to your content hub. What would you like to create today?</p>
+    <VerificationGuard>
+      <Layout>
+        <ScrollArea className="h-screen">
+          <div className="container px-4 md:px-6 py-6 md:py-10">
+            {/* Greeting Section - Top Banner */}
+            <section className="mb-8 fade-in">
+              <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-6 flex items-center justify-between">
+                <div>
+                  <h1 className="text-3xl md:text-4xl font-bold mb-2">{greeting}</h1>
+                  <p className="text-muted-foreground">Welcome to your content hub. What would you like to create today?</p>
+                </div>
+                <div className="bg-white p-3 rounded-full shadow-sm">
+                  {greetingIcon}
+                </div>
               </div>
-              <div className="bg-white p-3 rounded-full shadow-sm">
-                {greetingIcon}
-              </div>
-            </div>
-          </section>
+            </section>
 
-          {/* Main Content Area - Two Column Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column - 2/3 width */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* Journaling Section */}
-              <section className="space-y-4 fade-in">
-                <h2 className="text-xl font-bold mb-4">Your Journal</h2>
-                <Card className="border border-gray-100 shadow-sm">
-                  <CardContent className="space-y-6">
-                    <div className="pt-4">
-                      <h3 className="font-medium mb-2 text-sm">What would make today great?</h3>
-                      <Textarea 
-                        placeholder="List 1-3 things that would make today wonderful..."
-                        value={journalEntries.whatWouldMakeTodayGreat}
-                        onChange={(e) => handleJournalChange('whatWouldMakeTodayGreat', e.target.value)}
-                        className="min-h-[80px] resize-none"
-                      />
-                    </div>
-
-                    <div className="pt-4">
-                      <h3 className="font-medium mb-2 text-sm">Today's affirmations:</h3>
-                      <Textarea 
-                        placeholder="Write your daily affirmations..."
-                        value={journalEntries.todaysAffirmations}
-                        onChange={(e) => handleJournalChange('todaysAffirmations', e.target.value)}
-                        className="min-h-[80px] resize-none"
-                      />
-                    </div>
-
-                    <div className="pt-4">
-                      <h3 className="font-medium mb-2 text-sm">Three things I'm grateful for:</h3>
-                      <Textarea 
-                        placeholder="List three things you're grateful for today..."
-                        value={journalEntries.threeThingsImGratefulFor}
-                        onChange={(e) => handleJournalChange('threeThingsImGratefulFor', e.target.value)}
-                        className="min-h-[80px] resize-none"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              </section>
-
-              {/* Quick Access Section - Grid of Cards */}
-              <section className="fade-in">
-                <h2 className="text-xl font-bold mb-4">Quick Access</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {shortcuts.slice(0, 8).map((shortcut, index) => (
-                    <Card 
-                      key={index}
-                      className="border border-gray-100 shadow-sm hover:shadow transition-all cursor-pointer"
-                      onClick={() => navigate(shortcut.path)}
-                    >
-                      <CardContent className="p-4 flex flex-col items-center text-center justify-center h-full">
-                        <shortcut.icon className="h-8 w-8 text-primary mb-2" />
-                        <h3 className="font-medium text-sm">{shortcut.title}</h3>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </section>
-
-              {/* Quick Stats */}
-              <section className="fade-in mt-8">
-                <h2 className="text-xl font-bold mb-4">Quick Stats</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <Card className="p-6">
-                    <h3 className="text-lg font-medium mb-2">Content Ideas</h3>
-                    <div className="text-3xl font-bold">12</div>
-                    <p className="text-sm text-muted-foreground mt-1">4 new this week</p>
-                  </Card>
-
-                  <Card className="p-6">
-                    <h3 className="text-lg font-medium mb-2">Scheduled Content</h3>
-                    <div className="text-3xl font-bold">8</div>
-                    <p className="text-sm text-muted-foreground mt-1">Next post in 2 days</p>
-                  </Card>
-
-                  <Card className="p-6">
-                    <h3 className="text-lg font-medium mb-2">Active Brand Deals</h3>
-                    <div className="text-3xl font-bold">3</div>
-                    <p className="text-sm text-muted-foreground mt-1">1 pending approval</p>
-                  </Card>
-                </div>
-              </section>
-
-              {/* Recent Activity */}
-              <section className="fade-in mb-8">
-                <h2 className="text-2xl font-bold mb-4">Recent Activity</h2>
-                <Card className="p-0 overflow-hidden">
-                  <div className="divide-y">
-                    <div className="p-4 hover:bg-muted/50 transition-colors">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="font-medium">Content Idea Added</p>
-                          <p className="text-sm text-muted-foreground">You added 'Summer Travel Tips' to your content ideas</p>
-                        </div>
-                        <span className="text-xs text-muted-foreground">2 hours ago</span>
-                      </div>
-                    </div>
-                    <div className="p-4 hover:bg-muted/50 transition-colors">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="font-medium">Post Scheduled</p>
-                          <p className="text-sm text-muted-foreground">Instagram post scheduled for May 20th at 9:00 AM</p>
-                        </div>
-                        <span className="text-xs text-muted-foreground">Yesterday</span>
-                      </div>
-                    </div>
-                    <div className="p-4 hover:bg-muted/50 transition-colors">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="font-medium">Brand Deal Updated</p>
-                          <p className="text-sm text-muted-foreground">Contract approved for Skincare Brand collaboration</p>
-                        </div>
-                        <span className="text-xs text-muted-foreground">2 days ago</span>
-                      </div>
-                    </div>
-                    <div className="p-4 hover:bg-muted/50 transition-colors">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="font-medium">Analytics Updated</p>
-                          <p className="text-sm text-muted-foreground">April performance report is now available</p>
-                        </div>
-                        <span className="text-xs text-muted-foreground">3 days ago</span>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </section>
-
-              {/* Recent Content Section */}
-              <section className="fade-in">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-bold">Recent Content</h2>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => navigate('/bank-of-content')}
-                    className="text-xs"
-                  >
-                    View All
-                  </Button>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Main Content Area - Two Column Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Left Column - 2/3 width */}
+              <div className="lg:col-span-2 space-y-8">
+                {/* Journaling Section */}
+                <section className="space-y-4 fade-in">
+                  <h2 className="text-xl font-bold mb-4">Your Journal</h2>
                   <Card className="border border-gray-100 shadow-sm">
-                    <CardContent className="p-4">
-                      <div className="aspect-video bg-gray-100 rounded-md mb-3 flex items-center justify-center">
-                        <Edit className="h-8 w-8 text-gray-400" />
+                    <CardContent className="space-y-6">
+                      <div className="pt-4">
+                        <h3 className="font-medium mb-2 text-sm">What would make today great?</h3>
+                        <Textarea 
+                          placeholder="List 1-3 things that would make today wonderful..."
+                          value={journalEntries.whatWouldMakeTodayGreat}
+                          onChange={(e) => handleJournalChange('whatWouldMakeTodayGreat', e.target.value)}
+                          className="min-h-[80px] resize-none"
+                        />
                       </div>
-                      <h3 className="font-medium text-sm mb-1">Morning Routine Video</h3>
-                      <p className="text-xs text-muted-foreground">Draft • 2 days ago</p>
+
+                      <div className="pt-4">
+                        <h3 className="font-medium mb-2 text-sm">Today's affirmations:</h3>
+                        <Textarea 
+                          placeholder="Write your daily affirmations..."
+                          value={journalEntries.todaysAffirmations}
+                          onChange={(e) => handleJournalChange('todaysAffirmations', e.target.value)}
+                          className="min-h-[80px] resize-none"
+                        />
+                      </div>
+
+                      <div className="pt-4">
+                        <h3 className="font-medium mb-2 text-sm">Three things I'm grateful for:</h3>
+                        <Textarea 
+                          placeholder="List three things you're grateful for today..."
+                          value={journalEntries.threeThingsImGratefulFor}
+                          onChange={(e) => handleJournalChange('threeThingsImGratefulFor', e.target.value)}
+                          className="min-h-[80px] resize-none"
+                        />
+                      </div>
                     </CardContent>
                   </Card>
-                  <Card className="border border-gray-100 shadow-sm">
-                    <CardContent className="p-4">
-                      <div className="aspect-video bg-gray-100 rounded-md mb-3 flex items-center justify-center">
-                        <Edit className="h-8 w-8 text-gray-400" />
-                      </div>
-                      <h3 className="font-medium text-sm mb-1">Healthy Breakfast Ideas</h3>
-                      <p className="text-xs text-muted-foreground">Scheduled • Tomorrow</p>
-                    </CardContent>
-                  </Card>
-                </div>
-              </section>
-            </div>
+                </section>
 
-            {/* Right Column - 1/3 width */}
-            <div className="space-y-8">
-              {/* Today's Top Priority Tasks Section */}
-              <section className="fade-in">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-bold">Today's Top Priorities</h2>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => setIsAddPriorityOpen(true)}
-                  >
-                    <PlusCircle className="h-4 w-4" />
-                  </Button>
-                </div>
-                <Card className="border border-gray-100 shadow-sm">
-                  <CardContent className="p-4">
-                    <div className="space-y-3">
-                    {priorities.map((task) => (
-                      <div key={task.id} className="flex items-start group justify-between hover:bg-gray-50 rounded-sm p-1">
-                        <div className="flex items-start flex-1">
-                          <Checkbox 
-                            id={`task-${task.id}`}
-                            className="h-5 w-5 rounded mr-3 mt-0.5 flex-shrink-0 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-300"
-                            onCheckedChange={(checked) => {
-                              const tasks = JSON.parse(localStorage.getItem('homeTasks') || '[]');
-                              if (checked) {
-                                if (!tasks.includes(task.id)) {
-                                  tasks.push(task.id);
-                                }
-                              } else {
-                                const index = tasks.indexOf(task.id);
-                                if (index > -1) {
-                                  tasks.splice(index, 1);
-                                }
-                              }
-                              localStorage.setItem('homeTasks', JSON.stringify(tasks));
-                            }}
-                            defaultChecked={JSON.parse(localStorage.getItem('homeTasks') || '[]').includes(task.id)}
-                          />
-                          <label 
-                            htmlFor={`task-${task.id}`} 
-                            className="text-sm cursor-pointer peer-data-[state=checked]:line-through peer-data-[state=checked]:text-gray-500"
-                          >
-                            {task.text}
-                          </label>
-                        </div>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                          onClick={() => {
-                            // Create a new array without this task
-                            const updatedPriorities = priorities.filter(p => p.id !== task.id);
-                            setPriorities(updatedPriorities);
-
-                            // Save to localStorage
-                            localStorage.setItem('homePriorities', JSON.stringify(updatedPriorities));
-
-                            // Also remove from completed tasks if present
-                            const tasks = JSON.parse(localStorage.getItem('homeTasks') || '[]');
-                            const index = tasks.indexOf(task.id);
-                            if (index > -1) {
-                              tasks.splice(index, 1);
-                              localStorage.setItem('homeTasks', JSON.stringify(tasks));
-                            }
-                          }}
-                        >
-                          <Trash2 size={14} className="text-gray-400 hover:text-red-500" />
-                        </Button>
-                      </div>
+                {/* Quick Access Section - Grid of Cards */}
+                <section className="fade-in">
+                  <h2 className="text-xl font-bold mb-4">Quick Access</h2>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    {shortcuts.slice(0, 8).map((shortcut, index) => (
+                      <Card 
+                        key={index}
+                        className="border border-gray-100 shadow-sm hover:shadow transition-all cursor-pointer"
+                        onClick={() => navigate(shortcut.path)}
+                      >
+                        <CardContent className="p-4 flex flex-col items-center text-center justify-center h-full">
+                          <shortcut.icon className="h-8 w-8 text-primary mb-2" />
+                          <h3 className="font-medium text-sm">{shortcut.title}</h3>
+                        </CardContent>
+                      </Card>
                     ))}
                   </div>
-                  </CardContent>
-                </Card>
-              </section>
+                </section>
 
-              {/* Goals Section */}
-              <section className="fade-in">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-bold">Your Goals</h2>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => navigate('/strategy-growth')}
-                  >
-                    View All
-                  </Button>
-                </div>
-
-                <div className="space-y-3">
-                  {goals.map((goal: any, index: number) => (
-                    <Card key={index} className="border border-gray-100 shadow-sm">
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-center mb-1">
-                          <h3 className="font-medium text-sm">{goal.metric}</h3>
-                          <span className="text-xs text-muted-foreground">Target: {goal.timeframe}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <div className="h-2 flex-1 bg-gray-100 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-primary rounded-full"
-                              style={{ width: `${Math.min(100, (goal.current / goal.target) * 100)}%` }}
-                            ></div>
-                          </div>
-                          <span className="text-xs font-medium whitespace-nowrap">
-                            {goal.current} / {goal.target}
-                          </span>
-                        </div>
-                      </CardContent>
+                {/* Quick Stats */}
+                <section className="fade-in mt-8">
+                  <h2 className="text-xl font-bold mb-4">Quick Stats</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <Card className="p-6">
+                      <h3 className="text-lg font-medium mb-2">Content Ideas</h3>
+                      <div className="text-3xl font-bold">12</div>
+                      <p className="text-sm text-muted-foreground mt-1">4 new this week</p>
                     </Card>
-                  ))}
-                </div>
-              </section>
 
-              {/* Mood Board Section */}
-              <section className="fade-in">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-bold">Mood Board</h2>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => navigate('/vision-board')}
-                  >
-                    Edit
-                  </Button>
-                </div>
+                    <Card className="p-6">
+                      <h3 className="text-lg font-medium mb-2">Scheduled Content</h3>
+                      <div className="text-3xl font-bold">8</div>
+                      <p className="text-sm text-muted-foreground mt-1">Next post in 2 days</p>
+                    </Card>
 
-                <Card className="border border-gray-100 shadow-sm overflow-hidden">
-                  <CardContent className="p-2">
-                    <div className="grid grid-cols-3 gap-2">
-                      {moodboardImages.map((image, index) => (
-                        <div 
-                          key={index} 
-                          className="aspect-square rounded-md overflow-hidden"
-                          style={{ 
-                            backgroundImage: `url(${image})`,
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center'
-                          }}
-                        ></div>
-                      ))}
-                      <div className="aspect-square rounded-md bg-gray-100 flex items-center justify-center">
-                        <PlusCircle className="h-5 w-5 text-gray-400" />
+                    <Card className="p-6">
+                      <h3 className="text-lg font-medium mb-2">Active Brand Deals</h3>
+                      <div className="text-3xl font-bold">3</div>
+                      <p className="text-sm text-muted-foreground mt-1">1 pending approval</p>
+                    </Card>
+                  </div>
+                </section>
+
+                {/* Recent Activity */}
+                <section className="fade-in mb-8">
+                  <h2 className="text-2xl font-bold mb-4">Recent Activity</h2>
+                  <Card className="p-0 overflow-hidden">
+                    <div className="divide-y">
+                      <div className="p-4 hover:bg-muted/50 transition-colors">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium">Content Idea Added</p>
+                            <p className="text-sm text-muted-foreground">You added 'Summer Travel Tips' to your content ideas</p>
+                          </div>
+                          <span className="text-xs text-muted-foreground">2 hours ago</span>
+                        </div>
+                      </div>
+                      <div className="p-4 hover:bg-muted/50 transition-colors">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium">Post Scheduled</p>
+                            <p className="text-sm text-muted-foreground">Instagram post scheduled for May 20th at 9:00 AM</p>
+                          </div>
+                          <span className="text-xs text-muted-foreground">Yesterday</span>
+                        </div>
+                      </div>
+                      <div className="p-4 hover:bg-muted/50 transition-colors">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium">Brand Deal Updated</p>
+                            <p className="text-sm text-muted-foreground">Contract approved for Skincare Brand collaboration</p>
+                          </div>
+                          <span className="text-xs text-muted-foreground">2 days ago</span>
+                        </div>
+                      </div>
+                      <div className="p-4 hover:bg-muted/50 transition-colors">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium">Analytics Updated</p>
+                            <p className="text-sm text-muted-foreground">April performance report is now available</p>
+                          </div>
+                          <span className="text-xs text-muted-foreground">3 days ago</span>
+                        </div>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </section>
-            </div>
-          </div>
+                  </Card>
+                </section>
 
-          {/* AI Recommendations Section - Bottom Full Width */}
-          <section className="mt-8 fade-in">
-            <Card className="border border-primary/20 shadow-sm bg-primary/5">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xl font-medium">AI Recommendations</CardTitle>
-                <CardDescription>Personalized tips based on your content performance</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 bg-white rounded-md shadow-sm">
-                    <h4 className="font-medium mb-1">Content Idea</h4>
-                    <p className="text-sm text-muted-foreground">Based on your recent analytics, your audience responds well to tutorial-style content. Consider creating more how-to videos this week.</p>
+                {/* Recent Content Section */}
+                <section className="fade-in">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold">Recent Content</h2>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => navigate('/bank-of-content')}
+                      className="text-xs"
+                    >
+                      View All
+                    </Button>
                   </div>
-                  <div className="p-4 bg-white rounded-md shadow-sm">
-                    <h4 className="font-medium mb-1">Optimal Posting Time</h4>
-                    <p className="text-sm text-muted-foreground">Your engagement is highest between 6-8pm on weekdays. Try scheduling your next post during this window.</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Card className="border border-gray-100 shadow-sm">
+                      <CardContent className="p-4">
+                        <div className="aspect-video bg-gray-100 rounded-md mb-3 flex items-center justify-center">
+                          <Edit className="h-8 w-8 text-gray-400" />
+                        </div>
+                        <h3 className="font-medium text-sm mb-1">Morning Routine Video</h3>
+                        <p className="text-xs text-muted-foreground">Draft • 2 days ago</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="border border-gray-100 shadow-sm">
+                      <CardContent className="p-4">
+                        <div className="aspect-video bg-gray-100 rounded-md mb-3 flex items-center justify-center">
+                          <Edit className="h-8 w-8 text-gray-400" />
+                        </div>
+                        <h3 className="font-medium text-sm mb-1">Healthy Breakfast Ideas</h3>
+                        <p className="text-xs text-muted-foreground">Scheduled • Tomorrow</p>
+                      </CardContent>
+                    </Card>
                   </div>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline" size="sm" className="w-full">
-                  Get More Recommendations
-                </Button>
-              </CardFooter>
-            </Card>
-          </section>
-        </div>
-      </ScrollArea>
+                </section>
+              </div>
 
-{/* Add Priority Dialog */}
-      <Dialog open={isAddPriorityOpen} onOpenChange={setIsAddPriorityOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Add New Priority</DialogTitle>
-            <DialogDescription>
-              Add a new priority to your list
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="priority-text">Priority Task</Label>
-              <Input
-                id="priority-text"
-                value={newPriorityText}
-                onChange={(e) => setNewPriorityText(e.target.value)}
-                placeholder="Enter your priority task"
-              />
+              {/* Right Column - 1/3 width */}
+              <div className="space-y-8">
+                {/* Today's Top Priority Tasks Section */}
+                <section className="fade-in">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold">Today's Top Priorities</h2>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => setIsAddPriorityOpen(true)}
+                    >
+                      <PlusCircle className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <Card className="border border-gray-100 shadow-sm">
+                    <CardContent className="p-4">
+                      <div className="space-y-3">
+                      {priorities.map((task) => (
+                        <div key={task.id} className="flex items-start group justify-between hover:bg-gray-50 rounded-sm p-1">
+                          <div className="flex items-start flex-1">
+                            <Checkbox 
+                              id={`task-${task.id}`}
+                              className="h-5 w-5 rounded mr-3 mt-0.5 flex-shrink-0 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-300"
+                              onCheckedChange={(checked) => {
+                                const tasks = JSON.parse(localStorage.getItem('homeTasks') || '[]');
+                                if (checked) {
+                                  if (!tasks.includes(task.id)) {
+                                    tasks.push(task.id);
+                                  }
+                                } else {
+                                  const index = tasks.indexOf(task.id);
+                                  if (index > -1) {
+                                    tasks.splice(index, 1);
+                                  }
+                                }
+                                localStorage.setItem('homeTasks', JSON.stringify(tasks));
+                              }}
+                              defaultChecked={JSON.parse(localStorage.getItem('homeTasks') || '[]').includes(task.id)}
+                            />
+                            <label 
+                              htmlFor={`task-${task.id}`} 
+                              className="text-sm cursor-pointer peer-data-[state=checked]:line-through peer-data-[state=checked]:text-gray-500"
+                            >
+                              {task.text}
+                            </label>
+                          </div>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                            onClick={() => {
+                              // Create a new array without this task
+                              const updatedPriorities = priorities.filter(p => p.id !== task.id);
+                              setPriorities(updatedPriorities);
+
+                              // Save to localStorage
+                              localStorage.setItem('homePriorities', JSON.stringify(updatedPriorities));
+
+                              // Also remove from completed tasks if present
+                              const tasks = JSON.parse(localStorage.getItem('homeTasks') || '[]');
+                              const index = tasks.indexOf(task.id);
+                              if (index > -1) {
+                                tasks.splice(index, 1);
+                                localStorage.setItem('homeTasks', JSON.stringify(tasks));
+                              }
+                            }}
+                          >
+                            <Trash2 size={14} className="text-gray-400 hover:text-red-500" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    </CardContent>
+                  </Card>
+                </section>
+
+                {/* Goals Section */}
+                <section className="fade-in">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold">Your Goals</h2>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => navigate('/strategy-growth')}
+                    >
+                      View All
+                    </Button>
+                  </div>
+
+                  <div className="space-y-3">
+                    {goals.map((goal: any, index: number) => (
+                      <Card key={index} className="border border-gray-100 shadow-sm">
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-center mb-1">
+                            <h3 className="font-medium text-sm">{goal.metric}</h3>
+                            <span className="text-xs text-muted-foreground">Target: {goal.timeframe}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <div className="h-2 flex-1 bg-gray-100 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-primary rounded-full"
+                                style={{ width: `${Math.min(100, (goal.current / goal.target) * 100)}%` }}
+                              ></div>
+                            </div>
+                            <span className="text-xs font-medium whitespace-nowrap">
+                              {goal.current} / {goal.target}
+                            </span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </section>
+
+                {/* Mood Board Section */}
+                <section className="fade-in">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold">Mood Board</h2>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => navigate('/vision-board')}
+                    >
+                      Edit
+                    </Button>
+                  </div>
+
+                  <Card className="border border-gray-100 shadow-sm overflow-hidden">
+                    <CardContent className="p-2">
+                      <div className="grid grid-cols-3 gap-2">
+                        {moodboardImages.map((image, index) => (
+                          <div 
+                            key={index} 
+                            className="aspect-square rounded-md overflow-hidden"
+                            style={{ 
+                              backgroundImage: `url(${image})`,
+                              backgroundSize: 'cover',
+                              backgroundPosition: 'center'
+                            }}
+                          ></div>
+                        ))}
+                        <div className="aspect-square rounded-md bg-gray-100 flex items-center justify-center">
+                          <PlusCircle className="h-5 w-5 text-gray-400" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </section>
+              </div>
             </div>
+
+            {/* AI Recommendations Section - Bottom Full Width */}
+            <section className="mt-8 fade-in">
+              <Card className="border border-primary/20 shadow-sm bg-primary/5">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xl font-medium">AI Recommendations</CardTitle>
+                  <CardDescription>Personalized tips based on your content performance</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 bg-white rounded-md shadow-sm">
+                      <h4 className="font-medium mb-1">Content Idea</h4>
+                      <p className="text-sm text-muted-foreground">Based on your recent analytics, your audience responds well to tutorial-style content. Consider creating more how-to videos this week.</p>
+                    </div>
+                    <div className="p-4 bg-white rounded-md shadow-sm">
+                      <h4 className="font-medium mb-1">Optimal Posting Time</h4>
+                      <p className="text-sm text-muted-foreground">Your engagement is highest between 6-8pm on weekdays. Try scheduling your next post during this window.</p>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button variant="outline" size="sm" className="w-full">
+                    Get More Recommendations
+                  </Button>
+                </CardFooter>
+              </Card>
+            </section>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddPriorityOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleAddPriority} disabled={!newPriorityText.trim()}>
-              Add Priority
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </Layout>
+        </ScrollArea>
+
+  {/* Add Priority Dialog */}
+        <Dialog open={isAddPriorityOpen} onOpenChange={setIsAddPriorityOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Add New Priority</DialogTitle>
+              <DialogDescription>
+                Add a new priority to your list
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="priority-text">Priority Task</Label>
+                <Input
+                  id="priority-text"
+                  value={newPriorityText}
+                  onChange={(e) => setNewPriorityText(e.target.value)}
+                  placeholder="Enter your priority task"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsAddPriorityOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleAddPriority} disabled={!newPriorityText.trim()}>
+                Add Priority
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </Layout>
+    </VerificationGuard>
   );
 };
 

@@ -36,6 +36,7 @@ const WeeklyContentTasks = lazy(() => import('./pages/WeeklyContentTasks'));
 const SocialMediaScheduler = lazy(() => import('./pages/SocialMediaScheduler'));
 const Index = lazy(() => import('./pages/Index'));
 const PartnershipsManagement = lazy(() => import('./pages/PartnershipsManagement'));
+const EmailVerificationCallback = lazy(() => import('./pages/EmailVerificationCallback'));
 
 // Loading component
 const PageLoader = () => (
@@ -91,6 +92,7 @@ function App() {
               {/* Public routes */}
               <Route path="/" element={<LandingPage />} />
               <Route path="/onboarding" element={<OnboardingFlow />} />
+              <Route path="/auth/callback" element={<EmailVerificationCallback />} />
 
               {/* Protected routes - require authentication */}
               <Route path="/app" element={

@@ -1,36 +1,52 @@
+
 import { supabase } from './supabaseClient'
 
-// Remove the retry function entirely - we'll handle this at the UI level
-export async function signUp(email: string, password: string, fullName: string) {
+export interface SignUpResult {
+  success: boolean;
+  needsVerification?: boolean;
+  email?: string;
+  user?: any;
+  userId?: string;
+  userData?: any;
+  profileData?: any;
+  error?: {
+    message: string;
+    type: string;
+    isRateLimit?: boolean;
+  };
+}
+
+export interface VerificationResult {
+  success: boolean;
+  isVerified?: boolean;
+  error?: {
+    message: string;
+    type: string;
+  };
+}
+
+export async function signUp(email: string, password: string, fullName: string): Promise<SignUpResult> {
   const signupSessionId = Math.random().toString(36).substring(2, 15);
   console.log(`=== STARTING SIGNUP PROCESS ===`);
   console.log(`Session ID: ${signupSessionId}`);
 
-  // Store user-entered email in dedicated variable
   const userEnteredEmail = email;
   console.log(`🎯 userEnteredEmail assigned: "${userEnteredEmail}"`);
-  console.log(`🎯 Email type: ${typeof userEnteredEmail}`);
-  console.log(`🎯 Email length: ${userEnteredEmail?.length || 'undefined'}`);
-  console.log(`🎯 Email is valid format: ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEnteredEmail)}`);
-  console.log(`🎯 Start timestamp: ${new Date().toISOString()}`);
 
-  // Clean the email to remove any potential issues
   const cleanedEmail = userEnteredEmail.trim().toLowerCase();
   console.log(`Cleaned email: "${cleanedEmail}"`);
-  console.log(`Original vs cleaned: ${userEnteredEmail === cleanedEmail ? 'IDENTICAL' : 'DIFFERENT'}`);
 
   try {
-    console.log(`🚀 Email being passed to supabase.auth.signUp: "${userEnteredEmail}"`);
-    console.log(`🚀 Calling supabase.auth.signUp now...`);
+    console.log(`🚀 Calling supabase.auth.signUp with email confirmation enabled...`);
 
-    // Single signup attempt - no retries
     const { data, error } = await supabase.auth.signUp({
       email: userEnteredEmail,
       password: password,
       options: {
         data: {
           full_name: fullName
-        }
+        },
+        emailRedirectTo: `${window.location.origin}/auth/callback`
       }
     });
 
@@ -39,25 +55,24 @@ export async function signUp(email: string, password: string, fullName: string) 
       hasUser: !!data?.user,
       hasError: !!error,
       errorMessage: error?.message,
-      errorCode: error?.status
+      errorCode: error?.status,
+      emailConfirmed: data?.user?.email_confirmed_at
     });
 
     if (error) {
       console.error(`❌ Auth signup failed (Session: ${signupSessionId}):`, error);
 
-      // Handle rate limiting specifically
       if (error.status === 429 || error.message?.toLowerCase().includes('rate limit')) {
         return {
           success: false,
           error: {
-            message: error.message,
+            message: 'Too many signup attempts. Please wait a moment and try again.',
             type: 'RATE_LIMITED',
             isRateLimit: true
           }
         };
       }
 
-      // Handle other errors
       return {
         success: false,
         error: {
@@ -73,7 +88,7 @@ export async function signUp(email: string, password: string, fullName: string) 
       return {
         success: false,
         error: {
-          message: 'No user ID returned from signup',
+          message: 'Account creation failed. Please try again.',
           type: 'SIGNUP_ERROR',
           isRateLimit: false
         }
@@ -81,92 +96,36 @@ export async function signUp(email: string, password: string, fullName: string) 
     }
 
     const userId = data.user.id;
+    const isEmailConfirmed = !!data.user.email_confirmed_at;
+    
     console.log('✅ Supabase Auth user created successfully:', userId);
+    console.log('📧 Email confirmation status:', isEmailConfirmed ? 'CONFIRMED' : 'PENDING');
 
-    // Wait for auth state to settle
-    console.log('Waiting for auth state to settle...');
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    // Verify we're authenticated before proceeding
-    const { data: { user }, error: sessionError } = await supabase.auth.getUser();
-    if (sessionError || !user) {
-      console.error('❌ Auth session not established:', sessionError);
+    // If email is not confirmed, return early with verification needed
+    if (!isEmailConfirmed) {
+      console.log('📧 Email verification required - returning early');
       return {
-        success: false,
-        error: {
-          message: 'Authentication session not established',
-          type: 'SESSION_ERROR',
-          isRateLimit: false
-        }
-      };
-    }
-    console.log('✅ Auth session confirmed for user:', user.id);
-
-    // Step 2: Insert into users table
-    console.log('Step 2: Creating user record in users table...');
-    const { data: userData, error: usersInsertError } = await supabase
-      .from('users')
-      .insert([{
-        id: userId,
-        email: userEnteredEmail
-      }])
-      .select();
-
-    if (usersInsertError) {
-      console.error('❌ Users table insert failed:', usersInsertError);
-      return {
-        success: false,
-        error: {
-          message: `Failed to create user record: ${usersInsertError.message}`,
-          type: 'DATABASE_ERROR',
-          isRateLimit: false
-        }
-      };
-    }
-
-    console.log('✅ User record created successfully:', userData);
-
-    // Step 3: Insert into profiles table
-    console.log('Step 3: Creating user profile...');
-    const trialEndDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-    const { data: profileData, error: profileInsertError } = await supabase
-      .from('profiles')
-      .insert([{
-        id: userId,
-        full_name: fullName,
+        success: true,
+        needsVerification: true,
         email: userEnteredEmail,
-        is_on_trial: true,
-        trial_ends_at: trialEndDate.toISOString()
-      }])
-      .select();
-
-    if (profileInsertError) {
-      console.error('❌ Profile insert failed:', profileInsertError);
-      return {
-        success: false,
-        error: {
-          message: `Failed to create user profile: ${profileInsertError.message}`,
-          type: 'DATABASE_ERROR',
-          isRateLimit: false
-        }
+        user: data.user,
+        userId: userId
       };
     }
 
-    console.log('✅ Profile created successfully:', profileData);
-    console.log('=== SIGNUP PROCESS COMPLETE ===');
+    // Only create database records if email is confirmed
+    await createUserRecords(userId, userEnteredEmail, fullName);
 
     return { 
       success: true, 
+      needsVerification: false,
       email: userEnteredEmail,
       user: data.user,
-      userId: userId,
-      userData: userData,
-      profileData: profileData
+      userId: userId
     };
 
   } catch (error) {
     console.error('❌ Signup process failed:', error);
-
     return { 
       success: false,
       error: {
@@ -178,94 +137,194 @@ export async function signUp(email: string, password: string, fullName: string) 
   }
 }
 
-// Keep utility functions for testing but remove retry logic
-export async function testUIRateLimit(onRetryStatus?: (status: { isWaiting: boolean; secondsRemaining?: number; message?: string }) => void) {
-  console.log('=== TESTING UI RATE LIMIT BEHAVIOR ===');
+async function createUserRecords(userId: string, email: string, fullName: string) {
+  console.log('Creating user records in database...');
+  
+  // Step 1: Insert into users table
+  const { data: userData, error: usersInsertError } = await supabase
+    .from('users')
+    .insert([{ id: userId, email: email }])
+    .select();
 
-  onRetryStatus?.({ 
-    isWaiting: false, 
-    message: 'Testing signup process...'
-  });
-  await new Promise(resolve => setTimeout(resolve, 1000));
-
-  onRetryStatus?.({ 
-    isWaiting: true, 
-    secondsRemaining: 5,
-    message: 'Simulating rate limit...'
-  });
-
-  for (let i = 5; i > 0; i--) {
-    onRetryStatus?.({ 
-      isWaiting: true, 
-      secondsRemaining: i,
-      message: `Simulating rate limit... ${i}s`
-    });
-    console.log(`⏰ UI Test: ${i} seconds remaining...`);
-    await new Promise(resolve => setTimeout(resolve, 1000));
+  if (usersInsertError) {
+    console.error('❌ Users table insert failed:', usersInsertError);
+    throw new Error(`Failed to create user record: ${usersInsertError.message}`);
   }
 
-  onRetryStatus?.({ 
-    isWaiting: false, 
-    message: 'Test completed successfully!'
-  });
+  // Step 2: Insert into profiles table
+  const trialEndDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const { data: profileData, error: profileInsertError } = await supabase
+    .from('profiles')
+    .insert([{
+      id: userId,
+      full_name: fullName,
+      email: email,
+      is_on_trial: true,
+      trial_ends_at: trialEndDate.toISOString()
+    }])
+    .select();
 
-  return { 
-    success: true, 
-    message: 'UI rate limit test completed successfully'
-  };
+  if (profileInsertError) {
+    console.error('❌ Profile insert failed:', profileInsertError);
+    throw new Error(`Failed to create user profile: ${profileInsertError.message}`);
+  }
+
+  console.log('✅ User records created successfully');
 }
 
-// Make test functions available on window for console testing
-if (typeof window !== 'undefined') {
-  (window as any).testUIRateLimit = testUIRateLimit;
-
-  // Enhanced network monitoring helper
-  (window as any).monitorSignupRequests = function() {
-    console.log('🔍 NETWORK MONITORING ENABLED');
-    console.log('📋 Instructions for email verification:');
-    console.log('1. Open DevTools > Network tab');
-    console.log('2. Filter by "signup" or "auth"');
-    console.log('3. Attempt signup with your real email');
-    console.log('4. Check Request payload');
-
-    const originalFetch = window.fetch;
-
-    window.fetch = function(url, options) {
-      const startTime = Date.now();
-
-      if (typeof url === 'string' && url.includes('/auth/v1/signup')) {
-        console.log('🚀 INTERCEPTED SIGNUP REQUEST:');
-        console.log('📍 URL:', url);
-        console.log('⏰ Request timestamp:', new Date().toISOString());
-
-        if (options && options.body) {
-          try {
-            const body = JSON.parse(options.body);
-            console.log('📧 EMAIL IN REQUEST PAYLOAD:', body.email);
-            console.log('👤 NAME IN REQUEST PAYLOAD:', body.data?.full_name);
-            console.log('📦 FULL REQUEST BODY:', JSON.stringify(body, null, 2));
-          } catch (e) {
-            console.log('⚠️ Could not parse request body:', options.body);
-          }
-        }
+export async function resendVerificationEmail(email: string): Promise<VerificationResult> {
+  console.log('🔄 Resending verification email for:', email);
+  
+  try {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`
       }
+    });
 
-      return originalFetch.apply(this, arguments).then(response => {
-        if (typeof url === 'string' && url.includes('/auth/v1/signup')) {
-          const endTime = Date.now();
-          console.log('📬 SIGNUP RESPONSE RECEIVED:');
-          console.log('📊 Response status:', response.status);
-          console.log('⏱️ Response time:', endTime - startTime, 'ms');
+    if (error) {
+      console.error('❌ Resend verification failed:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          type: 'RESEND_ERROR'
         }
-        return response;
-      });
+      };
+    }
+
+    console.log('✅ Verification email resent successfully');
+    return {
+      success: true
     };
 
-    return 'Network monitoring enabled. All signup requests will be logged.';
-  };
+  } catch (error) {
+    console.error('❌ Resend verification error:', error);
+    return {
+      success: false,
+      error: {
+        message: error instanceof Error ? error.message : 'Failed to resend verification email',
+        type: 'RESEND_ERROR'
+      }
+    };
+  }
+}
 
-  console.log('✅ Test functions available in console:');
-  console.log('  - testUIRateLimit() - Tests UI behavior');
-  console.log('  - monitorSignupRequests() - Monitor network requests');
-  (window as any).testOnboardingUIRateLimit = (window as any).testOnboardingUIRateLimit;
+export async function checkEmailVerification(): Promise<VerificationResult> {
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    
+    if (error) {
+      console.error('❌ Failed to check user verification:', error);
+      return {
+        success: false,
+        error: {
+          message: 'Failed to check verification status',
+          type: 'CHECK_ERROR'
+        }
+      };
+    }
+
+    if (!user) {
+      return {
+        success: false,
+        error: {
+          message: 'No user found',
+          type: 'NO_USER'
+        }
+      };
+    }
+
+    const isVerified = !!user.email_confirmed_at;
+    console.log('📧 Email verification status:', isVerified ? 'VERIFIED' : 'PENDING');
+
+    return {
+      success: true,
+      isVerified: isVerified
+    };
+
+  } catch (error) {
+    console.error('❌ Check verification error:', error);
+    return {
+      success: false,
+      error: {
+        message: error instanceof Error ? error.message : 'Failed to check verification status',
+        type: 'CHECK_ERROR'
+      }
+    };
+  }
+}
+
+export async function signIn(email: string, password: string): Promise<SignUpResult> {
+  console.log('🔑 Attempting to sign in user:', email);
+  
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password
+    });
+
+    if (error) {
+      console.error('❌ Sign in failed:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          type: 'SIGNIN_ERROR'
+        }
+      };
+    }
+
+    if (!data.user) {
+      return {
+        success: false,
+        error: {
+          message: 'Sign in failed - no user returned',
+          type: 'SIGNIN_ERROR'
+        }
+      };
+    }
+
+    const isEmailConfirmed = !!data.user.email_confirmed_at;
+    console.log('📧 User email confirmation status:', isEmailConfirmed ? 'CONFIRMED' : 'PENDING');
+
+    if (!isEmailConfirmed) {
+      return {
+        success: false,
+        needsVerification: true,
+        email: email,
+        user: data.user,
+        error: {
+          message: 'Please verify your email address before signing in',
+          type: 'EMAIL_NOT_VERIFIED'
+        }
+      };
+    }
+
+    console.log('✅ User signed in successfully');
+    return {
+      success: true,
+      email: email,
+      user: data.user,
+      userId: data.user.id
+    };
+
+  } catch (error) {
+    console.error('❌ Sign in error:', error);
+    return {
+      success: false,
+      error: {
+        message: error instanceof Error ? error.message : 'Sign in failed',
+        type: 'SIGNIN_ERROR'
+      }
+    };
+  }
+}
+
+// Make functions available globally for testing
+if (typeof window !== 'undefined') {
+  (window as any).resendVerificationEmail = resendVerificationEmail;
+  (window as any).checkEmailVerification = checkEmailVerification;
 }

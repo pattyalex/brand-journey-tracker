@@ -1,83 +1,92 @@
-import { useState } from "react";
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
+import { useNavigate } from 'react-router-dom';
+import { supabase } from "@/supabaseClient";
+import { signIn } from "@/auth";
+import EmailVerificationStatus from "@/components/EmailVerificationStatus";
 
-const LoginModal = () => {
+const LoginModal: React.FC = () => {
   const { loginOpen, closeLoginModal, login } = useAuth();
-  const [email, setEmail] = useState("demo@example.com");
-  const [password, setPassword] = useState("demopassword");
-  const [loginError, setLoginError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showSignUp, setShowSignUp] = useState(false);
+  const [showEmailVerification, setShowEmailVerification] = useState(false);
+  const [pendingVerificationEmail, setPendingVerificationEmail] = useState('');
 
-  const handleMockLogin = (e: React.FormEvent) => {
+const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    console.log("Mock login with:", email);
+    setLoading(true);
+    setError('');
 
-    // Simulate API call delay
-    setTimeout(() => {
-      login(); // Set auth context state
-      toast.success("Successfully logged in");
-      closeLoginModal();
-      window.location.href = '/home-page';
-      setIsLoading(false);
-    }, 800);
+    try {
+      const result = await signIn(email, password);
+
+      if (result.success) {
+        login();
+        closeLoginModal();
+        navigate('/home-page');
+      } else if (result.needsVerification) {
+        setPendingVerificationEmail(email);
+        setShowEmailVerification(true);
+      } else {
+        setError(result.error?.message || 'Login failed');
+      }
+    } catch (err) {
+      setError('An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return (
+const handleSignUpSuccess = () => {
+    setShowSignUp(false);
+    setEmail('');
+    setPassword('');
+    setError('');
+  };
+
+  const handleEmailVerificationComplete = () => {
+    setShowEmailVerification(false);
+    setPendingVerificationEmail('');
+    login();
+    closeLoginModal();
+    navigate('/home-page');
+  };
+
+return (
     <Dialog open={loginOpen} onOpenChange={closeLoginModal}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Mock Login</DialogTitle>
-          <DialogDescription>
-            This is a demo login. Click the login button to access the app.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleMockLogin} className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input 
-              id="email" 
-              type="email" 
-              placeholder="demo@example.com" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+      <DialogContent className="sm:max-w-[425px]">
+        {showEmailVerification ? (
+          <div className="p-4">
+            <EmailVerificationStatus
+              email={pendingVerificationEmail}
+              onVerificationComplete={handleEmailVerificationComplete}
+              onBack={() => setShowEmailVerification(false)}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input 
-              id="password" 
-              type="password" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          {loginError && (
-            <p className="text-sm text-red-500">{loginError}</p>
-          )}
-          <div className="flex justify-between items-center mt-2">
-            <Button 
-              type="button" 
-              variant="link" 
-              className="text-sm p-0 h-auto text-muted-foreground hover:text-primary"
-              onClick={() => {
-                toast.info("This is a demo feature. Password reset would be sent to " + email);
-              }}
-            >
-              Forgot Password?
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Logging in..." : "Log In (Mock)"}
-            </Button>
-          </div>
-        </form>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle>{showSignUp ? 'Sign Up' : 'Log In'}</DialogTitle>
+              <DialogDescription>
+                {showSignUp 
+                  ? 'Create your account to get started' 
+                  : 'Enter your email and password to access your account'
+                }
+              </DialogDescription>
+            </DialogHeader>
+          
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
