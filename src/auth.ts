@@ -1,7 +1,13 @@
 
 import { supabase } from './supabaseClient'
 
-export async function signUpWithRetry(email: string, password: string, fullName: string, maxRetries: number = 3) {
+export async function signUpWithRetry(
+  email: string, 
+  password: string, 
+  fullName: string, 
+  maxRetries: number = 3,
+  onRetryStatus?: (status: { isWaiting: boolean; secondsRemaining?: number; message?: string }) => void
+) {
   console.log(`=== STARTING SIGNUP WITH RETRY (max ${maxRetries} attempts) ===`);
   console.log(`Target email: ${email}`);
   console.log(`Target name: ${fullName}`);
@@ -23,6 +29,7 @@ export async function signUpWithRetry(email: string, password: string, fullName:
     if (result.success) {
       console.log(`✅ Signup successful on attempt ${attempt}`);
       console.log(`Final success result:`, result);
+      onRetryStatus?.({ isWaiting: false, message: 'Signup successful!' });
       return result;
     }
     
@@ -43,27 +50,49 @@ export async function signUpWithRetry(email: string, password: string, fullName:
     if (!isRateLimited) {
       console.log(`❌ Non-rate-limit error on attempt ${attempt}, not retrying`);
       console.log(`Error details:`, result.error);
+      onRetryStatus?.({ isWaiting: false, message: `Error: ${result.error?.message}` });
       return result;
     }
     
     if (attempt < maxRetries) {
-      const waitTime = 60; // seconds
+      const waitTime = 61; // Slightly longer than 60 seconds to be safe
       console.log(`⏳ Rate limited on attempt ${attempt}/${maxRetries}`);
       console.log(`Rate limit error message: "${result.error?.message}"`);
       console.log(`Waiting ${waitTime} seconds before retry...`);
       console.log(`Wait started at: ${new Date().toISOString()}`);
       
-      // Count down the wait time
-      for (let i = waitTime; i > 0; i -= 10) {
-        console.log(`⏰ ${i} seconds remaining...`);
-        await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 10 seconds
+      // Update UI with countdown
+      onRetryStatus?.({ 
+        isWaiting: true, 
+        secondsRemaining: waitTime,
+        message: `Rate limited. Retrying in ${waitTime} seconds...`
+      });
+      
+      // Count down the wait time with more frequent updates for UI
+      for (let i = waitTime; i > 0; i--) {
+        onRetryStatus?.({ 
+          isWaiting: true, 
+          secondsRemaining: i,
+          message: `Rate limited. Retrying in ${i} seconds...`
+        });
+        
+        if (i % 10 === 0 || i <= 10) {
+          console.log(`⏰ ${i} seconds remaining...`);
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second for more precise countdown
       }
       
       console.log(`⏰ Wait completed at: ${new Date().toISOString()}`);
       console.log(`🔄 Starting retry attempt ${attempt + 1}...`);
+      onRetryStatus?.({ 
+        isWaiting: false, 
+        message: `Attempting signup again (attempt ${attempt + 1}/${maxRetries})...`
+      });
     } else {
       console.log(`❌ Max retries (${maxRetries}) reached, giving up`);
       console.log(`Final error after all retries:`, result.error);
+      onRetryStatus?.({ isWaiting: false, message: 'Maximum retry attempts exceeded. Please try again later.' });
       return result;
     }
   }
@@ -77,6 +106,7 @@ export async function signUpWithRetry(email: string, password: string, fullName:
     } 
   };
   console.log(`❌ Returning exhausted result:`, exhaustedResult);
+  onRetryStatus?.({ isWaiting: false, message: 'Maximum retry attempts exceeded. Please try again later.' });
   return exhaustedResult;
 }
 
@@ -89,9 +119,17 @@ export async function testSignUpRetry() {
   
   console.log('Testing with:', { testEmail, testPassword, testName });
   
-  const result = await signUpWithRetry(testEmail, testPassword, testName, 2);
+  const result = await signUpWithRetry(testEmail, testPassword, testName, 2, (status) => {
+    console.log('Test retry status:', status);
+  });
   console.log('Manual test result:', result);
   return result;
+}
+
+// Make test function available on window for console testing
+if (typeof window !== 'undefined') {
+  (window as any).testSignUpRetry = testSignUpRetry;
+  console.log('✅ testSignUpRetry() function available in console for testing');
 }
 
 export async function signUp(email: string, password: string, fullName: string) {

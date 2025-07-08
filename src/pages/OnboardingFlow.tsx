@@ -103,6 +103,7 @@ const OnboardingFlow: React.FC = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<OnboardingStep>("account-creation");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [retryStatus, setRetryStatus] = useState({ isWaiting: false, secondsRemaining: 0 });
 
   // Account Creation Form
   const accountForm = useForm<z.infer<typeof accountCreationSchema>>({
@@ -169,16 +170,13 @@ const OnboardingFlow: React.FC = () => {
 
   // Handle form submissions
   const onAccountSubmit = async (data: z.infer<typeof accountCreationSchema>) => {
-    console.log("=== ACCOUNT FORM SUBMITTED ===");
-    console.log("Account data:", data);
-
     // Prevent multiple submissions
-    if (isSubmitting) {
-      console.log('⚠️ Account creation already in progress, ignoring duplicate submission');
+    if (isSubmitting || retryStatus.isWaiting) {
+      console.log('⚠️ Account creation already in progress or waiting for retry, ignoring duplicate submission');
       return;
     }
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
     let signUpResult;
 
     try {
@@ -188,7 +186,9 @@ const OnboardingFlow: React.FC = () => {
       const { signUpWithRetry } = await import('../auth');
 
       console.log("Calling signUp function...");
-      signUpResult = await signUpWithRetry(data.email, data.password, data.name)
+      signUpResult = await signUpWithRetry(data.email, data.password, data.name, 3, (status) => {
+        setRetryStatus(status);
+      })
         .catch(signUpError => {
           console.error('❌ SignUp function threw error:', signUpError);
           return {
@@ -237,7 +237,8 @@ const OnboardingFlow: React.FC = () => {
 
       alert(`Account creation failed: ${errorMessage}`);
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
+      setRetryStatus({ isWaiting: false })
     }
   };
 
@@ -483,6 +484,11 @@ const OnboardingFlow: React.FC = () => {
                   <Button type="submit" className="w-full" disabled={isSubmitting}>
                     {isSubmitting ? 'Creating Account...' : 'Continue'}
                   </Button>
+                  {retryStatus.isWaiting && (
+                      <div>
+                        <p>Too many attempts. Please wait {retryStatus.secondsRemaining} seconds before retrying.</p>
+                      </div>
+                    )}
                 </form>
               </Form>
             </CardContent>
