@@ -104,6 +104,8 @@ const OnboardingFlow: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<OnboardingStep>("account-creation");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [retryStatus, setRetryStatus] = useState({ isWaiting: false, secondsRemaining: 0 });
+  const [cooldownTimer, setCooldownTimer] = useState(0);
+  const [lastSubmissionTime, setLastSubmissionTime] = useState<number>(0);
 
   // Account Creation Form
   const accountForm = useForm<z.infer<typeof accountCreationSchema>>({
@@ -170,13 +172,43 @@ const OnboardingFlow: React.FC = () => {
 
   // Handle form submissions
   const onAccountSubmit = async (data: z.infer<typeof accountCreationSchema>) => {
-    // Prevent multiple submissions
-    if (isSubmitting || retryStatus.isWaiting) {
-      console.log('⚠️ Account creation already in progress or waiting for retry, ignoring duplicate submission');
+    const now = Date.now();
+    const timeSinceLastSubmission = now - lastSubmissionTime;
+    const minCooldownMs = 5000; // 5 second minimum cooldown
+
+    // Prevent multiple submissions and enforce cooldown
+    if (isSubmitting || retryStatus.isWaiting || cooldownTimer > 0) {
+      console.log('⚠️ Account creation blocked:', {
+        isSubmitting,
+        isWaitingForRetry: retryStatus.isWaiting,
+        cooldownTimer,
+        timeSinceLastSubmission
+      });
       return;
     }
 
-    setIsSubmitting(true)
+    // Check if enough time has passed since last submission
+    if (timeSinceLastSubmission < minCooldownMs) {
+      const remainingCooldown = Math.ceil((minCooldownMs - timeSinceLastSubmission) / 1000);
+      console.log(`⏳ Cooldown active: ${remainingCooldown} seconds remaining`);
+      setCooldownTimer(remainingCooldown);
+      
+      // Start cooldown countdown
+      const cooldownInterval = setInterval(() => {
+        setCooldownTimer(prev => {
+          if (prev <= 1) {
+            clearInterval(cooldownInterval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      
+      return;
+    }
+
+    setIsSubmitting(true);
+    setLastSubmissionTime(now);
     let signUpResult;
 
     try {
@@ -187,6 +219,10 @@ const OnboardingFlow: React.FC = () => {
 
       console.log("Calling signUp function...");
       signUpResult = await signUpWithRetry(data.email, data.password, data.name, 3, (status) => {
+        console.log('Retry status update:', {
+          ...status,
+          timestamp: new Date().toISOString()
+        });
         setRetryStatus(status);
       })
         .catch(signUpError => {
@@ -237,8 +273,19 @@ const OnboardingFlow: React.FC = () => {
 
       alert(`Account creation failed: ${errorMessage}`);
     } finally {
-      setIsSubmitting(false)
-      setRetryStatus({ isWaiting: false })
+      setIsSubmitting(false);
+      setRetryStatus({ isWaiting: false });
+      // Start a brief cooldown after completion to prevent immediate re-submission
+      setCooldownTimer(3);
+      const finalCooldownInterval = setInterval(() => {
+        setCooldownTimer(prev => {
+          if (prev <= 1) {
+            clearInterval(finalCooldownInterval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     }
   };
 
@@ -495,23 +542,40 @@ const OnboardingFlow: React.FC = () => {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={isSubmitting || retryStatus.isWaiting}>
-                    {retryStatus.isWaiting 
-                      ? `Please wait ${retryStatus.secondsRemaining || '...'}s` 
-                      : isSubmitting 
-                        ? 'Creating Account...' 
-                        : 'Continue'
+                  <Button type="submit" className="w-full" disabled={isSubmitting || retryStatus.isWaiting || cooldownTimer > 0}>
+                    {cooldownTimer > 0
+                      ? `Cooldown ${cooldownTimer}s`
+                      : retryStatus.isWaiting 
+                        ? `Please wait ${retryStatus.secondsRemaining || '...'}s` 
+                        : isSubmitting 
+                          ? 'Creating Account...' 
+                          : 'Continue'
                     }
                   </Button>
-                  {retryStatus.isWaiting && (
+                  {(retryStatus.isWaiting || cooldownTimer > 0) && (
                     <div style={{ 
-                      padding: '10px', 
-                      backgroundColor: '#fef3c7', 
-                      border: '1px solid #f59e0b', 
-                      borderRadius: '4px',
-                      marginTop: '10px'
+                      padding: '12px', 
+                      backgroundColor: cooldownTimer > 0 ? '#e0f2fe' : '#fef3c7', 
+                      border: `1px solid ${cooldownTimer > 0 ? '#0288d1' : '#f59e0b'}`, 
+                      borderRadius: '6px',
+                      marginTop: '12px',
+                      fontSize: '14px'
                     }}>
-                      <strong>⏱️ Rate Limited:</strong> Please wait {retryStatus.secondsRemaining} seconds before the next attempt.
+                      {cooldownTimer > 0 ? (
+                        <div>
+                          <strong>⏳ Cooldown Active:</strong> Please wait {cooldownTimer} seconds before trying again.
+                        </div>
+                      ) : (
+                        <div>
+                          <strong>⏱️ Rate Limited:</strong> Supabase requires a {retryStatus.secondsRemaining} second wait. 
+                          Retrying automatically...
+                          {retryStatus.sessionId && (
+                            <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                              Session: {retryStatus.sessionId}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                 </form>

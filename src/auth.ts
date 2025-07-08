@@ -57,17 +57,21 @@ export async function signUpWithRetry(
     }
 
     if (attempt < maxRetries) {
-      const waitTime = 61; // Slightly longer than 60 seconds to be safe
+      const waitTime = 90; // Increased from 61 to 90 seconds to better accommodate Supabase rate limits
+      const sessionId = Math.random().toString(36).substring(2, 15);
       console.log(`⏳ Rate limited on attempt ${attempt}/${maxRetries}`);
+      console.log(`Session ID: ${sessionId}`);
       console.log(`Rate limit error message: "${result.error?.message}"`);
       console.log(`Waiting ${waitTime} seconds before retry...`);
       console.log(`Wait started at: ${new Date().toISOString()}`);
+      console.log(`Expected retry at: ${new Date(Date.now() + waitTime * 1000).toISOString()}`);
 
       // Update UI with countdown
       onRetryStatus?.({ 
         isWaiting: true, 
         secondsRemaining: waitTime,
-        message: `Rate limited. Retrying in ${waitTime} seconds...`
+        message: `Rate limited. Retrying in ${waitTime} seconds...`,
+        sessionId: sessionId
       });
 
       // Count down the wait time with more frequent updates for UI
@@ -75,21 +79,24 @@ export async function signUpWithRetry(
         onRetryStatus?.({ 
           isWaiting: true, 
           secondsRemaining: i,
-          message: `Rate limited. Retrying in ${i} seconds...`
+          message: `Rate limited. Retrying in ${i} seconds...`,
+          sessionId: sessionId
         });
 
-        if (i % 10 === 0 || i <= 10) {
-          console.log(`⏰ ${i} seconds remaining...`);
+        if (i % 15 === 0 || i <= 15) {
+          console.log(`⏰ ${i} seconds remaining... (Session: ${sessionId})`);
+          console.log(`Current time: ${new Date().toISOString()}`);
         }
 
         await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second for more precise countdown
       }
 
       console.log(`⏰ Wait completed at: ${new Date().toISOString()}`);
-      console.log(`🔄 Starting retry attempt ${attempt + 1}...`);
+      console.log(`🔄 Starting retry attempt ${attempt + 1}... (Session: ${sessionId})`);
       onRetryStatus?.({ 
         isWaiting: false, 
-        message: `Attempting signup again (attempt ${attempt + 1}/${maxRetries})...`
+        message: `Attempting signup again (attempt ${attempt + 1}/${maxRetries})...`,
+        sessionId: sessionId
       });
     } else {
       console.log(`❌ Max retries (${maxRetries}) reached, giving up`);
@@ -115,7 +122,7 @@ export async function signUpWithRetry(
 // Manual testing function for rate limit behavior
 export async function testSignUpRetry() {
   console.log('=== MANUAL TESTING SIGNUP RETRY ===');
-  const testEmail = `test-${Date.now()}@example.com`;
+  const testEmail = `testuser${Date.now()}@gmail.com`; // Changed to valid email format
   const testPassword = 'TestPassword123!';
   const testName = 'Test User';
 
@@ -222,9 +229,13 @@ if (typeof window !== 'undefined') {
 }
 
 export async function signUp(email: string, password: string, fullName: string) {
+  const signupSessionId = Math.random().toString(36).substring(2, 15);
   console.log(`=== STARTING SIGNUP PROCESS ===`);
+  console.log(`Session ID: ${signupSessionId}`);
   console.log(`Email: ${email}`);
   console.log(`Name: ${fullName}`);
+  console.log(`Start timestamp: ${new Date().toISOString()}`);
+  console.log(`Start timestamp (epoch): ${Date.now()}`);
 
   try {
     // Step 1: Sign the user up with Supabase Auth
@@ -264,11 +275,13 @@ export async function signUp(email: string, password: string, fullName: string) 
     });
 
     if (authError) {
-      console.error('❌ Auth signup failed:', authError);
-      console.error('Auth error details:', {
+      console.error(`❌ Auth signup failed (Session: ${signupSessionId}):`, authError);
+      console.error(`Auth error details (Session: ${signupSessionId}):`, {
         message: authError.message,
         status: authError.status,
-        statusCode: authError.status
+        statusCode: authError.status,
+        timestamp: new Date().toISOString(),
+        sessionId: signupSessionId
       });
       throw new Error(`Auth signup failed: ${authError.message}`);
     }
