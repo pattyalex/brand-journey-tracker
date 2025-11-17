@@ -356,7 +356,7 @@ const ContentCalendar = () => {
 
   return (
     <Layout>
-      <div className="space-y-4">
+      <div className="w-full max-w-[1600px] mx-auto px-8 py-6 space-y-4">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Content Calendar</h1>

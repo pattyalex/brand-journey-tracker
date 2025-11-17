@@ -83,7 +83,7 @@ const WeeklyContentTasks = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto py-6 max-w-6xl">
+      <div className="w-full max-w-[1600px] mx-auto px-8 py-6">
         <h1 className="text-4xl font-bold mb-2">Weekly View</h1>
         <p className="text-gray-600 text-lg mb-8">
           Map out your content workflow: Drag and drop tasks into the day you want to complete them

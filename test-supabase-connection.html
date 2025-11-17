@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Supabase Connection</title>
+</head>
+<body>
+    <h1>Supabase Connection Test</h1>
+    <button onclick="testConnection()">Test Connection</button>
+    <button onclick="testInsert()">Test Insert</button>
+    <button onclick="testSelect()">Test Select</button>
+    <pre id="output"></pre>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://cedxvrosmnsvfnnvkprr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNlZHh2cm9zbW5zdmZubnZrcHJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA3MTg1NDksImV4cCI6MjA3NjI5NDU0OX0.hxCf912qlV_84PtLTUHnNLGAeZRhBl5pLReW99q5WtY';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const output = document.getElementById('output');
+
+        async function testConnection() {
+            output.textContent = 'Testing connection...\n';
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('count');
+
+                if (error) {
+                    output.textContent += `❌ Error: ${error.message}\n`;
+                    output.textContent += `Details: ${JSON.stringify(error, null, 2)}`;
+                } else {
+                    output.textContent += `✅ Connected! Can read profiles table.\n`;
+                }
+            } catch (err) {
+                output.textContent += `❌ Exception: ${err.message}`;
+            }
+        }
+
+        async function testInsert() {
+            output.textContent = 'Testing insert...\n';
+            try {
+                const testId = 'test_' + Date.now();
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .insert([{
+                        id: testId,
+                        full_name: 'Test User',
+                        email: 'test@example.com'
+                    }]);
+
+                if (error) {
+                    output.textContent += `❌ Insert Error: ${error.message}\n`;
+                    output.textContent += `Details: ${JSON.stringify(error, null, 2)}`;
+                } else {
+                    output.textContent += `✅ Insert successful! Test ID: ${testId}\n`;
+                }
+            } catch (err) {
+                output.textContent += `❌ Exception: ${err.message}`;
+            }
+        }
+
+        async function testSelect() {
+            output.textContent = 'Testing select...\n';
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('*');
+
+                if (error) {
+                    output.textContent += `❌ Select Error: ${error.message}\n`;
+                    output.textContent += `Details: ${JSON.stringify(error, null, 2)}`;
+                } else {
+                    output.textContent += `✅ Select successful!\n`;
+                    output.textContent += `Found ${data.length} profiles:\n`;
+                    output.textContent += JSON.stringify(data, null, 2);
+                }
+            } catch (err) {
+                output.textContent += `❌ Exception: ${err.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

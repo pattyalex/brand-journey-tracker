@@ -34,7 +34,7 @@ const Analytics = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto p-6 space-y-8 fade-in">
+      <div className="w-full max-w-[1600px] mx-auto px-8 py-6 space-y-8 fade-in">
         <div className="flex flex-col space-y-2">
           <h1 className="text-4xl font-bold">Analytics</h1>
           <p className="text-muted-foreground">

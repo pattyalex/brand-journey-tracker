@@ -48,31 +48,8 @@ const Sidebar = () => {
 
   return (
     <SidebarContainer>
-      <div className="p-4">
-        <h2 className="text-2xl font-playfair font-bold text-primary">HeyMegan</h2>
-      </div>
-      <SidebarContent>
+      <SidebarContent className="pt-16">
         <SidebarGroup>
-          <div className="flex items-center justify-between pr-2">
-            <SidebarGroupLabel>Menu</SidebarGroupLabel>
-            <TooltipProvider delayDuration={0}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="xs"
-                    className="text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
-                    onClick={() => setShowAddForm(true)}
-                  >
-                    <Plus size={14} />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Add Page</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (

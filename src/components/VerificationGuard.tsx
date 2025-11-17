@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ShieldCheck, Mail, AlertCircle } from 'lucide-react';
 import { checkEmailVerification, resendVerificationEmail } from '@/auth';
-import { supabase } from '@/supabaseClient';
+import { supabase } from '@/lib/supabase';
 
 interface VerificationGuardProps {
   children: React.ReactNode;

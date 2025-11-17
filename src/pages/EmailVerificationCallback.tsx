@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
-import { supabase } from '@/supabaseClient';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 
 const EmailVerificationCallback: React.FC = () => {
@@ -21,55 +21,65 @@ const EmailVerificationCallback: React.FC = () => {
 
   const handleEmailVerification = async () => {
     try {
+      console.log('🔍 Processing email verification callback...');
+      console.log('URL params:', Object.fromEntries(searchParams.entries()));
+
+      // Supabase sends different URL formats for email verification
+      // Check for token_hash (new format) or token (old format)
+      const tokenHash = searchParams.get('token_hash');
       const token = searchParams.get('token');
       const type = searchParams.get('type');
-      
-      if (!token || type !== 'email') {
-        setStatus('error');
-        setMessage('Invalid verification link');
-        return;
-      }
 
-      console.log('🔍 Processing email verification callback...');
-      
-      // Verify the token with Supabase
-      const { data, error } = await supabase.auth.verifyOtp({
-        token_hash: token,
-        type: 'email'
-      });
+      // New Supabase format uses token_hash in the URL fragment
+      // The auth library should handle this automatically
+      const { data, error } = await supabase.auth.getSession();
 
       if (error) {
-        console.error('❌ Email verification failed:', error);
+        console.error('❌ Session check failed:', error);
         setStatus('error');
         setMessage(error.message || 'Email verification failed');
         return;
       }
 
-      if (data.user) {
-        console.log('✅ Email verified successfully for user:', data.user.id);
-        
-        // Create user records now that email is verified
-        try {
-          await createUserRecords(data.user.id, data.user.email!, data.user.user_metadata.full_name);
-          console.log('✅ User records created successfully');
-        } catch (dbError) {
-          console.warn('⚠️ Database record creation failed (user may already exist):', dbError);
-          // Don't fail the verification if database records already exist
+      // Check if we have a valid session after the callback
+      if (data.session?.user) {
+        const user = data.session.user;
+        console.log('✅ Email verified successfully for user:', user.id);
+
+        // Profile should be auto-created by database trigger
+        // But check if it exists, if not create it
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', user.id)
+          .single();
+
+        if (!existingProfile) {
+          console.log('Creating user profile...');
+          try {
+            await createUserRecords(user.id, user.email!, user.user_metadata?.full_name || 'User');
+            console.log('✅ User records created successfully');
+          } catch (dbError) {
+            console.warn('⚠️ Database record creation failed:', dbError);
+          }
+        } else {
+          console.log('Profile already exists');
         }
 
         setStatus('success');
         setMessage('Email verified successfully! You can now access your account.');
-        
+
         // Log the user in
         login();
-        
-        // Redirect to onboarding after a short delay
+
+        // Redirect to payment-setup step (step 3) after a short delay
         setTimeout(() => {
-          navigate('/onboarding');
+          navigate('/onboarding?step=payment-setup');
         }, 2000);
       } else {
+        console.error('No session found after callback');
         setStatus('error');
-        setMessage('Verification failed - no user data returned');
+        setMessage('Verification link may have expired. Please try signing up again.');
       }
 
     } catch (error) {
@@ -169,7 +179,7 @@ const EmailVerificationCallback: React.FC = () => {
               <p className="text-sm text-muted-foreground">
                 Redirecting to your account...
               </p>
-              <Button onClick={() => navigate('/onboarding')} className="w-full">
+              <Button onClick={() => navigate('/onboarding?step=payment-setup')} className="w-full">
                 Continue to App
               </Button>
             </div>

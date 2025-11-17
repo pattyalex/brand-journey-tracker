@@ -7,15 +7,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Label } from "@/components/ui/label";
 import { RotateCw, Handshake, Lightbulb, CheckCircle, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "../supabaseClient";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 // Keep the signUp import in case it's used elsewhere
 import { signUp } from "@/auth";
 import Layout from "@/components/Layout";
+import { useUser } from "@clerk/clerk-react";
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const { login, openLoginModal } = useAuth();
+  const { isSignedIn } = useUser();
   const [isLoading, setIsLoading] = useState(false);
 
   // Test Supabase connection
@@ -46,6 +48,18 @@ const LandingPage = () => {
   const handleStartFreeTrial = async () => {
     console.log("=== START: handleStartFreeTrial function started running ===");
 
+    // If user is already logged in with Clerk, redirect to dashboard
+    if (isSignedIn) {
+      console.log("User is already signed in, redirecting to dashboard");
+      navigate("/home-page");
+      return;
+    }
+
+    // Otherwise, redirect to onboarding to sign up
+    console.log("User is not signed in, redirecting to onboarding");
+    navigate("/onboarding");
+    return;
+
     // Test Supabase connection first
     await testSupabaseConnection();
 
@@ -75,9 +89,7 @@ const LandingPage = () => {
     console.log(`Full Name: ${fullName}`);
 
     try {
-      console.log("Attempting to import supabaseClient...");
-      // Import supabase client directly to ensure we're using the correct instance
-      const { supabase } = await import('../supabaseClient');
+      console.log("Using supabase client from @/lib/supabase...");
 
       if (!supabase) {
         console.error("Supabase client is undefined after import!");
@@ -91,7 +103,6 @@ const LandingPage = () => {
       console.log("=== SUPABASE CONFIG ===");
       console.log("Supabase URL being used:", import.meta.env.VITE_SUPABASE_URL);
       console.log("Auth endpoint:", `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/signup`);
-      console.log("Using supabaseClient from supabaseClient.ts to sign up user...");
 
       // Log the Supabase URL and Anon Key to ensure they're defined
       console.log("=== SUPABASE CREDENTIALS CHECK ===");
@@ -182,23 +193,6 @@ const LandingPage = () => {
 
   return (
     <Layout hideSidebar={true}>
-      <div className="absolute top-4 right-6 z-10 flex gap-2">
-        <Button 
-          variant="outline" 
-          onClick={testSupabaseConnection}
-          className="font-medium"
-        >
-          Test DB
-        </Button>
-        <Button 
-          variant="outline" 
-          onClick={openLoginModal}
-          className="font-medium"
-        >
-          Log In
-        </Button>
-      </div>
-
       <div className="max-w-6xl mx-auto px-6 py-16 space-y-16 fade-in">
         {/* Hero Section */}
         <section className="text-center space-y-6">
@@ -209,12 +203,12 @@ const LandingPage = () => {
             AI-powered workspace for content creators to manage projects, track income, and grow their business
           </p>
           <div className="flex justify-center">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="bg-primary hover:bg-primary/90 text-white text-lg px-8 py-6"
               onClick={handleStartFreeTrial}
             >
-              Start 7-Day Free Trial
+              {isSignedIn ? "Go to Dashboard" : "Start 7-Day Free Trial"}
             </Button>
           </div>
         </section>
@@ -276,11 +270,11 @@ const LandingPage = () => {
                 ))}
               </div>
 
-              <Button 
+              <Button
                 className="w-full py-6"
                 onClick={handleStartFreeTrial}
               >
-                Start 7-Day Free Trial
+                {isSignedIn ? "Go to Dashboard" : "Start 7-Day Free Trial"}
               </Button>
               <p className="text-xs text-center text-muted-foreground mt-4">
                 Cancel anytime.
@@ -295,12 +289,12 @@ const LandingPage = () => {
           <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
             Join thousands of content creators who have simplified their workflow and boosted their productivity
           </p>
-          <Button 
-            size="lg" 
+          <Button
+            size="lg"
             className="bg-primary hover:bg-primary/90 text-white px-8 py-6"
             onClick={handleStartFreeTrial}
           >
-            Start Your Free Trial Today
+            {isSignedIn ? "Go to Dashboard" : "Start Your Free Trial Today"}
           </Button>
         </section>
       </div>

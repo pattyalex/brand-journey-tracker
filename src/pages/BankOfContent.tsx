@@ -4,12 +4,24 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { ContentItem } from "@/types/content";
 import { toast } from "sonner";
 import ContentSearchModal from "@/components/content/ContentSearchModal";
-import PillarTabs from "@/components/content/PillarTabs";
+import PillarTabs, { getPillarColor } from "@/components/content/PillarTabs";
 import WritingSpace from "@/components/content/WritingSpace";
 import IdeaSection from "@/components/content/IdeaSection";
 import IdeaCreationDialog from "@/components/content/IdeaCreationDialog";
 import ContentTypeBuckets from "@/components/content/ContentTypeBuckets";
 import { getRestoredIdeas } from "@/utils/contentRestoreUtils";
+import { useUser } from "@clerk/clerk-react";
+import {
+  getUserContentPillars,
+  getPillarContentItems,
+  createContentPillar,
+  updateContentPillar,
+  deleteContentPillar as deleteContentPillarDb,
+  createContentItem,
+  updateContentItem,
+  deleteContentItem as deleteContentItemDb,
+  moveContentItem,
+} from "@/services/contentService";
 
 export type Pillar = {
   id: string;
@@ -20,17 +32,15 @@ export type Pillar = {
 };
 
 const BankOfContent = () => {
-  const [pillars, setPillars] = useState<Pillar[]>([
-    { id: "1", name: "Pillar 1", content: [], writingSpace: "" },
-    { id: "2", name: "Pillar 2", content: [], writingSpace: "" },
-    { id: "3", name: "Pillar 3", content: [], writingSpace: "" },
-  ]);
-  const [activeTab, setActiveTab] = useState("1");
+  const { user } = useUser();
+  const [pillars, setPillars] = useState<Pillar[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [writingText, setWritingText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  
+
   const [selectedText, setSelectedText] = useState("");
   const [developScriptText, setDevelopScriptText] = useState("");
   const [visualNotes, setVisualNotes] = useState("");
@@ -50,6 +60,57 @@ const BankOfContent = () => {
   const [selectedBucketId, setSelectedBucketId] = useState("");
 
   const allContent = pillars.flatMap(pillar => pillar.content);
+
+  // Load pillars and content from Supabase on mount
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (!user?.id) return;
+
+      try {
+        setLoading(true);
+        console.log('📥 Loading pillars and content from Supabase for user:', user.id);
+
+        // Load pillars
+        const dbPillars = await getUserContentPillars(user.id);
+
+        // If no pillars exist, create default ones
+        if (dbPillars.length === 0) {
+          console.log('No pillars found, creating defaults...');
+          const pillar1 = await createContentPillar(user.id, { name: 'Pillar 1', position: 0 });
+          const pillar2 = await createContentPillar(user.id, { name: 'Pillar 2', position: 1 });
+          const pillar3 = await createContentPillar(user.id, { name: 'Pillar 3', position: 2 });
+          dbPillars.push(pillar1, pillar2, pillar3);
+        }
+
+        // Load content for each pillar
+        const pillarsWithContent = await Promise.all(
+          dbPillars.map(async (dbPillar) => {
+            const content = await getPillarContentItems(user.id, dbPillar.id);
+            return {
+              id: dbPillar.id,
+              name: dbPillar.name,
+              content: content,
+              writingSpace: dbPillar.writing_space || "",
+            };
+          })
+        );
+
+        setPillars(pillarsWithContent);
+        if (pillarsWithContent.length > 0 && !activeTab) {
+          setActiveTab(pillarsWithContent[0].id);
+        }
+
+        console.log('✅ Loaded', pillarsWithContent.length, 'pillars from database');
+      } catch (error) {
+        console.error('❌ Error loading user data:', error);
+        toast.error('Failed to load your content');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUserData();
+  }, [user?.id]);
 
   useEffect(() => {
     const restoredIdeas = getRestoredIdeas();
@@ -116,34 +177,61 @@ const BankOfContent = () => {
     }
   }, []);
 
-  const addPillar = () => {
-    const newPillarId = String(pillars.length + 1);
-    const newPillar: Pillar = {
-      id: newPillarId,
-      name: `Pillar ${newPillarId}`,
-      content: [],
-      writingSpace: "",
-    };
-    setPillars([...pillars, newPillar]);
-    setActiveTab(newPillarId);
+  const addPillar = async () => {
+    if (!user?.id) return;
+
+    try {
+      const newPillar = await createContentPillar(user.id, {
+        name: `Pillar ${pillars.length + 1}`,
+        position: pillars.length,
+      });
+
+      const pillarWithContent: Pillar = {
+        id: newPillar.id,
+        name: newPillar.name,
+        content: [],
+        writingSpace: "",
+      };
+
+      setPillars([...pillars, pillarWithContent]);
+      setActiveTab(newPillar.id);
+      toast.success('New pillar created');
+    } catch (error) {
+      console.error('Error creating pillar:', error);
+      toast.error('Failed to create pillar');
+    }
   };
 
-  const renamePillar = (pillarId: string, newName: string) => {
-    setPillars(pillars.map(pillar => 
-      pillar.id === pillarId ? { ...pillar, name: newName } : pillar
-    ));
+  const renamePillar = async (pillarId: string, newName: string) => {
+    try {
+      await updateContentPillar(pillarId, { name: newName });
+      setPillars(pillars.map(pillar =>
+        pillar.id === pillarId ? { ...pillar, name: newName } : pillar
+      ));
+      toast.success('Pillar renamed');
+    } catch (error) {
+      console.error('Error renaming pillar:', error);
+      toast.error('Failed to rename pillar');
+    }
   };
 
-  const deletePillar = (pillarId: string) => {
+  const deletePillar = async (pillarId: string) => {
     if (pillars.length <= 1) {
       toast.error("Cannot delete the last pillar");
       return;
     }
-    
-    setPillars(pillars.filter(pillar => pillar.id !== pillarId));
-    
-    if (activeTab === pillarId) {
-      setActiveTab(pillars[0].id === pillarId ? pillars[1].id : pillars[0].id);
+
+    try {
+      await deleteContentPillarDb(pillarId);
+      setPillars(pillars.filter(pillar => pillar.id !== pillarId));
+
+      if (activeTab === pillarId) {
+        setActiveTab(pillars[0].id === pillarId ? pillars[1].id : pillars[0].id);
+      }
+      toast.success('Pillar deleted');
+    } catch (error) {
+      console.error('Error deleting pillar:', error);
+      toast.error('Failed to delete pillar');
     }
   };
 
@@ -182,38 +270,51 @@ const BankOfContent = () => {
     openNewIdeaDialog();
   };
 
-  const deleteContent = (pillarId: string, contentId: string) => {
-    setPillars(pillars.map(pillar => 
-      pillar.id === pillarId 
-        ? { ...pillar, content: pillar.content.filter(item => item.id !== contentId) } 
-        : pillar
-    ));
-    toast.success("Content deleted successfully");
+  const deleteContent = async (pillarId: string, contentId: string) => {
+    try {
+      await deleteContentItemDb(contentId);
+      setPillars(pillars.map(pillar =>
+        pillar.id === pillarId
+          ? { ...pillar, content: pillar.content.filter(item => item.id !== contentId) }
+          : pillar
+      ));
+      toast.success("Content deleted successfully");
+    } catch (error) {
+      console.error('Error deleting content:', error);
+      toast.error('Failed to delete content');
+    }
   };
 
-  const moveContent = (fromPillarId: string, toPillarId: string, contentId: string) => {
+  const moveContent = async (fromPillarId: string, toPillarId: string, contentId: string) => {
     const sourcePillar = pillars.find(p => p.id === fromPillarId);
     if (!sourcePillar) return;
-    
+
     const contentItem = sourcePillar.content.find(item => item.id === contentId);
     if (!contentItem) return;
-    
-    setPillars(pillars.map(pillar => {
-      if (pillar.id === fromPillarId) {
-        return {
-          ...pillar,
-          content: pillar.content.filter(item => item.id !== contentId)
-        };
-      } else if (pillar.id === toPillarId) {
-        return {
-          ...pillar,
-          content: [...pillar.content, contentItem]
-        };
-      }
-      return pillar;
-    }));
-    
-    toast.success(`Moved to ${pillars.find(p => p.id === toPillarId)?.name}`);
+
+    try {
+      await moveContentItem(contentId, toPillarId);
+
+      setPillars(pillars.map(pillar => {
+        if (pillar.id === fromPillarId) {
+          return {
+            ...pillar,
+            content: pillar.content.filter(item => item.id !== contentId)
+          };
+        } else if (pillar.id === toPillarId) {
+          return {
+            ...pillar,
+            content: [...pillar.content, contentItem]
+          };
+        }
+        return pillar;
+      }));
+
+      toast.success(`Moved to ${pillars.find(p => p.id === toPillarId)?.name}`);
+    } catch (error) {
+      console.error('Error moving content:', error);
+      toast.error('Failed to move content');
+    }
   };
 
   const editContent = (pillarId: string, contentId: string) => {
@@ -227,20 +328,27 @@ const BankOfContent = () => {
     setIsEditing(true);
   };
 
-  const updateContent = (pillarId: string, updatedContent: ContentItem) => {
-    setPillars(pillars.map(pillar => 
-      pillar.id === pillarId 
-        ? { 
-            ...pillar, 
-            content: pillar.content.map(item => 
-              item.id === updatedContent.id ? updatedContent : item
-            ) 
-          } 
-        : pillar
-    ));
-    setIsEditing(false);
-    setEditingContent(null);
-    toast.success("Content updated successfully");
+  const updateContent = async (pillarId: string, updatedContent: ContentItem) => {
+    try {
+      await updateContentItem(updatedContent.id, updatedContent);
+
+      setPillars(pillars.map(pillar =>
+        pillar.id === pillarId
+          ? {
+              ...pillar,
+              content: pillar.content.map(item =>
+                item.id === updatedContent.id ? updatedContent : item
+              )
+            }
+          : pillar
+      ));
+      setIsEditing(false);
+      setEditingContent(null);
+      toast.success("Content updated successfully");
+    } catch (error) {
+      console.error('Error updating content:', error);
+      toast.error('Failed to update content');
+    }
   };
 
   const cancelEditing = () => {
@@ -256,13 +364,25 @@ const BankOfContent = () => {
     ));
   };
 
-  const addContentToPillar = (pillarId: string, content: ContentItem) => {
-    setPillars(pillars.map(pillar => 
-      pillar.id === pillarId 
-        ? { ...pillar, content: [...pillar.content, content] } 
-        : pillar
-    ));
-    toast.success("New idea added successfully");
+  const addContentToPillar = async (pillarId: string, content: ContentItem) => {
+    if (!user?.id) return;
+
+    try {
+      // Save to database (remove id since it will be generated by database)
+      const { id, ...contentWithoutId } = content;
+      const savedContent = await createContentItem(user.id, pillarId, contentWithoutId);
+
+      // Update local state with database-generated content
+      setPillars(pillars.map(pillar =>
+        pillar.id === pillarId
+          ? { ...pillar, content: [...pillar.content, savedContent] }
+          : pillar
+      ));
+      toast.success("New idea added successfully");
+    } catch (error) {
+      console.error('Error adding content:', error);
+      toast.error('Failed to save content');
+    }
   };
 
   const addPlatform = () => {
@@ -336,9 +456,26 @@ const BankOfContent = () => {
     setSelectedBucketId(bucketId);
   };
 
+  // Show loading state while fetching data
+  if (loading) {
+    return (
+      <Layout>
+        <div className="w-full max-w-[1600px] mx-auto px-8 py-6 space-y-6 fade-in">
+          <h1 className="text-3xl font-bold">Idea Development</h1>
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading your content...</p>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
-      <div className="container mx-auto py-6 space-y-6 fade-in">
+      <div className="w-full max-w-[1600px] mx-auto px-8 py-6 space-y-6 fade-in">
         <h1 className="text-3xl font-bold">Idea Development</h1>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex items-center justify-between">
@@ -351,13 +488,28 @@ const BankOfContent = () => {
               onDeletePillar={deletePillar}
             />
           </div>
-          <ContentTypeBuckets 
-            onAddIdea={handleAddToBucket} 
+          <ContentTypeBuckets
+            onAddIdea={handleAddToBucket}
             pillarId={activeTab}
+            pillarName={pillars.find(p => p.id === activeTab)?.name || ''}
+            pillarIndex={pillars.findIndex(p => p.id === activeTab)}
           />
-          {pillars.map((pillar) => (
-            <TabsContent key={pillar.id} value={pillar.id} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {pillars.map((pillar, index) => {
+            const color = getPillarColor(index);
+
+            return (
+              <TabsContent
+                key={pillar.id}
+                value={pillar.id}
+                className="space-y-4 animate-in fade-in-50 duration-300"
+              >
+                <div
+                  className="grid grid-cols-1 md:grid-cols-2 gap-4 rounded-xl p-6 transition-all duration-500 border"
+                  style={{
+                    backgroundColor: color.veryLight,
+                    borderColor: color.light,
+                  }}
+                >
                 <WritingSpace 
                   value={writingText}
                   onChange={updateWritingSpace}
@@ -380,7 +532,8 @@ const BankOfContent = () => {
                 />
               </div>
             </TabsContent>
-          ))}
+            );
+          })}
         </Tabs>
         <ContentSearchModal
           isOpen={isSearchModalOpen}

@@ -9,6 +9,8 @@ export interface PlannerItem {
   endTime?: string; // Optional end time in format HH:MM (24-hour format)
   description?: string; // Optional description for additional details
   location?: string; // Optional location of the task
+  color?: string; // Optional background color for the task
+  order?: number; // Optional order for manual sorting (lower numbers appear first)
 }
 
 export interface PlannerDay {

@@ -4,12 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ContentItem } from "@/types/content";
-import { 
-  Tooltip, 
-  TooltipContent, 
-  TooltipProvider, 
-  TooltipTrigger 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
 } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import {
   Popover,
@@ -33,6 +34,8 @@ type ContentType = {
 interface ContentTypeBucketsProps {
   onAddIdea: (formatId: string) => void;
   pillarId: string;
+  pillarName?: string;
+  pillarIndex: number;
 }
 
 const containerVariants = {
@@ -60,13 +63,22 @@ const cardVariants = {
   }
 };
 
-const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) => {
+const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarName, pillarIndex }: ContentTypeBucketsProps) => {
   const { toast } = useToast();
-  const [contentTypes, setContentTypes] = useState<ContentType[]>([
-    { id: "blog", name: "Blog Posts", description: "Long-form written content", items: [] },
-    { id: "video", name: "Video Content", description: "Video-based content", items: [] },
-    { id: "social", name: "Social Media", description: "Short-form posts", items: [] },
-  ]);
+
+  // Initialize different default formats based on pillar index
+  const getDefaultFormats = (index: number) => {
+    if (index === 0) {
+      return [{ id: "talking-head", name: "Talking-head video", description: "Film a short clip of yourself speaking in the car", items: [] }];
+    } else if (index === 1) {
+      return [{ id: "photo-dump", name: "Photo dump", description: "Weekly carousel photos", items: [] }];
+    } else if (index === 2) {
+      return [{ id: "voiceover", name: "Voiceover video", description: "Record your voice over b-roll footage", items: [] }];
+    }
+    return [];
+  };
+
+  const [contentTypes, setContentTypes] = useState<ContentType[]>(() => getDefaultFormats(pillarIndex));
   
   const [newFormatName, setNewFormatName] = useState("");
   const [newDescription, setNewDescription] = useState("");
@@ -86,15 +98,45 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
   useEffect(() => {
     try {
       const savedFormats = localStorage.getItem(`content-formats-${pillarId}`);
+
       if (savedFormats) {
         const parsedFormats = JSON.parse(savedFormats);
-        const formats = parsedFormats.map((format: any) => {
-          return { 
-            ...format, 
-            description: format.description || "" 
-          };
-        });
-        setContentTypes(formats);
+
+        // Check if saved formats contain old defaults (Blog Posts, Video Content, Social Media)
+        const hasOldDefaults = parsedFormats.some((format: any) =>
+          format.name === "Blog Posts" ||
+          format.name === "Video Content" ||
+          format.name === "Social Media"
+        );
+
+        // Check if saved formats have wrong pillar-specific defaults
+        const expectedDefault = getDefaultFormats(pillarIndex)[0];
+        const hasWrongPillarDefault = parsedFormats.length === 1 &&
+          (parsedFormats[0].name === "Talking-head video" ||
+           parsedFormats[0].name === "Photo dump" ||
+           parsedFormats[0].name === "Voiceover video") &&
+          (parsedFormats[0].name !== expectedDefault.name ||
+           parsedFormats[0].description !== expectedDefault.description);
+
+        if (hasOldDefaults || hasWrongPillarDefault) {
+          // Clear old defaults and use new pillar-specific defaults
+          const newDefaults = getDefaultFormats(pillarIndex);
+          setContentTypes(newDefaults);
+          // Save the new defaults to localStorage
+          localStorage.setItem(`content-formats-${pillarId}`, JSON.stringify(newDefaults));
+        } else {
+          // Use saved formats if they're not old defaults
+          const formats = parsedFormats.map((format: any) => {
+            return {
+              ...format,
+              description: format.description || ""
+            };
+          });
+          setContentTypes(formats);
+        }
+      } else {
+        // If no saved formats, use the default formats for this pillar
+        setContentTypes(getDefaultFormats(pillarIndex));
       }
     } catch (error) {
       console.error("Failed to load content formats:", error);
@@ -237,7 +279,9 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
         transition={{ duration: 0.2, ease: "easeOut" }}
         className="flex justify-between items-center mb-3"
       >
-        <h2 className="text-xl font-semibold">Content Formats</h2>
+        <h2 className="text-xl font-semibold">
+          {pillarName ? `${pillarName} ` : ''}Content Formats
+        </h2>
       </motion.div>
       
       {isAddingFormat && (
@@ -338,7 +382,15 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                 </CollapsibleTrigger>
                 
                 <div className="p-3">
-                  <div 
+                  {(type.id === "talking-head" || type.id === "photo-dump" || type.id === "voiceover") && (
+                    <Badge
+                      variant="secondary"
+                      className="mb-2 text-[10px] px-1.5 py-0.5 h-5 bg-purple-100 text-purple-700 hover:bg-purple-100 border-purple-200"
+                    >
+                      format example
+                    </Badge>
+                  )}
+                  <div
                     className="flex items-center gap-2 mb-1"
                     onDoubleClick={(e) => {
                       e.stopPropagation();
@@ -386,7 +438,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                         />
                       ) : (
                         <p className="text-xs text-gray-500 mt-2 whitespace-pre-wrap">
-                          {type.description}
+                          {type.description || <span className="italic text-gray-400">Double-click to add description</span>}
                         </p>
                       )}
                     </div>
@@ -414,7 +466,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId }: ContentTypeBucketsProps) =>
                         />
                       ) : (
                         <p className="text-xs text-gray-500 line-clamp-2">
-                          {type.description}
+                          {type.description || <span className="italic text-gray-400">Double-click to add description</span>}
                         </p>
                       )}
                     </div>

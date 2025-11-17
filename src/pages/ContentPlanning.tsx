@@ -21,7 +21,7 @@ const ContentPlanning = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto py-6 space-y-6 fade-in">
+      <div className="w-full max-w-[1600px] mx-auto px-8 py-6 space-y-6 fade-in">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold">Content Planning</h1>

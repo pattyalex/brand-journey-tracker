@@ -1,20 +1,10 @@
 
 import Layout from "@/components/Layout";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Database, Calendar, BarChart, TrendingUp } from "lucide-react";
+import { Database, Calendar, BarChart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const services = [
-  {
-    title: (
-      <div className="flex flex-col">
-        <span>What's</span>
-        <span>Trending</span>
-      </div>
-    ),
-    icon: TrendingUp,
-    path: "/trending"
-  },
   {
     title: (
       <div className="flex flex-col">

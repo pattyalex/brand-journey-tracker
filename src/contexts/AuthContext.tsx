@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { supabase } from '../supabaseClient';
+import { useUser, useClerk } from '@clerk/clerk-react';
+import { supabase } from '@/lib/supabase';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -23,104 +24,145 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { isSignedIn, user, isLoaded } = useUser();
+  const clerk = useClerk();
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
 
-  // Use localStorage to persist auth state
+  // Check onboarding status from Supabase profile
   useEffect(() => {
-    const initAuth = async () => {
-      try {
-        // Check for Supabase session first if available
-        if (supabase && typeof supabase.auth?.getSession === 'function') {
+    const checkOnboardingStatus = async () => {
+      setCheckingOnboarding(true);
+
+      // First check localStorage - if they've completed onboarding before, trust it
+      const storedOnboarding = localStorage.getItem('hasCompletedOnboarding');
+      if (storedOnboarding === 'true') {
+        console.log('✅ Onboarding already completed (from localStorage)');
+        setHasCompletedOnboarding(true);
+        setCheckingOnboarding(false);
+        return;
+      }
+
+      if (isSignedIn && user) {
+        console.log('🔍 Checking onboarding status for user:', user.id);
+
+        try {
+          // Check if user has completed payment setup in Supabase
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('stripe_subscription_id, subscription_status')
+            .eq('id', user.id)
+            .single();
+
+          console.log('📊 Profile data from Supabase:', profile);
+
+          if (profile?.stripe_subscription_id) {
+            // User has a subscription, they've completed onboarding
+            console.log('✅ User has subscription, marking onboarding complete');
+            setHasCompletedOnboarding(true);
+            localStorage.setItem('hasCompletedOnboarding', 'true');
+          } else {
+            // No subscription found, they need to complete onboarding
+            console.log('❌ No subscription found, needs onboarding');
+            setHasCompletedOnboarding(false);
+            localStorage.removeItem('hasCompletedOnboarding');
+          }
+        } catch (error) {
+          console.error('Error checking onboarding:', error);
+          // On error, assume they need onboarding
+          setHasCompletedOnboarding(false);
+        }
+      } else {
+        // Not signed in
+        setHasCompletedOnboarding(false);
+      }
+
+      setCheckingOnboarding(false);
+    };
+
+    if (isLoaded) {
+      checkOnboardingStatus();
+    }
+
+    // Timeout fallback - if checking takes too long, stop loading
+    const timeout = setTimeout(() => {
+      if (checkingOnboarding) {
+        console.warn('⚠️ Onboarding check timed out, proceeding anyway');
+        setCheckingOnboarding(false);
+      }
+    }, 3000);
+
+    return () => clearTimeout(timeout);
+  }, [isSignedIn, user, isLoaded]);
+
+  // Sync user to Supabase when they sign in with Clerk
+  useEffect(() => {
+    const syncUserToSupabase = async () => {
+      if (isSignedIn && user) {
+        console.log('✅ User signed in with Clerk:', user.id);
+
+        // Check if user profile exists in Supabase
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', user.id)
+          .single();
+
+        if (!existingProfile) {
+          console.log('Creating user profile in Supabase...');
           try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-              setIsAuthenticated(true);
-              localStorage.setItem('isAuthenticated', 'true');
+            const trialEndDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+            const { data, error } = await supabase.from('profiles').insert([{
+              id: user.id,
+              full_name: user.fullName || user.firstName || 'User',
+              email: user.primaryEmailAddress?.emailAddress,
+              is_on_trial: true,
+              trial_ends_at: trialEndDate.toISOString()
+            }]);
+
+            if (error) {
+              console.error('❌ Supabase insert error:', error);
+              console.error('Error details:', JSON.stringify(error, null, 2));
             } else {
-              // Fallback to localStorage
-              const storedAuth = localStorage.getItem('isAuthenticated');
-              if (storedAuth) {
-                setIsAuthenticated(storedAuth === 'true');
-              }
+              console.log('✅ User profile created in Supabase');
             }
-          } catch (supabaseError) {
-            console.warn("Supabase session check failed:", supabaseError);
-            // Fallback to localStorage
-            const storedAuth = localStorage.getItem('isAuthenticated');
-            if (storedAuth) {
-              setIsAuthenticated(storedAuth === 'true');
-            }
+          } catch (error) {
+            console.error('⚠️ Failed to create Supabase profile:', error);
           }
         } else {
-          // No Supabase available, use localStorage only
-          const storedAuth = localStorage.getItem('isAuthenticated');
-          if (storedAuth) {
-            setIsAuthenticated(storedAuth === 'true');
-          }
+          console.log('✅ Profile already exists in Supabase');
         }
-
-        const storedOnboarding = localStorage.getItem('hasCompletedOnboarding');
-        if (storedOnboarding) {
-          setHasCompletedOnboarding(storedOnboarding === 'true');
-        }
-      } catch (error) {
-        console.error("Auth initialization error:", error);
-        // Fall back to localStorage on any error
-        const storedAuth = localStorage.getItem('isAuthenticated');
-        const storedOnboarding = localStorage.getItem('hasCompletedOnboarding');
-
-        if (storedAuth) {
-          setIsAuthenticated(storedAuth === 'true');
-        }
-
-        if (storedOnboarding) {
-          setHasCompletedOnboarding(storedOnboarding === 'true');
-        }
-      } finally {
-        setIsLoading(false);
       }
     };
 
-    initAuth();
-  }, []);
+    if (isLoaded) {
+      syncUserToSupabase();
+    }
+  }, [isSignedIn, user, isLoaded]);
 
   const login = useCallback(() => {
-    setIsAuthenticated(true);
+    // With Clerk, this is just for marking onboarding as complete
     setLoginOpen(false);
-    localStorage.setItem('isAuthenticated', 'true');
   }, []);
 
   const logout = async () => {
     try {
-      // Try to sign out from Supabase if available
-      if (supabase && typeof supabase.auth?.signOut === 'function') {
-        try {
-          await supabase.auth.signOut();
-        } catch (supabaseError) {
-          console.warn("Supabase signout failed:", supabaseError);
-        }
-      }
+      // Sign out from Clerk
+      await clerk.signOut();
 
-      // Clear local storage regardless
-      localStorage.removeItem('hasCompletedOnboarding');
-      localStorage.removeItem('isAuthenticated');
+      // DON'T clear hasCompletedOnboarding from localStorage
+      // It will be re-checked from Supabase on next sign-in
       localStorage.removeItem('user');
 
-      // Set auth states
-      setIsAuthenticated(false);
+      // Reset onboarding state
       setHasCompletedOnboarding(false);
 
       return true;
     } catch (error) {
       console.error("Error signing out:", error);
-      // Still clear local state even if Supabase fails
-      localStorage.removeItem('hasCompletedOnboarding');
-      localStorage.removeItem('isAuthenticated');
+      // Still clear local state even if Clerk fails
       localStorage.removeItem('user');
-      setIsAuthenticated(false);
       setHasCompletedOnboarding(false);
       return false;
     }
@@ -139,21 +181,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoginOpen(false);
   }, []);
 
-  if (isLoading) {
-    return (
-      <>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-pulse flex flex-col items-center">
-            <div className="w-20 h-20 bg-muted rounded-full mb-4"></div>
-            <div className="h-4 w-32 bg-muted rounded"></div>
-          </div>
-        </div>
-      </>
-    );
-  }
+  // Show loading state while Clerk loads or checking onboarding
+  // DISABLED: Removed loading check to fix hanging issue
+  // if (!isLoaded || checkingOnboarding) {
+  //   return (
+  //     <>
+  //       <div className="min-h-screen flex items-center justify-center">
+  //         <div className="animate-pulse flex flex-col items-center">
+  //           <div className="w-20 h-20 bg-muted rounded-full mb-4"></div>
+  //           <div className="h-4 w-32 bg-muted rounded"></div>
+  //         </div>
+  //       </div>
+  //     </>
+  //   );
+  // }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, hasCompletedOnboarding, login, logout, completeOnboarding, loginOpen, openLoginModal, closeLoginModal }}>
+    <AuthContext.Provider value={{
+      isAuthenticated: !!isSignedIn,
+      hasCompletedOnboarding,
+      login,
+      logout,
+      completeOnboarding,
+      loginOpen,
+      openLoginModal,
+      closeLoginModal
+    }}>
       {children}
     </AuthContext.Provider>
   );

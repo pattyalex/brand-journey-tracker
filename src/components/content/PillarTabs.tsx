@@ -38,10 +38,22 @@ interface PillarTabsProps {
   onDeletePillar: (pillarId: string) => void;
 }
 
-const PillarTabs = ({ 
-  pillars, 
-  activeTab, 
-  onTabChange, 
+// Export pillar color - using the same color for all pillars
+export const pillarColor = {
+  bg: '#8B6B4E',
+  light: '#D4C4B0',
+  text: 'text-[#8B6B4E]',
+  veryLight: '#F5F1ED'
+};
+
+export const getPillarColor = (index: number) => {
+  return pillarColor;
+};
+
+const PillarTabs = ({
+  pillars,
+  activeTab,
+  onTabChange,
   onAddPillar,
   onRenamePillar,
   onDeletePillar
@@ -80,104 +92,91 @@ const PillarTabs = ({
   return (
     <div className="flex items-center justify-between mb-6">
       <div className="flex items-center">
-        <TabsList className="bg-background border overflow-x-auto flex items-center h-12 relative">
-          {pillars.map((pillar) => (
-            <div key={pillar.id} className="relative flex items-center">
-              {editingPillarId === pillar.id ? (
-                <div className="px-4 py-2 flex items-center bg-primary text-primary-foreground rounded-sm">
-                  <Input
-                    value={editingPillarName}
-                    onChange={(e) => setEditingPillarName(e.target.value)}
-                    onKeyDown={handlePillarNameKeyDown}
-                    onBlur={saveEditingPillar}
-                    autoFocus
-                    className="h-7 px-1 py-0 text-base w-40 bg-transparent border-0 focus-visible:ring-0 text-primary-foreground"
-                    data-testid="edit-pillar-name-input"
-                  />
-                  <Button
-                    size="xs"
-                    variant="ghost"
-                    onClick={saveEditingPillar}
-                    className="ml-1 text-primary-foreground hover:text-primary-foreground/90 hover:bg-transparent p-0 h-6 w-6"
+        <TabsList className="bg-background border overflow-x-auto flex items-center h-14 relative p-1 gap-1">
+          {pillars.map((pillar, index) => {
+            const color = getPillarColor(index);
+            const isActive = activeTab === pillar.id;
+
+            return (
+              <div key={pillar.id} className="relative flex items-center">
+                {editingPillarId === pillar.id ? (
+                  <div
+                    className="px-4 py-2 flex items-center text-white rounded-md"
+                    style={{ backgroundColor: color.bg }}
                   >
-                    <Check className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="xs"
-                    variant="ghost"
-                    onClick={cancelEditingPillar}
-                    className="text-primary-foreground hover:text-primary-foreground/90 hover:bg-transparent p-0 h-6 w-6"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex items-center">
-                  <TabsTrigger 
-                    value={pillar.id}
-                    className={`data-[state=active]:bg-[#8B6B4E] data-[state=active]:text-white px-5 py-2 text-base ${
-                      pillar.id === "1" && activeTab === "1" ? "bg-[#8B6B4E] text-white" : ""
-                    } transition-all duration-300 relative overflow-hidden`}
-                    onClick={() => onTabChange(pillar.id)}
-                  >
-                    <span className="relative z-10">
-                      {pillar.name}
-                    </span>
-                    
-                    {/* Removed the white underline div that was here */}
-                  </TabsTrigger>
-                  
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        className="ml-1 px-1 h-7 text-muted-foreground hover:text-foreground"
-                      >
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-40">
-                      <DropdownMenuItem onClick={() => startEditingPillar(pillar.id, pillar.name)}>
-                        <Edit className="h-4 w-4 mr-2" />
-                        Rename
-                      </DropdownMenuItem>
-                      
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onSelect={(e) => e.preventDefault()}
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete {pillar.name} Pillar</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This will permanently delete the "{pillar.name}" pillar and all its content. 
-                              This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction 
-                              onClick={() => onDeletePillar(pillar.id)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                    <Input
+                      value={editingPillarName}
+                      onChange={(e) => setEditingPillarName(e.target.value)}
+                      onKeyDown={handlePillarNameKeyDown}
+                      onBlur={saveEditingPillar}
+                      autoFocus
+                      className="h-7 px-1 py-0 text-base w-40 bg-transparent border-0 focus-visible:ring-0 text-white placeholder:text-white/60"
+                      data-testid="edit-pillar-name-input"
+                    />
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      onClick={saveEditingPillar}
+                      className="ml-1 text-white hover:text-white/90 hover:bg-transparent p-0 h-6 w-6"
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      onClick={cancelEditingPillar}
+                      className="text-white hover:text-white/90 hover:bg-transparent p-0 h-6 w-6"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="relative group">
+                    <TabsTrigger
+                      value={pillar.id}
+                      className={`px-5 py-2.5 text-base font-medium transition-all duration-300 relative overflow-hidden rounded-md border-2 ${
+                        isActive
+                          ? 'shadow-md scale-105'
+                          : 'border-transparent hover:border-gray-200 hover:bg-gray-50'
+                      }`}
+                      style={{
+                        backgroundColor: isActive ? color.bg : 'transparent',
+                        borderColor: isActive ? color.bg : 'transparent',
+                        color: isActive ? '#ffffff' : 'inherit',
+                      }}
+                      onClick={() => onTabChange(pillar.id)}
+                      onDoubleClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        startEditingPillar(pillar.id, pillar.name);
+                      }}
+                    >
+                      <span className="relative z-10">
+                        {pillar.name}
+                      </span>
+                      {isActive && (
+                        <div
+                          className="absolute bottom-0 left-0 right-0 h-1 animate-in slide-in-from-bottom-1 duration-300"
+                          style={{ backgroundColor: 'rgba(255,255,255,0.5)' }}
+                        />
+                      )}
+                    </TabsTrigger>
+
+                    <button
+                      className="absolute -top-1 -right-1 w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onDeletePillar(pillar.id);
+                      }}
+                    >
+                      <X className="h-3 w-3 text-gray-500 hover:text-gray-700" />
+                    </button>
+                  </div>
               )}
             </div>
-          ))}
+            );
+          })}
         </TabsList>
         
         <TooltipProvider delayDuration={0}>

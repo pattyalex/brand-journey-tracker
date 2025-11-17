@@ -33,7 +33,7 @@ export default function PartnershipsManagement() {
   });
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="w-full max-w-[1600px] mx-auto px-8 py-8">
       <div className="mb-6">
         <Button
           variant="ghost"

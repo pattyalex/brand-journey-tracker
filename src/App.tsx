@@ -16,7 +16,6 @@ import OnboardingFlow from './pages/OnboardingFlow';
 import LandingPage from './pages/LandingPage';
 
 // Lazy load all other pages
-const TrendingContent = lazy(() => import('./pages/TrendingContent'));
 const BankOfContent = lazy(() => import('./pages/BankOfContent'));
 const ContentIdeation = lazy(() => import('./pages/ContentIdeation'));
 const ContentPlanning = lazy(() => import('./pages/ContentPlanning'));
@@ -183,11 +182,6 @@ function App() {
               <Route path="/partnerships-management" element={
                 <ProtectedRoute>
                   <PartnershipsManagement />
-                </ProtectedRoute>
-              } />
-              <Route path="/trending" element={
-                <ProtectedRoute>
-                  <TrendingContent />
                 </ProtectedRoute>
               } />
               <Route path="/collab-management" element={

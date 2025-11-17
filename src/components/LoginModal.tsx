@@ -7,7 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from 'react-router-dom';
-import { supabase } from "@/supabaseClient";
+import { supabase } from "@/lib/supabase";
 import { signIn } from "@/auth";
 import EmailVerificationStatus from "@/components/EmailVerificationStatus";
 

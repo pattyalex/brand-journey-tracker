@@ -1,5 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import Layout from "@/components/Layout";
+import { useVisionBoard } from "@/hooks/useVisionBoard";
+import { useOnboarding } from "@/hooks/useOnboarding";
+import GoalsOnboarding from "@/components/GoalsOnboarding";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {
   PenTool,
   Users,
@@ -28,7 +33,8 @@ import {
   Plus,
   Trash2,
   Upload,
-  ExternalLink
+  ExternalLink,
+  ChevronDown
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
@@ -45,6 +51,12 @@ const StrategyGrowth = () => {
   const [audienceDesires, setAudienceDesires] = useState("");
   const [selectedTones, setSelectedTones] = useState<string[]>(["relatable"]);
   const [colorPalette, setColorPalette] = useState<string[]>(["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#0088fe"]);
+  const [secondaryColorPalette, setSecondaryColorPalette] = useState<string[]>(["#CCCCCC", "#999999", "#666666"]);
+  const { images: visionBoardImages, pinterestUrl, addImage: addVisionBoardImage, removeImage: removeVisionBoardImage, updatePinterestUrl } = useVisionBoard();
+  const [typographyItems, setTypographyItems] = useState<string[]>([]);
+  const [typographyInput, setTypographyInput] = useState("");
+  const [aestheticItems, setAestheticItems] = useState<string[]>([]);
+  const [aestheticInput, setAestheticInput] = useState("");
 
   // Content Strategy states
   const [contentPillars, setContentPillars] = useState([
@@ -107,31 +119,121 @@ const StrategyGrowth = () => {
     notes: "" 
   });
 
-  // Growth Goals states
-  const [goals, setGoals] = useState([
-    { metric: "Followers", current: 5000, target: 10000, timeframe: "3 months" },
-    { metric: "Engagement Rate", current: 3.5, target: 5, timeframe: "2 months" },
-    { metric: "Brand Deals", current: 1, target: 3, timeframe: "6 months" },
-    { metric: "Monthly Income", current: 800, target: 2500, timeframe: "6 months" }
-  ]);
+  // Growth Goals states with progress tracking
+  type GoalStatus = 'not-started' | 'in-progress' | 'completed';
+  interface Goal {
+    id: number;
+    text: string;
+    status: GoalStatus;
+    progressNote?: string; // What part of the goal was accomplished
+  }
+  // Monthly goals organized by year and month
+  interface MonthlyGoalsData {
+    [year: string]: {
+      [month: string]: Goal[];
+    };
+  }
 
-  // State for new goal
-  const [newMetric, setNewMetric] = useState("");
-  const [currentValue, setCurrentValue] = useState<number>(0);
-  const [targetValue, setTargetValue] = useState<number>(0);
-  const [timeframe, setTimeframe] = useState("");
+  const [monthlyGoalsData, setMonthlyGoalsData] = useState<MonthlyGoalsData>(() => {
+    const saved = localStorage.getItem('monthlyGoalsData');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return {};
+      }
+    }
+    return {};
+  });
+  const [shortTermGoals, setShortTermGoals] = useState<Goal[]>(() => {
+    const saved = localStorage.getItem('shortTermGoals');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
+  const [longTermGoals, setLongTermGoals] = useState<Goal[]>(() => {
+    const saved = localStorage.getItem('longTermGoals');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
 
-  // State for milestones
-  const [milestones, setMilestones] = useState([
-    { name: "First 1K followers", date: "Jan 15, 2023", completed: false, linkedGoal: "Followers", incrementValue: 1000 },
-    { name: "First brand deal", date: "Mar 22, 2023", completed: false, linkedGoal: "Brand Deals", incrementValue: 1 },
-    { name: "5K follower milestone", date: "June 10, 2023", completed: false, linkedGoal: "Followers", incrementValue: 5000 }
-  ]);
-  const [newMilestoneName, setNewMilestoneName] = useState("");
-  const [newMilestoneDate, setNewMilestoneDate] = useState("");
+  const [newMonthlyGoalInputs, setNewMonthlyGoalInputs] = useState<{[key: string]: string}>({});
+  const [newShortTermGoal, setNewShortTermGoal] = useState("");
+  const [newLongTermGoal, setNewLongTermGoal] = useState("");
+
+  // Get current month and year
+  const getCurrentMonth = () => {
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    return months[new Date().getMonth()];
+  };
+
+  const getCurrentYear = () => new Date().getFullYear();
+
+  const [selectedYear, setSelectedYear] = useState(2025);
+  const [expandedMonths, setExpandedMonths] = useState<string[]>(["October"]);
+  const [showAllMonths, setShowAllMonths] = useState(false);
+  const [focusedMonth, setFocusedMonth] = useState("October");
+
+  const [editingMonthlyId, setEditingMonthlyId] = useState<number | null>(null);
+  const [editingShortTermId, setEditingShortTermId] = useState<number | null>(null);
+  const [editingLongTermId, setEditingLongTermId] = useState<number | null>(null);
+
+  const [editingMonthlyText, setEditingMonthlyText] = useState("");
+  const [editingShortTermText, setEditingShortTermText] = useState("");
+  const [editingLongTermText, setEditingLongTermText] = useState("");
+
+  // Get URL params to check if we should navigate to a specific tab
+  const [searchParams] = useSearchParams();
 
   // New state to track active tab
   const [activeTab, setActiveTab] = useState("brand-identity");
+
+  // Onboarding state
+  const { showOnboarding, completeOnboarding } = useOnboarding();
+
+  // Check URL params on mount to navigate to specific tab
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam) {
+      setActiveTab(tabParam);
+    }
+  }, [searchParams]);
+
+  // Save goals to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem('monthlyGoalsData', JSON.stringify(monthlyGoalsData));
+    } catch (error) {
+      console.error('Failed to save monthly goals data:', error);
+    }
+  }, [monthlyGoalsData]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('shortTermGoals', JSON.stringify(shortTermGoals));
+    } catch (error) {
+      console.error('Failed to save short-term goals:', error);
+    }
+  }, [shortTermGoals]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('longTermGoals', JSON.stringify(longTermGoals));
+    } catch (error) {
+      console.error('Failed to save long-term goals:', error);
+    }
+  }, [longTermGoals]);
 
   // Handlers
   const handleAddKeyword = () => {
@@ -199,128 +301,300 @@ const StrategyGrowth = () => {
     setViewingCompetitor(competitor);
   };
 
-  // Helper function to calculate goal progress percentage
-  const calculateProgress = (current: number, target: number) => {
-    return Math.min(Math.round((current / target) * 100), 100);
-  };
-
   // Handler for tab changes
   const handleTabChange = (value: string) => {
     setActiveTab(value);
   };
 
-  // Handler for adding a new goal
-  const handleAddGoal = () => {
-    if (newMetric && currentValue > 0 && targetValue > 0 && timeframe) {
-      setGoals([...goals, {
-        metric: newMetric,
-        current: currentValue,
-        target: targetValue,
-        timeframe: timeframe
-      }]);
-      // Reset form after adding
-      setNewMetric("");
-      setCurrentValue(0);
-      setTargetValue(0);
-      setTimeframe("");
+  // Helper to get goals for a specific month/year
+  const getMonthlyGoals = (year: number, month: string): Goal[] => {
+    return monthlyGoalsData[year]?.[month] || [];
+  };
+
+  // Helper to update goals for a specific month/year
+  const updateMonthlyGoals = (year: number, month: string, goals: Goal[]) => {
+    setMonthlyGoalsData(prev => ({
+      ...prev,
+      [year]: {
+        ...prev[year],
+        [month]: goals
+      }
+    }));
+  };
+
+  // Handlers for Monthly Goals
+  const handleAddMonthlyGoal = (year: number, month: string) => {
+    const inputKey = `${year}-${month}`;
+    const inputValue = newMonthlyGoalInputs[inputKey] || '';
+
+    if (inputValue.trim()) {
+      const currentGoals = getMonthlyGoals(year, month);
+      const newGoal = {
+        id: Math.max(0, ...currentGoals.map(g => g.id)) + 1,
+        text: inputValue.trim(),
+        status: 'not-started' as GoalStatus
+      };
+      updateMonthlyGoals(year, month, [...currentGoals, newGoal]);
+      setNewMonthlyGoalInputs(prev => ({ ...prev, [inputKey]: "" }));
     }
   };
 
-  // Handler for deleting a goal
-  const handleDeleteGoal = (index: number) => {
-    const updatedGoals = [...goals];
-    updatedGoals.splice(index, 1);
-    setGoals(updatedGoals);
-  };
-
-  // State for linking new milestone to goal
-  const [selectedGoalLink, setSelectedGoalLink] = useState("");
-  const [milestoneIncrementValue, setMilestoneIncrementValue] = useState<number>(0);
-
-  // Handler for adding a milestone
-  const handleAddMilestone = () => {
-    if (newMilestoneName && newMilestoneDate) {
-      // Format the date for display
-      const dateObj = new Date(newMilestoneDate);
-      const formattedDate = dateObj.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
-      });
-
-      setMilestones([...milestones, { 
-        name: newMilestoneName, 
-        date: formattedDate,
-        completed: false,
-        linkedGoal: selectedGoalLink || undefined,
-        incrementValue: milestoneIncrementValue || undefined
-      }]);
-
-      // Reset input fields
-      setNewMilestoneName("");
-      setNewMilestoneDate("");
-      setSelectedGoalLink("");
-      setMilestoneIncrementValue(0);
-    }
-  };
-
-  // Handler for toggling milestone completion status
-  const handleToggleMilestoneCompletion = (index: number) => {
-    const updatedMilestones = [...milestones];
-    const milestone = updatedMilestones[index];
-    const newCompletionStatus = !milestone.completed;
-    
-    updatedMilestones[index] = {
-      ...milestone,
-      completed: newCompletionStatus
-    };
-    setMilestones(updatedMilestones);
-    
-    // Update corresponding long-term goal if this milestone is linked to one
-    if (milestone.linkedGoal) {
-      const goalIndex = goals.findIndex(goal => goal.metric === milestone.linkedGoal);
-      if (goalIndex !== -1) {
-        const updatedGoals = [...goals];
-        // If completing the milestone, increment the current value
-        if (newCompletionStatus) {
-          // Increment by a fixed amount or percentage based on milestone weight
-          const incrementAmount = milestone.incrementValue || 1;
-          updatedGoals[goalIndex] = {
-            ...updatedGoals[goalIndex],
-            current: Math.min(updatedGoals[goalIndex].current + incrementAmount, updatedGoals[goalIndex].target)
-          };
-        } else {
-          // If un-checking, decrement the current value
-          const decrementAmount = milestone.incrementValue || 1;
-          updatedGoals[goalIndex] = {
-            ...updatedGoals[goalIndex],
-            current: Math.max(updatedGoals[goalIndex].current - decrementAmount, 0)
-          };
+  const handleToggleMonthlyGoal = (year: number, month: string, id: number) => {
+    const currentGoals = getMonthlyGoals(year, month);
+    const updatedGoals = currentGoals.map(g => {
+      if (g.id === id) {
+        // Cycle through statuses: not-started → in-progress → completed → not-started
+        const nextStatus: GoalStatus =
+          g.status === 'not-started' ? 'in-progress' :
+          g.status === 'in-progress' ? 'completed' :
+          'not-started';
+        // Clear progressNote when leaving in-progress status
+        if (g.status === 'in-progress' && nextStatus !== 'in-progress') {
+          return { ...g, status: nextStatus, progressNote: undefined };
         }
-        setGoals(updatedGoals);
-        
-        // Show success toast
+        return { ...g, status: nextStatus };
+      }
+      return g;
+    });
+    updateMonthlyGoals(year, month, updatedGoals);
+  };
+
+  const handleDeleteMonthlyGoal = (year: number, month: string, id: number) => {
+    const currentGoals = getMonthlyGoals(year, month);
+    updateMonthlyGoals(year, month, currentGoals.filter(g => g.id !== id));
+  };
+
+  const handleEditMonthlyGoal = (id: number, text: string) => {
+    setEditingMonthlyId(id);
+    setEditingMonthlyText(text);
+  };
+
+  const handleSaveMonthlyGoal = (year: number, month: string) => {
+    if (editingMonthlyId !== null && editingMonthlyText.trim()) {
+      const currentGoals = getMonthlyGoals(year, month);
+      updateMonthlyGoals(year, month, currentGoals.map(g =>
+        g.id === editingMonthlyId ? { ...g, text: editingMonthlyText.trim() } : g
+      ));
+      setEditingMonthlyId(null);
+      setEditingMonthlyText("");
+    }
+  };
+
+  const handleUpdateProgressNote = (year: number, month: string, id: number, note: string) => {
+    const currentGoals = getMonthlyGoals(year, month);
+    updateMonthlyGoals(year, month, currentGoals.map(g =>
+      g.id === id ? { ...g, progressNote: note } : g
+    ));
+  };
+
+  const toggleMonth = (month: string) => {
+    setExpandedMonths(prev =>
+      prev.includes(month) ? prev.filter(m => m !== month) : [...prev, month]
+    );
+  };
+
+  // Handlers for Short-Term Goals
+  const handleAddShortTermGoal = () => {
+    if (newShortTermGoal.trim()) {
+      const newGoal = {
+        id: Math.max(0, ...shortTermGoals.map(g => g.id)) + 1,
+        text: newShortTermGoal.trim(),
+        status: 'not-started' as GoalStatus
+      };
+      setShortTermGoals([...shortTermGoals, newGoal]);
+      setNewShortTermGoal("");
+    }
+  };
+
+  const handleToggleShortTermGoal = (id: number) => {
+    setShortTermGoals(shortTermGoals.map(g => {
+      if (g.id === id) {
+        // Cycle through statuses: not-started → in-progress → completed → not-started
+        const nextStatus: GoalStatus =
+          g.status === 'not-started' ? 'in-progress' :
+          g.status === 'in-progress' ? 'completed' :
+          'not-started';
+        // Clear progressNote when leaving in-progress status
+        if (g.status === 'in-progress' && nextStatus !== 'in-progress') {
+          return { ...g, status: nextStatus, progressNote: undefined };
+        }
+        return { ...g, status: nextStatus };
+      }
+      return g;
+    }));
+  };
+
+  const handleDeleteShortTermGoal = (id: number) => {
+    setShortTermGoals(shortTermGoals.filter(g => g.id !== id));
+  };
+
+  const handleEditShortTermGoal = (id: number, text: string) => {
+    setEditingShortTermId(id);
+    setEditingShortTermText(text);
+  };
+
+  const handleSaveShortTermGoal = () => {
+    if (editingShortTermId !== null && editingShortTermText.trim()) {
+      setShortTermGoals(shortTermGoals.map(g =>
+        g.id === editingShortTermId ? { ...g, text: editingShortTermText.trim() } : g
+      ));
+      setEditingShortTermId(null);
+      setEditingShortTermText("");
+    }
+  };
+
+  // Handlers for Long-Term Goals
+  const handleAddLongTermGoal = () => {
+    if (newLongTermGoal.trim()) {
+      const newGoal = {
+        id: Math.max(0, ...longTermGoals.map(g => g.id)) + 1,
+        text: newLongTermGoal.trim(),
+        status: 'not-started' as GoalStatus
+      };
+      setLongTermGoals([...longTermGoals, newGoal]);
+      setNewLongTermGoal("");
+    }
+  };
+
+  const handleToggleLongTermGoal = (id: number) => {
+    setLongTermGoals(longTermGoals.map(g => {
+      if (g.id === id) {
+        // Cycle through statuses: not-started → in-progress → completed → not-started
+        const nextStatus: GoalStatus =
+          g.status === 'not-started' ? 'in-progress' :
+          g.status === 'in-progress' ? 'completed' :
+          'not-started';
+        // Clear progressNote when leaving in-progress status
+        if (g.status === 'in-progress' && nextStatus !== 'in-progress') {
+          return { ...g, status: nextStatus, progressNote: undefined };
+        }
+        return { ...g, status: nextStatus };
+      }
+      return g;
+    }));
+  };
+
+  const handleDeleteLongTermGoal = (id: number) => {
+    setLongTermGoals(longTermGoals.filter(g => g.id !== id));
+  };
+
+  const handleEditLongTermGoal = (id: number, text: string) => {
+    setEditingLongTermId(id);
+    setEditingLongTermText(text);
+  };
+
+  const handleSaveLongTermGoal = () => {
+    if (editingLongTermId !== null && editingLongTermText.trim()) {
+      setLongTermGoals(longTermGoals.map(g =>
+        g.id === editingLongTermId ? { ...g, text: editingLongTermText.trim() } : g
+      ));
+      setEditingLongTermId(null);
+      setEditingLongTermText("");
+    }
+  };
+
+  // Ref for file input
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Handler to trigger file input click
+  const handleUploadClick = () => {
+    console.log('Upload button clicked');
+    console.log('File input ref:', fileInputRef.current);
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+      console.log('File input clicked');
+    } else {
+      console.error('File input ref is null');
+    }
+  };
+
+  // Handler for vision board file upload
+  const handleVisionBoardUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('Upload handler called');
+    const files = e.target.files;
+    console.log('Files:', files);
+
+    if (!files || files.length === 0) {
+      console.log('No files selected');
+      return;
+    }
+
+    Array.from(files).forEach(file => {
+      console.log('Processing file:', file.name, 'Size:', file.size, 'Type:', file.type);
+
+      // Check file size (2MB limit for localStorage)
+      if (file.size > 2 * 1024 * 1024) {
+        console.log('File too large:', file.size, 'bytes');
         import("@/hooks/use-toast").then(({ toast }) => {
           toast({
-            title: newCompletionStatus ? "Goal progress updated!" : "Goal progress reversed",
-            description: `"${milestone.name}" has been marked as ${newCompletionStatus ? 'completed' : 'incomplete'}, and the "${milestone.linkedGoal}" goal was updated.`,
-            variant: "default",
+            title: "File too large",
+            description: `${file.name} is ${(file.size / 1024 / 1024).toFixed(2)}MB. Please use images under 2MB.`,
+            variant: "destructive",
           });
         });
+        return;
       }
-    }
-  };
 
-  // Handler for deleting a milestone
-  const handleDeleteMilestone = (index: number) => {
-    const updatedMilestones = [...milestones];
-    updatedMilestones.splice(index, 1);
-    setMilestones(updatedMilestones);
+      // Check file type - accept all image types
+      if (!file.type.startsWith('image/')) {
+        console.log('Invalid file type:', file.type);
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: "Invalid file type",
+            description: "Please upload image files only",
+            variant: "destructive",
+          });
+        });
+        return;
+      }
+
+      console.log('Starting file read');
+      // Convert to base64 and add to vision board
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        console.log('File read complete');
+        if (event.target?.result) {
+          console.log('Adding image to vision board');
+          const success = addVisionBoardImage(event.target.result as string);
+          console.log('Add image result:', success);
+
+          import("@/hooks/use-toast").then(({ toast }) => {
+            if (success) {
+              toast({
+                title: "Image uploaded",
+                description: "Image added to your vision board",
+              });
+            } else {
+              toast({
+                title: "Storage limit exceeded",
+                description: "Please remove some images or use smaller file sizes",
+                variant: "destructive",
+              });
+            }
+          });
+        }
+      };
+      reader.onerror = (error) => {
+        console.error('File read error:', error);
+        import("@/hooks/use-toast").then(({ toast }) => {
+          toast({
+            title: "Upload failed",
+            description: "Failed to read the image file",
+            variant: "destructive",
+          });
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Reset input
+    e.target.value = '';
   };
 
   return (
     <Layout>
-      <div className="container mx-auto p-4 space-y-8 fade-in">
+      <GoalsOnboarding run={showOnboarding && activeTab === 'growth-goals'} onComplete={completeOnboarding} />
+      <div className="w-full max-w-[1600px] mx-auto px-8 py-6 space-y-8 fade-in">
         <div className="flex flex-col space-y-2">
           <h1 className="text-4xl font-bold">Strategy & Growth</h1>
           <p className="text-muted-foreground">
@@ -329,108 +603,89 @@ const StrategyGrowth = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="mb-6 grid grid-cols-4 gap-4">
-            <TabsTrigger value="brand-identity" className="flex items-center gap-2">
+          <TabsList className="mb-8 grid grid-cols-4 gap-4 bg-transparent p-0 h-auto">
+            <TabsTrigger
+              value="brand-identity"
+              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md border-2 border-gray-200 data-[state=active]:border-primary py-3 rounded-lg transition-all"
+            >
               <PenTool className="w-4 h-4" />
-              <span>Brand Identity</span>
+              <span className="font-medium">Gaining Clarity</span>
             </TabsTrigger>
-            <TabsTrigger value="content-strategy" className="flex items-center gap-2">
+            <TabsTrigger
+              value="content-strategy"
+              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md border-2 border-gray-200 data-[state=active]:border-primary py-3 rounded-lg transition-all"
+            >
               <Layers className="w-4 h-4" />
-              <span>Content Strategy</span>
+              <span className="font-medium">Content Strategy</span>
             </TabsTrigger>
-            <TabsTrigger value="competitor-tracker" className="flex items-center gap-2">
+            <TabsTrigger
+              value="competitor-tracker"
+              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md border-2 border-gray-200 data-[state=active]:border-primary py-3 rounded-lg transition-all"
+            >
               <Eye className="w-4 h-4" />
-              <span>Competitor Tracker</span>
+              <span className="font-medium">Competitor Tracker</span>
             </TabsTrigger>
-            <TabsTrigger value="growth-goals" className="flex items-center gap-2">
+            <TabsTrigger
+              value="growth-goals"
+              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md border-2 border-gray-200 data-[state=active]:border-primary py-3 rounded-lg transition-all"
+            >
               <TrendingUp className="w-4 h-4" />
-              <span>Growth Goals</span>
+              <span className="font-medium">Growth Goals</span>
             </TabsTrigger>
           </TabsList>
 
           {/* Brand Identity Tab */}
           <TabsContent value="brand-identity" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Mission Statement */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Target className="w-5 h-5 text-primary" />
-                    Mission Statement
-                  </CardTitle>
-                  <CardDescription>
-                    Remind yourself WHY you're building your brand. Return to this when you feel lost, distracted, or overwhelmed.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Textarea 
-                    className="min-h-[150px] resize-none"
-                    placeholder="Write your mission here — what you're here to do, what matters to you, and why you started this journey."
-                  />
-                </CardContent>
-              </Card>
+            <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-8 border border-primary/20 shadow-sm">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                <span>Strategy & Growth</span>
+                <span>/</span>
+                <span className="text-primary font-semibold">Gaining Clarity</span>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="bg-primary rounded-lg p-3 shadow-md">
+                  <PenTool className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold mb-1">Gaining Clarity</h2>
+                  <p className="text-muted-foreground">Define your brand's core identity and values</p>
+                </div>
+              </div>
+            </div>
+            {/* Mission Statement */}
+            <Card className="border-0 shadow-none">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-primary" />
+                  Mission Statement
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Textarea
+                  className="min-h-[150px] resize-none border border-input"
+                  placeholder="Write your mission here — what you're here to do, what matters to you, and why you started this journey. Return to this when you feel lost, distracted, or overwhelmed."
+                />
+              </CardContent>
+            </Card>
 
-              {/* Affirmation & Reminders */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Award className="w-5 h-5 text-primary" />
-                    Affirmation & Reminders
-                  </CardTitle>
-                  <CardDescription>
-                    Write down affirmations, reminders or quotes that help you stay grounded and focused on your bigger picture.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Textarea 
-                    className="min-h-[150px] resize-none"
-                    placeholder="Add daily affirmations that remind you of your purpose and values as a content creator."
-                  />
-                </CardContent>
-              </Card>
+            {/* Affirmations and Reminders */}
+            <Card className="border-0 shadow-none">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Award className="w-5 h-5 text-primary" />
+                  Affirmations and Reminders
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Textarea
+                  className="min-h-[150px] resize-none border border-input"
+                  placeholder="Write down affirmations, reminders, or quotes that help you stay grounded and focused on your bigger picture."
+                />
+              </CardContent>
+            </Card>
 
-              {/* Brand Keywords */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <PenTool className="w-5 h-5 text-primary" />
-                    Brand Keywords
-                  </CardTitle>
-                  <CardDescription>
-                    Define the core characteristics of your brand
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex gap-2">
-                    <Input 
-                      value={keywordInput} 
-                      onChange={(e) => setKeywordInput(e.target.value)}
-                      placeholder="Add a keyword (e.g., elegant, relatable)"
-                      onKeyDown={(e) => e.key === 'Enter' && handleAddKeyword()}
-                    />
-                    <Button onClick={handleAddKeyword}>Add</Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {brandKeywords.map((keyword, index) => (
-                      <Badge key={index} variant="secondary" className="px-3 py-1">
-                        {keyword}
-                        <button 
-                          onClick={() => handleRemoveKeyword(keyword)} 
-                          className="ml-2 text-muted-foreground hover:text-foreground"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                      </Badge>
-                    ))}
-                    {brandKeywords.length === 0 && (
-                      <p className="text-sm text-muted-foreground">No keywords added yet. Try adding words that describe your brand's personality.</p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Target Audience */}
-              <Card>
+            {/* Target Audience */}
+            <Card className="border-0 shadow-none">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="w-5 h-5 text-primary" />
@@ -443,41 +698,47 @@ const StrategyGrowth = () => {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="age-range">Age Range</Label>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-3">
                       {["18-24", "25-34", "35-44", "45-54", "55+"].map((range) => (
-                        <div
+                        <label
                           key={range}
-                          onClick={() => {
-                            if (audienceAgeRanges.includes(range)) {
-                              setAudienceAgeRanges(audienceAgeRanges.filter(r => r !== range));
-                            } else if (audienceAgeRanges.length < 3) {
-                              setAudienceAgeRanges([...audienceAgeRanges, range]);
-                            } else {
-                              // Show toast notification when maximum selections reached
-                              import("@/hooks/use-toast").then(({ showMaxAgeRangesSelectedToast }) => {
-                                showMaxAgeRangesSelectedToast();
-                              });
-                            }
-                          }}
-                          className={`p-2 border rounded-md cursor-pointer transition-all ${
+                          htmlFor={`age-${range}`}
+                          className={`p-3 border rounded-md cursor-pointer transition-all flex items-center gap-3 ${
                             audienceAgeRanges.includes(range) ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300"
                           }`}
                         >
-                          <div className="flex justify-between items-center">
-                            <p className="font-medium">{range}</p>
-                          </div>
-                        </div>
+                          <input
+                            type="checkbox"
+                            id={`age-${range}`}
+                            checked={audienceAgeRanges.includes(range)}
+                            onChange={() => {
+                              if (audienceAgeRanges.includes(range)) {
+                                setAudienceAgeRanges(audienceAgeRanges.filter(r => r !== range));
+                              } else if (audienceAgeRanges.length < 3) {
+                                setAudienceAgeRanges([...audienceAgeRanges, range]);
+                              } else {
+                                // Show toast notification when maximum selections reached
+                                import("@/hooks/use-toast").then(({ showMaxAgeRangesSelectedToast }) => {
+                                  showMaxAgeRangesSelectedToast();
+                                });
+                              }
+                            }}
+                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                          />
+                          <span className="font-medium">{range}</span>
+                        </label>
                       ))}
                     </div>
                     {/* Toast notification will be shown instead of static text */}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="lifestyle">Lifestyle</Label>
-                    <Input
+                    <Textarea
                       id="lifestyle"
                       value={audienceLifestyle}
                       onChange={(e) => setAudienceLifestyle(e.target.value)}
-                      placeholder="e.g., busy professionals, college students"
+                      placeholder="E.g., busy professionals, college students"
+                      className="resize-none h-20"
                     />
                   </div>
                   <div className="space-y-2">
@@ -503,101 +764,147 @@ const StrategyGrowth = () => {
                 </CardContent>
               </Card>
 
-              {/* Tone of Voice */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MessageSquare className="w-5 h-5 text-primary" />
-                    Tone of Voice
-                  </CardTitle>
-                  <CardDescription>
-                    Define how your brand communicates
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <p className="text-sm text-muted-foreground mb-2">Select up to 3 tones that represent your brand voice</p>
-                    <div className="grid grid-cols-2 gap-3">
-                      {["playful", "luxury", "educational", "relatable", "motivational", "bossy big sis", "authoritative", "casual"].map((tone) => (
-                        <div
-                          key={tone}
-                          onClick={() => {
+            {/* Tone of Voice */}
+            <Card className="border-0 shadow-none">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-primary" />
+                  Tone of Voice
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground mb-2">Select one (or a mix) of tones that best reflect your communication style or brand voice</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {["humorous", "aspirational", "educational/informative", "relatable", "motivational", "bold/opinionated", "cinematic/narrative", "comforting/calming"].map((tone) => (
+                      <label
+                        key={tone}
+                        htmlFor={`tone-${tone}`}
+                        className={`p-3 border rounded-md cursor-pointer transition-all flex items-center gap-3 ${
+                          selectedTones.includes(tone) ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          id={`tone-${tone}`}
+                          checked={selectedTones.includes(tone)}
+                          onChange={() => {
                             if (selectedTones.includes(tone)) {
                               setSelectedTones(selectedTones.filter(t => t !== tone));
-                            } else if (selectedTones.length < 3) {
-                              setSelectedTones([...selectedTones, tone]);
                             } else {
-                              // Show toast notification when maximum selections reached
-                              import("@/hooks/use-toast").then(({ showMaxAgeRangesSelectedToast }) => {
-                                showMaxAgeRangesSelectedToast();
-                              });
+                              setSelectedTones([...selectedTones, tone]);
                             }
                           }}
-                          className={`p-3 border rounded-md cursor-pointer transition-all ${
-                            selectedTones.includes(tone) ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300"
-                          }`}
+                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                        />
+                        <span className="font-medium capitalize">{tone}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {/* Toast notification will be shown instead of static text */}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Vision Board */}
+            <Card className="border-0 shadow-none">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ImageIcon className="w-5 h-5 text-primary" />
+                  Vision Board
+                </CardTitle>
+                <CardDescription>
+                  Upload your Vision Board here to keep it always in sight, or link your Pinterest board instead
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {visionBoardImages.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                    {visionBoardImages.map((image, index) => (
+                      <div key={index} className="relative group aspect-square rounded-lg overflow-hidden">
+                        <img
+                          src={image}
+                          alt={`Vision board ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          onClick={() => removeVisionBoardImage(index)}
+                          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                         >
-                          <div>
-                            <p className="font-medium capitalize">{tone}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    {/* Toast notification will be shown instead of static text */}
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                </CardContent>
-              </Card>
-
-              {/* Moodboard */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <ImageIcon className="w-5 h-5 text-primary" />
-                    Moodboard
-                  </CardTitle>
-                  <CardDescription>
-                    Upload images or embed a Pinterest board
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center">
-                    <ImageIcon className="mx-auto h-12 w-12 text-gray-300" />
-                    <h3 className="mt-2 text-sm font-medium">Upload images</h3>
-                    <p className="mt-1 text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
-                    <div className="mt-4">
-                      <Button variant="outline" className="flex items-center gap-2 relative">
-                        <Upload className="h-4 w-4" />
-                        <span>Upload files</span>
-                        <input type="file" className="absolute inset-0 w-full opacity-0 cursor-pointer" multiple />
+                )}
+                <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center">
+                  <ImageIcon className="mx-auto h-12 w-12 text-gray-300" />
+                  <h3 className="mt-2 text-sm font-medium">Upload images</h3>
+                  <p className="mt-1 text-xs text-gray-500">Any image format up to 2MB each</p>
+                  <p className="mt-1 text-xs text-gray-400">Accepts both landscape and portrait images</p>
+                  <div className="mt-4">
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2"
+                      onClick={handleUploadClick}
+                      type="button"
+                    >
+                      <Upload className="h-4 w-4" />
+                      <span>Upload</span>
+                    </Button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      className="hidden"
+                      multiple
+                      accept="image/*"
+                      onChange={handleVisionBoardUpload}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pinterest">Pinterest Board URL</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="pinterest"
+                      placeholder="https://pinterest.com/username/board-name"
+                      value={pinterestUrl}
+                      onChange={(e) => updatePinterestUrl(e.target.value)}
+                    />
+                    {pinterestUrl && (
+                      <Button
+                        variant="outline"
+                        onClick={() => window.open(pinterestUrl, '_blank')}
+                        className="flex items-center gap-2 whitespace-nowrap"
+                      >
+                        <span>See on Pinterest</span>
+                        <ExternalLink className="h-4 w-4" />
                       </Button>
-                    </div>
+                    )}
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="pinterest">Pinterest Board URL</Label>
-                    <Input id="pinterest" placeholder="https://pinterest.com/username/board-name" />
-                    <p className="text-xs text-muted-foreground">Paste your Pinterest board URL to embed it</p>
-                  </div>
-                </CardContent>
-              </Card>
+                </div>
+              </CardContent>
+            </Card>
 
-              {/* Color Palette */}
-              <Card className="md:col-span-2">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Palette className="w-5 h-5 text-primary" />
-                    Color Palette & Aesthetics
-                  </CardTitle>
-                  <CardDescription>
-                    Define your brand's visual identity
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-4">
-                      <Label>Primary Colors</Label>
-                      <div className="flex gap-2">
-                        {colorPalette.map((color, index) => (
-                          <Popover key={index}>
+            {/* Color Palette */}
+            <Card className="border-0 shadow-none">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Palette className="w-5 h-5 text-primary" />
+                  Color Palette & Aesthetics
+                </CardTitle>
+                <CardDescription>
+                  Define your brand's visual identity
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <Label>Primary Colors</Label>
+                    <div className="flex gap-2">
+                      {colorPalette.map((color, index) => (
+                        <div key={index} className="relative group">
+                          <Popover>
                             <PopoverTrigger asChild>
                               <div
                                 className="w-10 h-10 rounded-md cursor-pointer border"
@@ -628,34 +935,201 @@ const StrategyGrowth = () => {
                               </div>
                             </PopoverContent>
                           </Popover>
-                        ))}
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => setColorPalette([...colorPalette, "#FFFFFF"])}
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
+                          <button
+                            onClick={() => setColorPalette(colorPalette.filter((_, i) => i !== index))}
+                            className="absolute -top-1 -right-1 w-4 h-4 bg-gray-800 text-white rounded-full flex items-center justify-center text-xs hover:bg-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-4 bg-white">
+                          <div className="space-y-2">
+                            <Label className="text-sm font-semibold">Pick a color</Label>
+                            <div className="relative">
+                              <input
+                                type="color"
+                                defaultValue="#FFFFFF"
+                                onChange={(e) => {
+                                  setColorPalette([...colorPalette, e.target.value]);
+                                }}
+                                className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+                              />
+                              <div className="w-24 h-20 rounded-md border-2 border-dashed border-gray-300 flex flex-col items-center justify-center gap-1 hover:border-primary hover:bg-primary/5 transition-colors cursor-pointer">
+                                <Palette className="w-6 h-6 text-primary" />
+                                <span className="text-xs font-medium text-muted-foreground">Click</span>
+                              </div>
+                            </div>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="typography">Typography</Label>
-                      <Input id="typography" placeholder="e.g., Montserrat, Playfair Display" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="aesthetic">Aesthetic Direction</Label>
-                      <Input id="aesthetic" placeholder="e.g., Minimalist, Boho, Luxury" />
+                  <div className="flex items-center gap-4">
+                    <Label>Secondary Colors</Label>
+                    <div className="flex gap-2">
+                      {secondaryColorPalette.map((color, index) => (
+                        <div key={index} className="relative group">
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <div
+                                className="w-10 h-10 rounded-md cursor-pointer border"
+                                style={{ backgroundColor: color }}
+                              />
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-2">
+                              <div className="space-y-2">
+                                <input
+                                  type="color"
+                                  value={color}
+                                  onChange={(e) => {
+                                    const newPalette = [...secondaryColorPalette];
+                                    newPalette[index] = e.target.value;
+                                    setSecondaryColorPalette(newPalette);
+                                  }}
+                                  className="w-32 h-10"
+                                />
+                                <Input
+                                  value={color}
+                                  onChange={(e) => {
+                                    const newPalette = [...secondaryColorPalette];
+                                    newPalette[index] = e.target.value;
+                                    setSecondaryColorPalette(newPalette);
+                                  }}
+                                  className="w-32"
+                                />
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                          <button
+                            onClick={() => setSecondaryColorPalette(secondaryColorPalette.filter((_, i) => i !== index))}
+                            className="absolute -top-1 -right-1 w-4 h-4 bg-gray-800 text-white rounded-full flex items-center justify-center text-xs hover:bg-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-4 bg-white">
+                          <div className="space-y-2">
+                            <Label className="text-sm font-semibold">Pick a color</Label>
+                            <div className="relative">
+                              <input
+                                type="color"
+                                defaultValue="#FFFFFF"
+                                onChange={(e) => {
+                                  setSecondaryColorPalette([...secondaryColorPalette, e.target.value]);
+                                }}
+                                className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+                              />
+                              <div className="w-24 h-20 rounded-md border-2 border-dashed border-gray-300 flex flex-col items-center justify-center gap-1 hover:border-primary hover:bg-primary/5 transition-colors cursor-pointer">
+                                <Palette className="w-6 h-6 text-primary" />
+                                <span className="text-xs font-medium text-muted-foreground">Click</span>
+                              </div>
+                            </div>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="typography">Typography</Label>
+                    <Input
+                      id="typography"
+                      placeholder="e.g., Montserrat, Playfair Display"
+                      value={typographyInput}
+                      onChange={(e) => setTypographyInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && typographyInput.trim()) {
+                          setTypographyItems([...typographyItems, typographyInput.trim()]);
+                          setTypographyInput("");
+                        }
+                      }}
+                    />
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {typographyItems.map((item, index) => (
+                        <Badge key={index} variant="secondary" className="px-3 py-1">
+                          {item}
+                          <button
+                            onClick={() => setTypographyItems(typographyItems.filter((_, i) => i !== index))}
+                            className="ml-2 text-gray-300 hover:text-gray-500 text-xs font-light leading-none"
+                          >
+                            ×
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="aesthetic">Aesthetic Direction</Label>
+                    <Input
+                      id="aesthetic"
+                      placeholder="e.g., Minimalist, Boho, Luxury"
+                      value={aestheticInput}
+                      onChange={(e) => setAestheticInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && aestheticInput.trim()) {
+                          setAestheticItems([...aestheticItems, aestheticInput.trim()]);
+                          setAestheticInput("");
+                        }
+                      }}
+                    />
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {aestheticItems.map((item, index) => (
+                        <Badge key={index} variant="secondary" className="px-3 py-1">
+                          {item}
+                          <button
+                            onClick={() => setAestheticItems(aestheticItems.filter((_, i) => i !== index))}
+                            className="ml-2 text-gray-300 hover:text-gray-500 text-xs font-light leading-none"
+                          >
+                            ×
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Content Strategy Tab */}
           <TabsContent value="content-strategy" className="space-y-6">
+            <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-8 border border-primary/20 shadow-sm">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                <span>Strategy & Growth</span>
+                <span>/</span>
+                <span className="text-primary font-semibold">Content Strategy</span>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="bg-primary rounded-lg p-3 shadow-md">
+                  <Layers className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold mb-1">Content Strategy</h2>
+                  <p className="text-muted-foreground">Plan your content pillars and monthly themes</p>
+                </div>
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Value Map */}
               <Card className="md:col-span-2">
@@ -794,6 +1268,22 @@ const StrategyGrowth = () => {
 
           {/* Competitor Tracker Tab */}
           <TabsContent value="competitor-tracker" className="space-y-6">
+            <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-8 border border-primary/20 shadow-sm">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                <span>Strategy & Growth</span>
+                <span>/</span>
+                <span className="text-primary font-semibold">Competitor Tracker</span>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="bg-primary rounded-lg p-3 shadow-md">
+                  <Eye className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold mb-1">Competitor Tracker</h2>
+                  <p className="text-muted-foreground">Monitor creators who inspire you or compete in your niche</p>
+                </div>
+              </div>
+            </div>
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -933,227 +1423,375 @@ const StrategyGrowth = () => {
 
           {/* Growth Goals Tab */}
           <TabsContent value="growth-goals" className="space-y-6">
-            <h2 className="text-2xl font-bold mb-2">SMART Goals</h2>
-            <p className="text-muted-foreground mb-4">Set specific, measurable, achievable, relevant, and time-bound goals</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Growth Goals Card */}
-              <Card className="md:col-span-2">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Target className="w-5 h-5 text-primary" />
-                    Long-Term Goals
-                  </CardTitle>
-                  <CardDescription>
-                    Set the goals you want to accomplish within the next few months to a year
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    {goals.map((goal, index) => (
-                      <div key={index} className="space-y-2 group">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-medium">{goal.metric}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              Goal: {goal.target} in {goal.timeframe}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <div className="text-right">
-                              <p className="font-medium">{goal.current}</p>
-                              <p className="text-sm text-muted-foreground">Current</p>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDeleteGoal(index)}
-                              className="h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                        <div className="space-y-1">
-                          <Progress value={calculateProgress(goal.current, goal.target)} className="h-2" />
-                          <p className="text-xs text-right text-muted-foreground">
-                            {calculateProgress(goal.current, goal.target)}% of goal
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+            <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-8 border border-primary/20 shadow-sm">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                <span>Strategy & Growth</span>
+                <span>/</span>
+                <span className="text-primary font-semibold">Growth Goals</span>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="bg-primary rounded-lg p-3 shadow-md">
+                  <TrendingUp className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold mb-1">Growth Goals</h2>
+                  <p className="text-muted-foreground">Set and track your monthly, short-term, and long-term goals</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Two-column layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Left column: Monthly Goals */}
+              <Card className="lg:col-span-1">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-primary" />
+                  Monthly Goals
+                </CardTitle>
+                <CardDescription>
+                  Set and track goals for any month
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-4 items-center justify-between flex-wrap">
+                  <div className="flex gap-2 items-center">
+                    <Label htmlFor="year-select">Year:</Label>
+                    <select
+                      id="year-select"
+                      value={selectedYear}
+                      onChange={(e) => setSelectedYear(Number(e.target.value))}
+                      className="p-2 border rounded-md bg-primary/10 font-medium"
+                    >
+                      {[...Array(5)].map((_, i) => {
+                        const year = 2025 + i;
+                        return <option key={year} value={year}>{year}</option>;
+                      })}
+                    </select>
                   </div>
 
-                  <div className="mt-8 border-t pt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {/* State for new goal inputs */}
-                      <div className="space-y-2">
-                        <Label>Add New Goal</Label>
-                        <Input
-                          placeholder="e.g., Followers, income, subscribers"
-                          value={newMetric}
-                          onChange={(e) => setNewMetric(e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Current Status</Label>
-                        <Input 
-                          type="number" 
-                          placeholder="e.g., 1000 followers" 
-                          value={currentValue || ""}
-                          onChange={(e) => setCurrentValue(Number(e.target.value))}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Target Value</Label>
-                        <Input 
-                          type="number" 
-                          placeholder="e.g., 5000 followers" 
-                          value={targetValue || ""}
-                          onChange={(e) => setTargetValue(Number(e.target.value))}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Timeframe</Label>
-                        <Input 
-                          placeholder="e.g., 3 months" 
-                          value={timeframe}
-                          onChange={(e) => setTimeframe(e.target.value)}
-                        />
-                      </div>
-                      <div className="md:col-span-2 flex items-end">
-                        <Button 
-                          className="w-full"
-                          onClick={handleAddGoal}
-                          disabled={!newMetric || !currentValue || !targetValue || !timeframe}
-                        >
-                          Add Goal
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-                <div className="pb-8"></div>
-              </Card>
-
-
-              {/* Milestone Tracker */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Award className="w-5 h-5 text-primary" />
-                    Short-Term Goals
-                  </CardTitle>
-                  <CardDescription>
-                    List the things you want to accomplish soon
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="border rounded-md overflow-hidden">
-                      <table className="w-full">
-                        <thead className="bg-muted">
-                          <tr>
-                            <th className="px-4 py-2 text-left font-medium w-10">Done</th>
-                            <th className="px-4 py-2 text-left font-medium">Goal</th>
-                            <th className="px-4 py-2 text-left font-medium">Date</th>
-                            <th className="px-4 py-2 text-left font-medium">Linked Goal</th>
-                            <th className="px-4 py-2 text-left font-medium w-16"></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {milestones.map((milestone, index) => (
-                            <tr key={index} className={`border-t group ${milestone.completed ? "bg-muted/20" : ""}`}>
-                              <td className="px-4 py-3">
-                                <Checkbox 
-                                  checked={milestone.completed}
-                                  onCheckedChange={() => handleToggleMilestoneCompletion(index)}
-                                />
-                              </td>
-                              <td className="px-4 py-3">
-                                <span className={milestone.completed ? "line-through text-muted-foreground" : ""}>
-                                  {milestone.name}
-                                </span>
-                              </td>
-                              <td className="px-4 py-3">{milestone.date}</td>
-                              <td className="px-4 py-3">
-                                {milestone.linkedGoal ? (
-                                  <div className="flex items-center gap-1">
-                                    <Badge variant="outline" className="text-xs">
-                                      {milestone.linkedGoal}
-                                    </Badge>
-                                    {milestone.incrementValue && (
-                                      <span className="text-xs text-muted-foreground">
-                                        +{milestone.incrementValue}
-                                      </span>
-                                    )}
-                                  </div>
-                                ) : (
-                                  <span className="text-xs text-muted-foreground">Not linked</span>
-                                )}
-                              </td>
-                              <td className="px-4 py-3">
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon"
-                                  onClick={() => handleDeleteMilestone(index)}
-                                  className="h-8 w-8 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 mb-2">
-                      <Input 
-                        placeholder="Goal name" 
-                        value={newMilestoneName}
-                        onChange={(e) => setNewMilestoneName(e.target.value)}
-                      />
-                      <Input 
-                        type="date" 
-                        value={newMilestoneDate}
-                        onChange={(e) => setNewMilestoneDate(e.target.value)}
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 mb-2">
-                      <div className="space-y-1">
-                        <Label className="text-xs">Link to Long-Term Goal</Label>
+                  <div className="flex gap-2 items-center">
+                    {!showAllMonths && (
+                      <>
+                        <Label htmlFor="month-select">Month:</Label>
                         <select
-                          className="w-full p-2 border rounded-md bg-background text-xs"
-                          value={selectedGoalLink}
-                          onChange={(e) => setSelectedGoalLink(e.target.value)}
+                          id="month-select"
+                          value={focusedMonth}
+                          onChange={(e) => {
+                            setFocusedMonth(e.target.value);
+                            setExpandedMonths([e.target.value]);
+                          }}
+                          className="p-2 border rounded-md bg-primary/10 font-medium"
                         >
-                          <option value="" className="text-xs">Not linked</option>
-                          {goals.map((goal, idx) => (
-                            <option key={idx} value={goal.metric}>{goal.metric}</option>
+                          {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map((month) => (
+                            <option key={month} value={month}>{month}</option>
                           ))}
                         </select>
-                      </div>
-                      {selectedGoalLink && (
-                        <div className="space-y-1">
-                          <Label className="text-xs">Progress Value</Label>
-                          <Input
-                            type="number"
-                            placeholder="e.g., 1000"
-                            value={milestoneIncrementValue || ""}
-                            onChange={(e) => setMilestoneIncrementValue(Number(e.target.value))}
-                          />
-                        </div>
-                      )}
-                    </div>
-                    <Button 
-                      className="w-full"
-                      onClick={handleAddMilestone}
-                      disabled={!newMilestoneName || !newMilestoneDate}
+                      </>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowAllMonths(!showAllMonths)}
+                      className="flex items-center gap-2"
                     >
-                      Add Goal
+                      {showAllMonths ? "Focus on One Month" : "Show All Months"}
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+
+                {/* Accordion for all months */}
+                <Accordion type="multiple" value={expandedMonths} onValueChange={setExpandedMonths}>
+                  {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+                    .filter(month => showAllMonths ? true : month === focusedMonth)
+                    .map((month) => {
+                    const monthEmoji =
+                      ["January", "February", "December"].includes(month) ? "❄️" :
+                      ["March", "April", "May"].includes(month) ? "🌸" :
+                      ["June", "July", "August"].includes(month) ? "☀️" : "🍂";
+                    const goals = getMonthlyGoals(selectedYear, month);
+                    const inputKey = `${selectedYear}-${month}`;
+
+                    return (
+                      <AccordionItem key={month} value={month}>
+                        <AccordionTrigger className="hover:no-underline">
+                          <div className="flex items-center gap-2">
+                            <span>{monthEmoji} {month}</span>
+                            {goals.length > 0 && (
+                              <Badge variant="secondary" className="ml-2">{goals.length}</Badge>
+                            )}
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <div className="space-y-3 pt-2">
+                            {goals.map((goal) => (
+                              <div key={goal.id} className="space-y-2">
+                                <div className="flex items-start gap-3 group hover:bg-gray-50 p-2 rounded">
+                                  <button
+                                    onClick={() => handleToggleMonthlyGoal(selectedYear, month, goal.id)}
+                                    data-onboarding="goal-status-box"
+                        className={`mt-0.5 h-5 w-5 rounded border-2 flex items-center justify-center transition-colors ${
+                          goal.status === 'completed'
+                            ? 'bg-green-500 border-green-500'
+                            : goal.status === 'in-progress'
+                            ? 'bg-yellow-400 border-yellow-400'
+                            : 'bg-white border-gray-300 hover:border-gray-400'
+                        }`}
+                      >
+                        {goal.status === 'completed' && <span className="text-white text-xs">✓</span>}
+                        {goal.status === 'in-progress' && <span className="text-white text-xs">•</span>}
+                      </button>
+                                  {editingMonthlyId === goal.id ? (
+                                    <Input
+                                      value={editingMonthlyText}
+                                      onChange={(e) => setEditingMonthlyText(e.target.value)}
+                                      onBlur={() => handleSaveMonthlyGoal(selectedYear, month)}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') handleSaveMonthlyGoal(selectedYear, month);
+                                        if (e.key === 'Escape') setEditingMonthlyId(null);
+                                      }}
+                                      autoFocus
+                                      className="flex-1 h-8"
+                                    />
+                                  ) : (
+                                    <span
+                                      className={`flex-1 cursor-pointer ${
+                                        goal.status === 'completed' ? 'line-through text-muted-foreground' : ''
+                                      }`}
+                                      onDoubleClick={() => handleEditMonthlyGoal(goal.id, goal.text)}
+                                      title="Double-click to edit"
+                                    >
+                                      {goal.text}
+                                    </span>
+                                  )}
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6 opacity-0 group-hover:opacity-100"
+                                    onClick={() => handleDeleteMonthlyGoal(selectedYear, month, goal.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                                {goal.status === 'in-progress' && (
+                                  <div className="ml-8 mr-8">
+                                    <Input
+                                      placeholder="Progress notes..."
+                                      value={goal.progressNote || ''}
+                                      onChange={(e) => handleUpdateProgressNote(selectedYear, month, goal.id, e.target.value)}
+                                      className="text-xs bg-yellow-50/50 border-yellow-200/60 placeholder:text-yellow-600/60"
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                            <div className="flex gap-2 pt-2">
+                              <Input
+                                placeholder={`Add goal for ${month}...`}
+                                value={newMonthlyGoalInputs[inputKey] || ''}
+                                onChange={(e) => setNewMonthlyGoalInputs(prev => ({ ...prev, [inputKey]: e.target.value }))}
+                                onKeyDown={(e) => e.key === 'Enter' && handleAddMonthlyGoal(selectedYear, month)}
+                              />
+                              <Button
+                                onClick={() => handleAddMonthlyGoal(selectedYear, month)}
+                                disabled={!(newMonthlyGoalInputs[inputKey] || '').trim()}
+                              >
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    );
+                  })}
+                </Accordion>
+              </CardContent>
+            </Card>
+
+            {/* Right column: Short-Term and Long-Term Goals */}
+            <div className="lg:col-span-1 space-y-6">
+              {/* Short-Term Goals (1 Year) */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-primary" />
+                  Short-Term Goals (1 Year)
+                </CardTitle>
+                <CardDescription>
+                  Goals you want to accomplish within the next year
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {shortTermGoals.map((goal) => (
+                  <div key={goal.id} className="space-y-2">
+                    <div className="flex items-start gap-3 group hover:bg-gray-50 p-2 rounded">
+                      <button
+                        onClick={() => handleToggleShortTermGoal(goal.id)}
+                        data-onboarding="goal-status-box"
+                        className={`mt-0.5 h-5 w-5 rounded border-2 flex items-center justify-center transition-colors ${
+                          goal.status === 'completed'
+                            ? 'bg-green-500 border-green-500'
+                            : goal.status === 'in-progress'
+                            ? 'bg-yellow-400 border-yellow-400'
+                            : 'bg-white border-gray-300 hover:border-gray-400'
+                        }`}
+                      >
+                        {goal.status === 'completed' && <span className="text-white text-xs">✓</span>}
+                        {goal.status === 'in-progress' && <span className="text-white text-xs">•</span>}
+                      </button>
+                      {editingShortTermId === goal.id ? (
+                        <Input
+                          value={editingShortTermText}
+                          onChange={(e) => setEditingShortTermText(e.target.value)}
+                          onBlur={handleSaveShortTermGoal}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSaveShortTermGoal();
+                            if (e.key === 'Escape') setEditingShortTermId(null);
+                          }}
+                          autoFocus
+                          className="flex-1 h-8"
+                        />
+                      ) : (
+                        <span
+                          className={`flex-1 cursor-pointer ${
+                            goal.status === 'completed' ? 'line-through text-muted-foreground' : ''
+                          }`}
+                          onDoubleClick={() => handleEditShortTermGoal(goal.id, goal.text)}
+                          title="Double-click to edit"
+                        >
+                          {goal.text}
+                        </span>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 opacity-0 group-hover:opacity-100"
+                        onClick={() => handleDeleteShortTermGoal(goal.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    {goal.status === 'in-progress' && (
+                      <div className="ml-8 mr-8">
+                        <Input
+                          placeholder="Progress notes..."
+                          value={goal.progressNote || ''}
+                          onChange={(e) => {
+                            setShortTermGoals(shortTermGoals.map(g =>
+                              g.id === goal.id ? { ...g, progressNote: e.target.value } : g
+                            ));
+                          }}
+                          className="text-xs bg-yellow-50/50 border-yellow-200/60 placeholder:text-yellow-600/60"
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+                <div className="flex gap-2 pt-2">
+                  <Input
+                    placeholder="Add a 1-year goal..."
+                    value={newShortTermGoal}
+                    onChange={(e) => setNewShortTermGoal(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddShortTermGoal()}
+                  />
+                  <Button onClick={handleAddShortTermGoal} disabled={!newShortTermGoal.trim()}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Long-Term Goals (3 Years) */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-primary" />
+                  Long-Term Goals (3 Years)
+                </CardTitle>
+                <CardDescription>
+                  Your vision for where you want to be 3 years from now
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {longTermGoals.map((goal) => (
+                  <div key={goal.id} className="space-y-2">
+                    <div className="flex items-start gap-3 group hover:bg-gray-50 p-2 rounded">
+                      <button
+                        onClick={() => handleToggleLongTermGoal(goal.id)}
+                        data-onboarding="goal-status-box"
+                        className={`mt-0.5 h-5 w-5 rounded border-2 flex items-center justify-center transition-colors ${
+                          goal.status === 'completed'
+                            ? 'bg-green-500 border-green-500'
+                            : goal.status === 'in-progress'
+                            ? 'bg-yellow-400 border-yellow-400'
+                            : 'bg-white border-gray-300 hover:border-gray-400'
+                        }`}
+                      >
+                        {goal.status === 'completed' && <span className="text-white text-xs">✓</span>}
+                        {goal.status === 'in-progress' && <span className="text-white text-xs">•</span>}
+                      </button>
+                      {editingLongTermId === goal.id ? (
+                        <Input
+                          value={editingLongTermText}
+                          onChange={(e) => setEditingLongTermText(e.target.value)}
+                          onBlur={handleSaveLongTermGoal}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSaveLongTermGoal();
+                            if (e.key === 'Escape') setEditingLongTermId(null);
+                          }}
+                          autoFocus
+                          className="flex-1 h-8"
+                        />
+                      ) : (
+                        <span
+                          className={`flex-1 cursor-pointer ${
+                            goal.status === 'completed' ? 'line-through text-muted-foreground' : ''
+                          }`}
+                          onDoubleClick={() => handleEditLongTermGoal(goal.id, goal.text)}
+                          title="Double-click to edit"
+                        >
+                          {goal.text}
+                        </span>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 opacity-0 group-hover:opacity-100"
+                        onClick={() => handleDeleteLongTermGoal(goal.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    {goal.status === 'in-progress' && (
+                      <div className="ml-8 mr-8">
+                        <Input
+                          placeholder="Progress notes..."
+                          value={goal.progressNote || ''}
+                          onChange={(e) => {
+                            setLongTermGoals(longTermGoals.map(g =>
+                              g.id === goal.id ? { ...g, progressNote: e.target.value } : g
+                            ));
+                          }}
+                          className="text-xs bg-yellow-50/50 border-yellow-200/60 placeholder:text-yellow-600/60"
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+                <div className="flex gap-2 pt-2">
+                  <Input
+                    placeholder="Add a 3-year goal..."
+                    value={newLongTermGoal}
+                    onChange={(e) => setNewLongTermGoal(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddLongTermGoal()}
+                  />
+                  <Button onClick={handleAddLongTermGoal} disabled={!newLongTermGoal.trim()}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+            </div>
             </div>
           </TabsContent>
         </Tabs>

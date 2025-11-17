@@ -93,7 +93,7 @@ const SocialMediaScheduler = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto p-4 space-y-8">
+      <div className="w-full max-w-[1600px] mx-auto px-8 py-6 space-y-8">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Social Media Scheduler</h1>
           <Button>

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { PlannerItem } from "@/types/planner";
 import { Plus, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,9 +17,11 @@ interface PlannerSectionProps {
   section: PlannerItem["section"];
   onToggleItem: (id: string) => void;
   onDeleteItem: (id: string) => void;
-  onEditItem: (id: string, newText: string, startTime?: string, endTime?: string) => void;
+  onEditItem: (id: string, newText: string, startTime?: string, endTime?: string, color?: string) => void;
   onAddItem: (text: string, section: PlannerItem["section"], startTime?: string, endTime?: string) => void;
   onReorderItems?: (items: PlannerItem[]) => void;
+  isAllTasksSection?: boolean;
+  onDropTaskFromWeekly?: (draggedTaskId: string, targetTaskId: string, fromDate: string) => void;
 }
 
 export const PlannerSection = ({
@@ -30,7 +32,9 @@ export const PlannerSection = ({
   onDeleteItem,
   onEditItem,
   onAddItem,
-  onReorderItems
+  onReorderItems,
+  isAllTasksSection = false,
+  onDropTaskFromWeekly
 }: PlannerSectionProps) => {
   const [newItemText, setNewItemText] = useState("");
   const [newItemStartTime, setNewItemStartTime] = useState("");
@@ -39,6 +43,7 @@ export const PlannerSection = ({
   const [showTimeInput, setShowTimeInput] = useState(false);
   const [editingTimeItemId, setEditingTimeItemId] = useState<string | null>(null);
   const isMobile = useIsMobile();
+  const addItemRef = useRef<HTMLDivElement>(null);
 
   const handleAddItem = () => {
     if (newItemText.trim()) {
@@ -86,6 +91,26 @@ export const PlannerSection = ({
     e.stopPropagation();
     setShowTimeInput(true);
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (addItemRef.current && !addItemRef.current.contains(event.target as Node)) {
+        setIsAddingItem(false);
+        setNewItemText("");
+        setNewItemStartTime("");
+        setNewItemEndTime("");
+        setShowTimeInput(false);
+      }
+    };
+
+    if (isAddingItem) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isAddingItem]);
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination || !onReorderItems) return;
@@ -171,112 +196,130 @@ export const PlannerSection = ({
         </div>
       );
     }
-    
-    return (
-      <Popover>
-        <PopoverTrigger asChild>
-          <div className="w-full flex-shrink-0 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:text-primary mt-1 flex items-center gap-1">
-            <Clock size={10} />
-            <span>Add time</span>
-          </div>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-2" align="start">
-          <div className="space-y-2">
-            <div className="text-xs font-medium">Set time</div>
-            <div className="flex flex-col space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="text-xs">Start:</span>
-                <Input 
-                  type="time" 
-                  className="h-7 w-32" 
-                  value={item.startTime || ""}
-                  onChange={(e) => {
-                    onEditItem(item.id, item.text, e.target.value, item.endTime);
-                  }}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs">End:</span>
-                <Input 
-                  type="time" 
-                  className="h-7 w-32" 
-                  value={item.endTime || ""}
-                  onChange={(e) => {
-                    onEditItem(item.id, item.text, item.startTime, e.target.value);
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </PopoverContent>
-      </Popover>
-    );
+
+    return null;
   };
 
+  const droppableId = isAllTasksSection ? "allTasks" : section;
+
   return (
-    <Card className="h-full border-0 shadow-sm bg-white overflow-hidden rounded-lg">
-      <CardHeader className="pb-2 bg-gray-50 border-b">
-        <CardTitle className="text-lg font-medium text-gray-800">{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="pt-4 px-1">
-        <ScrollArea className={`${isMobile ? 'h-[calc(100vh-200px)]' : 'h-[calc(100vh-180px)]'}`}>
+    <Card className={`h-full border-0 shadow-sm bg-white overflow-hidden rounded-lg ${isAllTasksSection ? 'flex flex-col' : ''}`}>
+      {title && (
+        <CardHeader className="pb-2 bg-gray-50 border-b flex-shrink-0">
+          <CardTitle className="text-lg font-medium text-gray-800">{title}</CardTitle>
+        </CardHeader>
+      )}
+      <CardContent className={`${isAllTasksSection ? 'pt-2 px-1 flex-1 overflow-hidden' : 'pt-4 px-1'}`}>
+        <ScrollArea className={`${isAllTasksSection ? 'h-full' : isMobile ? 'h-[calc(100vh-200px)]' : 'h-[calc(100vh-180px)]'}`}>
           <div className="space-y-2 pr-2 pb-1">
-            <Droppable droppableId={section}>
+            <Droppable droppableId={droppableId}>
               {(provided) => (
-                <div 
+                <div
                   {...provided.droppableProps}
                   ref={provided.innerRef}
-                  className="space-y-2 min-h-[50px]"
+                  className="space-y-2 min-h-[20px]"
                 >
-                  {items.length > 0 ? (
-                    items.map((item, index) => (
-                      <Draggable 
-                        key={item.id} 
-                        draggableId={item.id} 
-                        index={index}
-                      >
-                        {(provided, snapshot) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            className={`${snapshot.isDragging ? 'opacity-80 bg-muted' : ''}`}
-                          >
-                            <div className="flex flex-col w-full group">
-                              <div className="flex items-center">
-                                <div className="flex-1 min-w-0 relative flex flex-col">
-                                  <div className="mb-1 ml-0.5">
-                                    {renderTimeDisplay(item)}
-                                  </div>
-                                  
-                                  <PlannerCheckItem
-                                    item={item}
-                                    onToggle={onToggleItem}
-                                    onDelete={onDeleteItem}
-                                    onEdit={onEditItem}
-                                    showTimeInItem={false}
-                                    renderCheckbox={true}
-                                    index={index}
-                                  />
+                  {items.map((item, index) => (
+                    <Draggable
+                      key={item.id}
+                      draggableId={item.id}
+                      index={index}
+                    >
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...(isAllTasksSection ? {} : provided.draggableProps)}
+                          className={`${snapshot.isDragging ? 'opacity-80 bg-muted' : ''}`}
+                          draggable={isAllTasksSection}
+                          onDragStart={(e) => {
+                            if (isAllTasksSection) {
+                              e.dataTransfer.setData('taskId', item.id);
+                              e.dataTransfer.setData('fromDate', '');
+                              e.dataTransfer.effectAllowed = 'move';
+                            }
+                          }}
+                          onDragEnd={(e) => {
+                            if (isAllTasksSection) {
+                              e.currentTarget.style.opacity = '1';
+                            }
+                          }}
+                          onDragOver={(e) => {
+                            if (isAllTasksSection) {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              e.currentTarget.classList.add('border-t-4', 'border-t-blue-500');
+                            }
+                          }}
+                          onDragLeave={(e) => {
+                            if (isAllTasksSection) {
+                              e.currentTarget.classList.remove('border-t-4', 'border-t-blue-500');
+                            }
+                          }}
+                          onDrop={(e) => {
+                            if (isAllTasksSection) {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              e.currentTarget.classList.remove('border-t-4', 'border-t-blue-500');
+
+                              const draggedTaskId = e.dataTransfer.getData('taskId');
+                              const fromDate = e.dataTransfer.getData('fromDate');
+                              const targetTaskId = item.id;
+
+                              if (draggedTaskId === targetTaskId) return;
+
+                              // Handle drop from weekly view (has a date)
+                              if (fromDate && onDropTaskFromWeekly) {
+                                onDropTaskFromWeekly(draggedTaskId, targetTaskId, fromDate);
+                                return;
+                              }
+
+                              // Reorder within All Tasks
+                              if (!fromDate && onReorderItems) {
+                                const draggedIndex = items.findIndex(i => i.id === draggedTaskId);
+                                const targetIndex = items.findIndex(i => i.id === targetTaskId);
+
+                                if (draggedIndex === -1 || targetIndex === -1) return;
+
+                                const reorderedItems = [...items];
+                                const [draggedItem] = reorderedItems.splice(draggedIndex, 1);
+                                reorderedItems.splice(targetIndex, 0, draggedItem);
+
+                                onReorderItems(reorderedItems);
+                              }
+                            }
+                          }}
+                        >
+                          <div className="flex flex-col w-full group">
+                            <div className="flex items-center">
+                              <div className="flex-1 min-w-0 relative flex flex-col">
+                                <div className="mb-1 ml-0.5">
+                                  {renderTimeDisplay(item)}
                                 </div>
+
+                                <PlannerCheckItem
+                                  item={item}
+                                  onToggle={onToggleItem}
+                                  onDelete={onDeleteItem}
+                                  onEdit={onEditItem}
+                                  showTimeInItem={false}
+                                  renderCheckbox={true}
+                                  index={index}
+                                  dragHandleProps={isAllTasksSection ? undefined : provided.dragHandleProps}
+                                />
                               </div>
                             </div>
                           </div>
-                        )}
-                      </Draggable>
-                    ))
-                  ) : (
-                    <div className="text-sm text-muted-foreground italic text-center py-3 bg-white rounded-md border-0">
-                      No tasks in this section
-                    </div>
-                  )}
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
                   {provided.placeholder}
                 </div>
               )}
             </Droppable>
-            
+
             {isAddingItem ? (
-              <div className="flex flex-col mt-2">
+              <div ref={addItemRef} className="flex flex-col mt-2">
                 <div className="flex items-center">
                   <div className="pl-3 pr-1">
                     <div className="h-4 w-4 border border-gray-400 rounded-sm"></div>
@@ -292,59 +335,16 @@ export const PlannerSection = ({
                         autoFocus
                       />
                     </div>
-                    
-                    {showTimeInput ? (
-                      <div className="flex items-center gap-2 mt-1">
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs text-muted-foreground">Start:</span>
-                          <Input
-                            type="time"
-                            value={newItemStartTime}
-                            onChange={(e) => setNewItemStartTime(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            className="w-24 h-7 py-1 text-sm"
-                          />
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs text-muted-foreground">End:</span>
-                          <Input
-                            type="time"
-                            value={newItemEndTime}
-                            onChange={(e) => setNewItemEndTime(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            className="w-24 h-7 py-1 text-sm"
-                          />
-                        </div>
-                        <Button
-                          onClick={handleAddItem}
-                          size="sm"
-                          className="text-xs bg-purple-500 hover:bg-purple-600"
-                        >
-                          Add
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="mt-1 ml-1" onClick={handleAddTimeClick}>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="xs"
-                          className="flex items-center gap-1 text-muted-foreground hover:text-purple-500 h-6 p-0"
-                        >
-                          <Clock size={12} />
-                          <span>Add time</span>
-                        </Button>
-                      </div>
-                    )}
+
                   </div>
                 </div>
               </div>
             ) : (
               <button
                 onClick={() => setIsAddingItem(true)}
-                className="flex items-center justify-center w-10 h-10 mx-auto mt-3 text-gray-500 hover:text-white hover:bg-purple-500 rounded-full transition-all hover:scale-110"
+                className={`flex items-center justify-center w-10 h-10 mx-auto text-gray-500 hover:text-gray-700 rounded-full transition-all hover:scale-110 hover:font-bold [&:hover_svg]:stroke-[3] ${items.length > 0 ? 'mt-3' : 'mt-0'}`}
               >
-                <Plus size={15} />
+                <Plus size={15} strokeWidth={2} />
               </button>
             )}
           </div>

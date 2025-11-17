@@ -3,7 +3,7 @@ import { Platform, ContentItem } from "@/types/content-flow";
 import PlatformIcon from "./PlatformIcon";
 import { v4 as uuidv4 } from "uuid";
 import TaskNotesDialog from "./TaskNotesDialog";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, X } from "lucide-react";
 
 interface ContentScheduleProps {
   platforms: Platform[];
@@ -69,9 +69,15 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
   };
   
   const handleSaveNotes = (taskId: string, notes: string) => {
-    const updatedItems = contentItems.map(item => 
+    const updatedItems = contentItems.map(item =>
       item.id === taskId ? { ...item, notes } : item
     );
+    setContentItems(updatedItems);
+  };
+
+  const handleDeleteTask = (e: React.MouseEvent, taskId: string) => {
+    e.stopPropagation();
+    const updatedItems = contentItems.filter(item => item.id !== taskId);
     setContentItems(updatedItems);
   };
   
@@ -221,9 +227,9 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
                       if (!platform) return null;
                       
                       return (
-                        <div 
+                        <div
                           key={content.id}
-                          className="bg-white py-1 px-2 rounded-md border border-gray-200 shadow-sm flex items-center gap-2 group hover:shadow-md transition-shadow cursor-grab mb-1"
+                          className="bg-white py-1 px-2 rounded-md border border-gray-200 shadow-sm flex items-center gap-2 group hover:shadow-md transition-shadow cursor-grab mb-1 relative"
                           draggable
                           onDragStart={(e) => handleTaskDragStart(e, content.id)}
                           onClick={() => handleTaskClick(content)}
@@ -232,10 +238,17 @@ const ContentSchedule = ({ platforms, contentItems, setContentItems }: ContentSc
                             <PlatformIcon platform={platform} size={16} />
                           </div>
                           <span className="text-sm font-medium flex-grow">{platform.name}</span>
-                          
+
                           {content.notes && (
                             <MessageSquare className="h-3.5 w-3.5 text-blue-500 mr-1 flex-shrink-0" />
                           )}
+
+                          <button
+                            onClick={(e) => handleDeleteTask(e, content.id)}
+                            className="absolute -top-1 -right-1 w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-full border border-gray-300 hover:bg-red-50 hover:border-red-300"
+                          >
+                            <X className="h-2.5 w-2.5 text-gray-500 hover:text-red-500" />
+                          </button>
                         </div>
                       );
                     })}

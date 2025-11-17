@@ -253,7 +253,6 @@ const HomePage = () => {
 
   // Add Priority Dialog component is moved inside the main component
   return (
-    <VerificationGuard>
       <Layout>
         <ScrollArea className="h-screen">
           <div className="container px-4 md:px-6 py-6 md:py-10">
@@ -647,7 +646,6 @@ const HomePage = () => {
           </DialogContent>
         </Dialog>
       </Layout>
-    </VerificationGuard>
   );
 };
 

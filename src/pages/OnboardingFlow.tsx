@@ -1,6 +1,7 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { SignUp, useUser, UserButton } from "@clerk/clerk-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,8 +14,10 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Instagram, Youtube, Linkedin, Twitter, Music } from "lucide-react";
 import { stripePromise } from "@/lib/stripe";
-import { supabase } from "@/supabaseClient";
-import EmailVerificationStatus from "@/components/EmailVerificationStatus";
+import { supabase } from "@/lib/supabase";
+import { Elements } from "@stripe/react-stripe-js";
+import { StripePaymentForm } from "@/components/StripePaymentForm";
+import { PaymentSetupStep } from "@/components/PaymentSetupStep";
 
 // Define the steps in the onboarding flow
 type OnboardingStep = 
@@ -157,10 +160,38 @@ const socialAccountsSchema = z.object({
 
 const OnboardingFlow: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { isSignedIn, user } = useUser();
+  const { hasCompletedOnboarding } = useAuth();
   const [currentStep, setCurrentStep] = useState<OnboardingStep>("account-creation");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<string>('');
   const [pendingVerificationEmail, setPendingVerificationEmail] = useState<string>('');
+
+  // Redirect users who have already completed onboarding
+  useEffect(() => {
+    if (isSignedIn && hasCompletedOnboarding) {
+      console.log('✅ User has already completed onboarding, redirecting to dashboard');
+      navigate('/home-page');
+    }
+  }, [isSignedIn, hasCompletedOnboarding, navigate]);
+
+  // Check URL parameters on mount to determine initial step
+  useEffect(() => {
+    const stepParam = searchParams.get('step');
+    if (stepParam && ['account-creation', 'email-verification', 'payment-setup', 'user-goals', 'connect-social', 'welcome'].includes(stepParam)) {
+      console.log('🔗 Setting initial step from URL parameter:', stepParam);
+      setCurrentStep(stepParam as OnboardingStep);
+    }
+  }, [searchParams]);
+
+  // Auto-advance to payment setup if user is already signed in with Clerk
+  useEffect(() => {
+    if (isSignedIn && currentStep === "account-creation") {
+      console.log('✅ User is signed in with Clerk, advancing to payment setup');
+      setCurrentStep("payment-setup");
+    }
+  }, [isSignedIn, currentStep]);
 
   // Account Creation Form
   const accountForm = useForm<z.infer<typeof accountCreationSchema>>({
@@ -511,448 +542,35 @@ const OnboardingFlow: React.FC = () => {
 
       case "account-creation":
         return (
-          <Card className="w-full max-w-md mx-auto">
-            <CardHeader>
-              <CardTitle className="text-2xl">Let's set up your account</CardTitle>
-              <CardDescription>Create your account to get started</CardDescription>
-              
-              {/* Enhanced Network monitoring helper */}
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={async () => {
-                  try {
-                    console.log('🔍 Attempting to enable network monitoring...');
-                    // Import the auth module to ensure monitorSignupRequests is available
-                    await import('../auth');
-                    
-                    if (typeof window !== 'undefined' && (window as any).monitorSignupRequests) {
-                      const result = (window as any).monitorSignupRequests();
-                      console.log('✅ NETWORK MONITORING ENABLED');
-                      console.log(result);
-                      alert('✅ Network monitoring enabled!\n\n📍 Instructions:\n1. Open DevTools Console tab (F12)\n2. Open DevTools Network tab\n3. Filter by "signup" or "auth"\n4. Fill and submit the form with a REAL email\n5. Check Request payload in Network tab\n6. Verify email matches your input exactly\n\n📋 Console will show:\n🎯 Form email tracking\n🚀 Final verification logs\n🔥 Exact email sent to Supabase\n\nAll requests will be intercepted and logged!');
-                    } else {
-                      console.error('❌ monitorSignupRequests not found on window object');
-                      console.error('Available window functions:', Object.keys(window).filter(key => key.includes('monitor') || key.includes('test')));
-                      alert('❌ Network monitoring not available. Please:\n1. Refresh the page\n2. Try again\n3. Check console for errors');
-                    }
-                  } catch (error) {
-                    console.error('❌ Error enabling network monitoring:', error);
-                    console.error('Error details:', error);
-                    alert('❌ Error enabling network monitoring:\n\n' + (error instanceof Error ? error.message : 'Unknown error') + '\n\nPlease:\n1. Refresh the page\n2. Check console for details\n3. Try again');
-                  }
-                }}
-                className="mt-2 ml-2"
-              >
-                🔍 Monitor Network
-              </Button>
-              {/* Direct email validation test */}
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={async () => {
-                  const testEmail = prompt('Enter email to test Supabase validation directly:') || 'test@example.com';
-                  console.log('=== DIRECT SUPABASE EMAIL VALIDATION TEST ===');
-                  console.log('Testing email:', testEmail);
-                  
-                  try {
-                    const { supabase } = await import('../supabaseClient');
-                    const authUrl = `${supabase.supabaseUrl}/auth/v1/signup`;
-                    
-                    const testPayload = {
-                      email: testEmail,
-                      password: 'TempPassword123!',
-                      data: { full_name: 'Test User' }
-                    };
-                    
-                    console.log('Test payload:', testPayload);
-                    console.log('Email char codes:', Array.from(testEmail).map(c => c.charCodeAt(0)));
-                    
-                    const response = await fetch(authUrl, {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': supabase.supabaseKey,
-                        'Authorization': `Bearer ${supabase.supabaseKey}`
-                      },
-                      body: JSON.stringify(testPayload)
-                    });
-                    
-                    console.log('Direct test response status:', response.status);
-                    const responseText = await response.text();
-                    console.log('Direct test response body:', responseText);
-                    
-                    if (response.status === 400) {
-                      alert('❌ Email validation failed!\n\nStatus: ' + response.status + '\nResponse: ' + responseText);
-                    } else if (response.ok) {
-                      alert('✅ Email passed validation!\n\nStatus: ' + response.status);
-                    } else {
-                      alert('⚠️ Unexpected response!\n\nStatus: ' + response.status + '\nResponse: ' + responseText);
-                    }
-                  } catch (error) {
-                    console.error('Direct test error:', error);
-                    alert('❌ Direct test failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
-                  }
-                }}
-                className="mt-2 ml-2"
-              >
-                🧪 Test Email
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={async () => {
-                  try {
-                    console.log('🔍 Starting comprehensive email validation diagnostics...');
-                    const { diagnoseSupabaseEmailValidation } = await import('../supabase-diagnostics');
-                    
-                    // Show loading state
-                    const originalText = document.activeElement?.textContent;
-                    if (document.activeElement) {
-                      (document.activeElement as HTMLElement).textContent = '🔄 Diagnosing...';
-                    }
-                    
-                    const results = await diagnoseSupabaseEmailValidation();
-                    
-                    // Restore button text
-                    if (document.activeElement && originalText) {
-                      (document.activeElement as HTMLElement).textContent = originalText;
-                    }
-                    
-                    // Analyze results for alert
-                    const totalTests = results.length;
-                    const validEmails = results.filter(r => r.isValid).length;
-                    const heymeganTests = results.filter(r => r.email.toLowerCase().includes('heymegan.com'));
-                    const heymeganValid = heymeganTests.filter(r => r.isValid).length;
-                    
-                    let alertMessage = `✅ Diagnostic completed!\n\n`;
-                    alertMessage += `📊 Results: ${validEmails}/${totalTests} emails passed validation\n`;
-                    alertMessage += `🏢 HeyMegan.com: ${heymeganValid}/${heymeganTests.length} passed\n\n`;
-                    
-                    if (heymeganTests.length > 0 && heymeganValid === 0) {
-                      alertMessage += `🚨 CRITICAL ISSUE: All heymegan.com emails failed!\n`;
-                      alertMessage += `This indicates a domain restriction in Supabase.\n\n`;
-                      alertMessage += `📋 Next steps:\n`;
-                      alertMessage += `1. Check Supabase Dashboard > Auth > Settings\n`;
-                      alertMessage += `2. Look for domain restrictions\n`;
-                      alertMessage += `3. Add heymegan.com to allowed domains\n\n`;
-                    } else if (validEmails === 0) {
-                      alertMessage += `🚨 CRITICAL: All emails failed validation!\n`;
-                      alertMessage += `This suggests a configuration issue.\n\n`;
-                    } else {
-                      alertMessage += `✅ Some emails passed - check console for patterns\n\n`;
-                    }
-                    
-                    alertMessage += `📊 Full diagnostic results are in the browser console.\n`;
-                    alertMessage += `🔍 Run window.emailDiagnosticResults to see raw data.`;
-                    
-                    alert(alertMessage);
-                    
-                  } catch (error) {
-                    console.error('❌ Diagnostic error:', error);
-                    alert('❌ Diagnostic failed!\n\nError: ' + (error instanceof Error ? error.message : 'Unknown error') + '\n\nCheck console for details.');
-                  }
-                }}
-                className="mt-2 ml-2"
-              >
-                🔍 Diagnose
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <Form {...accountForm}>
-                <form onSubmit={accountForm.handleSubmit(onAccountSubmit)} className="space-y-4">
-                  <FormField
-                    control={accountForm.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Your name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={accountForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email Address</FormLabel>
-                        <FormControl>
-                          <Input type="email" placeholder="your.email@example.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={accountForm.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <Input type="password" placeholder="••••••••••" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                          At least 10 characters, includes uppercase and special character
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? 'Creating Account...' : 'Continue'}
-                  </Button>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
+          <div className="w-full max-w-md mx-auto flex flex-col items-center">
+            <div className="mb-4 text-center">
+              <h2 className="text-2xl font-bold">Let's set up your account</h2>
+              <p className="text-muted-foreground mt-2">Create your account to get started</p>
+            </div>
+            <SignUp
+              routing="hash"
+              afterSignUpUrl="/onboarding?step=payment-setup"
+              appearance={{
+                elements: {
+                  rootBox: "w-full",
+                  card: "shadow-lg"
+                }
+              }}
+            />
+          </div>
         );
 
       case "payment-setup":
+        if (!user) {
+          return <div>Loading user information...</div>;
+        }
+
         return (
-          <Card className="w-full max-w-md mx-auto">
-            <CardHeader className="relative">
-
-              <CardTitle className="text-2xl">Enter your billing information</CardTitle>
-              <CardDescription>
-                You won't be charged today. After 7 days, your trial will convert into a paid subscription.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...paymentForm}>
-                <form 
-                  onSubmit={paymentForm.handleSubmit(onPaymentSubmit)} 
-                  className="space-y-4"
-                  autoComplete="off"
-                  data-lpignore="true"
-                  data-form-type="other"
-                  id="payment-form-separate-from-auth"
-                >
-                  {/* Add multiple decoy fields to break browser autofill algorithms */}
-                  <div style={{ display: 'none' }}>
-                    <input type="text" name="username" />
-                    <input type="email" name="hidden-email" />
-                    <input type="password" name="hidden-password" />
-                  </div>
-                  <FormField
-                    control={paymentForm.control}
-                    name="billingPlan"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Select a Plan</FormLabel>
-                        <div className="space-y-3 my-2">
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                            className="space-y-3"
-                          >
-                            <div className="flex items-start space-x-2 border rounded-md p-4 hover:bg-muted/50 transition-colors">
-                              <RadioGroupItem value="monthly" id="monthly" className="mt-1" />
-                              <div className="flex-1">
-                                <Label htmlFor="monthly" className="font-medium text-lg">
-                                  Monthly Plan
-                                </Label>
-                                <p className="text-muted-foreground text-sm mt-1">
-                                  $17 per month, billed monthly
-                                </p>
-                                <div className="mt-2">
-                                  <span className="bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded-full">
-                                    Most popular
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex items-start space-x-2 border rounded-md p-4 hover:bg-muted/50 transition-colors">
-                              <RadioGroupItem value="annual" id="annual" className="mt-1" />
-                              <div className="flex-1">
-                                <Label htmlFor="annual" className="font-medium text-lg">
-                                  Annual Plan
-                                </Label>
-                                <p className="text-muted-foreground text-sm mt-1">
-                                  $14 per month, billed annually ($168)
-                                </p>
-                                <div className="mt-2">
-                                  <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
-                                    Save 18%
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </RadioGroup>
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="flex items-center justify-center gap-2 mt-2 mb-4">
-                    <svg className="h-6 w-6 text-muted-foreground" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M4,4h16c1.1,0,2,0.9,2,2v12c0,1.1-0.9,2-2,2H4c-1.1,0-2-0.9-2-2V6C2,4.9,2.9,4,4,4z" />
-                    </svg>
-                    <svg className="h-6 w-6 text-muted-foreground" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="10" fill="#EB001B" opacity="0.6" />
-                      <circle cx="12" cy="12" r="10" fill="#F79E1B" opacity="0.6" style={{transform: 'translateX(4px)'}} />
-                    </svg>
-                    <svg className="h-6 w-6 text-muted-foreground" viewBox="0 0 24 24">
-                      <path d="M22,12c0,5.5-4.5,10-10,10S2,17.5,2,12S6.5,2,12,2S22,6.5,22,12z" fill="#006FCF" opacity="0.6" />
-                    </svg>
-                    <svg className="h-6 w-6 text-muted-foreground" viewBox="0 0 24 24">
-                      <path d="M2.5,10.5l2,-4.5h15l2,4.5" fill="#FF5F00" opacity="0.6" />
-                      <path d="M2.5,10.5v5.5h19v-5.5" fill="#EB001B" opacity="0.6" />
-                    </svg>
-                  </div>
-
-                  <FormField
-                    control={paymentForm.control}
-                    name="cardHolderName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Name on Card</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="John Doe" 
-                            {...field}
-                            autoComplete="cc-name"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={paymentForm.control}
-                    name="cardNumber"
-                    render={({ field }) => {
-                      return (
-                        <FormItem>
-                          <FormLabel>Card Number</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="tel"
-                              inputMode="numeric"
-                              placeholder="1234 5678 9012 3456"
-                              autoComplete="cc-number"
-                              autoCorrect="off"
-                              autoCapitalize="off"
-                              spellCheck="false"
-                              data-lpignore="true" 
-                              aria-label="Card number input"
-                              value={field.value}
-                              onChange={(e) => {
-                                // Format with spaces every 4 digits
-                                const value = e.target.value.replace(/[^0-9]/g, '');
-                                const formatted = value.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
-                                field.onChange(formatted);
-                              }}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            We accept Visa, Mastercard, American Express, and Discover
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      );
-                    }}
-                  />
-
-                  <div className="flex space-x-4">
-                    <FormField
-                      control={paymentForm.control}
-                      name="expiryDate"
-                      render={({ field }) => {
-                        return (
-                          <FormItem className="flex-1">
-                            <FormLabel>Expiry Date</FormLabel>
-                            <FormControl>
-                              <Input 
-                                placeholder="MM/YY" 
-                                autoComplete="cc-exp"
-                                value={field.value}
-                                onChange={(e) => {
-                                  let value = e.target.value.replace(/[^0-9]/g, '');
-
-                                  // Format as MM/YY
-                                  if (value.length > 2) {
-                                    value = value.slice(0, 2) + '/' + value.slice(2, 4);
-                                  }
-
-                                  field.onChange(value);
-                                }}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        );
-                      }}
-                    />
-
-                    <FormField
-                      control={paymentForm.control}
-                      name="cvc"
-                      render={({ field }) => {
-                        return (
-                          <FormItem className="flex-1">
-                            <FormLabel>CVC</FormLabel>
-                            <FormControl>
-                              <Input 
-                                placeholder="123" 
-                                autoComplete="cc-csc"
-                                maxLength={4}
-                                value={field.value}
-                                onChange={(e) => {
-                                  // Only allow numbers
-                                  const value = e.target.value.replace(/[^0-9]/g, '');
-                                  field.onChange(value);
-                                }}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        );
-                      }}
-                    />
-                  </div>
-
-                  <FormField
-                    control={paymentForm.control}
-                    name="termsAccepted"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 mt-4">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>
-                            I agree to the <a href="#" className="text-primary hover:underline">Terms of Service</a> and <a href="#" className="text-primary hover:underline">Privacy Policy</a>
-                          </FormLabel>
-                          <FormDescription>
-                            Your card will not be charged until after your 7-day trial ends.
-                          </FormDescription>
-                          <FormMessage />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="flex justify-between mt-6">
-                    <Button variant="ghost" size="sm" onClick={goToPreviousStep} className="flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="m15 18-6-6 6-6"/></svg>
-                      Back
-                    </Button>
-                    <Button type="submit" className="flex-1 ml-4">Continue</Button>
-                  </div>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
+          <PaymentSetupStep
+            user={user}
+            onSuccess={() => setCurrentStep("user-goals")}
+            onBack={goToPreviousStep}
+          />
         );
 
       case "user-goals":
@@ -1649,8 +1267,26 @@ const OnboardingFlow: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-white to-gray-100 py-12 px-4">
-      <div className="w-full max-w-md mb-8">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-100">
+      {/* Header with auth button */}
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="flex h-14 items-center justify-end px-6 gap-2">
+          {isSignedIn && (
+            <UserButton
+              afterSignOutUrl="/"
+              appearance={{
+                elements: {
+                  avatarBox: "h-8 w-8"
+                }
+              }}
+            />
+          )}
+        </div>
+      </header>
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col items-center justify-center py-12 px-4">
+        <div className="w-full max-w-md mb-8">
         <div className="mb-4">
           <div className="w-full">
             <ul className="steps w-full">
@@ -1665,7 +1301,8 @@ const OnboardingFlow: React.FC = () => {
         </div>
       </div>
 
-      {renderStep()}
+        {renderStep()}
+      </div>
     </div>
   );
 };

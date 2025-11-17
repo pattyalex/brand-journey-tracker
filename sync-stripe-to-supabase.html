@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sync Stripe to Supabase</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        button {
+            background: #635BFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #4F46E5;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 6px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #DEF7EC;
+            color: #03543F;
+            border: 1px solid #84E1BC;
+        }
+        .error {
+            background: #FDE8E8;
+            color: #9B1C1C;
+            border: 1px solid #F98080;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sync Stripe Subscription to Supabase</h1>
+        <p>This tool will fetch your Stripe subscription and update your Supabase profile.</p>
+
+        <label>Clerk User ID:</label>
+        <input type="text" id="clerkUserId" placeholder="user_xxx...">
+        <small>Find this in Clerk dashboard or browser console: console.log(window.Clerk.user.id)</small>
+
+        <label>Email Address:</label>
+        <input type="email" id="email" placeholder="patricia@example.com">
+
+        <button onclick="syncSubscription()" id="syncBtn">Sync Subscription</button>
+
+        <div id="result"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://jxqjkhyeelprqtfifmaw.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4cWpraHllZWxwcnF0ZmlmbWF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY1MjI0OTMsImV4cCI6MjA1MjA5ODQ5M30.3XBCcQT7TnA9iZUeqCEpB9FUuHZdz9B4JJN9WXyFLoc';
+        const API_BASE = 'http://localhost:3001';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function syncSubscription() {
+            const clerkUserId = document.getElementById('clerkUserId').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const resultDiv = document.getElementById('result');
+            const syncBtn = document.getElementById('syncBtn');
+
+            if (!clerkUserId || !email) {
+                showResult('Please fill in both Clerk User ID and Email', 'error');
+                return;
+            }
+
+            syncBtn.disabled = true;
+            showResult('Syncing... Please wait.', '');
+
+            try {
+                // Step 1: Get Stripe customer by email
+                console.log('Step 1: Looking up Stripe customer...');
+                const customerResponse = await fetch(`${API_BASE}/api/get-customer-by-email`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                if (!customerResponse.ok) {
+                    throw new Error('Failed to fetch customer from Stripe');
+                }
+
+                const { customerId, customer } = await customerResponse.json();
+
+                if (!customerId) {
+                    throw new Error('No Stripe customer found for this email');
+                }
+
+                console.log('Found Stripe customer:', customerId);
+
+                // Step 2: Get subscription for this customer
+                console.log('Step 2: Fetching subscription...');
+                const subResponse = await fetch(`${API_BASE}/api/get-subscription`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ customerId })
+                });
+
+                if (!subResponse.ok) {
+                    throw new Error('Failed to fetch subscription from Stripe');
+                }
+
+                const { subscription } = await subResponse.json();
+
+                if (!subscription) {
+                    throw new Error('No subscription found for this customer');
+                }
+
+                console.log('Found subscription:', subscription.id);
+
+                // Step 3: Update Supabase profile
+                console.log('Step 3: Updating Supabase...');
+                const planType = subscription.items.data[0]?.price.recurring?.interval === 'year' ? 'annual' : 'monthly';
+                const isOnTrial = subscription.status === 'trialing';
+                const trialEndsAt = subscription.trial_end
+                    ? new Date(subscription.trial_end * 1000).toISOString()
+                    : null;
+
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .update({
+                        stripe_customer_id: customerId,
+                        stripe_subscription_id: subscription.id,
+                        subscription_status: subscription.status,
+                        plan_type: planType,
+                        is_on_trial: isOnTrial,
+                        trial_ends_at: trialEndsAt,
+                    })
+                    .eq('id', clerkUserId);
+
+                if (error) {
+                    throw new Error(`Supabase error: ${error.message}`);
+                }
+
+                showResult(
+                    `✅ Success! Subscription synced.\n\n` +
+                    `Customer ID: ${customerId}\n` +
+                    `Subscription ID: ${subscription.id}\n` +
+                    `Status: ${subscription.status}\n` +
+                    `Plan: ${planType}\n` +
+                    `Trial: ${isOnTrial ? 'Yes, ends ' + new Date(subscription.trial_end * 1000).toLocaleDateString() : 'No'}\n\n` +
+                    `You can now refresh the Membership tab in Clerk to see your subscription!`,
+                    'success'
+                );
+
+            } catch (error) {
+                console.error('Sync error:', error);
+                showResult(`❌ Error: ${error.message}`, 'error');
+            } finally {
+                syncBtn.disabled = false;
+            }
+        }
+
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = message;
+            resultDiv.className = 'result ' + type;
+        }
+
+        // Try to auto-fill email if we can detect it
+        window.addEventListener('load', () => {
+            console.log('Sync tool loaded. To find your Clerk User ID, open your app and run: console.log(window.Clerk.user.id)');
+        });
+    </script>
+</body>
+</html>

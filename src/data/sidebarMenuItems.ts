@@ -5,28 +5,34 @@ import { MenuItem } from '@/types/sidebar';
 export const defaultMenuItems: MenuItem[] = [
   { title: 'Home Page', icon: Home, url: '/home-page', isDeletable: false },
   { title: 'Planner', icon: CheckCircle, url: '/task-board', isDeletable: false },
-  { 
-    title: 'Workflow', 
-    icon: FolderOpen, 
-    url: '/get-started', 
-    isDeletable: false,
-    subItems: [
-      { title: "What's Trending", icon: TrendingUp, url: '/trending' },
-      { title: 'Idea Development', icon: Database, url: '/bank-of-content' },
-      { title: 'Content Calendar', icon: Calendar, url: '/content-calendar' },
-      { title: 'Analytics', icon: BarChart, url: '/analytics' },
-    ]
+  {
+    title: 'Create a Post',
+    icon: Database,
+    url: '/bank-of-content',
+    isDeletable: false
   },
-  { 
-    title: 'Partnerships', 
-    icon: Handshake, 
-    url: '/collab-management', 
-    isDeletable: false 
+  {
+    title: 'Content Calendar',
+    icon: Calendar,
+    url: '/content-calendar',
+    isDeletable: false
   },
-  { 
-    title: 'Strategy and Growth', 
-    icon: TrendingUp, 
-    url: '/strategy-growth', 
+  {
+    title: 'Analytics',
+    icon: BarChart,
+    url: '/analytics',
+    isDeletable: false
+  },
+  {
+    title: 'Partnerships',
+    icon: Handshake,
+    url: '/collab-management',
+    isDeletable: false
+  },
+  {
+    title: 'Strategy and Growth',
+    icon: TrendingUp,
+    url: '/strategy-growth',
     isDeletable: false
   },
 ];
