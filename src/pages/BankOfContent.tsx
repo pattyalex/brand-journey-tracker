@@ -173,7 +173,7 @@ const BankOfContent = () => {
         );
       }
       
-      console.log("Content items restored to Idea Development:", restoredIdeas);
+      console.log("Content items restored to Pillars:", restoredIdeas);
     }
   }, []);
 
@@ -461,7 +461,7 @@ const BankOfContent = () => {
     return (
       <Layout>
         <div className="w-full max-w-[1600px] mx-auto px-8 py-6 space-y-6 fade-in">
-          <h1 className="text-3xl font-bold">Idea Development</h1>
+          <h1 className="text-2xl font-bold">Pillars</h1>
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
@@ -475,25 +475,8 @@ const BankOfContent = () => {
 
   return (
     <Layout>
-      <div className="w-full max-w-[1600px] mx-auto px-8 py-6 space-y-6 fade-in">
-        <h1 className="text-3xl font-bold">Idea Development</h1>
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="flex items-center justify-between">
-            <PillarTabs 
-              pillars={pillars}
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-              onAddPillar={addPillar}
-              onRenamePillar={renamePillar}
-              onDeletePillar={deletePillar}
-            />
-          </div>
-          <ContentTypeBuckets
-            onAddIdea={handleAddToBucket}
-            pillarId={activeTab}
-            pillarName={pillars.find(p => p.id === activeTab)?.name || ''}
-            pillarIndex={pillars.findIndex(p => p.id === activeTab)}
-          />
+      <div className="w-full max-w-[1800px] h-[calc(100vh-4rem)] mx-auto px-8 py-6 fade-in">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full">
           {pillars.map((pillar, index) => {
             const color = getPillarColor(index);
 
@@ -501,40 +484,90 @@ const BankOfContent = () => {
               <TabsContent
                 key={pillar.id}
                 value={pillar.id}
-                className="space-y-4 animate-in fade-in-50 duration-300"
+                className="h-full"
               >
-                <div
-                  className="grid grid-cols-1 md:grid-cols-2 gap-4 rounded-xl p-6 transition-all duration-500 border"
-                  style={{
-                    backgroundColor: color.veryLight,
-                    borderColor: color.light,
-                  }}
-                >
-                <WritingSpace 
-                  value={writingText}
-                  onChange={updateWritingSpace}
-                />
-                <IdeaSection 
-                  pillar={pillar}
-                  pillars={pillars}
-                  searchQuery={searchQuery}
-                  onNewIdeaClick={openNewIdeaDialog}
-                  onDeleteContent={(contentId) => deleteContent(pillar.id, contentId)}
-                  onMoveContent={(toPillarId, contentId) => moveContent(pillar.id, toPillarId, contentId)}
-                  onEditContent={(contentId) => editContent(pillar.id, contentId)}
-                  onReorderContent={(newItems) => handleReorderContent(pillar.id, newItems)}
-                  editingContent={editingContent}
-                  isEditing={isEditing}
-                  onContentUpdated={updateContent}
-                  onCancelEdit={cancelEditing}
-                  onContentAdded={addContentToPillar}
-                  onAddToBucket={handleAddToBucket}
-                />
-              </div>
-            </TabsContent>
+                {/* 2 COLUMNS - Left: Brain Dump card, Right: Pillars + Formats + Content Bank */}
+                <div className="grid grid-cols-1 lg:grid-cols-[30%_1fr] gap-8 h-full">
+
+                  {/* LEFT COLUMN: Brain Dump CARD - beige */}
+                  <div
+                    className="rounded-xl p-4 overflow-y-auto shadow-sm flex flex-col"
+                    style={{
+                      backgroundColor: color.veryLight,
+                      border: `1px solid ${color.light}`,
+                    }}
+                  >
+                    <h2 className="text-lg font-bold mb-3" style={{ color: '#8B6B4E' }}>
+                      Brain Dump
+                    </h2>
+                    <div className="flex-1">
+                      <WritingSpace
+                        value={writingText}
+                        onChange={updateWritingSpace}
+                      />
+                    </div>
+                  </div>
+
+                  {/* RIGHT COLUMN: Pillars + Formats + Content Bank stacked vertically */}
+                  <div className="space-y-6 overflow-y-auto">
+                    {/* Pillars */}
+                    <div>
+                      <h3 className="text-sm font-semibold mb-3" style={{ color: '#8B6B4E' }}>
+                        Pillars
+                      </h3>
+                      <PillarTabs
+                        pillars={pillars}
+                        activeTab={activeTab}
+                        onTabChange={setActiveTab}
+                        onAddPillar={addPillar}
+                        onRenamePillar={renamePillar}
+                        onDeletePillar={deletePillar}
+                      />
+                    </div>
+
+                    {/* Formats */}
+                    <div>
+                      <h3 className="text-sm font-semibold mb-3" style={{ color: '#8B6B4E' }}>
+                        Formats for {pillar.name}
+                      </h3>
+                      <ContentTypeBuckets
+                        onAddIdea={handleAddToBucket}
+                        pillarId={activeTab}
+                        pillarName={pillars.find(p => p.id === activeTab)?.name || ''}
+                        pillarIndex={pillars.findIndex(p => p.id === activeTab)}
+                      />
+                    </div>
+
+                    {/* Content Bank CARD - white */}
+                    <div className="rounded-xl p-6 bg-white border border-gray-300 shadow-sm">
+                      <h2 className="text-lg font-semibold mb-5" style={{ color: '#8B6B4E' }}>
+                        Content Bank
+                      </h2>
+                      <IdeaSection
+                        pillar={pillar}
+                        pillars={pillars}
+                        searchQuery={searchQuery}
+                        onNewIdeaClick={openNewIdeaDialog}
+                        onDeleteContent={(contentId) => deleteContent(pillar.id, contentId)}
+                        onMoveContent={(toPillarId, contentId) => moveContent(pillar.id, toPillarId, contentId)}
+                        onEditContent={(contentId) => editContent(pillar.id, contentId)}
+                        onReorderContent={(newItems) => handleReorderContent(pillar.id, newItems)}
+                        editingContent={editingContent}
+                        isEditing={isEditing}
+                        onContentUpdated={updateContent}
+                        onCancelEdit={cancelEditing}
+                        onContentAdded={addContentToPillar}
+                        onAddToBucket={handleAddToBucket}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
             );
           })}
         </Tabs>
+
+        {/* Modals */}
         <ContentSearchModal
           isOpen={isSearchModalOpen}
           onClose={() => setIsSearchModalOpen(false)}
@@ -579,8 +612,8 @@ const BankOfContent = () => {
             setSelectedBucketId("");
           }}
           isEditMode={developIdeaMode}
-          dialogTitle={developIdeaMode ? "Develop Selected Idea" : (newBucketType ? 
-            `Add to ${newBucketType.charAt(0).toUpperCase() + newBucketType.slice(1)} Format` : 
+          dialogTitle={developIdeaMode ? "Develop Selected Idea" : (newBucketType ?
+            `Add to ${newBucketType.charAt(0).toUpperCase() + newBucketType.slice(1)} Format` :
             "Create New Idea")}
           inspirationText=""
           onInspirationTextChange={() => {}}

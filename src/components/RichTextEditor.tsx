@@ -29,7 +29,7 @@ const RichTextEditor = React.forwardRef<RichTextEditorRef, RichTextEditorProps>(
     },
     editorProps: {
       attributes: {
-        class: "min-h-full h-full flex-1 px-4 py-3 focus:outline-none bg-white overflow-y-auto",
+        class: "min-h-full h-full flex-1 focus:outline-none bg-white overflow-y-auto",
         spellCheck: "true",
       },
     },
@@ -109,13 +109,13 @@ const RichTextEditor = React.forwardRef<RichTextEditorRef, RichTextEditorProps>(
         </button>
       </div>
       <div className="flex-1 rounded-lg border border-gray-200 bg-white w-full h-full relative">
-        <div className="h-full min-h-[450px] max-h-[70vh] pr-0" style={{
+        <div className="h-full min-h-[800px]" style={{
           overflowY: 'auto',
           scrollbarWidth: 'thin',
         }}>
-          <EditorContent 
-            editor={editor} 
-            className="flex-1 h-full focus:outline-none px-2 py-3"
+          <EditorContent
+            editor={editor}
+            className="flex-1 h-full focus:outline-none px-4 py-3"
           />
         </div>
       </div>

@@ -271,35 +271,10 @@ const IdeaSection = ({
       initial="hidden"
       animate="visible"
     >
-      <motion.div 
-        className="flex justify-end"
+      <motion.div
+        className="flex flex-col md:flex-row items-start md:items-center gap-4 mb-4"
         variants={itemVariants}
       >
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          transition={{ duration: 0.2 }}
-        >
-          <ContentUploader 
-            pillarId={pillar.id}
-            onContentAdded={onContentAdded}
-            onContentUpdated={onContentUpdated}
-            contentToEdit={editingContent}
-            isEditMode={isEditing}
-            onCancelEdit={onCancelEdit}
-          />
-        </motion.div>
-      </motion.div>
-      
-      <motion.div 
-        className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mt-4"
-        variants={itemVariants}
-      >
-        <h2 className="text-xl font-semibold flex items-center">
-          <Lightbulb className="h-5 w-5 mr-2" /> 
-          {pillar.name} Content Bank
-        </h2>
-        
         <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full md:w-auto">
           <motion.div 
             className="flex items-center gap-2 w-full md:w-auto"

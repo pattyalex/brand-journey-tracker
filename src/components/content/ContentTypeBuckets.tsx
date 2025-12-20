@@ -273,17 +273,6 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarName, pillarIndex }: Co
 
   return (
     <div className="mt-4 mb-6">
-      <motion.div 
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2, ease: "easeOut" }}
-        className="flex justify-between items-center mb-3"
-      >
-        <h2 className="text-xl font-semibold">
-          {pillarName ? `${pillarName} ` : ''}Content Formats
-        </h2>
-      </motion.div>
-      
       {isAddingFormat && (
         <motion.div 
           initial={{ opacity: 0, y: 10 }}

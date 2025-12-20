@@ -335,7 +335,7 @@
 }
 
 .writing-expanded {
-  margin-right: 1.5rem;
+  /* Removed margin-right to ensure equal padding on both sides */
 }
 
 .fade-in {

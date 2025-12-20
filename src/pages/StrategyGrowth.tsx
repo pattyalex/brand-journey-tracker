@@ -235,6 +235,31 @@ const StrategyGrowth = () => {
     }
   }, [longTermGoals]);
 
+  // Listen for storage events to sync with HomePage in real-time
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'monthlyGoalsData' && e.newValue) {
+        try {
+          setMonthlyGoalsData(JSON.parse(e.newValue));
+        } catch (error) {
+          console.error('Failed to parse monthly goals data:', error);
+        }
+      }
+    };
+
+    // Listen for custom event for same-tab updates from HomePage
+    const handleCustomUpdate = (e: CustomEvent) => {
+      setMonthlyGoalsData(e.detail);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('monthlyGoalsUpdated', handleCustomUpdate as EventListener);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('monthlyGoalsUpdated', handleCustomUpdate as EventListener);
+    };
+  }, []);
+
   // Handlers
   const handleAddKeyword = () => {
     if (keywordInput.trim() !== "" && !brandKeywords.includes(keywordInput.trim())) {

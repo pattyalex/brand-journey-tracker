@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { format, addDays, subDays, parseISO, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, addWeeks, subWeeks } from "date-fns";
-import { Copy, Trash2, Heart, AlarmClock, CalendarIcon, ChevronLeft, ChevronRight, ListChecks, ChevronRight as ChevronRightCollapse, Plus, Palette, X as XIcon, Check, GripVertical, Edit } from 'lucide-react';
+import { Copy, Trash2, Heart, AlarmClock, CalendarIcon, ChevronLeft, ChevronRight, ListChecks, ChevronRight as ChevronRightCollapse, Plus, Palette, X as XIcon, Check, GripVertical, Edit, Clock } from 'lucide-react';
 import { PlannerDay, PlannerItem, GlobalPlannerData } from "@/types/planner";
 import { PlannerSection } from "./PlannerSection";
+import { PlannerCheckItem } from "./PlannerCheckItem";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
-import { 
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -33,7 +35,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { DragDropContext, DropResult } from 'react-beautiful-dnd';
+import { DragDropContext, DropResult, Droppable, Draggable } from 'react-beautiful-dnd';
 
 const CheckListIcon = () => (
   <svg 
@@ -89,7 +91,7 @@ const updateItemOrders = (items: PlannerItem[]): PlannerItem[] => {
   }));
 };
 
-type PlannerView = 'today' | 'week' | 'month';
+type PlannerView = 'today' | 'week' | 'month' | 'day';
 
 export const DailyPlanner = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -102,6 +104,15 @@ export const DailyPlanner = () => {
   const [globalTasks, setGlobalTasks] = useState<string>("");
   const [allTasks, setAllTasks] = useState<PlannerItem[]>([]);
   const [isAllTasksCollapsed, setIsAllTasksCollapsed] = useState(false);
+  const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<PlannerItem | null>(null);
+  const [dialogTaskTitle, setDialogTaskTitle] = useState("");
+  const [dialogTaskDescription, setDialogTaskDescription] = useState("");
+  const [dialogStartTime, setDialogStartTime] = useState("");
+  const [dialogEndTime, setDialogEndTime] = useState("");
+  const [dialogTaskColor, setDialogTaskColor] = useState("");
+  const [dialogTaskCompleted, setDialogTaskCompleted] = useState(false);
+  const [pendingTaskFromAllTasks, setPendingTaskFromAllTasks] = useState<PlannerItem | null>(null);
 
   const [tasks, setTasks] = useState<string>("");
   const [greatDay, setGreatDay] = useState<string>("");
@@ -140,10 +151,15 @@ export const DailyPlanner = () => {
       setGlobalTasks(globalData.globalTasks || "");
     }
 
+    // Load All Tasks
     const savedAllTasks = localStorage.getItem("allTasks");
+    console.log('DailyPlanner: Loading allTasks from localStorage', savedAllTasks);
     if (savedAllTasks) {
-      setAllTasks(JSON.parse(savedAllTasks));
+      const parsed = JSON.parse(savedAllTasks);
+      console.log('DailyPlanner: Parsed allTasks', parsed);
+      setAllTasks(parsed);
     }
+
   }, []);
 
   useEffect(() => {
@@ -153,11 +169,40 @@ export const DailyPlanner = () => {
   useEffect(() => {
     localStorage.setItem("allTasks", JSON.stringify(allTasks));
   }, [allTasks]);
-  
+
+  // Listen for changes to allTasks from other pages (e.g., HomePage)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'allTasks' && e.newValue) {
+        try {
+          setAllTasks(JSON.parse(e.newValue));
+        } catch (error) {
+          console.error('Failed to parse allTasks:', error);
+        }
+      }
+    };
+
+    // Listen for custom event for same-tab updates
+    const handleCustomUpdate = (e: CustomEvent) => {
+      console.log('DailyPlanner: Received allTasksUpdated event', e.detail);
+      setAllTasks(e.detail);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('allTasksUpdated', handleCustomUpdate as EventListener);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('allTasksUpdated', handleCustomUpdate as EventListener);
+    };
+  }, []);
+
+
   useEffect(() => {
     const globalData: GlobalPlannerData = { globalTasks };
     localStorage.setItem("globalPlannerData", JSON.stringify(globalData));
   }, [globalTasks]);
+
+
 
   useEffect(() => {
     const currentDay = plannerData.find(day => day.date === dateString);
@@ -370,7 +415,7 @@ export const DailyPlanner = () => {
     setPlannerData(updatedPlannerData);
   };
 
-  const handleEditItem = (id: string, newText: string, startTime?: string, endTime?: string, color?: string, description?: string) => {
+  const handleEditItem = (id: string, newText: string, startTime?: string, endTime?: string, color?: string, description?: string, isCompleted?: boolean) => {
     const dayIndex = plannerData.findIndex(day => day.date === dateString);
     if (dayIndex < 0) return;
 
@@ -384,9 +429,11 @@ export const DailyPlanner = () => {
         startTime,
         endTime,
         color: color !== undefined ? color : updatedPlannerData[dayIndex].items[itemIndex].color,
-        description: description !== undefined ? description : updatedPlannerData[dayIndex].items[itemIndex].description
+        description: description !== undefined ? description : updatedPlannerData[dayIndex].items[itemIndex].description,
+        isCompleted: isCompleted !== undefined ? isCompleted : updatedPlannerData[dayIndex].items[itemIndex].isCompleted
       };
       setPlannerData(updatedPlannerData);
+      localStorage.setItem('plannerData', JSON.stringify(updatedPlannerData));
     }
   };
 
@@ -532,10 +579,10 @@ export const DailyPlanner = () => {
   const handleGratefulChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newGrateful = e.target.value;
     setGrateful(newGrateful);
-    
+
     const dayIndex = plannerData.findIndex(day => day.date === dateString);
     const updatedPlannerData = [...plannerData];
-    
+
     if (dayIndex >= 0) {
       updatedPlannerData[dayIndex] = {
         ...updatedPlannerData[dayIndex],
@@ -550,9 +597,151 @@ export const DailyPlanner = () => {
         grateful: newGrateful
       });
     }
-    
+
     setPlannerData(updatedPlannerData);
   };
+
+  const handleOpenTaskDialog = (hour: number, task?: PlannerItem) => {
+    if (task) {
+      // Editing existing task
+      setEditingTask(task);
+      setDialogTaskTitle(task.text);
+      setDialogTaskDescription(task.description || "");
+      setDialogStartTime(task.startTime || "");
+      setDialogEndTime(task.endTime || "");
+      setDialogTaskColor(task.color || "");
+      setDialogTaskCompleted(task.isCompleted || false);
+    } else {
+      // Creating new task
+      setEditingTask(null);
+      setDialogTaskTitle("");
+      setDialogTaskDescription("");
+      const hourStr = hour.toString().padStart(2, '0');
+      setDialogStartTime(`${hourStr}:00`);
+      setDialogEndTime(`${hourStr}:30`);
+      setDialogTaskColor("");
+      setDialogTaskCompleted(false);
+    }
+    setIsTaskDialogOpen(true);
+  };
+
+  const handleSaveTaskDialog = () => {
+    if (!dialogTaskTitle.trim()) return;
+
+    if (editingTask) {
+      // Check if this is a task being moved from All Tasks (has date but not in plannerData yet)
+      const taskDate = editingTask.date;
+      const isInPlannerData = plannerData.some(day =>
+        day.date === taskDate && day.items.some(item => item.id === editingTask.id)
+      );
+
+      if (!isInPlannerData && taskDate) {
+        // This is a task from All Tasks being added to a specific day
+        const newTask: PlannerItem = {
+          ...editingTask,
+          text: dialogTaskTitle.trim(),
+          section: "morning",
+          isCompleted: dialogTaskCompleted,
+          date: taskDate,
+          startTime: dialogStartTime,
+          endTime: dialogEndTime,
+          color: dialogTaskColor,
+          description: dialogTaskDescription,
+        };
+
+        const dayIndex = plannerData.findIndex(day => day.date === taskDate);
+        const updatedPlannerData = [...plannerData];
+
+        if (dayIndex >= 0) {
+          updatedPlannerData[dayIndex] = {
+            ...updatedPlannerData[dayIndex],
+            items: [...updatedPlannerData[dayIndex].items, newTask]
+          };
+        } else {
+          updatedPlannerData.push({
+            date: taskDate,
+            items: [newTask],
+            tasks: "",
+            greatDay: "",
+            grateful: ""
+          });
+        }
+
+        setPlannerData(updatedPlannerData);
+        localStorage.setItem('plannerData', JSON.stringify(updatedPlannerData));
+      } else {
+        // Update existing task in planner
+        handleEditItem(
+          editingTask.id,
+          dialogTaskTitle.trim(),
+          dialogStartTime,
+          dialogEndTime,
+          dialogTaskColor,
+          dialogTaskDescription,
+          dialogTaskCompleted
+        );
+      }
+    } else {
+      // Create new task
+      const newTask: PlannerItem = {
+        id: Date.now().toString(),
+        text: dialogTaskTitle.trim(),
+        section: "morning",
+        isCompleted: dialogTaskCompleted,
+        date: dateString,
+        startTime: dialogStartTime,
+        endTime: dialogEndTime,
+        color: dialogTaskColor,
+        description: dialogTaskDescription,
+      };
+
+      const dayIndex = plannerData.findIndex(day => day.date === dateString);
+      const updatedPlannerData = [...plannerData];
+
+      if (dayIndex >= 0) {
+        updatedPlannerData[dayIndex] = {
+          ...updatedPlannerData[dayIndex],
+          items: [...updatedPlannerData[dayIndex].items, newTask]
+        };
+      } else {
+        updatedPlannerData.push({
+          date: dateString,
+          items: [newTask],
+          tasks: tasks,
+          greatDay: greatDay,
+          grateful: grateful
+        });
+      }
+
+      setPlannerData(updatedPlannerData);
+      localStorage.setItem('plannerData', JSON.stringify(updatedPlannerData));
+    }
+
+    setIsTaskDialogOpen(false);
+    setEditingTask(null);
+    setPendingTaskFromAllTasks(null);
+  };
+
+  const handleCancelTaskDialog = () => {
+    // If there's a pending task from All Tasks, restore it
+    if (pendingTaskFromAllTasks) {
+      setAllTasks([...allTasks, pendingTaskFromAllTasks]);
+      setPendingTaskFromAllTasks(null);
+    }
+    setIsTaskDialogOpen(false);
+    setEditingTask(null);
+  };
+
+  const colorOptions = [
+    { name: 'Red', value: '#FEE2E2' },
+    { name: 'Orange', value: '#FFEDD5' },
+    { name: 'Yellow', value: '#FEF3C7' },
+    { name: 'Green', value: '#D1FAE5' },
+    { name: 'Blue', value: '#DBEAFE' },
+    { name: 'Indigo', value: '#E0E7FF' },
+    { name: 'Purple', value: '#EDE9FE' },
+    { name: 'Pink', value: '#FCE7F3' },
+  ];
 
   const hasItems = currentDay.items.length > 0;
 
@@ -602,6 +791,8 @@ export const DailyPlanner = () => {
     const tasksWithOrder = updateItemOrders(reorderedTasks);
     setAllTasks(tasksWithOrder);
   };
+
+  // Weekly Objectives handlers
 
   const handleDropTaskFromWeeklyToAllTasks = (draggedTaskId: string, targetTaskId: string, fromDate: string) => {
     // Find the task in the source day
@@ -755,6 +946,138 @@ export const DailyPlanner = () => {
           return item.section === destSection && idx === destination.index;
         });
 
+    // Extract hour from droppableId (e.g., "hour-8" -> 8)
+    const getHourFromDroppableId = (id: string): number | null => {
+      if (id.startsWith('hour-')) {
+        return parseInt(id.split('-')[1]);
+      }
+      return null;
+    };
+
+    const sourceHour = getHourFromDroppableId(source.droppableId);
+    const destHour = getHourFromDroppableId(destination.droppableId);
+
+    // Handle drag from All Tasks to hour slot
+    if (source.droppableId === "allTasks" && destHour !== null) {
+      const taskToMove = allTasks[source.index];
+      if (!taskToMove) return;
+
+      // Remove from All Tasks
+      const newAllTasks = allTasks.filter(task => task.id !== taskToMove.id);
+      setAllTasks(newAllTasks);
+      localStorage.setItem('allTasks', JSON.stringify(newAllTasks));
+
+      // Add to planner with time set to destination hour
+      const hourStr = destHour.toString().padStart(2, '0');
+      const newItem: PlannerItem = {
+        ...taskToMove,
+        section: "morning",
+        date: dateString,
+        startTime: `${hourStr}:00`,
+        endTime: `${hourStr}:30`,
+      };
+
+      const dayIndex = plannerData.findIndex(day => day.date === dateString);
+
+      if (dayIndex >= 0) {
+        const updatedPlannerData = [...plannerData];
+        updatedPlannerData[dayIndex] = {
+          ...updatedPlannerData[dayIndex],
+          items: [...updatedPlannerData[dayIndex].items, newItem]
+        };
+        setPlannerData(updatedPlannerData);
+        localStorage.setItem('plannerData', JSON.stringify(updatedPlannerData));
+      } else {
+        const newPlannerData = [...plannerData, {
+          date: dateString,
+          items: [newItem],
+          tasks: tasks,
+          greatDay: greatDay,
+          grateful: grateful
+        }];
+        setPlannerData(newPlannerData);
+        localStorage.setItem('plannerData', JSON.stringify(newPlannerData));
+      }
+      return;
+    }
+
+    // Handle drag from hour slot to All Tasks
+    if (sourceHour !== null && destination.droppableId === "allTasks") {
+      const dayIndex = plannerData.findIndex(day => day.date === dateString);
+      if (dayIndex < 0) return;
+
+      const sourceHourTasks = currentDay.items.filter(item => {
+        if (item.startTime) {
+          const taskHour = parseInt(item.startTime.split(':')[0]);
+          return taskHour === sourceHour;
+        }
+        return false;
+      });
+
+      const taskToMove = sourceHourTasks[source.index];
+      if (!taskToMove) return;
+
+      // Remove from planner
+      const updatedPlannerData = [...plannerData];
+      updatedPlannerData[dayIndex] = {
+        ...updatedPlannerData[dayIndex],
+        items: updatedPlannerData[dayIndex].items.filter(item => item.id !== taskToMove.id)
+      };
+      setPlannerData(updatedPlannerData);
+      localStorage.setItem('plannerData', JSON.stringify(updatedPlannerData));
+
+      // Add to All Tasks
+      const newAllTaskItem: PlannerItem = {
+        ...taskToMove,
+        date: "",
+        section: "morning",
+        startTime: undefined,
+        endTime: undefined,
+      };
+      const newAllTasks = [...allTasks, newAllTaskItem];
+      setAllTasks(newAllTasks);
+      localStorage.setItem('allTasks', JSON.stringify(newAllTasks));
+      return;
+    }
+
+    // Handle drag between hour slots
+    if (sourceHour !== null && destHour !== null) {
+      const dayIndex = plannerData.findIndex(day => day.date === dateString);
+      if (dayIndex < 0) return;
+
+      const sourceHourTasks = currentDay.items.filter(item => {
+        if (item.startTime) {
+          const taskHour = parseInt(item.startTime.split(':')[0]);
+          return taskHour === sourceHour;
+        }
+        return false;
+      });
+
+      const taskToMove = sourceHourTasks[source.index];
+      if (!taskToMove) return;
+
+      // Update the task's time to match the destination hour
+      const destHourStr = destHour.toString().padStart(2, '0');
+      const updatedTask = {
+        ...taskToMove,
+        startTime: `${destHourStr}:${taskToMove.startTime?.split(':')[1] || '00'}`,
+        endTime: taskToMove.endTime ? `${destHourStr}:${taskToMove.endTime.split(':')[1]}` : undefined,
+      };
+
+      // Remove old task and add updated task
+      const updatedPlannerData = [...plannerData];
+      const otherItems = updatedPlannerData[dayIndex].items.filter(item => item.id !== taskToMove.id);
+      updatedPlannerData[dayIndex] = {
+        ...updatedPlannerData[dayIndex],
+        items: [...otherItems, updatedTask]
+      };
+
+      setPlannerData(updatedPlannerData);
+      localStorage.setItem('plannerData', JSON.stringify(updatedPlannerData));
+      return;
+    }
+
+    // Handle old section-based drag logic for backward compatibility
     if (insertIndex >= 0) {
       newItems.splice(insertIndex, 0, updatedItem);
     } else {
@@ -775,7 +1098,8 @@ export const DailyPlanner = () => {
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
       <div className="flex gap-4">
-        {/* All Tasks Section - Left Side */}
+        {/* All Tasks Section - Left Side - Visible in Today, Day, and This Week views */}
+        {(currentView === 'today' || currentView === 'week' || currentView === 'day') && (
         <div
           className={`${isAllTasksCollapsed ? 'w-16' : 'w-64'} flex-shrink-0 ${isAllTasksCollapsed ? 'bg-transparent' : 'bg-gray-100'} rounded-lg ${isAllTasksCollapsed ? 'p-2' : 'p-4'} transition-all duration-300`}
           onDragOver={(e) => {
@@ -860,6 +1184,8 @@ export const DailyPlanner = () => {
             )}
           </Card>
         </div>
+        )}
+
 
         {/* Main Planner - Right Side */}
         <div className="flex-1">
@@ -945,167 +1271,131 @@ export const DailyPlanner = () => {
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
-            
-            <div className="flex items-center justify-end gap-2 flex-wrap">
-              <TooltipProvider delayDuration={0}>
-                <Dialog open={isCopyDialogOpen} onOpenChange={setIsCopyDialogOpen}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <DialogTrigger asChild>
-                        <Button 
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8"
-                          disabled={!hasItems}
-                        >
-                          <Copy className="h-3.5 w-3.5" />
-                        </Button>
-                      </DialogTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" sideOffset={5}>
-                      <p>Copy Template</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>Copy template to another day</DialogTitle>
-                      <DialogDescription>
-                        Select the date where you'd like to duplicate this day's template. This feature saves you from rewriting recurring tasks or habits.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="py-4">
-                      <Calendar
-                        mode="single"
-                        selected={copyToDate}
-                        onSelect={setCopyToDate}
-                        initialFocus
-                      />
-                    </div>
-                    <div className="flex items-center space-x-2 py-2">
-                      <Checkbox 
-                        id="delete-after-copy" 
-                        checked={deleteAfterCopy}
-                        onCheckedChange={(checked) => setDeleteAfterCopy(checked === true)}
-                      />
-                      <label
-                        htmlFor="delete-after-copy"
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                      >
-                        Delete template from current day after copying
-                      </label>
-                    </div>
-                    <DialogFooter>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={() => {
-                          setIsCopyDialogOpen(false);
-                          setDeleteAfterCopy(false);
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                      <Button 
-                        type="button" 
-                        onClick={copyTemplate}
-                        disabled={!copyToDate}
-                      >
-                        Copy template
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </TooltipProvider>
-              
-              <TooltipProvider delayDuration={0}>
-                <AlertDialog>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AlertDialogTrigger asChild>
-                        <Button 
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8"
-                          disabled={!hasItems}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </AlertDialogTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" sideOffset={5}>
-                      <p>Delete All</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete all items for this day?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete all planner items 
-                        for {format(selectedDate, "MMMM do, yyyy")}.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDeleteAllItems}>
-                        Delete All
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </TooltipProvider>
-            </div>
           </div>
         </CardHeader>
-        <CardContent className="px-0">
-          
-          <div className="mb-4">
-            <CardDescription>
-              Schedule your tasks:
-            </CardDescription>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <PlannerSection
-              title="Morning Routine"
-              items={getSectionItems("morning")}
-              section="morning"
-              onToggleItem={handleToggleItem}
-              onDeleteItem={handleDeleteItem}
-              onEditItem={handleEditItem}
-              onAddItem={handleAddItem}
-            />
-            
-            <PlannerSection
-              title="Morning"
-              items={getSectionItems("midday")}
-              section="midday"
-              onToggleItem={handleToggleItem}
-              onDeleteItem={handleDeleteItem}
-              onEditItem={handleEditItem}
-              onAddItem={handleAddItem}
-            />
-            
-            <PlannerSection
-              title="Afternoon"
-              items={getSectionItems("afternoon")}
-              section="afternoon"
-              onToggleItem={handleToggleItem}
-              onDeleteItem={handleDeleteItem}
-              onEditItem={handleEditItem}
-              onAddItem={handleAddItem}
-            />
-            
-            <PlannerSection
-              title="Evening"
-              items={getSectionItems("evening")}
-              section="evening"
-              onToggleItem={handleToggleItem}
-              onDeleteItem={handleDeleteItem}
-              onEditItem={handleEditItem}
-              onAddItem={handleAddItem}
-            />
-          </div>
+        <CardContent className="px-4">
+          <ScrollArea className="h-[calc(100vh-200px)]">
+              <div className="relative" style={{ height: '1440px' }}> {/* 24 hours * 60px */}
+                {/* Hour labels and grid lines */}
+                {Array.from({ length: 24 }, (_, i) => {
+                  const hour = i;
+                  const timeLabel = `${hour === 0 ? 12 : hour > 12 ? hour - 12 : hour} ${hour < 12 ? 'am' : 'pm'}`;
 
+                  return (
+                    <div
+                      key={hour}
+                      className="absolute left-0 right-0 flex gap-2 border-t border-gray-200"
+                      style={{ top: `${hour * 60}px`, height: '60px' }}
+                    >
+                      {/* Time label */}
+                      <div className="w-14 flex-shrink-0 py-2 pl-2 text-xs text-gray-500 font-medium">
+                        {timeLabel}
+                      </div>
+
+                      {/* Clickable area for adding tasks */}
+                      <div
+                        className="flex-1 cursor-pointer hover:bg-gray-50 transition-colors"
+                        onClick={(e) => {
+                          if (e.target === e.currentTarget) {
+                            const hourStr = hour.toString().padStart(2, '0');
+                            setDialogStartTime(`${hourStr}:00`);
+                            setDialogEndTime(`${hourStr}:30`);
+                            handleOpenTaskDialog(hour);
+                          }
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+
+                {/* Render task time labels on the left */}
+                <div className="absolute top-0 left-0 w-14">
+                  {currentDay.items
+                    .filter(item => item.startTime && item.endTime)
+                    .map((task) => {
+                      const [startHour, startMinute] = task.startTime!.split(':').map(Number);
+                      const startTotalMinutes = startHour * 60 + startMinute;
+
+                      // Only show time label if it's not at the hour mark (to avoid duplication with hour labels)
+                      if (startMinute === 0) return null;
+
+                      return (
+                        <div
+                          key={`time-${task.id}`}
+                          className="absolute right-1 text-[9px] text-gray-400 font-normal"
+                          style={{
+                            top: `${startTotalMinutes}px`,
+                            zIndex: 5,
+                          }}
+                        >
+                          {task.startTime}
+                        </div>
+                      );
+                    })}
+                </div>
+
+                {/* Render all tasks with absolute positioning */}
+                <div className="absolute top-0 left-[72px] right-2"> {/* 72px = 56px (w-14) + 16px (gap-2 * 2) */}
+                  {currentDay.items
+                    .filter(item => item.startTime && item.endTime)
+                    .map((task) => {
+                      // Calculate position and height
+                      const [startHour, startMinute] = task.startTime!.split(':').map(Number);
+                      const [endHour, endMinute] = task.endTime!.split(':').map(Number);
+
+                      const startTotalMinutes = startHour * 60 + startMinute;
+                      const endTotalMinutes = endHour * 60 + endMinute;
+                      const durationMinutes = endTotalMinutes - startTotalMinutes;
+
+                      const top = startTotalMinutes; // 1 minute = 1px
+                      const height = Math.max(durationMinutes, 36); // Minimum 36px for content
+
+                      return (
+                        <div
+                          key={task.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenTaskDialog(startHour, task);
+                          }}
+                          className="group absolute left-0 right-0 rounded px-2 py-1 border-l-4 hover:shadow-sm transition-all cursor-pointer overflow-hidden"
+                          style={{
+                            top: `${top}px`,
+                            minHeight: `${height}px`,
+                            backgroundColor: task.color ? `${task.color}40` : '#f9fafb',
+                            borderLeftColor: task.color || '#d1d5db',
+                            zIndex: 10,
+                          }}
+                        >
+                          <div className="flex items-start gap-2">
+                            <Checkbox
+                              checked={task.isCompleted}
+                              onCheckedChange={(checked) => {
+                                handleToggleItem(task.id);
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                              className="mt-0.5 h-3.5 w-3.5 flex-shrink-0"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className={`text-xs font-medium ${task.isCompleted ? 'line-through text-gray-400' : 'text-gray-700'}`}>
+                                {task.text}
+                              </div>
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteItem(task.id);
+                              }}
+                              className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity flex-shrink-0"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+          </ScrollArea>
         </CardContent>
           </>
         )}
@@ -1195,30 +1485,21 @@ export const DailyPlanner = () => {
                           const taskToMove = allTasks.find(t => t.id === taskId);
                           if (!taskToMove) return;
 
+                          // Store the original task in case user cancels
+                          setPendingTaskFromAllTasks(taskToMove);
+
                           // Remove from All Tasks
                           setAllTasks(allTasks.filter(t => t.id !== taskId));
 
-                          // Add to this day
-                          const toDayIndex = plannerData.findIndex(d => d.date === toDate);
-                          const movedTask = { ...taskToMove, date: toDate };
-
-                          if (toDayIndex >= 0) {
-                            const updatedPlannerData = [...plannerData];
-                            updatedPlannerData[toDayIndex] = {
-                              ...updatedPlannerData[toDayIndex],
-                              items: [...updatedPlannerData[toDayIndex].items, movedTask]
-                            };
-                            setPlannerData(updatedPlannerData);
-                          } else {
-                            // Create new day entry if it doesn't exist
-                            setPlannerData([...plannerData, {
-                              date: toDate,
-                              items: [movedTask],
-                              tasks: "",
-                              greatDay: "",
-                              grateful: ""
-                            }]);
-                          }
+                          // Open dialog to edit task details before adding to day
+                          setEditingTask({ ...taskToMove, date: toDate } as PlannerItem);
+                          setDialogTaskTitle(taskToMove.text);
+                          setDialogTaskDescription(taskToMove.description || "");
+                          setDialogStartTime(taskToMove.startTime || "09:00");
+                          setDialogEndTime(taskToMove.endTime || "09:30");
+                          setDialogTaskColor(taskToMove.color || "");
+                          setDialogTaskCompleted(taskToMove.isCompleted || false);
+                          setIsTaskDialogOpen(true);
                         }
                       }}
                     >
@@ -1577,6 +1858,139 @@ export const DailyPlanner = () => {
           </Card>
         </div>
       </div>
+
+      {/* Task Dialog */}
+      <Dialog open={isTaskDialogOpen} onOpenChange={(open) => {
+        if (!open) {
+          handleCancelTaskDialog();
+        }
+      }}>
+        <DialogContent className="sm:max-w-[500px] p-0 gap-0">
+          <DialogHeader className="px-6 pt-6 pb-4">
+            <DialogTitle className="text-xl font-semibold">{editingTask ? 'Edit Task' : 'New Task'}</DialogTitle>
+          </DialogHeader>
+
+          <div className="px-6 pb-6 space-y-5">
+            {/* Task Title */}
+            <div>
+              <Input
+                placeholder="Add title"
+                value={dialogTaskTitle}
+                onChange={(e) => setDialogTaskTitle(e.target.value)}
+                className="text-base border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-gray-400"
+              />
+            </div>
+
+            {/* Time inputs */}
+            <div className="flex items-center gap-3">
+              <Clock size={18} className="text-gray-500 flex-shrink-0" />
+              <div className="flex items-center gap-2 flex-1">
+                <Input
+                  type="time"
+                  value={dialogStartTime}
+                  onChange={(e) => setDialogStartTime(e.target.value)}
+                  className="flex-1 h-9 text-sm"
+                />
+                <span className="text-gray-400">—</span>
+                <Input
+                  type="time"
+                  value={dialogEndTime}
+                  onChange={(e) => setDialogEndTime(e.target.value)}
+                  className="flex-1 h-9 text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className="flex items-start gap-3">
+              <Edit size={18} className="text-gray-500 flex-shrink-0 mt-2" />
+              <Textarea
+                placeholder="Add description"
+                value={dialogTaskDescription}
+                onChange={(e) => setDialogTaskDescription(e.target.value)}
+                rows={3}
+                className="flex-1 resize-none text-sm"
+              />
+            </div>
+
+            {/* Color Picker */}
+            <div className="flex items-center gap-3">
+              <Palette size={18} className="text-gray-500 flex-shrink-0" />
+              <div className="flex flex-wrap gap-2">
+                {colorOptions.map((color) => (
+                  <button
+                    key={color.value}
+                    onClick={() => setDialogTaskColor(color.value)}
+                    className={`w-8 h-8 rounded-full transition-all ${
+                      dialogTaskColor === color.value
+                        ? 'ring-2 ring-offset-2 ring-gray-400 scale-110'
+                        : 'hover:scale-105'
+                    }`}
+                    style={{ backgroundColor: color.value }}
+                    title={color.name}
+                  />
+                ))}
+                <button
+                  onClick={() => setDialogTaskColor('')}
+                  className={`w-8 h-8 rounded-full border-2 border-gray-300 transition-all flex items-center justify-center bg-white ${
+                    dialogTaskColor === ''
+                      ? 'ring-2 ring-offset-2 ring-gray-400 scale-110'
+                      : 'hover:scale-105'
+                  }`}
+                  title="No color"
+                >
+                  <XIcon size={14} className="text-gray-400" />
+                </button>
+              </div>
+            </div>
+
+            {/* Completed Checkbox */}
+            <div className="flex items-center gap-3 pt-2">
+              <Checkbox
+                id="task-completed"
+                checked={dialogTaskCompleted}
+                onCheckedChange={(checked) => setDialogTaskCompleted(checked as boolean)}
+                className="h-5 w-5"
+              />
+              <label
+                htmlFor="task-completed"
+                className="text-sm text-gray-700 cursor-pointer"
+              >
+                Mark as completed
+              </label>
+            </div>
+          </div>
+
+          <DialogFooter className="px-6 py-4 bg-gray-50 flex-row justify-end gap-2 sm:space-x-0">
+            <Button variant="ghost" onClick={handleCancelTaskDialog} className="px-4">
+              Cancel
+            </Button>
+            <Button onClick={handleSaveTaskDialog} className="px-6 bg-blue-600 hover:bg-blue-700">
+              {editingTask ? 'Save' : 'Create'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Floating Action Button */}
+      {currentView === 'day' && (
+        <button
+          onClick={() => {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            const hourStr = currentHour.toString().padStart(2, '0');
+            const minuteStr = currentMinute.toString().padStart(2, '0');
+            setDialogStartTime(`${hourStr}:${minuteStr}`);
+            setDialogEndTime(`${hourStr}:${(currentMinute + 30).toString().padStart(2, '0')}`);
+            handleOpenTaskDialog(currentHour);
+          }}
+          className="fixed bottom-6 right-6 w-14 h-14 bg-rose-400 hover:bg-rose-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center z-50"
+          title="Add new task"
+        >
+          <Plus size={24} strokeWidth={2.5} />
+        </button>
+      )}
     </DragDropContext>
   );
 };

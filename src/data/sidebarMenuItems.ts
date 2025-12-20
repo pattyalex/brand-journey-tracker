@@ -6,7 +6,7 @@ export const defaultMenuItems: MenuItem[] = [
   { title: 'Home Page', icon: Home, url: '/home-page', isDeletable: false },
   { title: 'Planner', icon: CheckCircle, url: '/task-board', isDeletable: false },
   {
-    title: 'Create a Post',
+    title: 'Content Hub',
     icon: Database,
     url: '/bank-of-content',
     isDeletable: false
@@ -15,12 +15,6 @@ export const defaultMenuItems: MenuItem[] = [
     title: 'Content Calendar',
     icon: Calendar,
     url: '/content-calendar',
-    isDeletable: false
-  },
-  {
-    title: 'Analytics',
-    icon: BarChart,
-    url: '/analytics',
     isDeletable: false
   },
   {

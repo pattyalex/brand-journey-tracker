@@ -58,84 +58,28 @@ const WritingSpace = ({
   };
 
   return (
-    <motion.div 
-      className={`space-y-4 pr-2 transition-all duration-300 ${expandedClass}`}
+    <motion.div
+      className={`flex flex-col h-full transition-all duration-300 ${expandedClass}`}
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      <motion.div 
-        className="flex items-center justify-between"
-        variants={itemVariants}
-      >
-        <h2 className="text-xl font-semibold flex items-center">
-          <Pencil className="h-5 w-5 mr-2" />
-          Brainstorm
-        </h2>
-        <div className="flex items-center gap-2">
-          <TitleHookSuggestions onSelectHook={handleHookSelect} />
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Button
-              variant="ghost"
-              size="sm"
-              className="cursor-pointer transition-all duration-150 hover:bg-[#FDE1D3] active:scale-95 rounded-md text-primary shadow-sm px-3"
-              onClick={() => {
-                const sparklesButton = document.querySelector('[aria-label="Show title hook suggestions"]') as HTMLButtonElement;
-                if (sparklesButton) {
-                  sparklesButton.click();
-                }
-              }}
-            >
-              <Sparkles className="h-4 w-4 mr-1.5 text-primary" />
-              <span className="text-sm font-medium">Hook Generator</span>
-            </Button>
-          </motion.div>
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Button
-              variant="ghost"
-              size="sm"
-              className="cursor-pointer transition-all duration-150 hover:bg-[#FDE1D3] active:scale-95 rounded-md shadow-sm"
-              onClick={() => setIsMeganOpen(!isMeganOpen)}
-              aria-label={isMeganOpen ? "Hide Megan" : "Ask Megan AI"}
-            >
-              {isMeganOpen ? (
-                <span className="px-3 py-1.5 text-primary hover:text-primary/90 font-medium">Hide Megan</span>
-              ) : (
-                <div className="flex items-center gap-2 px-3 py-1.5 w-full">
-                  <span className="text-primary hover:text-primary/90 font-medium">Ask Megan AI</span>
-                  <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs">
-                    M
-                  </div>
-                </div>
-              )}
-            </Button>
-          </motion.div>
-        </div>
-      </motion.div>
 
-      <motion.div 
-        className="h-[calc(100vh-140px)]"
+      <motion.div
+        className="flex-1 h-full"
         variants={itemVariants}
       >
-        <motion.div 
+        <motion.div
           className={`rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full relative bg-[#F6F6F7] ${isMeganOpen ? "flex flex-row" : "flex flex-col"}`}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
         >
-          <div className={`${isMeganOpen ? "w-1/2 border-r border-gray-200 flex flex-col" : "w-full flex-1 flex flex-col"}`}>
-            <RichTextEditor 
+          <div className={`${isMeganOpen ? "w-1/2 border-r border-gray-200 flex flex-col h-full" : "w-full flex-1 flex flex-col h-full"}`}>
+            <RichTextEditor
               ref={editorRef}
-              value={value} 
-              onChange={onChange} 
+              value={value}
+              onChange={onChange}
             />
           </div>
           {isMeganOpen && (

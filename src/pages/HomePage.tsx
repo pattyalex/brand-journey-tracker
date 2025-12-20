@@ -1,86 +1,170 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useUser } from '@clerk/clerk-react';
 import Layout from "@/components/Layout";
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
+import {
+  Card,
+  CardContent,
+  CardHeader,
   CardTitle,
-  CardDescription, 
-  CardFooter 
+  CardDescription,
+  CardFooter
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { 
-  Calendar, 
-  CheckSquare, 
-  Edit, 
-  BarChart2, 
-  Layers, 
-  Settings, 
+import {
+  Calendar,
+  CheckSquare,
+  Edit,
+  BarChart2,
+  Layers,
+  Settings,
   Handshake,
   Award,
   Coffee,
   Sun,
   Moon,
   PlusCircle,
-  Trash2
+  Trash2,
+  ChevronDown,
+  TrendingUp
 } from "lucide-react";
 import AIRecommendations from '@/components/analytics/AIRecommendations';
 import VerificationGuard from '@/components/VerificationGuard';
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const { user } = useUser();
   const [greeting, setGreeting] = useState("");
   const [greetingIcon, setGreetingIcon] = useState<React.ReactNode>(null);
   const [journalEntries, setJournalEntries] = useState({
-    whatWouldMakeTodayGreat: "",
-    todaysAffirmations: "",
-    threeThingsImGratefulFor: ""
+    threeThingsImGratefulFor: "",
+    todaysAffirmations: ""
   });
   const [goals, setGoals] = useState([]);
   const [moodboardImages, setMoodboardImages] = useState<string[]>([]);
-  const [priorities, setPriorities] = useState<{id: number, text: string}[]>([
-    { id: 1, text: "Finish editing weekend vlog" },
-    { id: 2, text: "Respond to brand email" },
-    { id: 3, text: "Draft caption for tomorrow's post" }
-  ]);
-  const [isAddPriorityOpen, setIsAddPriorityOpen] = useState(false);
-  const [newPriorityText, setNewPriorityText] = useState("");
+
+  // All Tasks from planner - load from localStorage
+  interface PlannerItem {
+    id: string;
+    text: string;
+    section: "morning" | "midday" | "afternoon" | "evening";
+    isCompleted: boolean;
+    date: string;
+    startTime?: string;
+    endTime?: string;
+    description?: string;
+    location?: string;
+    color?: string;
+  }
+
+  const [allTasks, setAllTasks] = useState<PlannerItem[]>([]);
+  const [isAddingTask, setIsAddingTask] = useState(false);
+  const [newTaskText, setNewTaskText] = useState("");
+
+  // State for adding monthly goals
+  const [isAddingMonthlyGoal, setIsAddingMonthlyGoal] = useState(false);
+  const [newMonthlyGoalText, setNewMonthlyGoalText] = useState("");
+
+  // State for editing monthly goals
+  const [editingMonthlyGoalId, setEditingMonthlyGoalId] = useState<number | null>(null);
+  const [editingMonthlyGoalText, setEditingMonthlyGoalText] = useState("");
+  const [showProgressNotesForGoalId, setShowProgressNotesForGoalId] = useState<number | null>(null);
+
+  // Monthly Goals state - synced with Growth Goals page via localStorage
+  type GoalStatus = 'not-started' | 'in-progress' | 'completed';
+  interface MonthlyGoal {
+    id: number;
+    text: string;
+    status: GoalStatus;
+    progressNote?: string;
+  }
+  interface MonthlyGoalsData {
+    [year: string]: {
+      [month: string]: MonthlyGoal[];
+    };
+  }
+
+  const [monthlyGoalsData, setMonthlyGoalsData] = useState<MonthlyGoalsData>(() => {
+    const saved = localStorage.getItem('monthlyGoalsData');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return {};
+      }
+    }
+    return {};
+  });
+
+  // Get current month and year
+  const getCurrentMonth = () => {
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    return months[new Date().getMonth()];
+  };
+
+  const getCurrentYear = () => new Date().getFullYear();
 
   // State to track connected social media platforms
   const [connectedPlatforms, setConnectedPlatforms] = useState<string[]>([]);
+
+  // Load All Tasks from localStorage
+  useEffect(() => {
+    const loadAllTasks = () => {
+      const saved = localStorage.getItem('allTasks');
+      if (saved) {
+        try {
+          setAllTasks(JSON.parse(saved));
+        } catch (error) {
+          console.error('Failed to load allTasks:', error);
+        }
+      }
+    };
+
+    loadAllTasks();
+
+    // Listen for changes to allTasks from the planner
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'allTasks' && e.newValue) {
+        try {
+          setAllTasks(JSON.parse(e.newValue));
+        } catch (error) {
+          console.error('Failed to parse allTasks:', error);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   // Set greeting based on time of day
   useEffect(() => {
     const getCurrentGreeting = () => {
       const hour = new Date().getHours();
-      const userName = "Alex"; // This would be fetched from user data in a real app
-
+      const userName = user?.firstName || "there";
 
       if (hour >= 5 && hour < 12) {
         setGreeting(`Good morning, ${userName}!`);
-        setGreetingIcon(<Coffee className="h-10 w-10 text-amber-500" />);
+        setGreetingIcon(<Coffee className="h-7 w-7 text-amber-500" />);
       } else if (hour >= 12 && hour < 18) {
         setGreeting(`Good afternoon, ${userName}!`);
-        setGreetingIcon(<Sun className="h-10 w-10 text-yellow-500" />);
+        setGreetingIcon(<Sun className="h-7 w-7 text-yellow-500" />);
       } else {
-        setGreeting(`Good evening, Alex!`);
-        setGreetingIcon(<Moon className="h-10 w-10 text-indigo-400" />);
+        setGreeting(`Good evening, ${userName}!`);
+        setGreetingIcon(<Moon className="h-7 w-7 text-indigo-400" />);
       }
     };
 
     getCurrentGreeting();
-  }, []);
+  }, [user]);
 
-  // Load journal entries and priorities from localStorage
+  // Load journal entries from localStorage
   useEffect(() => {
-    // Check if it's a new day - reset journal entries and priorities if needed
+    // Check if it's a new day - reset journal entries if needed
     const checkNewDay = () => {
       const lastAccessDate = localStorage.getItem('lastAccessDate');
       const currentDate = new Date().toDateString();
@@ -88,20 +172,12 @@ const HomePage = () => {
       if (lastAccessDate !== currentDate) {
         // It's a new day, reset journal entries
         const emptyJournalEntries = {
-          whatWouldMakeTodayGreat: "",
-          todaysAffirmations: "",
-          threeThingsImGratefulFor: ""
+          threeThingsImGratefulFor: "",
+          todaysAffirmations: ""
         };
 
         setJournalEntries(emptyJournalEntries);
         localStorage.setItem('journalEntries', JSON.stringify(emptyJournalEntries));
-
-        // Keep priorities but reset their completion status
-        const savedPriorities = localStorage.getItem('homePriorities');
-        if (savedPriorities) {
-          // Keep the priority items but reset completion status
-          localStorage.setItem('homeTasks', JSON.stringify([]));
-        }
 
         // Save current date as last access date
         localStorage.setItem('lastAccessDate', currentDate);
@@ -113,17 +189,6 @@ const HomePage = () => {
         }
       }
     };
-
-    // Initialize the homeTasks localStorage if it doesn't exist
-    if (!localStorage.getItem('homeTasks')) {
-      localStorage.setItem('homeTasks', JSON.stringify([]));
-    }
-
-    // Load saved priorities if they exist
-    const savedPriorities = localStorage.getItem('homePriorities');
-    if (savedPriorities) {
-      setPriorities(JSON.parse(savedPriorities));
-    }
 
     // Run the day change check
     checkNewDay();
@@ -176,27 +241,202 @@ const HomePage = () => {
     localStorage.setItem('journalEntries', JSON.stringify(updatedEntries));
   };
 
-  // Handle adding new priority task
-  const handleAddPriority = () => {
-    if (newPriorityText.trim()) {
-      const newPriority = {
-        id: Math.max(0, ...priorities.map(p => p.id)) + 1,
-        text: newPriorityText.trim()
+  // Handle adding new task
+  const handleAddTask = () => {
+    if (newTaskText.trim()) {
+      const newTask: PlannerItem = {
+        id: Date.now().toString(),
+        text: newTaskText.trim(),
+        section: "morning",
+        isCompleted: false,
+        date: "",
+      };
+      const updatedTasks = [...allTasks, newTask];
+      console.log('HomePage: Adding task', newTask);
+      console.log('HomePage: Updated tasks', updatedTasks);
+      setAllTasks(updatedTasks);
+      localStorage.setItem('allTasks', JSON.stringify(updatedTasks));
+      console.log('HomePage: Saved to localStorage');
+      // Dispatch custom event for same-tab sync
+      window.dispatchEvent(new CustomEvent('allTasksUpdated', { detail: updatedTasks }));
+      console.log('HomePage: Dispatched allTasksUpdated event');
+      setNewTaskText("");
+      setIsAddingTask(false);
+    }
+  };
+
+  // Handle toggling task completion
+  const handleToggleTask = (taskId: string) => {
+    const updatedTasks = allTasks.map(task =>
+      task.id === taskId ? { ...task, isCompleted: !task.isCompleted } : task
+    );
+    setAllTasks(updatedTasks);
+    localStorage.setItem('allTasks', JSON.stringify(updatedTasks));
+    // Dispatch custom event for same-tab sync
+    window.dispatchEvent(new CustomEvent('allTasksUpdated', { detail: updatedTasks }));
+  };
+
+  // Handle deleting task
+  const handleDeleteTask = (taskId: string) => {
+    const updatedTasks = allTasks.filter(task => task.id !== taskId);
+    setAllTasks(updatedTasks);
+    localStorage.setItem('allTasks', JSON.stringify(updatedTasks));
+    // Dispatch custom event for same-tab sync
+    window.dispatchEvent(new CustomEvent('allTasksUpdated', { detail: updatedTasks }));
+  };
+
+
+  // Save monthly goals to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem('monthlyGoalsData', JSON.stringify(monthlyGoalsData));
+      // Dispatch custom event for same-tab sync with Strategy & Growth page
+      window.dispatchEvent(new CustomEvent('monthlyGoalsUpdated', { detail: monthlyGoalsData }));
+    } catch (error) {
+      console.error('Failed to save monthly goals data:', error);
+    }
+  }, [monthlyGoalsData]);
+
+
+  // Listen for storage events to sync between tabs/pages
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'monthlyGoalsData' && e.newValue) {
+        try {
+          setMonthlyGoalsData(JSON.parse(e.newValue));
+        } catch (error) {
+          console.error('Failed to parse monthly goals data:', error);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  // Get monthly goals for the current month
+  const getCurrentMonthGoals = (): MonthlyGoal[] => {
+    const year = getCurrentYear();
+    const month = getCurrentMonth();
+    return monthlyGoalsData[year]?.[month] || [];
+  };
+
+  // Toggle monthly goal status (same system as in Growth Goals page)
+  const handleToggleMonthlyGoal = (id: number) => {
+    const year = getCurrentYear();
+    const month = getCurrentMonth();
+    const currentGoals = getCurrentMonthGoals();
+
+    const updatedGoals = currentGoals.map(g => {
+      if (g.id === id) {
+        // Cycle through statuses: not-started → in-progress → completed → not-started
+        const nextStatus: GoalStatus =
+          g.status === 'not-started' ? 'in-progress' :
+          g.status === 'in-progress' ? 'completed' :
+          'not-started';
+        // Clear progressNote when leaving in-progress status
+        if (g.status === 'in-progress' && nextStatus !== 'in-progress') {
+          return { ...g, status: nextStatus, progressNote: undefined };
+        }
+        return { ...g, status: nextStatus };
+      }
+      return g;
+    });
+
+    setMonthlyGoalsData(prev => ({
+      ...prev,
+      [year]: {
+        ...prev[year],
+        [month]: updatedGoals
+      }
+    }));
+  };
+
+  // Update progress note for monthly goal
+  const handleUpdateMonthlyProgressNote = (id: number, note: string) => {
+    const year = getCurrentYear();
+    const month = getCurrentMonth();
+    const currentGoals = getCurrentMonthGoals();
+
+    const updatedGoals = currentGoals.map(g =>
+      g.id === id ? { ...g, progressNote: note } : g
+    );
+
+    setMonthlyGoalsData(prev => ({
+      ...prev,
+      [year]: {
+        ...prev[year],
+        [month]: updatedGoals
+      }
+    }));
+  };
+
+  // Add new monthly goal
+  const handleAddMonthlyGoal = () => {
+    if (newMonthlyGoalText.trim()) {
+      const year = getCurrentYear();
+      const month = getCurrentMonth();
+      const currentGoals = getCurrentMonthGoals();
+
+      const newGoal: MonthlyGoal = {
+        id: Date.now(),
+        text: newMonthlyGoalText.trim(),
+        status: 'not-started'
       };
 
-      const updatedPriorities = [...priorities, newPriority];
-      setPriorities(updatedPriorities);
+      const updatedGoals = [...currentGoals, newGoal];
 
-      // Reset state and close dialog
-      setNewPriorityText("");
-      setIsAddPriorityOpen(false);
+      setMonthlyGoalsData(prev => ({
+        ...prev,
+        [year]: {
+          ...prev[year],
+          [month]: updatedGoals
+        }
+      }));
 
-      // Store in localStorage for persistence
-      localStorage.setItem('homePriorities', JSON.stringify(updatedPriorities));
-
-      // Update the last access date to today to ensure proper day tracking
-      localStorage.setItem('lastAccessDate', new Date().toDateString());
+      setNewMonthlyGoalText("");
+      setIsAddingMonthlyGoal(false);
     }
+  };
+
+  // Edit monthly goal
+  const handleEditMonthlyGoal = (id: number, newText: string) => {
+    if (newText.trim()) {
+      const year = getCurrentYear();
+      const month = getCurrentMonth();
+      const currentGoals = getCurrentMonthGoals();
+
+      const updatedGoals = currentGoals.map(g =>
+        g.id === id ? { ...g, text: newText.trim() } : g
+      );
+
+      setMonthlyGoalsData(prev => ({
+        ...prev,
+        [year]: {
+          ...prev[year],
+          [month]: updatedGoals
+        }
+      }));
+    }
+    setEditingMonthlyGoalId(null);
+    setEditingMonthlyGoalText("");
+  };
+
+  // Delete monthly goal
+  const handleDeleteMonthlyGoal = (id: number) => {
+    const year = getCurrentYear();
+    const month = getCurrentMonth();
+    const currentGoals = getCurrentMonthGoals();
+
+    const updatedGoals = currentGoals.filter(g => g.id !== id);
+
+    setMonthlyGoalsData(prev => ({
+      ...prev,
+      [year]: {
+        ...prev[year],
+        [month]: updatedGoals
+      }
+    }));
   };
 
   // Navigation shortcuts
@@ -257,394 +497,337 @@ const HomePage = () => {
         <ScrollArea className="h-screen">
           <div className="container px-4 md:px-6 py-6 md:py-10">
             {/* Greeting Section - Top Banner */}
-            <section className="mb-8 fade-in">
-              <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-6 flex items-center justify-between">
+            <section className="mb-6 fade-in">
+              <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4 flex items-center justify-between">
                 <div>
-                  <h1 className="text-3xl md:text-4xl font-bold mb-2">{greeting}</h1>
-                  <p className="text-muted-foreground">Welcome to your content hub. What would you like to create today?</p>
+                  <h1 className="text-2xl md:text-3xl font-bold mb-1">{greeting}</h1>
+                  <p className="text-sm text-muted-foreground">Welcome to your content hub. What would you like to create today?</p>
                 </div>
-                <div className="bg-white p-3 rounded-full shadow-sm">
+                <div className="bg-white p-2 rounded-full shadow-sm">
                   {greetingIcon}
                 </div>
               </div>
             </section>
 
-            {/* Main Content Area - Two Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Left Column - 2/3 width */}
-              <div className="lg:col-span-2 space-y-8">
-                {/* Journaling Section */}
-                <section className="space-y-4 fade-in">
-                  <h2 className="text-xl font-bold mb-4">Your Journal</h2>
-                  <Card className="border border-gray-100 shadow-sm">
-                    <CardContent className="space-y-6">
-                      <div className="pt-4">
-                        <h3 className="font-medium mb-2 text-sm">What would make today great?</h3>
-                        <Textarea 
-                          placeholder="List 1-3 things that would make today wonderful..."
-                          value={journalEntries.whatWouldMakeTodayGreat}
-                          onChange={(e) => handleJournalChange('whatWouldMakeTodayGreat', e.target.value)}
-                          className="min-h-[80px] resize-none"
-                        />
-                      </div>
-
-                      <div className="pt-4">
-                        <h3 className="font-medium mb-2 text-sm">Today's affirmations:</h3>
-                        <Textarea 
-                          placeholder="Write your daily affirmations..."
-                          value={journalEntries.todaysAffirmations}
-                          onChange={(e) => handleJournalChange('todaysAffirmations', e.target.value)}
-                          className="min-h-[80px] resize-none"
-                        />
-                      </div>
-
-                      <div className="pt-4">
-                        <h3 className="font-medium mb-2 text-sm">Three things I'm grateful for:</h3>
-                        <Textarea 
-                          placeholder="List three things you're grateful for today..."
-                          value={journalEntries.threeThingsImGratefulFor}
-                          onChange={(e) => handleJournalChange('threeThingsImGratefulFor', e.target.value)}
-                          className="min-h-[80px] resize-none"
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </section>
-
-                {/* Quick Access Section - Grid of Cards */}
-                <section className="fade-in">
-                  <h2 className="text-xl font-bold mb-4">Quick Access</h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    {shortcuts.slice(0, 8).map((shortcut, index) => (
-                      <Card 
-                        key={index}
-                        className="border border-gray-100 shadow-sm hover:shadow transition-all cursor-pointer"
-                        onClick={() => navigate(shortcut.path)}
+            {/* Three Main Sections - To-Dos, Projects, Content Calendar */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 fade-in">
+              {/* All Tasks Section */}
+              <section>
+                <Card className="border border-gray-100 shadow-sm">
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="text-xl">All Tasks</CardTitle>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => navigate('/task-board')}
+                        className="h-7 text-xs px-2"
                       >
-                        <CardContent className="p-4 flex flex-col items-center text-center justify-center h-full">
-                          <shortcut.icon className="h-8 w-8 text-primary mb-2" />
-                          <h3 className="font-medium text-sm">{shortcut.title}</h3>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </section>
-
-                {/* Quick Stats */}
-                <section className="fade-in mt-8">
-                  <h2 className="text-xl font-bold mb-4">Quick Stats</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <Card className="p-6">
-                      <h3 className="text-lg font-medium mb-2">Content Ideas</h3>
-                      <div className="text-3xl font-bold">12</div>
-                      <p className="text-sm text-muted-foreground mt-1">4 new this week</p>
-                    </Card>
-
-                    <Card className="p-6">
-                      <h3 className="text-lg font-medium mb-2">Scheduled Content</h3>
-                      <div className="text-3xl font-bold">8</div>
-                      <p className="text-sm text-muted-foreground mt-1">Next post in 2 days</p>
-                    </Card>
-
-                    <Card className="p-6">
-                      <h3 className="text-lg font-medium mb-2">Active Brand Deals</h3>
-                      <div className="text-3xl font-bold">3</div>
-                      <p className="text-sm text-muted-foreground mt-1">1 pending approval</p>
-                    </Card>
-                  </div>
-                </section>
-
-                {/* Recent Activity */}
-                <section className="fade-in mb-8">
-                  <h2 className="text-2xl font-bold mb-4">Recent Activity</h2>
-                  <Card className="p-0 overflow-hidden">
-                    <div className="divide-y">
-                      <div className="p-4 hover:bg-muted/50 transition-colors">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="font-medium">Content Idea Added</p>
-                            <p className="text-sm text-muted-foreground">You added 'Summer Travel Tips' to your content ideas</p>
-                          </div>
-                          <span className="text-xs text-muted-foreground">2 hours ago</span>
-                        </div>
-                      </div>
-                      <div className="p-4 hover:bg-muted/50 transition-colors">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="font-medium">Post Scheduled</p>
-                            <p className="text-sm text-muted-foreground">Instagram post scheduled for May 20th at 9:00 AM</p>
-                          </div>
-                          <span className="text-xs text-muted-foreground">Yesterday</span>
-                        </div>
-                      </div>
-                      <div className="p-4 hover:bg-muted/50 transition-colors">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="font-medium">Brand Deal Updated</p>
-                            <p className="text-sm text-muted-foreground">Contract approved for Skincare Brand collaboration</p>
-                          </div>
-                          <span className="text-xs text-muted-foreground">2 days ago</span>
-                        </div>
-                      </div>
-                      <div className="p-4 hover:bg-muted/50 transition-colors">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="font-medium">Analytics Updated</p>
-                            <p className="text-sm text-muted-foreground">April performance report is now available</p>
-                          </div>
-                          <span className="text-xs text-muted-foreground">3 days ago</span>
-                        </div>
-                      </div>
+                        View All →
+                      </Button>
                     </div>
-                  </Card>
-                </section>
-
-                {/* Recent Content Section */}
-                <section className="fade-in">
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold">Recent Content</h2>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => navigate('/bank-of-content')}
-                      className="text-xs"
-                    >
-                      View All
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Card className="border border-gray-100 shadow-sm">
-                      <CardContent className="p-4">
-                        <div className="aspect-video bg-gray-100 rounded-md mb-3 flex items-center justify-center">
-                          <Edit className="h-8 w-8 text-gray-400" />
-                        </div>
-                        <h3 className="font-medium text-sm mb-1">Morning Routine Video</h3>
-                        <p className="text-xs text-muted-foreground">Draft • 2 days ago</p>
-                      </CardContent>
-                    </Card>
-                    <Card className="border border-gray-100 shadow-sm">
-                      <CardContent className="p-4">
-                        <div className="aspect-video bg-gray-100 rounded-md mb-3 flex items-center justify-center">
-                          <Edit className="h-8 w-8 text-gray-400" />
-                        </div>
-                        <h3 className="font-medium text-sm mb-1">Healthy Breakfast Ideas</h3>
-                        <p className="text-xs text-muted-foreground">Scheduled • Tomorrow</p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </section>
-              </div>
-
-              {/* Right Column - 1/3 width */}
-              <div className="space-y-8">
-                {/* Today's Top Priority Tasks Section */}
-                <section className="fade-in">
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold">Today's Top Priorities</h2>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => setIsAddPriorityOpen(true)}
-                    >
-                      <PlusCircle className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <Card className="border border-gray-100 shadow-sm">
-                    <CardContent className="p-4">
-                      <div className="space-y-3">
-                      {priorities.map((task) => (
-                        <div key={task.id} className="flex items-start group justify-between hover:bg-gray-50 rounded-sm p-1">
-                          <div className="flex items-start flex-1">
-                            <Checkbox 
-                              id={`task-${task.id}`}
-                              className="h-5 w-5 rounded mr-3 mt-0.5 flex-shrink-0 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-300"
-                              onCheckedChange={(checked) => {
-                                const tasks = JSON.parse(localStorage.getItem('homeTasks') || '[]');
-                                if (checked) {
-                                  if (!tasks.includes(task.id)) {
-                                    tasks.push(task.id);
-                                  }
-                                } else {
-                                  const index = tasks.indexOf(task.id);
-                                  if (index > -1) {
-                                    tasks.splice(index, 1);
-                                  }
-                                }
-                                localStorage.setItem('homeTasks', JSON.stringify(tasks));
-                              }}
-                              defaultChecked={JSON.parse(localStorage.getItem('homeTasks') || '[]').includes(task.id)}
-                            />
-                            <label 
-                              htmlFor={`task-${task.id}`} 
-                              className="text-sm cursor-pointer peer-data-[state=checked]:line-through peer-data-[state=checked]:text-gray-500"
-                            >
-                              {task.text}
-                            </label>
-                          </div>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                            onClick={() => {
-                              // Create a new array without this task
-                              const updatedPriorities = priorities.filter(p => p.id !== task.id);
-                              setPriorities(updatedPriorities);
-
-                              // Save to localStorage
-                              localStorage.setItem('homePriorities', JSON.stringify(updatedPriorities));
-
-                              // Also remove from completed tasks if present
-                              const tasks = JSON.parse(localStorage.getItem('homeTasks') || '[]');
-                              const index = tasks.indexOf(task.id);
-                              if (index > -1) {
-                                tasks.splice(index, 1);
-                                localStorage.setItem('homeTasks', JSON.stringify(tasks));
-                              }
-                            }}
-                          >
-                            <Trash2 size={14} className="text-gray-400 hover:text-red-500" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                    </CardContent>
-                  </Card>
-                </section>
-
-                {/* Goals Section */}
-                <section className="fade-in">
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold">Your Goals</h2>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => navigate('/strategy-growth')}
-                    >
-                      View All
-                    </Button>
-                  </div>
-
-                  <div className="space-y-3">
-                    {goals.map((goal: any, index: number) => (
-                      <Card key={index} className="border border-gray-100 shadow-sm">
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-center mb-1">
-                            <h3 className="font-medium text-sm">{goal.metric}</h3>
-                            <span className="text-xs text-muted-foreground">Target: {goal.timeframe}</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <div className="h-2 flex-1 bg-gray-100 rounded-full overflow-hidden">
-                              <div 
-                                className="h-full bg-primary rounded-full"
-                                style={{ width: `${Math.min(100, (goal.current / goal.target) * 100)}%` }}
-                              ></div>
+                  </CardHeader>
+                  <CardContent className="pt-1 pb-4">
+                    {/* All Tasks from Planner */}
+                    <div className="relative">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsAddingTask(true)}
+                        className="h-7 w-7 p-0 absolute top-2 right-0"
+                      >
+                        <PlusCircle className="h-3.5 w-3.5" />
+                      </Button>
+                      <div className="space-y-2 pt-10">
+                        {allTasks.length === 0 && !isAddingTask ? (
+                          <p className="text-xs text-gray-400 italic">No tasks yet. Click + to add a task!</p>
+                        ) : (
+                          allTasks.map((task) => (
+                            <div key={task.id} className="flex items-start group justify-between hover:bg-gray-50 rounded-sm p-1">
+                              <div className="flex items-start flex-1">
+                                <Checkbox
+                                  id={`task-${task.id}`}
+                                  checked={task.isCompleted}
+                                  onCheckedChange={() => handleToggleTask(task.id)}
+                                  className="h-4 w-4 rounded mr-2 mt-0.5 flex-shrink-0 data-[state=checked]:bg-green-500 data-[state=checked]:text-white border-gray-300"
+                                />
+                                <label
+                                  htmlFor={`task-${task.id}`}
+                                  className={`text-xs cursor-pointer ${task.isCompleted ? 'line-through text-gray-500' : ''}`}
+                                >
+                                  {task.text}
+                                </label>
+                              </div>
+                              <button
+                                onClick={() => handleDeleteTask(task.id)}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity ml-2 text-gray-400 hover:text-red-500"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
                             </div>
-                            <span className="text-xs font-medium whitespace-nowrap">
-                              {goal.current} / {goal.target}
-                            </span>
+                          ))
+                        )}
+                        {isAddingTask && (
+                          <div className="flex items-center gap-1 p-1">
+                            <div className="h-4 w-4 rounded mr-2 mt-0.5 flex-shrink-0 border border-gray-300"></div>
+                            <Input
+                              autoFocus
+                              value={newTaskText}
+                              onChange={(e) => setNewTaskText(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  handleAddTask();
+                                } else if (e.key === 'Escape') {
+                                  setIsAddingTask(false);
+                                  setNewTaskText("");
+                                }
+                              }}
+                              onBlur={() => {
+                                if (!newTaskText.trim()) {
+                                  setIsAddingTask(false);
+                                }
+                              }}
+                              placeholder="Enter task..."
+                              className="flex-1 text-xs h-6"
+                            />
                           </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </section>
-
-                {/* Mood Board Section */}
-                <section className="fade-in">
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold">Mood Board</h2>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => navigate('/vision-board')}
-                    >
-                      Edit
-                    </Button>
-                  </div>
-
-                  <Card className="border border-gray-100 shadow-sm overflow-hidden">
-                    <CardContent className="p-2">
-                      <div className="grid grid-cols-3 gap-2">
-                        {moodboardImages.map((image, index) => (
-                          <div 
-                            key={index} 
-                            className="aspect-square rounded-md overflow-hidden"
-                            style={{ 
-                              backgroundImage: `url(${image})`,
-                              backgroundSize: 'cover',
-                              backgroundPosition: 'center'
-                            }}
-                          ></div>
-                        ))}
-                        <div className="aspect-square rounded-md bg-gray-100 flex items-center justify-center">
-                          <PlusCircle className="h-5 w-5 text-gray-400" />
-                        </div>
+                        )}
                       </div>
-                    </CardContent>
-                  </Card>
-                </section>
-              </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </section>
+
+              {/* Projects Section */}
+              <section>
+                <Card className="border border-gray-100 shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="text-xl">Projects</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">Content will be added here</p>
+                  </CardContent>
+                </Card>
+              </section>
+
+              {/* Content Calendar Section */}
+              <section>
+                <Card className="border border-gray-100 shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="text-xl">Content Calendar</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">Content will be added here</p>
+                  </CardContent>
+                </Card>
+              </section>
             </div>
 
-            {/* AI Recommendations Section - Bottom Full Width */}
-            <section className="mt-8 fade-in">
-              <Card className="border border-primary/20 shadow-sm bg-primary/5">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xl font-medium">AI Recommendations</CardTitle>
-                  <CardDescription>Personalized tips based on your content performance</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 bg-white rounded-md shadow-sm">
-                      <h4 className="font-medium mb-1">Content Idea</h4>
-                      <p className="text-sm text-muted-foreground">Based on your recent analytics, your audience responds well to tutorial-style content. Consider creating more how-to videos this week.</p>
+            {/* Partnerships and Strategy & Growth Sections */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 fade-in">
+              {/* Partnerships Section */}
+              <section>
+                <Card
+                  className="border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => navigate('/collab-management')}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="text-xl flex items-center gap-2">
+                        <Handshake className="h-5 w-5 text-blue-500" />
+                        Partnerships
+                      </CardTitle>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs px-2"
+                      >
+                        View All →
+                      </Button>
                     </div>
-                    <div className="p-4 bg-white rounded-md shadow-sm">
-                      <h4 className="font-medium mb-1">Optimal Posting Time</h4>
-                      <p className="text-sm text-muted-foreground">Your engagement is highest between 6-8pm on weekdays. Try scheduling your next post during this window.</p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                        <span className="text-sm font-medium">Active Partnerships</span>
+                        <span className="text-lg font-bold text-blue-600">3</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                        <span className="text-sm font-medium">Pending Proposals</span>
+                        <span className="text-lg font-bold text-yellow-600">2</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                        <span className="text-sm font-medium">Completed Collabs</span>
+                        <span className="text-lg font-bold text-green-600">8</span>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button variant="outline" size="sm" className="w-full">
-                    Get More Recommendations
-                  </Button>
-                </CardFooter>
-              </Card>
-            </section>
+                  </CardContent>
+                </Card>
+              </section>
+
+              {/* Strategy & Growth Section */}
+              <section>
+                <Card className="border border-gray-100 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="text-xl flex items-center gap-2">
+                        <TrendingUp className="h-5 w-5 text-green-500" />
+                        Monthly Goals - {getCurrentMonth()}
+                      </CardTitle>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs px-2"
+                        onClick={() => navigate('/strategy-growth?tab=growth-goals')}
+                      >
+                        View All →
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {getCurrentMonthGoals().slice(0, 5).map((goal) => (
+                        <div key={goal.id} className="space-y-2">
+                          <div className="flex items-start gap-3 p-2 hover:bg-gray-50 rounded group">
+                            <button
+                              onClick={() => handleToggleMonthlyGoal(goal.id)}
+                              className={`h-4 w-4 rounded mr-2 mt-0.5 flex-shrink-0 border-2 transition-colors flex items-center justify-center ${
+                                goal.status === 'completed'
+                                  ? 'bg-green-500 border-green-500'
+                                  : goal.status === 'in-progress'
+                                  ? 'bg-yellow-400 border-yellow-400'
+                                  : 'border-gray-300 bg-white'
+                              }`}
+                            >
+                              {goal.status === 'completed' && (
+                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                </svg>
+                              )}
+                              {goal.status === 'in-progress' && (
+                                <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+                              )}
+                            </button>
+                            {editingMonthlyGoalId === goal.id ? (
+                              <Input
+                                value={editingMonthlyGoalText}
+                                onChange={(e) => setEditingMonthlyGoalText(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    handleEditMonthlyGoal(goal.id, editingMonthlyGoalText);
+                                  } else if (e.key === 'Escape') {
+                                    setEditingMonthlyGoalId(null);
+                                    setEditingMonthlyGoalText("");
+                                  }
+                                }}
+                                onBlur={() => handleEditMonthlyGoal(goal.id, editingMonthlyGoalText)}
+                                className="flex-1 text-sm h-7"
+                                autoFocus
+                              />
+                            ) : (
+                              <span
+                                onDoubleClick={() => {
+                                  setEditingMonthlyGoalId(goal.id);
+                                  setEditingMonthlyGoalText(goal.text);
+                                }}
+                                className={`flex-1 text-sm cursor-pointer ${
+                                  goal.status === 'completed' ? 'line-through text-gray-500' : ''
+                                }`}
+                              >
+                                {goal.text}
+                              </span>
+                            )}
+
+                            {/* Arrow for in-progress goals */}
+                            {goal.status === 'in-progress' && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowProgressNotesForGoalId(
+                                    showProgressNotesForGoalId === goal.id ? null : goal.id
+                                  );
+                                }}
+                                className="text-yellow-600/70 hover:text-yellow-600 flex-shrink-0"
+                              >
+                                <ChevronDown className={`h-3.5 w-3.5 transition-transform ${
+                                  showProgressNotesForGoalId === goal.id ? 'rotate-180' : ''
+                                }`} />
+                              </button>
+                            )}
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteMonthlyGoal(goal.id);
+                              }}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                          {/* Progress notes for in-progress goals */}
+                          {goal.status === 'in-progress' && showProgressNotesForGoalId === goal.id && (
+                            <div className="ml-8 mr-8">
+                              <Input
+                                value={goal.progressNote || ""}
+                                onChange={(e) => handleUpdateMonthlyProgressNote(goal.id, e.target.value)}
+                                placeholder="Progress notes..."
+                                className="text-xs bg-yellow-50/50 border-yellow-200/60 placeholder:text-yellow-600/60"
+                                autoFocus
+                              />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+
+                      {/* Add new goal input */}
+                      {isAddingMonthlyGoal ? (
+                        <div className="flex items-center gap-2 p-2 border border-gray-200 rounded bg-white">
+                          <div className="h-4 w-4 rounded mr-2 mt-0.5 flex-shrink-0 border-2 border-gray-300"></div>
+                          <Input
+                            value={newMonthlyGoalText}
+                            onChange={(e) => setNewMonthlyGoalText(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                handleAddMonthlyGoal();
+                              } else if (e.key === 'Escape') {
+                                setIsAddingMonthlyGoal(false);
+                                setNewMonthlyGoalText("");
+                              }
+                            }}
+                            onBlur={() => {
+                              if (!newMonthlyGoalText.trim()) {
+                                setIsAddingMonthlyGoal(false);
+                              }
+                            }}
+                            placeholder="Add goal for this month..."
+                            className="flex-1 text-sm h-7 border-0 shadow-none focus-visible:ring-0"
+                            autoFocus
+                          />
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setIsAddingMonthlyGoal(true)}
+                          className="flex items-center justify-center w-full py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded transition-colors"
+                        >
+                          <PlusCircle className="h-4 w-4 mr-1" />
+                          Add Goal
+                        </button>
+                      )}
+
+                      {getCurrentMonthGoals().length > 5 && (
+                        <p className="text-xs text-gray-500 text-center pt-2">
+                          +{getCurrentMonthGoals().length - 5} more goals
+                        </p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </section>
+            </div>
           </div>
         </ScrollArea>
 
-  {/* Add Priority Dialog */}
-        <Dialog open={isAddPriorityOpen} onOpenChange={setIsAddPriorityOpen}>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Add New Priority</DialogTitle>
-              <DialogDescription>
-                Add a new priority to your list
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="priority-text">Priority Task</Label>
-                <Input
-                  id="priority-text"
-                  value={newPriorityText}
-                  onChange={(e) => setNewPriorityText(e.target.value)}
-                  placeholder="Enter your priority task"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddPriorityOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleAddPriority} disabled={!newPriorityText.trim()}>
-                Add Priority
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </Layout>
   );
 };

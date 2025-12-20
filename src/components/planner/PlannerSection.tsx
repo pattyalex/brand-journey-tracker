@@ -48,15 +48,16 @@ export const PlannerSection = ({
   const handleAddItem = () => {
     if (newItemText.trim()) {
       onAddItem(
-        newItemText, 
-        section, 
-        newItemStartTime || undefined, 
+        newItemText,
+        section,
+        newItemStartTime || undefined,
         newItemEndTime || undefined
       );
       setNewItemText("");
       setNewItemStartTime("");
       setNewItemEndTime("");
-      setIsAddingItem(false);
+      // Keep isAddingItem true to start a new entry automatically
+      // setIsAddingItem(false);
       setShowTimeInput(false);
     }
   };
@@ -228,66 +229,8 @@ export const PlannerSection = ({
                       {(provided, snapshot) => (
                         <div
                           ref={provided.innerRef}
-                          {...(isAllTasksSection ? {} : provided.draggableProps)}
+                          {...provided.draggableProps}
                           className={`${snapshot.isDragging ? 'opacity-80 bg-muted' : ''}`}
-                          draggable={isAllTasksSection}
-                          onDragStart={(e) => {
-                            if (isAllTasksSection) {
-                              e.dataTransfer.setData('taskId', item.id);
-                              e.dataTransfer.setData('fromDate', '');
-                              e.dataTransfer.effectAllowed = 'move';
-                            }
-                          }}
-                          onDragEnd={(e) => {
-                            if (isAllTasksSection) {
-                              e.currentTarget.style.opacity = '1';
-                            }
-                          }}
-                          onDragOver={(e) => {
-                            if (isAllTasksSection) {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              e.currentTarget.classList.add('border-t-4', 'border-t-blue-500');
-                            }
-                          }}
-                          onDragLeave={(e) => {
-                            if (isAllTasksSection) {
-                              e.currentTarget.classList.remove('border-t-4', 'border-t-blue-500');
-                            }
-                          }}
-                          onDrop={(e) => {
-                            if (isAllTasksSection) {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              e.currentTarget.classList.remove('border-t-4', 'border-t-blue-500');
-
-                              const draggedTaskId = e.dataTransfer.getData('taskId');
-                              const fromDate = e.dataTransfer.getData('fromDate');
-                              const targetTaskId = item.id;
-
-                              if (draggedTaskId === targetTaskId) return;
-
-                              // Handle drop from weekly view (has a date)
-                              if (fromDate && onDropTaskFromWeekly) {
-                                onDropTaskFromWeekly(draggedTaskId, targetTaskId, fromDate);
-                                return;
-                              }
-
-                              // Reorder within All Tasks
-                              if (!fromDate && onReorderItems) {
-                                const draggedIndex = items.findIndex(i => i.id === draggedTaskId);
-                                const targetIndex = items.findIndex(i => i.id === targetTaskId);
-
-                                if (draggedIndex === -1 || targetIndex === -1) return;
-
-                                const reorderedItems = [...items];
-                                const [draggedItem] = reorderedItems.splice(draggedIndex, 1);
-                                reorderedItems.splice(targetIndex, 0, draggedItem);
-
-                                onReorderItems(reorderedItems);
-                              }
-                            }
-                          }}
                         >
                           <div className="flex flex-col w-full group">
                             <div className="flex items-center">
@@ -304,7 +247,7 @@ export const PlannerSection = ({
                                   showTimeInItem={false}
                                   renderCheckbox={true}
                                   index={index}
-                                  dragHandleProps={isAllTasksSection ? undefined : provided.dragHandleProps}
+                                  dragHandleProps={provided.dragHandleProps}
                                 />
                               </div>
                             </div>
