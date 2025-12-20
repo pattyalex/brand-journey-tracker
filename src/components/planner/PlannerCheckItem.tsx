@@ -211,34 +211,48 @@ export const PlannerCheckItem = ({
       ) : (
         <div
           ref={scrollableRef}
-          className="group flex items-start w-full py-2 px-2 border border-gray-200 rounded-lg relative overflow-visible"
+          className="group flex items-center w-full py-1.5 px-2 border border-gray-200 rounded-md relative overflow-visible hover:border-gray-300 transition-colors"
           style={{ backgroundColor: item.color || 'white' }}
-          draggable={!dragHandleProps}
+          draggable={true}
           onDragStart={(e) => {
-            if (!dragHandleProps) {
-              e.dataTransfer.setData('taskId', item.id);
-              e.dataTransfer.setData('fromDate', item.date || '');
-              e.dataTransfer.effectAllowed = 'move';
-            }
+            console.log('DRAG START:', { id: item.id, date: item.date, text: item.text });
+
+            // Set data for native HTML5 drag
+            e.dataTransfer.setData('text/plain', item.id);
+            e.dataTransfer.setData('taskId', item.id);
+            e.dataTransfer.setData('fromDate', item.date || '');
+            e.dataTransfer.setData('fromAllTasks', item.date ? 'false' : 'true');
+            e.dataTransfer.effectAllowed = 'move';
+
+            // Make it semi-transparent while dragging
+            setTimeout(() => {
+              e.currentTarget.style.opacity = '0.5';
+            }, 0);
+          }}
+          onDragEnd={(e) => {
+            console.log('DRAG END');
+            e.currentTarget.style.opacity = '1';
           }}
         >
-          <div
-            {...dragHandleProps}
-            className="mr-1 mt-0.5 text-gray-400 cursor-grab active:cursor-grabbing flex-shrink-0"
-            style={{ touchAction: 'none' }}
-          >
-            <GripVertical size={16} />
-          </div>
+          {dragHandleProps && (
+            <div
+              {...dragHandleProps}
+              className="mr-1.5 text-gray-400 cursor-grab active:cursor-grabbing flex-shrink-0"
+              style={{ touchAction: 'none' }}
+            >
+              <GripVertical size={14} />
+            </div>
+          )}
           {renderCheckbox && (
             <Checkbox
               checked={item.isCompleted}
               onCheckedChange={() => onToggle(item.id)}
-              className="h-4 w-4 mr-2 mt-1 flex-shrink-0 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
+              className="h-3.5 w-3.5 mr-2 flex-shrink-0 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
             />
           )}
 
           <div
-            className={`flex-1 text-base ${item.isCompleted ? 'line-through text-gray-600' : 'text-gray-800'} cursor-pointer overflow-visible flex items-start pr-5`}
+            className={`flex-1 text-sm ${item.isCompleted ? 'line-through text-gray-500' : 'text-gray-700'} cursor-pointer overflow-visible flex items-center pr-5`}
             onDoubleClick={handleDoubleClick}
           >
             <span className="break-words whitespace-normal">{item.text}</span>

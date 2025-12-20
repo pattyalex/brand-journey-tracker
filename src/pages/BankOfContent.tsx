@@ -475,7 +475,7 @@ const BankOfContent = () => {
 
   return (
     <Layout>
-      <div className="w-full max-w-[1800px] h-[calc(100vh-4rem)] mx-auto px-8 py-6 fade-in">
+      <div className="w-full max-w-[1800px] h-[calc(100vh-4rem)] mx-auto px-8 pt-2 pb-6 fade-in">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full">
           {pillars.map((pillar, index) => {
             const color = getPillarColor(index);

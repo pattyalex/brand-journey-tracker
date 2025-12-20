@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { format, addDays, subDays, parseISO, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, addWeeks, subWeeks } from "date-fns";
 import { Copy, Trash2, Heart, AlarmClock, CalendarIcon, ChevronLeft, ChevronRight, ListChecks, ChevronRight as ChevronRightCollapse, Plus, Palette, X as XIcon, Check, GripVertical, Edit, Clock } from 'lucide-react';
 import { PlannerDay, PlannerItem, GlobalPlannerData } from "@/types/planner";
@@ -138,6 +138,8 @@ export const DailyPlanner = () => {
     "#e3f2fd", "#a5b8d0", "#ce93d8", "#f3e5f5",
     "#eeeeee", "#ede8e3", "#f8bbd0", "#f5e1e5"
   ];
+
+  const nativeDropHandledRef = useRef<{taskId: string, handled: boolean} | null>(null);
 
   useEffect(() => {
     const savedData = localStorage.getItem("plannerData");
@@ -628,7 +630,7 @@ export const DailyPlanner = () => {
   const handleSaveTaskDialog = () => {
     if (!dialogTaskTitle.trim()) return;
 
-    if (editingTask) {
+    if (editingTask && editingTask.id) {
       // Check if this is a task being moved from All Tasks (has date but not in plannerData yet)
       const taskDate = editingTask.date;
       const isInPlannerData = plannerData.some(day =>
@@ -683,19 +685,20 @@ export const DailyPlanner = () => {
       }
     } else {
       // Create new task
+      const targetDate = editingTask?.date || dateString; // Use the date from editingTask if available (for weekly view)
       const newTask: PlannerItem = {
         id: Date.now().toString(),
         text: dialogTaskTitle.trim(),
         section: "morning",
         isCompleted: dialogTaskCompleted,
-        date: dateString,
+        date: targetDate,
         startTime: dialogStartTime,
         endTime: dialogEndTime,
         color: dialogTaskColor,
         description: dialogTaskDescription,
       };
 
-      const dayIndex = plannerData.findIndex(day => day.date === dateString);
+      const dayIndex = plannerData.findIndex(day => day.date === targetDate);
       const updatedPlannerData = [...plannerData];
 
       if (dayIndex >= 0) {
@@ -824,7 +827,13 @@ export const DailyPlanner = () => {
   };
 
   const handleDragEnd = (result: DropResult) => {
-    const { source, destination } = result;
+    const { source, destination, draggableId } = result;
+
+    // Check if this drop was handled by native HTML5 drag-and-drop (to calendar)
+    if (nativeDropHandledRef.current?.taskId === draggableId && nativeDropHandledRef.current?.handled) {
+      nativeDropHandledRef.current = null;
+      return; // Don't process further, already handled
+    }
 
     if (!destination) {
       return;
@@ -1101,19 +1110,19 @@ export const DailyPlanner = () => {
         {/* All Tasks Section - Left Side - Visible in Today, Day, and This Week views */}
         {(currentView === 'today' || currentView === 'week' || currentView === 'day') && (
         <div
-          className={`${isAllTasksCollapsed ? 'w-16' : 'w-64'} flex-shrink-0 ${isAllTasksCollapsed ? 'bg-transparent' : 'bg-gray-100'} rounded-lg ${isAllTasksCollapsed ? 'p-2' : 'p-4'} transition-all duration-300`}
+          className={`${isAllTasksCollapsed ? 'w-16' : 'w-80'} flex-shrink-0 bg-white rounded-lg ${isAllTasksCollapsed ? 'p-2' : 'p-6'} transition-all duration-300`}
           onDragOver={(e) => {
             e.preventDefault();
             if (!isAllTasksCollapsed) {
-              e.currentTarget.classList.add('bg-blue-200');
+              e.currentTarget.classList.add('bg-blue-50');
             }
           }}
           onDragLeave={(e) => {
-            e.currentTarget.classList.remove('bg-blue-200');
+            e.currentTarget.classList.remove('bg-blue-50');
           }}
           onDrop={(e) => {
             e.preventDefault();
-            e.currentTarget.classList.remove('bg-blue-200');
+            e.currentTarget.classList.remove('bg-blue-50');
 
             const taskId = e.dataTransfer.getData('taskId');
             const fromDate = e.dataTransfer.getData('fromDate');
@@ -1145,29 +1154,27 @@ export const DailyPlanner = () => {
             }
           }}
         >
-          <Card className={`h-full flex flex-col ${isAllTasksCollapsed ? 'border-0 shadow-none bg-transparent' : 'border-0 shadow-sm bg-white'}`}>
-            <CardHeader className={`${isAllTasksCollapsed ? 'p-2 border-b bg-gray-50' : 'pb-2 bg-gray-50 border-b'} flex-shrink-0`}>
-              <CardTitle className={`text-lg font-medium text-gray-800 flex ${isAllTasksCollapsed ? 'flex-col' : 'flex-row'} items-center justify-between gap-2`}>
-                <div className={`flex items-center gap-2 ${isAllTasksCollapsed ? 'flex-col' : ''}`}>
-                  <CheckListIcon />
-                  {!isAllTasksCollapsed && <span>All Tasks</span>}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6"
-                  onClick={() => setIsAllTasksCollapsed(!isAllTasksCollapsed)}
-                >
-                  {isAllTasksCollapsed ? (
-                    <ChevronRightCollapse className="h-4 w-4" />
-                  ) : (
-                    <ChevronLeft className="h-4 w-4" />
-                  )}
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            {!isAllTasksCollapsed && (
-              <CardContent className="pt-4 px-1 flex-1 overflow-hidden">
+          {isAllTasksCollapsed ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+              onClick={() => setIsAllTasksCollapsed(!isAllTasksCollapsed)}
+            >
+              <ChevronRightCollapse className="h-4 w-4" />
+            </Button>
+          ) : (
+            <div className="h-full flex flex-col">
+              {/* Header */}
+              <div className="flex items-center mb-4">
+                <h2 className="text-xl font-semibold text-purple-600 flex items-center gap-2">
+                  All Tasks
+                  <ChevronLeft className="h-5 w-5 cursor-pointer" onClick={() => setIsAllTasksCollapsed(!isAllTasksCollapsed)} />
+                </h2>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 overflow-hidden">
                 <PlannerSection
                   title=""
                   items={allTasks}
@@ -1180,9 +1187,9 @@ export const DailyPlanner = () => {
                   isAllTasksSection={true}
                   onDropTaskFromWeekly={handleDropTaskFromWeeklyToAllTasks}
                 />
-              </CardContent>
-            )}
-          </Card>
+              </div>
+            </div>
+          )}
         </div>
         )}
 
@@ -1275,7 +1282,7 @@ export const DailyPlanner = () => {
         </CardHeader>
         <CardContent className="px-4">
           <ScrollArea className="h-[calc(100vh-200px)]">
-              <div className="relative" style={{ height: '1440px' }}> {/* 24 hours * 60px */}
+              <div className="relative" style={{ height: '2160px' }}> {/* 24 hours * 90px */}
                 {/* Hour labels and grid lines */}
                 {Array.from({ length: 24 }, (_, i) => {
                   const hour = i;
@@ -1284,55 +1291,174 @@ export const DailyPlanner = () => {
                   return (
                     <div
                       key={hour}
-                      className="absolute left-0 right-0 flex gap-2 border-t border-gray-200"
-                      style={{ top: `${hour * 60}px`, height: '60px' }}
+                      className="absolute left-0 right-0"
+                      style={{ top: `${hour * 90}px`, height: '90px' }}
                     >
-                      {/* Time label */}
-                      <div className="w-14 flex-shrink-0 py-2 pl-2 text-xs text-gray-500 font-medium">
-                        {timeLabel}
-                      </div>
+                      {/* Hour row container */}
+                      <div className="flex gap-2 h-full border-t border-gray-200">
+                        {/* Time label */}
+                        <div className="w-14 flex-shrink-0 py-3 pl-2 text-sm text-gray-500 font-medium">
+                          {timeLabel}
+                        </div>
 
-                      {/* Clickable area for adding tasks */}
-                      <div
-                        className="flex-1 cursor-pointer hover:bg-gray-50 transition-colors"
-                        onClick={(e) => {
-                          if (e.target === e.currentTarget) {
-                            const hourStr = hour.toString().padStart(2, '0');
-                            setDialogStartTime(`${hourStr}:00`);
-                            setDialogEndTime(`${hourStr}:30`);
-                            handleOpenTaskDialog(hour);
-                          }
-                        }}
-                      />
+                        {/* 20-minute slots (3 slots per hour) */}
+                        <div className="flex-1 flex flex-col">
+                          {[0, 20, 40].map((minute, idx) => {
+                            return (
+                              <div
+                                key={`${hour}-${minute}`}
+                                className="flex-1 cursor-pointer hover:bg-blue-50 transition-colors relative group/slot"
+                                onClick={(e) => {
+                                  if (e.target === e.currentTarget || e.currentTarget.contains(e.target as Node)) {
+                                    const hourStr = hour.toString().padStart(2, '0');
+                                    const minuteStr = minute.toString().padStart(2, '0');
+                                    const endMinute = minute + 20;
+                                    const endHourStr = endMinute >= 60 ? (hour + 1).toString().padStart(2, '0') : hourStr;
+                                    const endMinuteStr = (endMinute % 60).toString().padStart(2, '0');
+                                    setDialogStartTime(`${hourStr}:${minuteStr}`);
+                                    setDialogEndTime(`${endHourStr}:${endMinuteStr}`);
+                                    handleOpenTaskDialog(hour);
+                                  }
+                                }}
+                                onDragOver={(e) => {
+                                  e.preventDefault();
+                                  e.currentTarget.classList.add('bg-blue-100');
+                                }}
+                                onDragLeave={(e) => {
+                                  e.currentTarget.classList.remove('bg-blue-100');
+                                }}
+                                onDrop={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  e.currentTarget.classList.remove('bg-blue-100');
+
+                                  const taskId = e.dataTransfer.getData('taskId');
+                                  const fromAllTasks = e.dataTransfer.getData('fromAllTasks');
+
+                                  console.log('=== DROP EVENT ===');
+                                  console.log('TaskId:', taskId);
+                                  console.log('FromAllTasks:', fromAllTasks);
+                                  console.log('Hour:', hour, 'Minute:', minute);
+                                  console.log('All Tasks:', allTasks);
+
+                                  if (!taskId) {
+                                    console.log('❌ No taskId found, aborting');
+                                    return;
+                                  }
+
+                                  // Mark that we handled this drop natively
+                                  nativeDropHandledRef.current = { taskId, handled: true };
+
+                                  // Calculate new time based on drop position
+                                  const hourStr = hour.toString().padStart(2, '0');
+                                  const minuteStr = minute.toString().padStart(2, '0');
+
+                                  if (fromAllTasks === 'true') {
+                                    console.log('✅ Handling drop from All Tasks');
+
+                                    // Task is from All Tasks
+                                    const taskFromAllTasks = allTasks.find(t => t.id === taskId);
+                                    console.log('Found task:', taskFromAllTasks);
+
+                                    if (!taskFromAllTasks) {
+                                      console.log('❌ Task not found in allTasks');
+                                      return;
+                                    }
+
+                                    // Default duration of 20 minutes for tasks from All Tasks
+                                    const endMinute = minute + 20;
+                                    const endHourStr = endMinute >= 60 ? (hour + 1).toString().padStart(2, '0') : hourStr;
+                                    const endMinuteStr = (endMinute % 60).toString().padStart(2, '0');
+
+                                    const newStartTime = `${hourStr}:${minuteStr}`;
+                                    const newEndTime = `${endHourStr}:${endMinuteStr}`;
+
+                                    console.log('New times:', newStartTime, '-', newEndTime);
+
+                                    // Add to calendar with time
+                                    const newTask: PlannerItem = {
+                                      ...taskFromAllTasks,
+                                      date: dateString,
+                                      startTime: newStartTime,
+                                      endTime: newEndTime,
+                                      section: "morning"
+                                    };
+
+                                    console.log('New task object:', newTask);
+
+                                    const dayIndex = plannerData.findIndex(day => day.date === dateString);
+                                    console.log('Day index:', dayIndex);
+
+                                    const updatedPlannerData = [...plannerData];
+
+                                    if (dayIndex >= 0) {
+                                      updatedPlannerData[dayIndex] = {
+                                        ...updatedPlannerData[dayIndex],
+                                        items: [...updatedPlannerData[dayIndex].items, newTask]
+                                      };
+                                    } else {
+                                      updatedPlannerData.push({
+                                        date: dateString,
+                                        items: [newTask],
+                                        tasks: tasks,
+                                        greatDay: greatDay,
+                                        grateful: grateful
+                                      });
+                                    }
+
+                                    console.log('Updating planner data...');
+                                    setPlannerData(updatedPlannerData);
+
+                                    console.log('Removing from All Tasks...');
+                                    // Remove from All Tasks AFTER adding to calendar
+                                    setAllTasks(prevTasks => {
+                                      const filtered = prevTasks.filter(t => t.id !== taskId);
+                                      console.log('New All Tasks count:', filtered.length);
+                                      return filtered;
+                                    });
+
+                                    console.log('✅ Drop complete!');
+                                  } else {
+                                    // Task is already in calendar, just moving it
+                                    const dayIndex = plannerData.findIndex(day => day.date === dateString);
+                                    if (dayIndex < 0) return;
+
+                                    const taskToMove = currentDay.items.find(item => item.id === taskId);
+                                    if (!taskToMove) return;
+
+                                    // Calculate duration to maintain it
+                                    const [oldStartHour, oldStartMinute] = taskToMove.startTime!.split(':').map(Number);
+                                    const [oldEndHour, oldEndMinute] = taskToMove.endTime!.split(':').map(Number);
+                                    const durationMinutes = (oldEndHour * 60 + oldEndMinute) - (oldStartHour * 60 + oldStartMinute);
+
+                                    // Calculate new end time
+                                    const newStartMinutes = hour * 60 + minute;
+                                    const newEndMinutes = newStartMinutes + durationMinutes;
+                                    const newEndHour = Math.floor(newEndMinutes / 60);
+                                    const newEndMinute = newEndMinutes % 60;
+
+                                    const newStartTime = `${hourStr}:${minuteStr}`;
+                                    const newEndTime = `${newEndHour.toString().padStart(2, '0')}:${newEndMinute.toString().padStart(2, '0')}`;
+
+                                    // Update the task with new times
+                                    handleEditItem(taskId, taskToMove.text, newStartTime, newEndTime, taskToMove.color, taskToMove.description, taskToMove.isCompleted);
+                                  }
+                                }}
+                              >
+                                {/* Plus icon hint on hover */}
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/slot:opacity-30 transition-opacity pointer-events-none">
+                                  <Plus size={20} className="text-gray-400" />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </div>
                   );
                 })}
 
-                {/* Render task time labels on the left */}
-                <div className="absolute top-0 left-0 w-14">
-                  {currentDay.items
-                    .filter(item => item.startTime && item.endTime)
-                    .map((task) => {
-                      const [startHour, startMinute] = task.startTime!.split(':').map(Number);
-                      const startTotalMinutes = startHour * 60 + startMinute;
-
-                      // Only show time label if it's not at the hour mark (to avoid duplication with hour labels)
-                      if (startMinute === 0) return null;
-
-                      return (
-                        <div
-                          key={`time-${task.id}`}
-                          className="absolute right-1 text-[9px] text-gray-400 font-normal"
-                          style={{
-                            top: `${startTotalMinutes}px`,
-                            zIndex: 5,
-                          }}
-                        >
-                          {task.startTime}
-                        </div>
-                      );
-                    })}
-                </div>
+                {/* Time labels are handled by hour labels only */}
 
                 {/* Render all tasks with absolute positioning */}
                 <div className="absolute top-0 left-[72px] right-2"> {/* 72px = 56px (w-14) + 16px (gap-2 * 2) */}
@@ -1347,20 +1473,29 @@ export const DailyPlanner = () => {
                       const endTotalMinutes = endHour * 60 + endMinute;
                       const durationMinutes = endTotalMinutes - startTotalMinutes;
 
-                      const top = startTotalMinutes; // 1 minute = 1px
-                      const height = Math.max(durationMinutes, 36); // Minimum 36px for content
+                      const top = startTotalMinutes * 1.5; // 1.5px per minute (90px per hour)
+                      const height = Math.max(durationMinutes * 1.5, 28); // Minimum 28px to fit content
 
                       return (
                         <div
                           key={task.id}
+                          draggable
+                          onDragStart={(e) => {
+                            e.dataTransfer.setData('taskId', task.id);
+                            e.dataTransfer.effectAllowed = 'move';
+                            e.currentTarget.style.opacity = '0.5';
+                          }}
+                          onDragEnd={(e) => {
+                            e.currentTarget.style.opacity = '1';
+                          }}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleOpenTaskDialog(startHour, task);
                           }}
-                          className="group absolute left-0 right-0 rounded px-2 py-1 border-l-4 hover:shadow-sm transition-all cursor-pointer overflow-hidden"
+                          className="group absolute left-0 right-0 rounded px-2 py-1 border-l-4 hover:shadow-sm transition-all cursor-move overflow-hidden"
                           style={{
                             top: `${top}px`,
-                            minHeight: `${height}px`,
+                            height: `${height}px`,
                             backgroundColor: task.color ? `${task.color}40` : '#f9fafb',
                             borderLeftColor: task.color || '#d1d5db',
                             zIndex: 10,
@@ -1444,7 +1579,10 @@ export const DailyPlanner = () => {
                         const fromDate = e.dataTransfer.getData('fromDate');
                         const toDate = dayString;
 
+                        console.log('🎯 DROP ON DAY CONTAINER - taskId:', taskId, 'fromDate:', fromDate, 'toDate:', toDate);
+
                         if (taskId && fromDate && fromDate !== toDate) {
+                          console.log('✅ Moving task between days');
                           // Find the task in the source day
                           const fromDayIndex = plannerData.findIndex(d => d.date === fromDate);
                           if (fromDayIndex < 0) return;
@@ -1539,142 +1677,47 @@ export const DailyPlanner = () => {
                           ) : (
                             <div
                               key={item.id}
-                              draggable
+                              draggable={true}
                               onDragStart={(e) => {
+                                console.log('🚀 DRAG START - Weekly Task:', item.id, item.text, 'from:', dayString);
+                                e.dataTransfer.setData('text/plain', item.id);
                                 e.dataTransfer.setData('taskId', item.id);
                                 e.dataTransfer.setData('fromDate', dayString);
                                 e.dataTransfer.effectAllowed = 'move';
-                                e.currentTarget.classList.add('opacity-50');
-                              }}
-                              onDragEnd={(e) => {
-                                e.currentTarget.classList.remove('opacity-50');
-                              }}
-                              onDragOver={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                e.currentTarget.classList.add('border-t-4', 'border-t-blue-500');
-                              }}
-                              onDragLeave={(e) => {
-                                e.currentTarget.classList.remove('border-t-4', 'border-t-blue-500');
-                              }}
-                              onDrop={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                e.currentTarget.classList.remove('border-t-4', 'border-t-blue-500');
 
-                                const draggedTaskId = e.dataTransfer.getData('taskId');
-                                const fromDate = e.dataTransfer.getData('fromDate');
-                                const targetTaskId = item.id;
+                                // Create a custom drag image showing the full task
+                                const taskElement = e.currentTarget as HTMLElement;
+                                if (taskElement) {
+                                  // Clone the element to use as drag image
+                                  const dragImage = taskElement.cloneNode(true) as HTMLElement;
+                                  dragImage.style.position = 'absolute';
+                                  dragImage.style.top = '-1000px';
+                                  dragImage.style.opacity = '0.8';
+                                  dragImage.style.pointerEvents = 'none';
+                                  document.body.appendChild(dragImage);
 
-                                if (draggedTaskId === targetTaskId) return;
+                                  // Set the custom drag image
+                                  e.dataTransfer.setDragImage(dragImage, 0, 0);
 
-                                // Handle drop from All Tasks
-                                if (!fromDate) {
-                                  const taskToMove = allTasks.find(t => t.id === draggedTaskId);
-                                  if (!taskToMove) return;
+                                  // Remove the temporary element after a brief delay
+                                  setTimeout(() => {
+                                    document.body.removeChild(dragImage);
+                                  }, 0);
 
-                                  // Remove from All Tasks
-                                  setAllTasks(allTasks.filter(t => t.id !== draggedTaskId));
-
-                                  // Find target position in this day
-                                  const toDayIndex = plannerData.findIndex(d => d.date === dayString);
-                                  const movedTask = { ...taskToMove, date: dayString };
-
-                                  if (toDayIndex >= 0) {
-                                    const updatedPlannerData = [...plannerData];
-                                    const targetIndex = updatedPlannerData[toDayIndex].items.findIndex(i => i.id === targetTaskId);
-                                    const newItems = [...updatedPlannerData[toDayIndex].items];
-                                    newItems.splice(targetIndex, 0, movedTask);
-
-                                    // Update order fields to persist the new order
-                                    const itemsWithOrder = updateItemOrders(newItems);
-
-                                    updatedPlannerData[toDayIndex] = {
-                                      ...updatedPlannerData[toDayIndex],
-                                      items: itemsWithOrder
-                                    };
-                                    setPlannerData(updatedPlannerData);
-                                  } else {
-                                    setPlannerData([...plannerData, {
-                                      date: dayString,
-                                      items: [movedTask],
-                                      tasks: "",
-                                      greatDay: "",
-                                      grateful: ""
-                                    }]);
-                                  }
-                                } else if (fromDate === dayString) {
-                                  // Reorder within same day
-                                  const toDayIndex = plannerData.findIndex(d => d.date === dayString);
-                                  if (toDayIndex < 0) return;
-
-                                  const updatedPlannerData = [...plannerData];
-                                  const items = [...updatedPlannerData[toDayIndex].items];
-                                  const draggedIndex = items.findIndex(i => i.id === draggedTaskId);
-                                  const targetIndex = items.findIndex(i => i.id === targetTaskId);
-
-                                  if (draggedIndex === -1 || targetIndex === -1) return;
-
-                                  const [draggedItem] = items.splice(draggedIndex, 1);
-                                  items.splice(targetIndex, 0, draggedItem);
-
-                                  // Update order fields to persist the new order
-                                  const itemsWithOrder = updateItemOrders(items);
-
-                                  updatedPlannerData[toDayIndex] = {
-                                    ...updatedPlannerData[toDayIndex],
-                                    items: itemsWithOrder
-                                  };
-                                  setPlannerData(updatedPlannerData);
-                                } else {
-                                  // Move from different day
-                                  const fromDayIndex = plannerData.findIndex(d => d.date === fromDate);
-                                  if (fromDayIndex < 0) return;
-
-                                  const taskToMove = plannerData[fromDayIndex].items.find(i => i.id === draggedTaskId);
-                                  if (!taskToMove) return;
-
-                                  const updatedPlannerData = [...plannerData];
-
-                                  // Remove from source
-                                  updatedPlannerData[fromDayIndex] = {
-                                    ...updatedPlannerData[fromDayIndex],
-                                    items: updatedPlannerData[fromDayIndex].items.filter(i => i.id !== draggedTaskId)
-                                  };
-
-                                  // Add to target position
-                                  const toDayIndex = updatedPlannerData.findIndex(d => d.date === dayString);
-                                  if (toDayIndex >= 0) {
-                                    const targetIndex = updatedPlannerData[toDayIndex].items.findIndex(i => i.id === targetTaskId);
-                                    const movedTask = { ...taskToMove, date: dayString };
-                                    const newItems = [...updatedPlannerData[toDayIndex].items];
-                                    newItems.splice(targetIndex, 0, movedTask);
-
-                                    // Update order fields to persist the new order
-                                    const itemsWithOrder = updateItemOrders(newItems);
-
-                                    updatedPlannerData[toDayIndex] = {
-                                      ...updatedPlannerData[toDayIndex],
-                                      items: itemsWithOrder
-                                    };
-                                  }
-
-                                  setPlannerData(updatedPlannerData);
+                                  // Make original semi-transparent
+                                  setTimeout(() => {
+                                    taskElement.style.opacity = '0.5';
+                                  }, 0);
                                 }
                               }}
-                              className="group relative text-xs p-2 pr-5 rounded border border-gray-200 cursor-move hover:shadow-md transition-shadow"
-                              style={{ backgroundColor: item.color || 'white' }}
-                              onDoubleClick={(e) => {
-                                e.stopPropagation();
-                                setWeeklyEditingTask(item.id);
-                                setWeeklyEditText(item.text);
+                              onDragEnd={(e) => {
+                                console.log('✅ DRAG END - Weekly Task');
+                                e.currentTarget.style.opacity = '1';
                               }}
+                              className="group relative text-xs p-2 pr-5 rounded border border-gray-200 hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing"
+                              style={{ backgroundColor: item.color || 'white' }}
                             >
                               <div className="flex items-start gap-1 flex-1 min-w-0">
-                                {/* Drag handle */}
-                                <div className="text-gray-400 cursor-grab active:cursor-grabbing flex-shrink-0 mt-0.5">
-                                  <GripVertical size={14} />
-                                </div>
 
                                 {/* Checkbox */}
                                 <Checkbox
@@ -1709,135 +1752,56 @@ export const DailyPlanner = () => {
                                   <Trash2 size={10} />
                                 </button>
 
-                                <Dialog open={weeklyEditDialogOpen === item.id} onOpenChange={(open) => setWeeklyEditDialogOpen(open ? item.id : null)}>
-                                  <DialogTrigger asChild>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setWeeklyEditTitle(item.text);
-                                        setWeeklyEditDescription(item.description || "");
-                                        setWeeklyEditColor(item.color || "");
-                                        setWeeklyEditingTitle(false);
-                                        setWeeklyEditDialogOpen(item.id);
-                                      }}
-                                      className="p-0.5 rounded-sm text-gray-400 hover:text-gray-600 hover:bg-white transition-colors z-20"
-                                      title="Edit task details"
-                                    >
-                                      <Edit size={10} />
-                                    </button>
-                                  </DialogTrigger>
-                                  <DialogContent className="sm:max-w-[400px]">
-                                    <DialogHeader>
-                                      <DialogTitle className="text-base">Edit Task Details</DialogTitle>
-                                    </DialogHeader>
-                                    <div className="space-y-3 py-3">
-                                      {/* Title */}
-                                      <div className="space-y-1.5">
-                                        <label className="text-xs font-medium">Title</label>
-                                        {weeklyEditingTitle ? (
-                                          <Input
-                                            value={weeklyEditTitle}
-                                            onChange={(e) => setWeeklyEditTitle(e.target.value)}
-                                            onBlur={() => setWeeklyEditingTitle(false)}
-                                            onKeyDown={(e) => {
-                                              if (e.key === 'Enter') {
-                                                setWeeklyEditingTitle(false);
-                                              }
-                                            }}
-                                            autoFocus
-                                            className="text-sm"
-                                          />
-                                        ) : (
-                                          <div
-                                            className="p-2 rounded border border-gray-200 text-sm cursor-pointer hover:border-gray-400 transition-colors"
-                                            style={{ backgroundColor: weeklyEditColor || 'white' }}
-                                            onDoubleClick={() => setWeeklyEditingTitle(true)}
-                                            title="Double-click to edit"
-                                          >
-                                            {weeklyEditTitle}
-                                          </div>
-                                        )}
-                                      </div>
-
-                                      <div className="space-y-1.5">
-                                        <label className="text-xs font-medium">Description</label>
-                                        <Textarea
-                                          value={weeklyEditDescription}
-                                          onChange={(e) => setWeeklyEditDescription(e.target.value)}
-                                          placeholder="Add a description..."
-                                          className="min-h-[80px] text-sm"
-                                        />
-                                      </div>
-
-                                      <div className="space-y-1.5">
-                                        <label className="text-xs font-medium">Color</label>
-                                        <div className="grid grid-cols-8 gap-1">
-                                          {colors.map((color) => (
-                                            <button
-                                              key={color}
-                                              onClick={() => setWeeklyEditColor(color)}
-                                              className={`w-8 h-8 rounded border transition-colors ${
-                                                weeklyEditColor === color ? 'border-gray-800 border-2' : 'border-gray-300 hover:border-gray-500'
-                                              }`}
-                                              style={{ backgroundColor: color }}
-                                              title={color}
-                                            />
-                                          ))}
-                                        </div>
-                                        <button
-                                          onClick={() => setWeeklyEditColor("")}
-                                          className="w-full py-1 text-xs text-gray-600 hover:text-gray-800 border border-gray-300 rounded hover:bg-gray-50 transition-colors flex items-center justify-center gap-1 mt-1"
-                                        >
-                                          <XIcon size={10} />
-                                          Remove color
-                                        </button>
-                                      </div>
-                                    </div>
-                                    <div className="flex justify-end gap-2 pt-2">
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => setWeeklyEditDialogOpen(null)}
-                                      >
-                                        Cancel
-                                      </Button>
-                                      <Button size="sm" onClick={() => handleSaveWeeklyTaskDetails(item.id, dayString)}>
-                                        Save
-                                      </Button>
-                                    </div>
-                                  </DialogContent>
-                                </Dialog>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    // Open the same simple dialog as Today view
+                                    setEditingTask(item);
+                                    setDialogTaskTitle(item.text);
+                                    setDialogTaskDescription(item.description || "");
+                                    setDialogStartTime(item.startTime || "09:00");
+                                    setDialogEndTime(item.endTime || "09:30");
+                                    setDialogTaskColor(item.color || "");
+                                    setDialogTaskCompleted(item.isCompleted || false);
+                                    setIsTaskDialogOpen(true);
+                                  }}
+                                  className="p-0.5 rounded-sm text-gray-400 hover:text-gray-600 hover:bg-white transition-colors z-20"
+                                  title="Edit task details"
+                                >
+                                  <Edit size={10} />
+                                </button>
                               </div>
                             </div>
                           )
                         ))}
-                        {/* Add task input */}
-                        {weeklyAddingTask[dayString] ? (
-                          <div className="mt-2">
-                            <Input
-                              value={weeklyNewTaskInputs[dayString] || ""}
-                              onChange={(e) => setWeeklyNewTaskInputs(prev => ({ ...prev, [dayString]: e.target.value }))}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") {
-                                  handleAddWeeklyTask(dayString, weeklyNewTaskInputs[dayString] || "");
-                                } else if (e.key === "Escape") {
-                                  setWeeklyAddingTask(prev => ({ ...prev, [dayString]: false }));
-                                  setWeeklyNewTaskInputs(prev => ({ ...prev, [dayString]: "" }));
-                                }
-                              }}
-                              placeholder="Add task..."
-                              autoFocus
-                              className="h-8 text-xs"
-                            />
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => setWeeklyAddingTask(prev => ({ ...prev, [dayString]: true }))}
-                            className="w-full mt-2 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded flex items-center justify-center transition-colors"
-                          >
-                            <Plus size={16} />
-                          </button>
-                        )}
+                        {/* Add task button */}
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log('➕ PLUS BUTTON CLICKED for day:', dayString);
+                            // Open the same dialog as the Today view
+                            setEditingTask({
+                              id: '',
+                              date: dayString,
+                              text: '',
+                              section: 'morning',
+                              isCompleted: false,
+                              order: 0
+                            } as PlannerItem);
+                            setDialogTaskTitle('');
+                            setDialogTaskDescription('');
+                            setDialogStartTime('09:00');
+                            setDialogEndTime('09:30');
+                            setDialogTaskColor('');
+                            setDialogTaskCompleted(false);
+                            setIsTaskDialogOpen(true);
+                            console.log('✅ Dialog should be open now');
+                          }}
+                          className="w-full mt-2 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded flex items-center justify-center transition-colors"
+                        >
+                          <Plus size={16} />
+                        </button>
                       </div>
                     </div>
                   );
