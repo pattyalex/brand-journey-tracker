@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { format, addDays, subDays, parseISO, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, addWeeks, subWeeks } from "date-fns";
+import { format, addDays, subDays, parseISO, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, addWeeks, subWeeks, startOfMonth, endOfMonth, addMonths, subMonths, getDay } from "date-fns";
 import { Copy, Trash2, Heart, AlarmClock, CalendarIcon, ChevronLeft, ChevronRight, ListChecks, ChevronRight as ChevronRightCollapse, Plus, Palette, X as XIcon, Check, GripVertical, Edit, Clock } from 'lucide-react';
 import { PlannerDay, PlannerItem, GlobalPlannerData } from "@/types/planner";
 import { PlannerSection } from "./PlannerSection";
@@ -104,6 +104,8 @@ export const DailyPlanner = () => {
   const [globalTasks, setGlobalTasks] = useState<string>("");
   const [allTasks, setAllTasks] = useState<PlannerItem[]>([]);
   const [isAllTasksCollapsed, setIsAllTasksCollapsed] = useState(false);
+  const [showContentCalendar, setShowContentCalendar] = useState(false);
+  const [contentCalendarData, setContentCalendarData] = useState<any[]>([]);
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<PlannerItem | null>(null);
   const [dialogTaskTitle, setDialogTaskTitle] = useState("");
@@ -162,6 +164,17 @@ export const DailyPlanner = () => {
       setAllTasks(parsed);
     }
 
+    // Load Content Calendar data
+    const savedScheduledContent = localStorage.getItem("scheduledContent");
+    if (savedScheduledContent) {
+      try {
+        const parsed = JSON.parse(savedScheduledContent);
+        setContentCalendarData(parsed);
+      } catch (error) {
+        console.error('Failed to parse scheduledContent:', error);
+      }
+    }
+
   }, []);
 
   useEffect(() => {
@@ -171,6 +184,10 @@ export const DailyPlanner = () => {
   useEffect(() => {
     localStorage.setItem("allTasks", JSON.stringify(allTasks));
   }, [allTasks]);
+
+  useEffect(() => {
+    localStorage.setItem("scheduledContent", JSON.stringify(contentCalendarData));
+  }, [contentCalendarData]);
 
   // Listen for changes to allTasks from other pages (e.g., HomePage)
   useEffect(() => {
@@ -182,6 +199,13 @@ export const DailyPlanner = () => {
           console.error('Failed to parse allTasks:', error);
         }
       }
+      if (e.key === 'scheduledContent' && e.newValue) {
+        try {
+          setContentCalendarData(JSON.parse(e.newValue));
+        } catch (error) {
+          console.error('Failed to parse scheduledContent:', error);
+        }
+      }
     };
 
     // Listen for custom event for same-tab updates
@@ -190,11 +214,18 @@ export const DailyPlanner = () => {
       setAllTasks(e.detail);
     };
 
+    const handleContentCalendarUpdate = (e: CustomEvent) => {
+      console.log('DailyPlanner: Received scheduledContentUpdated event', e.detail);
+      setContentCalendarData(e.detail);
+    };
+
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('allTasksUpdated', handleCustomUpdate as EventListener);
+    window.addEventListener('scheduledContentUpdated', handleContentCalendarUpdate as EventListener);
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('allTasksUpdated', handleCustomUpdate as EventListener);
+      window.removeEventListener('scheduledContentUpdated', handleContentCalendarUpdate as EventListener);
     };
   }, []);
 
@@ -1221,16 +1252,6 @@ export const DailyPlanner = () => {
                   >
                     This Week
                   </button>
-                  <button
-                    onClick={() => setCurrentView('month')}
-                    className={`text-lg transition-colors ${
-                      currentView === 'month'
-                        ? 'font-bold text-black'
-                        : 'font-normal text-gray-400 hover:text-gray-600'
-                    }`}
-                  >
-                    This Month
-                  </button>
                 </div>
               </div>
             </div>
@@ -1812,10 +1833,233 @@ export const DailyPlanner = () => {
         )}
 
         {currentView === 'month' && (
-          <CardContent className="px-0 py-8">
-            <div className="text-center text-muted-foreground">
-              <p className="text-lg mb-2">Monthly View</p>
-              <p className="text-sm">This feature is coming soon! You'll be able to see your tasks across the entire month.</p>
+          <CardContent className="px-4 py-4">
+            {/* Month navigation */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-center flex-1">
+                <button
+                  onClick={() => setSelectedDate(subMonths(selectedDate, 1))}
+                  className="p-2 hover:bg-gray-100 rounded"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <h2 className="text-xl font-semibold mx-4">
+                  {format(selectedDate, "MMMM yyyy")} - {showContentCalendar ? "Content Calendar" : "All Tasks"}
+                </h2>
+                <button
+                  onClick={() => setSelectedDate(addMonths(selectedDate, 1))}
+                  className="p-2 hover:bg-gray-100 rounded"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+
+              {/* Toggle button for Content Calendar */}
+              <Button
+                variant={showContentCalendar ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowContentCalendar(!showContentCalendar)}
+                className="ml-4"
+              >
+                {showContentCalendar ? "Show All Tasks" : "Show Only Content Calendar"}
+              </Button>
+            </div>
+
+            {/* Calendar grid */}
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              {/* Day headers */}
+              <div className="grid grid-cols-7 bg-gray-50">
+                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                  <div key={day} className="p-3 text-center text-xs font-semibold text-gray-600 border-r border-gray-200 last:border-r-0">
+                    {day}
+                  </div>
+                ))}
+              </div>
+
+              {/* Calendar days */}
+              <div className="grid grid-cols-7">
+                {(() => {
+                  const monthStart = startOfMonth(selectedDate);
+                  const monthEnd = endOfMonth(selectedDate);
+                  const startDate = startOfWeek(monthStart, { weekStartsOn: 1 });
+                  const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
+                  const days = eachDayOfInterval({ start: startDate, end: endDate });
+
+                  return days.map((day, index) => {
+                    const dayString = getDateString(day);
+                    const dayData = plannerData.find(d => d.date === dayString);
+                    const isToday = isSameDay(day, new Date());
+                    const isCurrentMonth = day.getMonth() === selectedDate.getMonth();
+
+                    // Filter tasks based on toggle state
+                    let displayItems: any[] = [];
+                    if (showContentCalendar) {
+                      // Show only content calendar items for this date
+                      const contentForDay = contentCalendarData.filter(content => {
+                        if (!content.date) return false;
+                        const contentDateString = getDateString(new Date(content.date));
+                        return contentDateString === dayString;
+                      });
+                      displayItems = contentForDay;
+                    } else {
+                      // Show regular tasks
+                      displayItems = dayData?.items || [];
+                    }
+
+                    const tasks = displayItems;
+
+                    return (
+                      <div
+                        key={dayString}
+                        className={`min-h-[120px] p-2 border-r border-b border-gray-200 ${
+                          index % 7 === 6 ? 'border-r-0' : ''
+                        } ${!isCurrentMonth ? 'bg-gray-50' : 'bg-white'} hover:bg-gray-50 transition-colors`}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          e.currentTarget.classList.add('bg-blue-50');
+                        }}
+                        onDragLeave={(e) => {
+                          e.currentTarget.classList.remove('bg-blue-50');
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          e.currentTarget.classList.remove('bg-blue-50');
+
+                          const itemId = e.dataTransfer.getData('taskId');
+                          const fromDate = e.dataTransfer.getData('fromDate');
+                          const toDate = dayString;
+                          const isContentItem = e.dataTransfer.getData('isContentItem') === 'true';
+
+                          console.log('📅 MONTH VIEW DROP - itemId:', itemId, 'fromDate:', fromDate, 'toDate:', toDate, 'isContentItem:', isContentItem);
+
+                          if (itemId && fromDate && fromDate !== toDate) {
+                            if (isContentItem) {
+                              // Handle content calendar item move
+                              const itemToMove = contentCalendarData.find(item => item.id === itemId);
+                              if (!itemToMove) return;
+
+                              const updatedContentData = contentCalendarData.map(item => {
+                                if (item.id === itemId) {
+                                  return { ...item, date: toDate };
+                                }
+                                return item;
+                              });
+
+                              setContentCalendarData(updatedContentData);
+                              localStorage.setItem('scheduledContent', JSON.stringify(updatedContentData));
+
+                              // Dispatch custom event for same-tab updates
+                              const event = new CustomEvent('scheduledContentUpdated', { detail: updatedContentData });
+                              window.dispatchEvent(event);
+
+                              toast.success('Content item moved successfully');
+                            } else {
+                              // Handle regular task move
+                              const fromDayIndex = plannerData.findIndex(d => d.date === fromDate);
+                              if (fromDayIndex < 0) return;
+
+                              const taskToMove = plannerData[fromDayIndex].items.find(item => item.id === itemId);
+                              if (!taskToMove) return;
+
+                              // Remove from source day
+                              const updatedPlannerData = [...plannerData];
+                              updatedPlannerData[fromDayIndex] = {
+                                ...updatedPlannerData[fromDayIndex],
+                                items: updatedPlannerData[fromDayIndex].items.filter(item => item.id !== itemId)
+                              };
+
+                              // Add to destination day
+                              const toDayIndex = updatedPlannerData.findIndex(d => d.date === toDate);
+                              const movedTask = { ...taskToMove, date: toDate };
+
+                              if (toDayIndex >= 0) {
+                                updatedPlannerData[toDayIndex] = {
+                                  ...updatedPlannerData[toDayIndex],
+                                  items: [...updatedPlannerData[toDayIndex].items, movedTask]
+                                };
+                              } else {
+                                updatedPlannerData.push({
+                                  date: toDate,
+                                  items: [movedTask],
+                                  tasks: "",
+                                  greatDay: "",
+                                  grateful: ""
+                                });
+                              }
+
+                              setPlannerData(updatedPlannerData);
+                              localStorage.setItem('plannerData', JSON.stringify(updatedPlannerData));
+                              toast.success('Task moved successfully');
+                            }
+                          }
+                        }}
+                      >
+                        {/* Day number */}
+                        <div className="flex items-center justify-between mb-1">
+                          <span className={`text-sm font-medium ${
+                            isToday ? 'bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center' :
+                            isCurrentMonth ? 'text-gray-900' : 'text-gray-400'
+                          }`}>
+                            {format(day, 'd')}
+                          </span>
+                          {tasks.length > 0 && (
+                            <span className="text-xs text-gray-500">{tasks.length}</span>
+                          )}
+                        </div>
+
+                        {/* Tasks or Content Calendar Items */}
+                        <div className="space-y-1">
+                          {tasks.slice(0, 3).map(item => {
+                            // Check if it's a content calendar item or regular task
+                            const isContentItem = showContentCalendar;
+                            const displayText = isContentItem ? item.title : item.text;
+                            const displayColor = isContentItem ? '#e0f2fe' : (item.color || '#f3f4f6');
+
+                            return (
+                              <div
+                                key={item.id}
+                                draggable={true}
+                                onDragStart={(e) => {
+                                  console.log('🚀 DRAG START - Month Item:', item.id, displayText, 'from:', dayString);
+                                  e.dataTransfer.setData('text/plain', item.id);
+                                  e.dataTransfer.setData('taskId', item.id);
+                                  e.dataTransfer.setData('fromDate', dayString);
+                                  e.dataTransfer.setData('isContentItem', isContentItem ? 'true' : 'false');
+                                  e.dataTransfer.effectAllowed = 'move';
+                                  setTimeout(() => {
+                                    e.currentTarget.style.opacity = '0.5';
+                                  }, 0);
+                                }}
+                                onDragEnd={(e) => {
+                                  e.currentTarget.style.opacity = '1';
+                                }}
+                                className="text-xs p-1 rounded truncate cursor-grab active:cursor-grabbing hover:shadow-sm transition-shadow"
+                                style={{ backgroundColor: displayColor }}
+                                title={displayText}
+                              >
+                                <div className="flex items-center gap-1">
+                                  {isContentItem && item.format && (
+                                    <span className="text-[10px] font-semibold text-blue-600">{item.format}</span>
+                                  )}
+                                  {!isContentItem && item.startTime && (
+                                    <span className="text-[10px] font-medium">{item.startTime}</span>
+                                  )}
+                                  <span className={`truncate ${!isContentItem && item.isCompleted ? 'line-through text-gray-500' : ''}`}>
+                                    {displayText}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                          {tasks.length > 3 && (
+                            <div className="text-xs text-gray-500 pl-1">+{tasks.length - 3} more</div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
             </div>
           </CardContent>
         )}

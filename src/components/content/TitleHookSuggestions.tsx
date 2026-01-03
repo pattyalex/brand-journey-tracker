@@ -8,11 +8,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Sparkles, ArrowRight, Plus, Trash2, ChevronLeft } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import HookGenerator from "./HookGenerator";
 
 interface TitleHookSuggestionsProps {
   onSelectHook: (hook: string) => void;
+  externalOpen?: boolean;
+  onExternalOpenChange?: (open: boolean) => void;
 }
 
 const HOOK_DATA = {
@@ -405,12 +405,18 @@ const HOOK_DATA = {
 
 const TitleHookSuggestions = ({
   onSelectHook,
+  externalOpen,
+  onExternalOpenChange,
 }: TitleHookSuggestionsProps) => {
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [internalDialogOpen, setInternalDialogOpen] = useState(false);
   const [hookSelectionDialogOpen, setHookSelectionDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [customHook, setCustomHook] = useState("");
   const [customHooks, setCustomHooks] = useState<string[]>([]);
+
+  // Use external control if provided, otherwise use internal state
+  const dialogOpen = externalOpen !== undefined ? externalOpen : internalDialogOpen;
+  const setDialogOpen = onExternalOpenChange || setInternalDialogOpen;
 
   useEffect(() => {
     const savedHooks = localStorage.getItem("customHooks");
@@ -469,104 +475,215 @@ const TitleHookSuggestions = ({
       </Button>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[700px]">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold mb-4">Hook Creation</DialogTitle>
+        <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] border border-gray-200 flex flex-col overflow-hidden">
+          <DialogHeader className="border-b border-gray-100 pb-4 flex-shrink-0">
+            {/* Breadcrumbs */}
+            <div className="flex items-center gap-3 text-base mb-4">
+              <button
+                onClick={() => setDialogOpen(false)}
+                className="text-gray-500 hover:text-blue-600 transition-colors font-medium"
+              >
+                Production
+              </button>
+              <span className="text-gray-400">/</span>
+              <button
+                onClick={() => setDialogOpen(false)}
+                className="text-gray-500 hover:text-blue-600 transition-colors font-medium"
+              >
+                Content Ideation
+              </button>
+              <span className="text-gray-400">/</span>
+              <span className="text-gray-900 font-semibold">Trending Hooks</span>
+            </div>
+
+            <DialogTitle className="text-2xl font-bold text-gray-900 mb-3">Hook Library</DialogTitle>
+            <p className="text-sm text-gray-500 mt-1">Browse hundreds of proven hooks organized by category</p>
           </DialogHeader>
-          
-          <Tabs defaultValue="ai" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="ai" className="text-base">
-                Generate Hook with Megan AI
-              </TabsTrigger>
-              <TabsTrigger value="library" className="text-base">
-                Hook Library
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="ai" className="p-4 border rounded-lg">
-              <HookGenerator onSelectHook={onSelectHook} />
-            </TabsContent>
 
-            <TabsContent value="library">
-              <div className="max-h-[500px] overflow-y-auto">
-                <div className="p-1">
-                  <button
-                    className="w-full flex justify-between items-center px-4 py-3 text-left hover:bg-accent text-sm font-medium rounded-sm"
-                    onClick={() => {
-                      setSelectedCategory("Create your own");
-                      setDialogOpen(false);
-                      setHookSelectionDialogOpen(true);
-                    }}
-                  >
-                    Create your own
-                    <ArrowRight className="h-4 w-4 ml-2 text-muted-foreground" />
-                  </button>
-
-                  {Object.keys(HOOK_DATA).map((category, index) => (
-                    <button
-                      key={index}
-                      className="w-full flex justify-between items-center px-4 py-3 text-left hover:bg-accent text-sm font-medium rounded-sm"
-                      onClick={() => handleSelectCategory(category)}
-                    >
-                      {category}
-                      <ArrowRight className="h-4 w-4 ml-2 text-muted-foreground" />
-                    </button>
-                  ))}
+          <div className="flex-1 overflow-y-auto py-4">
+            <div className="grid grid-cols-1 gap-3 px-2">
+              {/* Inspirational Hooks */}
+              <button
+                onClick={() => handleSelectCategory("Inspirational Hooks")}
+                className="group w-full flex items-center justify-between px-5 py-4 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center text-lg group-hover:bg-purple-100 transition-colors">
+                    ⭐
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-semibold text-gray-900 text-base">Inspirational Hooks</h3>
+                    <p className="text-xs text-gray-500 mt-0.5">Motivate and inspire your audience</p>
+                  </div>
                 </div>
-              </div>
-            </TabsContent>
-          </Tabs>
+                <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all" />
+              </button>
+
+              {/* Educational Hooks */}
+              <button
+                onClick={() => handleSelectCategory("Educational Hooks")}
+                className="group w-full flex items-center justify-between px-5 py-4 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center text-lg group-hover:bg-emerald-100 transition-colors">
+                    📚
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-semibold text-gray-900 text-base">Educational Hooks</h3>
+                    <p className="text-xs text-gray-500 mt-0.5">Teach and share knowledge</p>
+                  </div>
+                </div>
+                <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all" />
+              </button>
+
+              {/* Entertaining Hooks */}
+              <button
+                onClick={() => handleSelectCategory("Entertaining Hooks")}
+                className="group w-full flex items-center justify-between px-5 py-4 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-rose-50 rounded-lg flex items-center justify-center text-lg group-hover:bg-rose-100 transition-colors">
+                    🎭
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-semibold text-gray-900 text-base">Entertaining Hooks</h3>
+                    <p className="text-xs text-gray-500 mt-0.5">Captivate with stories and surprises</p>
+                  </div>
+                </div>
+                <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all" />
+              </button>
+
+              {/* Promotional Hooks */}
+              <button
+                onClick={() => handleSelectCategory("Promotional Hooks")}
+                className="group w-full flex items-center justify-between px-5 py-4 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center text-lg group-hover:bg-amber-100 transition-colors">
+                    💰
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-semibold text-gray-900 text-base">Promotional Hooks</h3>
+                    <p className="text-xs text-gray-500 mt-0.5">Drive sales and conversions</p>
+                  </div>
+                </div>
+                <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all" />
+              </button>
+
+              {/* Industry Specific Hooks */}
+              <button
+                onClick={() => handleSelectCategory("Industry Specific Hooks")}
+                className="group w-full flex items-center justify-between px-5 py-4 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-sky-50 rounded-lg flex items-center justify-center text-lg group-hover:bg-sky-100 transition-colors">
+                    🎯
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-semibold text-gray-900 text-base">Industry Specific Hooks</h3>
+                    <p className="text-xs text-gray-500 mt-0.5">Tailored for your niche</p>
+                  </div>
+                </div>
+                <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all" />
+              </button>
+
+              {/* Create your own */}
+              <button
+                onClick={() => {
+                  setSelectedCategory("Create your own");
+                  setDialogOpen(false);
+                  setHookSelectionDialogOpen(true);
+                }}
+                className="group w-full flex items-center justify-between px-5 py-4 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-lg group-hover:bg-gray-200 transition-colors">
+                    ✍️
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-semibold text-gray-900 text-base">Create your own</h3>
+                    <p className="text-xs text-gray-500 mt-0.5">Write and save custom hooks</p>
+                  </div>
+                </div>
+                <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all" />
+              </button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
       <Dialog open={hookSelectionDialogOpen} onOpenChange={setHookSelectionDialogOpen}>
-        <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
-          <DialogHeader className="flex flex-row items-center">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => handleBackToCategories()}
-              className="mr-2 h-8 w-8"
-              aria-label="Back to categories"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <DialogTitle>{selectedCategory}</DialogTitle>
+        <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] flex flex-col border border-gray-200 overflow-hidden">
+          <DialogHeader className="border-b border-gray-100 pb-4 flex-shrink-0">
+            {/* Breadcrumbs */}
+            <div className="flex items-center gap-3 text-base mb-4">
+              <button
+                onClick={() => {
+                  setHookSelectionDialogOpen(false);
+                  setDialogOpen(false);
+                }}
+                className="text-gray-500 hover:text-blue-600 transition-colors font-medium"
+              >
+                Production
+              </button>
+              <span className="text-gray-400">/</span>
+              <button
+                onClick={() => {
+                  setHookSelectionDialogOpen(false);
+                  setDialogOpen(false);
+                }}
+                className="text-gray-500 hover:text-blue-600 transition-colors font-medium"
+              >
+                Content Ideation
+              </button>
+              <span className="text-gray-400">/</span>
+              <button
+                onClick={() => handleBackToCategories()}
+                className="text-gray-500 hover:text-blue-600 transition-colors font-medium"
+              >
+                Trending Hooks
+              </button>
+              <span className="text-gray-400">/</span>
+              <span className="text-gray-900 font-semibold">{selectedCategory}</span>
+            </div>
+
+            <DialogTitle className="text-2xl font-bold text-gray-900 mb-3">{selectedCategory}</DialogTitle>
+            <p className="text-sm text-gray-500 mt-1">Click any hook to add it to your ideate column</p>
           </DialogHeader>
-          
-          <div className="py-4">
-            {selectedCategory && selectedCategory !== "Create your own" && 
+
+          <div className="overflow-y-auto flex-1 py-4">
+            {selectedCategory && selectedCategory !== "Create your own" &&
               HOOK_DATA[selectedCategory as keyof typeof HOOK_DATA]?.subcategories.map((subcat, scIndex) => (
-                <div key={scIndex} className="mb-8">
-                  <h3 className="font-bold text-lg mb-3 text-primary">{subcat.name}</h3>
-                  <ul className="space-y-2.5 ml-4">
+                <div key={scIndex} className="mb-8 px-2">
+                  <h3 className="font-semibold text-base text-gray-900 mb-3 px-3">{subcat.name}</h3>
+                  <div className="space-y-2">
                     {subcat.hooks.map((hook, hIndex) => (
-                      <li key={hIndex} className="list-disc ml-4">
-                        <button 
-                          onClick={() => handleSelectHook(hook)}
-                          className="text-left hover:text-primary hover:underline"
-                        >
+                      <button
+                        key={hIndex}
+                        onClick={() => handleSelectHook(hook)}
+                        className="w-full text-left px-4 py-3 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg transition-all duration-150 hover:shadow-sm group"
+                      >
+                        <p className="text-sm text-gray-700 group-hover:text-gray-900">
                           "{hook}"
-                        </button>
-                      </li>
+                        </p>
+                      </button>
                     ))}
-                  </ul>
+                  </div>
                 </div>
               ))
             }
             
             {selectedCategory === "Create your own" && (
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold text-lg mb-3 text-primary">Your Custom Hooks</h3>
-                  
-                  <div className="flex items-center gap-2 mt-2 mb-4 w-full">
+              <div className="px-2">
+                <div className="mb-6">
+                  <h3 className="font-semibold text-base text-gray-900 mb-3 px-3">Your Custom Hooks</h3>
+
+                  <div className="flex items-center gap-2 mb-6 px-3">
                     <Input
                       type="text"
                       value={customHook}
                       onChange={(e) => setCustomHook(e.target.value)}
-                      className="flex-1"
+                      className="flex-1 border-gray-200 focus:border-gray-400 focus:ring-gray-400"
                       placeholder="Type your own hook..."
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
@@ -578,7 +695,7 @@ const TitleHookSuggestions = ({
                         }
                       }}
                     />
-                    <Button 
+                    <Button
                       onClick={() => {
                         if (customHook.trim()) {
                           setCustomHooks(prev => [...prev, customHook]);
@@ -587,43 +704,43 @@ const TitleHookSuggestions = ({
                       }}
                       disabled={!customHook.trim()}
                       size="sm"
-                      className="bg-[#c4b7a6] hover:bg-[#b0a48f] text-white"
+                      className="bg-gray-900 hover:bg-gray-800 text-white"
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
-                </div>
-                
-                {customHooks.length > 0 ? (
-                  <ul className="space-y-2.5">
-                    {customHooks.map((hook, index) => (
-                      <li key={index} className="flex items-center gap-2">
-                        <span className="list-disc ml-4">
-                          <button 
+
+                  {customHooks.length > 0 ? (
+                    <div className="space-y-2">
+                      {customHooks.map((hook, index) => (
+                        <div key={index} className="relative group">
+                          <button
                             onClick={() => handleSelectHook(hook)}
-                            className="text-left hover:text-primary hover:underline"
+                            className="w-full text-left px-4 py-3 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg transition-all duration-150 hover:shadow-sm pr-12"
                           >
-                            "{hook}"
+                            <p className="text-sm text-gray-700 group-hover:text-gray-900">
+                              "{hook}"
+                            </p>
                           </button>
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteCustomHook(hook);
-                          }}
-                          className="ml-auto p-1 h-6 w-6"
-                          aria-label={`Delete hook "${hook}"`}
-                        >
-                          <Trash2 className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-muted-foreground italic">No custom hooks added yet.</p>
-                )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteCustomHook(hook);
+                            }}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
+                            aria-label={`Delete hook "${hook}"`}
+                          >
+                            <Trash2 className="h-4 w-4 text-gray-400 hover:text-red-600" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-sm px-3">No custom hooks added yet. Create your first one above!</p>
+                  )}
+                </div>
               </div>
             )}
           </div>

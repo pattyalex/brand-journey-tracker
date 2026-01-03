@@ -20,6 +20,7 @@ const BankOfContent = lazy(() => import('./pages/BankOfContent'));
 const ContentIdeation = lazy(() => import('./pages/ContentIdeation'));
 const ContentPlanning = lazy(() => import('./pages/ContentPlanning'));
 const ContentCalendar = lazy(() => import('./pages/ContentCalendar'));
+const Production = lazy(() => import('./pages/Production'));
 const StrategyGrowth = lazy(() => import("./pages/StrategyGrowth"));
 const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
 const Terms = lazy(() => import("./pages/Terms"));
@@ -127,6 +128,11 @@ function App() {
               <Route path="/content-calendar" element={
                 <ProtectedRoute>
                   <ContentCalendar />
+                </ProtectedRoute>
+              } />
+              <Route path="/production" element={
+                <ProtectedRoute>
+                  <Production />
                 </ProtectedRoute>
               } />
               <Route path="/strategy-growth" element={

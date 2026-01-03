@@ -47,40 +47,37 @@ const CalendarDayCell: React.FC<CalendarDayCellProps> = ({
     <div
       data-date={dateStr}
       className={cn(
-        "border-t border-l min-h-[120px] p-1",
-        !isCurrentMonth ? "bg-gray-50 text-gray-400" : "",
-        isCurrentDay ? "bg-blue-50" : "",
-        isWeekendDay && isCurrentMonth ? "bg-gray-100" : "",
+        "group relative border-r border-b min-h-[120px] p-2 transition-colors hover:bg-gray-50",
+        !isCurrentMonth ? "bg-gray-50/50 text-gray-400" : "bg-white",
         isDropTarget ? "ring-2 ring-inset ring-blue-400 bg-blue-50" : ""
       )}
-      onClick={() => isCurrentMonth && onDayClick(day)}
       onDragOver={(e) => isCurrentMonth && onDragOver(e, dateStr)}
       onDragLeave={onDragLeave}
       onDrop={(e) => isCurrentMonth && onDrop(e, day)}
     >
-      <div className="flex justify-between items-start p-1">
-        <div className={cn(
+      <div className="flex items-center justify-between mb-1">
+        <span className={cn(
           "text-sm font-medium",
-          isCurrentDay ? "bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center" : ""
+          isCurrentDay ? "bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center" :
+          isCurrentMonth ? "text-gray-900" : "text-gray-400"
         )}>
           {formatDate(day, 'd')}
-        </div>
+        </span>
         {isCurrentMonth && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-5 w-5"
+          <button
             onClick={(e) => {
               e.stopPropagation();
               onDayClick(day);
             }}
+            className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-blue-50"
+            title="Add content"
           >
-            <PlusCircle className="h-4 w-4" />
-          </Button>
+            <PlusCircle className="h-3.5 w-3.5 text-blue-600" />
+          </button>
         )}
       </div>
 
-      <div className="space-y-1 mt-1 max-h-[90px] overflow-y-auto">
+      <div className="space-y-1">
         {dayContent.map((content) => (
           <CalendarContentItem
             key={content.id}

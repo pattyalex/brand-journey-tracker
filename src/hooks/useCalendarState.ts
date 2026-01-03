@@ -50,6 +50,9 @@ export const useCalendarState = () => {
 
   useEffect(() => {
     localStorage.setItem('scheduledContent', JSON.stringify(scheduledContent));
+    // Dispatch custom event for same-tab updates
+    const event = new CustomEvent('scheduledContentUpdated', { detail: scheduledContent });
+    window.dispatchEvent(event);
   }, [scheduledContent]);
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));

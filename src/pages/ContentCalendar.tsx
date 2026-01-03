@@ -4,7 +4,7 @@ import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, PlusCircle, Trash2, Instagram, Youtube, AtSign, Pencil, CornerUpLeft } from "lucide-react";
-import { format as formatDate, isSameMonth } from "date-fns";
+import { format as formatDate, isSameMonth, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, addMonths, subMonths, format } from "date-fns";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import IdeaCreationDialog from "@/components/content/IdeaCreationDialog";
 import ContentCard from "@/components/content/ContentCard";
@@ -16,8 +16,14 @@ import { restoreContentToIdeas } from "@/utils/contentRestoreUtils";
 import CalendarDayCell from "@/components/content/calendar/CalendarDayCell";
 import { useCalendarState } from "@/hooks/useCalendarState";
 import { getCalendarDays, getContentForDate } from "@/utils/calendarUtils";
+import { PlannerDay } from "@/types/planner";
+
+const getDateString = (date: Date): string => {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
 
 const ContentCalendar = () => {
+  const [plannerData, setPlannerData] = useState<PlannerDay[]>([]);
   const {
     currentMonth,
     selectedDate,
@@ -35,6 +41,32 @@ const ContentCalendar = () => {
     goToToday,
     handleDateChange
   } = useCalendarState();
+
+  // Load planner data from localStorage
+  useEffect(() => {
+    const savedData = localStorage.getItem("plannerData");
+    if (savedData) {
+      setPlannerData(JSON.parse(savedData));
+    }
+  }, []);
+
+  // Listen for planner data changes
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'plannerData' && e.newValue) {
+        try {
+          setPlannerData(JSON.parse(e.newValue));
+        } catch (error) {
+          console.error('Failed to parse plannerData:', error);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   const readyContentRef = useRef<HTMLDivElement>(null);
   const [newContentDialogOpen, setNewContentDialogOpen] = React.useState(false);
@@ -454,26 +486,50 @@ const ContentCalendar = () => {
           </div>
 
           <div className="grid grid-cols-7 min-h-[70vh]">
-            {calendarDays.map((day, i) => (
-              <CalendarDayCell
-                key={i}
-                day={day}
-                currentMonth={currentMonth}
-                dayContent={getContentForDate(scheduledContent, day)}
-                onDayClick={(day) => {
-                  setSelectedDate(day);
-                  setNewContentDialogOpen(true);
-                }}
-                onEditContent={handleEditContent}
-                onDeleteContent={deleteScheduledContent}
-                draggedContent={draggedContent}
-                onDragStart={handleDragStart}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                dropTarget={dropTarget}
-              />
-            ))}
+            {calendarDays.map((day, i) => {
+              const dayString = getDateString(day);
+              const dayData = plannerData.find(d => d.date === dayString);
+              const plannerTasks = dayData?.items || [];
+
+              // Combine content items and planner tasks
+              const contentItems = getContentForDate(scheduledContent, day);
+              const allItems = [
+                ...contentItems,
+                ...plannerTasks.map(task => ({
+                  id: task.id,
+                  title: task.text,
+                  description: task.description || '',
+                  format: 'Task' as any,
+                  scheduledDate: new Date(dayString),
+                  dateCreated: new Date(),
+                  isPlannerTask: true,
+                  color: task.color,
+                  startTime: task.startTime,
+                  isCompleted: task.isCompleted
+                }))
+              ];
+
+              return (
+                <CalendarDayCell
+                  key={i}
+                  day={day}
+                  currentMonth={currentMonth}
+                  dayContent={allItems as any}
+                  onDayClick={(day) => {
+                    setSelectedDate(day);
+                    setNewContentDialogOpen(true);
+                  }}
+                  onEditContent={handleEditContent}
+                  onDeleteContent={deleteScheduledContent}
+                  draggedContent={draggedContent}
+                  onDragStart={handleDragStart}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  dropTarget={dropTarget}
+                />
+              );
+            })}
           </div>
         </div>
 

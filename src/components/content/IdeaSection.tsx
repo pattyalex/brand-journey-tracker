@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Lightbulb, Filter } from "lucide-react";
+import { Lightbulb, Filter, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ContentItem } from "@/types/content";
 import { Pillar } from "@/pages/BankOfContent";
@@ -275,8 +275,8 @@ const IdeaSection = ({
         className="flex flex-col md:flex-row items-start md:items-center gap-4 mb-4"
         variants={itemVariants}
       >
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full md:w-auto">
-          <motion.div 
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 w-full">
+          <motion.div
             className="flex items-center gap-2 w-full md:w-auto"
             variants={itemVariants}
           >
@@ -346,6 +346,15 @@ const IdeaSection = ({
               </Select>
             )}
           </motion.div>
+
+          <Button
+            onClick={onNewIdeaClick}
+            className="bg-[#8B6B4E] hover:bg-[#7A5D42] text-white flex items-center gap-2"
+            size="sm"
+          >
+            <PlusCircle className="h-4 w-4" />
+            Create New Idea
+          </Button>
         </div>
       </motion.div>
       

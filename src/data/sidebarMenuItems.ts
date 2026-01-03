@@ -1,5 +1,5 @@
 
-import { Home, FolderOpen, FileText, Settings, Database, CreditCard, Calendar, TrendingUp, BarChart, HelpCircle, CheckSquare, Clipboard, CheckCircle, Handshake } from 'lucide-react';
+import { Home, FolderOpen, FileText, Settings, Database, CreditCard, Calendar, TrendingUp, BarChart, HelpCircle, CheckSquare, Clipboard, CheckCircle, Handshake, Clapperboard } from 'lucide-react';
 import { MenuItem } from '@/types/sidebar';
 
 export const defaultMenuItems: MenuItem[] = [
@@ -12,9 +12,15 @@ export const defaultMenuItems: MenuItem[] = [
     isDeletable: false
   },
   {
-    title: 'Content Calendar',
+    title: 'Calendar',
     icon: Calendar,
     url: '/content-calendar',
+    isDeletable: false
+  },
+  {
+    title: 'Production',
+    icon: Clapperboard,
+    url: '/production',
     isDeletable: false
   },
   {
