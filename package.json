@@ -14,6 +14,7 @@
     "start:all": "concurrently \"npm run dev\" \"cd server && node api-server.cjs\""
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.2",
     "@clerk/clerk-react": "^5.53.2",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-accordion": "^1.2.0",
@@ -77,6 +78,7 @@
     "prosemirror-state": "^1.4.3",
     "prosemirror-transform": "^1.10.4",
     "prosemirror-view": "^1.39.2",
+    "puppeteer": "^24.34.0",
     "react": "^18.3.1",
     "react-beautiful-dnd": "^13.1.1",
     "react-day-picker": "^8.10.1",

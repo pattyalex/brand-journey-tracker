@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle, MoreVertical, Trash2, Edit, Sparkles, Check, Plus, ArrowLeft, Lightbulb } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +32,18 @@ export interface ProductionCard {
   columnId: string;
   isCompleted?: boolean;
   isNew?: boolean;
+  platforms?: string[];
+  formats?: string[];
+  script?: string;
+  hook?: string;
+  locationChecked?: boolean;
+  locationText?: string;
+  outfitChecked?: boolean;
+  outfitText?: string;
+  propsChecked?: boolean;
+  propsText?: string;
+  filmingNotes?: string;
+  status?: 'to-start' | 'needs-work' | 'ready' | null;
 }
 
 export interface KanbanColumn {
@@ -95,6 +108,7 @@ const InlineCardInput: React.FC<{
 const Production = () => {
   const [columns, setColumns] = useState<KanbanColumn[]>(defaultColumns);
   const [draggedCard, setDraggedCard] = useState<ProductionCard | null>(null);
+  const [dropIndicator, setDropIndicator] = useState<{ columnId: string; index: number } | null>(null);
   const [draggedOverColumn, setDraggedOverColumn] = useState<string | null>(null);
   const [draggedOverCardId, setDraggedOverCardId] = useState<string | null>(null);
   const [dropPosition, setDropPosition] = useState<{ columnId: string; index: number } | null>(null);
@@ -118,6 +132,32 @@ const Production = () => {
   const [ideaExpanderText, setIdeaExpanderText] = useState("");
   const [expandedAngles, setExpandedAngles] = useState<string[]>([]);
   const [isGeneratingAngles, setIsGeneratingAngles] = useState(false);
+
+  // Script editor modal state
+  const [isScriptEditorOpen, setIsScriptEditorOpen] = useState(false);
+  const [editingScriptCard, setEditingScriptCard] = useState<ProductionCard | null>(null);
+  const [cardTitle, setCardTitle] = useState("");
+  const [cardHook, setCardHook] = useState("");
+  const [scriptContent, setScriptContent] = useState("");
+  const [platformTags, setPlatformTags] = useState<string[]>([]);
+  const [formatTags, setFormatTags] = useState<string[]>([]);
+  const [platformInput, setPlatformInput] = useState("");
+  const [formatInput, setFormatInput] = useState("");
+  // Filming checklist state
+  const [locationChecked, setLocationChecked] = useState(false);
+  const [locationText, setLocationText] = useState("");
+  const [outfitChecked, setOutfitChecked] = useState(false);
+  const [outfitText, setOutfitText] = useState("");
+  const [propsChecked, setPropsChecked] = useState(false);
+  const [propsText, setPropsText] = useState("");
+  const [filmingNotes, setFilmingNotes] = useState("");
+  const [cardStatus, setCardStatus] = useState<'to-start' | 'needs-work' | 'ready' | null>(null);
+  // Refs for filming checklist navigation
+  const titleInputRef = useRef<HTMLInputElement>(null);
+  const locationInputRef = useRef<HTMLInputElement>(null);
+  const outfitInputRef = useRef<HTMLInputElement>(null);
+  const propsInputRef = useRef<HTMLInputElement>(null);
+  const notesInputRef = useRef<HTMLTextAreaElement>(null);
   const [addedAngleText, setAddedAngleText] = useState<string | null>(null);
   const [bankIdeas, setBankIdeas] = useState<Array<{ id: string; text: string; isPlaceholder?: boolean }>>([]);
   const [newBankIdeaText, setNewBankIdeaText] = useState("");
@@ -142,8 +182,47 @@ const Production = () => {
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>("");
   const [cascadeIdeas, setCascadeIdeas] = useState<string[]>([]);
   const [isGeneratingCascadeIdeas, setIsGeneratingCascadeIdeas] = useState(false);
+
+  // What Worked → What's Next functionality
+  const [isWhatWorkedDialogOpen, setIsWhatWorkedDialogOpen] = useState(false);
+  const [whatWorkedStep, setWhatWorkedStep] = useState<'input' | 'generate'>('input');
+  const [wwContentLink, setWwContentLink] = useState('');
+  const [wwVideoFile, setWwVideoFile] = useState<File | null>(null);
+  const [wwPillar, setWwPillar] = useState('');
+  const [wwFormat, setWwFormat] = useState('');
+  const [wwDeliveryStyle, setWwDeliveryStyle] = useState('');
+  const [wwHookType, setWwHookType] = useState('');
+  const [wwComments, setWwComments] = useState('');
+  const [wwSelectedSignals, setWwSelectedSignals] = useState<string[]>([]);
+  const [wwTwist, setWwTwist] = useState('');
+  const [wwContextSummary, setWwContextSummary] = useState('');
+  const [wwRemixIdeas, setWwRemixIdeas] = useState<Array<{id: string, title: string, variation: string, description: string}>>([]);
+  const [wwContentSubmitted, setWwContentSubmitted] = useState(false);
+  const [wwThumbnailUrl, setWwThumbnailUrl] = useState<string>('');
+  const [wwShowAudienceSignals, setWwShowAudienceSignals] = useState(false);
+  const [wwShowFormat, setWwShowFormat] = useState(false);
+  const [wwShowDelivery, setWwShowDelivery] = useState(false);
+  const [wwShowHook, setWwShowHook] = useState(false);
+  const [wwShowComments, setWwShowComments] = useState(false);
+  const [wwAnalyzing, setWwAnalyzing] = useState(false);
+  const [wwAnalysisComplete, setWwAnalysisComplete] = useState(false);
   const [isGeneratingMoreIdeas, setIsGeneratingMoreIdeas] = useState(false);
   const [addedIdeaText, setAddedIdeaText] = useState<string | null>(null);
+
+  // Re-process embeds when content changes
+  React.useEffect(() => {
+    if (wwContentSubmitted && wwContentLink) {
+      // Small delay to ensure DOM is updated
+      setTimeout(() => {
+        if (wwContentLink.includes('instagram.com') && typeof window !== 'undefined' && (window as any).instgrm) {
+          (window as any).instgrm.Embeds.process();
+        }
+        if (wwContentLink.includes('tiktok.com') && typeof window !== 'undefined' && (window as any).tiktok) {
+          (window as any).tiktok.embed.process();
+        }
+      }, 100);
+    }
+  }, [wwContentSubmitted, wwContentLink]);
 
   const narrativeDirections = [
     { title: "Personal Experience", example: "My experience with…", why: "authenticity + relatability" },
@@ -271,6 +350,75 @@ const Production = () => {
     }
   }, [editingCardId, editTrigger, clickPosition]);
 
+
+  // Handle content submission and automatic analysis
+  const handleContentSubmit = async () => {
+    if (!wwContentLink.trim() || wwAnalyzing) return;
+
+    try {
+      setWwAnalyzing(true);
+      setWwContentSubmitted(true);
+      toast.loading('Capturing and analyzing content with Claude AI...');
+
+      // Determine content type
+      let contentType = 'other';
+      if (wwContentLink.includes('instagram.com')) {
+        contentType = 'instagram';
+      } else if (wwContentLink.includes('tiktok.com')) {
+        contentType = 'tiktok';
+      }
+
+      // Call analyze-content API with direct URL for Puppeteer capture
+      const analyzeResponse = await fetch('http://localhost:3001/api/analyze-content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          directUrl: wwContentLink,
+          contentType
+        })
+      });
+
+      if (!analyzeResponse.ok) {
+        const errorData = await analyzeResponse.json();
+        throw new Error(errorData.error || 'Failed to analyze content');
+      }
+
+      const analysisData = await analyzeResponse.json();
+      const content = analysisData.content[0].text;
+
+      // Parse JSON from response
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('Could not parse analysis from response');
+      }
+
+      const analysis = JSON.parse(jsonMatch[0]);
+
+      // Populate state with analysis results
+      setWwPillar(analysis.pillar || '');
+      setWwFormat(analysis.format || '');
+      setWwDeliveryStyle(analysis.deliveryStyle || '');
+      setWwHookType(analysis.hook || '');
+      setWwComments(analysis.comments || '');
+      setWwContextSummary(analysis.summary || '');
+
+      setWwContentSubmitted(true);
+      setWwAnalysisComplete(true);
+      setWwShowAudienceSignals(true); // Show the "Give it a twist" section
+
+      toast.dismiss();
+      toast.success('Content analyzed successfully!');
+    } catch (error) {
+      console.error('Error analyzing content:', error);
+      toast.dismiss();
+      toast.error('Failed to analyze content. Please try again.');
+    } finally {
+      setWwAnalyzing(false);
+    }
+  };
+
   const handleDragStart = (e: React.DragEvent, card: ProductionCard) => {
     setDraggedCard(card);
     e.dataTransfer.effectAllowed = "move";
@@ -280,6 +428,7 @@ const Production = () => {
     setDraggedCard(null);
     setDraggedOverColumn(null);
     setDropPosition(null);
+    setDropIndicator(null);
   };
 
   const handleCardDragOver = (e: React.DragEvent, columnId: string, cardIndex: number) => {
@@ -292,8 +441,11 @@ const Production = () => {
     const midpoint = rect.top + rect.height / 2;
     const insertIndex = e.clientY < midpoint ? cardIndex : cardIndex + 1;
 
-    setDropPosition({ columnId, index: insertIndex });
-    setDraggedOverColumn(columnId);
+    // Only update state if position actually changed
+    if (dropPosition?.columnId !== columnId || dropPosition?.index !== insertIndex) {
+      setDropPosition({ columnId, index: insertIndex });
+      setDraggedOverColumn(columnId);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent, columnId: string) => {
@@ -321,25 +473,70 @@ const Production = () => {
     e.preventDefault();
     if (!draggedCard || !dropPosition) return;
 
-    const insertIndex = dropPosition.index;
+    // Save the drop position before clearing state
+    const savedDropPosition = { ...dropPosition };
+    const actualTargetColumnId = savedDropPosition.columnId;
 
-    // Remove card from original column
-    let updatedColumns = columns.map((column) => ({
-      ...column,
-      cards: column.cards.filter((card) => card.id !== draggedCard.id),
-    }));
+    // Clear drop indicators immediately
+    setDropPosition(null);
+    setDraggedOverColumn(null);
+    const sourceColumn = columns.find((col) =>
+      col.cards.some((card) => card.id === draggedCard.id)
+    );
+    const sourceColumnId = sourceColumn?.id;
 
-    // Adjust insert index if dropping in same column and after the dragged card's original position
-    const targetColumn = updatedColumns.find((col) => col.id === targetColumnId);
-    if (targetColumn) {
-      const newCard = { ...draggedCard, columnId: targetColumnId };
-      targetColumn.cards.splice(insertIndex, 0, newCard);
-    }
+    if (!sourceColumn) return;
+
+    const isSameColumn = sourceColumnId === actualTargetColumnId;
+
+    // Create updated columns
+    const updatedColumns = columns.map((column) => {
+      // Get filtered cards for this column
+      const filterCard = (c: ProductionCard) =>
+        c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea');
+
+      if (column.id === sourceColumnId && isSameColumn) {
+        // Moving within the same column
+        const filtered = column.cards.filter(filterCard);
+        const draggedIndex = filtered.findIndex((c) => c.id === draggedCard.id);
+
+        if (draggedIndex === -1) return column;
+
+        // Remove dragged card from filtered array
+        const withoutDragged = filtered.filter((c) => c.id !== draggedCard.id);
+
+        // Calculate actual drop index (accounting for removed card)
+        let actualDropIndex = savedDropPosition.index;
+        if (actualDropIndex > draggedIndex) {
+          actualDropIndex--;
+        }
+
+        // Insert at new position
+        withoutDragged.splice(actualDropIndex, 0, { ...draggedCard, columnId: column.id });
+
+        return { ...column, cards: withoutDragged };
+      } else if (column.id === sourceColumnId) {
+        // Removing from source column (moving to different column)
+        return {
+          ...column,
+          cards: column.cards.filter((c) => c.id !== draggedCard.id),
+        };
+      } else if (column.id === actualTargetColumnId) {
+        // Adding to target column (from different column)
+        const filtered = column.cards.filter(filterCard);
+        // Set status to 'to-start' if moving to shape-ideas column and card doesn't already have a status
+        const cardToAdd = column.id === 'shape-ideas' && !draggedCard.status
+          ? { ...draggedCard, columnId: column.id, status: 'to-start' as const }
+          : { ...draggedCard, columnId: column.id };
+        filtered.splice(savedDropPosition.index, 0, cardToAdd);
+        return { ...column, cards: filtered };
+      }
+
+      return column;
+    });
 
     setColumns(updatedColumns);
     setDraggedCard(null);
-    setDraggedOverColumn(null);
-    setDropPosition(null);
   };
 
   const handleAddCard = () => {
@@ -413,6 +610,137 @@ const Production = () => {
         ),
       }))
     );
+  };
+
+  const handleOpenScriptEditor = (card: ProductionCard) => {
+    setEditingScriptCard(card);
+    setCardTitle(card.title || "");
+    setCardHook(card.hook || "");
+    setScriptContent(card.script || "");
+    setPlatformTags(card.platforms || []);
+    setFormatTags(card.formats || []);
+    setPlatformInput("");
+    setFormatInput("");
+    // Initialize filming checklist
+    setLocationChecked(card.locationChecked || false);
+    setLocationText(card.locationText || "");
+    setOutfitChecked(card.outfitChecked || false);
+    setOutfitText(card.outfitText || "");
+    setPropsChecked(card.propsChecked || false);
+    setPropsText(card.propsText || "");
+    setFilmingNotes(card.filmingNotes || "");
+    setCardStatus(card.status || null);
+    setIsScriptEditorOpen(true);
+  };
+
+  const handleSaveScript = () => {
+    if (!editingScriptCard) return;
+
+    setColumns((prev) =>
+      prev.map((col) => ({
+        ...col,
+        cards: col.cards.map((card) =>
+          card.id === editingScriptCard.id
+            ? {
+                ...card,
+                title: cardTitle,
+                hook: cardHook,
+                script: scriptContent,
+                platforms: platformTags,
+                formats: formatTags,
+                locationChecked,
+                locationText,
+                outfitChecked,
+                outfitText,
+                propsChecked,
+                propsText,
+                filmingNotes,
+                status: cardStatus,
+              }
+            : card
+        ),
+      }))
+    );
+
+    setIsScriptEditorOpen(false);
+    setEditingScriptCard(null);
+    setCardTitle("");
+    setCardHook("");
+    setScriptContent("");
+    setPlatformTags([]);
+    setFormatTags([]);
+    setPlatformInput("");
+    setFormatInput("");
+    setLocationChecked(false);
+    setLocationText("");
+    setOutfitChecked(false);
+    setOutfitText("");
+    setPropsChecked(false);
+    setPropsText("");
+    setFilmingNotes("");
+    setCardStatus(null);
+  };
+
+  const handleAddPlatformTag = () => {
+    if (platformInput.trim() && !platformTags.includes(platformInput.trim())) {
+      setPlatformTags([...platformTags, platformInput.trim()]);
+      setPlatformInput("");
+    }
+  };
+
+  const handleAddFormatTag = () => {
+    if (formatInput.trim() && !formatTags.includes(formatInput.trim())) {
+      setFormatTags([...formatTags, formatInput.trim()]);
+      setFormatInput("");
+    }
+  };
+
+  const handleRemovePlatformTag = (tag: string) => {
+    setPlatformTags(platformTags.filter(t => t !== tag));
+  };
+
+  const handleRemoveFormatTag = (tag: string) => {
+    setFormatTags(formatTags.filter(t => t !== tag));
+  };
+
+  // Get color classes for platform tags
+  const getPlatformColors = (platform: string): { bg: string; text: string; hover: string } => {
+    const lowercased = platform.toLowerCase();
+    if (lowercased.includes('instagram') || lowercased === 'ig') {
+      return { bg: 'bg-pink-100', text: 'text-pink-700', hover: 'hover:bg-pink-200' };
+    } else if (lowercased.includes('tiktok') || lowercased === 'tt') {
+      return { bg: 'bg-gray-900', text: 'text-white', hover: 'hover:bg-gray-800' };
+    } else if (lowercased.includes('youtube')) {
+      return { bg: 'bg-red-100', text: 'text-red-700', hover: 'hover:bg-red-200' };
+    } else if (lowercased.includes('facebook')) {
+      return { bg: 'bg-blue-100', text: 'text-blue-700', hover: 'hover:bg-blue-200' };
+    } else if (lowercased.includes('twitter') || lowercased.includes('x.com')) {
+      return { bg: 'bg-sky-100', text: 'text-sky-700', hover: 'hover:bg-sky-200' };
+    } else if (lowercased.includes('linkedin')) {
+      return { bg: 'bg-indigo-100', text: 'text-indigo-700', hover: 'hover:bg-indigo-200' };
+    }
+    // Default color
+    return { bg: 'bg-blue-100', text: 'text-blue-700', hover: 'hover:bg-blue-200' };
+  };
+
+  // Get color classes for format tags
+  const getFormatColors = (format: string): { bg: string; text: string; hover: string } => {
+    const lowercased = format.toLowerCase();
+    if (lowercased.includes('carousel')) {
+      return { bg: 'bg-purple-100', text: 'text-purple-700', hover: 'hover:bg-purple-200' };
+    } else if (lowercased.includes('vlog')) {
+      return { bg: 'bg-indigo-100', text: 'text-indigo-700', hover: 'hover:bg-indigo-200' };
+    } else if (lowercased.includes('reel')) {
+      return { bg: 'bg-orange-100', text: 'text-orange-700', hover: 'hover:bg-orange-200' };
+    } else if (lowercased.includes('b-roll') || lowercased.includes('broll')) {
+      return { bg: 'bg-amber-100', text: 'text-amber-700', hover: 'hover:bg-amber-200' };
+    } else if (lowercased.includes('story') || lowercased.includes('stories')) {
+      return { bg: 'bg-violet-100', text: 'text-violet-700', hover: 'hover:bg-violet-200' };
+    } else if (lowercased.includes('short')) {
+      return { bg: 'bg-cyan-100', text: 'text-cyan-700', hover: 'hover:bg-cyan-200' };
+    }
+    // Default color
+    return { bg: 'bg-purple-100', text: 'text-purple-700', hover: 'hover:bg-purple-200' };
   };
 
   const handleStartAddingCard = (columnId: string) => {
@@ -801,10 +1129,42 @@ const Production = () => {
                       {column.cards.filter(card => card.title && card.title.trim() && !card.title.toLowerCase().includes('add quick idea')).map((card, cardIndex) => {
                         const isEditing = editingCardId === card.id;
 
+                        // Find dragged card's current index in this column
+                        const filteredCards = column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea'));
+                        const draggedCardIndex = draggedCard ? filteredCards.findIndex(c => c.id === draggedCard.id) : -1;
+
+                        // Don't show indicator at or adjacent to the dragged card's original position in the same column
+                        const isNearOriginalPosition = draggedCardIndex !== -1 &&
+                                                       dropPosition?.columnId === column.id &&
+                                                       (dropPosition?.index === draggedCardIndex ||
+                                                        dropPosition?.index === draggedCardIndex + 1);
+
+                        const showDropIndicatorBefore = dropPosition?.columnId === column.id &&
+                                                         dropPosition?.index === cardIndex &&
+                                                         !isNearOriginalPosition;
+
+                        const isDragging = draggedCard !== null;
+                        const isThisCardDragged = draggedCard?.id === card.id;
+
                         return (
+                          <React.Fragment key={card.id}>
+                            {/* Drop indicator - fixed height to prevent layout shift */}
+                            {column.id !== "ideate" && (
+                              <div className="relative h-0">
+                                {showDropIndicatorBefore && draggedCard && (
+                                  <div
+                                    className="absolute inset-x-0 -top-1 h-0.5 bg-purple-500 rounded-full"
+                                    style={{
+                                      opacity: 1,
+                                      transition: 'opacity 0.1s ease-out'
+                                    }}
+                                  />
+                                )}
+                              </div>
+                            )}
+
                             <motion.div
-                              key={card.id}
-                              layout
+                              layout={!isDragging}
                               initial={{ opacity: 1 }}
                               animate={{
                                 opacity: 1,
@@ -812,10 +1172,10 @@ const Production = () => {
                                   ? ["0 0 0px rgba(168, 85, 247, 0)", "0 0 20px rgba(168, 85, 247, 0.6)", "0 0 0px rgba(168, 85, 247, 0)"]
                                   : "0 1px 2px 0 rgb(0 0 0 / 0.05)"
                               }}
-                              exit={{ opacity: 0, scale: 0.8 }}
+                              exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.1 } }}
                               transition={{
-                                layout: { duration: 0.2, ease: "easeInOut" },
-                                opacity: { duration: 0.15 },
+                                layout: { duration: 0.2, ease: "easeOut" },
+                                opacity: { duration: 0.05 },
                                 boxShadow: { duration: 1.5, repeat: card.isNew ? 2 : 0 }
                               }}
                               draggable={!isEditing}
@@ -823,12 +1183,17 @@ const Production = () => {
                               onDragEnd={handleDragEnd}
                               onDragOver={(e) => handleCardDragOver(e, column.id, cardIndex)}
                               className={cn(
-                                "group backdrop-blur-sm p-2 rounded-lg shadow-sm hover:shadow-md hover:scale-[1.01] transition-all duration-200 relative",
+                                "group backdrop-blur-sm rounded-lg shadow-sm relative",
+                                column.id === "ideate" ? "py-4 px-2" : "p-2",
                                 !isEditing && "cursor-grab active:cursor-grabbing",
-                                draggedCard?.id === card.id ? "opacity-40 scale-95" : "",
+                                !isDragging && "hover:shadow-md transition-shadow duration-150",
+                                isThisCardDragged ? "opacity-40 scale-[0.98]" : "",
                                 card.isCompleted && "opacity-60",
                                 card.isNew ? "border-2 border-purple-600 bg-purple-100" : "bg-white/80 border border-white"
                               )}
+                              style={{
+                                willChange: isDragging ? 'transform' : 'auto'
+                              }}
                             >
                             {card.isNew && (
                               <div className="absolute -top-1 -right-1 bg-purple-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
@@ -865,7 +1230,7 @@ const Production = () => {
                                       if (el) textRefs.current.set(card.id, el);
                                     }}
                                     className={cn(
-                                      "font-medium text-sm text-gray-900 break-words leading-tight flex-1 cursor-text",
+                                      "font-medium text-sm text-gray-900 break-words leading-tight flex-1 cursor-grab hover:cursor-grab",
                                       card.isCompleted && "line-through text-gray-500"
                                     )}
                                     onClick={(e) => {
@@ -881,6 +1246,19 @@ const Production = () => {
                                   </h3>
                                 )}
                                 <div className="flex flex-row gap-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                                  {column.id === "shape-ideas" && (
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-3.5 w-3.5 p-0 rounded hover:bg-blue-50"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenScriptEditor(card);
+                                      }}
+                                    >
+                                      <Edit className="h-2.5 w-2.5 text-gray-400 hover:text-blue-600" />
+                                    </Button>
+                                  )}
                                   <Button
                                     size="sm"
                                     variant="ghost"
@@ -892,9 +1270,66 @@ const Production = () => {
                                 </div>
                               </div>
                             </div>
+                            {/* Tags for Shape Ideas column */}
+                            {column.id === "shape-ideas" && ((card.platforms && card.platforms.length > 0) || (card.formats && card.formats.length > 0) || card.status) && (
+                              <div className="flex gap-1.5 mt-2 flex-wrap">
+                                {card.formats?.map((format, idx) => {
+                                  const colors = getFormatColors(format);
+                                  return (
+                                    <span key={`format-${idx}`} className={`text-[10px] px-2 py-0.5 rounded-full ${colors.bg} ${colors.text} font-medium`}>
+                                      {format}
+                                    </span>
+                                  );
+                                })}
+                                {card.platforms?.map((platform, idx) => {
+                                  const colors = getPlatformColors(platform);
+                                  return (
+                                    <span key={`platform-${idx}`} className={`text-[10px] px-2 py-0.5 rounded-full ${colors.bg} ${colors.text} font-medium`}>
+                                      {platform}
+                                    </span>
+                                  );
+                                })}
+                                {card.status && (
+                                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                                    card.status === 'to-start' ? 'bg-gray-200 text-gray-700' :
+                                    card.status === 'needs-work' ? 'bg-yellow-100 text-yellow-700' :
+                                    'bg-green-100 text-green-700'
+                                  }`}>
+                                    {card.status === 'to-start' ? 'To start' :
+                                     card.status === 'needs-work' ? 'Needs more work' :
+                                     'Ready to film'}
+                                  </span>
+                                )}
+                              </div>
+                            )}
                           </motion.div>
+                          </React.Fragment>
                         );
                       })}
+
+                      {/* Drop indicator at the end of the column - fixed height to prevent layout shift */}
+                      {column.id !== "ideate" && (() => {
+                        const filteredCards = column.cards.filter(card => card.title && card.title.trim() && !card.title.toLowerCase().includes('add quick idea'));
+                        const draggedCardIndex = draggedCard ? filteredCards.findIndex(c => c.id === draggedCard.id) : -1;
+                        const isLastCard = draggedCardIndex !== -1 && draggedCardIndex === filteredCards.length - 1;
+                        const shouldShow = dropPosition?.columnId === column.id &&
+                                         dropPosition?.index === filteredCards.length &&
+                                         !isLastCard;
+
+                        return (
+                          <div className="relative h-0">
+                            {shouldShow && draggedCard && (
+                              <div
+                                className="absolute inset-x-0 top-0 h-0.5 bg-purple-500 rounded-full"
+                                style={{
+                                  opacity: 1,
+                                  transition: 'opacity 0.1s ease-out'
+                                }}
+                              />
+                            )}
+                          </div>
+                        );
+                      })()}
 
                       {addingToColumn === column.id ? (
                         <div key={`inline-input-${column.id}`}>
@@ -1107,6 +1542,7 @@ const Production = () => {
 
                     {/* 3. What Worked, What's Next - Sky/Cyan Blue - Spans 2 cols */}
                     <button
+                      onClick={() => setIsWhatWorkedDialogOpen(true)}
                       className="col-span-2 group relative overflow-hidden bg-gradient-to-br from-sky-50 to-cyan-50 hover:from-sky-100 hover:to-cyan-100 border-2 border-sky-200 hover:border-sky-400 rounded-xl p-6 transition-all duration-300 hover:scale-105 hover:shadow-lg"
                     >
                       <div className="flex flex-col items-center text-center space-y-3">
@@ -2318,6 +2754,872 @@ const Production = () => {
                   </div>
                 )}
               </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* What Worked → What's Next Dialog */}
+        <Dialog open={isWhatWorkedDialogOpen} onOpenChange={(open) => {
+          setIsWhatWorkedDialogOpen(open);
+          if (!open) {
+            setWwContentSubmitted(false);
+            setWwShowAudienceSignals(false);
+            setIsIdeateDialogOpen(false);
+          }
+        }}>
+          <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] overflow-hidden border-0 shadow-2xl flex flex-col bg-gradient-to-br from-blue-50 via-white to-sky-50">
+            <DialogHeader className="flex-shrink-0 pt-6 px-4">
+              <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-sky-600 bg-clip-text text-transparent mb-2">
+                {whatWorkedStep === 'input' ? 'What Worked → What\'s Next' : 'Your Remix Ideas'}
+              </DialogTitle>
+              {whatWorkedStep === 'input' && (
+                <p className="text-gray-600 text-base">
+                  Turn winning content patterns into fresh ideas
+                </p>
+              )}
+            </DialogHeader>
+
+            {whatWorkedStep === 'input' ? (
+              <div className="flex-1 overflow-y-auto pr-6 pb-4 pl-4">
+                <div className="space-y-6">
+                  {/* Content Reference - Only show if not submitted */}
+                  {!wwContentSubmitted && (
+                  <div className="bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50 rounded-lg p-5">
+                    <div className="flex items-center gap-1.5 mb-4">
+                      <div className="w-0.5 h-3.5 bg-sky-500 rounded-full"></div>
+                      <h3 className="text-sm font-semibold text-gray-900">
+                        Content Reference
+                      </h3>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={wwContentLink}
+                          onChange={(e) => setWwContentLink(e.target.value)}
+                          onKeyDown={async (e) => {
+                            if (e.key === 'Enter' && wwContentLink.trim() && !wwAnalyzing) {
+                              await handleContentSubmit();
+                            }
+                          }}
+                          placeholder="Paste link (Instagram, TikTok, YouTube...)"
+                          className="w-full px-3 py-2.5 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-sky-400 focus:border-sky-400 transition-colors"
+                          disabled={wwAnalyzing}
+                        />
+                        {wwContentLink.trim() && !wwContentSubmitted && (
+                          <button
+                            onClick={handleContentSubmit}
+                            disabled={wwAnalyzing}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-sky-600 text-white rounded text-xs font-medium hover:bg-sky-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {wwAnalyzing ? 'Analyzing...' : 'Continue'}
+                          </button>
+                        )}
+                      </div>
+                      <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t border-gray-200"></div>
+                        </div>
+                        <div className="relative flex justify-center text-xs">
+                          <span className="px-3 bg-white text-gray-400 uppercase tracking-wide">or</span>
+                        </div>
+                      </div>
+                      <label className="flex items-center justify-center gap-2 w-full px-3 py-2.5 border border-dashed border-gray-300 rounded-md cursor-pointer hover:border-sky-400 hover:bg-sky-50 transition-all text-sm text-gray-600">
+                        <span className="text-gray-400">📎</span>
+                        {wwVideoFile ? wwVideoFile.name : 'Upload video file'}
+                        <input
+                          type="file"
+                          accept="video/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0] || null;
+                            setWwVideoFile(file);
+                            if (file) {
+                              setWwContentSubmitted(true);
+                            }
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                  )}
+
+                  {/* Content Preview - Show after submission */}
+                  {wwContentSubmitted && (wwContentLink.trim() || wwVideoFile) && (
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-5 bg-amber-500 rounded-full"></div>
+                        <h3 className="text-base font-semibold text-gray-900">Content Preview</h3>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setWwContentLink('');
+                          setWwVideoFile(null);
+                          setWwContentSubmitted(false);
+                          setWwThumbnailUrl('');
+                          setWwShowAudienceSignals(false);
+                        }}
+                        className="text-sm text-gray-500 hover:text-gray-700 underline"
+                      >
+                        Change content
+                      </button>
+                    </div>
+
+                    {/* Two Column Layout: Embed + Form */}
+                    <div className="flex gap-6">
+                      {/* Thumbnail/Embed Container */}
+                      <div className="flex-shrink-0">
+                      {wwVideoFile ? (
+                        <div className="rounded-xl overflow-hidden shadow-lg bg-black" style={{ maxWidth: '400px' }}>
+                          <video
+                            src={URL.createObjectURL(wwVideoFile)}
+                            controls
+                            className="w-full h-auto"
+                          />
+                        </div>
+                      ) : wwContentLink.includes('instagram.com') ? (
+                        <div style={{ transform: 'scale(0.8)', transformOrigin: 'top left', paddingTop: '60px', position: 'relative' }}>
+                          <blockquote
+                            className="instagram-media"
+                            data-instgrm-captioned
+                            data-instgrm-permalink={wwContentLink}
+                            data-instgrm-version="14"
+                            style={{
+                              background: '#FFF',
+                              border: '0',
+                              borderRadius: '12px',
+                              boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                              margin: '0',
+                              maxWidth: '540px',
+                              minWidth: '326px',
+                              padding: '0',
+                              width: '100%',
+                              position: 'relative',
+                              top: '-60px'
+                            }}
+                          >
+                            <a href={wwContentLink} target="_blank" rel="noopener noreferrer">
+                              View this post on Instagram
+                            </a>
+                          </blockquote>
+                          {typeof window !== 'undefined' && (window as any).instgrm && (window as any).instgrm.Embeds && (window as any).instgrm.Embeds.process()}
+                        </div>
+                      ) : wwContentLink.includes('tiktok.com') ? (
+                        <div style={{ transform: 'scale(0.85)', transformOrigin: 'top left' }}>
+                          <blockquote
+                            className="tiktok-embed"
+                            cite={wwContentLink}
+                            data-video-id={wwContentLink.split('/video/')[1]?.split('?')[0]}
+                            style={{ maxWidth: '605px', minWidth: '325px' }}
+                          >
+                            <a href={wwContentLink} target="_blank" rel="noopener noreferrer">
+                              View this video on TikTok
+                            </a>
+                          </blockquote>
+                          {typeof window !== 'undefined' && (window as any).tiktok && (window as any).tiktok.embed && (window as any).tiktok.embed.process()}
+                        </div>
+                      ) : (wwContentLink.includes('youtube.com') || wwContentLink.includes('youtu.be')) ? (() => {
+                        const videoId = wwContentLink.includes('youtube.com')
+                          ? new URLSearchParams(wwContentLink.split('?')[1]).get('v')
+                          : wwContentLink.split('youtu.be/')[1]?.split('?')[0];
+                        return videoId ? (
+                          <div className="rounded-xl overflow-hidden shadow-lg" style={{ maxWidth: '400px' }}>
+                            <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                              <iframe
+                                className="absolute top-0 left-0 w-full h-full"
+                                src={`https://www.youtube.com/embed/${videoId}`}
+                                frameBorder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                              />
+                            </div>
+                          </div>
+                        ) : null;
+                      })() : (
+                        <div className="rounded-xl shadow-lg bg-white p-6 text-center" style={{ maxWidth: '400px' }}>
+                          <a
+                            href={wwContentLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-700 underline break-all"
+                          >
+                            {wwContentLink}
+                          </a>
+                        </div>
+                      )}
+                      </div>
+
+                      {/* AI-Generated Content Analysis - Right Side */}
+                      <div className="flex-1 min-w-0">
+                        {wwAnalyzing ? (
+                          <div className="bg-white rounded-lg p-6 text-center">
+                            <div className="animate-pulse flex flex-col items-center gap-3">
+                              <div className="w-12 h-12 bg-indigo-200 rounded-full"></div>
+                              <div className="h-4 w-48 bg-indigo-100 rounded"></div>
+                              <div className="h-3 w-64 bg-indigo-50 rounded"></div>
+                            </div>
+                            <p className="text-sm text-gray-600 mt-4">Analyzing content with Claude AI...</p>
+                          </div>
+                        ) : wwContentSubmitted && !wwAnalysisComplete ? (
+                          <div className="bg-white rounded-lg p-6">
+                            <div className="text-center">
+                              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <span className="text-2xl">📸</span>
+                              </div>
+                              <h4 className="text-lg font-semibold text-gray-900 mb-2">Upload Screenshot</h4>
+                              <p className="text-sm text-gray-600 mb-6">Upload a screenshot of the content so Claude can analyze it</p>
+                              <label className="inline-block px-6 py-3 bg-sky-600 text-white rounded-lg cursor-pointer hover:bg-sky-700 transition-colors font-medium">
+                                Choose Screenshot
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+
+                                    try {
+                                      setWwAnalyzing(true);
+                                      toast.loading('Analyzing screenshot with Claude...');
+
+                                      // Convert file to base64
+                                      const reader = new FileReader();
+                                      reader.onloadend = async () => {
+                                        try {
+                                          const base64String = (reader.result as string).split(',')[1];
+
+                                          // Call analyze-content API with base64 image
+                                          const analyzeResponse = await fetch('http://localhost:3001/api/analyze-content', {
+                                            method: 'POST',
+                                            headers: {
+                                              'Content-Type': 'application/json',
+                                            },
+                                            body: JSON.stringify({
+                                              imageData: base64String,
+                                              mediaType: file.type,
+                                              contentType: 'screenshot'
+                                            })
+                                          });
+
+                                          if (!analyzeResponse.ok) {
+                                            const errorData = await analyzeResponse.json();
+                                            throw new Error(errorData.error || 'Failed to analyze screenshot');
+                                          }
+
+                                          const analysisData = await analyzeResponse.json();
+                                          const content = analysisData.content[0].text;
+
+                                          // Parse JSON from response
+                                          const jsonMatch = content.match(/\{[\s\S]*\}/);
+                                          if (!jsonMatch) {
+                                            throw new Error('Could not parse analysis from response');
+                                          }
+
+                                          const analysis = JSON.parse(jsonMatch[0]);
+
+                                          // Populate state with analysis results
+                                          setWwPillar(analysis.pillar || '');
+                                          setWwFormat(analysis.format || '');
+                                          setWwDeliveryStyle(analysis.deliveryStyle || '');
+                                          setWwHookType(analysis.hook || '');
+                                          setWwComments(analysis.comments || '');
+                                          setWwContextSummary(analysis.summary || '');
+
+                                          setWwAnalysisComplete(true);
+                                          setWwShowAudienceSignals(true);
+
+                                          toast.dismiss();
+                                          toast.success('Screenshot analyzed successfully!');
+                                        } catch (error) {
+                                          console.error('Error analyzing screenshot:', error);
+                                          toast.dismiss();
+                                          toast.error('Failed to analyze screenshot. Please try again.');
+                                        } finally {
+                                          setWwAnalyzing(false);
+                                        }
+                                      };
+                                      reader.readAsDataURL(file);
+                                    } catch (error) {
+                                      console.error('Error reading file:', error);
+                                      toast.error('Failed to read file');
+                                      setWwAnalyzing(false);
+                                    }
+                                  }}
+                                  className="hidden"
+                                />
+                              </label>
+                            </div>
+                          </div>
+                        ) : wwAnalysisComplete ? (
+                          <div className="space-y-6">
+                            <div className="bg-white rounded-lg p-4">
+                              {/* AI-Generated Content Summary */}
+                              <div className="p-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg border border-indigo-200">
+                                <div className="flex items-center gap-1.5 mb-3">
+                                  <div className="w-0.5 h-4 bg-indigo-500 rounded-full"></div>
+                                  <h4 className="text-sm font-semibold text-gray-900">
+                                    AI Analysis
+                                  </h4>
+                                </div>
+                                <div className="space-y-3">
+                                  <div>
+                                    <p className="text-xs text-gray-600 mb-1">Topic</p>
+                                    <p className="text-sm font-medium text-gray-900">{wwPillar}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-gray-600 mb-1">Format</p>
+                                    <p className="text-sm font-medium text-gray-900">{wwFormat}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-gray-600 mb-1">Delivery Style</p>
+                                    <p className="text-sm font-medium text-gray-900">{wwDeliveryStyle}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-gray-600 mb-1">Hook</p>
+                                    <p className="text-sm font-medium text-gray-900">{wwHookType}</p>
+                                  </div>
+                                  {wwComments && (
+                                    <div>
+                                      <p className="text-xs text-gray-600 mb-1">Audience Response</p>
+                                      <p className="text-sm font-medium text-gray-900">{wwComments}</p>
+                                    </div>
+                                  )}
+                                  {wwContextSummary && (
+                                    <div className="mt-4 pt-4 border-t border-indigo-200">
+                                      <p className="text-xs text-gray-600 mb-1.5">What Makes It Work</p>
+                                      <p className="text-sm text-gray-700 leading-relaxed">{wwContextSummary}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Give it your twist - Show after analysis is complete */}
+                            {wwShowAudienceSignals && (
+                            <div className="bg-white rounded-lg p-4">
+                            <div className="flex items-center gap-1.5 mb-3">
+                              <div className="w-0.5 h-4 bg-purple-500 rounded-full"></div>
+                              <h4 className="text-sm font-semibold text-gray-900">
+                                Give it a twist
+                              </h4>
+                            </div>
+                            <textarea
+                              value={wwTwist}
+                              onChange={(e) => setWwTwist(e.target.value)}
+                              placeholder="Describe how you'd like to twist it. Would you change the topic? The format? The hook? What else?"
+                              rows={7}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors resize-none"
+                            />
+
+                            {/* Generate Ideas Button */}
+                            <button
+                              onClick={async () => {
+                                if (!wwTwist.trim()) {
+                                  toast.error('Please describe your twist first');
+                                  return;
+                                }
+
+                                try {
+                                  toast.loading('Generating creative ideas with Claude...');
+
+                                  const prompt = `You are a creative content strategist. Generate 10 unique and actionable content ideas based on the following information:
+
+ORIGINAL CONTENT CONTEXT:
+- Topic/Pillar: ${wwPillar}
+- Format: ${wwFormat}
+- Delivery Style: ${wwDeliveryStyle}
+- Hook Used: ${wwHookType}
+${wwComments ? `- Audience Response: ${wwComments}` : ''}
+
+USER'S TWIST:
+${wwTwist}
+
+IMPORTANT: Pay close attention to the user's twist description. Generate ideas that specifically incorporate and honor what they want to change or try differently.
+
+For each of the 10 ideas, provide:
+1. A catchy, specific title (not generic)
+2. A variation type (e.g., "Format Shift", "New Angle", "Audience-Driven")
+3. A detailed, actionable description (2-3 sentences) that explains exactly what to create and how it incorporates the twist
+
+Format your response as a JSON array with this structure:
+[
+  {
+    "title": "Specific idea title here",
+    "variation": "Type of variation",
+    "description": "Detailed actionable description..."
+  }
+]
+
+Make each idea unique, creative, and directly tied to both the original content context and the user's specific twist.`;
+
+                                  const response = await fetch('http://localhost:3001/api/generate-ideas', {
+                                    method: 'POST',
+                                    headers: {
+                                      'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({ prompt })
+                                  });
+
+                                  if (!response.ok) {
+                                    const errorData = await response.json();
+                                    throw new Error(errorData.error || `API error: ${response.status}`);
+                                  }
+
+                                  const data = await response.json();
+                                  const content = data.content[0].text;
+
+                                  // Parse JSON from response
+                                  const jsonMatch = content.match(/\[[\s\S]*\]/);
+                                  if (!jsonMatch) {
+                                    throw new Error('Could not parse ideas from response');
+                                  }
+
+                                  const ideasArray = JSON.parse(jsonMatch[0]);
+                                  const ideas = ideasArray.map((idea: any, index: number) => ({
+                                    id: `idea-${index + 1}`,
+                                    title: idea.title,
+                                    variation: idea.variation,
+                                    description: idea.description
+                                  }));
+
+                                  setWwRemixIdeas(ideas);
+                                  setWhatWorkedStep('generate');
+                                  toast.dismiss();
+                                  toast.success(`Generated ${ideas.length} creative ideas!`);
+                                } catch (error) {
+                                  console.error('Error generating ideas:', error);
+                                  toast.dismiss();
+                                  toast.error('Failed to generate ideas. Please check your API key and try again.');
+                                }
+                              }}
+                              className="w-full mt-4 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white py-3 px-4 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                            >
+                              <Sparkles className="w-5 h-5" />
+                              Generate Ideas
+                            </button>
+                            </div>
+                            )}
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                  )}
+
+                  {/* Remove old Audience Signals section */}
+                  {false && wwContentSubmitted && (
+                  <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-6 border-2 border-emerald-200">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-1 h-6 bg-emerald-500 rounded-full"></div>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        Audience Signals <span className="text-red-500 text-sm">* Select 1-2</span>
+                      </h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {['Saved a lot', 'Shared a lot', 'Lots of comments', 'Strong watch time (felt addictive)', 'All of the above'].map((signal) => (
+                        <button
+                          key={signal}
+                          onClick={() => {
+                            if (wwSelectedSignals.includes(signal)) {
+                              setWwSelectedSignals(wwSelectedSignals.filter(s => s !== signal));
+                            } else {
+                              if (wwSelectedSignals.length < 2 || signal === 'All of the above') {
+                                setWwSelectedSignals([signal]);
+                              } else {
+                                setWwSelectedSignals([...wwSelectedSignals.slice(0, 1), signal]);
+                              }
+                            }
+                          }}
+                          className={cn(
+                            "px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 text-left border-2",
+                            wwSelectedSignals.includes(signal)
+                              ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-emerald-600 shadow-md"
+                              : "bg-white text-gray-700 border-emerald-200 hover:border-emerald-400 hover:shadow-sm"
+                          )}
+                        >
+                          {signal}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="flex-1 overflow-y-auto pr-2 py-4 px-4">
+                <div className="space-y-4">
+                  <AnimatePresence mode="popLayout">
+                    {wwRemixIdeas.map((idea, index) => (
+                      <motion.div
+                        key={idea.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="group relative overflow-hidden bg-gradient-to-br from-purple-50 to-indigo-50 hover:from-purple-100 hover:to-indigo-100 border-2 border-purple-200 hover:border-purple-400 rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center">
+                                <Sparkles className="w-5 h-5 text-white" />
+                              </div>
+                              <span className="text-sm font-bold text-purple-600 bg-purple-100 px-3 py-1.5 rounded-full">
+                                {idea.variation}
+                              </span>
+                            </div>
+                            <h4 className="text-lg font-bold text-gray-900 mb-2">{idea.title}</h4>
+                            <p className="text-base text-gray-700 leading-relaxed">{idea.description}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-3 mt-5">
+                          <Button
+                            onClick={() => {
+                              addContentCard(idea.title);
+                              toast.success('Saved to Content Cards!');
+                            }}
+                            className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all"
+                          >
+                            💾 Save to Content Cards
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="flex items-center gap-2 border-2 border-purple-300 text-purple-700 hover:bg-purple-50 rounded-lg"
+                          >
+                            ✏️ Edit
+                          </Button>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+
+                <div className="flex-shrink-0 border-t pt-5 mt-5">
+                  <Button
+                    onClick={() => {
+                      setWhatWorkedStep('input');
+                      setWwContentLink('');
+                      setWwVideoFile(null);
+                      setWwPillar('');
+                      setWwFormat('');
+                      setWwDeliveryStyle('');
+                      setWwHookType('');
+                      setWwComments('');
+                      setWwSelectedSignals([]);
+                      setWwContentSubmitted(false);
+                      setWwShowAudienceSignals(false);
+                    }}
+                    className="w-full bg-gradient-to-r from-blue-500 to-sky-500 hover:from-blue-600 hover:to-sky-600 text-white py-6 text-lg font-semibold shadow-md hover:shadow-lg transition-all rounded-lg"
+                  >
+                    ➕ Capture Another
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Script Editor Dialog */}
+        <Dialog open={isScriptEditorOpen} onOpenChange={(open) => {
+          if (!open) {
+            setIsScriptEditorOpen(false);
+            setEditingScriptCard(null);
+            setCardTitle("");
+            setCardHook("");
+            setScriptContent("");
+            setPlatformTags([]);
+            setFormatTags([]);
+            setPlatformInput("");
+            setFormatInput("");
+            setLocationChecked(false);
+            setLocationText("");
+            setOutfitChecked(false);
+            setOutfitText("");
+            setPropsChecked(false);
+            setPropsText("");
+            setFilmingNotes("");
+            setCardStatus(null);
+          }
+        }}>
+          <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] overflow-hidden border-0 shadow-2xl flex flex-col">
+            <div className="flex-1 overflow-y-auto px-6 pt-4 pb-6 space-y-6">
+              {/* Title - borderless, no label */}
+              <input
+                ref={titleInputRef}
+                type="text"
+                value={cardTitle}
+                onChange={(e) => setCardTitle(e.target.value)}
+                onFocus={(e) => e.target.setSelectionRange(0, 0)}
+                autoComplete="off"
+                placeholder="Content title..."
+                className="w-full px-0 py-2 text-2xl font-bold bg-transparent border-0 focus:outline-none focus:ring-0 placeholder:text-gray-300"
+              />
+
+              {/* Format and Platform Tags - Side by Side */}
+              <div className="grid grid-cols-2 gap-6">
+                {/* Format Tags */}
+                <div className="space-y-3">
+                  <label className="text-sm font-semibold text-gray-700">
+                    Format
+                  </label>
+                  <input
+                    type="text"
+                    value={formatInput}
+                    onChange={(e) => setFormatInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddFormatTag();
+                      }
+                    }}
+                    placeholder="e.g., Carousel, Vlog"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  />
+                  {formatTags.length > 0 && (
+                    <div className="flex gap-2 flex-wrap">
+                      {formatTags.map((tag, idx) => {
+                        const colors = getFormatColors(tag);
+                        return (
+                          <span
+                            key={idx}
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full ${colors.bg} ${colors.text} text-sm font-medium`}
+                          >
+                            {tag}
+                            <button
+                              onClick={() => handleRemoveFormatTag(tag)}
+                              className={`${colors.hover} rounded-full p-0.5 transition-colors`}
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Platform Tags */}
+                <div className="space-y-3">
+                  <label className="text-sm font-semibold text-gray-700">
+                    Platform
+                  </label>
+                  <input
+                    type="text"
+                    value={platformInput}
+                    onChange={(e) => setPlatformInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddPlatformTag();
+                      }
+                    }}
+                    placeholder="e.g., Instagram, TikTok"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  />
+                  {platformTags.length > 0 && (
+                    <div className="flex gap-2 flex-wrap">
+                      {platformTags.map((tag, idx) => {
+                        const colors = getPlatformColors(tag);
+                        return (
+                          <span
+                            key={idx}
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full ${colors.bg} ${colors.text} text-sm font-medium`}
+                          >
+                            {tag}
+                            <button
+                              onClick={() => handleRemovePlatformTag(tag)}
+                              className={`${colors.hover} rounded-full p-0.5 transition-colors`}
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Talking Points Area */}
+              <div className="space-y-3">
+                <label className="text-sm font-semibold text-gray-700">
+                  Talking Points
+                </label>
+                <Textarea
+                  value={scriptContent}
+                  onChange={(e) => setScriptContent(e.target.value)}
+                  placeholder="Write your content script here..."
+                  className="min-h-[350px] resize-none border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm leading-relaxed"
+                />
+              </div>
+
+              {/* Filming Checklist */}
+              <div className="space-y-4">
+                <label className="text-sm font-semibold text-gray-700">
+                  Filming Checklist
+                </label>
+
+                {/* Location */}
+                <div className="flex items-center gap-3">
+                  <Checkbox
+                    checked={locationChecked}
+                    onCheckedChange={(checked) => setLocationChecked(checked as boolean)}
+                    className="flex-shrink-0 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+                  />
+                  <span className="text-sm font-medium text-gray-600 w-20">Location</span>
+                  <input
+                    ref={locationInputRef}
+                    type="text"
+                    value={locationText}
+                    onChange={(e) => setLocationText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        outfitInputRef.current?.focus();
+                      }
+                    }}
+                    placeholder="Where do you want to shoot this content?"
+                    className={`flex-1 px-0 py-2 bg-transparent border-0 text-sm focus:outline-none focus:ring-0 placeholder:text-gray-300 transition-colors ${!locationText ? 'border-b border-gray-200 focus:border-b-blue-500' : ''}`}
+                  />
+                </div>
+
+                {/* Outfit */}
+                <div className="flex items-center gap-3">
+                  <Checkbox
+                    checked={outfitChecked}
+                    onCheckedChange={(checked) => setOutfitChecked(checked as boolean)}
+                    className="flex-shrink-0 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+                  />
+                  <span className="text-sm font-medium text-gray-600 w-20">Outfit</span>
+                  <input
+                    ref={outfitInputRef}
+                    type="text"
+                    value={outfitText}
+                    onChange={(e) => setOutfitText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        propsInputRef.current?.focus();
+                      }
+                    }}
+                    placeholder="What do you want to wear?"
+                    className={`flex-1 px-0 py-2 bg-transparent border-0 text-sm focus:outline-none focus:ring-0 placeholder:text-gray-300 transition-colors ${!outfitText ? 'border-b border-gray-200 focus:border-b-blue-500' : ''}`}
+                  />
+                </div>
+
+                {/* Props */}
+                <div className="flex items-center gap-3">
+                  <Checkbox
+                    checked={propsChecked}
+                    onCheckedChange={(checked) => setPropsChecked(checked as boolean)}
+                    className="flex-shrink-0 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+                  />
+                  <span className="text-sm font-medium text-gray-600 w-20">Props</span>
+                  <input
+                    ref={propsInputRef}
+                    type="text"
+                    value={propsText}
+                    onChange={(e) => setPropsText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        notesInputRef.current?.focus();
+                      }
+                    }}
+                    placeholder="What props do you need?"
+                    className={`flex-1 px-0 py-2 bg-transparent border-0 text-sm focus:outline-none focus:ring-0 placeholder:text-gray-300 transition-colors ${!propsText ? 'border-b border-gray-200 focus:border-b-blue-500' : ''}`}
+                  />
+                </div>
+
+                {/* Notes and Reminders */}
+                <div className="space-y-2 mt-4">
+                  <label className="text-sm font-medium text-gray-600">
+                    Notes & Reminders
+                  </label>
+                  <Textarea
+                    ref={notesInputRef}
+                    value={filmingNotes}
+                    onChange={(e) => setFilmingNotes(e.target.value)}
+                    placeholder="Add any additional notes or reminders..."
+                    className="min-h-[100px] resize-none bg-transparent border-0 focus:outline-none focus:ring-0 text-sm placeholder:text-gray-300"
+                  />
+                </div>
+
+                {/* Status Section */}
+                <div className="space-y-3 mt-6">
+                  <label className="text-sm font-semibold text-gray-700">
+                    Status
+                  </label>
+
+                  {/* To Start */}
+                  <div className="flex items-center gap-3">
+                    <Checkbox
+                      checked={cardStatus === 'to-start'}
+                      onCheckedChange={(checked) => setCardStatus(checked ? 'to-start' : null)}
+                      className="flex-shrink-0 data-[state=checked]:bg-gray-500 data-[state=checked]:border-gray-500"
+                    />
+                    <span className="text-sm font-medium text-gray-600">To start</span>
+                  </div>
+
+                  {/* Needs More Work */}
+                  <div className="flex items-center gap-3">
+                    <Checkbox
+                      checked={cardStatus === 'needs-work'}
+                      onCheckedChange={(checked) => setCardStatus(checked ? 'needs-work' : null)}
+                      className="flex-shrink-0 data-[state=checked]:bg-yellow-500 data-[state=checked]:border-yellow-500"
+                    />
+                    <span className="text-sm font-medium text-gray-600">Needs more work</span>
+                  </div>
+
+                  {/* Ready to Film */}
+                  <div className="flex items-center gap-3">
+                    <Checkbox
+                      checked={cardStatus === 'ready'}
+                      onCheckedChange={(checked) => setCardStatus(checked ? 'ready' : null)}
+                      className="flex-shrink-0 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+                    />
+                    <span className="text-sm font-medium text-gray-600">Ready to film</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 flex-shrink-0">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsScriptEditorOpen(false);
+                  setEditingScriptCard(null);
+                  setCardTitle("");
+                  setCardHook("");
+                  setScriptContent("");
+                  setPlatformTags([]);
+                  setFormatTags([]);
+                  setPlatformInput("");
+                  setFormatInput("");
+                  setLocationChecked(false);
+                  setLocationText("");
+                  setOutfitChecked(false);
+                  setOutfitText("");
+                  setPropsChecked(false);
+                  setPropsText("");
+                  setFilmingNotes("");
+                  setCardStatus(null);
+                }}
+                className="px-6"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSaveScript}
+                className="px-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
+              >
+                Save Changes
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
