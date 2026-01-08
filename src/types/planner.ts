@@ -11,6 +11,7 @@ export interface PlannerItem {
   location?: string; // Optional location of the task
   color?: string; // Optional background color for the task
   order?: number; // Optional order for manual sorting (lower numbers appear first)
+  isContentCalendar?: boolean; // Optional flag to include in content calendar
 }
 
 export interface PlannerDay {

@@ -1,5 +1,5 @@
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,7 +17,6 @@ interface PlannerCheckItemProps {
   showTimeInItem?: boolean;
   renderCheckbox?: boolean;
   index?: number;
-  dragHandleProps?: any;
 }
 
 export const PlannerCheckItem = ({
@@ -27,8 +26,7 @@ export const PlannerCheckItem = ({
   onEdit,
   showTimeInItem = false,
   renderCheckbox = false,
-  index,
-  dragHandleProps
+  index
 }: PlannerCheckItemProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSimpleEdit, setIsSimpleEdit] = useState(false);
@@ -43,6 +41,8 @@ export const PlannerCheckItem = ({
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const isMobile = useIsMobile();
   const scrollableRef = useRef<HTMLDivElement>(null);
+  const editInputRef = useRef<HTMLInputElement>(null);
+  const textSpanRef = useRef<HTMLSpanElement>(null);
 
   const colors = [
     // Row 1: Browns to yellow
@@ -67,6 +67,7 @@ export const PlannerCheckItem = ({
     "#f5e1e5", // blush pink
   ];
 
+
   const handleSaveEdit = () => {
     if (isTimeEdit || editText.trim()) {
       onEdit(item.id, isTimeEdit ? item.text : editText, editStartTime, editEndTime);
@@ -89,10 +90,26 @@ export const PlannerCheckItem = ({
     }
   };
 
-  const handleDoubleClick = () => {
+  const handleClick = (e: React.MouseEvent<HTMLSpanElement>) => {
     if (!isEditing) {
+      const span = e.currentTarget;
+      const range = document.caretRangeFromPoint(e.clientX, e.clientY);
+      let cursorPosition = 0;
+
+      if (range) {
+        cursorPosition = range.startOffset;
+      }
+
       setIsSimpleEdit(true);
       setEditText(item.text);
+
+      // Set cursor position after the input is rendered
+      setTimeout(() => {
+        if (editInputRef.current) {
+          editInputRef.current.focus();
+          editInputRef.current.setSelectionRange(cursorPosition, cursorPosition);
+        }
+      }, 0);
     }
   };
 
@@ -159,27 +176,25 @@ export const PlannerCheckItem = ({
           </button>
         </div>
       ) : isSimpleEdit ? (
-        <div className="flex flex-1 items-center p-1 bg-white border border-gray-200 rounded-lg">
+        <div
+          className="flex items-center w-full py-2.5 px-3 border border-gray-200 rounded-lg"
+          style={{ backgroundColor: item.color || 'white' }}
+        >
           {renderCheckbox && (
             <Checkbox
               checked={item.isCompleted}
               onCheckedChange={() => onToggle(item.id)}
-              className="h-4 w-4 mr-1 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-400 rounded-sm flex-shrink-0"
+              className="h-3.5 w-3.5 mr-2 flex-shrink-0 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
             />
           )}
           <Input
+            ref={editInputRef}
             value={editText}
             onChange={(e) => setEditText(e.target.value)}
             onKeyDown={handleKeyDown}
-            autoFocus
-            className="h-7 py-1 flex-1 text-base"
+            onBlur={handleSaveEdit}
+            className="flex-1 text-sm border-0 shadow-none focus-visible:ring-0 bg-transparent p-0 h-auto text-gray-800"
           />
-          <button 
-            onClick={handleSaveEdit} 
-            className="text-green-600 p-1 rounded-sm hover:bg-green-100 ml-1"
-          >
-            <Check size={15} />
-          </button>
         </div>
       ) : isTimeEdit ? (
         <div className="flex flex-1 items-center p-1 bg-white border border-gray-200 rounded-lg">
@@ -211,38 +226,64 @@ export const PlannerCheckItem = ({
       ) : (
         <div
           ref={scrollableRef}
-          className="group flex items-center w-full py-1.5 px-2 border border-gray-200 rounded-md relative overflow-visible hover:border-gray-300 transition-colors"
+          className="group flex items-center w-full py-2.5 px-3 border border-gray-200 rounded-lg relative overflow-visible hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer"
           style={{ backgroundColor: item.color || 'white' }}
           draggable={true}
           onDragStart={(e) => {
-            console.log('DRAG START:', { id: item.id, date: item.date, text: item.text });
+            console.log('🚀 DRAG START:', { id: item.id, date: item.date, text: item.text });
 
             // Set data for native HTML5 drag
             e.dataTransfer.setData('text/plain', item.id);
             e.dataTransfer.setData('taskId', item.id);
             e.dataTransfer.setData('fromDate', item.date || '');
             e.dataTransfer.setData('fromAllTasks', item.date ? 'false' : 'true');
+            e.dataTransfer.setData('taskIndex', String(index || 0));
+            e.dataTransfer.setData('allowReorder', 'true');
             e.dataTransfer.effectAllowed = 'move';
 
+            console.log('✅ Drag data set - taskId:', item.id, 'fromDate:', item.date || '', 'index:', index);
+
+            // Create a custom drag image with fixed dimensions
+            const dragImage = document.createElement('div');
+            dragImage.style.position = 'fixed';
+            dragImage.style.top = '-9999px';
+            dragImage.style.left = '-9999px';
+            dragImage.style.width = '280px';
+            dragImage.style.padding = '10px 16px';
+            dragImage.style.backgroundColor = item.color || '#f3f4f6';
+            dragImage.style.border = '1px solid #d1d5db';
+            dragImage.style.borderRadius = '12px';
+            dragImage.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+            dragImage.style.fontSize = '14px';
+            dragImage.style.fontWeight = '500';
+            dragImage.style.color = '#1f2937';
+            dragImage.style.whiteSpace = 'normal';
+            dragImage.style.wordWrap = 'break-word';
+            dragImage.style.lineHeight = '1.4';
+            dragImage.style.pointerEvents = 'none';
+            dragImage.style.zIndex = '9999';
+            dragImage.textContent = item.text;
+            document.body.appendChild(dragImage);
+
+            // Force a layout recalculation
+            dragImage.offsetHeight;
+
+            // Set the custom drag image
+            e.dataTransfer.setDragImage(dragImage, 20, 20);
+
+            // Clean up after drag starts
+            requestAnimationFrame(() => {
+              document.body.removeChild(dragImage);
+            });
+
             // Make it semi-transparent while dragging
-            setTimeout(() => {
-              e.currentTarget.style.opacity = '0.5';
-            }, 0);
+            e.currentTarget.style.opacity = '0.5';
           }}
           onDragEnd={(e) => {
-            console.log('DRAG END');
+            console.log('🏁 DRAG END');
             e.currentTarget.style.opacity = '1';
           }}
         >
-          {dragHandleProps && (
-            <div
-              {...dragHandleProps}
-              className="mr-1.5 text-gray-400 cursor-grab active:cursor-grabbing flex-shrink-0"
-              style={{ touchAction: 'none' }}
-            >
-              <GripVertical size={14} />
-            </div>
-          )}
           {renderCheckbox && (
             <Checkbox
               checked={item.isCompleted}
@@ -252,10 +293,15 @@ export const PlannerCheckItem = ({
           )}
 
           <div
-            className={`flex-1 text-sm ${item.isCompleted ? 'line-through text-gray-500' : 'text-gray-700'} cursor-pointer overflow-visible flex items-center pr-5`}
-            onDoubleClick={handleDoubleClick}
+            className={`flex-1 text-sm ${item.isCompleted ? 'line-through text-gray-400' : 'text-gray-800'} cursor-pointer overflow-visible flex items-center pr-5 leading-snug`}
           >
-            <span className="break-words whitespace-normal">{item.text}</span>
+            <span
+              ref={textSpanRef}
+              className="break-words whitespace-normal font-normal cursor-pointer"
+              onClick={handleClick}
+            >
+              {item.text}
+            </span>
           </div>
 
           {/* Action buttons - vertically stacked on right */}
@@ -267,105 +313,6 @@ export const PlannerCheckItem = ({
             >
               <Trash2 size={10} />
             </button>
-
-            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-              <DialogTrigger asChild>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setEditTitle(item.text);
-                    setEditDescription(item.description || "");
-                    setSelectedColor(item.color || "");
-                    setIsEditingTitle(false);
-                    setIsEditDialogOpen(true);
-                  }}
-                  className="p-0.5 rounded-sm text-gray-400 hover:text-gray-600 hover:bg-white transition-colors z-20"
-                  title="Edit task details"
-                >
-                  <Edit size={10} />
-                </button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[400px]">
-                <DialogHeader>
-                  <DialogTitle className="text-base">Edit Task Details</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-3 py-3">
-                  {/* Title */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-medium">Title</label>
-                    {isEditingTitle ? (
-                      <Input
-                        value={editTitle}
-                        onChange={(e) => setEditTitle(e.target.value)}
-                        onBlur={() => setIsEditingTitle(false)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            setIsEditingTitle(false);
-                          }
-                        }}
-                        autoFocus
-                        className="text-sm"
-                      />
-                    ) : (
-                      <div
-                        className="p-2 rounded border border-gray-200 text-sm cursor-pointer hover:border-gray-400 transition-colors"
-                        style={{ backgroundColor: selectedColor || 'white' }}
-                        onDoubleClick={() => setIsEditingTitle(true)}
-                        title="Double-click to edit"
-                      >
-                        {editTitle}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-medium">Description</label>
-                    <Textarea
-                      value={editDescription}
-                      onChange={(e) => setEditDescription(e.target.value)}
-                      placeholder="Add a description..."
-                      className="min-h-[80px] text-sm"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-medium">Color</label>
-                    <div className="grid grid-cols-8 gap-1">
-                      {colors.map((color) => (
-                        <button
-                          key={color}
-                          onClick={() => handleColorChange(color)}
-                          className={`w-8 h-8 rounded border transition-colors ${
-                            selectedColor === color ? 'border-gray-800 border-2' : 'border-gray-300 hover:border-gray-500'
-                          }`}
-                          style={{ backgroundColor: color }}
-                          title={color}
-                        />
-                      ))}
-                    </div>
-                    <button
-                      onClick={handleRemoveColor}
-                      className="w-full py-1 text-xs text-gray-600 hover:text-gray-800 border border-gray-300 rounded hover:bg-gray-50 transition-colors flex items-center justify-center gap-1 mt-1"
-                    >
-                      <XIcon size={10} />
-                      Remove color
-                    </button>
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2 pt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsEditDialogOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button size="sm" onClick={handleSaveEditDialog}>
-                    Save
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
           </div>
         </div>
       )}

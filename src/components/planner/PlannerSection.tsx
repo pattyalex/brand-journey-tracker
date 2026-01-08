@@ -8,8 +8,6 @@ import { PlannerCheckItem } from "./PlannerCheckItem";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import { Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 
 interface PlannerSectionProps {
   title: string;
@@ -113,15 +111,85 @@ export const PlannerSection = ({
     };
   }, [isAddingItem]);
 
-  const handleDragEnd = (result: DropResult) => {
-    if (!result.destination || !onReorderItems) return;
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [isDraggingExternal, setIsDraggingExternal] = useState(false);
+  const [dropIndicatorIndex, setDropIndicatorIndex] = useState<number | null>(null);
 
-    const reorderedItems = Array.from(items);
-    const [removed] = reorderedItems.splice(result.source.index, 1);
-    reorderedItems.splice(result.destination.index, 0, removed);
-
-    onReorderItems(reorderedItems);
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
   };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+
+    // Get actual values from dataTransfer
+    const fromDateValue = e.dataTransfer.getData('fromDate');
+    const fromAllTasksValue = e.dataTransfer.getData('fromAllTasks');
+    const allowReorder = e.dataTransfer.types.includes('allowreorder');
+
+    // For All Tasks section: handle both external drags (from calendar) and internal reordering
+    if (isAllTasksSection) {
+      // Internal reordering within All Tasks (no date, fromAllTasks is true)
+      if (!fromDateValue && fromAllTasksValue === 'true' && allowReorder) {
+        // Only reorder if we have a valid dragged index and it's different from target
+        if (draggedIndex !== null && draggedIndex !== index) {
+          const newItems = Array.from(items);
+          const [draggedItem] = newItems.splice(draggedIndex, 1);
+          newItems.splice(index, 0, draggedItem);
+
+          if (onReorderItems) {
+            onReorderItems(newItems);
+          }
+          setDraggedIndex(index);
+        }
+        return;
+      } else if (fromDateValue && fromAllTasksValue === 'false') {
+        // External drag from calendar to All Tasks
+        setDropIndicatorIndex(index);
+        return;
+      }
+    }
+
+    // Original logic for other sections
+    if (draggedIndex === null || draggedIndex === index) return;
+
+    const newItems = Array.from(items);
+    const [draggedItem] = newItems.splice(draggedIndex, 1);
+    newItems.splice(index, 0, draggedItem);
+
+    if (onReorderItems) {
+      onReorderItems(newItems);
+    }
+    setDraggedIndex(index);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setIsDraggingExternal(false);
+    setDropIndicatorIndex(null);
+  };
+
+  // Clear draggedIndex when items change or component unmounts
+  useEffect(() => {
+    return () => {
+      setDraggedIndex(null);
+    };
+  }, [items]);
+
+  // Clear draggedIndex on mouse up as fallback (in case drag doesn't complete)
+  useEffect(() => {
+    const handleMouseUp = () => {
+      if (draggedIndex !== null) {
+        setDraggedIndex(null);
+      }
+    };
+
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [draggedIndex]);
 
   const renderTimeDisplay = (item: PlannerItem) => {
     if (editingTimeItemId === item.id) {
@@ -204,62 +272,82 @@ export const PlannerSection = ({
   const droppableId = isAllTasksSection ? "allTasks" : section;
 
   return (
-    <Card className={`h-full border-0 shadow-sm bg-white overflow-hidden rounded-lg ${isAllTasksSection ? 'flex flex-col' : ''}`}>
+    <Card
+      className={`h-full border-0 shadow-none bg-transparent overflow-hidden ${isAllTasksSection ? 'flex flex-col' : ''}`}
+    >
       {title && (
-        <CardHeader className="pb-2 bg-gray-50 border-b flex-shrink-0">
-          <CardTitle className="text-lg font-medium text-gray-800">{title}</CardTitle>
+        <CardHeader className="pb-3 pt-0 px-0 flex-shrink-0">
+          <CardTitle className="text-sm font-medium text-gray-500 uppercase tracking-wide">{title}</CardTitle>
         </CardHeader>
       )}
-      <CardContent className={`${isAllTasksSection ? 'pt-2 px-1 flex-1 overflow-hidden' : 'pt-4 px-1'}`}>
-        <ScrollArea className={`${isAllTasksSection ? 'h-full' : isMobile ? 'h-[calc(100vh-200px)]' : 'h-[calc(100vh-180px)]'}`}>
-          <div className="space-y-2 pr-2 pb-1">
-            <Droppable droppableId={droppableId}>
-              {(provided) => (
-                <div
-                  {...provided.droppableProps}
-                  ref={provided.innerRef}
-                  className="space-y-2 min-h-[20px]"
-                >
-                  {items.map((item, index) => (
-                    <Draggable
-                      key={item.id}
-                      draggableId={item.id}
-                      index={index}
-                    >
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          className={`${snapshot.isDragging ? 'opacity-80 bg-muted' : ''}`}
-                        >
-                          <div className="flex flex-col w-full group">
-                            <div className="flex items-center">
-                              <div className="flex-1 min-w-0 relative flex flex-col">
-                                <div className="mb-1 ml-0.5">
-                                  {renderTimeDisplay(item)}
-                                </div>
+      <CardContent
+        className={`${isAllTasksSection ? 'pt-0 px-0 flex-1 overflow-hidden' : 'pt-4 px-0'}`}
+      >
+        <ScrollArea
+          className={`${isAllTasksSection ? 'h-full' : isMobile ? 'h-[calc(100vh-200px)]' : 'h-[calc(100vh-180px)]'}`}
+        >
+          <div
+            className="space-y-2.5 pr-1 pb-1"
+            onDragLeave={(e) => {
+              // Clear drop indicator when leaving the list
+              if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                setDropIndicatorIndex(null);
+              }
+            }}
+            onDrop={() => {
+              // Clear drop indicator after drop
+              setDropIndicatorIndex(null);
+            }}
+          >
+            <div
+              className="space-y-2.5 min-h-[20px]"
+            >
+              {items.map((item, index) => (
+                <div key={item.id}>
+                  {/* Drop indicator line */}
+                  {dropIndicatorIndex === index && (
+                    <div className="h-0.5 bg-blue-500 rounded-full my-1 shadow-sm"></div>
+                  )}
 
-                                <PlannerCheckItem
-                                  item={item}
-                                  onToggle={onToggleItem}
-                                  onDelete={onDeleteItem}
-                                  onEdit={onEditItem}
-                                  showTimeInItem={false}
-                                  renderCheckbox={true}
-                                  index={index}
-                                  dragHandleProps={provided.dragHandleProps}
-                                />
-                              </div>
-                            </div>
+                  <div
+                    onDragStart={(e) => {
+                      // Set the dragged index when drag starts from All Tasks
+                      if (isAllTasksSection) {
+                        setDraggedIndex(index);
+                      }
+                    }}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDragEnd={handleDragEnd}
+                    className={`${draggedIndex === index ? 'opacity-50' : ''}`}
+                  >
+                    <div className="flex flex-col w-full group">
+                      <div className="flex items-center">
+                        <div className="flex-1 min-w-0 relative flex flex-col">
+                          <div className="mb-1 ml-0.5">
+                            {renderTimeDisplay(item)}
                           </div>
+
+                          <PlannerCheckItem
+                            item={item}
+                            onToggle={onToggleItem}
+                            onDelete={onDeleteItem}
+                            onEdit={onEditItem}
+                            showTimeInItem={false}
+                            renderCheckbox={true}
+                            index={index}
+                          />
                         </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
+                      </div>
+                    </div>
+                  </div>
                 </div>
+              ))}
+
+              {/* Drop indicator at the end */}
+              {dropIndicatorIndex === items.length && (
+                <div className="h-0.5 bg-blue-500 rounded-full my-1 shadow-sm"></div>
               )}
-            </Droppable>
+            </div>
 
             {isAddingItem ? (
               <div ref={addItemRef} className="flex flex-col mt-2">
@@ -285,9 +373,10 @@ export const PlannerSection = ({
             ) : (
               <button
                 onClick={() => setIsAddingItem(true)}
-                className={`flex items-center justify-center w-10 h-10 mx-auto text-gray-500 hover:text-gray-700 rounded-full transition-all hover:scale-110 hover:font-bold [&:hover_svg]:stroke-[3] ${items.length > 0 ? 'mt-3' : 'mt-0'}`}
+                className={`flex items-center justify-center w-full py-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors text-sm ${items.length > 0 ? 'mt-2' : 'mt-0'}`}
               >
-                <Plus size={15} strokeWidth={2} />
+                <Plus size={16} strokeWidth={2} className="mr-1" />
+                <span>Add task</span>
               </button>
             )}
           </div>
