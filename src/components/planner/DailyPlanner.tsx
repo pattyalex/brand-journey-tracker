@@ -2099,7 +2099,7 @@ export const DailyPlanner = () => {
         {currentView === 'week' && (
           <>
             <CardContent className="px-0">
-              <div className="flex border border-gray-200 rounded-lg overflow-hidden bg-white">
+              <div className="flex border-t border-r border-b border-gray-200 rounded-lg overflow-hidden bg-white">
                 {/* Time column on the left */}
                 <div className="flex-shrink-0 bg-white" style={{ width: '40px' }}>
                   {/* Header spacer */}
