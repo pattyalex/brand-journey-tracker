@@ -1586,15 +1586,9 @@ export const DailyPlanner = () => {
             <div className="flex overflow-hidden bg-white">
               {/* Time column on the left */}
               <div className="flex-shrink-0 bg-white border-r border-gray-200" style={{ width: '60px' }}>
-                {/* Header with timezone and date */}
-                <div className="h-[60px] border-b border-gray-200 flex flex-col items-center justify-center">
-                  <span className="text-[10px] text-gray-400 uppercase mb-0.5">
-                    {format(selectedDate, 'EEE')}
-                  </span>
-                  <span className="text-2xl font-semibold text-gray-900">
-                    {format(selectedDate, 'd')}
-                  </span>
-                  <span className="text-[9px] text-gray-400 mt-0.5">
+                {/* Header with timezone only */}
+                <div className="h-[60px] border-b border-gray-200 flex items-center justify-center">
+                  <span className="text-[9px] text-gray-400">
                     {new Date().toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop()}
                   </span>
                 </div>
@@ -1616,8 +1610,17 @@ export const DailyPlanner = () => {
 
               {/* Main content area */}
               <div className="flex-1 relative">
-                {/* Date header spacer */}
-                <div className="h-[60px] border-b border-gray-200"></div>
+                {/* Date header */}
+                <div className="h-[60px] border-b border-gray-200 flex items-center px-4">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-sm text-gray-400 uppercase font-medium">
+                      {format(selectedDate, 'EEE')}
+                    </span>
+                    <span className="text-2xl font-semibold text-gray-900">
+                      {format(selectedDate, 'd')}
+                    </span>
+                  </div>
+                </div>
 
                 <ScrollArea className="h-[calc(100vh-260px)]">
                   <div className="relative" style={{ height: '2160px' }}> {/* 24 hours * 90px */}
