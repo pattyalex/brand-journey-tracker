@@ -20,6 +20,7 @@ interface PlannerSectionProps {
   onReorderItems?: (items: PlannerItem[]) => void;
   isAllTasksSection?: boolean;
   onDropTaskFromWeekly?: (draggedTaskId: string, targetTaskId: string, fromDate: string) => void;
+  onDropTaskFromCalendar?: (taskId: string, fromDate: string, targetIndex: number) => void;
 }
 
 export const PlannerSection = ({
@@ -32,7 +33,8 @@ export const PlannerSection = ({
   onAddItem,
   onReorderItems,
   isAllTasksSection = false,
-  onDropTaskFromWeekly
+  onDropTaskFromWeekly,
+  onDropTaskFromCalendar
 }: PlannerSectionProps) => {
   const [newItemText, setNewItemText] = useState("");
   const [newItemStartTime, setNewItemStartTime] = useState("");
@@ -114,6 +116,7 @@ export const PlannerSection = ({
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [isDraggingExternal, setIsDraggingExternal] = useState(false);
   const [dropIndicatorIndex, setDropIndicatorIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedIndex(index);
@@ -123,29 +126,17 @@ export const PlannerSection = ({
   const handleDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault();
 
-    // Get actual values from dataTransfer
-    const fromDateValue = e.dataTransfer.getData('fromDate');
-    const fromAllTasksValue = e.dataTransfer.getData('fromAllTasks');
-    const allowReorder = e.dataTransfer.types.includes('allowreorder');
-
     // For All Tasks section: handle both external drags (from calendar) and internal reordering
     if (isAllTasksSection) {
-      // Internal reordering within All Tasks (no date, fromAllTasks is true)
-      if (!fromDateValue && fromAllTasksValue === 'true' && allowReorder) {
-        // Only reorder if we have a valid dragged index and it's different from target
-        if (draggedIndex !== null && draggedIndex !== index) {
-          const newItems = Array.from(items);
-          const [draggedItem] = newItems.splice(draggedIndex, 1);
-          newItems.splice(index, 0, draggedItem);
-
-          if (onReorderItems) {
-            onReorderItems(newItems);
-          }
-          setDraggedIndex(index);
+      // If draggedIndex is set, it means we're dragging from within All Tasks (internal reordering)
+      if (draggedIndex !== null) {
+        // Internal reordering within All Tasks - just show where it will drop
+        if (draggedIndex !== index) {
+          setDropIndicatorIndex(index);
         }
         return;
-      } else if (fromDateValue && fromAllTasksValue === 'false') {
-        // External drag from calendar to All Tasks
+      } else {
+        // External drag from calendar to All Tasks (draggedIndex is null)
         setDropIndicatorIndex(index);
         return;
       }
@@ -164,10 +155,40 @@ export const PlannerSection = ({
     setDraggedIndex(index);
   };
 
+  const handleDrop = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const taskId = e.dataTransfer.getData('taskId');
+    const fromDate = e.dataTransfer.getData('fromDate');
+    const fromAllTasks = e.dataTransfer.getData('fromAllTasks');
+
+    // For All Tasks section
+    if (isAllTasksSection) {
+      // Internal reordering within All Tasks
+      if (draggedIndex !== null && draggedIndex !== index) {
+        const newItems = Array.from(items);
+        const [draggedItem] = newItems.splice(draggedIndex, 1);
+        newItems.splice(index, 0, draggedItem);
+
+        if (onReorderItems) {
+          onReorderItems(newItems);
+        }
+      }
+      // External drop from calendar to All Tasks
+      else if (fromDate && fromAllTasks === 'false' && taskId && onDropTaskFromCalendar) {
+        onDropTaskFromCalendar(taskId, fromDate, index);
+      }
+    }
+
+    setDropIndicatorIndex(null);
+  };
+
   const handleDragEnd = () => {
     setDraggedIndex(null);
     setIsDraggingExternal(false);
     setDropIndicatorIndex(null);
+    setDragOverIndex(null);
   };
 
   // Clear draggedIndex when items change or component unmounts
@@ -317,6 +338,7 @@ export const PlannerSection = ({
                       }
                     }}
                     onDragOver={(e) => handleDragOver(e, index)}
+                    onDrop={(e) => handleDrop(e, index)}
                     onDragEnd={handleDragEnd}
                     className={`${draggedIndex === index ? 'opacity-50' : ''}`}
                   >
@@ -335,6 +357,7 @@ export const PlannerSection = ({
                             showTimeInItem={false}
                             renderCheckbox={true}
                             index={index}
+                            onDragStartCapture={isAllTasksSection ? () => setDraggedIndex(index) : undefined}
                           />
                         </div>
                       </div>
@@ -347,6 +370,42 @@ export const PlannerSection = ({
               {dropIndicatorIndex === items.length && (
                 <div className="h-0.5 bg-blue-500 rounded-full my-1 shadow-sm"></div>
               )}
+
+              {/* Drop zone at the end of the list */}
+              <div
+                className="min-h-[10px]"
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  if (isAllTasksSection) {
+                    setDropIndicatorIndex(items.length);
+                  }
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+
+                  const taskId = e.dataTransfer.getData('taskId');
+                  const fromDate = e.dataTransfer.getData('fromDate');
+                  const fromAllTasks = e.dataTransfer.getData('fromAllTasks');
+
+                  if (isAllTasksSection) {
+                    // Internal reordering - move to end
+                    if (draggedIndex !== null) {
+                      const newItems = Array.from(items);
+                      const [draggedItem] = newItems.splice(draggedIndex, 1);
+                      newItems.push(draggedItem);
+                      if (onReorderItems) {
+                        onReorderItems(newItems);
+                      }
+                    }
+                    // External drop from calendar - add to end
+                    else if (fromDate && fromAllTasks === 'false' && taskId && onDropTaskFromCalendar) {
+                      onDropTaskFromCalendar(taskId, fromDate, items.length);
+                    }
+                  }
+                  setDropIndicatorIndex(null);
+                }}
+              />
             </div>
 
             {isAddingItem ? (

@@ -17,6 +17,7 @@ interface PlannerCheckItemProps {
   showTimeInItem?: boolean;
   renderCheckbox?: boolean;
   index?: number;
+  onDragStartCapture?: () => void;
 }
 
 export const PlannerCheckItem = ({
@@ -26,7 +27,8 @@ export const PlannerCheckItem = ({
   onEdit,
   showTimeInItem = false,
   renderCheckbox = false,
-  index
+  index,
+  onDragStartCapture
 }: PlannerCheckItemProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSimpleEdit, setIsSimpleEdit] = useState(false);
@@ -231,6 +233,11 @@ export const PlannerCheckItem = ({
           draggable={true}
           onDragStart={(e) => {
             console.log('🚀 DRAG START:', { id: item.id, date: item.date, text: item.text });
+
+            // Call the drag start callback if provided (for All Tasks section)
+            if (onDragStartCapture) {
+              onDragStartCapture();
+            }
 
             // Set data for native HTML5 drag
             e.dataTransfer.setData('text/plain', item.id);

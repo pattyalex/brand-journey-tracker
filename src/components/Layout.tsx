@@ -54,7 +54,7 @@ const Layout = ({ children, hideSidebar = false }: LayoutProps) => {
     <SidebarProvider key={sidebarKey}>
       <div className="min-h-screen flex flex-col w-full bg-background">
         {/* Header with branding and auth */}
-        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <header className="sticky top-0 z-50 w-full border-b bg-background">
           <div className="flex h-14 items-center justify-between px-6">
             {/* Logo/Branding */}
             <div className="flex items-center gap-2">

@@ -122,6 +122,17 @@ export const DailyPlanner = () => {
   const startTimeInputRef = useRef<HTMLInputElement>(null);
   const endTimeInputRef = useRef<HTMLInputElement>(null);
   const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
+  const isResizingRef = useRef(false);
+
+  // State for drag-to-create task (Today view)
+  const [isDraggingCreate, setIsDraggingCreate] = useState(false);
+  const [dragCreateStart, setDragCreateStart] = useState<{ hour: number; minute: number } | null>(null);
+  const [dragCreateEnd, setDragCreateEnd] = useState<{ hour: number; minute: number } | null>(null);
+
+  // Per-day drag-to-create state (Weekly view)
+  const [weeklyDraggingCreate, setWeeklyDraggingCreate] = useState<{[dayString: string]: boolean}>({});
+  const [weeklyDragCreateStart, setWeeklyDragCreateStart] = useState<{[dayString: string]: {hour: number, minute: number}}>({});
+  const [weeklyDragCreateEnd, setWeeklyDragCreateEnd] = useState<{[dayString: string]: {hour: number, minute: number}}>({});
 
   const [globalTasks, setGlobalTasks] = useState<string>("");
   const [allTasks, setAllTasks] = useState<PlannerItem[]>([
@@ -192,6 +203,196 @@ export const DailyPlanner = () => {
     "#e3f2fd", "#a5b8d0", "#ce93d8", "#f3e5f5",
     "#eeeeee", "#ede8e3", "#f8bbd0", "#f5e1e5"
   ];
+
+  // Handle global mouse events for drag-to-create
+  useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (isDraggingCreate && dragCreateStart) {
+        // Calculate which time slot we're over based on mouse position
+        const scrollArea = todayScrollRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+        const calendarElement = todayScrollRef.current?.querySelector('.relative');
+        if (calendarElement && scrollArea) {
+          const rect = calendarElement.getBoundingClientRect();
+          const scrollTop = scrollArea.scrollTop || 0;
+          const relativeY = e.clientY - rect.top + scrollTop;
+
+          // Each hour is 90px, each 20-minute slot is 30px
+          const totalMinutes = Math.floor((relativeY / 90) * 60);
+          const hour = Math.floor(totalMinutes / 60);
+          const minute = Math.floor((totalMinutes % 60) / 20) * 20; // Round to nearest 20-min slot
+
+          if (hour >= 0 && hour < 24) {
+            setDragCreateEnd({ hour, minute });
+          }
+        }
+      }
+    };
+
+    const handleGlobalMouseUp = () => {
+      if (isDraggingCreate) {
+        // User released mouse - finalize the drag or cancel
+        if (dragCreateStart && dragCreateEnd) {
+          // Calculate times and open dialog
+          const startMinutes = dragCreateStart.hour * 60 + dragCreateStart.minute;
+          const endMinutes = dragCreateEnd.hour * 60 + dragCreateEnd.minute;
+
+          const actualStart = Math.min(startMinutes, endMinutes);
+          const actualEnd = Math.max(startMinutes, endMinutes + 20);
+
+          const startHour = Math.floor(actualStart / 60);
+          const startMin = actualStart % 60;
+          const endHour = Math.floor(actualEnd / 60);
+          const endMin = actualEnd % 60;
+
+          const startTimeStr = `${startHour.toString().padStart(2, '0')}:${startMin.toString().padStart(2, '0')}`;
+          const endTimeStr = `${endHour.toString().padStart(2, '0')}:${endMin.toString().padStart(2, '0')}`;
+
+          // Reset drag state first
+          setIsDraggingCreate(false);
+          setDragCreateStart(null);
+          setDragCreateEnd(null);
+
+          // Open dialog
+          handleOpenTaskDialog(startHour, undefined, startTimeStr, endTimeStr);
+        } else {
+          // Cancel the drag
+          setIsDraggingCreate(false);
+          setDragCreateStart(null);
+          setDragCreateEnd(null);
+        }
+      }
+    };
+
+    if (isDraggingCreate) {
+      document.addEventListener('mousemove', handleGlobalMouseMove);
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [isDraggingCreate, dragCreateStart, dragCreateEnd]);
+
+  // Handle global mouse events for weekly drag-to-create
+  useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      // Find which day column is being dragged in
+      const dayColumns = document.querySelectorAll('[data-day-column]');
+      let targetDay: string | null = null;
+      let targetColumn: Element | null = null;
+
+      dayColumns.forEach(col => {
+        const rect = col.getBoundingClientRect();
+        if (e.clientX >= rect.left && e.clientX <= rect.right) {
+          targetDay = col.getAttribute('data-day-column');
+          targetColumn = col;
+        }
+      });
+
+      if (targetDay && targetColumn && weeklyDraggingCreate[targetDay]) {
+        const timelineElement = targetColumn.querySelector('[data-timeline]');
+        if (timelineElement) {
+          const rect = timelineElement.getBoundingClientRect();
+          const relativeY = e.clientY - rect.top;
+          const totalMinutes = Math.floor(relativeY / 1.5);
+          const hour = Math.floor(totalMinutes / 60);
+          const minute = totalMinutes % 60;
+
+          if (hour >= 0 && hour < 24) {
+            setWeeklyDragCreateEnd(prev => ({
+              ...prev,
+              [targetDay!]: { hour, minute }
+            }));
+          }
+        }
+      }
+    };
+
+    const handleGlobalMouseUp = () => {
+      // Check if any day is being dragged
+      Object.keys(weeklyDraggingCreate).forEach(dayString => {
+        if (weeklyDraggingCreate[dayString]) {
+          const start = weeklyDragCreateStart[dayString];
+          const end = weeklyDragCreateEnd[dayString];
+
+          if (start && end) {
+            // Calculate times
+            const startMinutes = start.hour * 60 + start.minute;
+            const endMinutes = end.hour * 60 + end.minute;
+            const actualStart = Math.min(startMinutes, endMinutes);
+            const actualEnd = Math.max(startMinutes, endMinutes);
+
+            // Ensure minimum duration of 30 minutes
+            const duration = actualEnd - actualStart;
+            const finalEnd = duration < 30 ? actualStart + 30 : actualEnd;
+
+            const startHour = Math.floor(actualStart / 60);
+            const startMin = actualStart % 60;
+            const endHour = Math.floor(finalEnd / 60);
+            const endMin = finalEnd % 60;
+
+            const startTimeStr = `${startHour.toString().padStart(2, '0')}:${startMin.toString().padStart(2, '0')}`;
+            const endTimeStr = `${endHour.toString().padStart(2, '0')}:${endMin.toString().padStart(2, '0')}`;
+
+            // Reset drag state
+            setWeeklyDraggingCreate(prev => ({ ...prev, [dayString]: false }));
+            setWeeklyDragCreateStart(prev => {
+              const newState = { ...prev };
+              delete newState[dayString];
+              return newState;
+            });
+            setWeeklyDragCreateEnd(prev => {
+              const newState = { ...prev };
+              delete newState[dayString];
+              return newState;
+            });
+
+            // Open dialog with pre-filled times
+            setEditingTask({
+              id: '',
+              date: dayString,
+              text: '',
+              section: 'morning',
+              isCompleted: false,
+              order: 0
+            } as PlannerItem);
+            setDialogTaskTitle('');
+            setDialogTaskDescription('');
+            setDialogStartTime(startTimeStr);
+            setDialogEndTime(endTimeStr);
+            setDialogTaskColor('');
+            setDialogAddToContentCalendar(false);
+            setIsTaskDialogOpen(true);
+          } else {
+            // Cancel the drag
+            setWeeklyDraggingCreate(prev => ({ ...prev, [dayString]: false }));
+            setWeeklyDragCreateStart(prev => {
+              const newState = { ...prev };
+              delete newState[dayString];
+              return newState;
+            });
+            setWeeklyDragCreateEnd(prev => {
+              const newState = { ...prev };
+              delete newState[dayString];
+              return newState;
+            });
+          }
+        }
+      });
+    };
+
+    const isDragging = Object.values(weeklyDraggingCreate).some(val => val);
+    if (isDragging) {
+      document.addEventListener('mousemove', handleGlobalMouseMove);
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [weeklyDraggingCreate, weeklyDragCreateStart, weeklyDragCreateEnd]);
 
   useEffect(() => {
     const savedData = localStorage.getItem("plannerData");
@@ -757,23 +958,23 @@ export const DailyPlanner = () => {
     setPlannerData(updatedPlannerData);
   };
 
-  const handleOpenTaskDialog = (hour: number, task?: PlannerItem) => {
+  const handleOpenTaskDialog = (hour: number, task?: PlannerItem, startTime?: string, endTime?: string) => {
     if (task) {
-      // Editing existing task
+      // Editing existing task - convert times to 12-hour format for display
       setEditingTask(task);
       setDialogTaskTitle(task.text);
       setDialogTaskDescription(task.description || "");
-      setDialogStartTime(task.startTime || "");
-      setDialogEndTime(task.endTime || "");
+      setDialogStartTime(task.startTime ? convert24To12Hour(task.startTime) : "");
+      setDialogEndTime(task.endTime ? convert24To12Hour(task.endTime) : "");
       setDialogTaskColor(task.color || "");
       setDialogAddToContentCalendar(task.isContentCalendar || false);
     } else {
-      // Creating new task
+      // Creating new task - convert times to 12-hour format for display
       setEditingTask(null);
       setDialogTaskTitle("");
       setDialogTaskDescription("");
-      setDialogStartTime("");
-      setDialogEndTime("");
+      setDialogStartTime(startTime ? convert24To12Hour(startTime) : "");
+      setDialogEndTime(endTime ? convert24To12Hour(endTime) : "");
       setDialogTaskColor("");
       setDialogAddToContentCalendar(false);
     }
@@ -782,6 +983,10 @@ export const DailyPlanner = () => {
 
   const handleSaveTaskDialog = () => {
     if (!dialogTaskTitle.trim()) return;
+
+    // Convert times from 12-hour format to 24-hour format for storage
+    const startTime24 = dialogStartTime ? convert12To24Hour(dialogStartTime) : '';
+    const endTime24 = dialogEndTime ? convert12To24Hour(dialogEndTime) : '';
 
     if (editingTask && editingTask.id) {
       // Check if this is a task being moved from All Tasks (has date but not in plannerData yet)
@@ -799,8 +1004,8 @@ export const DailyPlanner = () => {
           isCompleted: false,
           isContentCalendar: dialogAddToContentCalendar,
           date: taskDate,
-          startTime: dialogStartTime,
-          endTime: dialogEndTime,
+          startTime: startTime24,
+          endTime: endTime24,
           color: dialogTaskColor,
           description: dialogTaskDescription,
         };
@@ -830,8 +1035,8 @@ export const DailyPlanner = () => {
         handleEditItem(
           editingTask.id,
           dialogTaskTitle.trim(),
-          dialogStartTime,
-          dialogEndTime,
+          startTime24,
+          endTime24,
           dialogTaskColor,
           dialogTaskDescription,
           undefined, // Keep existing isCompleted state
@@ -849,8 +1054,8 @@ export const DailyPlanner = () => {
         isCompleted: false,
         isContentCalendar: dialogAddToContentCalendar,
         date: targetDate,
-        startTime: dialogStartTime,
-        endTime: dialogEndTime,
+        startTime: startTime24,
+        endTime: endTime24,
         color: dialogTaskColor,
         description: dialogTaskDescription,
       };
@@ -892,19 +1097,71 @@ export const DailyPlanner = () => {
     setEditingTask(null);
   };
 
+  // Convert 24-hour format (HH:MM) to 12-hour format (h:mm am/pm)
+  const convert24To12Hour = (time24: string): string => {
+    if (!time24 || !time24.includes(':')) return '';
+    const [hourStr, minuteStr] = time24.split(':');
+    const hour = parseInt(hourStr, 10);
+    const minute = parseInt(minuteStr, 10);
+
+    const period = hour >= 12 ? 'pm' : 'am';
+    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    const displayMin = minute.toString().padStart(2, '0');
+
+    return `${displayHour}:${displayMin} ${period}`;
+  };
+
+  // Convert 12-hour format (h:mm am/pm) to 24-hour format (HH:MM)
+  const convert12To24Hour = (time12: string): string => {
+    const match = time12.match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);
+    if (!match) return '';
+
+    let hour = parseInt(match[1], 10);
+    const minute = match[2];
+    const period = match[3].toLowerCase();
+
+    if (period === 'pm' && hour !== 12) {
+      hour += 12;
+    } else if (period === 'am' && hour === 12) {
+      hour = 0;
+    }
+
+    return `${hour.toString().padStart(2, '0')}:${minute}`;
+  };
+
   const formatTimeInput = (value: string): string => {
-    // Remove any non-digit characters
+    // Remove any extra spaces and lowercase
+    value = value.trim().toLowerCase();
+
+    // If the value contains 'a' or 'p', treat as 12-hour input
+    const hasAmPm = /[ap]/.test(value);
+
+    // Extract digits
     const digitsOnly = value.replace(/\D/g, '');
 
     // Auto-format as user types
     if (digitsOnly.length === 0) {
       return '';
     } else if (digitsOnly.length <= 2) {
+      const hours = parseInt(digitsOnly, 10);
+      if (hours > 12) return '12:';
       return digitsOnly;
     } else if (digitsOnly.length <= 4) {
-      return digitsOnly.slice(0, 2) + ':' + digitsOnly.slice(2);
+      const formatted = digitsOnly.slice(0, 2) + ':' + digitsOnly.slice(2);
+      // If user is typing am/pm
+      if (hasAmPm) {
+        const period = value.includes('p') ? 'pm' : 'am';
+        return formatted + ' ' + period;
+      }
+      return formatted;
     } else {
-      return digitsOnly.slice(0, 2) + ':' + digitsOnly.slice(2, 4);
+      const formatted = digitsOnly.slice(0, 2) + ':' + digitsOnly.slice(2, 4);
+      // Extract am/pm if present
+      if (hasAmPm) {
+        const period = value.includes('p') ? 'pm' : 'am';
+        return formatted + ' ' + period;
+      }
+      return formatted;
     }
   };
 
@@ -936,22 +1193,44 @@ export const DailyPlanner = () => {
 
   const handleStartTimeFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     if (!dialogStartTime) {
-      e.target.placeholder = '__:__';
+      e.target.placeholder = '__:__ am/pm';
     }
   };
 
   const handleEndTimeFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     if (!dialogEndTime) {
-      e.target.placeholder = '__:__';
+      e.target.placeholder = '__:__ am/pm';
     }
   };
 
   const handleStartTimeBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.target.placeholder = 'Start time';
+    e.target.placeholder = '9:00 am';
+
+    // Auto-add AM/PM if user didn't specify
+    if (dialogStartTime && !dialogStartTime.includes('am') && !dialogStartTime.includes('pm')) {
+      const match = dialogStartTime.match(/(\d{1,2}):(\d{2})/);
+      if (match) {
+        const hour = parseInt(match[1], 10);
+        // Default to PM if hour is 1-11, AM if 12
+        const period = hour === 12 ? 'pm' : hour >= 1 && hour <= 11 ? 'pm' : 'am';
+        setDialogStartTime(dialogStartTime + ' ' + period);
+      }
+    }
   };
 
   const handleEndTimeBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.target.placeholder = 'End time';
+    e.target.placeholder = '10:00 pm';
+
+    // Auto-add AM/PM if user didn't specify
+    if (dialogEndTime && !dialogEndTime.includes('am') && !dialogEndTime.includes('pm')) {
+      const match = dialogEndTime.match(/(\d{1,2}):(\d{2})/);
+      if (match) {
+        const hour = parseInt(match[1], 10);
+        // Default to PM if hour is 1-11, AM if 12
+        const period = hour === 12 ? 'pm' : hour >= 1 && hour <= 11 ? 'pm' : 'am';
+        setDialogEndTime(dialogEndTime + ' ' + period);
+      }
+    }
   };
 
   const handleTitleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
@@ -1079,6 +1358,43 @@ export const DailyPlanner = () => {
     localStorage.setItem('allTasks', JSON.stringify(newAllTasks));
   };
 
+  const handleDropTaskFromCalendarToAllTasks = (taskId: string, fromDate: string, targetIndex: number) => {
+    console.log('🎯 Dropping task at index:', targetIndex);
+
+    // Find the task in the source day
+    const fromDayIndex = plannerData.findIndex(d => d.date === fromDate);
+    if (fromDayIndex < 0) return;
+
+    const taskToMove = plannerData[fromDayIndex].items.find(item => item.id === taskId);
+    if (!taskToMove) return;
+
+    // Remove from source day
+    const updatedPlannerData = [...plannerData];
+    updatedPlannerData[fromDayIndex] = {
+      ...updatedPlannerData[fromDayIndex],
+      items: updatedPlannerData[fromDayIndex].items.filter(item => item.id !== taskId)
+    };
+    setPlannerData(updatedPlannerData);
+    localStorage.setItem('plannerData', JSON.stringify(updatedPlannerData));
+
+    // Add to All Tasks at specific position
+    const newAllTaskItem: PlannerItem = {
+      ...taskToMove,
+      date: undefined, // Completely remove date to prevent any past-date styling
+      section: "morning",
+      startTime: undefined,
+      endTime: undefined,
+      color: "", // Clear color when moving to All Tasks
+    };
+
+    const newAllTasks = [...allTasks];
+    newAllTasks.splice(targetIndex, 0, newAllTaskItem);
+    setAllTasks(newAllTasks);
+    localStorage.setItem('allTasks', JSON.stringify(newAllTasks));
+
+    console.log('✅ Task inserted at position', targetIndex);
+  };
+
   return (
     <div>
       <div className="flex gap-4">
@@ -1103,65 +1419,9 @@ export const DailyPlanner = () => {
             }
           }}
           onDrop={(e) => {
-            console.log('💥 DROP EVENT FIRED ON ALL TASKS!');
-            e.preventDefault();
-            e.stopPropagation();
+            // The actual drop handling is now done by PlannerSection at specific positions
+            // This outer handler just cleans up the drag state
             setIsDraggingOverAllTasks(false);
-
-            const taskId = e.dataTransfer.getData('taskId');
-            const fromDate = e.dataTransfer.getData('fromDate');
-            const fromAllTasks = e.dataTransfer.getData('fromAllTasks');
-
-            console.log('📦 Data received - taskId:', taskId, 'fromDate:', fromDate, 'fromAllTasks:', fromAllTasks);
-
-            if (!taskId) {
-              console.log('❌ No taskId');
-              return;
-            }
-
-            // If dragging from All Tasks, ignore (already here)
-            if (fromAllTasks === 'true' || !fromDate) {
-              console.log('❌ Already in All Tasks or no fromDate');
-              return;
-            }
-
-            // Task is from calendar, move it to All Tasks
-            console.log('✅ Moving task from calendar to All Tasks...');
-            const fromDayIndex = plannerData.findIndex(d => d.date === fromDate);
-            if (fromDayIndex < 0) {
-              console.log('❌ Day not found:', fromDate);
-              return;
-            }
-
-            const taskToMove = plannerData[fromDayIndex].items.find(item => item.id === taskId);
-            if (!taskToMove) {
-              console.log('❌ Task not found:', taskId);
-              return;
-            }
-
-            console.log('📋 Found task:', taskToMove.text);
-
-            const updatedPlannerData = [...plannerData];
-            updatedPlannerData[fromDayIndex] = {
-              ...updatedPlannerData[fromDayIndex],
-              items: updatedPlannerData[fromDayIndex].items.filter(item => item.id !== taskId)
-            };
-            setPlannerData(updatedPlannerData);
-            localStorage.setItem('plannerData', JSON.stringify(updatedPlannerData));
-
-            const newAllTaskItem: PlannerItem = {
-              ...taskToMove,
-              date: undefined, // Completely remove date to prevent any past-date styling
-              section: "morning",
-              startTime: undefined,
-              endTime: undefined,
-              color: "", // Clear color when moving to All Tasks
-            };
-            const updatedAllTasks = [...allTasks, newAllTaskItem];
-            setAllTasks(updatedAllTasks);
-            localStorage.setItem('allTasks', JSON.stringify(updatedAllTasks));
-
-            console.log('✅✅✅ TASK MOVED TO ALL TASKS SUCCESSFULLY! ✅✅✅');
           }}
         >
           {isAllTasksCollapsed ? (
@@ -1202,6 +1462,7 @@ export const DailyPlanner = () => {
                   onReorderItems={handleReorderAllTasks}
                   isAllTasksSection={true}
                   onDropTaskFromWeekly={handleDropTaskFromWeeklyToAllTasks}
+                  onDropTaskFromCalendar={handleDropTaskFromCalendarToAllTasks}
                 />
               </div>
             </div>
@@ -1348,10 +1609,14 @@ export const DailyPlanner = () => {
                             return (
                               <div
                                 key={`${hour}-${minute}`}
-                                className="flex-1 cursor-pointer hover:bg-blue-50 transition-colors relative group/slot"
-                                onClick={(e) => {
-                                  if (e.target === e.currentTarget || e.currentTarget.contains(e.target as Node)) {
-                                    handleOpenTaskDialog(hour);
+                                className="flex-1 cursor-crosshair relative group/slot"
+                                onMouseDown={(e) => {
+                                  // Only start drag create if clicking directly on the slot (not on a task)
+                                  if (e.target === e.currentTarget || (e.currentTarget.contains(e.target as Node) && (e.target as HTMLElement).classList.contains('pointer-events-none'))) {
+                                    e.preventDefault();
+                                    setIsDraggingCreate(true);
+                                    setDragCreateStart({ hour, minute });
+                                    setDragCreateEnd({ hour, minute });
                                   }
                                 }}
                                 onDragOver={(e) => {
@@ -1476,10 +1741,7 @@ export const DailyPlanner = () => {
                                   }
                                 }}
                               >
-                                {/* Plus icon hint on hover */}
-                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/slot:opacity-30 transition-opacity pointer-events-none">
-                                  <Plus size={20} className="text-gray-400" />
-                                </div>
+                                {/* Remove Plus icon - drag to create instead */}
                               </div>
                             );
                           })}
@@ -1493,19 +1755,118 @@ export const DailyPlanner = () => {
 
                 {/* Render all tasks with absolute positioning */}
                 <div className="absolute top-0 left-[72px] right-2"> {/* 72px = 56px (w-14) + 16px (gap-2 * 2) */}
-                  {currentDay.items
-                    .filter(item => item.startTime && item.endTime)
-                    .map((task) => {
-                      // Calculate position and height
+                  {(() => {
+                    const tasksWithTimes = currentDay.items.filter(item => item.startTime && item.endTime);
+
+                    // Calculate time ranges and detect overlaps
+                    const tasksWithLayout = tasksWithTimes.map((task, index) => {
                       const [startHour, startMinute] = task.startTime!.split(':').map(Number);
                       const [endHour, endMinute] = task.endTime!.split(':').map(Number);
-
                       const startTotalMinutes = startHour * 60 + startMinute;
                       const endTotalMinutes = endHour * 60 + endMinute;
                       const durationMinutes = endTotalMinutes - startTotalMinutes;
 
-                      const top = startTotalMinutes * 1.5; // 1.5px per minute (90px per hour)
-                      const height = Math.max(durationMinutes * 1.5, 28); // Minimum 28px to fit content
+                      return {
+                        task,
+                        startMinutes: startTotalMinutes,
+                        endMinutes: endTotalMinutes,
+                        durationMinutes,
+                        column: 0,
+                        totalColumns: 1,
+                        isBackground: false,
+                        inOverlapGroup: false
+                      };
+                    });
+
+                    // Detect overlaps and assign columns
+                    const processedTasks = new Set<typeof tasksWithLayout[0]>();
+
+                    for (let i = 0; i < tasksWithLayout.length; i++) {
+                      const currentTask = tasksWithLayout[i];
+
+                      // Skip if already processed as part of another group
+                      if (processedTasks.has(currentTask)) continue;
+
+                      const overlappingTasks = [currentTask];
+
+                      // Find all tasks that overlap with this one
+                      for (let j = i + 1; j < tasksWithLayout.length; j++) {
+                        const otherTask = tasksWithLayout[j];
+
+                        // Check if this task overlaps with ANY task in the current group
+                        const overlapsWithGroup = overlappingTasks.some(groupTask =>
+                          (groupTask.startMinutes < otherTask.endMinutes &&
+                           groupTask.endMinutes > otherTask.startMinutes)
+                        );
+
+                        if (overlapsWithGroup && !overlappingTasks.includes(otherTask)) {
+                          overlappingTasks.push(otherTask);
+                        }
+                      }
+
+                      // Mark all tasks in this group as processed
+                      overlappingTasks.forEach(t => processedTasks.add(t));
+
+                      // Assign columns to overlapping tasks
+                      if (overlappingTasks.length > 1) {
+                        // Find the longest task - it should be the background
+                        const longestTask = overlappingTasks.reduce((longest, current) =>
+                          current.durationMinutes > longest.durationMinutes ? current : longest
+                        );
+
+                        // Mark longest task as background (full width, behind others)
+                        longestTask.isBackground = true;
+                        longestTask.column = 0;
+                        longestTask.totalColumns = 1;
+                        longestTask.inOverlapGroup = true;
+
+                        // Other tasks are positioned on top in columns
+                        const foregroundTasks = overlappingTasks.filter(t => t !== longestTask);
+                        const totalColumns = foregroundTasks.length;
+
+                        foregroundTasks.forEach((t) => {
+                          const originalIndex = tasksWithLayout.indexOf(t);
+                          const columnIndex = foregroundTasks
+                            .map(ot => tasksWithLayout.indexOf(ot))
+                            .sort((a, b) => a - b)
+                            .indexOf(originalIndex);
+
+                          t.column = columnIndex;
+                          t.totalColumns = totalColumns;
+                          t.isBackground = false;
+                          t.inOverlapGroup = true;
+                        });
+                      }
+                    }
+
+                    return tasksWithLayout.map(({ task, startMinutes, endMinutes, column, totalColumns, isBackground, inOverlapGroup }) => {
+                      const durationMinutes = endMinutes - startMinutes;
+                      const top = startMinutes * 1.5;
+                      const height = Math.max(durationMinutes * 1.5, 28);
+                      const [startHour, startMinute] = task.startTime!.split(':').map(Number);
+
+                      // Calculate width and position for overlapping tasks
+                      let widthPercent, leftPercent, zIndex;
+
+                      if (isBackground) {
+                        // Background task: full width, behind others
+                        widthPercent = 100;
+                        leftPercent = 0;
+                        zIndex = 5; // Lower z-index to stay behind
+                      } else if (inOverlapGroup) {
+                        // Foreground tasks in an overlapping group: position on right side
+                        // Leave left 40% for background task visibility
+                        const availableSpace = 60;
+                        const startPosition = 40;
+                        widthPercent = availableSpace / totalColumns;
+                        leftPercent = startPosition + (column * widthPercent);
+                        zIndex = 15 + column; // Higher z-index to appear on top
+                      } else {
+                        // Standalone task (no overlap): full width
+                        widthPercent = 100;
+                        leftPercent = 0;
+                        zIndex = 10;
+                      }
 
                       return (
                         <div
@@ -1526,17 +1887,103 @@ export const DailyPlanner = () => {
                           }}
                           onClick={(e) => {
                             e.stopPropagation();
+                            // Don't open dialog if we just finished resizing
+                            if (isResizingRef.current) {
+                              return;
+                            }
                             handleOpenTaskDialog(startHour, task);
                           }}
-                          className="group absolute left-0 right-0 rounded px-2 py-1 border-l-4 hover:shadow-sm transition-all cursor-move overflow-hidden"
+                          className="group absolute rounded px-2 py-1 border-l-4 hover:shadow-sm transition-all cursor-pointer overflow-hidden"
                           style={{
                             top: `${top}px`,
                             height: `${height}px`,
-                            backgroundColor: task.color ? `${task.color}40` : '#f9fafb',
+                            left: `${leftPercent}%`,
+                            width: `calc(${widthPercent}% - 4px)`,
+                            backgroundColor: task.color || '#f9fafb',
                             borderLeftColor: task.color || '#d1d5db',
-                            zIndex: 10,
+                            zIndex: zIndex,
                           }}
                         >
+                          {/* Top resize handle */}
+                          <div
+                            className="absolute top-0 left-0 right-0 h-1 cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity z-30"
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              isResizingRef.current = true;
+
+                              const startY = e.clientY;
+                              const originalStartMinutes = startMinutes;
+
+                              const handleMouseMove = (moveEvent: MouseEvent) => {
+                                const deltaY = moveEvent.clientY - startY;
+                                const deltaMinutes = Math.round(deltaY / 1.5); // 1.5px per minute
+                                const newStartMinutes = Math.max(0, Math.min(1439, originalStartMinutes + deltaMinutes));
+
+                                // Ensure start time is before end time (at least 15 min duration)
+                                if (newStartMinutes < endMinutes - 15) {
+                                  const newStartHour = Math.floor(newStartMinutes / 60);
+                                  const newStartMinute = newStartMinutes % 60;
+                                  const newStartTime = `${newStartHour.toString().padStart(2, '0')}:${newStartMinute.toString().padStart(2, '0')}`;
+
+                                  handleEditItem(task.id, task.text, newStartTime, task.endTime, task.color, task.description, task.isCompleted, task.date);
+                                }
+                              };
+
+                              const handleMouseUp = () => {
+                                document.removeEventListener('mousemove', handleMouseMove);
+                                document.removeEventListener('mouseup', handleMouseUp);
+                                // Reset after a short delay to allow click event to be checked
+                                setTimeout(() => {
+                                  isResizingRef.current = false;
+                                }, 100);
+                              };
+
+                              document.addEventListener('mousemove', handleMouseMove);
+                              document.addEventListener('mouseup', handleMouseUp);
+                            }}
+                          />
+
+                          {/* Bottom resize handle */}
+                          <div
+                            className="absolute bottom-0 left-0 right-0 h-1 cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity z-30"
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              isResizingRef.current = true;
+
+                              const startY = e.clientY;
+                              const originalEndMinutes = endMinutes;
+
+                              const handleMouseMove = (moveEvent: MouseEvent) => {
+                                const deltaY = moveEvent.clientY - startY;
+                                const deltaMinutes = Math.round(deltaY / 1.5); // 1.5px per minute
+                                const newEndMinutes = Math.max(0, Math.min(1439, originalEndMinutes + deltaMinutes));
+
+                                // Ensure end time is after start time (at least 15 min duration)
+                                if (newEndMinutes > startMinutes + 15) {
+                                  const newEndHour = Math.floor(newEndMinutes / 60);
+                                  const newEndMinute = newEndMinutes % 60;
+                                  const newEndTime = `${newEndHour.toString().padStart(2, '0')}:${newEndMinute.toString().padStart(2, '0')}`;
+
+                                  handleEditItem(task.id, task.text, task.startTime, newEndTime, task.color, task.description, task.isCompleted, task.date);
+                                }
+                              };
+
+                              const handleMouseUp = () => {
+                                document.removeEventListener('mousemove', handleMouseMove);
+                                document.removeEventListener('mouseup', handleMouseUp);
+                                // Reset after a short delay to allow click event to be checked
+                                setTimeout(() => {
+                                  isResizingRef.current = false;
+                                }, 100);
+                              };
+
+                              document.addEventListener('mousemove', handleMouseMove);
+                              document.addEventListener('mouseup', handleMouseUp);
+                            }}
+                          />
+
                           <div className="flex items-start gap-2">
                             <Checkbox
                               checked={task.isCompleted}
@@ -1546,10 +1993,34 @@ export const DailyPlanner = () => {
                               onClick={(e) => e.stopPropagation()}
                               className="mt-0.5 h-3.5 w-3.5 flex-shrink-0"
                             />
-                            <div className="flex-1 min-w-0">
-                              <div className={`text-xs font-medium ${task.isCompleted ? 'line-through text-gray-400' : 'text-gray-700'}`}>
-                                {task.text}
-                              </div>
+                            <div className="flex-1 min-w-0 overflow-hidden">
+                              {height >= 45 ? (
+                                // Show time below title when there's enough space
+                                <>
+                                  <div className={`text-xs font-medium truncate ${task.isCompleted ? 'line-through text-gray-400' : 'text-gray-700'}`}>
+                                    {task.text}
+                                  </div>
+                                  {(task.startTime || task.endTime) && (
+                                    <div className="text-[10px] text-gray-500 mt-0.5">
+                                      {task.startTime && convert24To12Hour(task.startTime)}
+                                      {task.startTime && task.endTime && ' - '}
+                                      {task.endTime && convert24To12Hour(task.endTime)}
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                // Show time inline with title when space is limited
+                                <div className={`text-xs font-medium truncate ${task.isCompleted ? 'line-through text-gray-400' : 'text-gray-700'}`}>
+                                  {task.text}
+                                  {(task.startTime || task.endTime) && (
+                                    <span className="text-[10px] text-gray-500 ml-1.5 font-normal">
+                                      {task.startTime && convert24To12Hour(task.startTime)}
+                                      {task.startTime && task.endTime && ' - '}
+                                      {task.endTime && convert24To12Hour(task.endTime)}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
                             </div>
                             <button
                               onClick={(e) => {
@@ -1563,7 +2034,60 @@ export const DailyPlanner = () => {
                           </div>
                         </div>
                       );
-                    })}
+                    });
+                  })()}
+
+                  {/* Drag-to-create preview */}
+                  {isDraggingCreate && dragCreateStart && dragCreateEnd && (() => {
+                    const startMinutes = dragCreateStart.hour * 60 + dragCreateStart.minute;
+                    const endMinutes = dragCreateEnd.hour * 60 + dragCreateEnd.minute;
+
+                    const actualStart = Math.min(startMinutes, endMinutes);
+                    const actualEnd = Math.max(startMinutes, endMinutes + 20);
+
+                    const top = (actualStart / 60) * 90; // 90px per hour
+                    const height = Math.max(30, ((actualEnd - actualStart) / 60) * 90);
+
+                    // Format times for display in 12-hour format
+                    const startHour = Math.floor(actualStart / 60);
+                    const startMin = actualStart % 60;
+                    const endHour = Math.floor(actualEnd / 60);
+                    const endMin = actualEnd % 60;
+
+                    const formatTime12Hour = (hour: number, minute: number) => {
+                      const period = hour >= 12 ? 'pm' : 'am';
+                      const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+                      const displayMin = minute.toString().padStart(2, '0');
+                      return `${displayHour}:${displayMin}${period}`;
+                    };
+
+                    const startTimeStr = formatTime12Hour(startHour, startMin);
+                    const endTimeStr = formatTime12Hour(endHour, endMin);
+
+                    return (
+                      <div
+                        className="absolute rounded px-2 py-1 border-l-4 border-blue-400"
+                        style={{
+                          top: `${top}px`,
+                          height: `${height}px`,
+                          left: '0',
+                          right: '0',
+                          backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                          zIndex: 100,
+                          pointerEvents: 'none'
+                        }}
+                      >
+                        <div className="text-xs text-blue-700 font-semibold">
+                          {startTimeStr}
+                        </div>
+                        {height > 40 && (
+                          <div className="text-xs text-blue-700 font-semibold absolute bottom-1 left-2">
+                            {endTimeStr}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             </ScrollArea>
@@ -1590,6 +2114,7 @@ export const DailyPlanner = () => {
                   return (
                     <div
                       key={dayString}
+                      data-day-column={dayString}
                       className={`min-h-[600px] border-r border-gray-200 last:border-r-0 ${dayColor} transition-colors`}
                       onDragOver={(e) => {
                         e.preventDefault();
@@ -1679,211 +2204,410 @@ export const DailyPlanner = () => {
                           {format(day, "d")}
                         </div>
                       </div>
-                      <div className="p-2 space-y-1 overflow-y-auto max-h-[500px]">
-                        {sortTasksBySection(dayData?.items || []).map((item, taskIndex) => (
-                          weeklyEditingTask === item.id ? (
-                            <div key={item.id} className="flex items-center gap-1 p-2 bg-white border border-gray-200 rounded">
-                              <Input
-                                value={weeklyEditText}
-                                onChange={(e) => setWeeklyEditText(e.target.value)}
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter") {
-                                    handleEditWeeklyTask(item.id, dayString, weeklyEditText);
-                                  } else if (e.key === "Escape") {
-                                    setWeeklyEditingTask(null);
-                                    setWeeklyEditText("");
-                                  }
-                                }}
-                                autoFocus
-                                className="h-7 text-xs flex-1"
-                              />
-                              <button
-                                onClick={() => handleEditWeeklyTask(item.id, dayString, weeklyEditText)}
-                                className="text-green-600 p-1 rounded-sm hover:bg-green-100"
-                              >
-                                <Check size={12} />
-                              </button>
+                      {/* Timeline container */}
+                      <div className="relative" data-timeline style={{ height: '2160px' }}>
+                        {/* Hour grid lines */}
+                        {Array.from({ length: 24 }, (_, hour) => (
+                          <div
+                            key={hour}
+                            className="absolute left-0 right-0 border-t border-gray-100"
+                            style={{ top: `${hour * 90}px`, height: '90px' }}
+                          >
+                            <div className="absolute left-1 top-1 text-[10px] text-gray-400">
+                              {hour === 0 ? '12 am' : hour < 12 ? `${hour} am` : hour === 12 ? '12 pm' : `${hour - 12} pm`}
                             </div>
-                          ) : (
-                            <div key={item.id} className="relative">
-                              {/* Drop indicator */}
-                              {dragOverWeeklyTaskId === item.id && weeklyDropIndicatorPosition === 'before' && (
-                                <div className="absolute -top-1 left-0 right-0 h-0.5 bg-blue-500 rounded-full z-10"></div>
-                              )}
+                          </div>
+                        ))}
 
+                        {/* Tasks positioned absolutely by time */}
+                        {(() => {
+                          const tasksWithTimes = (dayData?.items || []).filter(item => item.startTime && item.endTime);
+
+                          // Calculate time ranges and detect overlaps
+                          const tasksWithLayout = tasksWithTimes.map((task, index) => {
+                            const [startHour, startMinute] = task.startTime!.split(':').map(Number);
+                            const [endHour, endMinute] = task.endTime!.split(':').map(Number);
+                            const startTotalMinutes = startHour * 60 + startMinute;
+                            const endTotalMinutes = endHour * 60 + endMinute;
+                            const durationMinutes = endTotalMinutes - startTotalMinutes;
+
+                            return {
+                              task,
+                              startMinutes: startTotalMinutes,
+                              endMinutes: endTotalMinutes,
+                              durationMinutes,
+                              column: 0,
+                              totalColumns: 1,
+                              isBackground: false,
+                              inOverlapGroup: false
+                            };
+                          });
+
+                          // Detect overlaps and assign columns
+                          const processedTasks = new Set<typeof tasksWithLayout[0]>();
+
+                          for (let i = 0; i < tasksWithLayout.length; i++) {
+                            const currentTask = tasksWithLayout[i];
+
+                            // Skip if already processed as part of another group
+                            if (processedTasks.has(currentTask)) continue;
+
+                            const overlappingTasks = [currentTask];
+
+                            // Find all tasks that overlap with this one
+                            for (let j = i + 1; j < tasksWithLayout.length; j++) {
+                              const otherTask = tasksWithLayout[j];
+
+                              // Check if this task overlaps with ANY task in the current group
+                              const overlapsWithGroup = overlappingTasks.some(groupTask =>
+                                (groupTask.startMinutes < otherTask.endMinutes &&
+                                 groupTask.endMinutes > otherTask.startMinutes)
+                              );
+
+                              if (overlapsWithGroup && !overlappingTasks.includes(otherTask)) {
+                                overlappingTasks.push(otherTask);
+                              }
+                            }
+
+                            // Mark all tasks in this group as processed
+                            overlappingTasks.forEach(t => processedTasks.add(t));
+
+                            // Assign columns to overlapping tasks
+                            if (overlappingTasks.length > 1) {
+                              // Find the longest task - it should be the background
+                              const longestTask = overlappingTasks.reduce((longest, current) =>
+                                current.durationMinutes > longest.durationMinutes ? current : longest
+                              );
+
+                              // Mark longest task as background (full width, behind others)
+                              longestTask.isBackground = true;
+                              longestTask.column = 0;
+                              longestTask.totalColumns = 1;
+                              longestTask.inOverlapGroup = true;
+
+                              // Other tasks are positioned on top in columns
+                              const foregroundTasks = overlappingTasks.filter(t => t !== longestTask);
+                              const totalColumns = foregroundTasks.length;
+
+                              foregroundTasks.forEach((t) => {
+                                const originalIndex = tasksWithLayout.indexOf(t);
+                                const columnIndex = foregroundTasks
+                                  .map(ot => tasksWithLayout.indexOf(ot))
+                                  .sort((a, b) => a - b)
+                                  .indexOf(originalIndex);
+
+                                t.column = columnIndex;
+                                t.totalColumns = totalColumns;
+                                t.isBackground = false;
+                                t.inOverlapGroup = true;
+                              });
+                            }
+                          }
+
+                          return tasksWithLayout.map(({ task: item, startMinutes, endMinutes, column, totalColumns, isBackground, inOverlapGroup }) => {
+                            const durationMinutes = endMinutes - startMinutes;
+                            const topPos = startMinutes * 1.5;
+                            const height = Math.max(durationMinutes * 1.5, 28);
+
+                            // Calculate width and position for overlapping tasks
+                            let widthPercent, leftPercent, zIndex;
+
+                            if (isBackground) {
+                              // Background task: full width, behind others
+                              widthPercent = 100;
+                              leftPercent = 0;
+                              zIndex = 5;
+                            } else if (inOverlapGroup) {
+                              // Foreground tasks: position on right side
+                              // Leave left 50% for background task visibility (wider for weekly view)
+                              const availableSpace = 50;
+                              const startPosition = 50;
+                              widthPercent = availableSpace / totalColumns;
+                              leftPercent = startPosition + (column * widthPercent);
+                              zIndex = 15 + column;
+                            } else {
+                              // Standalone task (no overlap): full width
+                              widthPercent = 100;
+                              leftPercent = 0;
+                              zIndex = 10;
+                            }
+
+                            return (
                               <div
+                                key={item.id}
+                                className="absolute group"
+                                style={{
+                                  top: `${topPos}px`,
+                                  height: `${height}px`,
+                                  left: `${leftPercent}%`,
+                                  width: `${widthPercent}%`,
+                                  zIndex
+                                }}
+                              >
+                                <div
+                                  draggable={true}
+                                  onDragStart={(e) => {
+                                    console.log('🚀 DRAG START - Weekly Task:', item.id, item.text, 'from:', dayString);
+                                    setDraggedWeeklyTaskId(item.id);
+                                    e.dataTransfer.setData('text/plain', item.id);
+                                    e.dataTransfer.setData('taskId', item.id);
+                                    e.dataTransfer.setData('fromDate', dayString);
+                                    e.dataTransfer.setData('fromAllTasks', 'false');
+                                    e.dataTransfer.effectAllowed = 'move';
+                                    e.currentTarget.style.opacity = '0.5';
+                                  }}
+                                  onDragEnd={(e) => {
+                                    e.currentTarget.style.opacity = isPast ? '0.5' : '1';
+                                    setDraggedWeeklyTaskId(null);
+                                  }}
+                                  onClick={(e) => {
+                                    if (isResizingRef.current) {
+                                      return;
+                                    }
+                                    setEditingTask(item);
+                                    setDialogTaskTitle(item.text);
+                                    setDialogTaskDescription(item.description || "");
+                                    setDialogStartTime(item.startTime || "");
+                                    setDialogEndTime(item.endTime || "");
+                                    setDialogTaskColor(item.color || "");
+                                    setDialogAddToContentCalendar(item.isContentCalendar || false);
+                                    setIsTaskDialogOpen(true);
+                                  }}
+                                  className="h-full relative rounded border border-gray-300 p-2 cursor-pointer hover:shadow-md transition-shadow overflow-hidden"
+                                  style={{
+                                    backgroundColor: item.color || 'white',
+                                    opacity: isPast ? 0.5 : 1
+                                  }}
+                                >
+                                  {/* Resize handles */}
+                                  <div
+                                    className="absolute top-0 left-0 right-0 h-1 cursor-ns-resize opacity-0 group-hover:opacity-100 hover:bg-blue-400 transition-opacity z-30"
+                                    onMouseDown={(e) => {
+                                      e.stopPropagation();
+                                      isResizingRef.current = true;
+                                      const startY = e.clientY;
+                                      const originalStartTime = item.startTime!;
+
+                                      const handleMouseMove = (moveEvent: MouseEvent) => {
+                                        const deltaY = moveEvent.clientY - startY;
+                                        const deltaMinutes = Math.round(deltaY / 1.5);
+                                        const [hour, minute] = originalStartTime.split(':').map(Number);
+                                        const originalMinutes = hour * 60 + minute;
+                                        const newMinutes = Math.max(0, Math.min(1439, originalMinutes + deltaMinutes));
+
+                                        // Get end time in minutes
+                                        const [endHour, endMinute] = item.endTime!.split(':').map(Number);
+                                        const endTotalMinutes = endHour * 60 + endMinute;
+
+                                        // Ensure start time is before end time (at least 15 min duration)
+                                        if (newMinutes < endTotalMinutes - 15) {
+                                          const newHour = Math.floor(newMinutes / 60);
+                                          const newMinute = newMinutes % 60;
+                                          const newStartTime = `${newHour.toString().padStart(2, '0')}:${newMinute.toString().padStart(2, '0')}`;
+
+                                          handleEditItem(item.id, item.text, newStartTime, item.endTime, item.color, item.description, item.isCompleted, dayString, item.isContentCalendar);
+                                        }
+                                      };
+
+                                      const handleMouseUp = () => {
+                                        document.removeEventListener('mousemove', handleMouseMove);
+                                        document.removeEventListener('mouseup', handleMouseUp);
+                                        setTimeout(() => {
+                                          isResizingRef.current = false;
+                                        }, 100);
+                                      };
+
+                                      document.addEventListener('mousemove', handleMouseMove);
+                                      document.addEventListener('mouseup', handleMouseUp);
+                                    }}
+                                  />
+
+                                  <div
+                                    className="absolute bottom-0 left-0 right-0 h-1 cursor-ns-resize opacity-0 group-hover:opacity-100 hover:bg-blue-400 transition-opacity z-30"
+                                    onMouseDown={(e) => {
+                                      e.stopPropagation();
+                                      isResizingRef.current = true;
+                                      const startY = e.clientY;
+                                      const originalEndTime = item.endTime!;
+
+                                      const handleMouseMove = (moveEvent: MouseEvent) => {
+                                        const deltaY = moveEvent.clientY - startY;
+                                        const deltaMinutes = Math.round(deltaY / 1.5);
+                                        const [hour, minute] = originalEndTime.split(':').map(Number);
+                                        const originalMinutes = hour * 60 + minute;
+                                        const newMinutes = Math.max(0, Math.min(1439, originalMinutes + deltaMinutes));
+
+                                        // Get start time in minutes
+                                        const [startHour, startMinute] = item.startTime!.split(':').map(Number);
+                                        const startTotalMinutes = startHour * 60 + startMinute;
+
+                                        // Ensure end time is after start time (at least 15 min duration)
+                                        if (newMinutes > startTotalMinutes + 15) {
+                                          const newHour = Math.floor(newMinutes / 60);
+                                          const newMinute = newMinutes % 60;
+                                          const newEndTime = `${newHour.toString().padStart(2, '0')}:${newMinute.toString().padStart(2, '0')}`;
+
+                                          handleEditItem(item.id, item.text, item.startTime, newEndTime, item.color, item.description, item.isCompleted, dayString, item.isContentCalendar);
+                                        }
+                                      };
+
+                                      const handleMouseUp = () => {
+                                        document.removeEventListener('mousemove', handleMouseMove);
+                                        document.removeEventListener('mouseup', handleMouseUp);
+                                        setTimeout(() => {
+                                          isResizingRef.current = false;
+                                        }, 100);
+                                      };
+
+                                      document.addEventListener('mousemove', handleMouseMove);
+                                      document.addEventListener('mouseup', handleMouseUp);
+                                    }}
+                                  />
+
+                                  {/* Task content */}
+                                  <div className="flex items-start gap-1 h-full relative z-20">
+                                    <Checkbox
+                                      checked={item.isCompleted}
+                                      onCheckedChange={() => handleToggleWeeklyTask(item.id, dayString)}
+                                      className="h-3.5 w-3.5 flex-shrink-0 mt-0.5 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
+                                    <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                                      <span className={`text-[10px] ${item.isCompleted ? 'line-through text-gray-500' : 'text-gray-800'} break-words`}>
+                                        {item.text}
+                                      </span>
+                                      <span className="text-gray-600 font-medium text-[9px]">
+                                        {convert24To12Hour(item.startTime!)} - {convert24To12Hour(item.endTime!)}
+                                      </span>
+                                    </div>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteWeeklyTask(item.id, dayString);
+                                      }}
+                                      className="p-0.5 rounded-sm text-gray-400 hover:text-red-600 hover:bg-white transition-colors opacity-0 group-hover:opacity-100"
+                                    >
+                                      <Trash2 size={10} />
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          });
+                        })()}
+
+                        {/* Tasks without times - shown at bottom */}
+                        <div className="absolute bottom-0 left-0 right-0 p-2 space-y-1">
+                          {(dayData?.items || [])
+                            .filter(item => !item.startTime || !item.endTime)
+                            .map((item, taskIndex) => (
+                              <div
+                                key={item.id}
                                 draggable={true}
                                 onDragStart={(e) => {
-                                  console.log('🚀 DRAG START - Weekly Task:', item.id, item.text, 'from:', dayString);
                                   setDraggedWeeklyTaskId(item.id);
-                                  e.dataTransfer.setData('text/plain', item.id);
                                   e.dataTransfer.setData('taskId', item.id);
                                   e.dataTransfer.setData('fromDate', dayString);
                                   e.dataTransfer.setData('fromAllTasks', 'false');
-                                  e.dataTransfer.setData('isWeeklyReorder', 'true');
                                   e.dataTransfer.effectAllowed = 'move';
-
-                                // Create a custom drag image showing the full task
-                                const taskElement = e.currentTarget as HTMLElement;
-                                if (taskElement) {
-                                  // Clone the element to use as drag image
-                                  const dragImage = taskElement.cloneNode(true) as HTMLElement;
-                                  dragImage.style.position = 'absolute';
-                                  dragImage.style.top = '-1000px';
-                                  dragImage.style.opacity = '0.8';
-                                  dragImage.style.pointerEvents = 'none';
-                                  document.body.appendChild(dragImage);
-
-                                  // Set the custom drag image
-                                  e.dataTransfer.setDragImage(dragImage, 0, 0);
-
-                                  // Remove the temporary element after a brief delay
-                                  setTimeout(() => {
-                                    document.body.removeChild(dragImage);
-                                  }, 0);
-
-                                  // Make original semi-transparent
-                                  setTimeout(() => {
-                                    taskElement.style.opacity = '0.5';
-                                  }, 0);
-                                }
-                              }}
-                              onDragOver={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-
-                                const isWeeklyReorder = e.dataTransfer.types.includes('isweeklyreorder');
-                                const fromDate = e.dataTransfer.types.includes('fromdate');
-
-                                // Only handle reordering if dragging within same day column
-                                if (isWeeklyReorder && draggedWeeklyTaskId && draggedWeeklyTaskId !== item.id) {
-                                  // Calculate if we should show indicator before or after
-                                  const rect = e.currentTarget.getBoundingClientRect();
-                                  const midpoint = rect.top + rect.height / 2;
-                                  const position = e.clientY < midpoint ? 'before' : 'after';
-
-                                  setDragOverWeeklyTaskId(item.id);
-                                  setWeeklyDropIndicatorPosition(position);
-                                }
-                              }}
-                              onDragLeave={(e) => {
-                                // Only clear if leaving the task element itself
-                                if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                                  setDragOverWeeklyTaskId(null);
-                                  setWeeklyDropIndicatorPosition(null);
-                                }
-                              }}
-                              onDrop={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-
-                                const isWeeklyReorder = e.dataTransfer.getData('isWeeklyReorder');
-
-                                if (isWeeklyReorder && draggedWeeklyTaskId && draggedWeeklyTaskId !== item.id && weeklyDropIndicatorPosition) {
-                                  handleReorderWeeklyTasks(dayString, draggedWeeklyTaskId, item.id, weeklyDropIndicatorPosition);
-                                }
-
-                                setDraggedWeeklyTaskId(null);
-                                setDragOverWeeklyTaskId(null);
-                                setWeeklyDropIndicatorPosition(null);
-                              }}
-                              onDragEnd={(e) => {
-                                console.log('✅ DRAG END - Weekly Task');
-                                e.currentTarget.style.opacity = isPast ? '0.5' : '1';
-                                setDraggedWeeklyTaskId(null);
-                                setDragOverWeeklyTaskId(null);
-                                setWeeklyDropIndicatorPosition(null);
-                              }}
-                              onClick={(e) => {
-                                // Open edit dialog on click
-                                setEditingTask(item);
-                                setDialogTaskTitle(item.text);
-                                setDialogTaskDescription(item.description || "");
-                                setDialogStartTime(item.startTime || "");
-                                setDialogEndTime(item.endTime || "");
-                                setDialogTaskColor(item.color || "");
-                                setDialogAddToContentCalendar(item.isContentCalendar || false);
-                                setIsTaskDialogOpen(true);
-                              }}
-                              className="group relative text-xs p-2 pr-5 rounded border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
-                              style={{
-                                backgroundColor: item.color || 'white',
-                                opacity: isPast ? 0.5 : 1
-                              }}
-                            >
-                              <div className="flex items-start gap-1 flex-1 min-w-0">
-
-                                {/* Checkbox */}
-                                <Checkbox
-                                  checked={item.isCompleted}
-                                  onCheckedChange={() => handleToggleWeeklyTask(item.id, dayString)}
-                                  className="h-3.5 w-3.5 flex-shrink-0 mt-0.5 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
-                                  onClick={(e) => e.stopPropagation()}
-                                />
-
-                                {/* Task content */}
-                                <div className="flex flex-col gap-0.5 flex-1 min-w-0 pr-1">
-                                  {item.startTime && (
-                                    <span className="text-gray-600 font-medium flex-shrink-0 text-[10px]">
-                                      {item.startTime}{item.endTime && ` - ${item.endTime}`}
-                                    </span>
-                                  )}
-                                  <span className={`${item.isCompleted ? 'line-through text-gray-500' : 'text-gray-800'} break-words whitespace-normal`}>
+                                  e.currentTarget.style.opacity = '0.5';
+                                }}
+                                onDragEnd={(e) => {
+                                  e.currentTarget.style.opacity = isPast ? '0.5' : '1';
+                                  setDraggedWeeklyTaskId(null);
+                                }}
+                                onClick={(e) => {
+                                  setEditingTask(item);
+                                  setDialogTaskTitle(item.text);
+                                  setDialogTaskDescription(item.description || "");
+                                  setDialogStartTime(item.startTime || "");
+                                  setDialogEndTime(item.endTime || "");
+                                  setDialogTaskColor(item.color || "");
+                                  setDialogAddToContentCalendar(item.isContentCalendar || false);
+                                  setIsTaskDialogOpen(true);
+                                }}
+                                className="group text-xs p-2 rounded border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
+                                style={{
+                                  backgroundColor: item.color || 'white',
+                                  opacity: isPast ? 0.5 : 1
+                                }}
+                              >
+                                <div className="flex items-start gap-1">
+                                  <Checkbox
+                                    checked={item.isCompleted}
+                                    onCheckedChange={() => handleToggleWeeklyTask(item.id, dayString)}
+                                    className="h-3.5 w-3.5 flex-shrink-0 mt-0.5 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                  <span className={`${item.isCompleted ? 'line-through text-gray-500' : 'text-gray-800'} break-words flex-1`}>
                                     {item.text}
                                   </span>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteWeeklyTask(item.id, dayString);
+                                    }}
+                                    className="p-0.5 rounded-sm text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100"
+                                  >
+                                    <Trash2 size={10} />
+                                  </button>
                                 </div>
                               </div>
+                            ))}
+                        </div>
 
-                              {/* Action buttons - always visible area on right */}
-                              <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex flex-col opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteWeeklyTask(item.id, dayString);
-                                  }}
-                                  className="p-0.5 rounded-sm text-gray-400 hover:text-red-600 hover:bg-white transition-colors z-20"
-                                >
-                                  <Trash2 size={10} />
-                                </button>
+                        {/* Drag-to-create overlay */}
+                        <div
+                          className="absolute top-0 left-0 right-0 bottom-0 z-0"
+                          onMouseDown={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            const y = e.clientY - rect.top;
+                            const totalMinutes = Math.floor(y / 1.5);
+                            const hour = Math.floor(totalMinutes / 60);
+                            const minute = totalMinutes % 60;
+
+                            setWeeklyDragCreateStart(prev => ({
+                              ...prev,
+                              [dayString]: { hour, minute }
+                            }));
+                            setWeeklyDragCreateEnd(prev => ({
+                              ...prev,
+                              [dayString]: { hour, minute }
+                            }));
+                            setWeeklyDraggingCreate(prev => ({
+                              ...prev,
+                              [dayString]: true
+                            }));
+                          }}
+                        />
+
+                        {/* Drag-to-create preview */}
+                        {weeklyDraggingCreate[dayString] && weeklyDragCreateStart[dayString] && weeklyDragCreateEnd[dayString] && (() => {
+                          const start = weeklyDragCreateStart[dayString];
+                          const end = weeklyDragCreateEnd[dayString];
+                          const startMinutes = start.hour * 60 + start.minute;
+                          const endMinutes = end.hour * 60 + end.minute;
+                          const topPos = Math.min(startMinutes, endMinutes) * 1.5;
+                          const height = Math.abs(endMinutes - startMinutes) * 1.5;
+                          const actualStart = startMinutes < endMinutes ? start : end;
+                          const actualEnd = startMinutes < endMinutes ? end : start;
+
+                          return (
+                            <div
+                              className="absolute left-1 right-1 bg-blue-200 border-2 border-blue-400 rounded pointer-events-none z-50"
+                              style={{
+                                top: `${topPos}px`,
+                                height: `${Math.max(height, 45)}px`
+                              }}
+                            >
+                              <div className="p-1 text-[9px] font-medium text-blue-900">
+                                {actualStart.hour === 0 ? '12' : actualStart.hour > 12 ? actualStart.hour - 12 : actualStart.hour}:{actualStart.minute.toString().padStart(2, '0')} {actualStart.hour >= 12 ? 'pm' : 'am'}
+                                {' - '}
+                                {actualEnd.hour === 0 ? '12' : actualEnd.hour > 12 ? actualEnd.hour - 12 : actualEnd.hour}:{actualEnd.minute.toString().padStart(2, '0')} {actualEnd.hour >= 12 ? 'pm' : 'am'}
                               </div>
                             </div>
-
-                            {/* Drop indicator after */}
-                            {dragOverWeeklyTaskId === item.id && weeklyDropIndicatorPosition === 'after' && (
-                              <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-500 rounded-full z-10"></div>
-                            )}
-                          </div>
-                          )
-                        ))}
-                        {/* Add task button */}
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            console.log('➕ PLUS BUTTON CLICKED for day:', dayString);
-                            // Open the same dialog as the Today view
-                            setEditingTask({
-                              id: '',
-                              date: dayString,
-                              text: '',
-                              section: 'morning',
-                              isCompleted: false,
-                              order: 0
-                            } as PlannerItem);
-                            setDialogTaskTitle('');
-                            setDialogTaskDescription('');
-                            setDialogStartTime('');
-                            setDialogEndTime('');
-                            setDialogTaskColor('');
-                            setDialogAddToContentCalendar(false);
-                            setIsTaskDialogOpen(true);
-                            console.log('✅ Dialog should be open now');
-                          }}
-                          className="w-full mt-2 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded flex items-center justify-center transition-colors"
-                          style={{ opacity: isPast ? 0.5 : 1 }}
-                        >
-                          <Plus size={16} />
-                        </button>
+                          );
+                        })()}
                       </div>
                     </div>
                   );
@@ -1951,21 +2675,10 @@ export const DailyPlanner = () => {
                       // Filter tasks based on mode
                       let tasksToShow = dayData?.items || [];
                       if (calendarFilterMode === 'content') {
-                        // Filter to show only content-related tasks
-                        tasksToShow = tasksToShow.filter(task =>
-                          task.description?.toLowerCase().includes('content') ||
-                          task.description?.toLowerCase().includes('post') ||
-                          task.description?.toLowerCase().includes('video') ||
-                          task.description?.toLowerCase().includes('photo') ||
-                          task.text.toLowerCase().includes('content') ||
-                          task.text.toLowerCase().includes('post') ||
-                          task.text.toLowerCase().includes('video') ||
-                          task.text.toLowerCase().includes('photo') ||
-                          task.text.toLowerCase().includes('film') ||
-                          task.text.toLowerCase().includes('edit') ||
-                          task.text.toLowerCase().includes('schedule')
-                        );
+                        // Filter to show only tasks marked for content calendar
+                        tasksToShow = tasksToShow.filter(task => task.isContentCalendar === true);
                       }
+                      // When calendarFilterMode === 'all', show ALL tasks (including those with isContentCalendar: true)
 
                       return (
                         <div
@@ -2085,7 +2798,7 @@ export const DailyPlanner = () => {
                                 onDragEnd={(e) => {
                                   e.currentTarget.style.opacity = '1';
                                 }}
-                                className="text-xs p-1 rounded truncate border border-gray-200 hover:shadow-sm transition-shadow cursor-grab active:cursor-grabbing"
+                                className="text-xs p-1 rounded truncate border border-gray-200 hover:shadow-sm transition-shadow cursor-pointer"
                                 style={{ backgroundColor: task.color || '#f3f4f6' }}
                                 title={task.text}
                               >
@@ -2170,21 +2883,12 @@ export const DailyPlanner = () => {
                     const isCurrentMonth = day.getMonth() === selectedDate.getMonth();
 
                     // Filter tasks based on toggle state
-                    let displayItems: any[] = [];
+                    let tasks = dayData?.items || [];
                     if (showContentCalendar) {
-                      // Show only content calendar items for this date
-                      const contentForDay = contentCalendarData.filter(content => {
-                        if (!content.date) return false;
-                        const contentDateString = getDateString(new Date(content.date));
-                        return contentDateString === dayString;
-                      });
-                      displayItems = contentForDay;
-                    } else {
-                      // Show regular tasks
-                      displayItems = dayData?.items || [];
+                      // Show only tasks marked for content calendar
+                      tasks = tasks.filter(task => task.isContentCalendar === true);
                     }
-
-                    const tasks = displayItems;
+                    // When showContentCalendar is false, show ALL tasks (including those with isContentCalendar: true)
 
                     return (
                       <div
@@ -2332,7 +3036,7 @@ export const DailyPlanner = () => {
                                 onDragEnd={(e) => {
                                   e.currentTarget.style.opacity = '1';
                                 }}
-                                className="text-xs p-1 rounded truncate cursor-grab active:cursor-grabbing hover:shadow-sm transition-shadow"
+                                className="text-xs p-1 rounded truncate cursor-pointer hover:shadow-sm transition-shadow"
                                 style={{ backgroundColor: displayColor }}
                                 title={displayText}
                               >
@@ -2341,7 +3045,7 @@ export const DailyPlanner = () => {
                                     <span className="text-[10px] font-semibold text-blue-600">{item.format}</span>
                                   )}
                                   {!isContentItem && item.startTime && (
-                                    <span className="text-[10px] font-medium">{item.startTime}{item.endTime && ` - ${item.endTime}`}</span>
+                                    <span className="text-[10px] font-medium">{convert24To12Hour(item.startTime)}{item.endTime && ` - ${convert24To12Hour(item.endTime)}`}</span>
                                   )}
                                   <span className={`truncate ${!isContentItem && item.isCompleted ? 'line-through text-gray-500' : ''}`}>
                                     {displayText}
@@ -2407,9 +3111,9 @@ export const DailyPlanner = () => {
                   onFocus={handleStartTimeFocus}
                   onBlur={handleStartTimeBlur}
                   onKeyDown={handleStartTimeKeyDown}
-                  placeholder="Start time"
+                  placeholder="9:00 am"
                   className="flex-1 h-9 text-sm"
-                  maxLength={5}
+                  maxLength={8}
                 />
                 <span className="text-gray-400">—</span>
                 <Input
@@ -2420,9 +3124,9 @@ export const DailyPlanner = () => {
                   onFocus={handleEndTimeFocus}
                   onBlur={handleEndTimeBlur}
                   onKeyDown={handleEndTimeKeyDown}
-                  placeholder="End time"
+                  placeholder="10:00 pm"
                   className="flex-1 h-9 text-sm"
-                  maxLength={5}
+                  maxLength={8}
                 />
               </div>
             </div>
