@@ -1587,8 +1587,8 @@ export const DailyPlanner = () => {
               {/* Time column on the left */}
               <div className="flex-shrink-0 bg-white border-r border-gray-200" style={{ width: '60px' }}>
                 {/* Header with timezone only */}
-                <div className="h-[60px] border-b border-gray-200 flex items-center justify-center pb-1">
-                  <span className="text-[10px] text-gray-400 font-medium">
+                <div className="h-[60px] border-b border-gray-200 flex items-center justify-center">
+                  <span className="text-[11px] text-gray-400 font-medium" style={{ marginTop: '4px' }}>
                     {new Date().toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop()}
                   </span>
                 </div>
@@ -1611,12 +1611,12 @@ export const DailyPlanner = () => {
               {/* Main content area */}
               <div className="flex-1 relative">
                 {/* Date header */}
-                <div className="h-[60px] border-b border-gray-200 flex items-center px-4 pb-1">
-                  <div className="flex items-baseline gap-2">
+                <div className="h-[60px] border-b border-gray-200 flex items-center px-4">
+                  <div className="flex items-center gap-2" style={{ marginTop: '4px' }}>
                     <span className="text-sm text-gray-400 uppercase font-medium tracking-wide">
                       {format(selectedDate, 'EEE')}
                     </span>
-                    <span className="text-2xl font-semibold text-gray-700">
+                    <span className="text-2xl font-semibold text-gray-700 leading-none">
                       {format(selectedDate, 'd')}
                     </span>
                   </div>
