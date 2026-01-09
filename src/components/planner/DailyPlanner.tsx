@@ -295,7 +295,7 @@ export const DailyPlanner = () => {
         if (timelineElement) {
           const rect = timelineElement.getBoundingClientRect();
           const relativeY = e.clientY - rect.top;
-          const totalMinutes = Math.floor(relativeY / 1.5);
+          const totalMinutes = Math.floor(relativeY / 0.8);
           const hour = Math.floor(totalMinutes / 60);
           const minute = totalMinutes % 60;
 
@@ -2107,14 +2107,14 @@ export const DailyPlanner = () => {
                     <span className="text-[9px] text-gray-400">GMT-08</span>
                   </div>
                   {/* Time labels */}
-                  <div className="relative" style={{ height: '2160px' }}>
+                  <div className="relative" style={{ height: '1152px' }}>
                     {Array.from({ length: 24 }, (_, hour) => (
                       <div
                         key={hour}
-                        className="absolute left-0 right-0 flex items-start justify-start pl-1 pt-1"
-                        style={{ top: `${hour * 90}px`, height: '90px' }}
+                        className="absolute left-0 right-0 flex items-start justify-start pl-1"
+                        style={{ top: `${hour * 48}px`, height: '48px', marginTop: '-8px' }}
                       >
-                        <span className="text-[10px] text-gray-500">
+                        <span className="text-[10px] text-gray-400">
                           {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
                         </span>
                       </div>
@@ -2131,8 +2131,8 @@ export const DailyPlanner = () => {
                         key={hour}
                         className="absolute left-0 right-0"
                         style={{
-                          top: `${hour * 90}px`,
-                          borderTop: '1px solid #f3f4f6'
+                          top: `${hour * 48}px`,
+                          borderTop: '1px solid #f9fafb'
                         }}
                       />
                     ))}
@@ -2153,7 +2153,8 @@ export const DailyPlanner = () => {
                     <div
                       key={dayString}
                       data-day-column={dayString}
-                      className={`border-r border-gray-100 last:border-r-0 ${dayColor} transition-colors`}
+                      className={`${dayColor} transition-colors`}
+                      style={{ borderRight: index < 6 ? '1px solid #f3f4f6' : 'none' }}
                       onDragOver={(e) => {
                         e.preventDefault();
                         e.currentTarget.classList.add('bg-blue-100');
@@ -2244,7 +2245,7 @@ export const DailyPlanner = () => {
                         </div>
                       </div>
                       {/* Timeline container */}
-                      <div className="relative" data-timeline style={{ height: '2160px' }}>
+                      <div className="relative" data-timeline style={{ height: '1152px' }}>
 
                         {/* Tasks positioned absolutely by time */}
                         {(() => {
@@ -2333,8 +2334,8 @@ export const DailyPlanner = () => {
 
                           return tasksWithLayout.map(({ task: item, startMinutes, endMinutes, column, totalColumns, isBackground, inOverlapGroup }) => {
                             const durationMinutes = endMinutes - startMinutes;
-                            const topPos = startMinutes * 1.5;
-                            const height = Math.max(durationMinutes * 1.5, 28);
+                            const topPos = startMinutes * 0.8;
+                            const height = Math.max(durationMinutes * 0.8, 24);
 
                             // Calculate width and position for overlapping tasks
                             let widthPercent, leftPercent, zIndex;
@@ -2419,7 +2420,7 @@ export const DailyPlanner = () => {
 
                                       const handleMouseMove = (moveEvent: MouseEvent) => {
                                         const deltaY = moveEvent.clientY - startY;
-                                        const deltaMinutes = Math.round(deltaY / 1.5);
+                                        const deltaMinutes = Math.round(deltaY / 0.8);
                                         const [hour, minute] = originalStartTime.split(':').map(Number);
                                         const originalMinutes = hour * 60 + minute;
                                         const newMinutes = Math.max(0, Math.min(1439, originalMinutes + deltaMinutes));
@@ -2461,7 +2462,7 @@ export const DailyPlanner = () => {
 
                                       const handleMouseMove = (moveEvent: MouseEvent) => {
                                         const deltaY = moveEvent.clientY - startY;
-                                        const deltaMinutes = Math.round(deltaY / 1.5);
+                                        const deltaMinutes = Math.round(deltaY / 0.8);
                                         const [hour, minute] = originalEndTime.split(':').map(Number);
                                         const originalMinutes = hour * 60 + minute;
                                         const newMinutes = Math.max(0, Math.min(1439, originalMinutes + deltaMinutes));
@@ -2586,7 +2587,7 @@ export const DailyPlanner = () => {
                           onMouseDown={(e) => {
                             const rect = e.currentTarget.getBoundingClientRect();
                             const y = e.clientY - rect.top;
-                            const totalMinutes = Math.floor(y / 1.5);
+                            const totalMinutes = Math.floor(y / 0.8);
                             const hour = Math.floor(totalMinutes / 60);
                             const minute = totalMinutes % 60;
 
@@ -2611,8 +2612,8 @@ export const DailyPlanner = () => {
                           const end = weeklyDragCreateEnd[dayString];
                           const startMinutes = start.hour * 60 + start.minute;
                           const endMinutes = end.hour * 60 + end.minute;
-                          const topPos = Math.min(startMinutes, endMinutes) * 1.5;
-                          const height = Math.abs(endMinutes - startMinutes) * 1.5;
+                          const topPos = Math.min(startMinutes, endMinutes) * 0.8;
+                          const height = Math.abs(endMinutes - startMinutes) * 0.8;
                           const actualStart = startMinutes < endMinutes ? start : end;
                           const actualEnd = startMinutes < endMinutes ? end : start;
 
