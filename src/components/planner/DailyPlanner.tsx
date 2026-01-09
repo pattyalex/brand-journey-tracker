@@ -2129,8 +2129,11 @@ export const DailyPlanner = () => {
                     {Array.from({ length: 24 }, (_, hour) => (
                       <div
                         key={hour}
-                        className="absolute left-0 right-0 border-t border-gray-100"
-                        style={{ top: `${hour * 90}px` }}
+                        className="absolute left-0 right-0 border-t"
+                        style={{
+                          top: `${hour * 90}px`,
+                          borderColor: '#e5e7eb'
+                        }}
                       />
                     ))}
                   </div>
@@ -2359,7 +2362,7 @@ export const DailyPlanner = () => {
                             return (
                               <div
                                 key={item.id}
-                                className="absolute group"
+                                className="absolute group px-1"
                                 style={{
                                   top: `${topPos}px`,
                                   height: `${height}px`,
@@ -2397,15 +2400,17 @@ export const DailyPlanner = () => {
                                     setDialogAddToContentCalendar(item.isContentCalendar || false);
                                     setIsTaskDialogOpen(true);
                                   }}
-                                  className="h-full relative rounded border border-gray-300 p-2 cursor-pointer hover:shadow-md transition-shadow overflow-hidden"
+                                  className="h-full relative rounded-md cursor-pointer hover:shadow-sm transition-all overflow-hidden border-l-4"
                                   style={{
-                                    backgroundColor: item.color || 'white',
-                                    opacity: isPast ? 0.5 : 1
+                                    backgroundColor: item.color ? `${item.color}15` : '#e3f2fd',
+                                    borderLeftColor: item.color || '#2196f3',
+                                    opacity: isPast ? 0.5 : 1,
+                                    padding: '4px 8px'
                                   }}
                                 >
                                   {/* Resize handles */}
                                   <div
-                                    className="absolute top-0 left-0 right-0 h-1 cursor-ns-resize opacity-0 group-hover:opacity-100 hover:bg-blue-400 transition-opacity z-30"
+                                    className="absolute top-0 left-0 right-0 h-2 cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity z-30"
                                     onMouseDown={(e) => {
                                       e.stopPropagation();
                                       isResizingRef.current = true;
@@ -2447,7 +2452,7 @@ export const DailyPlanner = () => {
                                   />
 
                                   <div
-                                    className="absolute bottom-0 left-0 right-0 h-1 cursor-ns-resize opacity-0 group-hover:opacity-100 hover:bg-blue-400 transition-opacity z-30"
+                                    className="absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity z-30"
                                     onMouseDown={(e) => {
                                       e.stopPropagation();
                                       isResizingRef.current = true;
@@ -2489,27 +2494,23 @@ export const DailyPlanner = () => {
                                   />
 
                                   {/* Task content */}
-                                  <div className="flex items-start gap-1 h-full relative z-20">
-                                    <Checkbox
-                                      checked={item.isCompleted}
-                                      onCheckedChange={() => handleToggleWeeklyTask(item.id, dayString)}
-                                      className="h-3.5 w-3.5 flex-shrink-0 mt-0.5 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
-                                      onClick={(e) => e.stopPropagation()}
-                                    />
-                                    <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                                      <span className={`text-[10px] ${item.isCompleted ? 'line-through text-gray-500' : 'text-gray-800'} break-words`}>
+                                  <div className="h-full relative z-20 flex flex-col justify-between">
+                                    <div className="flex-1 min-h-0">
+                                      <div className={`text-[11px] font-medium leading-tight ${item.isCompleted ? 'line-through text-gray-500' : 'text-gray-900'} break-words`}>
                                         {item.text}
-                                      </span>
-                                      <span className="text-gray-600 font-medium text-[9px]">
-                                        {convert24To12Hour(item.startTime!)} - {convert24To12Hour(item.endTime!)}
-                                      </span>
+                                      </div>
+                                      {height >= 45 && (
+                                        <div className="text-[10px] text-gray-600 mt-0.5">
+                                          {convert24To12Hour(item.startTime!)}
+                                        </div>
+                                      )}
                                     </div>
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleDeleteWeeklyTask(item.id, dayString);
                                       }}
-                                      className="p-0.5 rounded-sm text-gray-400 hover:text-red-600 hover:bg-white transition-colors opacity-0 group-hover:opacity-100"
+                                      className="absolute top-1 right-1 p-1 rounded text-gray-400 hover:text-red-600 hover:bg-white/80 transition-colors opacity-0 group-hover:opacity-100"
                                     >
                                       <Trash2 size={10} />
                                     </button>
@@ -2550,20 +2551,21 @@ export const DailyPlanner = () => {
                                   setDialogAddToContentCalendar(item.isContentCalendar || false);
                                   setIsTaskDialogOpen(true);
                                 }}
-                                className="group text-xs p-2 rounded border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
+                                className="group text-xs px-2 py-1.5 rounded-md hover:shadow-sm transition-all cursor-pointer border-l-2 relative"
                                 style={{
-                                  backgroundColor: item.color || 'white',
+                                  backgroundColor: item.color ? `${item.color}10` : '#f5f5f5',
+                                  borderLeftColor: item.color || '#9e9e9e',
                                   opacity: isPast ? 0.5 : 1
                                 }}
                               >
-                                <div className="flex items-start gap-1">
+                                <div className="flex items-center gap-2">
                                   <Checkbox
                                     checked={item.isCompleted}
                                     onCheckedChange={() => handleToggleWeeklyTask(item.id, dayString)}
-                                    className="h-3.5 w-3.5 flex-shrink-0 mt-0.5 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
+                                    className="h-3 w-3 flex-shrink-0 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
                                     onClick={(e) => e.stopPropagation()}
                                   />
-                                  <span className={`${item.isCompleted ? 'line-through text-gray-500' : 'text-gray-800'} break-words flex-1`}>
+                                  <span className={`${item.isCompleted ? 'line-through text-gray-500' : 'text-gray-800'} break-words flex-1 text-[11px]`}>
                                     {item.text}
                                   </span>
                                   <button
@@ -2571,7 +2573,7 @@ export const DailyPlanner = () => {
                                       e.stopPropagation();
                                       handleDeleteWeeklyTask(item.id, dayString);
                                     }}
-                                    className="p-0.5 rounded-sm text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100"
+                                    className="p-1 rounded text-gray-400 hover:text-red-600 hover:bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity"
                                   >
                                     <Trash2 size={10} />
                                   </button>
@@ -2618,16 +2620,18 @@ export const DailyPlanner = () => {
 
                           return (
                             <div
-                              className="absolute left-1 right-1 bg-blue-200 border-2 border-blue-400 rounded pointer-events-none z-50"
+                              className="absolute left-2 right-2 rounded-md pointer-events-none z-50 border-l-4"
                               style={{
                                 top: `${topPos}px`,
-                                height: `${Math.max(height, 45)}px`
+                                height: `${Math.max(height, 45)}px`,
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                borderLeftColor: '#3b82f6'
                               }}
                             >
-                              <div className="p-1 text-[9px] font-medium text-blue-900">
-                                {actualStart.hour === 0 ? '12' : actualStart.hour > 12 ? actualStart.hour - 12 : actualStart.hour}:{actualStart.minute.toString().padStart(2, '0')} {actualStart.hour >= 12 ? 'pm' : 'am'}
+                              <div className="p-2 text-[10px] font-medium text-blue-700">
+                                {actualStart.hour === 0 ? '12' : actualStart.hour > 12 ? actualStart.hour - 12 : actualStart.hour}:{actualStart.minute.toString().padStart(2, '0')} {actualStart.hour >= 12 ? 'PM' : 'AM'}
                                 {' - '}
-                                {actualEnd.hour === 0 ? '12' : actualEnd.hour > 12 ? actualEnd.hour - 12 : actualEnd.hour}:{actualEnd.minute.toString().padStart(2, '0')} {actualEnd.hour >= 12 ? 'pm' : 'am'}
+                                {actualEnd.hour === 0 ? '12' : actualEnd.hour > 12 ? actualEnd.hour - 12 : actualEnd.hour}:{actualEnd.minute.toString().padStart(2, '0')} {actualEnd.hour >= 12 ? 'PM' : 'AM'}
                               </div>
                             </div>
                           );
