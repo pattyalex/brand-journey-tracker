@@ -1581,30 +1581,60 @@ export const DailyPlanner = () => {
 
         {currentView === 'today' && (
           <>
-        <CardContent className="px-4">
+        <CardContent className="px-0">
           <div ref={todayScrollRef}>
-            <ScrollArea className="h-[calc(100vh-200px)]">
-              <div className="relative" style={{ height: '2160px' }}> {/* 24 hours * 90px */}
-                {/* Hour labels and grid lines */}
-                {Array.from({ length: 24 }, (_, i) => {
-                  const hour = i;
-                  const timeLabel = `${hour === 0 ? 12 : hour > 12 ? hour - 12 : hour} ${hour < 12 ? 'am' : 'pm'}`;
-
-                  return (
+            <div className="flex overflow-hidden bg-white">
+              {/* Time column on the left */}
+              <div className="flex-shrink-0 bg-white border-r border-gray-200" style={{ width: '60px' }}>
+                {/* Header with timezone and date */}
+                <div className="h-[60px] border-b border-gray-200 flex flex-col items-center justify-center">
+                  <span className="text-[10px] text-gray-400 uppercase mb-0.5">
+                    {format(selectedDate, 'EEE')}
+                  </span>
+                  <span className="text-2xl font-semibold text-gray-900">
+                    {format(selectedDate, 'd')}
+                  </span>
+                  <span className="text-[9px] text-gray-400 mt-0.5">
+                    {new Date().toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop()}
+                  </span>
+                </div>
+                {/* Time labels */}
+                <div className="relative" style={{ height: '2160px' }}>
+                  {Array.from({ length: 24 }, (_, hour) => (
                     <div
                       key={hour}
-                      className="absolute left-0 right-0"
+                      className="absolute left-0 right-0 flex items-start justify-end pr-2 pt-0.5"
                       style={{ top: `${hour * 90}px`, height: '90px' }}
                     >
-                      {/* Hour row container */}
-                      <div className="flex gap-2 h-full border-t border-gray-200 bg-white">
-                        {/* Time label */}
-                        <div className="w-14 flex-shrink-0 py-3 pl-2 text-sm text-gray-500 font-medium">
-                          {timeLabel}
-                        </div>
+                      <span className="text-[11px] text-gray-400 leading-none">
+                        {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-                        {/* 20-minute slots (3 slots per hour) */}
-                        <div className="flex-1 flex flex-col">
+              {/* Main content area */}
+              <div className="flex-1 relative">
+                {/* Date header spacer */}
+                <div className="h-[60px] border-b border-gray-200"></div>
+
+                <ScrollArea className="h-[calc(100vh-260px)]">
+                  <div className="relative" style={{ height: '2160px' }}> {/* 24 hours * 90px */}
+                    {/* Hour labels and grid lines */}
+                    {Array.from({ length: 24 }, (_, i) => {
+                      const hour = i;
+
+                      return (
+                        <div
+                          key={hour}
+                          className="absolute left-0 right-0"
+                          style={{ top: `${hour * 90}px`, height: '90px' }}
+                        >
+                          {/* Hour row container */}
+                          <div className="flex h-full border-t border-gray-200 bg-white">
+                            {/* 20-minute slots (3 slots per hour) */}
+                            <div className="flex-1 flex flex-col">
                           {[0, 20, 40].map((minute, idx) => {
                             return (
                               <div
@@ -1754,7 +1784,7 @@ export const DailyPlanner = () => {
                 {/* Time labels are handled by hour labels only */}
 
                 {/* Render all tasks with absolute positioning */}
-                <div className="absolute top-0 left-[72px] right-2"> {/* 72px = 56px (w-14) + 16px (gap-2 * 2) */}
+                <div className="absolute top-0 left-2 right-2">
                   {(() => {
                     const tasksWithTimes = currentDay.items.filter(item => item.startTime && item.endTime);
 
@@ -2091,6 +2121,8 @@ export const DailyPlanner = () => {
                 </div>
               </div>
             </ScrollArea>
+              </div>
+            </div>
           </div>
         </CardContent>
           </>
