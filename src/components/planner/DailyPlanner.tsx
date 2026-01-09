@@ -2099,11 +2099,46 @@ export const DailyPlanner = () => {
         {currentView === 'week' && (
           <>
             <CardContent className="px-0">
-              <div className="grid grid-cols-7 gap-0 border border-gray-200 rounded-lg overflow-hidden">
-                {eachDayOfInterval({
-                  start: startOfWeek(selectedDate, { weekStartsOn: 1 }),
-                  end: endOfWeek(selectedDate, { weekStartsOn: 1 })
-                }).map((day, index) => {
+              <div className="flex border border-gray-200 rounded-lg overflow-hidden">
+                {/* Time column on the left */}
+                <div className="flex-shrink-0 bg-gray-50 border-r border-gray-200" style={{ width: '80px' }}>
+                  {/* Header spacer */}
+                  <div className="h-[60px] border-b border-gray-200 flex items-center justify-center">
+                    <span className="text-[10px] text-gray-400">GMT-08</span>
+                  </div>
+                  {/* Time labels */}
+                  <div className="relative" style={{ height: '2160px' }}>
+                    {Array.from({ length: 24 }, (_, hour) => (
+                      <div
+                        key={hour}
+                        className="absolute left-0 right-0 flex items-start justify-end pr-2 pt-1"
+                        style={{ top: `${hour * 90}px`, height: '90px' }}
+                      >
+                        <span className="text-[11px] text-gray-500 font-medium">
+                          {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Day columns */}
+                <div className="flex-1 grid grid-cols-7 gap-0 relative">
+                  {/* Horizontal grid lines spanning all days */}
+                  <div className="absolute inset-0 pointer-events-none" style={{ top: '60px' }}>
+                    {Array.from({ length: 24 }, (_, hour) => (
+                      <div
+                        key={hour}
+                        className="absolute left-0 right-0 border-t border-gray-100"
+                        style={{ top: `${hour * 90}px` }}
+                      />
+                    ))}
+                  </div>
+
+                  {eachDayOfInterval({
+                    start: startOfWeek(selectedDate, { weekStartsOn: 1 }),
+                    end: endOfWeek(selectedDate, { weekStartsOn: 1 })
+                  }).map((day, index) => {
                   const dayString = getDateString(day);
                   const dayData = plannerData.find(d => d.date === dayString);
                   const isToday = isSameDay(day, new Date());
@@ -2115,7 +2150,7 @@ export const DailyPlanner = () => {
                     <div
                       key={dayString}
                       data-day-column={dayString}
-                      className={`min-h-[600px] border-r border-gray-200 last:border-r-0 ${dayColor} transition-colors`}
+                      className={`border-r border-gray-200 last:border-r-0 ${dayColor} transition-colors`}
                       onDragOver={(e) => {
                         e.preventDefault();
                         e.currentTarget.classList.add('bg-blue-100');
@@ -2196,28 +2231,17 @@ export const DailyPlanner = () => {
                         }
                       }}
                     >
-                      <div className={`py-2 px-3 border-b border-b-gray-200 ${isToday ? 'bg-purple-50' : 'bg-gray-50'}`} style={{ opacity: isPast ? 0.5 : 1 }}>
-                        <div className="text-sm font-medium text-gray-500 uppercase tracking-wide">
+                      {/* Day header */}
+                      <div className={`h-[60px] flex flex-col items-center justify-center border-b border-gray-200 ${isToday ? 'bg-purple-50' : 'bg-gray-50'}`} style={{ opacity: isPast ? 0.5 : 1 }}>
+                        <div className="text-xs font-medium text-gray-500 uppercase">
                           {format(day, "EEE")}
                         </div>
-                        <div className={`text-lg font-semibold ${isToday ? 'text-purple-600' : 'text-gray-900'}`}>
+                        <div className={`text-2xl font-semibold ${isToday ? 'text-purple-600' : 'text-gray-900'}`}>
                           {format(day, "d")}
                         </div>
                       </div>
                       {/* Timeline container */}
                       <div className="relative" data-timeline style={{ height: '2160px' }}>
-                        {/* Hour grid lines */}
-                        {Array.from({ length: 24 }, (_, hour) => (
-                          <div
-                            key={hour}
-                            className="absolute left-0 right-0 border-t border-gray-100"
-                            style={{ top: `${hour * 90}px`, height: '90px' }}
-                          >
-                            <div className="absolute left-1 top-1 text-[10px] text-gray-400">
-                              {hour === 0 ? '12 am' : hour < 12 ? `${hour} am` : hour === 12 ? '12 pm' : `${hour - 12} pm`}
-                            </div>
-                          </div>
-                        ))}
 
                         {/* Tasks positioned absolutely by time */}
                         {(() => {
@@ -2612,6 +2636,7 @@ export const DailyPlanner = () => {
                     </div>
                   );
                 })}
+                </div>
               </div>
             </CardContent>
           </>
