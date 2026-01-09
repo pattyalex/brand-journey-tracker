@@ -2101,10 +2101,12 @@ export const DailyPlanner = () => {
             <CardContent className="px-0">
               <div className="flex border border-gray-200 rounded-lg overflow-hidden bg-white">
                 {/* Time column on the left */}
-                <div className="flex-shrink-0 bg-white border-r border-gray-200" style={{ width: '40px' }}>
+                <div className="flex-shrink-0 bg-white" style={{ width: '40px' }}>
                   {/* Header spacer */}
                   <div className="h-[60px] border-b border-gray-200 flex items-center justify-center">
-                    <span className="text-[9px] text-gray-400">GMT-08</span>
+                    <span className="text-[9px] text-gray-400">
+                      {new Date().toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop()}
+                    </span>
                   </div>
                   {/* Time labels */}
                   <div className="relative" style={{ height: '1152px' }}>
