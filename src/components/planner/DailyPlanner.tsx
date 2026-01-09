@@ -2099,22 +2099,22 @@ export const DailyPlanner = () => {
         {currentView === 'week' && (
           <>
             <CardContent className="px-0">
-              <div className="flex border border-gray-200 rounded-lg overflow-hidden">
+              <div className="flex border border-gray-200 rounded-lg overflow-hidden bg-white">
                 {/* Time column on the left */}
-                <div className="flex-shrink-0 bg-gray-50 border-r border-gray-200" style={{ width: '80px' }}>
+                <div className="flex-shrink-0 bg-white border-r border-gray-200" style={{ width: '60px' }}>
                   {/* Header spacer */}
                   <div className="h-[60px] border-b border-gray-200 flex items-center justify-center">
-                    <span className="text-[10px] text-gray-400">GMT-08</span>
+                    <span className="text-[9px] text-gray-400">GMT-08</span>
                   </div>
                   {/* Time labels */}
                   <div className="relative" style={{ height: '2160px' }}>
                     {Array.from({ length: 24 }, (_, hour) => (
                       <div
                         key={hour}
-                        className="absolute left-0 right-0 flex items-start justify-end pr-2 pt-1"
+                        className="absolute left-0 right-0 flex items-start justify-start pl-1 pt-1"
                         style={{ top: `${hour * 90}px`, height: '90px' }}
                       >
-                        <span className="text-[11px] text-gray-500 font-medium">
+                        <span className="text-[10px] text-gray-500">
                           {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
                         </span>
                       </div>
@@ -2129,10 +2129,10 @@ export const DailyPlanner = () => {
                     {Array.from({ length: 24 }, (_, hour) => (
                       <div
                         key={hour}
-                        className="absolute left-0 right-0 border-t"
+                        className="absolute left-0 right-0"
                         style={{
                           top: `${hour * 90}px`,
-                          borderColor: '#e5e7eb'
+                          borderTop: '1px solid #f3f4f6'
                         }}
                       />
                     ))}
@@ -2153,7 +2153,7 @@ export const DailyPlanner = () => {
                     <div
                       key={dayString}
                       data-day-column={dayString}
-                      className={`border-r border-gray-200 last:border-r-0 ${dayColor} transition-colors`}
+                      className={`border-r border-gray-100 last:border-r-0 ${dayColor} transition-colors`}
                       onDragOver={(e) => {
                         e.preventDefault();
                         e.currentTarget.classList.add('bg-blue-100');
@@ -2400,12 +2400,12 @@ export const DailyPlanner = () => {
                                     setDialogAddToContentCalendar(item.isContentCalendar || false);
                                     setIsTaskDialogOpen(true);
                                   }}
-                                  className="h-full relative rounded-md cursor-pointer hover:shadow-sm transition-all overflow-hidden border-l-4"
+                                  className="h-full relative rounded cursor-pointer hover:brightness-95 transition-all overflow-hidden"
                                   style={{
-                                    backgroundColor: item.color ? `${item.color}15` : '#e3f2fd',
-                                    borderLeftColor: item.color || '#2196f3',
-                                    opacity: isPast ? 0.5 : 1,
-                                    padding: '4px 8px'
+                                    backgroundColor: item.color || '#4caf50',
+                                    opacity: isPast ? 0.6 : 0.9,
+                                    padding: '6px 8px',
+                                    border: 'none'
                                   }}
                                 >
                                   {/* Resize handles */}
@@ -2494,25 +2494,23 @@ export const DailyPlanner = () => {
                                   />
 
                                   {/* Task content */}
-                                  <div className="h-full relative z-20 flex flex-col justify-between">
-                                    <div className="flex-1 min-h-0">
-                                      <div className={`text-[11px] font-medium leading-tight ${item.isCompleted ? 'line-through text-gray-500' : 'text-gray-900'} break-words`}>
-                                        {item.text}
-                                      </div>
-                                      {height >= 45 && (
-                                        <div className="text-[10px] text-gray-600 mt-0.5">
-                                          {convert24To12Hour(item.startTime!)}
-                                        </div>
-                                      )}
+                                  <div className="h-full relative z-20 flex flex-col">
+                                    <div className={`text-[11px] font-medium leading-snug ${item.isCompleted ? 'line-through opacity-70' : ''} text-white break-words`}>
+                                      {item.text}
                                     </div>
+                                    {height >= 45 && (
+                                      <div className="text-[10px] text-white/90 mt-0.5">
+                                        {convert24To12Hour(item.startTime!)}
+                                      </div>
+                                    )}
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleDeleteWeeklyTask(item.id, dayString);
                                       }}
-                                      className="absolute top-1 right-1 p-1 rounded text-gray-400 hover:text-red-600 hover:bg-white/80 transition-colors opacity-0 group-hover:opacity-100"
+                                      className="absolute top-0.5 right-0.5 p-0.5 rounded text-white/60 hover:text-white hover:bg-black/20 transition-colors opacity-0 group-hover:opacity-100"
                                     >
-                                      <Trash2 size={10} />
+                                      <Trash2 size={11} />
                                     </button>
                                   </div>
                                 </div>
