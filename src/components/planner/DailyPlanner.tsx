@@ -92,6 +92,19 @@ const updateItemOrders = (items: PlannerItem[]): PlannerItem[] => {
 
 type PlannerView = 'today' | 'week' | 'month' | 'day' | 'calendar';
 
+// Common timezones
+const TIMEZONES = [
+  { label: 'PST', value: 'America/Los_Angeles', offset: 'GMT-08' },
+  { label: 'MST', value: 'America/Denver', offset: 'GMT-07' },
+  { label: 'CST', value: 'America/Chicago', offset: 'GMT-06' },
+  { label: 'EST', value: 'America/New_York', offset: 'GMT-05' },
+  { label: 'GMT', value: 'Europe/London', offset: 'GMT+00' },
+  { label: 'CET', value: 'Europe/Paris', offset: 'GMT+01' },
+  { label: 'IST', value: 'Asia/Kolkata', offset: 'GMT+05:30' },
+  { label: 'JST', value: 'Asia/Tokyo', offset: 'GMT+09' },
+  { label: 'AEST', value: 'Australia/Sydney', offset: 'GMT+10' },
+];
+
 export const DailyPlanner = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [plannerData, setPlannerData] = useState<PlannerDay[]>([]);
@@ -99,7 +112,25 @@ export const DailyPlanner = () => {
   const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
   const [deleteAfterCopy, setDeleteAfterCopy] = useState(false);
   const [currentView, setCurrentView] = useState<PlannerView>('today');
+  const [selectedTimezone, setSelectedTimezone] = useState<string>(() => {
+    return localStorage.getItem('selectedTimezone') || 'auto';
+  });
   const [calendarFilterMode, setCalendarFilterMode] = useState<'all' | 'content'>('all');
+
+  // Get timezone display
+  const getTimezoneDisplay = () => {
+    if (selectedTimezone === 'auto') {
+      return new Date().toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop() || 'PST';
+    }
+    const tz = TIMEZONES.find(t => t.value === selectedTimezone);
+    return tz?.label || 'PST';
+  };
+
+  // Handle timezone change
+  const handleTimezoneChange = (timezone: string) => {
+    setSelectedTimezone(timezone);
+    localStorage.setItem('selectedTimezone', timezone);
+  };
   const [todayScrollPosition, setTodayScrollPosition] = useState(() => {
     // Default to 7am (7 hours * 90px per hour = 630px)
     const DEFAULT_SCROLL = 630;
@@ -1588,9 +1619,37 @@ export const DailyPlanner = () => {
               <div className="flex border-b border-gray-200">
                 {/* Time column header */}
                 <div className="flex-shrink-0 border-r border-gray-200 h-[60px] flex items-center justify-center" style={{ width: '60px' }}>
-                  <span className="text-[11px] text-gray-400 font-medium" style={{ marginTop: '4px' }}>
-                    {new Date().toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop()}
-                  </span>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button className="text-[11px] text-gray-400 font-medium hover:text-gray-600 hover:bg-gray-50 px-2 py-1 rounded transition-colors cursor-pointer" style={{ marginTop: '4px' }}>
+                        {getTimezoneDisplay()}
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-56 p-2" align="start">
+                      <div className="space-y-1">
+                        <div className="px-2 py-1.5 text-xs font-semibold text-gray-700">Select Timezone</div>
+                        <button
+                          onClick={() => handleTimezoneChange('auto')}
+                          className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-gray-100 transition-colors ${selectedTimezone === 'auto' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'}`}
+                        >
+                          Auto (detect)
+                        </button>
+                        <div className="h-px bg-gray-200 my-1"></div>
+                        {TIMEZONES.map((tz) => (
+                          <button
+                            key={tz.value}
+                            onClick={() => handleTimezoneChange(tz.value)}
+                            className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-gray-100 transition-colors ${selectedTimezone === tz.value ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'}`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span>{tz.label}</span>
+                              <span className="text-xs text-gray-400">{tz.offset}</span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 {/* Date header */}
                 <div className="flex-1 h-[60px] flex items-center px-4">
@@ -2144,9 +2203,37 @@ export const DailyPlanner = () => {
                 <div className="flex-shrink-0 bg-white border-r border-gray-200" style={{ width: '40px' }}>
                   {/* Header spacer */}
                   <div className="h-[60px] border-b border-gray-200 flex items-center justify-center">
-                    <span className="text-[9px] text-gray-400">
-                      {new Date().toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop()}
-                    </span>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button className="text-[9px] text-gray-400 font-medium hover:text-gray-600 hover:bg-gray-50 px-1 py-0.5 rounded transition-colors cursor-pointer">
+                          {getTimezoneDisplay()}
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-56 p-2" align="start">
+                        <div className="space-y-1">
+                          <div className="px-2 py-1.5 text-xs font-semibold text-gray-700">Select Timezone</div>
+                          <button
+                            onClick={() => handleTimezoneChange('auto')}
+                            className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-gray-100 transition-colors ${selectedTimezone === 'auto' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'}`}
+                          >
+                            Auto (detect)
+                          </button>
+                          <div className="h-px bg-gray-200 my-1"></div>
+                          {TIMEZONES.map((tz) => (
+                            <button
+                              key={tz.value}
+                              onClick={() => handleTimezoneChange(tz.value)}
+                              className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-gray-100 transition-colors ${selectedTimezone === tz.value ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'}`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span>{tz.label}</span>
+                                <span className="text-xs text-gray-400">{tz.offset}</span>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                   {/* Time labels */}
                   <div className="relative" style={{ height: '1152px' }}>
