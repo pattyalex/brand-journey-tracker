@@ -1625,7 +1625,7 @@ export const DailyPlanner = () => {
                         {getTimezoneDisplay()}
                       </button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-56 p-2" align="start">
+                    <PopoverContent className="w-56 p-2 bg-white" align="start">
                       <div className="space-y-1">
                         <div className="px-2 py-1.5 text-xs font-semibold text-gray-700">Select Timezone</div>
                         <button
@@ -2209,7 +2209,7 @@ export const DailyPlanner = () => {
                           {getTimezoneDisplay()}
                         </button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-56 p-2" align="start">
+                      <PopoverContent className="w-56 p-2 bg-white" align="start">
                         <div className="space-y-1">
                           <div className="px-2 py-1.5 text-xs font-semibold text-gray-700">Select Timezone</div>
                           <button
