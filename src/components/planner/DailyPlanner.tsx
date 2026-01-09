@@ -94,15 +94,15 @@ type PlannerView = 'today' | 'week' | 'month' | 'day' | 'calendar';
 
 // Common timezones
 const TIMEZONES = [
-  { label: 'PST', value: 'America/Los_Angeles', offset: 'GMT-08' },
-  { label: 'MST', value: 'America/Denver', offset: 'GMT-07' },
-  { label: 'CST', value: 'America/Chicago', offset: 'GMT-06' },
-  { label: 'EST', value: 'America/New_York', offset: 'GMT-05' },
-  { label: 'GMT', value: 'Europe/London', offset: 'GMT+00' },
-  { label: 'CET', value: 'Europe/Paris', offset: 'GMT+01' },
-  { label: 'IST', value: 'Asia/Kolkata', offset: 'GMT+05:30' },
-  { label: 'JST', value: 'Asia/Tokyo', offset: 'GMT+09' },
-  { label: 'AEST', value: 'Australia/Sydney', offset: 'GMT+10' },
+  { label: 'PST', value: 'America/Los_Angeles', offset: 'GMT-08', name: 'Pacific Standard Time' },
+  { label: 'MST', value: 'America/Denver', offset: 'GMT-07', name: 'Mountain Standard Time' },
+  { label: 'CST', value: 'America/Chicago', offset: 'GMT-06', name: 'Central Standard Time' },
+  { label: 'EST', value: 'America/New_York', offset: 'GMT-05', name: 'Eastern Standard Time' },
+  { label: 'GMT', value: 'Europe/London', offset: 'GMT+00', name: 'Greenwich Mean Time' },
+  { label: 'CET', value: 'Europe/Paris', offset: 'GMT+01', name: 'Central European Time' },
+  { label: 'IST', value: 'Asia/Kolkata', offset: 'GMT+05:30', name: 'India Standard Time' },
+  { label: 'JST', value: 'Asia/Tokyo', offset: 'GMT+09', name: 'Japan Standard Time' },
+  { label: 'AEST', value: 'Australia/Sydney', offset: 'GMT+10', name: 'Australian Eastern Standard Time' },
 ];
 
 export const DailyPlanner = () => {
@@ -1642,7 +1642,10 @@ export const DailyPlanner = () => {
                             className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-gray-100 transition-colors ${selectedTimezone === tz.value ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'}`}
                           >
                             <div className="flex items-center justify-between">
-                              <span>{tz.label}</span>
+                              <div className="flex flex-col">
+                                <span>{tz.label}</span>
+                                <span className="text-[10px] text-gray-400">{tz.name}</span>
+                              </div>
                               <span className="text-xs text-gray-400">{tz.offset}</span>
                             </div>
                           </button>
@@ -2226,7 +2229,10 @@ export const DailyPlanner = () => {
                               className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-gray-100 transition-colors ${selectedTimezone === tz.value ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'}`}
                             >
                               <div className="flex items-center justify-between">
-                                <span>{tz.label}</span>
+                                <div className="flex flex-col">
+                                  <span>{tz.label}</span>
+                                  <span className="text-[10px] text-gray-400">{tz.name}</span>
+                                </div>
                                 <span className="text-xs text-gray-400">{tz.offset}</span>
                               </div>
                             </button>
