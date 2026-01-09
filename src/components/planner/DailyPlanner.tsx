@@ -2784,14 +2784,37 @@ export const DailyPlanner = () => {
           <>
             {/* Calendar Filter Toggle and Timezone Selector */}
             <div className="flex justify-between items-center mb-6">
-              <div className="flex-1">
+              <div className="flex-1"></div>
+              <div className="inline-flex items-center gap-0 bg-white rounded-lg shadow-sm border border-gray-200 p-1">
+                <button
+                  onClick={() => setCalendarFilterMode('all')}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                    calendarFilterMode === 'all'
+                      ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-sm'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  All Tasks
+                </button>
+                <button
+                  onClick={() => setCalendarFilterMode('content')}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                    calendarFilterMode === 'content'
+                      ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-sm'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  Content Calendar
+                </button>
+              </div>
+              <div className="flex-1 flex justify-end">
                 <Popover>
                   <PopoverTrigger asChild>
-                    <button className="text-[11px] text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded transition-colors cursor-pointer">
+                    <button className="text-[10px] text-gray-400 hover:text-gray-600 bg-transparent hover:bg-gray-50 px-2 py-1 rounded transition-colors cursor-pointer">
                       <span className="font-medium">{getTimezoneDisplay()}</span>
                     </button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-56 p-2 bg-white" align="start">
+                  <PopoverContent className="w-56 p-2 bg-white" align="end">
                     <div className="space-y-1">
                       <div className="px-2 py-1.5 text-xs font-semibold text-gray-700">Select Timezone</div>
                       <button
@@ -2820,29 +2843,6 @@ export const DailyPlanner = () => {
                   </PopoverContent>
                 </Popover>
               </div>
-              <div className="inline-flex items-center gap-0 bg-white rounded-lg shadow-sm border border-gray-200 p-1">
-                <button
-                  onClick={() => setCalendarFilterMode('all')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                    calendarFilterMode === 'all'
-                      ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-sm'
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  All Tasks
-                </button>
-                <button
-                  onClick={() => setCalendarFilterMode('content')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                    calendarFilterMode === 'content'
-                      ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-sm'
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  Content Calendar
-                </button>
-              </div>
-              <div className="flex-1"></div>
             </div>
 
             {/* Month Calendar Grid */}
