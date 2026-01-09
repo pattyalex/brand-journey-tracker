@@ -1583,35 +1583,17 @@ export const DailyPlanner = () => {
           <>
         <CardContent className="px-0">
           <div ref={todayScrollRef}>
-            <div className="flex overflow-hidden bg-white">
-              {/* Time column on the left */}
-              <div className="flex-shrink-0 bg-white border-r border-gray-200" style={{ width: '60px' }}>
-                {/* Header with timezone only */}
-                <div className="h-[60px] border-b border-gray-200 flex items-center justify-center">
+            <div className="flex flex-col overflow-hidden bg-white">
+              {/* Fixed header row */}
+              <div className="flex border-b border-gray-200">
+                {/* Time column header */}
+                <div className="flex-shrink-0 border-r border-gray-200 h-[60px] flex items-center justify-center" style={{ width: '60px' }}>
                   <span className="text-[11px] text-gray-400 font-medium" style={{ marginTop: '4px' }}>
                     {new Date().toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop()}
                   </span>
                 </div>
-                {/* Time labels */}
-                <div className="relative" style={{ height: '2160px' }}>
-                  {Array.from({ length: 24 }, (_, hour) => (
-                    <div
-                      key={hour}
-                      className="absolute left-0 right-0 flex items-start justify-end pr-2 pt-0.5"
-                      style={{ top: `${hour * 90}px`, height: '90px' }}
-                    >
-                      <span className="text-[11px] text-gray-400 leading-none">
-                        {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Main content area */}
-              <div className="flex-1 relative">
                 {/* Date header */}
-                <div className="h-[60px] border-b border-gray-200 flex items-center px-4">
+                <div className="flex-1 h-[60px] flex items-center px-4">
                   <div className="flex items-center gap-2" style={{ marginTop: '4px' }}>
                     <span className="text-sm text-gray-400 uppercase font-medium tracking-wide">
                       {format(selectedDate, 'EEE')}
@@ -1621,9 +1603,31 @@ export const DailyPlanner = () => {
                     </span>
                   </div>
                 </div>
+              </div>
 
-                <ScrollArea className="h-[calc(100vh-260px)]">
-                  <div className="relative" style={{ height: '2160px' }}> {/* 24 hours * 90px */}
+              {/* Scrollable content area */}
+              <ScrollArea className="h-[calc(100vh-260px)]">
+                <div className="flex">
+                  {/* Time column */}
+                  <div className="flex-shrink-0 bg-white border-r border-gray-200" style={{ width: '60px' }}>
+                    <div className="relative" style={{ height: '2160px' }}>
+                      {Array.from({ length: 24 }, (_, hour) => (
+                        <div
+                          key={hour}
+                          className="absolute left-0 right-0 flex items-start justify-end pr-2 pt-0.5"
+                          style={{ top: `${hour * 90}px`, height: '90px' }}
+                        >
+                          <span className="text-[11px] text-gray-400 leading-none">
+                            {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Main content area */}
+                  <div className="flex-1 relative">
+                    <div className="relative" style={{ height: '2160px' }}> {/* 24 hours * 90px */}
                     {/* Hour labels and grid lines */}
                     {Array.from({ length: 24 }, (_, i) => {
                       const hour = i;
@@ -2122,9 +2126,10 @@ export const DailyPlanner = () => {
                     );
                   })()}
                 </div>
-              </div>
-            </ScrollArea>
-              </div>
+                    </div>
+                  </div>
+                </div>
+              </ScrollArea>
             </div>
           </div>
         </CardContent>
