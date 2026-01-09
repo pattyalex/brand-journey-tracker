@@ -2112,9 +2112,9 @@ export const DailyPlanner = () => {
                       <div
                         key={hour}
                         className="absolute left-0 right-0 flex items-start justify-start pl-1"
-                        style={{ top: `${hour * 48}px`, height: '48px', marginTop: '-8px' }}
+                        style={{ top: `${hour * 48 - 6}px`, height: '48px' }}
                       >
-                        <span className="text-[10px] text-gray-400">
+                        <span className="text-[10px] text-gray-400 leading-none">
                           {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
                         </span>
                       </div>
