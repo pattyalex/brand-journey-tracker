@@ -2101,7 +2101,7 @@ export const DailyPlanner = () => {
             <CardContent className="px-0">
               <div className="flex border border-gray-200 rounded-lg overflow-hidden bg-white">
                 {/* Time column on the left */}
-                <div className="flex-shrink-0 bg-white border-r border-gray-200" style={{ width: '45px' }}>
+                <div className="flex-shrink-0 bg-white border-r border-gray-200" style={{ width: '40px' }}>
                   {/* Header spacer */}
                   <div className="h-[60px] border-b border-gray-200 flex items-center justify-center">
                     <span className="text-[9px] text-gray-400">GMT-08</span>
@@ -2111,7 +2111,7 @@ export const DailyPlanner = () => {
                     {Array.from({ length: 24 }, (_, hour) => (
                       <div
                         key={hour}
-                        className="absolute left-0 right-0 flex items-start justify-start pl-px pt-0.5"
+                        className="absolute left-0 right-0 flex items-start justify-end pr-1 pt-0.5"
                         style={{ top: `${hour * 48}px`, height: '48px' }}
                       >
                         <span className="text-[10px] text-gray-400 leading-none">
