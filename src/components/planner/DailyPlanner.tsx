@@ -117,6 +117,12 @@ export const DailyPlanner = () => {
   });
   const [calendarFilterMode, setCalendarFilterMode] = useState<'all' | 'content'>('all');
 
+  // Zoom level for Today view (0.5 = 50%, 1 = 100%, 2 = 200%)
+  const [todayZoomLevel, setTodayZoomLevel] = useState<number>(() => {
+    const saved = localStorage.getItem('todayZoomLevel');
+    return saved ? parseFloat(saved) : 1;
+  });
+
   // Get timezone display
   const getTimezoneDisplay = () => {
     if (selectedTimezone === 'auto') {
@@ -132,8 +138,10 @@ export const DailyPlanner = () => {
     localStorage.setItem('selectedTimezone', timezone);
   };
   const [todayScrollPosition, setTodayScrollPosition] = useState(() => {
-    // Default to 7am (7 hours * 90px per hour = 630px)
-    const DEFAULT_SCROLL = 630;
+    // Default to 7am (7 hours * 90px per hour * zoom = 630px at 100% zoom)
+    const savedZoom = localStorage.getItem('todayZoomLevel');
+    const zoom = savedZoom ? parseFloat(savedZoom) : 1;
+    const DEFAULT_SCROLL = 7 * 90 * zoom;
 
     const savedDate = localStorage.getItem('plannerLastAccessDate');
     const today = format(new Date(), 'yyyy-MM-dd');
@@ -148,7 +156,26 @@ export const DailyPlanner = () => {
     const savedPosition = localStorage.getItem('todayScrollPosition');
     return savedPosition ? parseInt(savedPosition, 10) : DEFAULT_SCROLL;
   });
+
+  const [weeklyScrollPosition, setWeeklyScrollPosition] = useState(() => {
+    // Default to 7am (7 hours * 48px per hour for weekly view = 336px)
+    const DEFAULT_SCROLL = 7 * 48;
+
+    const savedDate = localStorage.getItem('plannerLastAccessDate');
+    const today = format(new Date(), 'yyyy-MM-dd');
+
+    // If it's a new day, reset to 7am
+    if (savedDate !== today) {
+      return DEFAULT_SCROLL;
+    }
+
+    // Otherwise, try to restore saved position
+    const savedPosition = localStorage.getItem('weeklyScrollPosition');
+    return savedPosition ? parseInt(savedPosition, 10) : DEFAULT_SCROLL;
+  });
+
   const todayScrollRef = useRef<HTMLDivElement>(null);
+  const weeklyScrollRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const startTimeInputRef = useRef<HTMLInputElement>(null);
   const endTimeInputRef = useRef<HTMLInputElement>(null);
@@ -173,7 +200,8 @@ export const DailyPlanner = () => {
       section: 'morning',
       isCompleted: false,
       date: '',
-      order: 0
+      order: 0,
+      isPlaceholder: true
     },
     {
       id: 'placeholder-2',
@@ -181,7 +209,8 @@ export const DailyPlanner = () => {
       section: 'morning',
       isCompleted: false,
       date: '',
-      order: 1
+      order: 1,
+      isPlaceholder: true
     },
     {
       id: 'placeholder-3',
@@ -189,7 +218,8 @@ export const DailyPlanner = () => {
       section: 'morning',
       isCompleted: false,
       date: '',
-      order: 2
+      order: 2,
+      isPlaceholder: true
     }
   ]);
   const [isAllTasksCollapsed, setIsAllTasksCollapsed] = useState(false);
@@ -235,6 +265,38 @@ export const DailyPlanner = () => {
     "#eeeeee", "#ede8e3", "#f8bbd0", "#f5e1e5"
   ];
 
+  // Convert 24-hour format (HH:MM) to 12-hour format (h:mm am/pm)
+  const convert24To12Hour = (time24: string): string => {
+    if (!time24 || !time24.includes(':')) return '';
+    const [hourStr, minuteStr] = time24.split(':');
+    const hour = parseInt(hourStr, 10);
+    const minute = parseInt(minuteStr, 10);
+
+    const period = hour >= 12 ? 'pm' : 'am';
+    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    const displayMin = minute.toString().padStart(2, '0');
+
+    return `${displayHour}:${displayMin} ${period}`;
+  };
+
+  // Convert 12-hour format (h:mm am/pm) to 24-hour format (HH:MM)
+  const convert12To24Hour = (time12: string): string => {
+    const match = time12.match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);
+    if (!match) return '';
+
+    let hour = parseInt(match[1], 10);
+    const minute = match[2];
+    const period = match[3].toLowerCase();
+
+    if (period === 'pm' && hour !== 12) {
+      hour += 12;
+    } else if (period === 'am' && hour === 12) {
+      hour = 0;
+    }
+
+    return `${hour.toString().padStart(2, '0')}:${minute}`;
+  };
+
   // Handle global mouse events for drag-to-create
   useEffect(() => {
     const handleGlobalMouseMove = (e: MouseEvent) => {
@@ -247,8 +309,8 @@ export const DailyPlanner = () => {
           const scrollTop = scrollArea.scrollTop || 0;
           const relativeY = e.clientY - rect.top + scrollTop;
 
-          // Each hour is 90px, each 20-minute slot is 30px
-          const totalMinutes = Math.floor((relativeY / 90) * 60);
+          // Each hour is 90px * zoom, each 20-minute slot is 30px * zoom
+          const totalMinutes = Math.floor((relativeY / (90 * todayZoomLevel)) * 60);
           const hour = Math.floor(totalMinutes / 60);
           const minute = Math.floor((totalMinutes % 60) / 20) * 20; // Round to nearest 20-min slot
 
@@ -303,11 +365,14 @@ export const DailyPlanner = () => {
       document.removeEventListener('mousemove', handleGlobalMouseMove);
       document.removeEventListener('mouseup', handleGlobalMouseUp);
     };
-  }, [isDraggingCreate, dragCreateStart, dragCreateEnd]);
+  }, [isDraggingCreate, dragCreateStart, dragCreateEnd, todayZoomLevel]);
 
   // Handle global mouse events for weekly drag-to-create
   useEffect(() => {
     const handleGlobalMouseMove = (e: MouseEvent) => {
+      // Don't handle mouse move if dialog is open
+      if (isTaskDialogOpen) return;
+
       // Find which day column is being dragged in
       const dayColumns = document.querySelectorAll('[data-day-column]');
       let targetDay: string | null = null;
@@ -366,6 +431,10 @@ export const DailyPlanner = () => {
             const startTimeStr = `${startHour.toString().padStart(2, '0')}:${startMin.toString().padStart(2, '0')}`;
             const endTimeStr = `${endHour.toString().padStart(2, '0')}:${endMin.toString().padStart(2, '0')}`;
 
+            // Convert to 12-hour format for dialog display
+            const startTime12 = convert24To12Hour(startTimeStr);
+            const endTime12 = convert24To12Hour(endTimeStr);
+
             // Reset drag state
             setWeeklyDraggingCreate(prev => ({ ...prev, [dayString]: false }));
             setWeeklyDragCreateStart(prev => {
@@ -390,8 +459,8 @@ export const DailyPlanner = () => {
             } as PlannerItem);
             setDialogTaskTitle('');
             setDialogTaskDescription('');
-            setDialogStartTime(startTimeStr);
-            setDialogEndTime(endTimeStr);
+            setDialogStartTime(startTime12);
+            setDialogEndTime(endTime12);
             setDialogTaskColor('');
             setDialogAddToContentCalendar(false);
             setIsTaskDialogOpen(true);
@@ -423,7 +492,7 @@ export const DailyPlanner = () => {
       document.removeEventListener('mousemove', handleGlobalMouseMove);
       document.removeEventListener('mouseup', handleGlobalMouseUp);
     };
-  }, [weeklyDraggingCreate, weeklyDragCreateStart, weeklyDragCreateEnd]);
+  }, [weeklyDraggingCreate, weeklyDragCreateStart, weeklyDragCreateEnd, isTaskDialogOpen]);
 
   useEffect(() => {
     const savedData = localStorage.getItem("plannerData");
@@ -459,6 +528,55 @@ export const DailyPlanner = () => {
 
   }, []);
 
+  // Handle pinch-to-zoom for Today view
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      // Only handle zoom when in today view and ctrl key is pressed (pinch gesture)
+      if (currentView === 'today' && e.ctrlKey) {
+        e.preventDefault();
+
+        // Get the scroll container
+        const scrollArea = todayScrollRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+        if (!scrollArea) return;
+
+        // Get current scroll position and viewport info
+        const currentScrollTop = scrollArea.scrollTop;
+        const viewportHeight = scrollArea.clientHeight;
+        const oldTotalHeight = 24 * 90 * todayZoomLevel;
+
+        // Calculate what content is at the center of the viewport
+        const centerPoint = currentScrollTop + (viewportHeight / 2);
+        const centerRatio = centerPoint / oldTotalHeight;
+
+        // Calculate zoom change (deltaY < 0 means zoom in) - ultra slow zoom for precise control
+        const zoomDelta = e.deltaY > 0 ? -0.01 : 0.01;
+        const newZoom = Math.max(0.5, Math.min(1, todayZoomLevel + zoomDelta));
+
+        // Only update if zoom actually changed
+        if (newZoom !== todayZoomLevel) {
+          setTodayZoomLevel(newZoom);
+          localStorage.setItem('todayZoomLevel', newZoom.toString());
+
+          // Calculate new scroll position to maintain center point
+          // Need to do this after React updates, so use setTimeout
+          setTimeout(() => {
+            const newTotalHeight = 24 * 90 * newZoom;
+            const newCenterPoint = centerRatio * newTotalHeight;
+            const newScrollTop = newCenterPoint - (viewportHeight / 2);
+            scrollArea.scrollTop = Math.max(0, newScrollTop);
+          }, 0);
+        }
+      }
+    };
+
+    // Add event listener with passive: false to allow preventDefault
+    document.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      document.removeEventListener('wheel', handleWheel);
+    };
+  }, [currentView, todayZoomLevel]);
+
   useEffect(() => {
     localStorage.setItem("plannerData", JSON.stringify(plannerData));
   }, [plannerData]);
@@ -471,10 +589,14 @@ export const DailyPlanner = () => {
     localStorage.setItem("scheduledContent", JSON.stringify(contentCalendarData));
   }, [contentCalendarData]);
 
-  // Save scroll position to localStorage
+  // Save scroll positions to localStorage
   useEffect(() => {
     localStorage.setItem('todayScrollPosition', todayScrollPosition.toString());
   }, [todayScrollPosition]);
+
+  useEffect(() => {
+    localStorage.setItem('weeklyScrollPosition', weeklyScrollPosition.toString());
+  }, [weeklyScrollPosition]);
 
   // Restore scroll position when switching to Today view
   useEffect(() => {
@@ -498,6 +620,35 @@ export const DailyPlanner = () => {
 
       return () => {
         const viewport = todayScrollRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+        if (viewport) {
+          viewport.removeEventListener('scroll', () => {});
+        }
+      };
+    }
+  }, [currentView]);
+
+  // Restore scroll position when switching to Weekly view
+  useEffect(() => {
+    if (currentView === 'week' && weeklyScrollRef.current) {
+      // Use requestAnimationFrame to set scroll position before next paint
+      requestAnimationFrame(() => {
+        const viewport = weeklyScrollRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+
+        if (viewport) {
+          // Restore scroll position immediately
+          viewport.scrollTop = weeklyScrollPosition;
+
+          // Add scroll listener to save position
+          const handleScroll = () => {
+            setWeeklyScrollPosition(viewport.scrollTop);
+          };
+
+          viewport.addEventListener('scroll', handleScroll);
+        }
+      });
+
+      return () => {
+        const viewport = weeklyScrollRef.current?.querySelector('[data-radix-scroll-area-viewport]');
         if (viewport) {
           viewport.removeEventListener('scroll', () => {});
         }
@@ -1019,7 +1170,8 @@ export const DailyPlanner = () => {
     const startTime24 = dialogStartTime ? convert12To24Hour(dialogStartTime) : '';
     const endTime24 = dialogEndTime ? convert12To24Hour(dialogEndTime) : '';
 
-    if (editingTask && editingTask.id) {
+    // Check if we're editing an existing task (must have a non-empty ID)
+    if (editingTask && editingTask.id && editingTask.id !== '') {
       // Check if this is a task being moved from All Tasks (has date but not in plannerData yet)
       const taskDate = editingTask.date;
       const isInPlannerData = plannerData.some(day =>
@@ -1076,8 +1228,9 @@ export const DailyPlanner = () => {
         );
       }
     } else {
-      // Create new task
+      // Create new task (from drag-to-create or other sources)
       const targetDate = editingTask?.date || dateString; // Use the date from editingTask if available (for weekly view)
+
       const newTask: PlannerItem = {
         id: Date.now().toString(),
         text: dialogTaskTitle.trim(),
@@ -1089,6 +1242,7 @@ export const DailyPlanner = () => {
         endTime: endTime24,
         color: dialogTaskColor,
         description: dialogTaskDescription,
+        order: 0,
       };
 
       const dayIndex = plannerData.findIndex(day => day.date === targetDate);
@@ -1101,11 +1255,11 @@ export const DailyPlanner = () => {
         };
       } else {
         updatedPlannerData.push({
-          date: dateString,
+          date: targetDate,
           items: [newTask],
-          tasks: tasks,
-          greatDay: greatDay,
-          grateful: grateful
+          tasks: "",
+          greatDay: "",
+          grateful: ""
         });
       }
 
@@ -1126,38 +1280,6 @@ export const DailyPlanner = () => {
     }
     setIsTaskDialogOpen(false);
     setEditingTask(null);
-  };
-
-  // Convert 24-hour format (HH:MM) to 12-hour format (h:mm am/pm)
-  const convert24To12Hour = (time24: string): string => {
-    if (!time24 || !time24.includes(':')) return '';
-    const [hourStr, minuteStr] = time24.split(':');
-    const hour = parseInt(hourStr, 10);
-    const minute = parseInt(minuteStr, 10);
-
-    const period = hour >= 12 ? 'pm' : 'am';
-    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    const displayMin = minute.toString().padStart(2, '0');
-
-    return `${displayHour}:${displayMin} ${period}`;
-  };
-
-  // Convert 12-hour format (h:mm am/pm) to 24-hour format (HH:MM)
-  const convert12To24Hour = (time12: string): string => {
-    const match = time12.match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);
-    if (!match) return '';
-
-    let hour = parseInt(match[1], 10);
-    const minute = match[2];
-    const period = match[3].toLowerCase();
-
-    if (period === 'pm' && hour !== 12) {
-      hour += 12;
-    } else if (period === 'am' && hour === 12) {
-      hour = 0;
-    }
-
-    return `${hour.toString().padStart(2, '0')}:${minute}`;
   };
 
   const formatTimeInput = (value: string): string => {
@@ -1441,7 +1563,7 @@ export const DailyPlanner = () => {
           onDragOver={(e) => {
             console.log('⬆️ DRAG OVER ALL TASKS');
             e.preventDefault();
-            e.stopPropagation();
+            // Don't stopPropagation - let it bubble to children
           }}
           onDragLeave={(e) => {
             // Only hide if we're leaving the container, not entering a child
@@ -1450,8 +1572,9 @@ export const DailyPlanner = () => {
             }
           }}
           onDrop={(e) => {
-            // The actual drop handling is now done by PlannerSection at specific positions
-            // This outer handler just cleans up the drag state
+            // Don't handle the drop here - let it bubble to PlannerSection
+            // Just clean up the drag state
+            console.log('🎯 Parent container onDrop triggered');
             setIsDraggingOverAllTasks(false);
           }}
         >
@@ -1655,7 +1778,7 @@ export const DailyPlanner = () => {
                   </Popover>
                 </div>
                 {/* Date header */}
-                <div className="flex-1 h-[60px] flex items-center px-4">
+                <div className="flex-1 h-[60px] flex items-center justify-between px-4">
                   <div className="flex items-center gap-2" style={{ marginTop: '4px' }}>
                     <span className="text-sm text-gray-400 uppercase font-medium tracking-wide">
                       {format(selectedDate, 'EEE')}
@@ -1663,6 +1786,9 @@ export const DailyPlanner = () => {
                     <span className="text-2xl font-semibold text-gray-700 leading-none">
                       {format(selectedDate, 'd')}
                     </span>
+                  </div>
+                  <div className="text-[10px] text-gray-400 font-medium">
+                    {Math.round(todayZoomLevel * 100)}%
                   </div>
                 </div>
               </div>
@@ -1672,12 +1798,12 @@ export const DailyPlanner = () => {
                 <div className="flex">
                   {/* Time column */}
                   <div className="flex-shrink-0 bg-white border-r border-gray-200" style={{ width: '60px' }}>
-                    <div className="relative" style={{ height: '2160px' }}>
+                    <div className="relative" style={{ height: `${24 * 90 * todayZoomLevel}px` }}>
                       {Array.from({ length: 24 }, (_, hour) => (
                         <div
                           key={hour}
                           className="absolute left-0 right-0 flex items-start justify-end pr-2 pt-0.5"
-                          style={{ top: `${hour * 90}px`, height: '90px' }}
+                          style={{ top: `${hour * 90 * todayZoomLevel}px`, height: `${90 * todayZoomLevel}px` }}
                         >
                           <span className="text-[11px] text-gray-400 leading-none">
                             {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
@@ -1689,7 +1815,7 @@ export const DailyPlanner = () => {
 
                   {/* Main content area */}
                   <div className="flex-1 relative">
-                    <div className="relative" style={{ height: '2160px' }}> {/* 24 hours * 90px */}
+                    <div className="relative" style={{ height: `${24 * 90 * todayZoomLevel}px` }}>
                     {/* Hour labels and grid lines */}
                     {Array.from({ length: 24 }, (_, i) => {
                       const hour = i;
@@ -1698,7 +1824,7 @@ export const DailyPlanner = () => {
                         <div
                           key={hour}
                           className="absolute left-0 right-0"
-                          style={{ top: `${hour * 90}px`, height: '90px' }}
+                          style={{ top: `${hour * 90 * todayZoomLevel}px`, height: `${90 * todayZoomLevel}px` }}
                         >
                           {/* Hour row container */}
                           <div className="flex h-full border-t border-gray-200 bg-white">
@@ -1760,13 +1886,21 @@ export const DailyPlanner = () => {
                                       return;
                                     }
 
-                                    // Default duration of 20 minutes for tasks from All Tasks
-                                    const endMinute = minute + 20;
-                                    const endHourStr = endMinute >= 60 ? (hour + 1).toString().padStart(2, '0') : hourStr;
-                                    const endMinuteStr = (endMinute % 60).toString().padStart(2, '0');
+                                    // Calculate duration - preserve if task already has times, otherwise 20 minutes
+                                    let durationMinutes = 20;
+                                    if (taskFromAllTasks.startTime && taskFromAllTasks.endTime) {
+                                      const [oldStartHour, oldStartMinute] = taskFromAllTasks.startTime.split(':').map(Number);
+                                      const [oldEndHour, oldEndMinute] = taskFromAllTasks.endTime.split(':').map(Number);
+                                      durationMinutes = (oldEndHour * 60 + oldEndMinute) - (oldStartHour * 60 + oldStartMinute);
+                                    }
+
+                                    const newStartMinutes = hour * 60 + minute;
+                                    const newEndMinutes = newStartMinutes + durationMinutes;
+                                    const newEndHour = Math.floor(newEndMinutes / 60);
+                                    const newEndMinute = newEndMinutes % 60;
 
                                     const newStartTime = `${hourStr}:${minuteStr}`;
-                                    const newEndTime = `${endHourStr}:${endMinuteStr}`;
+                                    const newEndTime = `${newEndHour.toString().padStart(2, '0')}:${newEndMinute.toString().padStart(2, '0')}`;
 
                                     console.log('New times:', newStartTime, '-', newEndTime);
 
@@ -1940,8 +2074,8 @@ export const DailyPlanner = () => {
 
                     return tasksWithLayout.map(({ task, startMinutes, endMinutes, column, totalColumns, isBackground, inOverlapGroup }) => {
                       const durationMinutes = endMinutes - startMinutes;
-                      const top = startMinutes * 1.5;
-                      const height = Math.max(durationMinutes * 1.5, 28);
+                      const top = startMinutes * 1.5 * todayZoomLevel;
+                      const height = Math.max(durationMinutes * 1.5 * todayZoomLevel, 28);
                       const [startHour, startMinute] = task.startTime!.split(':').map(Number);
 
                       // Calculate width and position for overlapping tasks
@@ -2016,7 +2150,7 @@ export const DailyPlanner = () => {
 
                               const handleMouseMove = (moveEvent: MouseEvent) => {
                                 const deltaY = moveEvent.clientY - startY;
-                                const deltaMinutes = Math.round(deltaY / 1.5); // 1.5px per minute
+                                const deltaMinutes = Math.round(deltaY / (1.5 * todayZoomLevel)); // 1.5px per minute * zoom
                                 const newStartMinutes = Math.max(0, Math.min(1439, originalStartMinutes + deltaMinutes));
 
                                 // Ensure start time is before end time (at least 15 min duration)
@@ -2056,7 +2190,7 @@ export const DailyPlanner = () => {
 
                               const handleMouseMove = (moveEvent: MouseEvent) => {
                                 const deltaY = moveEvent.clientY - startY;
-                                const deltaMinutes = Math.round(deltaY / 1.5); // 1.5px per minute
+                                const deltaMinutes = Math.round(deltaY / (1.5 * todayZoomLevel)); // 1.5px per minute * zoom
                                 const newEndMinutes = Math.max(0, Math.min(1439, originalEndMinutes + deltaMinutes));
 
                                 // Ensure end time is after start time (at least 15 min duration)
@@ -2126,7 +2260,7 @@ export const DailyPlanner = () => {
                                 e.stopPropagation();
                                 handleDeleteItem(task.id);
                               }}
-                              className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity flex-shrink-0"
+                              className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity flex-shrink-0 mt-0.5"
                             >
                               <Trash2 size={12} />
                             </button>
@@ -2144,8 +2278,8 @@ export const DailyPlanner = () => {
                     const actualStart = Math.min(startMinutes, endMinutes);
                     const actualEnd = Math.max(startMinutes, endMinutes + 20);
 
-                    const top = (actualStart / 60) * 90; // 90px per hour
-                    const height = Math.max(30, ((actualEnd - actualStart) / 60) * 90);
+                    const top = (actualStart / 60) * 90 * todayZoomLevel; // 90px per hour * zoom
+                    const height = Math.max(30, ((actualEnd - actualStart) / 60) * 90 * todayZoomLevel);
 
                     // Format times for display in 12-hour format
                     const startHour = Math.floor(actualStart / 60);
@@ -2201,11 +2335,11 @@ export const DailyPlanner = () => {
         {currentView === 'week' && (
           <>
             <CardContent className="px-0">
-              <div className="flex overflow-hidden bg-white">
-                {/* Time column on the left */}
-                <div className="flex-shrink-0 bg-white border-r border-gray-200" style={{ width: '40px' }}>
-                  {/* Header spacer */}
-                  <div className="h-[60px] border-b border-gray-200 flex items-center justify-center">
+              <div className="flex flex-col bg-white">
+                {/* Fixed header row */}
+                <div className="flex border-b border-gray-200">
+                  {/* Time column header */}
+                  <div className="flex-shrink-0 bg-white border-r border-gray-200 h-[60px] flex items-center justify-center" style={{ width: '40px' }}>
                     <Popover>
                       <PopoverTrigger asChild>
                         <button className="text-[9px] text-gray-400 font-medium hover:text-gray-600 hover:bg-gray-50 px-1 py-0.5 rounded transition-colors cursor-pointer">
@@ -2241,26 +2375,60 @@ export const DailyPlanner = () => {
                       </PopoverContent>
                     </Popover>
                   </div>
-                  {/* Time labels */}
-                  <div className="relative" style={{ height: '1152px' }}>
-                    {Array.from({ length: 24 }, (_, hour) => (
-                      <div
-                        key={hour}
-                        className="absolute left-0 right-0 flex items-start justify-end pr-1 pt-0.5"
-                        style={{ top: `${hour * 48}px`, height: '48px' }}
-                      >
-                        <span className="text-[10px] text-gray-400 leading-none">
-                          {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
-                        </span>
-                      </div>
-                    ))}
+                  {/* Day headers */}
+                  <div className="flex-1 grid grid-cols-7 gap-0">
+                    {eachDayOfInterval({
+                      start: startOfWeek(selectedDate, { weekStartsOn: 1 }),
+                      end: endOfWeek(selectedDate, { weekStartsOn: 1 })
+                    }).map((day, index) => {
+                      const isToday = isSameDay(day, new Date());
+                      const isPast = day < new Date() && !isToday;
+                      return (
+                        <div
+                          key={getDateString(day)}
+                          className={`h-[60px] flex flex-col items-center justify-center ${isToday ? 'bg-purple-50' : 'bg-gray-50'}`}
+                          style={{
+                            borderRight: index < 6 ? '1px solid #f3f4f6' : 'none',
+                            opacity: isPast ? 0.5 : 1
+                          }}
+                        >
+                          <div className="text-xs font-medium text-gray-500 uppercase">
+                            {format(day, "EEE")}
+                          </div>
+                          <div className={`text-2xl font-semibold ${isToday ? 'text-purple-600' : 'text-gray-900'}`}>
+                            {format(day, "d")}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
-                {/* Day columns */}
-                <div className="flex-1 grid grid-cols-7 gap-0 relative">
-                  {/* Horizontal grid lines spanning all days */}
-                  <div className="absolute inset-0 pointer-events-none" style={{ top: '60px' }}>
+                {/* Scrollable timeline area */}
+                <div ref={weeklyScrollRef}>
+                <ScrollArea className="h-[calc(100vh-320px)]">
+                  <div className="flex">
+                    {/* Time column */}
+                    <div className="flex-shrink-0 bg-white border-r border-gray-200" style={{ width: '40px' }}>
+                      <div className="relative" style={{ height: '1152px' }}>
+                        {Array.from({ length: 24 }, (_, hour) => (
+                          <div
+                            key={hour}
+                            className="absolute left-0 right-0 flex items-start justify-end pr-1 pt-0.5"
+                            style={{ top: `${hour * 48}px`, height: '48px' }}
+                          >
+                            <span className="text-[10px] text-gray-400 leading-none">
+                              {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Day columns */}
+                    <div className="flex-1 grid grid-cols-7 gap-0 relative">
+                      {/* Horizontal grid lines spanning all days */}
+                      <div className="absolute inset-0 pointer-events-none">
                     {Array.from({ length: 24 }, (_, hour) => (
                       <div
                         key={hour}
@@ -2290,97 +2458,227 @@ export const DailyPlanner = () => {
                       data-day-column={dayString}
                       className={`${dayColor} transition-colors`}
                       style={{ borderRight: index < 6 ? '1px solid #f3f4f6' : 'none' }}
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        e.currentTarget.classList.add('bg-blue-100');
-                      }}
-                      onDragLeave={(e) => {
-                        e.currentTarget.classList.remove('bg-blue-100');
-                      }}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        e.currentTarget.classList.remove('bg-blue-100');
-
-                        const taskId = e.dataTransfer.getData('taskId');
-                        const fromDate = e.dataTransfer.getData('fromDate');
-                        const toDate = dayString;
-
-                        console.log('🎯 DROP ON DAY CONTAINER - taskId:', taskId, 'fromDate:', fromDate, 'toDate:', toDate);
-
-                        if (taskId && fromDate && fromDate !== toDate) {
-                          console.log('✅ Moving task between days');
-                          // Find the task in the source day
-                          const fromDayIndex = plannerData.findIndex(d => d.date === fromDate);
-                          if (fromDayIndex < 0) return;
-
-                          const taskToMove = plannerData[fromDayIndex].items.find(item => item.id === taskId);
-                          if (!taskToMove) return;
-
-                          // Remove from source day
-                          const updatedPlannerData = [...plannerData];
-                          updatedPlannerData[fromDayIndex] = {
-                            ...updatedPlannerData[fromDayIndex],
-                            items: updatedPlannerData[fromDayIndex].items.filter(item => item.id !== taskId)
-                          };
-
-                          // Add to destination day
-                          const toDayIndex = updatedPlannerData.findIndex(d => d.date === toDate);
-                          const movedTask = { ...taskToMove, date: toDate };
-
-                          if (toDayIndex >= 0) {
-                            updatedPlannerData[toDayIndex] = {
-                              ...updatedPlannerData[toDayIndex],
-                              items: [...updatedPlannerData[toDayIndex].items, movedTask]
-                            };
-                          } else {
-                            // Create new day entry if it doesn't exist
-                            updatedPlannerData.push({
-                              date: toDate,
-                              items: [movedTask],
-                              tasks: "",
-                              greatDay: "",
-                              grateful: ""
-                            });
-                          }
-
-                          setPlannerData(updatedPlannerData);
-                          localStorage.setItem('plannerData', JSON.stringify(updatedPlannerData));
-                        } else if (taskId && !fromDate) {
-                          // Task is coming from All Tasks (no date)
-                          const taskToMove = allTasks.find(t => t.id === taskId);
-                          if (!taskToMove) return;
-
-                          // Store the original task in case user cancels
-                          setPendingTaskFromAllTasks(taskToMove);
-
-                          // Remove from All Tasks
-                          const filteredAllTasks = allTasks.filter(t => t.id !== taskId);
-                          setAllTasks(filteredAllTasks);
-                          localStorage.setItem('allTasks', JSON.stringify(filteredAllTasks));
-
-                          // Open dialog to edit task details before adding to day
-                          setEditingTask({ ...taskToMove, date: toDate } as PlannerItem);
-                          setDialogTaskTitle(taskToMove.text);
-                          setDialogTaskDescription(taskToMove.description || "");
-                          setDialogStartTime(taskToMove.startTime || "");
-                          setDialogEndTime(taskToMove.endTime || "");
-                          setDialogTaskColor(taskToMove.color || "");
-                          setDialogAddToContentCalendar(taskToMove.isContentCalendar || false);
-                          setIsTaskDialogOpen(true);
-                        }
-                      }}
                     >
-                      {/* Day header */}
-                      <div className={`h-[60px] flex flex-col items-center justify-center border-b border-gray-200 ${isToday ? 'bg-purple-50' : 'bg-gray-50'}`} style={{ opacity: isPast ? 0.5 : 1 }}>
-                        <div className="text-xs font-medium text-gray-500 uppercase">
-                          {format(day, "EEE")}
-                        </div>
-                        <div className={`text-2xl font-semibold ${isToday ? 'text-purple-600' : 'text-gray-900'}`}>
-                          {format(day, "d")}
-                        </div>
-                      </div>
                       {/* Timeline container */}
                       <div className="relative" data-timeline style={{ height: '1152px' }}>
+
+                        {/* Time slot grid for drag and drop */}
+                        {Array.from({ length: 24 }, (_, hour) => (
+                          <div
+                            key={`slot-${hour}`}
+                            className="absolute left-0 right-0 pointer-events-none"
+                            style={{ top: `${hour * 48}px`, height: '48px', zIndex: 100 }}
+                          >
+                            <div
+                              className={`h-full w-full relative ${isTaskDialogOpen ? 'pointer-events-none' : 'pointer-events-auto cursor-crosshair'}`}
+                              onMouseDown={(e) => {
+                                // Don't allow drag-to-create when dialog is open
+                                if (isTaskDialogOpen) return;
+
+                                // Only start drag create if clicking directly on this div (not on a task)
+                                const target = e.target as HTMLElement;
+                                if (target === e.currentTarget) {
+                                  e.preventDefault();
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  const relativeY = e.clientY - rect.top;
+                                  const minuteFraction = relativeY / 48; // 48px per hour
+                                  const minute = Math.floor(minuteFraction * 60);
+
+                                  setWeeklyDraggingCreate(prev => ({ ...prev, [dayString]: true }));
+                                  setWeeklyDragCreateStart(prev => ({
+                                    ...prev,
+                                    [dayString]: { hour, minute }
+                                  }));
+                                  setWeeklyDragCreateEnd(prev => ({
+                                    ...prev,
+                                    [dayString]: { hour, minute }
+                                  }));
+                                }
+                              }}
+                              onDragOver={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                e.currentTarget.classList.add('bg-blue-100');
+                              }}
+                              onDragLeave={(e) => {
+                                e.stopPropagation();
+                                e.currentTarget.classList.remove('bg-blue-100');
+                              }}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                e.currentTarget.classList.remove('bg-blue-100');
+
+                                const taskId = e.dataTransfer.getData('taskId');
+                                const fromDate = e.dataTransfer.getData('fromDate');
+                                const fromAllTasks = e.dataTransfer.getData('fromAllTasks');
+
+                                if (!taskId) return;
+
+                                // Calculate minute based on position within the hour
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                const relativeY = e.clientY - rect.top;
+                                const minuteFraction = relativeY / 48; // 48px per hour
+                                const minute = Math.floor(minuteFraction * 60);
+                                const roundedMinute = Math.floor(minute / 20) * 20; // Round to 20-minute intervals
+
+                                const hourStr = hour.toString().padStart(2, '0');
+                                const minuteStr = roundedMinute.toString().padStart(2, '0');
+                                const startTime = `${hourStr}:${minuteStr}`;
+
+                                // Calculate duration to preserve when moving
+                                let durationMinutes = 20; // Default 20-minute duration
+                                let endTime = '';
+
+                                if (fromAllTasks === 'true') {
+                                  // Task from All Tasks - place directly without dialog
+                                  const taskToMove = allTasks.find(t => t.id === taskId);
+                                  if (!taskToMove) return;
+
+                                  // Check if task already has times (duration to preserve)
+                                  if (taskToMove.startTime && taskToMove.endTime) {
+                                    const [oldStartHour, oldStartMinute] = taskToMove.startTime.split(':').map(Number);
+                                    const [oldEndHour, oldEndMinute] = taskToMove.endTime.split(':').map(Number);
+                                    durationMinutes = (oldEndHour * 60 + oldEndMinute) - (oldStartHour * 60 + oldStartMinute);
+                                  }
+
+                                  // Calculate new end time with preserved duration
+                                  const newStartMinutes = hour * 60 + roundedMinute;
+                                  const newEndMinutes = newStartMinutes + durationMinutes;
+                                  const newEndHour = Math.floor(newEndMinutes / 60);
+                                  const newEndMinute = newEndMinutes % 60;
+                                  endTime = `${newEndHour.toString().padStart(2, '0')}:${newEndMinute.toString().padStart(2, '0')}`;
+
+                                  // Remove from All Tasks
+                                  const filteredAllTasks = allTasks.filter(t => t.id !== taskId);
+                                  setAllTasks(filteredAllTasks);
+                                  localStorage.setItem('allTasks', JSON.stringify(filteredAllTasks));
+
+                                  // Add to this day with calculated time
+                                  const updatedPlannerData = [...plannerData];
+                                  const toDayIndex = updatedPlannerData.findIndex(d => d.date === dayString);
+
+                                  const newTask: PlannerItem = {
+                                    id: taskToMove.id,
+                                    date: dayString,
+                                    text: taskToMove.text,
+                                    section: 'morning',
+                                    isCompleted: taskToMove.isCompleted || false,
+                                    order: 0,
+                                    startTime: startTime,
+                                    endTime: endTime,
+                                    color: taskToMove.color,
+                                    description: taskToMove.description,
+                                    isContentCalendar: taskToMove.isContentCalendar
+                                  };
+
+                                  if (toDayIndex >= 0) {
+                                    updatedPlannerData[toDayIndex] = {
+                                      ...updatedPlannerData[toDayIndex],
+                                      items: [...updatedPlannerData[toDayIndex].items, newTask]
+                                    };
+                                  } else {
+                                    updatedPlannerData.push({
+                                      date: dayString,
+                                      items: [newTask],
+                                      tasks: "",
+                                      greatDay: "",
+                                      grateful: ""
+                                    });
+                                  }
+
+                                  setPlannerData(updatedPlannerData);
+                                  localStorage.setItem('plannerData', JSON.stringify(updatedPlannerData));
+                                } else if (fromDate && fromDate === dayString) {
+                                  // Task moving within the same day to a different time
+                                  const dayIndex = plannerData.findIndex(d => d.date === fromDate);
+                                  if (dayIndex < 0) return;
+
+                                  const taskToMove = plannerData[dayIndex].items.find(item => item.id === taskId);
+                                  if (!taskToMove) return;
+
+                                  // Preserve duration if task has times
+                                  if (taskToMove.startTime && taskToMove.endTime) {
+                                    const [oldStartHour, oldStartMinute] = taskToMove.startTime.split(':').map(Number);
+                                    const [oldEndHour, oldEndMinute] = taskToMove.endTime.split(':').map(Number);
+                                    durationMinutes = (oldEndHour * 60 + oldEndMinute) - (oldStartHour * 60 + oldStartMinute);
+                                  }
+
+                                  // Calculate new end time with preserved duration
+                                  const newStartMinutes = hour * 60 + roundedMinute;
+                                  const newEndMinutes = newStartMinutes + durationMinutes;
+                                  const newEndHour = Math.floor(newEndMinutes / 60);
+                                  const newEndMinute = newEndMinutes % 60;
+                                  endTime = `${newEndHour.toString().padStart(2, '0')}:${newEndMinute.toString().padStart(2, '0')}`;
+
+                                  // Update the task with new time
+                                  const updatedPlannerData = [...plannerData];
+                                  updatedPlannerData[dayIndex] = {
+                                    ...updatedPlannerData[dayIndex],
+                                    items: updatedPlannerData[dayIndex].items.map(item =>
+                                      item.id === taskId
+                                        ? { ...item, startTime: startTime, endTime: endTime }
+                                        : item
+                                    )
+                                  };
+
+                                  setPlannerData(updatedPlannerData);
+                                  localStorage.setItem('plannerData', JSON.stringify(updatedPlannerData));
+                                } else if (fromDate && fromDate !== dayString) {
+                                  // Task moving between days - update time
+                                  const fromDayIndex = plannerData.findIndex(d => d.date === fromDate);
+                                  if (fromDayIndex < 0) return;
+
+                                  const taskToMove = plannerData[fromDayIndex].items.find(item => item.id === taskId);
+                                  if (!taskToMove) return;
+
+                                  // Preserve duration if task has times
+                                  if (taskToMove.startTime && taskToMove.endTime) {
+                                    const [oldStartHour, oldStartMinute] = taskToMove.startTime.split(':').map(Number);
+                                    const [oldEndHour, oldEndMinute] = taskToMove.endTime.split(':').map(Number);
+                                    durationMinutes = (oldEndHour * 60 + oldEndMinute) - (oldStartHour * 60 + oldStartMinute);
+                                  }
+
+                                  // Calculate new end time with preserved duration
+                                  const newStartMinutes = hour * 60 + roundedMinute;
+                                  const newEndMinutes = newStartMinutes + durationMinutes;
+                                  const newEndHour = Math.floor(newEndMinutes / 60);
+                                  const newEndMinute = newEndMinutes % 60;
+                                  endTime = `${newEndHour.toString().padStart(2, '0')}:${newEndMinute.toString().padStart(2, '0')}`;
+
+                                  // Remove from source day
+                                  const updatedPlannerData = [...plannerData];
+                                  updatedPlannerData[fromDayIndex] = {
+                                    ...updatedPlannerData[fromDayIndex],
+                                    items: updatedPlannerData[fromDayIndex].items.filter(item => item.id !== taskId)
+                                  };
+
+                                  // Add to destination day with new time
+                                  const toDayIndex = updatedPlannerData.findIndex(d => d.date === dayString);
+                                  const movedTask = { ...taskToMove, date: dayString, startTime: startTime, endTime: endTime };
+
+                                  if (toDayIndex >= 0) {
+                                    updatedPlannerData[toDayIndex] = {
+                                      ...updatedPlannerData[toDayIndex],
+                                      items: [...updatedPlannerData[toDayIndex].items, movedTask]
+                                    };
+                                  } else {
+                                    updatedPlannerData.push({
+                                      date: dayString,
+                                      items: [movedTask],
+                                      tasks: "",
+                                      greatDay: "",
+                                      grateful: ""
+                                    });
+                                  }
+
+                                  setPlannerData(updatedPlannerData);
+                                  localStorage.setItem('plannerData', JSON.stringify(updatedPlannerData));
+                                }
+                              }}
+                            />
+                          </div>
+                        ))}
 
                         {/* Tasks positioned absolutely by time */}
                         {(() => {
@@ -2479,7 +2777,7 @@ export const DailyPlanner = () => {
                               // Background task: full width, behind others
                               widthPercent = 100;
                               leftPercent = 0;
-                              zIndex = 5;
+                              zIndex = 105;
                             } else if (inOverlapGroup) {
                               // Foreground tasks: position on right side
                               // Leave left 50% for background task visibility (wider for weekly view)
@@ -2487,12 +2785,12 @@ export const DailyPlanner = () => {
                               const startPosition = 50;
                               widthPercent = availableSpace / totalColumns;
                               leftPercent = startPosition + (column * widthPercent);
-                              zIndex = 15 + column;
+                              zIndex = 115 + column;
                             } else {
                               // Standalone task (no overlap): full width
                               widthPercent = 100;
                               leftPercent = 0;
-                              zIndex = 10;
+                              zIndex = 110;
                             }
 
                             return (
@@ -2510,6 +2808,12 @@ export const DailyPlanner = () => {
                                 <div
                                   draggable={true}
                                   onDragStart={(e) => {
+                                    // Prevent drag if clicking on resize handle
+                                    const target = e.target as HTMLElement;
+                                    if (target.classList.contains('resize-handle') || target.closest('.resize-handle')) {
+                                      e.preventDefault();
+                                      return;
+                                    }
                                     console.log('🚀 DRAG START - Weekly Task:', item.id, item.text, 'from:', dayString);
                                     setDraggedWeeklyTaskId(item.id);
                                     e.dataTransfer.setData('text/plain', item.id);
@@ -2530,25 +2834,26 @@ export const DailyPlanner = () => {
                                     setEditingTask(item);
                                     setDialogTaskTitle(item.text);
                                     setDialogTaskDescription(item.description || "");
-                                    setDialogStartTime(item.startTime || "");
-                                    setDialogEndTime(item.endTime || "");
+                                    setDialogStartTime(item.startTime ? convert24To12Hour(item.startTime) : "");
+                                    setDialogEndTime(item.endTime ? convert24To12Hour(item.endTime) : "");
                                     setDialogTaskColor(item.color || "");
                                     setDialogAddToContentCalendar(item.isContentCalendar || false);
                                     setIsTaskDialogOpen(true);
                                   }}
                                   className="h-full relative rounded cursor-pointer hover:brightness-95 transition-all overflow-hidden"
                                   style={{
-                                    backgroundColor: item.color || '#4caf50',
+                                    backgroundColor: item.color || '#e5e7eb',
                                     opacity: isPast ? 0.6 : 0.9,
-                                    padding: '6px 8px',
+                                    padding: '4px 4px',
                                     border: 'none'
                                   }}
                                 >
                                   {/* Resize handles */}
                                   <div
-                                    className="absolute top-0 left-0 right-0 h-2 cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity z-30"
+                                    className="resize-handle absolute top-0 left-0 right-0 h-2 cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity z-50 hover:bg-blue-400/30"
                                     onMouseDown={(e) => {
                                       e.stopPropagation();
+                                      e.preventDefault();
                                       isResizingRef.current = true;
                                       const startY = e.clientY;
                                       const originalStartTime = item.startTime!;
@@ -2588,9 +2893,10 @@ export const DailyPlanner = () => {
                                   />
 
                                   <div
-                                    className="absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity z-30"
+                                    className="resize-handle absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity z-50 hover:bg-blue-400/30"
                                     onMouseDown={(e) => {
                                       e.stopPropagation();
+                                      e.preventDefault();
                                       isResizingRef.current = true;
                                       const startY = e.clientY;
                                       const originalEndTime = item.endTime!;
@@ -2630,21 +2936,33 @@ export const DailyPlanner = () => {
                                   />
 
                                   {/* Task content */}
-                                  <div className="h-full relative z-20 flex flex-col">
-                                    <div className={`text-[11px] font-medium leading-snug ${item.isCompleted ? 'line-through opacity-70' : ''} text-white break-words`}>
-                                      {item.text}
-                                    </div>
-                                    {height >= 45 && (
-                                      <div className="text-[10px] text-white/90 mt-0.5">
-                                        {convert24To12Hour(item.startTime!)}
+                                  <div className="h-full relative z-30 flex items-start gap-0.5">
+                                    <Checkbox
+                                      checked={item.isCompleted}
+                                      onCheckedChange={(checked) => {
+                                        handleToggleWeeklyTask(item.id, dayString);
+                                      }}
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="mt-0.5 h-2.5 w-2.5 flex-shrink-0"
+                                    />
+                                    <div className="flex-1 flex flex-col pr-2">
+                                      <div className={`text-[11px] font-medium leading-tight ${item.isCompleted ? 'line-through opacity-70' : ''} text-gray-900 break-normal`}>
+                                        {item.text}
                                       </div>
-                                    )}
+                                      {(item.startTime || item.endTime) && (
+                                        <div className="text-[9px] text-gray-700 mt-1 whitespace-nowrap">
+                                          {item.startTime && convert24To12Hour(item.startTime)}
+                                          {item.startTime && item.endTime && ' - '}
+                                          {item.endTime && convert24To12Hour(item.endTime)}
+                                        </div>
+                                      )}
+                                    </div>
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleDeleteWeeklyTask(item.id, dayString);
                                       }}
-                                      className="absolute top-0.5 right-0.5 p-0.5 rounded text-white/60 hover:text-white hover:bg-black/20 transition-colors opacity-0 group-hover:opacity-100"
+                                      className="absolute top-0 right-0.5 p-0.5 rounded text-gray-600 hover:text-gray-900 hover:bg-black/10 transition-colors opacity-0 group-hover:opacity-100 z-40"
                                     >
                                       <Trash2 size={11} />
                                     </button>
@@ -2679,8 +2997,8 @@ export const DailyPlanner = () => {
                                   setEditingTask(item);
                                   setDialogTaskTitle(item.text);
                                   setDialogTaskDescription(item.description || "");
-                                  setDialogStartTime(item.startTime || "");
-                                  setDialogEndTime(item.endTime || "");
+                                  setDialogStartTime(item.startTime ? convert24To12Hour(item.startTime) : "");
+                                  setDialogEndTime(item.endTime ? convert24To12Hour(item.endTime) : "");
                                   setDialogTaskColor(item.color || "");
                                   setDialogAddToContentCalendar(item.isContentCalendar || false);
                                   setIsTaskDialogOpen(true);
@@ -2716,31 +3034,6 @@ export const DailyPlanner = () => {
                             ))}
                         </div>
 
-                        {/* Drag-to-create overlay */}
-                        <div
-                          className="absolute top-0 left-0 right-0 bottom-0 z-0"
-                          onMouseDown={(e) => {
-                            const rect = e.currentTarget.getBoundingClientRect();
-                            const y = e.clientY - rect.top;
-                            const totalMinutes = Math.floor(y / 0.8);
-                            const hour = Math.floor(totalMinutes / 60);
-                            const minute = totalMinutes % 60;
-
-                            setWeeklyDragCreateStart(prev => ({
-                              ...prev,
-                              [dayString]: { hour, minute }
-                            }));
-                            setWeeklyDragCreateEnd(prev => ({
-                              ...prev,
-                              [dayString]: { hour, minute }
-                            }));
-                            setWeeklyDraggingCreate(prev => ({
-                              ...prev,
-                              [dayString]: true
-                            }));
-                          }}
-                        />
-
                         {/* Drag-to-create preview */}
                         {weeklyDraggingCreate[dayString] && weeklyDragCreateStart[dayString] && weeklyDragCreateEnd[dayString] && (() => {
                           const start = weeklyDragCreateStart[dayString];
@@ -2774,6 +3067,9 @@ export const DailyPlanner = () => {
                     </div>
                   );
                 })}
+                    </div>
+                  </div>
+                </ScrollArea>
                 </div>
               </div>
             </CardContent>

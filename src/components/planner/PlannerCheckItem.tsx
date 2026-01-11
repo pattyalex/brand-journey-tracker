@@ -300,15 +300,20 @@ export const PlannerCheckItem = ({
           )}
 
           <div
-            className={`flex-1 text-sm ${item.isCompleted ? 'line-through text-gray-400' : 'text-gray-800'} cursor-pointer overflow-visible flex items-center pr-5 leading-snug`}
+            className={`flex-1 text-sm ${item.isCompleted ? 'line-through text-gray-400' : item.isPlaceholder ? 'text-gray-500' : 'text-gray-800'} cursor-pointer overflow-visible flex items-center pr-5 leading-snug gap-2`}
           >
             <span
               ref={textSpanRef}
-              className="break-words whitespace-normal font-normal cursor-pointer"
+              className={`break-words whitespace-normal font-normal cursor-pointer ${item.isPlaceholder ? 'italic' : ''}`}
               onClick={handleClick}
             >
               {item.text}
             </span>
+            {item.isPlaceholder && (
+              <span className="text-[9px] px-1.5 py-0.5 bg-gray-200 text-gray-600 rounded-full font-medium flex-shrink-0">
+                Example
+              </span>
+            )}
           </div>
 
           {/* Action buttons - vertically stacked on right */}

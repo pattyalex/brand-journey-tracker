@@ -163,6 +163,8 @@ export const PlannerSection = ({
     const fromDate = e.dataTransfer.getData('fromDate');
     const fromAllTasks = e.dataTransfer.getData('fromAllTasks');
 
+    console.log('🎯 DROP at index', index, '- taskId:', taskId, 'fromDate:', fromDate, 'fromAllTasks:', fromAllTasks);
+
     // For All Tasks section
     if (isAllTasksSection) {
       // Internal reordering within All Tasks
@@ -175,9 +177,13 @@ export const PlannerSection = ({
           onReorderItems(newItems);
         }
       }
-      // External drop from calendar to All Tasks
-      else if (fromDate && fromAllTasks === 'false' && taskId && onDropTaskFromCalendar) {
-        onDropTaskFromCalendar(taskId, fromDate, index);
+      // External drop from calendar/weekly to All Tasks
+      else if (fromDate && fromAllTasks === 'false' && taskId) {
+        console.log('✅ External drop to All Tasks');
+        if (onDropTaskFromCalendar) {
+          console.log('Calling onDropTaskFromCalendar with index:', index);
+          onDropTaskFromCalendar(taskId, fromDate, index);
+        }
       }
     }
 
@@ -308,20 +314,45 @@ export const PlannerSection = ({
           className={`${isAllTasksSection ? 'h-full' : isMobile ? 'h-[calc(100vh-200px)]' : 'h-[calc(100vh-180px)]'}`}
         >
           <div
-            className="space-y-2.5 pr-1 pb-1"
+            className="space-y-2.5 pr-1 pb-1 min-h-full flex flex-col"
+            onDragOver={(e) => {
+              if (isAllTasksSection) {
+                e.preventDefault();
+                // If no specific item is being hovered, default to dropping at the end
+                if (dropIndicatorIndex === null) {
+                  setDropIndicatorIndex(items.length);
+                }
+              }
+            }}
             onDragLeave={(e) => {
               // Clear drop indicator when leaving the list
               if (!e.currentTarget.contains(e.relatedTarget as Node)) {
                 setDropIndicatorIndex(null);
               }
             }}
-            onDrop={() => {
+            onDrop={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+
+              // Handle drop anywhere in All Tasks section
+              if (isAllTasksSection) {
+                const taskId = e.dataTransfer.getData('taskId');
+                const fromDate = e.dataTransfer.getData('fromDate');
+                const fromAllTasks = e.dataTransfer.getData('fromAllTasks');
+
+                // External drop from calendar to All Tasks (add to end if no specific position)
+                if (fromDate && fromAllTasks === 'false' && taskId && onDropTaskFromCalendar) {
+                  const targetIndex = dropIndicatorIndex !== null ? dropIndicatorIndex : items.length;
+                  onDropTaskFromCalendar(taskId, fromDate, targetIndex);
+                }
+              }
+
               // Clear drop indicator after drop
               setDropIndicatorIndex(null);
             }}
           >
             <div
-              className="space-y-2.5 min-h-[20px]"
+              className="space-y-2.5 min-h-[20px] flex-shrink-0"
             >
               {items.map((item, index) => (
                 <div key={item.id}>
@@ -376,6 +407,7 @@ export const PlannerSection = ({
                 className="min-h-[10px]"
                 onDragOver={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
                   if (isAllTasksSection) {
                     setDropIndicatorIndex(items.length);
                   }
@@ -388,6 +420,8 @@ export const PlannerSection = ({
                   const fromDate = e.dataTransfer.getData('fromDate');
                   const fromAllTasks = e.dataTransfer.getData('fromAllTasks');
 
+                  console.log('🎯 DROP at end zone - taskId:', taskId, 'fromDate:', fromDate, 'fromAllTasks:', fromAllTasks);
+
                   if (isAllTasksSection) {
                     // Internal reordering - move to end
                     if (draggedIndex !== null) {
@@ -398,9 +432,13 @@ export const PlannerSection = ({
                         onReorderItems(newItems);
                       }
                     }
-                    // External drop from calendar - add to end
-                    else if (fromDate && fromAllTasks === 'false' && taskId && onDropTaskFromCalendar) {
-                      onDropTaskFromCalendar(taskId, fromDate, items.length);
+                    // External drop from calendar/weekly - add to end
+                    else if (fromDate && fromAllTasks === 'false' && taskId) {
+                      console.log('✅ External drop to end of All Tasks');
+                      if (onDropTaskFromCalendar) {
+                        console.log('Calling onDropTaskFromCalendar with index:', items.length);
+                        onDropTaskFromCalendar(taskId, fromDate, items.length);
+                      }
                     }
                   }
                   setDropIndicatorIndex(null);
@@ -437,6 +475,47 @@ export const PlannerSection = ({
                 <Plus size={16} strokeWidth={2} className="mr-1" />
                 <span>Add task</span>
               </button>
+            )}
+
+            {/* Flexible drop zone below the button for All Tasks section */}
+            {isAllTasksSection && (
+              <div
+                className="flex-1"
+                style={{ minHeight: '200px' }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setDropIndicatorIndex(items.length);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+
+                  const taskId = e.dataTransfer.getData('taskId');
+                  const fromDate = e.dataTransfer.getData('fromDate');
+                  const fromAllTasks = e.dataTransfer.getData('fromAllTasks');
+
+                  console.log('🎯 DROP in bottom zone - taskId:', taskId, 'fromDate:', fromDate, 'fromAllTasks:', fromAllTasks);
+
+                  // Drop to bottom of All Tasks list - handle both calendar and weekly drops
+                  if (fromDate && fromAllTasks === 'false' && taskId) {
+                    if (onDropTaskFromCalendar) {
+                      console.log('✅ Calling onDropTaskFromCalendar');
+                      onDropTaskFromCalendar(taskId, fromDate, items.length);
+                    } else if (onDropTaskFromWeekly) {
+                      console.log('✅ Calling onDropTaskFromWeekly');
+                      // For drop to bottom, we don't have a target task, so use the last item or empty string
+                      const lastTaskId = items.length > 0 ? items[items.length - 1].id : '';
+                      onDropTaskFromWeekly(taskId, lastTaskId, fromDate);
+                    }
+                  }
+
+                  setDropIndicatorIndex(null);
+                }}
+              >
+                {/* Visual indicator that this is a drop zone */}
+                <div className="h-full w-full" />
+              </div>
             )}
           </div>
         </ScrollArea>
