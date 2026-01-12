@@ -11,6 +11,7 @@ import {
   SidebarMenuSubItem,
   SidebarMenuSubButton
 } from "@/components/ui/sidebar";
+import { getString, setString, sidebarExpanded } from '@/lib/storage';
 
 interface SidebarMenuItemProps {
   item: MenuItem;
@@ -20,7 +21,7 @@ interface SidebarMenuItemProps {
 const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
   // Initialize expanded state from localStorage or default to false
   const [isExpanded, setIsExpanded] = useState(() => {
-    const savedState = localStorage.getItem(`sidebar-expanded-${item.title}`);
+    const savedState = getString(sidebarExpanded(item.title));
     return savedState ? JSON.parse(savedState) : false;
   });
   
@@ -28,7 +29,7 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
   
   // Save expanded state to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem(`sidebar-expanded-${item.title}`, JSON.stringify(isExpanded));
+    setString(sidebarExpanded(item.title), JSON.stringify(isExpanded));
   }, [isExpanded, item.title]);
   
   // Toggle expanded state when clicking the arrow

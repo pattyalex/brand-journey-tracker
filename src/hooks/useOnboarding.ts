@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
-
-const ONBOARDING_STORAGE_KEY = 'hasSeenGoalsOnboarding';
+import { StorageKeys, getString, remove, setString } from '@/lib/storage';
 
 export const useOnboarding = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     // Check if user has seen the onboarding before
-    const hasSeenOnboarding = localStorage.getItem(ONBOARDING_STORAGE_KEY);
+    const hasSeenOnboarding = getString(StorageKeys.hasSeenGoalsOnboarding);
 
     if (!hasSeenOnboarding) {
       // Show onboarding for first-time users
@@ -16,12 +15,12 @@ export const useOnboarding = () => {
   }, []);
 
   const completeOnboarding = () => {
-    localStorage.setItem(ONBOARDING_STORAGE_KEY, 'true');
+    setString(StorageKeys.hasSeenGoalsOnboarding, 'true');
     setShowOnboarding(false);
   };
 
   const resetOnboarding = () => {
-    localStorage.removeItem(ONBOARDING_STORAGE_KEY);
+    remove(StorageKeys.hasSeenGoalsOnboarding);
     setShowOnboarding(true);
   };
 

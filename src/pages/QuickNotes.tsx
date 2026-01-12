@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
+import { StorageKeys, getString, setString } from "@/lib/storage";
 
 type Note = {
   id: string;
@@ -23,7 +24,7 @@ const QuickNotes = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    const savedNotes = localStorage.getItem("quickNotes");
+    const savedNotes = getString(StorageKeys.quickNotes);
     if (savedNotes) {
       try {
         // Convert all existing notes to the new format (without type)
@@ -43,7 +44,7 @@ const QuickNotes = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("quickNotes", JSON.stringify(notes));
+    setString(StorageKeys.quickNotes, JSON.stringify(notes));
   }, [notes]);
 
   const handleAddNote = () => {

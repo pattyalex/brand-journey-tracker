@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle, Image as ImageIcon } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
+import { StorageKeys, getString, setString } from "@/lib/storage";
 
 interface VisionItem {
   id: string;
@@ -18,7 +19,7 @@ const VisionBoard = () => {
   const [visionItems, setVisionItems] = useState<VisionItem[]>([]);
   
   useEffect(() => {
-    const savedItems = localStorage.getItem("visionBoardItems");
+    const savedItems = getString(StorageKeys.visionBoardItems);
     if (savedItems) {
       try {
         setVisionItems(JSON.parse(savedItems));
@@ -29,7 +30,7 @@ const VisionBoard = () => {
   }, []);
   
   useEffect(() => {
-    localStorage.setItem("visionBoardItems", JSON.stringify(visionItems));
+    setString(StorageKeys.visionBoardItems, JSON.stringify(visionItems));
   }, [visionItems]);
 
   // Placeholder function for adding a new vision item

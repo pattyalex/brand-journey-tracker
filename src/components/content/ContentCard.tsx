@@ -11,6 +11,7 @@ import { ContentCardActions } from "./card/ContentCardActions";
 import { RestoreToIdeasButton } from "./card/RestoreToIdeasButton";
 import { Pillar } from "@/pages/BankOfContent";
 import { format } from "date-fns";
+import { StorageKeys, contentFormatsByPillar, getString, setString } from "@/lib/storage";
 
 const ContentCard = ({
   content,
@@ -79,7 +80,7 @@ const ContentCard = ({
   useEffect(() => {
     if (content.bucketId) {
       try {
-        const savedFormats = localStorage.getItem(`content-formats-${pillar.id}`);
+        const savedFormats = getString(contentFormatsByPillar(pillar.id));
         if (savedFormats) {
           const parsedFormats = JSON.parse(savedFormats);
           const format = parsedFormats.find((f: any) => f.id === content.bucketId);
@@ -149,7 +150,7 @@ const ContentCard = ({
     
     try {
       let readyToScheduleContent = [];
-      const storedContent = localStorage.getItem('readyToScheduleContent');
+      const storedContent = getString(StorageKeys.readyToScheduleContent);
       
       if (storedContent) {
         readyToScheduleContent = JSON.parse(storedContent);
@@ -173,7 +174,7 @@ const ContentCard = ({
       };
       
       readyToScheduleContent.push(contentToSchedule);
-      localStorage.setItem('readyToScheduleContent', JSON.stringify(readyToScheduleContent));
+      setString(StorageKeys.readyToScheduleContent, JSON.stringify(readyToScheduleContent));
       
       onDeleteContent(content.id);
       
@@ -199,14 +200,14 @@ const ContentCard = ({
         
         if (isInCalendarView) {
           let contents = [];
-          const storedContent = localStorage.getItem('readyToScheduleContent');
+          const storedContent = getString(StorageKeys.readyToScheduleContent);
           
           if (storedContent) {
             contents = JSON.parse(storedContent);
             const index = contents.findIndex((item: any) => item.id === content.id);
             if (index >= 0) {
               contents[index] = updatedContent;
-              localStorage.setItem('readyToScheduleContent', JSON.stringify(contents));
+              setString(StorageKeys.readyToScheduleContent, JSON.stringify(contents));
             }
           }
         }

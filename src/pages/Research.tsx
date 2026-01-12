@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { StorageKeys, getString, setString } from "@/lib/storage";
 
 interface ResearchItem {
   id: string;
@@ -27,7 +28,7 @@ const Research = () => {
   
   // Load research items from localStorage on component mount
   useEffect(() => {
-    const savedItems = localStorage.getItem("researchItems");
+    const savedItems = getString(StorageKeys.researchItems);
     if (savedItems) {
       try {
         setResearchItems(JSON.parse(savedItems));
@@ -39,7 +40,7 @@ const Research = () => {
   
   // Save research items to localStorage when they change
   useEffect(() => {
-    localStorage.setItem("researchItems", JSON.stringify(researchItems));
+    setString(StorageKeys.researchItems, JSON.stringify(researchItems));
   }, [researchItems]);
 
   const handleAddItem = () => {

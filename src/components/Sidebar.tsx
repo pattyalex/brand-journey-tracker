@@ -23,10 +23,11 @@ import SidebarMenuItemComponent from './sidebar/SidebarMenuItemComponent';
 import AddPageForm from './sidebar/AddPageForm';
 import SidebarFooterSection from './sidebar/SidebarFooterSection';
 import { toast } from 'sonner';
+import { StorageKeys, getString, setString } from '@/lib/storage';
 
 const Sidebar = () => {
   const getSavedMenuItems = () => {
-    const saved = localStorage.getItem('sidebarMenuItems');
+    const saved = getString(StorageKeys.sidebarMenuItems);
     return saved ? JSON.parse(saved) : defaultMenuItems;
   };
 
@@ -36,13 +37,13 @@ const Sidebar = () => {
 
   // Save sidebar state to localStorage
   useEffect(() => {
-    localStorage.setItem('sidebarState', state);
+    setString(StorageKeys.sidebarState, state);
   }, [state]);
 
   const handleDeleteItem = (itemTitle: string) => {
     const updatedItems = menuItems.filter(item => item.title !== itemTitle);
     setMenuItems(updatedItems);
-    localStorage.setItem('sidebarMenuItems', JSON.stringify(updatedItems));
+    setString(StorageKeys.sidebarMenuItems, JSON.stringify(updatedItems));
     toast.success(`"${itemTitle}" removed from sidebar`);
   };
 

@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Sparkles, ArrowRight, Plus, Trash2, ChevronLeft } from "lucide-react";
+import { StorageKeys, getString, setString } from "@/lib/storage";
 
 interface TitleHookSuggestionsProps {
   onSelectHook: (hook: string) => void;
@@ -419,14 +420,14 @@ const TitleHookSuggestions = ({
   const setDialogOpen = onExternalOpenChange || setInternalDialogOpen;
 
   useEffect(() => {
-    const savedHooks = localStorage.getItem("customHooks");
+    const savedHooks = getString(StorageKeys.customHooks);
     if (savedHooks) {
       setCustomHooks(JSON.parse(savedHooks));
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("customHooks", JSON.stringify(customHooks));
+    setString(StorageKeys.customHooks, JSON.stringify(customHooks));
   }, [customHooks]);
 
   const handleSelectCategory = (category: string) => {

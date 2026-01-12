@@ -14,6 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { StorageKeys, getString, setString } from "@/lib/storage";
+import { EVENTS, on } from "@/lib/events";
 import {
   PenTool,
   Users,
@@ -135,7 +137,7 @@ const StrategyGrowth = () => {
   }
 
   const [monthlyGoalsData, setMonthlyGoalsData] = useState<MonthlyGoalsData>(() => {
-    const saved = localStorage.getItem('monthlyGoalsData');
+    const saved = getString(StorageKeys.monthlyGoalsData);
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -146,7 +148,7 @@ const StrategyGrowth = () => {
     return {};
   });
   const [shortTermGoals, setShortTermGoals] = useState<Goal[]>(() => {
-    const saved = localStorage.getItem('shortTermGoals');
+    const saved = getString(StorageKeys.shortTermGoals);
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -157,7 +159,7 @@ const StrategyGrowth = () => {
     return [];
   });
   const [longTermGoals, setLongTermGoals] = useState<Goal[]>(() => {
-    const saved = localStorage.getItem('longTermGoals');
+    const saved = getString(StorageKeys.longTermGoals);
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -213,7 +215,7 @@ const StrategyGrowth = () => {
   // Save goals to localStorage whenever they change
   useEffect(() => {
     try {
-      localStorage.setItem('monthlyGoalsData', JSON.stringify(monthlyGoalsData));
+      setString(StorageKeys.monthlyGoalsData, JSON.stringify(monthlyGoalsData));
     } catch (error) {
       console.error('Failed to save monthly goals data:', error);
     }
@@ -221,7 +223,7 @@ const StrategyGrowth = () => {
 
   useEffect(() => {
     try {
-      localStorage.setItem('shortTermGoals', JSON.stringify(shortTermGoals));
+      setString(StorageKeys.shortTermGoals, JSON.stringify(shortTermGoals));
     } catch (error) {
       console.error('Failed to save short-term goals:', error);
     }
@@ -229,7 +231,7 @@ const StrategyGrowth = () => {
 
   useEffect(() => {
     try {
-      localStorage.setItem('longTermGoals', JSON.stringify(longTermGoals));
+      setString(StorageKeys.longTermGoals, JSON.stringify(longTermGoals));
     } catch (error) {
       console.error('Failed to save long-term goals:', error);
     }
@@ -253,10 +255,10 @@ const StrategyGrowth = () => {
     };
 
     window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('monthlyGoalsUpdated', handleCustomUpdate as EventListener);
+    const unsubscribe = on(window, EVENTS.monthlyGoalsUpdated, handleCustomUpdate as EventListener);
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('monthlyGoalsUpdated', handleCustomUpdate as EventListener);
+      unsubscribe();
     };
   }, []);
 

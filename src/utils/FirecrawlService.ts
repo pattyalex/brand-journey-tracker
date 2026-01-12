@@ -1,4 +1,6 @@
 
+import { StorageKeys, getString, setString } from "@/lib/storage";
+
 interface ErrorResponse {
   success: false;
   error: string;
@@ -17,15 +19,14 @@ interface CrawlStatusResponse {
 type CrawlResponse = CrawlStatusResponse | ErrorResponse;
 
 export class FirecrawlService {
-  private static API_KEY_STORAGE_KEY = 'firecrawl_api_key';
   private static API_BASE_URL = 'https://api.firecrawl.dev'; // Replace with actual API URL when available
 
   static saveApiKey(apiKey: string): void {
-    localStorage.setItem(this.API_KEY_STORAGE_KEY, apiKey);
+    setString(StorageKeys.firecrawlApiKey, apiKey);
   }
 
   static getApiKey(): string | null {
-    return localStorage.getItem(this.API_KEY_STORAGE_KEY);
+    return getString(StorageKeys.firecrawlApiKey);
   }
 
   static async crawlSocialContent(platform: string): Promise<{ success: boolean; error?: string; data?: any }> {

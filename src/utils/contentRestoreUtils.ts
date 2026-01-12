@@ -1,13 +1,14 @@
 
 import { ContentItem } from "@/types/content";
+import { StorageKeys, getString, remove, setString } from "@/lib/storage";
 
 export const restoreContentToIdeas = (content: ContentItem, originalPillarId: string | undefined = undefined) => {
   try {
     // Get existing restored content from localStorage
-    const restoredIdeasKey = 'restoredToIdeasContent';
+    const restoredIdeasKey = StorageKeys.restoredToIdeasContent;
     let restoredIdeas = [];
     
-    const storedContent = localStorage.getItem(restoredIdeasKey);
+    const storedContent = getString(restoredIdeasKey);
     if (storedContent) {
       restoredIdeas = JSON.parse(storedContent);
     }
@@ -41,12 +42,12 @@ export const restoreContentToIdeas = (content: ContentItem, originalPillarId: st
     });
     
     // Save back to localStorage
-    localStorage.setItem(restoredIdeasKey, JSON.stringify(restoredIdeas));
+    setString(restoredIdeasKey, JSON.stringify(restoredIdeas));
     
     // Also add a log entry to track the restoration
     let restorationLog = [];
-    const logKey = 'contentRestorationLog';
-    const existingLog = localStorage.getItem(logKey);
+    const logKey = StorageKeys.contentRestorationLog;
+    const existingLog = getString(logKey);
     
     if (existingLog) {
       restorationLog = JSON.parse(existingLog);
@@ -59,7 +60,7 @@ export const restoreContentToIdeas = (content: ContentItem, originalPillarId: st
       restoredAt: new Date().toISOString()
     });
     
-    localStorage.setItem(logKey, JSON.stringify(restorationLog));
+    setString(logKey, JSON.stringify(restorationLog));
     
     console.log(`Content "${content.title}" (ID: ${content.id}) has been marked for restoration to Ideas Pillar ${finalPillarId || "unknown"}`);
     return true;
@@ -71,8 +72,8 @@ export const restoreContentToIdeas = (content: ContentItem, originalPillarId: st
 
 export const getRestoredIdeas = (): ContentItem[] => {
   try {
-    const restoredIdeasKey = 'restoredToIdeasContent';
-    const storedContent = localStorage.getItem(restoredIdeasKey);
+    const restoredIdeasKey = StorageKeys.restoredToIdeasContent;
+    const storedContent = getString(restoredIdeasKey);
     
     if (storedContent) {
       const restoredIdeas = JSON.parse(storedContent);
@@ -88,7 +89,7 @@ export const getRestoredIdeas = (): ContentItem[] => {
       });
       
       // Clear the restored ideas from localStorage after retrieving them
-      localStorage.removeItem(restoredIdeasKey);
+      remove(restoredIdeasKey);
       
       return processedIdeas;
     }
@@ -102,8 +103,8 @@ export const getRestoredIdeas = (): ContentItem[] => {
 
 export const getRestorationLog = () => {
   try {
-    const logKey = 'contentRestorationLog';
-    const existingLog = localStorage.getItem(logKey);
+    const logKey = StorageKeys.contentRestorationLog;
+    const existingLog = getString(logKey);
     
     if (existingLog) {
       return JSON.parse(existingLog);
@@ -117,5 +118,5 @@ export const getRestorationLog = () => {
 };
 
 export const clearRestorationLog = () => {
-  localStorage.removeItem('contentRestorationLog');
+  remove(StorageKeys.contentRestorationLog);
 };

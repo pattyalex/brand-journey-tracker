@@ -1,0 +1,15 @@
+# Refactor Invariants
+
+1. Auth onboarding checks must keep the localStorage short-circuit: if `hasCompletedOnboarding` is `true`, onboarding is considered complete without a Supabase call. (src/contexts/AuthContext.tsx:38-45)
+2. Logout must not clear `hasCompletedOnboarding`; it only clears the `user` key and resets local state. (src/contexts/AuthContext.tsx:154-166)
+3. Completing onboarding must persist `hasCompletedOnboarding` to localStorage. (src/contexts/AuthContext.tsx:171-173)
+4. Goals onboarding visibility relies on the `hasSeenGoalsOnboarding` localStorage key. (src/hooks/useOnboarding.ts:3-25)
+5. DailyPlanner must initialize `selectedTimezone` from localStorage (default `auto`) and persist updates. (src/components/planner/DailyPlanner.tsx:115-139)
+6. DailyPlanner must read/write `todayZoomLevel` in localStorage for Today view zoom persistence. (src/components/planner/DailyPlanner.tsx:121-123,552-559)
+7. DailyPlanner must use `plannerLastAccessDate` to reset scroll positions daily and persist `todayScrollPosition`/`weeklyScrollPosition`. (src/components/planner/DailyPlanner.tsx:146-174,592-599)
+8. DailyPlanner must load and persist `plannerData`, `allTasks`, `scheduledContent`, and `globalPlannerData` via localStorage. (src/components/planner/DailyPlanner.tsx:498-520,580-589,700-703)
+9. Content calendar state must continue using `readyToScheduleContent` and `scheduledContent` in localStorage, and `scheduledContentUpdated` must fire on same-tab updates. (src/hooks/useCalendarState.ts:21-55)
+10. HomePage must continue syncing tasks by writing `allTasks` to localStorage and dispatching `allTasksUpdated`. (src/pages/HomePage.tsx:117-276)
+11. Monthly goals must continue saving `monthlyGoalsData` to localStorage and broadcasting `monthlyGoalsUpdated`, which StrategyGrowth listens for. (src/pages/HomePage.tsx:290-295; src/pages/StrategyGrowth.tsx:250-257)
+12. Content restoration must keep the `restoredToIdeasContent` and `contentRestorationLog` localStorage flow (write, read, clear). (src/utils/contentRestoreUtils.ts:7-92)
+13. OpenAI settings must keep `openai_api_key`, `openai_api_key_masked`, and `openai_key_set` localStorage behavior. (src/components/settings/OpenAISettings.tsx:17-47)

@@ -24,6 +24,35 @@ export default tseslint.config(
         { allowConstantExport: true },
       ],
       "@typescript-eslint/no-unused-vars": "off",
+      "no-restricted-globals": [
+        "error",
+        {
+          name: "localStorage",
+          message: "Use src/lib/storage.ts for storage access.",
+        },
+      ],
+    },
+  },
+  {
+    files: ["**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "MemberExpression[object.name='window'][property.name='localStorage']",
+          message: "Use src/lib/storage.ts for storage access.",
+        },
+        {
+          selector: "MemberExpression[object.name='globalThis'][property.name='localStorage']",
+          message: "Use src/lib/storage.ts for storage access.",
+        },
+      ],
+    },
+  },
+  {
+    files: ["src/lib/storage.ts"],
+    rules: {
+      "no-restricted-syntax": "off",
     },
   }
 );

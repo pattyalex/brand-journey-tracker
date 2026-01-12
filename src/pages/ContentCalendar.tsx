@@ -17,6 +17,7 @@ import CalendarDayCell from "@/components/content/calendar/CalendarDayCell";
 import { useCalendarState } from "@/hooks/useCalendarState";
 import { getCalendarDays, getContentForDate } from "@/utils/calendarUtils";
 import { PlannerDay } from "@/types/planner";
+import { StorageKeys, getString } from "@/lib/storage";
 
 const getDateString = (date: Date): string => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -44,7 +45,7 @@ const ContentCalendar = () => {
 
   // Load planner data from localStorage
   useEffect(() => {
-    const savedData = localStorage.getItem("plannerData");
+    const savedData = getString(StorageKeys.plannerData);
     if (savedData) {
       setPlannerData(JSON.parse(savedData));
     }

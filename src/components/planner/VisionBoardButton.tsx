@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { VisionBoardData } from "@/types/planner";
+import { StorageKeys, getString, remove, setString } from "@/lib/storage";
 
 export const VisionBoardButton = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,7 +18,7 @@ export const VisionBoardButton = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const savedData = localStorage.getItem("visionBoardData");
+    const savedData = getString(StorageKeys.visionBoardData);
     if (savedData) {
       setVisionBoardData(JSON.parse(savedData));
     }
@@ -48,7 +49,7 @@ export const VisionBoardButton = () => {
       };
 
       setVisionBoardData(newVisionBoard);
-      localStorage.setItem("visionBoardData", JSON.stringify(newVisionBoard));
+      setString(StorageKeys.visionBoardData, JSON.stringify(newVisionBoard));
       setActiveSection("view");
       toast.success("Vision board uploaded!");
     };
@@ -78,14 +79,14 @@ export const VisionBoardButton = () => {
     };
 
     setVisionBoardData(newVisionBoard);
-    localStorage.setItem("visionBoardData", JSON.stringify(newVisionBoard));
+    setString(StorageKeys.visionBoardData, JSON.stringify(newVisionBoard));
     setActiveSection("view");
     toast.success("Vision board link saved!");
   };
 
   const handleRemoveVisionBoard = () => {
     setVisionBoardData(null);
-    localStorage.removeItem("visionBoardData");
+    remove(StorageKeys.visionBoardData);
     setTitle("");
     setLinkUrl("");
     toast.success("Vision board removed");

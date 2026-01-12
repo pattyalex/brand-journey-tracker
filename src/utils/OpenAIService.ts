@@ -1,5 +1,6 @@
 
 import { toast } from "sonner";
+import { StorageKeys, getString } from "@/lib/storage";
 
 export interface OpenAIResponse {
   content: string;
@@ -9,12 +10,12 @@ export interface OpenAIResponse {
 export class OpenAIService {
   // Check if the API key is available
   static hasApiKey(): boolean {
-    return localStorage.getItem("openai_key_set") === "true";
+    return getString(StorageKeys.openaiKeySet) === "true";
   }
   
   // Get the API key from local storage
   static getApiKey(): string | null {
-    return localStorage.getItem("openai_api_key");
+    return getString(StorageKeys.openaiApiKey);
   }
   
   // Generate content recommendations based on platform and handle

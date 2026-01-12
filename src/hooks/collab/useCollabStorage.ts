@@ -1,5 +1,6 @@
 
 import { CollabBrand, TableColumn } from "@/types/collab";
+import { StorageKeys, getString, setString } from "@/lib/storage";
 
 // Default column configuration
 export const DEFAULT_COLUMNS: TableColumn[] = [
@@ -45,7 +46,7 @@ export const createNewBrand = (): CollabBrand => ({
 
 // Load brands from local storage
 export const loadBrands = (): CollabBrand[] => {
-  const savedBrands = localStorage.getItem('collabBrands');
+  const savedBrands = getString(StorageKeys.collabBrands);
   if (savedBrands) {
     const parsedBrands = JSON.parse(savedBrands);
     return parsedBrands.map((brand: CollabBrand) => ({
@@ -81,7 +82,7 @@ export const loadBrands = (): CollabBrand[] => {
 
 // Load columns from local storage with migration handling
 export const loadColumns = (): TableColumn[] => {
-  const savedColumns = localStorage.getItem('collabColumns');
+  const savedColumns = getString(StorageKeys.collabColumns);
   if (!savedColumns) {
     return DEFAULT_COLUMNS;
   }
@@ -125,9 +126,9 @@ export const loadColumns = (): TableColumn[] => {
 
 // Save data to local storage
 export const saveBrands = (brands: CollabBrand[]): void => {
-  localStorage.setItem('collabBrands', JSON.stringify(brands));
+  setString(StorageKeys.collabBrands, JSON.stringify(brands));
 };
 
 export const saveColumns = (columns: TableColumn[]): void => {
-  localStorage.setItem('collabColumns', JSON.stringify(columns));
+  setString(StorageKeys.collabColumns, JSON.stringify(columns));
 };

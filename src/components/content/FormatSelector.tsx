@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion } from "framer-motion";
+import { StorageKeys, getString, setString } from "@/lib/storage";
 
 // Common content formats that creators might use
 const DEFAULT_PREDEFINED_FORMATS = [
@@ -41,7 +42,7 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
   const [isAddingCustom, setIsAddingCustom] = useState(false);
   const [formats, setFormats] = useState<string[]>(() => {
     // Try to load saved formats from localStorage, fallback to defaults
-    const savedFormats = localStorage.getItem("contentFormats");
+    const savedFormats = getString(StorageKeys.contentFormats);
     return savedFormats ? JSON.parse(savedFormats) : DEFAULT_PREDEFINED_FORMATS;
   });
   const [scrollPosition, setScrollPosition] = useState(0);
@@ -49,7 +50,7 @@ const FormatSelector = ({ selectedFormat, onFormatChange }: FormatSelectorProps)
 
   // Save formats to localStorage whenever they change
   const saveFormats = (newFormats: string[]) => {
-    localStorage.setItem("contentFormats", JSON.stringify(newFormats));
+    setString(StorageKeys.contentFormats, JSON.stringify(newFormats));
     setFormats(newFormats);
   };
 

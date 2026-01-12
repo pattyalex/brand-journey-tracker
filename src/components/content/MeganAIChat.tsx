@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SendIcon, XIcon } from "lucide-react";
 import { toast } from "sonner";
+import { StorageKeys, getString, setString } from "@/lib/storage";
 
 interface Message {
   id: string;
@@ -35,7 +36,7 @@ const MeganAIChat = ({ onClose, contextData }: MeganAIChatProps) => {
   
   const [inputValue, setInputValue] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [apiKey, setApiKey] = useState<string | null>(localStorage.getItem("openai_api_key"));
+  const [apiKey, setApiKey] = useState<string | null>(getString(StorageKeys.openaiApiKey));
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -72,7 +73,7 @@ const MeganAIChat = ({ onClose, contextData }: MeganAIChatProps) => {
   };
 
   const saveApiKey = (key: string) => {
-    localStorage.setItem("openai_api_key", key);
+    setString(StorageKeys.openaiApiKey, key);
     setApiKey(key);
     toast.success("API key saved successfully!");
   };

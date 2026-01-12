@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { addMonths, subMonths } from "date-fns";
 import { ContentItem } from "@/types/content";
 import { toast } from "sonner";
+import { StorageKeys, getString, setString } from "@/lib/storage";
+import { EVENTS, emit } from "@/lib/events";
 
 export const useCalendarState = () => {
   const getToday = () => new Date();
@@ -18,7 +20,7 @@ export const useCalendarState = () => {
 
   useEffect(() => {
     try {
-      const readyToScheduleData = localStorage.getItem('readyToScheduleContent');
+      const readyToScheduleData = getString(StorageKeys.readyToScheduleContent);
       if (readyToScheduleData) {
         const parsedData = JSON.parse(readyToScheduleData);
         const contentWithDates = parsedData.map((item: any) => ({
@@ -29,7 +31,7 @@ export const useCalendarState = () => {
         setReadyToScheduleContent(contentWithDates);
       }
 
-      const scheduledData = localStorage.getItem('scheduledContent');
+      const scheduledData = getString(StorageKeys.scheduledContent);
       if (scheduledData) {
         const parsedData = JSON.parse(scheduledData);
         const contentWithDates = parsedData.map((item: any) => ({
@@ -45,14 +47,13 @@ export const useCalendarState = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('readyToScheduleContent', JSON.stringify(readyToScheduleContent));
+    setString(StorageKeys.readyToScheduleContent, JSON.stringify(readyToScheduleContent));
   }, [readyToScheduleContent]);
 
   useEffect(() => {
-    localStorage.setItem('scheduledContent', JSON.stringify(scheduledContent));
+    setString(StorageKeys.scheduledContent, JSON.stringify(scheduledContent));
     // Dispatch custom event for same-tab updates
-    const event = new CustomEvent('scheduledContentUpdated', { detail: scheduledContent });
-    window.dispatchEvent(event);
+    emit(window, EVENTS.scheduledContentUpdated, scheduledContent);
   }, [scheduledContent]);
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
@@ -98,4 +99,3 @@ export const useCalendarState = () => {
     handleDateChange
   };
 };
-

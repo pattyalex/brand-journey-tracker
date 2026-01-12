@@ -12,6 +12,7 @@ import TagsSection from "./TagsSection";
 import InspirationSection from "./InspirationSection";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { Pillar } from "@/pages/BankOfContent";
+import { StorageKeys, getString } from "@/lib/storage";
 
 interface DialogContentProps {
   title: string;
@@ -122,7 +123,7 @@ const DialogContent = ({
 
   useEffect(() => {
     try {
-      const savedPillars = localStorage.getItem("pillars");
+      const savedPillars = getString(StorageKeys.pillars);
       if (savedPillars) {
         setPillars(JSON.parse(savedPillars));
       }

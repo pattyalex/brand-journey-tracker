@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { FileText } from 'lucide-react';
 import { MenuItem } from '@/types/sidebar';
 import { SidebarMenuItem } from "@/components/ui/sidebar";
+import { StorageKeys, setString } from '@/lib/storage';
 
 interface AddPageFormProps {
   menuItems: MenuItem[];
@@ -36,7 +37,7 @@ const AddPageForm = ({ menuItems, setMenuItems, onCancel }: AddPageFormProps) =>
 
     const updatedItems = [...menuItems, newPage];
     setMenuItems(updatedItems);
-    localStorage.setItem('sidebarMenuItems', JSON.stringify(updatedItems));
+    setString(StorageKeys.sidebarMenuItems, JSON.stringify(updatedItems));
     
     toast.success(`"${newPageTitle}" added to sidebar`);
     onCancel();

@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, Instagram, Youtube, AtSign } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { StorageKeys, getString, setString } from "@/lib/storage";
 import { ContentItem } from "@/types/content";
 import { formatColors } from "@/utils/calendarUtils";
 
@@ -72,7 +73,7 @@ const CalendarContentItem: React.FC<CalendarContentItemProps> = ({
   const handleSave = () => {
     if (editedTitle.trim() && editedTitle !== content.title) {
       // Update planner data in localStorage
-      const plannerDataStr = localStorage.getItem('plannerData');
+      const plannerDataStr = getString(StorageKeys.plannerData);
       if (plannerDataStr) {
         const plannerData = JSON.parse(plannerDataStr);
         const updatedData = plannerData.map((day: any) => ({
@@ -81,7 +82,7 @@ const CalendarContentItem: React.FC<CalendarContentItemProps> = ({
             item.id === content.id ? { ...item, text: editedTitle.trim() } : item
           )
         }));
-        localStorage.setItem('plannerData', JSON.stringify(updatedData));
+        setString(StorageKeys.plannerData, JSON.stringify(updatedData));
         window.dispatchEvent(new Event('storage'));
       }
     }
@@ -211,4 +212,3 @@ const CalendarContentItem: React.FC<CalendarContentItemProps> = ({
 };
 
 export default CalendarContentItem;
-

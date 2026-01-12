@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { contentFormatsByPillar, getString, setString } from "@/lib/storage";
 import {
   Popover,
   PopoverContent,
@@ -97,7 +98,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarName, pillarIndex }: Co
 
   useEffect(() => {
     try {
-      const savedFormats = localStorage.getItem(`content-formats-${pillarId}`);
+      const savedFormats = getString(contentFormatsByPillar(pillarId));
 
       if (savedFormats) {
         const parsedFormats = JSON.parse(savedFormats);
@@ -123,7 +124,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarName, pillarIndex }: Co
           const newDefaults = getDefaultFormats(pillarIndex);
           setContentTypes(newDefaults);
           // Save the new defaults to localStorage
-          localStorage.setItem(`content-formats-${pillarId}`, JSON.stringify(newDefaults));
+          setString(contentFormatsByPillar(pillarId), JSON.stringify(newDefaults));
         } else {
           // Use saved formats if they're not old defaults
           const formats = parsedFormats.map((format: any) => {
@@ -151,7 +152,7 @@ const ContentTypeBuckets = ({ onAddIdea, pillarId, pillarName, pillarIndex }: Co
         };
       });
       
-      localStorage.setItem(`content-formats-${pillarId}`, JSON.stringify(formatsToSave));
+      setString(contentFormatsByPillar(pillarId), JSON.stringify(formatsToSave));
     } catch (error) {
       console.error("Failed to save content formats:", error);
     }

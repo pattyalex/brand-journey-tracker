@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { AIRecommendationService, Recommendation } from "@/utils/AIRecommendationService";
 import { Sparkles } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { StorageKeys, getString, setString } from "@/lib/storage";
 
 interface AIRecommendationsProps {
   connectedPlatforms: string[];
@@ -28,7 +29,7 @@ const AIRecommendations: React.FC<AIRecommendationsProps> = ({
       setIsLoading(true);
       try {
         // Check if OpenAI API key is set
-        const hasOpenAIKey = localStorage.getItem("openai_key_set") === "true";
+        const hasOpenAIKey = getString(StorageKeys.openaiKeySet) === "true";
         
         const data = await AIRecommendationService.getRecommendations(connectedPlatforms, platformUsername);
         setRecommendations(data);
@@ -81,8 +82,8 @@ const AIRecommendations: React.FC<AIRecommendationsProps> = ({
       }));
       setShowUsernameDialog(false);
       // Local storage to persist usernames
-      const storedUsernames = JSON.parse(localStorage.getItem('platformUsernames') || '{}');
-      localStorage.setItem('platformUsernames', JSON.stringify({
+      const storedUsernames = JSON.parse(getString(StorageKeys.platformUsernames) || '{}');
+      setString(StorageKeys.platformUsernames, JSON.stringify({
         ...storedUsernames,
         [selectedPlatform]: username
       }));

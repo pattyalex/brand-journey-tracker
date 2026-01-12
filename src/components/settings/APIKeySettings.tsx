@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Key, Check, AlertTriangle } from "lucide-react";
+import { StorageKeys, getString, remove, setString } from "@/lib/storage";
 
 const APIKeySettings = () => {
   const [apiKey, setApiKey] = useState("");
@@ -14,7 +15,7 @@ const APIKeySettings = () => {
   
   useEffect(() => {
     // Check if the key is in local storage (just for UI feedback, actual key is in env)
-    setIsKeySet(!!localStorage.getItem("openai_key_set"));
+    setIsKeySet(!!getString(StorageKeys.openaiKeySet));
   }, []);
   
   const handleSaveKey = () => {
@@ -25,7 +26,7 @@ const APIKeySettings = () => {
     
     // In a real implementation, this would make a server-side request to store the key
     // For now, we'll just simulate successful storage
-    localStorage.setItem("openai_key_set", "true");
+    setString(StorageKeys.openaiKeySet, "true");
     
     // Don't actually store the key in local storage - it's a security risk
     // Instead, just store a flag that indicates the key has been set
@@ -36,7 +37,7 @@ const APIKeySettings = () => {
   
   const handleRemoveKey = () => {
     if (confirm("Are you sure you want to remove your API key? This will disable AI-powered recommendations.")) {
-      localStorage.removeItem("openai_key_set");
+      remove(StorageKeys.openaiKeySet);
       setIsKeySet(false);
       toast.info("API key removed");
     }

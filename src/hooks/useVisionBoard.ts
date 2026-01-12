@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react';
+import { StorageKeys, getString, setString } from '@/lib/storage';
 
 export interface VisionBoardData {
   images: string[];
   pinterestUrl: string;
 }
 
-const STORAGE_KEY = 'visionBoardData';
-
 export const useVisionBoard = () => {
   const [images, setImages] = useState<string[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = getString(StorageKeys.visionBoardData);
     if (saved) {
       try {
         const data = JSON.parse(saved);
@@ -22,7 +21,7 @@ export const useVisionBoard = () => {
   });
 
   const [pinterestUrl, setPinterestUrl] = useState<string>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = getString(StorageKeys.visionBoardData);
     if (saved) {
       try {
         const data = JSON.parse(saved);
@@ -49,7 +48,7 @@ export const useVisionBoard = () => {
         throw new Error('Data too large for localStorage');
       }
 
-      localStorage.setItem(STORAGE_KEY, dataString);
+      setString(StorageKeys.visionBoardData, dataString);
     } catch (error) {
       // localStorage quota exceeded
       console.error('Failed to save vision board data:', error);

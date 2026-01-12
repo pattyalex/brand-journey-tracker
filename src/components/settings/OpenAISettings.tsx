@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff, Key } from "lucide-react";
 import { toast } from "sonner";
+import { StorageKeys, getString, remove, setString } from "@/lib/storage";
 
 const OpenAISettings: React.FC = () => {
   const [apiKey, setApiKey] = useState("");
@@ -14,11 +15,11 @@ const OpenAISettings: React.FC = () => {
   
   useEffect(() => {
     // Check if the key is stored
-    const hasKey = localStorage.getItem("openai_key_set") === "true";
+    const hasKey = getString(StorageKeys.openaiKeySet) === "true";
     setIsKeySet(hasKey);
     
     // Try to get the masked key for display
-    const key = localStorage.getItem("openai_api_key_masked");
+    const key = getString(StorageKeys.openaiApiKeyMasked);
     if (key) {
       setStoredKey(key);
     }
@@ -37,14 +38,14 @@ const OpenAISettings: React.FC = () => {
     
     try {
       // Store the actual key securely
-      localStorage.setItem("openai_api_key", apiKey);
+      setString(StorageKeys.openaiApiKey, apiKey);
       
       // Store a masked version for display
       const maskedKey = `${apiKey.substring(0, 5)}...${apiKey.substring(apiKey.length - 5)}`;
-      localStorage.setItem("openai_api_key_masked", maskedKey);
+      setString(StorageKeys.openaiApiKeyMasked, maskedKey);
       
       // Set the flag indicating the key is set
-      localStorage.setItem("openai_key_set", "true");
+      setString(StorageKeys.openaiKeySet, "true");
       
       setIsKeySet(true);
       setStoredKey(maskedKey);
@@ -58,9 +59,9 @@ const OpenAISettings: React.FC = () => {
   
   const handleRemoveKey = () => {
     if (window.confirm("Are you sure you want to remove your OpenAI API key? This will disable AI-powered recommendations.")) {
-      localStorage.removeItem("openai_api_key");
-      localStorage.removeItem("openai_api_key_masked");
-      localStorage.removeItem("openai_key_set");
+      remove(StorageKeys.openaiApiKey);
+      remove(StorageKeys.openaiApiKeyMasked);
+      remove(StorageKeys.openaiKeySet);
       setIsKeySet(false);
       setStoredKey(null);
       toast.info("OpenAI API key removed");

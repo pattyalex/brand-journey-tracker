@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import DialogHeader from "@/components/content/ideaDialog/DialogHeader";
 import SimilarContentForm from "./similiarContent/DialogContent";
 import { Pillar } from "@/pages/BankOfContent";
+import { StorageKeys, getString, setString } from "@/lib/storage";
 
 interface CreateSimilarContentDialogProps {
   open: boolean;
@@ -85,7 +86,7 @@ const CreateSimilarContentDialog = ({
 
   useEffect(() => {
     try {
-      const savedPillars = localStorage.getItem("pillars");
+      const savedPillars = getString(StorageKeys.pillars);
       if (savedPillars) {
         setPillars(JSON.parse(savedPillars));
       }
@@ -148,7 +149,7 @@ const CreateSimilarContentDialog = ({
     }
 
     try {
-      const savedPillars = localStorage.getItem("pillars") || JSON.stringify(pillars);
+      const savedPillars = getString(StorageKeys.pillars) || JSON.stringify(pillars);
       const existingPillars: Pillar[] = JSON.parse(savedPillars);
       
       const targetPillarIndex = existingPillars.findIndex(p => p.id === selectedPillarId);
@@ -178,7 +179,7 @@ const CreateSimilarContentDialog = ({
         
         existingPillars[targetPillarIndex].content.push(newContentItem);
         
-        localStorage.setItem("pillars", JSON.stringify(existingPillars));
+        setString(StorageKeys.pillars, JSON.stringify(existingPillars));
         
         const pillarName = existingPillars[targetPillarIndex].name;
         toast.success(`Content idea added to ${pillarName}`, {

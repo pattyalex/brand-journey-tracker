@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Flame } from "lucide-react";
 import { motion } from "framer-motion";
+import { contentFormatsByPillar, getString } from "@/lib/storage";
 
 interface BucketSelectionSectionProps {
   bucketId: string;
@@ -33,7 +34,7 @@ const BucketSelectionSection = ({
     
     setIsLoading(true);
     try {
-      const savedFormats = localStorage.getItem(`content-formats-${pillarId}`);
+      const savedFormats = getString(contentFormatsByPillar(pillarId));
       if (savedFormats) {
         const parsedFormats = JSON.parse(savedFormats);
         setContentFormats(parsedFormats);

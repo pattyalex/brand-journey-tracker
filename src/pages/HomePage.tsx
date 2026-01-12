@@ -34,6 +34,8 @@ import {
 } from "lucide-react";
 import AIRecommendations from '@/components/analytics/AIRecommendations';
 import VerificationGuard from '@/components/VerificationGuard';
+import { StorageKeys, getString, setString } from "@/lib/storage";
+import { EVENTS, emit } from "@/lib/events";
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -89,7 +91,7 @@ const HomePage = () => {
   }
 
   const [monthlyGoalsData, setMonthlyGoalsData] = useState<MonthlyGoalsData>(() => {
-    const saved = localStorage.getItem('monthlyGoalsData');
+    const saved = getString(StorageKeys.monthlyGoalsData);
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -114,7 +116,7 @@ const HomePage = () => {
   // Load All Tasks from localStorage
   useEffect(() => {
     const loadAllTasks = () => {
-      const saved = localStorage.getItem('allTasks');
+      const saved = getString(StorageKeys.allTasks);
       if (saved) {
         try {
           setAllTasks(JSON.parse(saved));
@@ -166,7 +168,7 @@ const HomePage = () => {
   useEffect(() => {
     // Check if it's a new day - reset journal entries if needed
     const checkNewDay = () => {
-      const lastAccessDate = localStorage.getItem('lastAccessDate');
+      const lastAccessDate = getString(StorageKeys.lastAccessDate);
       const currentDate = new Date().toDateString();
 
       if (lastAccessDate !== currentDate) {
@@ -177,13 +179,13 @@ const HomePage = () => {
         };
 
         setJournalEntries(emptyJournalEntries);
-        localStorage.setItem('journalEntries', JSON.stringify(emptyJournalEntries));
+        setString(StorageKeys.journalEntries, JSON.stringify(emptyJournalEntries));
 
         // Save current date as last access date
-        localStorage.setItem('lastAccessDate', currentDate);
+        setString(StorageKeys.lastAccessDate, currentDate);
       } else {
         // Same day, load existing entries
-        const savedEntries = localStorage.getItem('journalEntries');
+        const savedEntries = getString(StorageKeys.journalEntries);
         if (savedEntries) {
           setJournalEntries(JSON.parse(savedEntries));
         }
@@ -205,7 +207,7 @@ const HomePage = () => {
   useEffect(() => {
     // For demo, fetch goals from StrategyGrowth page
     const loadGoals = () => {
-      const goalsStr = localStorage.getItem('growthGoals');
+      const goalsStr = getString(StorageKeys.growthGoals);
       if (goalsStr) {
         setGoals(JSON.parse(goalsStr));
       } else {
@@ -238,7 +240,7 @@ const HomePage = () => {
       [field]: value
     };
     setJournalEntries(updatedEntries);
-    localStorage.setItem('journalEntries', JSON.stringify(updatedEntries));
+    setString(StorageKeys.journalEntries, JSON.stringify(updatedEntries));
   };
 
   // Handle adding new task
@@ -255,11 +257,11 @@ const HomePage = () => {
       console.log('HomePage: Adding task', newTask);
       console.log('HomePage: Updated tasks', updatedTasks);
       setAllTasks(updatedTasks);
-      localStorage.setItem('allTasks', JSON.stringify(updatedTasks));
+      setString(StorageKeys.allTasks, JSON.stringify(updatedTasks));
       console.log('HomePage: Saved to localStorage');
       // Dispatch custom event for same-tab sync
-      window.dispatchEvent(new CustomEvent('allTasksUpdated', { detail: updatedTasks }));
-      console.log('HomePage: Dispatched allTasksUpdated event');
+      emit(window, EVENTS.allTasksUpdated, updatedTasks);
+      console.log(`HomePage: Dispatched ${EVENTS.allTasksUpdated} event`);
       setNewTaskText("");
       setIsAddingTask(false);
     }
@@ -271,27 +273,27 @@ const HomePage = () => {
       task.id === taskId ? { ...task, isCompleted: !task.isCompleted } : task
     );
     setAllTasks(updatedTasks);
-    localStorage.setItem('allTasks', JSON.stringify(updatedTasks));
+    setString(StorageKeys.allTasks, JSON.stringify(updatedTasks));
     // Dispatch custom event for same-tab sync
-    window.dispatchEvent(new CustomEvent('allTasksUpdated', { detail: updatedTasks }));
+    emit(window, EVENTS.allTasksUpdated, updatedTasks);
   };
 
   // Handle deleting task
   const handleDeleteTask = (taskId: string) => {
     const updatedTasks = allTasks.filter(task => task.id !== taskId);
     setAllTasks(updatedTasks);
-    localStorage.setItem('allTasks', JSON.stringify(updatedTasks));
+    setString(StorageKeys.allTasks, JSON.stringify(updatedTasks));
     // Dispatch custom event for same-tab sync
-    window.dispatchEvent(new CustomEvent('allTasksUpdated', { detail: updatedTasks }));
+    emit(window, EVENTS.allTasksUpdated, updatedTasks);
   };
 
 
   // Save monthly goals to localStorage whenever they change
   useEffect(() => {
     try {
-      localStorage.setItem('monthlyGoalsData', JSON.stringify(monthlyGoalsData));
+      setString(StorageKeys.monthlyGoalsData, JSON.stringify(monthlyGoalsData));
       // Dispatch custom event for same-tab sync with Strategy & Growth page
-      window.dispatchEvent(new CustomEvent('monthlyGoalsUpdated', { detail: monthlyGoalsData }));
+      emit(window, EVENTS.monthlyGoalsUpdated, monthlyGoalsData);
     } catch (error) {
       console.error('Failed to save monthly goals data:', error);
     }

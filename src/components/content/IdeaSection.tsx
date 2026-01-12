@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { contentFormatsByPillar, getString } from "@/lib/storage";
 
 interface IdeaSectionProps {
   pillar: Pillar;
@@ -82,7 +83,7 @@ const IdeaSection = ({
   
   useEffect(() => {
     try {
-      const savedFormats = localStorage.getItem(`content-formats-${pillar.id}`);
+      const savedFormats = getString(contentFormatsByPillar(pillar.id));
       if (savedFormats) {
         setContentFormats(JSON.parse(savedFormats));
       } else {

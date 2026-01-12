@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useUser, useClerk } from '@clerk/clerk-react';
 import { supabase } from '@/lib/supabase';
+import { StorageKeys, getString, remove, setString } from '@/lib/storage';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -36,7 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setCheckingOnboarding(true);
 
       // First check localStorage - if they've completed onboarding before, trust it
-      const storedOnboarding = localStorage.getItem('hasCompletedOnboarding');
+      const storedOnboarding = getString(StorageKeys.hasCompletedOnboarding);
       if (storedOnboarding === 'true') {
         console.log('✅ Onboarding already completed (from localStorage)');
         setHasCompletedOnboarding(true);
@@ -61,12 +62,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // User has a subscription, they've completed onboarding
             console.log('✅ User has subscription, marking onboarding complete');
             setHasCompletedOnboarding(true);
-            localStorage.setItem('hasCompletedOnboarding', 'true');
+            setString(StorageKeys.hasCompletedOnboarding, 'true');
           } else {
             // No subscription found, they need to complete onboarding
             console.log('❌ No subscription found, needs onboarding');
             setHasCompletedOnboarding(false);
-            localStorage.removeItem('hasCompletedOnboarding');
+            remove(StorageKeys.hasCompletedOnboarding);
           }
         } catch (error) {
           console.error('Error checking onboarding:', error);
@@ -153,7 +154,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // DON'T clear hasCompletedOnboarding from localStorage
       // It will be re-checked from Supabase on next sign-in
-      localStorage.removeItem('user');
+      remove(StorageKeys.user);
 
       // Reset onboarding state
       setHasCompletedOnboarding(false);
@@ -162,7 +163,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error("Error signing out:", error);
       // Still clear local state even if Clerk fails
-      localStorage.removeItem('user');
+      remove(StorageKeys.user);
       setHasCompletedOnboarding(false);
       return false;
     }
@@ -170,7 +171,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const completeOnboarding = () => {
     setHasCompletedOnboarding(true);
-    localStorage.setItem('hasCompletedOnboarding', 'true');
+    setString(StorageKeys.hasCompletedOnboarding, 'true');
   };
 
   const openLoginModal = useCallback(() => {

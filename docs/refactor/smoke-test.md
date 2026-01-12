@@ -1,0 +1,21 @@
+# Post-Refactor Smoke Test Checklist
+
+- DailyPlanner
+  - Confirm `selectedTimezone` persists across refresh and defaults to auto when unset.
+  - Confirm Today view zoom persists (`todayZoomLevel`).
+  - Confirm scroll position persists (`todayScrollPosition`, `weeklyScrollPosition`) and resets on a new day (`plannerLastAccessDate`).
+  - Add, toggle, delete tasks; verify `plannerData` + `allTasks` persist and restore.
+  - Add/move scheduled content; verify `scheduledContent` persists and updates.
+- Cross-page updates
+  - Tasks updates propagate (HomePage → DailyPlanner via `allTasksUpdated`).
+  - Monthly goals updates propagate (HomePage → StrategyGrowth via `monthlyGoalsUpdated`).
+  - Scheduled content updates propagate (Calendar/DailyPlanner via `scheduledContentUpdated`).
+- Sidebar
+  - Expanded state persists (`sidebarState`, `sidebar-expanded-*`).
+  - Menu items persist (`sidebarMenuItems`).
+- Production
+  - Kanban columns/cards persist (`productionKanban`).
+- VisionBoard + Research + QuickNotes
+  - Vision board items persist.
+  - Research items persist.
+  - Quick notes persist.

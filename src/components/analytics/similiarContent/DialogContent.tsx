@@ -12,6 +12,7 @@ import TagsSection from "@/components/content/ideaDialog/TagsSection";
 import InspirationSection from "../inspirationSection/InspirationSection";
 import PillarSelector from "@/components/content/ideaDialog/PillarSelector";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
+import { StorageKeys, getString } from "@/lib/storage";
 import { Pillar } from "@/pages/BankOfContent";
 
 interface DialogContentProps {
@@ -123,7 +124,7 @@ const DialogContent = ({
 
   useEffect(() => {
     try {
-      const savedPillars = localStorage.getItem("pillars");
+      const savedPillars = getString(StorageKeys.pillars);
       if (savedPillars) {
         setPillars(JSON.parse(savedPillars));
       }

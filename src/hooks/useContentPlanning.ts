@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { ContentItem } from "@/types/content";
 import { toast } from "sonner";
+import { StorageKeys, getString } from "@/lib/storage";
 
 type ContentStatus = "scheduled" | "ready" | "draft" | "published";
 
@@ -16,7 +17,7 @@ export function useContentPlanning() {
   useEffect(() => {
     // Load content from localStorage (would be replaced with API calls in production)
     const loadContent = () => {
-      const allPillarsStr = localStorage.getItem("contentPillars");
+      const allPillarsStr = getString(StorageKeys.contentPillars);
       if (!allPillarsStr) return [];
       
       try {

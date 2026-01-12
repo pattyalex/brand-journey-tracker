@@ -1,0 +1,369 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { PlannerDay, PlannerItem } from "@/types/planner";
+import { PlannerView } from "../types";
+import { TIMEZONES, getDateString } from "../utils/plannerUtils";
+
+export interface PlannerInitialSettings {
+  selectedTimezone: string;
+  todayZoomLevel: number;
+  todayScrollPosition: number;
+  weeklyScrollPosition: number;
+}
+
+export const usePlannerState = ({
+  selectedTimezone: initialSelectedTimezone,
+  todayZoomLevel: initialTodayZoomLevel,
+  todayScrollPosition: initialTodayScrollPosition,
+  weeklyScrollPosition: initialWeeklyScrollPosition,
+}: PlannerInitialSettings) => {
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [plannerData, setPlannerData] = useState<PlannerDay[]>([]);
+  const [copyToDate, setCopyToDate] = useState<Date | undefined>(undefined);
+  const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
+  const [deleteAfterCopy, setDeleteAfterCopy] = useState(false);
+  const [currentView, setCurrentView] = useState<PlannerView>('today');
+  const [selectedTimezone, setSelectedTimezone] = useState<string>(initialSelectedTimezone);
+  const [calendarFilterMode, setCalendarFilterMode] = useState<'all' | 'content'>('all');
+
+  // Zoom level for Today view (0.5 = 50%, 1 = 100%, 2 = 200%)
+  const [todayZoomLevel, setTodayZoomLevel] = useState<number>(initialTodayZoomLevel);
+  const [todayScrollPosition, setTodayScrollPosition] = useState(initialTodayScrollPosition);
+  const [weeklyScrollPosition, setWeeklyScrollPosition] = useState(initialWeeklyScrollPosition);
+
+  const todayScrollRef = useRef<HTMLDivElement>(null);
+  const weeklyScrollRef = useRef<HTMLDivElement>(null);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+  const startTimeInputRef = useRef<HTMLInputElement>(null);
+  const endTimeInputRef = useRef<HTMLInputElement>(null);
+  const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
+  const isResizingRef = useRef(false);
+
+  // State for drag-to-create task (Today view)
+  const [isDraggingCreate, setIsDraggingCreate] = useState(false);
+  const [dragCreateStart, setDragCreateStart] = useState<{ hour: number; minute: number } | null>(null);
+  const [dragCreateEnd, setDragCreateEnd] = useState<{ hour: number; minute: number } | null>(null);
+
+  // Per-day drag-to-create state (Weekly view)
+  const [weeklyDraggingCreate, setWeeklyDraggingCreate] = useState<{[dayString: string]: boolean}>({});
+  const [weeklyDragCreateStart, setWeeklyDragCreateStart] = useState<{[dayString: string]: {hour: number, minute: number}}>({});
+  const [weeklyDragCreateEnd, setWeeklyDragCreateEnd] = useState<{[dayString: string]: {hour: number, minute: number}}>({});
+
+  const [globalTasks, setGlobalTasks] = useState<string>("");
+  const [allTasks, setAllTasks] = useState<PlannerItem[]>([
+    {
+      id: 'placeholder-1',
+      text: 'Edit photos for upcoming post',
+      section: 'morning',
+      isCompleted: false,
+      date: '',
+      order: 0,
+      isPlaceholder: true
+    },
+    {
+      id: 'placeholder-2',
+      text: 'Respond to comments and DMs',
+      section: 'morning',
+      isCompleted: false,
+      date: '',
+      order: 1,
+      isPlaceholder: true
+    },
+    {
+      id: 'placeholder-3',
+      text: 'Plan next week\'s content calendar',
+      section: 'morning',
+      isCompleted: false,
+      date: '',
+      order: 2,
+      isPlaceholder: true
+    }
+  ]);
+  const [isAllTasksCollapsed, setIsAllTasksCollapsed] = useState(false);
+  const [showContentCalendar, setShowContentCalendar] = useState(false);
+  const [contentCalendarData, setContentCalendarData] = useState<any[]>([]);
+  const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<PlannerItem | null>(null);
+  const [dialogTaskTitle, setDialogTaskTitle] = useState("");
+  const [dialogTaskDescription, setDialogTaskDescription] = useState("");
+  const [dialogStartTime, setDialogStartTime] = useState("");
+  const [dialogEndTime, setDialogEndTime] = useState("");
+  const [dialogTaskColor, setDialogTaskColor] = useState("");
+  const [dialogAddToContentCalendar, setDialogAddToContentCalendar] = useState(false);
+  const [pendingTaskFromAllTasks, setPendingTaskFromAllTasks] = useState<PlannerItem | null>(null);
+
+  const [tasks, setTasks] = useState<string>("");
+  const [greatDay, setGreatDay] = useState<string>("");
+  const [grateful, setGrateful] = useState<string>("");
+  const [calendarOpen, setCalendarOpen] = useState(false);
+
+  // Weekly view states
+  const [weeklyNewTaskInputs, setWeeklyNewTaskInputs] = useState<{[key: string]: string}>({});
+  const [weeklyAddingTask, setWeeklyAddingTask] = useState<{[key: string]: boolean}>({});
+  const [weeklyEditingTask, setWeeklyEditingTask] = useState<string | null>(null);
+  const [weeklyEditText, setWeeklyEditText] = useState<string>("");
+  const [draggedWeeklyTaskId, setDraggedWeeklyTaskId] = useState<string | null>(null);
+  const [dragOverWeeklyTaskId, setDragOverWeeklyTaskId] = useState<string | null>(null);
+  const [weeklyDropIndicatorPosition, setWeeklyDropIndicatorPosition] = useState<'before' | 'after' | null>(null);
+  const [weeklyEditDialogOpen, setWeeklyEditDialogOpen] = useState<string | null>(null);
+  const [weeklyEditDescription, setWeeklyEditDescription] = useState<string>("");
+  const [weeklyEditColor, setWeeklyEditColor] = useState<string>("");
+  const [weeklyEditTitle, setWeeklyEditTitle] = useState<string>("");
+  const [weeklyEditingTitle, setWeeklyEditingTitle] = useState<boolean>(false);
+  const [isDraggingOverAllTasks, setIsDraggingOverAllTasks] = useState(false);
+  const [draggingTaskText, setDraggingTaskText] = useState<string>("");
+
+  const dateString = useMemo(() => getDateString(selectedDate), [selectedDate]);
+
+  const colors = [
+    "#d4a373", "#deb887", "#f0dc82", "#fef3c7",
+    "#e8f5e9", "#a5d6a7", "#80cbc4", "#d4f1f4",
+    "#e3f2fd", "#a5b8d0", "#ce93d8", "#f3e5f5",
+    "#eeeeee", "#ede8e3", "#f8bbd0", "#f5e1e5"
+  ];
+
+  const colorOptions = [
+    { name: 'Light Gray', value: '#f3f4f6' },
+    { name: 'Rose', value: '#fecdd3' },
+    { name: 'Pink', value: '#fbcfe8' },
+    { name: 'Purple', value: '#e9d5ff' },
+    { name: 'Blue', value: '#bfdbfe' },
+    { name: 'Sky', value: '#bae6fd' },
+    { name: 'Teal', value: '#99f6e4' },
+    { name: 'Green', value: '#bbf7d0' },
+    { name: 'Lime', value: '#d9f99d' },
+    { name: 'Yellow', value: '#fef08a' },
+    { name: 'Orange', value: '#fed7aa' }
+  ];
+
+  // Get timezone display
+  const getTimezoneDisplay = useCallback(() => {
+    if (selectedTimezone === 'auto') {
+      return new Date().toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop() || 'PST';
+    }
+    const tz = TIMEZONES.find(t => t.value === selectedTimezone);
+    return tz?.label || 'PST';
+  }, [selectedTimezone]);
+
+  useEffect(() => {
+    const currentDay = plannerData.find(day => day.date === dateString);
+    if (currentDay) {
+      if (currentDay.tasks) {
+        setTasks(currentDay.tasks);
+      } else {
+        setTasks("");
+      }
+
+      if (currentDay.greatDay) {
+        setGreatDay(currentDay.greatDay);
+      } else {
+        setGreatDay("");
+      }
+
+      if (currentDay.grateful) {
+        setGrateful(currentDay.grateful);
+      } else {
+        setGrateful("");
+      }
+    } else {
+      setTasks("");
+      setGreatDay("");
+      setGrateful("");
+    }
+  }, [dateString, plannerData]);
+
+  const currentDay = useMemo(() => (
+    plannerData.find(day => day.date === dateString) || {
+      date: dateString,
+      items: [],
+      tasks: "",
+      greatDay: "",
+      grateful: ""
+    }
+  ), [dateString, plannerData]);
+
+  const getSectionItems = useCallback((section: PlannerItem["section"]) => {
+    const filtered = currentDay.items.filter(item => item.section === section);
+    // Sort by order if available, otherwise maintain array order
+    return filtered.sort((a, b) => {
+      if (a.order !== undefined && b.order !== undefined) {
+        return a.order - b.order;
+      }
+      if (a.order !== undefined) return -1;
+      if (b.order !== undefined) return 1;
+      return 0;
+    });
+  }, [currentDay.items]);
+
+  const hasItems = currentDay.items.length > 0;
+  const daysWithItems = useMemo(() => (
+    plannerData
+      .filter(day => day.items && day.items.length > 0)
+      .map(day => new Date(day.date))
+  ), [plannerData]);
+
+  // Convert 24-hour format (HH:MM) to 12-hour format (h:mm am/pm)
+  const convert24To12Hour = useCallback((time24: string): string => {
+    if (!time24 || !time24.includes(':')) return '';
+    const [hourStr, minuteStr] = time24.split(':');
+    const hour = parseInt(hourStr, 10);
+    const minute = parseInt(minuteStr, 10);
+
+    const period = hour >= 12 ? 'pm' : 'am';
+    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    const displayMin = minute.toString().padStart(2, '0');
+
+    return `${displayHour}:${displayMin} ${period}`;
+  }, []);
+
+  // Convert 12-hour format (h:mm am/pm) to 24-hour format (HH:MM)
+  const convert12To24Hour = useCallback((time12: string): string => {
+    const match = time12.match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);
+    if (!match) return '';
+
+    let hour = parseInt(match[1], 10);
+    const minute = match[2];
+    const period = match[3].toLowerCase();
+
+    if (period === 'pm' && hour !== 12) {
+      hour += 12;
+    } else if (period === 'am' && hour === 12) {
+      hour = 0;
+    }
+
+    return `${hour.toString().padStart(2, '0')}:${minute}`;
+  }, []);
+
+  return {
+    state: {
+      selectedDate,
+      plannerData,
+      copyToDate,
+      isCopyDialogOpen,
+      deleteAfterCopy,
+      currentView,
+      selectedTimezone,
+      calendarFilterMode,
+      todayZoomLevel,
+      todayScrollPosition,
+      weeklyScrollPosition,
+      isDraggingCreate,
+      dragCreateStart,
+      dragCreateEnd,
+      weeklyDraggingCreate,
+      weeklyDragCreateStart,
+      weeklyDragCreateEnd,
+      globalTasks,
+      allTasks,
+      isAllTasksCollapsed,
+      showContentCalendar,
+      contentCalendarData,
+      isTaskDialogOpen,
+      editingTask,
+      dialogTaskTitle,
+      dialogTaskDescription,
+      dialogStartTime,
+      dialogEndTime,
+      dialogTaskColor,
+      dialogAddToContentCalendar,
+      pendingTaskFromAllTasks,
+      tasks,
+      greatDay,
+      grateful,
+      calendarOpen,
+      weeklyNewTaskInputs,
+      weeklyAddingTask,
+      weeklyEditingTask,
+      weeklyEditText,
+      draggedWeeklyTaskId,
+      dragOverWeeklyTaskId,
+      weeklyDropIndicatorPosition,
+      weeklyEditDialogOpen,
+      weeklyEditDescription,
+      weeklyEditColor,
+      weeklyEditTitle,
+      weeklyEditingTitle,
+      isDraggingOverAllTasks,
+      draggingTaskText,
+    },
+    setters: {
+      setSelectedDate,
+      setPlannerData,
+      setCopyToDate,
+      setIsCopyDialogOpen,
+      setDeleteAfterCopy,
+      setCurrentView,
+      setSelectedTimezone,
+      setCalendarFilterMode,
+      setTodayZoomLevel,
+      setTodayScrollPosition,
+      setWeeklyScrollPosition,
+      setIsDraggingCreate,
+      setDragCreateStart,
+      setDragCreateEnd,
+      setWeeklyDraggingCreate,
+      setWeeklyDragCreateStart,
+      setWeeklyDragCreateEnd,
+      setGlobalTasks,
+      setAllTasks,
+      setIsAllTasksCollapsed,
+      setShowContentCalendar,
+      setContentCalendarData,
+      setIsTaskDialogOpen,
+      setEditingTask,
+      setDialogTaskTitle,
+      setDialogTaskDescription,
+      setDialogStartTime,
+      setDialogEndTime,
+      setDialogTaskColor,
+      setDialogAddToContentCalendar,
+      setPendingTaskFromAllTasks,
+      setTasks,
+      setGreatDay,
+      setGrateful,
+      setCalendarOpen,
+      setWeeklyNewTaskInputs,
+      setWeeklyAddingTask,
+      setWeeklyEditingTask,
+      setWeeklyEditText,
+      setDraggedWeeklyTaskId,
+      setDragOverWeeklyTaskId,
+      setWeeklyDropIndicatorPosition,
+      setWeeklyEditDialogOpen,
+      setWeeklyEditDescription,
+      setWeeklyEditColor,
+      setWeeklyEditTitle,
+      setWeeklyEditingTitle,
+      setIsDraggingOverAllTasks,
+      setDraggingTaskText,
+    },
+    refs: {
+      todayScrollRef,
+      weeklyScrollRef,
+      titleInputRef,
+      startTimeInputRef,
+      endTimeInputRef,
+      descriptionInputRef,
+      isResizingRef,
+    },
+    derived: {
+      dateString,
+      currentDay,
+      getSectionItems,
+      hasItems,
+      daysWithItems,
+      colors,
+      colorOptions,
+      getTimezoneDisplay,
+    },
+    helpers: {
+      convert24To12Hour,
+      convert12To24Hour,
+    },
+  };
+};
+
+export type PlannerState = ReturnType<typeof usePlannerState>["state"];
+export type PlannerSetters = ReturnType<typeof usePlannerState>["setters"];
+export type PlannerRefs = ReturnType<typeof usePlannerState>["refs"];
+export type PlannerDerived = ReturnType<typeof usePlannerState>["derived"];
+export type PlannerHelpers = ReturnType<typeof usePlannerState>["helpers"];
