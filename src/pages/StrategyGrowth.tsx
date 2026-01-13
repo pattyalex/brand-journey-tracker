@@ -21,105 +21,38 @@ import {
   Users,
   MessageSquare,
   ImageIcon,
-  Palette,
-  Layers,
   Calendar,
   Video,
   BarChart,
   Target,
-  Eye,
   FileText,
   TrendingUp,
-  Award,
-  PieChart,
   Plus,
   Trash2,
   Upload,
   ExternalLink,
-  ChevronDown
+  ChevronDown,
+  Heart,
+  Compass
 } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
-import { Slider } from "@/components/ui/slider";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Switch } from "@/components/ui/switch";
 
 const StrategyGrowth = () => {
   // Brand Identity states
   const [brandKeywords, setBrandKeywords] = useState<string[]>([]);
   const [keywordInput, setKeywordInput] = useState("");
   const [audienceAgeRanges, setAudienceAgeRanges] = useState<string[]>(["25-34"]);
-  const [audienceLifestyle, setAudienceLifestyle] = useState("");
   const [audienceStruggles, setAudienceStruggles] = useState("");
   const [audienceDesires, setAudienceDesires] = useState("");
   const [selectedTones, setSelectedTones] = useState<string[]>(["relatable"]);
-  const [colorPalette, setColorPalette] = useState<string[]>(["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#0088fe"]);
-  const [secondaryColorPalette, setSecondaryColorPalette] = useState<string[]>(["#CCCCCC", "#999999", "#666666"]);
+  const [missionStatement, setMissionStatement] = useState(() => getString(StorageKeys.missionStatement) || "");
+  const [missionStatementFocused, setMissionStatementFocused] = useState(false);
+  const [showMissionExamples, setShowMissionExamples] = useState(true);
+  const [contentValues, setContentValues] = useState(() => getString(StorageKeys.contentValues) || "");
+  const [contentValuesFocused, setContentValuesFocused] = useState(false);
+  const [showValuesExamples, setShowValuesExamples] = useState(true);
+  const [strugglesFocused, setStrugglesFocused] = useState(false);
+  const [desiresFocused, setDesiresFocused] = useState(false);
   const { images: visionBoardImages, pinterestUrl, addImage: addVisionBoardImage, removeImage: removeVisionBoardImage, updatePinterestUrl } = useVisionBoard();
-  const [typographyItems, setTypographyItems] = useState<string[]>([]);
-  const [typographyInput, setTypographyInput] = useState("");
-  const [aestheticItems, setAestheticItems] = useState<string[]>([]);
-  const [aestheticInput, setAestheticInput] = useState("");
-
-  // Content Strategy states
-  const [contentPillars, setContentPillars] = useState([
-    { name: "Food", value: "Teaches followers healthy recipes" },
-    { name: "Fitness", value: "Motivates and inspires followers to live a healthy lifestyle" },
-    { name: "Entertainment", value: "Provides fun and engaging content" }
-  ]);
-  const [pillarInput, setPillarInput] = useState({ name: "", value: "" });
-  const [monthlyThemes, setMonthlyThemes] = useState([
-    { month: "January", theme: "New Beginnings" },
-    { month: "February", theme: "Self-Love" }
-  ]);
-  const [newThemeMonth, setNewThemeMonth] = useState("");
-  const [newThemeContent, setNewThemeContent] = useState("");
-
-  const handleAddTheme = () => {
-    if (newThemeMonth && newThemeContent) {
-      // Check if the month already exists
-      const monthExists = monthlyThemes.some(item => item.month === newThemeMonth);
-
-      if (monthExists) {
-        // If the month exists, update its theme
-        setMonthlyThemes(monthlyThemes.map(item => 
-          item.month === newThemeMonth 
-            ? { ...item, theme: newThemeContent } 
-            : item
-        ));
-      } else {
-        // If the month doesn't exist, add a new entry
-        setMonthlyThemes([...monthlyThemes, { month: newThemeMonth, theme: newThemeContent }]);
-      }
-
-      // Reset input fields
-      setNewThemeMonth("");
-      setNewThemeContent("");
-    }
-  };
-  const [contentFormats, setContentFormats] = useState([
-    { name: "Tutorial Reels", selected: true },
-    { name: "Carousel Tips", selected: true },
-    { name: "Behind-the-scenes", selected: false },
-    { name: "Q&A Stories", selected: true }
-  ]);
-
-  // Competitor Tracker states
-  const [competitors, setCompetitors] = useState([
-    { 
-      handle: "@competitor1", 
-      niche: "Lifestyle", 
-      platform: "Instagram",
-      strengths: "Consistent aesthetic, high engagement on tutorials",
-      notes: "Great use of carousel posts for tutorials" 
-    }
-  ]);
-  const [newCompetitor, setNewCompetitor] = useState({ 
-    handle: "", 
-    niche: "", 
-    platform: "Instagram",
-    strengths: "",
-    notes: "" 
-  });
 
   // Growth Goals states with progress tracking
   type GoalStatus = 'not-started' | 'in-progress' | 'completed';
@@ -127,9 +60,8 @@ const StrategyGrowth = () => {
     id: number;
     text: string;
     status: GoalStatus;
-    progressNote?: string; // What part of the goal was accomplished
+    progressNote?: string;
   }
-  // Monthly goals organized by year and month
   interface MonthlyGoalsData {
     [year: string]: {
       [month: string]: Goal[];
@@ -147,6 +79,7 @@ const StrategyGrowth = () => {
     }
     return {};
   });
+
   const [shortTermGoals, setShortTermGoals] = useState<Goal[]>(() => {
     const saved = getString(StorageKeys.shortTermGoals);
     if (saved) {
@@ -158,6 +91,7 @@ const StrategyGrowth = () => {
     }
     return [];
   });
+
   const [longTermGoals, setLongTermGoals] = useState<Goal[]>(() => {
     const saved = getString(StorageKeys.longTermGoals);
     if (saved) {
@@ -174,18 +108,10 @@ const StrategyGrowth = () => {
   const [newShortTermGoal, setNewShortTermGoal] = useState("");
   const [newLongTermGoal, setNewLongTermGoal] = useState("");
 
-  // Get current month and year
-  const getCurrentMonth = () => {
-    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    return months[new Date().getMonth()];
-  };
-
-  const getCurrentYear = () => new Date().getFullYear();
-
   const [selectedYear, setSelectedYear] = useState(2025);
-  const [expandedMonths, setExpandedMonths] = useState<string[]>(["October"]);
+  const [expandedMonths, setExpandedMonths] = useState<string[]>(["January"]);
   const [showAllMonths, setShowAllMonths] = useState(false);
-  const [focusedMonth, setFocusedMonth] = useState("October");
+  const [focusedMonth, setFocusedMonth] = useState("January");
 
   const [editingMonthlyId, setEditingMonthlyId] = useState<number | null>(null);
   const [editingShortTermId, setEditingShortTermId] = useState<number | null>(null);
@@ -195,13 +121,8 @@ const StrategyGrowth = () => {
   const [editingShortTermText, setEditingShortTermText] = useState("");
   const [editingLongTermText, setEditingLongTermText] = useState("");
 
-  // Get URL params to check if we should navigate to a specific tab
   const [searchParams] = useSearchParams();
-
-  // New state to track active tab
   const [activeTab, setActiveTab] = useState("brand-identity");
-
-  // Onboarding state
   const { showOnboarding, completeOnboarding } = useOnboarding();
 
   // Check URL params on mount to navigate to specific tab
@@ -211,6 +132,19 @@ const StrategyGrowth = () => {
       setActiveTab(tabParam);
     }
   }, [searchParams]);
+
+  // Scroll to section if hash is present in URL
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash === '#vision-board') {
+      setTimeout(() => {
+        const element = document.getElementById('vision-board');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
+  }, []);
 
   // Save goals to localStorage whenever they change
   useEffect(() => {
@@ -237,6 +171,22 @@ const StrategyGrowth = () => {
     }
   }, [longTermGoals]);
 
+  useEffect(() => {
+    try {
+      setString(StorageKeys.missionStatement, missionStatement);
+    } catch (error) {
+      console.error('Failed to save mission statement:', error);
+    }
+  }, [missionStatement]);
+
+  useEffect(() => {
+    try {
+      setString(StorageKeys.contentValues, contentValues);
+    } catch (error) {
+      console.error('Failed to save content values:', error);
+    }
+  }, [contentValues]);
+
   // Listen for storage events to sync with HomePage in real-time
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
@@ -249,7 +199,6 @@ const StrategyGrowth = () => {
       }
     };
 
-    // Listen for custom event for same-tab updates from HomePage
     const handleCustomUpdate = (e: CustomEvent) => {
       setMonthlyGoalsData(e.detail);
     };
@@ -262,7 +211,7 @@ const StrategyGrowth = () => {
     };
   }, []);
 
-  // Handlers
+  // Brand Identity handlers
   const handleAddKeyword = () => {
     if (keywordInput.trim() !== "" && !brandKeywords.includes(keywordInput.trim())) {
       setBrandKeywords([...brandKeywords, keywordInput.trim()]);
@@ -272,60 +221,6 @@ const StrategyGrowth = () => {
 
   const handleRemoveKeyword = (keyword: string) => {
     setBrandKeywords(brandKeywords.filter(k => k !== keyword));
-  };
-
-  const handleAddPillar = () => {
-    if (pillarInput.name.trim() !== "" && pillarInput.value.trim() !== "") {
-      setContentPillars([...contentPillars, { name: pillarInput.name, value: pillarInput.value }]);
-      setPillarInput({ name: "", value: "" });
-    }
-  };
-
-  const handleRemovePillar = (index: number) => {
-    setContentPillars(contentPillars.filter((_, i) => i !== index));
-  };
-
-  const handleFormatToggle = (index: number) => {
-    const updatedFormats = [...contentFormats];
-    updatedFormats[index].selected = !updatedFormats[index].selected;
-    setContentFormats(updatedFormats);
-  };
-
-  const handleAddCompetitor = () => {
-    if (newCompetitor.handle.trim() !== "") {
-      setCompetitors([...competitors, newCompetitor]);
-      setNewCompetitor({ 
-        handle: "", 
-        niche: "", 
-        platform: "Instagram",
-        strengths: "",
-        notes: "" 
-      });
-    }
-  };
-
-  const handleRemoveCompetitor = (index: number) => {
-    setCompetitors(competitors.filter((_, i) => i !== index));
-  };
-
-  // State for viewing competitor details
-  const [viewingCompetitor, setViewingCompetitor] = useState<null | {
-    handle: string;
-    niche: string;
-    platform: string;
-    strengths: string;
-    notes: string;
-  }>(null);
-
-  // Handler for viewing competitor details
-  const handleViewCompetitor = (competitor: {
-    handle: string;
-    niche: string;
-    platform: string;
-    strengths: string;
-    notes: string;
-  }) => {
-    setViewingCompetitor(competitor);
   };
 
   // Handler for tab changes
@@ -621,117 +516,166 @@ const StrategyGrowth = () => {
   return (
     <Layout>
       <GoalsOnboarding run={showOnboarding && activeTab === 'growth-goals'} onComplete={completeOnboarding} />
-      <div className="w-full max-w-[1600px] mx-auto px-8 py-6 space-y-8 fade-in">
-        <div className="flex flex-col space-y-2">
-          <h1 className="text-4xl font-bold">Strategy & Growth</h1>
-          <p className="text-muted-foreground">
-            Define your brand identity, plan your content strategy, and track your growth
-          </p>
-        </div>
+      <div className="w-full h-full mx-auto px-8 py-6 bg-gradient-to-br from-gray-50 to-gray-100 overflow-auto">
+        <div className="max-w-[1600px] mx-auto space-y-6">
+          {/* Header */}
+          <div className="flex flex-col space-y-2">
+            <h1 className="text-3xl font-bold text-gray-900">Strategy & Goals</h1>
+            <p className="text-sm text-gray-600">
+              Define your brand positioning and track your growth goals
+            </p>
+          </div>
 
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="mb-8 grid grid-cols-4 gap-4 bg-transparent p-0 h-auto">
-            <TabsTrigger
-              value="brand-identity"
-              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md border-2 border-gray-200 data-[state=active]:border-primary py-3 rounded-lg transition-all"
-            >
-              <PenTool className="w-4 h-4" />
-              <span className="font-medium">Gaining Clarity</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="content-strategy"
-              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md border-2 border-gray-200 data-[state=active]:border-primary py-3 rounded-lg transition-all"
-            >
-              <Layers className="w-4 h-4" />
-              <span className="font-medium">Content Strategy</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="competitor-tracker"
-              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md border-2 border-gray-200 data-[state=active]:border-primary py-3 rounded-lg transition-all"
-            >
-              <Eye className="w-4 h-4" />
-              <span className="font-medium">Competitor Tracker</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="growth-goals"
-              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md border-2 border-gray-200 data-[state=active]:border-primary py-3 rounded-lg transition-all"
-            >
-              <TrendingUp className="w-4 h-4" />
-              <span className="font-medium">Growth Goals</span>
-            </TabsTrigger>
-          </TabsList>
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+            <TabsList className="inline-flex items-center gap-0 bg-white rounded-lg shadow-sm border border-gray-200 p-1 mb-6">
+              <TabsTrigger
+                value="brand-identity"
+                className="relative px-6 py-2 rounded-md text-sm font-medium transition-all data-[state=active]:bg-indigo-500 data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900"
+              >
+                <PenTool className="w-4 h-4 mr-2 inline-block" />
+                Positioning
+              </TabsTrigger>
+              <TabsTrigger
+                value="growth-goals"
+                className="relative px-6 py-2 rounded-md text-sm font-medium transition-all data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900"
+              >
+                <TrendingUp className="w-4 h-4 mr-2 inline-block" />
+                Growth Goals
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Brand Identity Tab */}
-          <TabsContent value="brand-identity" className="space-y-6">
-            <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-8 border border-primary/20 shadow-sm">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                <span>Strategy & Growth</span>
-                <span>/</span>
-                <span className="text-primary font-semibold">Gaining Clarity</span>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="bg-primary rounded-lg p-3 shadow-md">
-                  <PenTool className="w-8 h-8 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold mb-1">Gaining Clarity</h2>
-                  <p className="text-muted-foreground">Define your brand's core identity and values</p>
-                </div>
-              </div>
-            </div>
-            {/* Mission Statement */}
-            <Card className="border-0 shadow-none">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-primary" />
-                  Mission Statement
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Textarea
-                  className="min-h-[150px] resize-none border border-input"
-                  placeholder="Write your mission here — what you're here to do, what matters to you, and why you started this journey. Return to this when you feel lost, distracted, or overwhelmed."
-                />
-              </CardContent>
-            </Card>
-
-            {/* Affirmations and Reminders */}
-            <Card className="border-0 shadow-none">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Award className="w-5 h-5 text-primary" />
-                  Affirmations and Reminders
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Textarea
-                  className="min-h-[150px] resize-none border border-input"
-                  placeholder="Write down affirmations, reminders, or quotes that help you stay grounded and focused on your bigger picture."
-                />
-              </CardContent>
-            </Card>
-
-            {/* Target Audience */}
-            <Card className="border-0 shadow-none">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="w-5 h-5 text-primary" />
-                    Target Audience Persona
+            {/* Positioning Tab */}
+            <TabsContent value="brand-identity" className="space-y-4 mt-0">
+              {/* Mission Statement */}
+              <Card className="rounded-lg border border-indigo-100 shadow-sm bg-white hover:shadow-md transition-all">
+                <CardHeader className="border-b border-indigo-50 bg-gradient-to-r from-indigo-50/50 to-transparent">
+                  <CardTitle className="flex items-center gap-3 text-base">
+                    <div className="p-2 rounded-lg bg-indigo-500 text-white shadow-sm">
+                      <Target className="w-4 h-4" />
+                    </div>
+                    <span className="font-semibold text-gray-900">Mission Statement</span>
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="ml-11 text-sm text-gray-600">
+                    Why you create content and who you help
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-8 space-y-4">
+                  <div className="relative">
+                    <Textarea
+                      value={missionStatement}
+                      onChange={(e) => setMissionStatement(e.target.value)}
+                      className="min-h-[160px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent p-4 pb-12 text-sm leading-relaxed"
+                      placeholder={missionStatementFocused ? "" : "Write a short sentence that explains who your content is for and what you want it to do for them..."}
+                      onFocus={() => setMissionStatementFocused(true)}
+                      onBlur={() => setMissionStatementFocused(false)}
+                    />
+                    {showMissionExamples && (
+                      <Button
+                        onClick={() => setShowMissionExamples(false)}
+                        size="sm"
+                        className="absolute bottom-3 left-3 text-xs bg-indigo-500 hover:bg-indigo-600 text-white"
+                      >
+                        Done
+                      </Button>
+                    )}
+                  </div>
+                  {showMissionExamples && (
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Examples</p>
+                      <div className="space-y-2">
+                        <div className="text-sm text-gray-600 bg-indigo-50/50 rounded-md px-3 py-2 border border-indigo-100/50">
+                          "I create content to help busy people build healthy routines they can actually stick to"
+                        </div>
+                        <div className="text-sm text-gray-600 bg-indigo-50/50 rounded-md px-3 py-2 border border-indigo-100/50">
+                          "I create content to inspire women to dress well without overthinking or overspending"
+                        </div>
+                        <div className="text-sm text-gray-600 bg-indigo-50/50 rounded-md px-3 py-2 border border-indigo-100/50">
+                          "I create content to help small business founders scale their businesses without burning out"
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Core Values & Non-Negotiables */}
+              <Card className="rounded-lg border border-rose-100 shadow-sm bg-white hover:shadow-md transition-all">
+                <CardHeader className="border-b border-rose-50 bg-gradient-to-r from-rose-50/50 to-transparent">
+                  <CardTitle className="flex items-center gap-3 text-base">
+                    <div className="p-2 rounded-lg bg-rose-500 text-white shadow-sm">
+                      <Heart className="w-4 h-4" />
+                    </div>
+                    <span className="font-semibold text-gray-900">Core Values & Non-Negotiables</span>
+                  </CardTitle>
+                  <CardDescription className="ml-11 text-sm text-gray-600">
+                    Define the principles and values that guide your content
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-8 space-y-4">
+                  <div className="relative">
+                    <Textarea
+                      value={contentValues}
+                      onChange={(e) => setContentValues(e.target.value)}
+                      className="min-h-[160px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent p-4 pb-12 text-sm leading-relaxed"
+                      placeholder={contentValuesFocused ? "" : "What values and principles are non-negotiable in your content?"}
+                      onFocus={() => setContentValuesFocused(true)}
+                      onBlur={() => setContentValuesFocused(false)}
+                    />
+                    {showValuesExamples && (
+                      <Button
+                        onClick={() => setShowValuesExamples(false)}
+                        size="sm"
+                        className="absolute bottom-3 left-3 text-xs bg-rose-500 hover:bg-rose-600 text-white"
+                      >
+                        Done
+                      </Button>
+                    )}
+                  </div>
+                  {showValuesExamples && (
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Examples</p>
+                      <div className="space-y-2">
+                        <div className="text-sm text-gray-600 bg-rose-50/50 rounded-md px-3 py-2 border border-rose-100/50">
+                          "My content will always be kind and never attack others"
+                        </div>
+                        <div className="text-sm text-gray-600 bg-rose-50/50 rounded-md px-3 py-2 border border-rose-100/50">
+                          "I value honesty and transparency with my community"
+                        </div>
+                        <div className="text-sm text-gray-600 bg-rose-50/50 rounded-md px-3 py-2 border border-rose-100/50">
+                          "I only promote brands I genuinely use and believe in - alignment over revenue"
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Target Audience */}
+              <Card className="rounded-lg border border-purple-100 shadow-sm bg-white hover:shadow-md transition-all">
+                <CardHeader className="border-b border-purple-50 bg-gradient-to-r from-purple-50/50 to-transparent">
+                  <CardTitle className="flex items-center gap-3 text-base">
+                    <div className="p-2 rounded-lg bg-purple-500 text-white shadow-sm">
+                      <Users className="w-4 h-4" />
+                    </div>
+                    <span className="font-semibold text-gray-900">Target Audience</span>
+                  </CardTitle>
+                  <CardDescription className="ml-11 text-sm text-gray-600">
                     Define who your ideal audience is
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="age-range">Age Range</Label>
-                    <div className="grid grid-cols-2 gap-3">
+                <CardContent className="space-y-8 pt-8">
+                  <div className="space-y-3">
+                    <Label htmlFor="age-range" className="text-sm font-semibold text-gray-800">Age Range</Label>
+                    <div className="flex flex-wrap gap-2">
                       {["18-24", "25-34", "35-44", "45-54", "55+"].map((range) => (
                         <label
                           key={range}
                           htmlFor={`age-${range}`}
-                          className={`p-3 border rounded-md cursor-pointer transition-all flex items-center gap-3 ${
-                            audienceAgeRanges.includes(range) ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300"
+                          className={`px-4 py-2.5 border-2 rounded-lg cursor-pointer transition-all flex items-center gap-2 text-sm font-medium ${
+                            audienceAgeRanges.includes(range)
+                              ? "border-purple-500 bg-purple-50 text-purple-700 shadow-sm"
+                              : "border-gray-200 hover:border-purple-300 hover:bg-purple-50/30 text-gray-700"
                           }`}
                         >
                           <input
@@ -750,135 +694,157 @@ const StrategyGrowth = () => {
                                 });
                               }
                             }}
-                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                            className="h-4 w-4 rounded border-gray-300 text-purple-500 focus:ring-purple-500 cursor-pointer"
                           />
-                          <span className="font-medium">{range}</span>
+                          <span>{range}</span>
                         </label>
                       ))}
                     </div>
-                    {/* Toast notification will be shown instead of static text */}
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lifestyle">Lifestyle</Label>
-                    <Textarea
-                      id="lifestyle"
-                      value={audienceLifestyle}
-                      onChange={(e) => setAudienceLifestyle(e.target.value)}
-                      placeholder="E.g., busy professionals, college students"
-                      className="resize-none h-20"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="struggles">Struggles</Label>
-                    <Textarea
-                      id="struggles"
-                      value={audienceStruggles}
-                      onChange={(e) => setAudienceStruggles(e.target.value)}
-                      placeholder="What challenges do they face?"
-                      className="resize-none h-20"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="desires">Desires</Label>
-                    <Textarea
-                      id="desires"
-                      value={audienceDesires}
-                      onChange={(e) => setAudienceDesires(e.target.value)}
-                      placeholder="What do they aspire to achieve?"
-                      className="resize-none h-20"
-                    />
+
+                  <div className="space-y-8">
+                    <div className="space-y-3">
+                      <Label htmlFor="struggles" className="text-sm font-semibold text-gray-800">Struggles</Label>
+                      <Textarea
+                        id="struggles"
+                        value={audienceStruggles}
+                        onChange={(e) => setAudienceStruggles(e.target.value)}
+                        placeholder={strugglesFocused ? "" : "What pain points or challenges does your audience face? What problems are they trying to solve? Understanding their struggles helps you create content that truly resonates."}
+                        onFocus={() => setStrugglesFocused(true)}
+                        onBlur={() => setStrugglesFocused(false)}
+                        className="min-h-[120px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent p-4 text-sm leading-relaxed"
+                      />
+                    </div>
+
+                    <div className="space-y-3">
+                      <Label htmlFor="desires" className="text-sm font-semibold text-gray-800">Desires</Label>
+                      <Textarea
+                        id="desires"
+                        value={audienceDesires}
+                        onChange={(e) => setAudienceDesires(e.target.value)}
+                        placeholder={desiresFocused ? "" : "What are your audience's goals and aspirations? What transformation are they seeking? What does success look like for them?"}
+                        onFocus={() => setDesiresFocused(true)}
+                        onBlur={() => setDesiresFocused(false)}
+                        className="min-h-[120px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent p-4 text-sm leading-relaxed"
+                      />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
 
-            {/* Tone of Voice */}
-            <Card className="border-0 shadow-none">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageSquare className="w-5 h-5 text-primary" />
-                  Tone of Voice
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground mb-2">Select one (or a mix) of tones that best reflect your communication style or brand voice</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    {["humorous", "aspirational", "educational/informative", "relatable", "motivational", "bold/opinionated", "cinematic/narrative", "comforting/calming"].map((tone) => (
-                      <label
-                        key={tone}
-                        htmlFor={`tone-${tone}`}
-                        className={`p-3 border rounded-md cursor-pointer transition-all flex items-center gap-3 ${
-                          selectedTones.includes(tone) ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300"
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          id={`tone-${tone}`}
-                          checked={selectedTones.includes(tone)}
-                          onChange={() => {
-                            if (selectedTones.includes(tone)) {
-                              setSelectedTones(selectedTones.filter(t => t !== tone));
-                            } else {
-                              setSelectedTones([...selectedTones, tone]);
-                            }
-                          }}
-                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
-                        />
-                        <span className="font-medium capitalize">{tone}</span>
-                      </label>
-                    ))}
-                  </div>
-                  {/* Toast notification will be shown instead of static text */}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Vision Board */}
-            <Card className="border-0 shadow-none">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ImageIcon className="w-5 h-5 text-primary" />
-                  Vision Board
-                </CardTitle>
-                <CardDescription>
-                  Upload your Vision Board here to keep it always in sight, or link your Pinterest board instead
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {visionBoardImages.length > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                    {visionBoardImages.map((image, index) => (
-                      <div key={index} className="relative group aspect-square rounded-lg overflow-hidden">
-                        <img
-                          src={image}
-                          alt={`Vision board ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                        <button
-                          onClick={() => removeVisionBoardImage(index)}
-                          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+              {/* Tone of Voice */}
+              <Card className="rounded-lg border border-blue-100 shadow-sm bg-white hover:shadow-md transition-all">
+                <CardHeader className="border-b border-blue-50 bg-gradient-to-r from-blue-50/50 to-transparent">
+                  <CardTitle className="flex items-center gap-3 text-base">
+                    <div className="p-2 rounded-lg bg-blue-500 text-white shadow-sm">
+                      <MessageSquare className="w-4 h-4" />
+                    </div>
+                    <span className="font-semibold text-gray-900">Tone of Voice</span>
+                  </CardTitle>
+                  <CardDescription className="ml-11 text-sm text-gray-600">
+                    Select one or more tones that reflect how you want to communicate with your community
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-8">
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      {["humorous", "aspirational", "educational/informative", "relatable", "motivational", "bold/opinionated", "cinematic/narrative", "comforting/calming"].map((tone) => (
+                        <label
+                          key={tone}
+                          htmlFor={`tone-${tone}`}
+                          className={`p-3.5 border-2 rounded-lg cursor-pointer transition-all flex items-center gap-3 ${
+                            selectedTones.includes(tone)
+                              ? "border-blue-500 bg-blue-50 text-blue-700 shadow-sm"
+                              : "border-gray-200 hover:border-blue-300 hover:bg-blue-50/30 text-gray-700"
+                          }`}
                         >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ))}
+                          <input
+                            type="checkbox"
+                            id={`tone-${tone}`}
+                            checked={selectedTones.includes(tone)}
+                            onChange={() => {
+                              if (selectedTones.includes(tone)) {
+                                setSelectedTones(selectedTones.filter(t => t !== tone));
+                              } else {
+                                setSelectedTones([...selectedTones, tone]);
+                              }
+                            }}
+                            className="h-4 w-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-pointer"
+                          />
+                          <span className="font-medium capitalize text-sm">{tone}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
-                )}
-                <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center">
-                  <ImageIcon className="mx-auto h-12 w-12 text-gray-300" />
-                  <h3 className="mt-2 text-sm font-medium">Upload images</h3>
-                  <p className="mt-1 text-xs text-gray-500">Any image format up to 2MB each</p>
-                  <p className="mt-1 text-xs text-gray-400">Accepts both landscape and portrait images</p>
-                  <div className="mt-4">
-                    <Button
-                      variant="outline"
-                      className="flex items-center gap-2"
-                      onClick={handleUploadClick}
-                      type="button"
-                    >
-                      <Upload className="h-4 w-4" />
-                      <span>Upload</span>
-                    </Button>
+                </CardContent>
+              </Card>
+
+              {/* Vision Board */}
+              <Card id="vision-board" className="rounded-lg border border-rose-100 shadow-sm bg-white hover:shadow-md transition-all scroll-mt-6">
+                <CardHeader className="border-b border-rose-50 bg-gradient-to-r from-rose-50/50 to-transparent">
+                  <CardTitle className="flex items-center gap-3 text-base">
+                    <div className="p-2 rounded-lg bg-rose-500 text-white shadow-sm">
+                      <ImageIcon className="w-4 h-4" />
+                    </div>
+                    <span className="font-semibold text-gray-900">Vision Board</span>
+                  </CardTitle>
+                  <CardDescription className="ml-11 text-sm text-gray-600">
+                    Upload images or link your Pinterest board
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-8 pt-8">
+                  {/* Images Display - Large */}
+                  {visionBoardImages.length > 0 && (
+                    <div className="grid grid-cols-1 gap-6">
+                      {visionBoardImages.map((image, index) => (
+                        <div key={index} className="relative group rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+                          <img
+                            src={image}
+                            alt={`Vision board ${index + 1}`}
+                            className="w-full h-auto max-h-[600px] object-contain bg-gray-50"
+                          />
+                          <button
+                            onClick={() => removeVisionBoardImage(index)}
+                            className="absolute top-4 right-4 p-2 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
+                          >
+                            <Trash2 className="h-5 w-5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Upload Section - only show when no images */}
+                  {visionBoardImages.length === 0 && (
+                    <div className="border-2 border-dashed border-gray-200 rounded-xl p-10 text-center hover:border-rose-300 hover:bg-rose-50/30 transition-all">
+                      <ImageIcon className="mx-auto h-12 w-12 text-gray-300" />
+                      <h3 className="mt-3 text-sm font-semibold text-gray-800">Upload images</h3>
+                      <p className="mt-1.5 text-xs text-gray-500">Any image format up to 2MB each</p>
+                      <p className="mt-0.5 text-xs text-gray-400">Accepts both landscape and portrait images</p>
+                      <div className="mt-5">
+                        <Button
+                          variant="outline"
+                          className="flex items-center gap-2 border-2 hover:bg-rose-50 hover:border-rose-300"
+                          onClick={handleUploadClick}
+                          type="button"
+                        >
+                          <Upload className="h-4 w-4" />
+                          <span>Choose Files</span>
+                        </Button>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          className="hidden"
+                          multiple
+                          accept="image/*"
+                          onChange={handleVisionBoardUpload}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Hidden file input for when images exist */}
+                  {visionBoardImages.length > 0 && (
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -887,608 +853,61 @@ const StrategyGrowth = () => {
                       accept="image/*"
                       onChange={handleVisionBoardUpload}
                     />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="pinterest">Pinterest Board URL</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="pinterest"
-                      placeholder="https://pinterest.com/username/board-name"
-                      value={pinterestUrl}
-                      onChange={(e) => updatePinterestUrl(e.target.value)}
-                    />
-                    {pinterestUrl && (
-                      <Button
-                        variant="outline"
-                        onClick={() => window.open(pinterestUrl, '_blank')}
-                        className="flex items-center gap-2 whitespace-nowrap"
-                      >
-                        <span>See on Pinterest</span>
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                  )}
 
-            {/* Color Palette */}
-            <Card className="border-0 shadow-none">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Palette className="w-5 h-5 text-primary" />
-                  Color Palette & Aesthetics
-                </CardTitle>
-                <CardDescription>
-                  Define your brand's visual identity
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <Label>Primary Colors</Label>
+                  <div className="space-y-3">
+                    <Label htmlFor="pinterest" className="text-sm font-semibold text-gray-800">Pinterest Board URL</Label>
                     <div className="flex gap-2">
-                      {colorPalette.map((color, index) => (
-                        <div key={index} className="relative group">
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <div
-                                className="w-10 h-10 rounded-md cursor-pointer border"
-                                style={{ backgroundColor: color }}
-                              />
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-2">
-                              <div className="space-y-2">
-                                <input
-                                  type="color"
-                                  value={color}
-                                  onChange={(e) => {
-                                    const newPalette = [...colorPalette];
-                                    newPalette[index] = e.target.value;
-                                    setColorPalette(newPalette);
-                                  }}
-                                  className="w-32 h-10"
-                                />
-                                <Input
-                                  value={color}
-                                  onChange={(e) => {
-                                    const newPalette = [...colorPalette];
-                                    newPalette[index] = e.target.value;
-                                    setColorPalette(newPalette);
-                                  }}
-                                  className="w-32"
-                                />
-                              </div>
-                            </PopoverContent>
-                          </Popover>
-                          <button
-                            onClick={() => setColorPalette(colorPalette.filter((_, i) => i !== index))}
-                            className="absolute -top-1 -right-1 w-4 h-4 bg-gray-800 text-white rounded-full flex items-center justify-center text-xs hover:bg-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-4 bg-white">
-                          <div className="space-y-2">
-                            <Label className="text-sm font-semibold">Pick a color</Label>
-                            <div className="relative">
-                              <input
-                                type="color"
-                                defaultValue="#FFFFFF"
-                                onChange={(e) => {
-                                  setColorPalette([...colorPalette, e.target.value]);
-                                }}
-                                className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
-                              />
-                              <div className="w-24 h-20 rounded-md border-2 border-dashed border-gray-300 flex flex-col items-center justify-center gap-1 hover:border-primary hover:bg-primary/5 transition-colors cursor-pointer">
-                                <Palette className="w-6 h-6 text-primary" />
-                                <span className="text-xs font-medium text-muted-foreground">Click</span>
-                              </div>
-                            </div>
-                          </div>
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <Label>Secondary Colors</Label>
-                    <div className="flex gap-2">
-                      {secondaryColorPalette.map((color, index) => (
-                        <div key={index} className="relative group">
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <div
-                                className="w-10 h-10 rounded-md cursor-pointer border"
-                                style={{ backgroundColor: color }}
-                              />
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-2">
-                              <div className="space-y-2">
-                                <input
-                                  type="color"
-                                  value={color}
-                                  onChange={(e) => {
-                                    const newPalette = [...secondaryColorPalette];
-                                    newPalette[index] = e.target.value;
-                                    setSecondaryColorPalette(newPalette);
-                                  }}
-                                  className="w-32 h-10"
-                                />
-                                <Input
-                                  value={color}
-                                  onChange={(e) => {
-                                    const newPalette = [...secondaryColorPalette];
-                                    newPalette[index] = e.target.value;
-                                    setSecondaryColorPalette(newPalette);
-                                  }}
-                                  className="w-32"
-                                />
-                              </div>
-                            </PopoverContent>
-                          </Popover>
-                          <button
-                            onClick={() => setSecondaryColorPalette(secondaryColorPalette.filter((_, i) => i !== index))}
-                            className="absolute -top-1 -right-1 w-4 h-4 bg-gray-800 text-white rounded-full flex items-center justify-center text-xs hover:bg-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-4 bg-white">
-                          <div className="space-y-2">
-                            <Label className="text-sm font-semibold">Pick a color</Label>
-                            <div className="relative">
-                              <input
-                                type="color"
-                                defaultValue="#FFFFFF"
-                                onChange={(e) => {
-                                  setSecondaryColorPalette([...secondaryColorPalette, e.target.value]);
-                                }}
-                                className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
-                              />
-                              <div className="w-24 h-20 rounded-md border-2 border-dashed border-gray-300 flex flex-col items-center justify-center gap-1 hover:border-primary hover:bg-primary/5 transition-colors cursor-pointer">
-                                <Palette className="w-6 h-6 text-primary" />
-                                <span className="text-xs font-medium text-muted-foreground">Click</span>
-                              </div>
-                            </div>
-                          </div>
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="typography">Typography</Label>
-                    <Input
-                      id="typography"
-                      placeholder="e.g., Montserrat, Playfair Display"
-                      value={typographyInput}
-                      onChange={(e) => setTypographyInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && typographyInput.trim()) {
-                          setTypographyItems([...typographyItems, typographyInput.trim()]);
-                          setTypographyInput("");
-                        }
-                      }}
-                    />
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {typographyItems.map((item, index) => (
-                        <Badge key={index} variant="secondary" className="px-3 py-1">
-                          {item}
-                          <button
-                            onClick={() => setTypographyItems(typographyItems.filter((_, i) => i !== index))}
-                            className="ml-2 text-gray-300 hover:text-gray-500 text-xs font-light leading-none"
-                          >
-                            ×
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="aesthetic">Aesthetic Direction</Label>
-                    <Input
-                      id="aesthetic"
-                      placeholder="e.g., Minimalist, Boho, Luxury"
-                      value={aestheticInput}
-                      onChange={(e) => setAestheticInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && aestheticInput.trim()) {
-                          setAestheticItems([...aestheticItems, aestheticInput.trim()]);
-                          setAestheticInput("");
-                        }
-                      }}
-                    />
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {aestheticItems.map((item, index) => (
-                        <Badge key={index} variant="secondary" className="px-3 py-1">
-                          {item}
-                          <button
-                            onClick={() => setAestheticItems(aestheticItems.filter((_, i) => i !== index))}
-                            className="ml-2 text-gray-300 hover:text-gray-500 text-xs font-light leading-none"
-                          >
-                            ×
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Content Strategy Tab */}
-          <TabsContent value="content-strategy" className="space-y-6">
-            <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-8 border border-primary/20 shadow-sm">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                <span>Strategy & Growth</span>
-                <span>/</span>
-                <span className="text-primary font-semibold">Content Strategy</span>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="bg-primary rounded-lg p-3 shadow-md">
-                  <Layers className="w-8 h-8 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold mb-1">Content Strategy</h2>
-                  <p className="text-muted-foreground">Plan your content pillars and monthly themes</p>
-                </div>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Value Map */}
-              <Card className="md:col-span-2">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <PieChart className="w-5 h-5 text-primary" />
-                    Value Map
-                  </CardTitle>
-                  <CardDescription>
-                    Define what value each content pillar delivers to your audience
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex flex-col gap-4">
-                      {contentPillars.map((pillar, index) => (
-                        <div key={index} className="flex flex-col gap-2 p-4 border rounded-md">
-                          <div className="flex justify-between items-center">
-                            <h4 className="font-medium">{pillar.name}</h4>
-                            <Button 
-                              variant="ghost" 
-                              size="icon"
-                              onClick={() => handleRemovePillar(index)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          <p className="text-muted-foreground text-sm">{pillar.value}</p>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="flex gap-2 pt-4">
-                      <div className="grid grid-cols-2 gap-2 flex-1">
-                        <Input
-                          placeholder="Pillar name"
-                          value={pillarInput.name}
-                          onChange={(e) => setPillarInput({ ...pillarInput, name: e.target.value })}
-                        />
-                        <Input
-                          placeholder="Value it provides"
-                          value={pillarInput.value}
-                          onChange={(e) => setPillarInput({ ...pillarInput, value: e.target.value })}
-                        />
-                      </div>
-                      <Button onClick={handleAddPillar}>Add Pillar</Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Monthly Themes */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-primary" />
-                    Monthly Themes
-                  </CardTitle>
-                  <CardDescription>
-                    Plan content themes for upcoming months
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="border rounded-md overflow-hidden">
-                      <table className="w-full">
-                        <thead className="bg-muted">
-                          <tr>
-                            <th className="px-4 py-2 text-left font-medium">Month</th>
-                            <th className="px-4 py-2 text-left font-medium">Theme</th>
-                            <th className="px-4 py-2 text-left font-medium w-24">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {monthlyThemes.map((item, index) => (
-                            <tr key={index} className="border-t">
-                              <td className="px-4 py-3">{item.month}</td>
-                              <td className="px-4 py-3">{item.theme}</td>
-                              <td className="px-4 py-3">
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon"
-                                  onClick={() => {
-                                    setMonthlyThemes(monthlyThemes.filter((_, i) => i !== index));
-                                  }}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <select 
-                        className="p-2 border rounded-md bg-white" 
-                        value={newThemeMonth} 
-                        onChange={(e) => setNewThemeMonth(e.target.value)}
-                      >
-                        <option value="">Select Month</option>
-                        <option value="January">January</option>
-                        <option value="February">February</option>
-                        <option value="March">March</option>
-                        <option value="April">April</option>
-                        <option value="May">May</option>
-                        <option value="June">June</option>
-                        <option value="July">July</option>
-                        <option value="August">August</option>
-                        <option value="September">September</option>
-                        <option value="October">October</option>
-                        <option value="November">November</option>
-                        <option value="December">December</option>
-                      </select>
-                      <Input 
-                        placeholder="Theme (e.g., Self-Love)" 
-                        value={newThemeContent}
-                        onChange={(e) => setNewThemeContent(e.target.value)}
+                      <Input
+                        id="pinterest"
+                        placeholder="https://pinterest.com/username/board-name"
+                        value={pinterestUrl}
+                        onChange={(e) => updatePinterestUrl(e.target.value)}
+                        className="border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                       />
+                      {pinterestUrl && (
+                        <Button
+                          variant="outline"
+                          onClick={() => window.open(pinterestUrl, '_blank')}
+                          className="flex items-center gap-2 whitespace-nowrap border-2 hover:bg-rose-50 hover:border-rose-300"
+                        >
+                          <span>View Board</span>
+                          <ExternalLink className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
-                    <Button 
-                      className="w-full"
-                      onClick={handleAddTheme}
-                      disabled={!newThemeMonth || !newThemeContent}
-                    >
-                      Add Theme
-                    </Button>
                   </div>
                 </CardContent>
               </Card>
-
-              
-
-
-            </div>
           </TabsContent>
 
-          {/* Competitor Tracker Tab */}
-          <TabsContent value="competitor-tracker" className="space-y-6">
-            <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-8 border border-primary/20 shadow-sm">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                <span>Strategy & Growth</span>
-                <span>/</span>
-                <span className="text-primary font-semibold">Competitor Tracker</span>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="bg-primary rounded-lg p-3 shadow-md">
-                  <Eye className="w-8 h-8 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold mb-1">Competitor Tracker</h2>
-                  <p className="text-muted-foreground">Monitor creators who inspire you or compete in your niche</p>
-                </div>
-              </div>
-            </div>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Eye className="w-5 h-5 text-primary" />
-                  Competitor & Inspiration Tracker
-                </CardTitle>
-                <CardDescription>
-                  Keep tabs on creators who inspire you or compete in your niche
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Input 
-                      placeholder="@handle" 
-                      value={newCompetitor.handle}
-                      onChange={(e) => setNewCompetitor({...newCompetitor, handle: e.target.value})}
-                    />
-                    <Input 
-                      placeholder="Niche (e.g., Beauty, Fitness)" 
-                      value={newCompetitor.niche}
-                      onChange={(e) => setNewCompetitor({...newCompetitor, niche: e.target.value})}
-                    />
-                    <select 
-                      className="p-2 border rounded-md bg-background"
-                      value={newCompetitor.platform}
-                      onChange={(e) => setNewCompetitor({...newCompetitor, platform: e.target.value})}
-                    >
-                      <option value="Instagram">Instagram</option>
-                      <option value="TikTok">TikTok</option>
-                      <option value="YouTube">YouTube</option>
-                      <option value="Pinterest">Pinterest</option>
-                      <option value="LinkedIn">LinkedIn</option>
-                    </select>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input 
-                      placeholder="What do they do well?" 
-                      value={newCompetitor.strengths}
-                      onChange={(e) => setNewCompetitor({...newCompetitor, strengths: e.target.value})}
-                    />
-                    <Input 
-                      placeholder="Notes (trends, strategies to try)" 
-                      value={newCompetitor.notes}
-                      onChange={(e) => setNewCompetitor({...newCompetitor, notes: e.target.value})}
-                    />
-                  </div>
-                  <Button onClick={handleAddCompetitor} className="w-full">Add Creator</Button>
-                </div>
-
-                <div className="mt-6 border rounded-md overflow-hidden">
-                  <table className="w-full">
-                    <thead className="bg-muted">
-                      <tr>
-                        <th className="px-4 py-2 text-left font-medium">Handle</th>
-                        <th className="px-4 py-2 text-left font-medium">Niche</th>
-                        <th className="px-4 py-2 text-left font-medium">Platform</th>
-                        <th className="px-4 py-2 text-left font-medium">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {competitors.map((competitor, index) => (
-                        <tr key={index} className="border-t">
-                          <td className="px-4 py-3 font-medium">{competitor.handle}</td>
-                          <td className="px-4 py-3">{competitor.niche}</td>
-                          <td className="px-4 py-3">{competitor.platform}</td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => handleViewCompetitor(competitor)}
-                              >
-                                View
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="icon"
-                                onClick={() => handleRemoveCompetitor(index)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Card className="bg-muted/40">
-                    <CardHeader className="py-4"><CardTitle className="text-base">Differentiation Analysis</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <Label>What makes you different?</Label>
-                        <Textarea 
-                          placeholder="How is your content/approach unique compared to competitors?"
-                          className="h-24 resize-none"
-                        />
-                      </div>
-                      <div className="space-y-2 mt-4">
-                        <Label>Unique selling points</Label>
-                        <Input placeholder="e.g., Insider industry knowledge" className="mb-2" />
-                        <Input placeholder="e.g., Authentic behind-the-scenes" />
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-muted/40">
-                    <CardHeader className="py-4">
-                      <CardTitle className="text-base">Performance Tracking</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">Auto-track competitor growth</span>
-                          <Switch />
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">Get alerts about top content</span>
-                          <Switch />
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">Compare engagement rates</span>
-                          <Switch />
-                        </div>
-                        <Button variant="outline" className="w-full">Import Analytics</Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           {/* Growth Goals Tab */}
-          <TabsContent value="growth-goals" className="space-y-6">
-            <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-8 border border-primary/20 shadow-sm">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                <span>Strategy & Growth</span>
-                <span>/</span>
-                <span className="text-primary font-semibold">Growth Goals</span>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="bg-primary rounded-lg p-3 shadow-md">
-                  <TrendingUp className="w-8 h-8 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold mb-1">Growth Goals</h2>
-                  <p className="text-muted-foreground">Set and track your monthly, short-term, and long-term goals</p>
-                </div>
-              </div>
-            </div>
-
+          <TabsContent value="growth-goals" className="space-y-6 mt-0">
             {/* Two-column layout */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Left column: Monthly Goals */}
-              <Card className="lg:col-span-1">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-primary" />
-                  Monthly Goals
-                </CardTitle>
-                <CardDescription>
-                  Set and track goals for any month
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex gap-4 items-center justify-between flex-wrap">
-                  <div className="flex gap-2 items-center">
-                    <Label htmlFor="year-select">Year:</Label>
+              <Card className="lg:col-span-1 rounded-lg border border-blue-100 shadow-sm bg-white hover:shadow-md transition-all">
+                <CardHeader className="border-b border-blue-50 bg-gradient-to-r from-blue-50/50 to-transparent">
+                  <CardTitle className="flex items-center gap-3 text-base">
+                    <div className="p-2 rounded-lg bg-blue-500 text-white shadow-sm">
+                      <Calendar className="w-4 h-4" />
+                    </div>
+                    <span className="font-semibold text-gray-900">Monthly Goals</span>
+                  </CardTitle>
+                  <CardDescription className="ml-11 text-sm text-gray-600">
+                    Set and track goals for any month
+                  </CardDescription>
+                </CardHeader>
+              <CardContent className="space-y-6 pt-8">
+                <div className="flex gap-4 items-center justify-between flex-wrap bg-blue-50/30 p-4 rounded-lg border border-blue-100/50">
+                  <div className="flex gap-3 items-center">
+                    <Label htmlFor="year-select" className="text-sm font-semibold text-gray-700">Year:</Label>
                     <select
                       id="year-select"
                       value={selectedYear}
                       onChange={(e) => setSelectedYear(Number(e.target.value))}
-                      className="p-2 border rounded-md bg-primary/10 font-medium"
+                      className="px-3 py-2 border-2 border-blue-200 rounded-lg bg-white font-medium text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       {[...Array(5)].map((_, i) => {
                         const year = 2025 + i;
@@ -1497,10 +916,10 @@ const StrategyGrowth = () => {
                     </select>
                   </div>
 
-                  <div className="flex gap-2 items-center">
+                  <div className="flex gap-3 items-center">
                     {!showAllMonths && (
                       <>
-                        <Label htmlFor="month-select">Month:</Label>
+                        <Label htmlFor="month-select" className="text-sm font-semibold text-gray-700">Month:</Label>
                         <select
                           id="month-select"
                           value={focusedMonth}
@@ -1508,7 +927,7 @@ const StrategyGrowth = () => {
                             setFocusedMonth(e.target.value);
                             setExpandedMonths([e.target.value]);
                           }}
-                          className="p-2 border rounded-md bg-primary/10 font-medium"
+                          className="px-3 py-2 border-2 border-blue-200 rounded-lg bg-white font-medium text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
                           {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map((month) => (
                             <option key={month} value={month}>{month}</option>
@@ -1520,7 +939,7 @@ const StrategyGrowth = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => setShowAllMonths(!showAllMonths)}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 border-2 hover:bg-blue-50 border-blue-200 hover:border-blue-300"
                     >
                       {showAllMonths ? "Focus on One Month" : "Show All Months"}
                     </Button>
@@ -1550,10 +969,10 @@ const StrategyGrowth = () => {
                           </div>
                         </AccordionTrigger>
                         <AccordionContent>
-                          <div className="space-y-3 pt-2">
+                          <div className="space-y-3 pt-2 px-1">
                             {goals.map((goal) => (
                               <div key={goal.id} className="space-y-2">
-                                <div className="flex items-start gap-3 group hover:bg-gray-50 p-2 rounded">
+                                <div className="flex items-start gap-3 group hover:bg-blue-50/30 p-3 rounded-lg border border-transparent hover:border-blue-100 transition-all">
                                   <button
                                     onClick={() => handleToggleMonthlyGoal(selectedYear, month, goal.id)}
                                     data-onboarding="goal-status-box"
@@ -1585,8 +1004,8 @@ const StrategyGrowth = () => {
                                       className={`flex-1 cursor-pointer ${
                                         goal.status === 'completed' ? 'line-through text-muted-foreground' : ''
                                       }`}
-                                      onDoubleClick={() => handleEditMonthlyGoal(goal.id, goal.text)}
-                                      title="Double-click to edit"
+                                      onClick={() => handleEditMonthlyGoal(goal.id, goal.text)}
+                                      title="Click to edit"
                                     >
                                       {goal.text}
                                     </span>
@@ -1612,16 +1031,18 @@ const StrategyGrowth = () => {
                                 )}
                               </div>
                             ))}
-                            <div className="flex gap-2 pt-2">
+                            <div className="flex gap-2 pt-3">
                               <Input
                                 placeholder={`Add goal for ${month}...`}
                                 value={newMonthlyGoalInputs[inputKey] || ''}
                                 onChange={(e) => setNewMonthlyGoalInputs(prev => ({ ...prev, [inputKey]: e.target.value }))}
                                 onKeyDown={(e) => e.key === 'Enter' && handleAddMonthlyGoal(selectedYear, month)}
+                                className="border-2 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200"
                               />
                               <Button
                                 onClick={() => handleAddMonthlyGoal(selectedYear, month)}
                                 disabled={!(newMonthlyGoalInputs[inputKey] || '').trim()}
+                                className="bg-blue-500 hover:bg-blue-600"
                               >
                                 <Plus className="h-4 w-4" />
                               </Button>
@@ -1635,23 +1056,25 @@ const StrategyGrowth = () => {
               </CardContent>
             </Card>
 
-            {/* Right column: Short-Term and Long-Term Goals */}
-            <div className="lg:col-span-1 space-y-6">
-              {/* Short-Term Goals (1 Year) */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-primary" />
-                  Short-Term Goals (1 Year)
-                </CardTitle>
-                <CardDescription>
-                  Goals you want to accomplish within the next year
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+              {/* Right column: Short-Term and Long-Term Goals */}
+              <div className="lg:col-span-1 space-y-6">
+                {/* Short-Term Goals (1 Year) */}
+                <Card className="rounded-lg border border-amber-100 shadow-sm bg-white hover:shadow-md transition-all">
+                  <CardHeader className="border-b border-amber-50 bg-gradient-to-r from-amber-50/50 to-transparent">
+                    <CardTitle className="flex items-center gap-3 text-base">
+                      <div className="p-2 rounded-lg bg-amber-500 text-white shadow-sm">
+                        <Target className="w-4 h-4" />
+                      </div>
+                      <span className="font-semibold text-gray-900">Short-Term (1 Year)</span>
+                    </CardTitle>
+                    <CardDescription className="ml-11 text-sm text-gray-600">
+                      Goals within the next year
+                    </CardDescription>
+                  </CardHeader>
+              <CardContent className="space-y-4 pt-8">
                 {shortTermGoals.map((goal) => (
                   <div key={goal.id} className="space-y-2">
-                    <div className="flex items-start gap-3 group hover:bg-gray-50 p-2 rounded">
+                    <div className="flex items-start gap-3 group hover:bg-amber-50/30 p-3 rounded-lg border border-transparent hover:border-amber-100 transition-all">
                       <button
                         onClick={() => handleToggleShortTermGoal(goal.id)}
                         data-onboarding="goal-status-box"
@@ -1683,8 +1106,8 @@ const StrategyGrowth = () => {
                           className={`flex-1 cursor-pointer ${
                             goal.status === 'completed' ? 'line-through text-muted-foreground' : ''
                           }`}
-                          onDoubleClick={() => handleEditShortTermGoal(goal.id, goal.text)}
-                          title="Double-click to edit"
+                          onClick={() => handleEditShortTermGoal(goal.id, goal.text)}
+                          title="Click to edit"
                         >
                           {goal.text}
                         </span>
@@ -1714,35 +1137,38 @@ const StrategyGrowth = () => {
                     )}
                   </div>
                 ))}
-                <div className="flex gap-2 pt-2">
+                <div className="flex gap-2 pt-3">
                   <Input
                     placeholder="Add a 1-year goal..."
                     value={newShortTermGoal}
                     onChange={(e) => setNewShortTermGoal(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleAddShortTermGoal()}
+                    className="border-2 border-gray-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
                   />
-                  <Button onClick={handleAddShortTermGoal} disabled={!newShortTermGoal.trim()}>
+                  <Button onClick={handleAddShortTermGoal} disabled={!newShortTermGoal.trim()} className="bg-amber-500 hover:bg-amber-600">
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            {/* Long-Term Goals (3 Years) */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-primary" />
-                  Long-Term Goals (3 Years)
-                </CardTitle>
-                <CardDescription>
-                  Your vision for where you want to be 3 years from now
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                {/* Long-Term Goals (3 Years) */}
+                <Card className="rounded-lg border border-emerald-100 shadow-sm bg-white hover:shadow-md transition-all">
+                  <CardHeader className="border-b border-emerald-50 bg-gradient-to-r from-emerald-50/50 to-transparent">
+                    <CardTitle className="flex items-center gap-3 text-base">
+                      <div className="p-2 rounded-lg bg-emerald-500 text-white shadow-sm">
+                        <TrendingUp className="w-4 h-4" />
+                      </div>
+                      <span className="font-semibold text-gray-900">Long-Term (3 Years)</span>
+                    </CardTitle>
+                    <CardDescription className="ml-11 text-sm text-gray-600">
+                      Your 3-year vision
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4 pt-8">
                 {longTermGoals.map((goal) => (
                   <div key={goal.id} className="space-y-2">
-                    <div className="flex items-start gap-3 group hover:bg-gray-50 p-2 rounded">
+                    <div className="flex items-start gap-3 group hover:bg-emerald-50/30 p-3 rounded-lg border border-transparent hover:border-emerald-100 transition-all">
                       <button
                         onClick={() => handleToggleLongTermGoal(goal.id)}
                         data-onboarding="goal-status-box"
@@ -1774,8 +1200,8 @@ const StrategyGrowth = () => {
                           className={`flex-1 cursor-pointer ${
                             goal.status === 'completed' ? 'line-through text-muted-foreground' : ''
                           }`}
-                          onDoubleClick={() => handleEditLongTermGoal(goal.id, goal.text)}
-                          title="Double-click to edit"
+                          onClick={() => handleEditLongTermGoal(goal.id, goal.text)}
+                          title="Click to edit"
                         >
                           {goal.text}
                         </span>
@@ -1805,73 +1231,25 @@ const StrategyGrowth = () => {
                     )}
                   </div>
                 ))}
-                <div className="flex gap-2 pt-2">
+                <div className="flex gap-2 pt-3">
                   <Input
                     placeholder="Add a 3-year goal..."
                     value={newLongTermGoal}
                     onChange={(e) => setNewLongTermGoal(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleAddLongTermGoal()}
+                    className="border-2 border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-200"
                   />
-                  <Button onClick={handleAddLongTermGoal} disabled={!newLongTermGoal.trim()}>
+                  <Button onClick={handleAddLongTermGoal} disabled={!newLongTermGoal.trim()} className="bg-emerald-500 hover:bg-emerald-600">
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-            </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </TabsContent>
         </Tabs>
-
-        {/* Dialog for viewing competitor details */}
-        {viewingCompetitor && (
-          <Dialog open={!!viewingCompetitor} onOpenChange={(open) => !open && setViewingCompetitor(null)}>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle className="text-xl">{viewingCompetitor.handle}</DialogTitle>
-                <DialogDescription>
-                  Detailed information about this competitor or inspiration.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">Platform:</span>
-                  <Badge variant="outline">{viewingCompetitor.platform}</Badge>
-                </div>
-                <div>
-                  <span className="font-medium">Niche:</span>
-                  <p className="mt-1">{viewingCompetitor.niche}</p>
-                </div>
-                <div>
-                  <span className="font-medium">Strengths:</span>
-                  <p className="mt-1">{viewingCompetitor.strengths || "No strengths recorded"}</p>
-                </div>
-                <div>
-                  <span className="font-medium">Notes:</span>
-                  <p className="mt-1">{viewingCompetitor.notes || "No notes recorded"}</p>
-                </div>
-                
-                {/* Placeholder for analytics comparison - could be expanded in future */}
-                <div className="mt-6 border-t pt-4">
-                  <h4 className="font-medium mb-2">Actions</h4>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button variant="outline" size="sm" className="w-full">
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Visit Profile
-                    </Button>
-                    <Button variant="outline" size="sm" className="w-full">
-                      <BarChart className="h-4 w-4 mr-2" />
-                      Compare Stats
-                    </Button>
-                  </div>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setViewingCompetitor(null)}>Close</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        )}
+        </div>
       </div>
     </Layout>
   );
