@@ -1721,8 +1721,8 @@ const HomePage = () => {
                     {missionStatement ? (
                       <>
                         <p
-                          className="text-4xl leading-relaxed text-gray-700 text-center mb-4"
-                          style={{ fontFamily: "'Allura', cursive" }}
+                          className="text-2xl leading-relaxed text-gray-800 text-center mb-4 font-serif italic"
+                          style={{ fontFamily: "'Playfair Display', serif" }}
                         >
                           {missionStatement}
                         </p>
