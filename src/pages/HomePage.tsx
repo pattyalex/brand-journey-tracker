@@ -1096,10 +1096,8 @@ const HomePage = () => {
 
             {/* Grid Layout Container - Fixed positions, Pinterest style */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 fade-in items-start">
-              {/* Left Column */}
-              <div className="space-y-6">
               {/* Today's Top 3 Priorities Section */}
-              <section className="mb-6">
+              <section>
                 <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
                   <CardHeader className="pb-4">
                     <CardTitle className="text-xl font-bold flex items-center gap-2">
@@ -1171,7 +1169,7 @@ const HomePage = () => {
               </section>
 
               {/* Today's Tasks Section */}
-              <section className="mb-6">
+              <section>
                 <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-center mb-2">
@@ -1673,12 +1671,97 @@ const HomePage = () => {
                 </Card>
               </section>
               )}
-              </div>
 
-              {/* Right Column */}
-              <div className="space-y-6">
-              {/* Monthly Goals Section */}
-              <section className="mb-6">
+              {/* Mission Statement Section */}
+              <section className="break-inside-avoid">
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl relative">
+                  <CardContent className="py-8 px-6">
+                    {missionStatement ? (
+                      <>
+                        <p
+                          className="text-2xl leading-relaxed text-gray-800 text-center mb-4 font-serif italic"
+                          style={{ fontFamily: "'Playfair Display', serif" }}
+                        >
+                          {missionStatement}
+                        </p>
+                        <div className="flex justify-end">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate('/strategy-growth')}
+                            className="text-gray-400 hover:text-gray-600 text-xs"
+                          >
+                            Edit →
+                          </Button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="space-y-3 flex flex-col items-center">
+                        <p className="text-base text-gray-400 italic text-center">
+                          Your mission statement will appear here as a daily reminder
+                        </p>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => navigate('/strategy-growth')}
+                          className="h-7 text-xs text-gray-500 hover:text-gray-700"
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          Add Mission Statement
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </section>
+
+              {/* Content Calendar */}
+              <section className="break-inside-avoid">
+                <Card
+                  className="border-0 shadow-md hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-br from-white via-purple-50/20 to-blue-50/30 rounded-2xl"
+                  onClick={() => navigate('/task-board?view=calendar')}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="text-xl font-bold flex items-center gap-2">
+                        <Calendar className="h-5 w-5 text-purple-600" />
+                        Content Calendar
+                      </CardTitle>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs px-2 hover:bg-purple-100"
+                      >
+                        View →
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="min-h-[200px] flex items-center justify-center">
+                      <div className="text-center space-y-3">
+                        <div className="inline-block p-4 bg-purple-100 rounded-full">
+                          <Calendar className="h-12 w-12 text-purple-600" />
+                        </div>
+                        <p className="text-sm text-muted-foreground">View your content schedule</p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="mt-2"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate('/task-board?view=calendar');
+                          }}
+                        >
+                          Open Calendar
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </section>
+
+              {/* Monthly Goals Section - Moved to bottom */}
+              <section className="break-inside-avoid md:col-span-2">
                 <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-center">
@@ -1819,95 +1902,6 @@ const HomePage = () => {
                 </Card>
               </section>
 
-              {/* Mission Statement Section */}
-              <section className="break-inside-avoid mb-6">
-                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl relative">
-                  <CardContent className="py-8 px-6">
-                    {missionStatement ? (
-                      <>
-                        <p
-                          className="text-2xl leading-relaxed text-gray-800 text-center mb-4 font-serif italic"
-                          style={{ fontFamily: "'Playfair Display', serif" }}
-                        >
-                          {missionStatement}
-                        </p>
-                        <div className="flex justify-end">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => navigate('/strategy-growth')}
-                            className="text-gray-400 hover:text-gray-600 text-xs"
-                          >
-                            Edit →
-                          </Button>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="space-y-3 flex flex-col items-center">
-                        <p className="text-base text-gray-400 italic text-center">
-                          Your mission statement will appear here as a daily reminder
-                        </p>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate('/strategy-growth')}
-                          className="h-7 text-xs text-gray-500 hover:text-gray-700"
-                        >
-                          <Plus className="h-3 w-3 mr-1" />
-                          Add Mission Statement
-                        </Button>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </section>
-
-              {/* Content Calendar */}
-              <section className="break-inside-avoid mb-6">
-                <Card
-                  className="border-0 shadow-md hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-br from-white via-purple-50/20 to-blue-50/30 rounded-2xl"
-                  onClick={() => navigate('/task-board?view=calendar')}
-                >
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-center">
-                      <CardTitle className="text-xl font-bold flex items-center gap-2">
-                        <Calendar className="h-5 w-5 text-purple-600" />
-                        Content Calendar
-                      </CardTitle>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 text-xs px-2 hover:bg-purple-100"
-                      >
-                        View →
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="min-h-[200px] flex items-center justify-center">
-                      <div className="text-center space-y-3">
-                        <div className="inline-block p-4 bg-purple-100 rounded-full">
-                          <Calendar className="h-12 w-12 text-purple-600" />
-                        </div>
-                        <p className="text-sm text-muted-foreground">View your content schedule</p>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="mt-2"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate('/task-board?view=calendar');
-                          }}
-                        >
-                          Open Calendar
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </section>
-              </div>
-              {/* End Right Column */}
             </div>
             {/* End Grid Container */}
           </div>
