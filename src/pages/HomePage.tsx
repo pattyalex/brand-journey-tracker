@@ -1098,9 +1098,81 @@ const HomePage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 fade-in items-start">
               {/* Left Column */}
               <div className="space-y-6">
+              {/* Today's Top 3 Priorities Section */}
+              <section className="mb-6">
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-xl font-bold flex items-center gap-2">
+                      <Target className="h-5 w-5 text-purple-600" />
+                      Today's Top 3 Priorities
+                    </CardTitle>
+                    <p className="text-xs text-muted-foreground mt-1">What matters most today?</p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {priorities.map((priority, index) => {
+                        const colors = [
+                          { bg: 'bg-gradient-to-br from-blue-50/50 to-blue-100/30', border: 'border-blue-200', text: 'text-blue-800', number: 'bg-blue-400' },
+                          { bg: 'bg-gradient-to-br from-purple-50/50 to-purple-100/30', border: 'border-purple-200', text: 'text-purple-800', number: 'bg-purple-400' },
+                          { bg: 'bg-gradient-to-br from-amber-50/50 to-amber-100/30', border: 'border-amber-200', text: 'text-amber-800', number: 'bg-amber-400' }
+                        ];
+                        const color = colors[index];
+
+                        return (
+                          <div
+                            key={priority.id}
+                            className={`relative p-4 rounded-lg border ${color.border} ${color.bg} hover:shadow-md transition-all group`}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className={`flex-shrink-0 w-8 h-8 rounded-full ${color.number} flex items-center justify-center text-white font-bold text-sm shadow-sm`}>
+                                {priority.id}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                {editingPriorityId === priority.id ? (
+                                  <input
+                                    autoFocus
+                                    type="text"
+                                    value={priority.text}
+                                    onChange={(e) => handleUpdatePriority(priority.id, e.target.value)}
+                                    onBlur={() => setEditingPriorityId(null)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        setEditingPriorityId(null);
+                                      } else if (e.key === 'Escape') {
+                                        setEditingPriorityId(null);
+                                      }
+                                    }}
+                                    placeholder={`Priority ${priority.id}...`}
+                                    className={`w-full bg-white/70 border-0 shadow-none focus:ring-2 focus:ring-blue-300 rounded px-2 py-1 text-sm ${color.text} font-medium placeholder:text-gray-400`}
+                                  />
+                                ) : (
+                                  <div
+                                    onClick={() => setEditingPriorityId(priority.id)}
+                                    className={`cursor-pointer ${color.text} font-medium text-sm min-h-[28px] flex items-center ${
+                                      !priority.text ? 'text-gray-400 italic' : ''
+                                    } ${priority.isCompleted ? 'line-through text-gray-500' : ''}`}
+                                  >
+                                    {priority.text || `Click to set priority ${priority.id}...`}
+                                  </div>
+                                )}
+                              </div>
+                              <Checkbox
+                                checked={priority.isCompleted}
+                                onCheckedChange={() => handleTogglePriority(priority.id)}
+                                className="h-5 w-5 rounded data-[state=checked]:bg-green-500 data-[state=checked]:text-white border-gray-300 flex-shrink-0"
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              </section>
+
               {/* Today's Tasks Section */}
               <section className="mb-6">
-                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl rounded-2xl">
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-center mb-2">
                       <CardTitle className="text-xl flex items-center gap-2">
@@ -1498,78 +1570,6 @@ const HomePage = () => {
                         </div>
                       );
                     })()}
-                  </CardContent>
-                </Card>
-              </section>
-
-              {/* Today's Top 3 Priorities Section */}
-              <section className="mb-6">
-                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-xl font-bold flex items-center gap-2">
-                      <Target className="h-5 w-5 text-purple-600" />
-                      Today's Top 3 Priorities
-                    </CardTitle>
-                    <p className="text-xs text-muted-foreground mt-1">What matters most today?</p>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {priorities.map((priority, index) => {
-                        const colors = [
-                          { bg: 'bg-gradient-to-br from-blue-50/50 to-blue-100/30', border: 'border-blue-200', text: 'text-blue-800', number: 'bg-blue-400' },
-                          { bg: 'bg-gradient-to-br from-purple-50/50 to-purple-100/30', border: 'border-purple-200', text: 'text-purple-800', number: 'bg-purple-400' },
-                          { bg: 'bg-gradient-to-br from-amber-50/50 to-amber-100/30', border: 'border-amber-200', text: 'text-amber-800', number: 'bg-amber-400' }
-                        ];
-                        const color = colors[index];
-
-                        return (
-                          <div
-                            key={priority.id}
-                            className={`relative p-4 rounded-lg border ${color.border} ${color.bg} hover:shadow-md transition-all group`}
-                          >
-                            <div className="flex items-start gap-3">
-                              <div className={`flex-shrink-0 w-8 h-8 rounded-full ${color.number} flex items-center justify-center text-white font-bold text-sm shadow-sm`}>
-                                {priority.id}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                {editingPriorityId === priority.id ? (
-                                  <input
-                                    autoFocus
-                                    type="text"
-                                    value={priority.text}
-                                    onChange={(e) => handleUpdatePriority(priority.id, e.target.value)}
-                                    onBlur={() => setEditingPriorityId(null)}
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
-                                        setEditingPriorityId(null);
-                                      } else if (e.key === 'Escape') {
-                                        setEditingPriorityId(null);
-                                      }
-                                    }}
-                                    placeholder={`Priority ${priority.id}...`}
-                                    className={`w-full bg-white/70 border-0 shadow-none focus:ring-2 focus:ring-blue-300 rounded px-2 py-1 text-sm ${color.text} font-medium placeholder:text-gray-400`}
-                                  />
-                                ) : (
-                                  <div
-                                    onClick={() => setEditingPriorityId(priority.id)}
-                                    className={`cursor-pointer ${color.text} font-medium text-sm min-h-[28px] flex items-center ${
-                                      !priority.text ? 'text-gray-400 italic' : ''
-                                    } ${priority.isCompleted ? 'line-through text-gray-500' : ''}`}
-                                  >
-                                    {priority.text || `Click to set priority ${priority.id}...`}
-                                  </div>
-                                )}
-                              </div>
-                              <Checkbox
-                                checked={priority.isCompleted}
-                                onCheckedChange={() => handleTogglePriority(priority.id)}
-                                className="h-5 w-5 rounded data-[state=checked]:bg-green-500 data-[state=checked]:text-white border-gray-300 flex-shrink-0"
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
                   </CardContent>
                 </Card>
               </section>
