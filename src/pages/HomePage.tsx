@@ -1719,16 +1719,16 @@ const HomePage = () => {
                   <CardContent className="py-8 px-6">
                     {missionStatement ? (
                       <p
-                        className="text-3xl leading-relaxed text-gray-700 text-center"
-                        style={{ fontFamily: "'Great Vibes', cursive" }}
+                        className="text-4xl leading-relaxed text-gray-700 text-center"
+                        style={{ fontFamily: "'Sacramento', cursive" }}
                       >
                         {missionStatement}
                       </p>
                     ) : (
                       <div className="space-y-3 flex flex-col items-center">
                         <p
-                          className="text-xl text-gray-400 text-center"
-                          style={{ fontFamily: "'Great Vibes', cursive" }}
+                          className="text-2xl text-gray-400 text-center"
+                          style={{ fontFamily: "'Sacramento', cursive" }}
                         >
                           Your mission statement will appear here as a daily reminder
                         </p>
