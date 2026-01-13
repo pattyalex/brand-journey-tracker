@@ -406,10 +406,13 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions }: T
             return tasksWithLayout.map(({ task, startMinutes, endMinutes, column, totalColumns, isBackground, inOverlapGroup }) => {
               let durationMinutes = endMinutes - startMinutes;
 
-              // Safety check: if duration is negative or unreasonably long, cap it
-              if (durationMinutes < 0 || durationMinutes > 720) { // Max 12 hours
-                console.warn('Invalid task duration:', task.text, 'Duration:', durationMinutes, 'Start:', task.startTime, 'End:', task.endTime);
+              // Safety check: if duration is negative or spans multiple days, warn and cap
+              if (durationMinutes < 0) {
+                console.warn('Invalid task duration (negative):', task.text, 'Duration:', durationMinutes, 'Start:', task.startTime, 'End:', task.endTime);
                 durationMinutes = 60; // Default to 1 hour
+              } else if (durationMinutes > 1439) {
+                console.warn('Invalid task duration (>24h):', task.text, 'Duration:', durationMinutes, 'Start:', task.startTime, 'End:', task.endTime);
+                durationMinutes = 1439; // Cap at 23:59 (full day minus 1 minute)
               }
 
               const top = startMinutes * 1.5 * todayZoomLevel;
