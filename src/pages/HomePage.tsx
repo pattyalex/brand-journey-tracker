@@ -1733,7 +1733,7 @@ const HomePage = () => {
                             onClick={() => navigate('/strategy-growth')}
                             className="text-gray-400 hover:text-gray-600 text-xs"
                           >
-                            Edit <ArrowRight className="h-3 w-3 ml-1" />
+                            Edit →
                           </Button>
                         </div>
                       </>
