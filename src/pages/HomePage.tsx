@@ -1094,10 +1094,12 @@ const HomePage = () => {
               </div>
             </section>
 
-            {/* Masonry Layout Container */}
-            <div className="columns-1 md:columns-2 gap-8 fade-in">
+            {/* Grid Layout Container - Fixed positions, Pinterest style */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 fade-in items-start">
+              {/* Left Column */}
+              <div className="space-y-6">
               {/* Today's Tasks Section */}
-              <section className="break-inside-avoid mb-6">
+              <section className="mb-6">
                 <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl rounded-2xl">
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-center mb-2">
@@ -1500,8 +1502,183 @@ const HomePage = () => {
                 </Card>
               </section>
 
+              {/* Today's Top 3 Priorities Section */}
+              <section className="mb-6">
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-xl font-bold flex items-center gap-2">
+                      <Target className="h-5 w-5 text-purple-600" />
+                      Today's Top 3 Priorities
+                    </CardTitle>
+                    <p className="text-xs text-muted-foreground mt-1">What matters most today?</p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {priorities.map((priority, index) => {
+                        const colors = [
+                          { bg: 'bg-gradient-to-br from-blue-50/50 to-blue-100/30', border: 'border-blue-200', text: 'text-blue-800', number: 'bg-blue-400' },
+                          { bg: 'bg-gradient-to-br from-purple-50/50 to-purple-100/30', border: 'border-purple-200', text: 'text-purple-800', number: 'bg-purple-400' },
+                          { bg: 'bg-gradient-to-br from-amber-50/50 to-amber-100/30', border: 'border-amber-200', text: 'text-amber-800', number: 'bg-amber-400' }
+                        ];
+                        const color = colors[index];
+
+                        return (
+                          <div
+                            key={priority.id}
+                            className={`relative p-4 rounded-lg border ${color.border} ${color.bg} hover:shadow-md transition-all group`}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className={`flex-shrink-0 w-8 h-8 rounded-full ${color.number} flex items-center justify-center text-white font-bold text-sm shadow-sm`}>
+                                {priority.id}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                {editingPriorityId === priority.id ? (
+                                  <input
+                                    autoFocus
+                                    type="text"
+                                    value={priority.text}
+                                    onChange={(e) => handleUpdatePriority(priority.id, e.target.value)}
+                                    onBlur={() => setEditingPriorityId(null)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        setEditingPriorityId(null);
+                                      } else if (e.key === 'Escape') {
+                                        setEditingPriorityId(null);
+                                      }
+                                    }}
+                                    placeholder={`Priority ${priority.id}...`}
+                                    className={`w-full bg-white/70 border-0 shadow-none focus:ring-2 focus:ring-blue-300 rounded px-2 py-1 text-sm ${color.text} font-medium placeholder:text-gray-400`}
+                                  />
+                                ) : (
+                                  <div
+                                    onClick={() => setEditingPriorityId(priority.id)}
+                                    className={`cursor-pointer ${color.text} font-medium text-sm min-h-[28px] flex items-center ${
+                                      !priority.text ? 'text-gray-400 italic' : ''
+                                    } ${priority.isCompleted ? 'line-through text-gray-500' : ''}`}
+                                  >
+                                    {priority.text || `Click to set priority ${priority.id}...`}
+                                  </div>
+                                )}
+                              </div>
+                              <Checkbox
+                                checked={priority.isCompleted}
+                                onCheckedChange={() => handleTogglePriority(priority.id)}
+                                className="h-5 w-5 rounded data-[state=checked]:bg-green-500 data-[state=checked]:text-white border-gray-300 flex-shrink-0"
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              </section>
+
+              {/* Next to Work On Section */}
+              {pinnedContent.length > 0 && (
+              <section className="mb-6">
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-xl font-bold flex items-center gap-2">
+                      <Pin className="h-5 w-5 text-amber-600" />
+                      Next to Work On
+                    </CardTitle>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Pinned content cards from your Content Hub
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="columns-1 sm:columns-2 gap-4">
+                      {pinnedContent.map((content) => (
+                        <div
+                          key={content.id}
+                          className="relative group break-inside-avoid mb-4"
+                        >
+                          {/* Pin visual at the top */}
+                          <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10">
+                            <Pin className="h-6 w-6 text-amber-500 fill-amber-400 drop-shadow-md rotate-45" />
+                          </div>
+
+                          {/* Content card with pinned effect */}
+                          <div className="relative bg-gradient-to-br from-amber-50 via-white to-amber-50/30 border border-amber-100 rounded-2xl p-4 pt-6 shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1 cursor-pointer">
+                            {/* Tape effect at top corners */}
+                            <div className="absolute top-0 left-0 w-8 h-6 bg-amber-100/60 border border-amber-200 -rotate-12 -translate-x-1 -translate-y-2"></div>
+                            <div className="absolute top-0 right-0 w-8 h-6 bg-amber-100/60 border border-amber-200 rotate-12 translate-x-1 -translate-y-2"></div>
+
+                            {/* Content */}
+                            <div className="space-y-2">
+                              <div className="flex items-start gap-2">
+                                <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                                <h3 className="font-semibold text-sm text-gray-900 line-clamp-2">
+                                  {content.title || "Untitled Content"}
+                                </h3>
+                              </div>
+
+                              {(content.formats || content.platforms) && (
+                                <div className="flex items-center gap-1 flex-wrap">
+                                  {content.formats?.map((format, idx) => (
+                                    <span key={`format-${idx}`} className="text-xs font-medium text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">
+                                      {format}
+                                    </span>
+                                  ))}
+                                  {content.platforms?.map((platform, idx) => (
+                                    <span key={`platform-${idx}`} className="text-xs font-medium text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full">
+                                      {platform}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+
+                              {content.hook && (
+                                <p className="text-xs text-gray-600 line-clamp-2 italic">
+                                  "{content.hook}"
+                                </p>
+                              )}
+
+                              {content.description && (
+                                <p className="text-xs text-gray-500 line-clamp-2 mt-2 pt-2 border-t border-amber-200">
+                                  {content.description}
+                                </p>
+                              )}
+
+                              {content.status && (
+                                <div className={`inline-block text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                                  content.status === 'to-start' ? 'bg-gray-200 text-gray-700' :
+                                  content.status === 'needs-work' ? 'bg-yellow-100 text-yellow-700' :
+                                  'bg-green-100 text-green-700'
+                                }`}>
+                                  {content.status === 'to-start' ? 'To start' :
+                                   content.status === 'needs-work' ? 'Needs work' :
+                                   'Ready to film'}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Click hint */}
+                            <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 text-xs text-amber-700 hover:text-amber-900"
+                                onClick={() => navigate('/production')}
+                              >
+                                View →
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </section>
+              )}
+              </div>
+
+              {/* Right Column */}
+              <div className="space-y-6">
               {/* Monthly Goals Section */}
-              <section className="break-inside-avoid mb-6">
+              <section className="mb-6">
                 <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-center">
@@ -1642,78 +1819,6 @@ const HomePage = () => {
                 </Card>
               </section>
 
-              {/* Today's Top 3 Priorities Section */}
-              <section className="break-inside-avoid mb-6">
-                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-xl font-bold flex items-center gap-2">
-                      <Target className="h-5 w-5 text-purple-600" />
-                      Today's Top 3 Priorities
-                    </CardTitle>
-                    <p className="text-xs text-muted-foreground mt-1">What matters most today?</p>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {priorities.map((priority, index) => {
-                        const colors = [
-                          { bg: 'bg-gradient-to-br from-blue-50/50 to-blue-100/30', border: 'border-blue-200', text: 'text-blue-800', number: 'bg-blue-400' },
-                          { bg: 'bg-gradient-to-br from-purple-50/50 to-purple-100/30', border: 'border-purple-200', text: 'text-purple-800', number: 'bg-purple-400' },
-                          { bg: 'bg-gradient-to-br from-amber-50/50 to-amber-100/30', border: 'border-amber-200', text: 'text-amber-800', number: 'bg-amber-400' }
-                        ];
-                        const color = colors[index];
-
-                        return (
-                          <div
-                            key={priority.id}
-                            className={`relative p-4 rounded-lg border ${color.border} ${color.bg} hover:shadow-md transition-all group`}
-                          >
-                            <div className="flex items-start gap-3">
-                              <div className={`flex-shrink-0 w-8 h-8 rounded-full ${color.number} flex items-center justify-center text-white font-bold text-sm shadow-sm`}>
-                                {priority.id}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                {editingPriorityId === priority.id ? (
-                                  <input
-                                    autoFocus
-                                    type="text"
-                                    value={priority.text}
-                                    onChange={(e) => handleUpdatePriority(priority.id, e.target.value)}
-                                    onBlur={() => setEditingPriorityId(null)}
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
-                                        setEditingPriorityId(null);
-                                      } else if (e.key === 'Escape') {
-                                        setEditingPriorityId(null);
-                                      }
-                                    }}
-                                    placeholder={`Priority ${priority.id}...`}
-                                    className={`w-full bg-white/70 border-0 shadow-none focus:ring-2 focus:ring-blue-300 rounded px-2 py-1 text-sm ${color.text} font-medium placeholder:text-gray-400`}
-                                  />
-                                ) : (
-                                  <div
-                                    onClick={() => setEditingPriorityId(priority.id)}
-                                    className={`cursor-pointer ${color.text} font-medium text-sm min-h-[28px] flex items-center ${
-                                      !priority.text ? 'text-gray-400 italic' : ''
-                                    } ${priority.isCompleted ? 'line-through text-gray-500' : ''}`}
-                                  >
-                                    {priority.text || `Click to set priority ${priority.id}...`}
-                                  </div>
-                                )}
-                              </div>
-                              <Checkbox
-                                checked={priority.isCompleted}
-                                onCheckedChange={() => handleTogglePriority(priority.id)}
-                                className="h-5 w-5 rounded data-[state=checked]:bg-green-500 data-[state=checked]:text-white border-gray-300 flex-shrink-0"
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
-              </section>
-
               {/* Mission Statement Section */}
               <section className="break-inside-avoid mb-6">
                 <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl relative">
@@ -1756,106 +1861,6 @@ const HomePage = () => {
                   </CardContent>
                 </Card>
               </section>
-
-              {/* Next to Work On Section */}
-              {pinnedContent.length > 0 && (
-              <section className="break-inside-avoid mb-6">
-                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-xl font-bold flex items-center gap-2">
-                      <Pin className="h-5 w-5 text-amber-600" />
-                      Next to Work On
-                    </CardTitle>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Pinned content cards from your Content Hub
-                    </p>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="columns-1 sm:columns-2 gap-4">
-                      {pinnedContent.map((content) => (
-                        <div
-                          key={content.id}
-                          className="relative group break-inside-avoid mb-4"
-                        >
-                          {/* Pin visual at the top */}
-                          <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10">
-                            <Pin className="h-6 w-6 text-amber-500 fill-amber-400 drop-shadow-md rotate-45" />
-                          </div>
-
-                          {/* Content card with pinned effect */}
-                          <div className="relative bg-gradient-to-br from-amber-50 via-white to-amber-50/30 border border-amber-100 rounded-2xl p-4 pt-6 shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1 cursor-pointer">
-                            {/* Tape effect at top corners */}
-                            <div className="absolute top-0 left-0 w-8 h-6 bg-amber-100/60 border border-amber-200 -rotate-12 -translate-x-1 -translate-y-2"></div>
-                            <div className="absolute top-0 right-0 w-8 h-6 bg-amber-100/60 border border-amber-200 rotate-12 translate-x-1 -translate-y-2"></div>
-
-                            {/* Content */}
-                            <div className="space-y-2">
-                              <div className="flex items-start gap-2">
-                                <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                                <h3 className="font-semibold text-sm text-gray-900 line-clamp-2">
-                                  {content.title || "Untitled Content"}
-                                </h3>
-                              </div>
-
-                              {(content.formats || content.platforms) && (
-                                <div className="flex items-center gap-1 flex-wrap">
-                                  {content.formats?.map((format, idx) => (
-                                    <span key={`format-${idx}`} className="text-xs font-medium text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">
-                                      {format}
-                                    </span>
-                                  ))}
-                                  {content.platforms?.map((platform, idx) => (
-                                    <span key={`platform-${idx}`} className="text-xs font-medium text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full">
-                                      {platform}
-                                    </span>
-                                  ))}
-                                </div>
-                              )}
-
-                              {content.hook && (
-                                <p className="text-xs text-gray-600 line-clamp-2 italic">
-                                  "{content.hook}"
-                                </p>
-                              )}
-
-                              {content.description && (
-                                <p className="text-xs text-gray-500 line-clamp-2 mt-2 pt-2 border-t border-amber-200">
-                                  {content.description}
-                                </p>
-                              )}
-
-                              {content.status && (
-                                <div className={`inline-block text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                                  content.status === 'to-start' ? 'bg-gray-200 text-gray-700' :
-                                  content.status === 'needs-work' ? 'bg-yellow-100 text-yellow-700' :
-                                  'bg-green-100 text-green-700'
-                                }`}>
-                                  {content.status === 'to-start' ? 'To start' :
-                                   content.status === 'needs-work' ? 'Needs work' :
-                                   'Ready to film'}
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Click hint */}
-                            <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 text-xs text-amber-700 hover:text-amber-900"
-                                onClick={() => navigate('/production')}
-                              >
-                                View →
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </section>
-              )}
 
               {/* Content Calendar */}
               <section className="break-inside-avoid mb-6">
@@ -1901,7 +1906,10 @@ const HomePage = () => {
                   </CardContent>
                 </Card>
               </section>
+              </div>
+              {/* End Right Column */}
             </div>
+            {/* End Grid Container */}
           </div>
         </ScrollArea>
 
