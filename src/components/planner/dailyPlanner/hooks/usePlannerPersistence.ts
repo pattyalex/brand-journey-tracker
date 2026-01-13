@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { format } from "date-fns";
-import { EVENTS, on } from "@/lib/events";
+import { EVENTS, on, emit } from "@/lib/events";
 import { StorageKeys, getString, setJSON, setString } from "@/lib/storage";
 import { GlobalPlannerData, PlannerDay, PlannerItem } from "@/types/planner";
 
@@ -80,10 +80,69 @@ export const usePlannerPersistence = ({
   setTodayScrollPosition,
   setWeeklyScrollPosition,
 }: UsePlannerPersistenceArgs) => {
+  // Track if this is initial mount to prevent saving empty initial state
+  const isInitialMount = useRef(true);
+
   useEffect(() => {
     const savedData = getString(StorageKeys.plannerData);
     if (savedData) {
-      setPlannerData(JSON.parse(savedData));
+      const parsed = JSON.parse(savedData);
+
+      // Sanitize invalid times (fix hours > 23)
+      let needsSave = false;
+      parsed.forEach((day: PlannerDay) => {
+        day.items.forEach((item: PlannerItem) => {
+          let startChanged = false;
+          let endChanged = false;
+
+          if (item.startTime) {
+            const [hour, minute] = item.startTime.split(':').map(Number);
+            if (hour > 23) {
+              // Cap at 23:59 instead of wrapping
+              item.startTime = `23:59`;
+              needsSave = true;
+              startChanged = true;
+              console.warn('Fixed invalid startTime for task:', item.text, 'was:', `${hour}:${minute}`);
+            }
+          }
+          if (item.endTime) {
+            const [hour, minute] = item.endTime.split(':').map(Number);
+            if (hour > 23) {
+              // Cap at 23:59 instead of wrapping
+              item.endTime = `23:59`;
+              needsSave = true;
+              endChanged = true;
+              console.warn('Fixed invalid endTime for task:', item.text, 'was:', `${hour}:${minute}`);
+            }
+          }
+
+          // Check for negative duration after fix
+          if (item.startTime && item.endTime) {
+            const [startH, startM] = item.startTime.split(':').map(Number);
+            const [endH, endM] = item.endTime.split(':').map(Number);
+            const startMins = startH * 60 + startM;
+            const endMins = endH * 60 + endM;
+
+            if (endMins <= startMins) {
+              // Set end time to start time + 1 hour (or 23:59 if that exceeds day)
+              const newEndMins = Math.min(startMins + 60, 1439);
+              const newEndH = Math.floor(newEndMins / 60);
+              const newEndM = newEndMins % 60;
+              item.endTime = `${String(newEndH).padStart(2, '0')}:${String(newEndM).padStart(2, '0')}`;
+              needsSave = true;
+              console.warn('Fixed invalid endTime for task:', item.text, 'was:', `${endH}:${endM}`);
+            }
+          }
+        });
+      });
+
+      setPlannerData(parsed);
+
+      // Save sanitized data back to storage
+      if (needsSave) {
+        console.log('Saving sanitized planner data...');
+        setJSON(StorageKeys.plannerData, parsed);
+      }
     }
 
     const savedGlobalData = getString(StorageKeys.globalPlannerData);
@@ -94,10 +153,8 @@ export const usePlannerPersistence = ({
 
     // Load All Tasks
     const savedAllTasks = getString(StorageKeys.allTasks);
-    console.log('DailyPlanner: Loading allTasks from localStorage', savedAllTasks);
     if (savedAllTasks) {
       const parsed = JSON.parse(savedAllTasks);
-      console.log('DailyPlanner: Parsed allTasks', parsed);
       setAllTasks(parsed);
     }
 
@@ -114,17 +171,8 @@ export const usePlannerPersistence = ({
 
   }, [setAllTasks, setContentCalendarData, setGlobalTasks, setPlannerData]);
 
-  useEffect(() => {
-    setJSON(StorageKeys.plannerData, plannerData);
-  }, [plannerData]);
-
-  useEffect(() => {
-    setJSON(StorageKeys.allTasks, allTasks);
-  }, [allTasks]);
-
-  useEffect(() => {
-    setJSON(StorageKeys.scheduledContent, contentCalendarData);
-  }, [contentCalendarData]);
+  // DO NOT auto-save plannerData here - it causes race conditions!
+  // All saves must go through the explicit save functions below
 
   // Save scroll positions to localStorage
   useEffect(() => {
@@ -152,28 +200,40 @@ export const usePlannerPersistence = ({
           console.error('Failed to parse scheduledContent:', error);
         }
       }
+      if (e.key === 'plannerData' && e.newValue) {
+        try {
+          setPlannerData(JSON.parse(e.newValue));
+        } catch (error) {
+          console.error('Failed to parse plannerData:', error);
+        }
+      }
     };
 
     // Listen for custom event for same-tab updates
     const handleCustomUpdate = (e: CustomEvent) => {
-      console.log(`DailyPlanner: Received ${EVENTS.allTasksUpdated} event`, e.detail);
       setAllTasks(e.detail);
     };
 
     const handleContentCalendarUpdate = (e: CustomEvent) => {
-      console.log(`DailyPlanner: Received ${EVENTS.scheduledContentUpdated} event`, e.detail);
       setContentCalendarData(e.detail);
     };
 
+    const handlePlannerDataUpdate = (e: CustomEvent) => {
+      setPlannerData(e.detail);
+    };
+
     window.addEventListener('storage', handleStorageChange);
-    const unsubscribeAllTasks = on(window, EVENTS.allTasksUpdated, handleCustomUpdate as EventListener);
-    const unsubscribeScheduledContent = on(window, EVENTS.scheduledContentUpdated, handleContentCalendarUpdate as EventListener);
+    const unsubscribeAllTasks = on(window, EVENTS.allTasksUpdated, handleCustomUpdate);
+    const unsubscribeScheduledContent = on(window, EVENTS.scheduledContentUpdated, handleContentCalendarUpdate);
+    const unsubscribePlannerData = on(window, EVENTS.plannerDataUpdated, handlePlannerDataUpdate);
+
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       unsubscribeAllTasks();
       unsubscribeScheduledContent();
+      unsubscribePlannerData();
     };
-  }, [setAllTasks, setContentCalendarData]);
+  }, []); // Empty deps - setState functions are stable
 
   useEffect(() => {
     const globalData: GlobalPlannerData = { globalTasks };
@@ -182,14 +242,18 @@ export const usePlannerPersistence = ({
 
   const savePlannerData = (data: PlannerDay[]) => {
     setJSON(StorageKeys.plannerData, data);
+    // Emit event for same-tab sync (e.g., Dashboard)
+    emit(window, EVENTS.plannerDataUpdated, data);
   };
 
   const saveAllTasks = (tasks: PlannerItem[]) => {
     setJSON(StorageKeys.allTasks, tasks);
+    emit(window, EVENTS.allTasksUpdated, tasks);
   };
 
   const saveScheduledContent = (data: any[]) => {
     setJSON(StorageKeys.scheduledContent, data);
+    emit(window, EVENTS.scheduledContentUpdated, data);
   };
 
   const saveTodayScrollPosition = (scrollPosition: number) => {

@@ -42,6 +42,8 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions }: T
     handleToggleItem,
     handleDeleteItem,
     handleEditItem,
+    savePlannerData,
+    saveAllTasks,
   } = actions;
   const {
     setPlannerData,
@@ -212,7 +214,13 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions }: T
                             }
 
                             const newStartMinutes = hour * 60 + minute;
-                            const newEndMinutes = newStartMinutes + durationMinutes;
+                            let newEndMinutes = newStartMinutes + durationMinutes;
+
+                            // Cap at end of day (23:59)
+                            if (newEndMinutes > 1439) {
+                              newEndMinutes = 1439;
+                            }
+
                             const newEndHour = Math.floor(newEndMinutes / 60);
                             const newEndMinute = newEndMinutes % 60;
 
@@ -254,11 +262,13 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions }: T
 
                             console.log('Updating planner data...');
                             setPlannerData(updatedPlannerData);
+                            savePlannerData(updatedPlannerData);
 
                             console.log('Removing from All Tasks...');
                             // Remove from All Tasks AFTER adding to calendar
                             const filteredAllTasks = allTasks.filter(t => t.id !== taskId);
                             setAllTasks(filteredAllTasks);
+                            saveAllTasks(filteredAllTasks);
                             console.log('New All Tasks count:', filteredAllTasks.length);
 
                             console.log('✅ Drop complete!');
@@ -277,7 +287,13 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions }: T
 
                             // Calculate new end time
                             const newStartMinutes = hour * 60 + minute;
-                            const newEndMinutes = newStartMinutes + durationMinutes;
+                            let newEndMinutes = newStartMinutes + durationMinutes;
+
+                            // Cap at end of day (23:59)
+                            if (newEndMinutes > 1439) {
+                              newEndMinutes = 1439;
+                            }
+
                             const newEndHour = Math.floor(newEndMinutes / 60);
                             const newEndMinute = newEndMinutes % 60;
 
@@ -388,7 +404,14 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions }: T
             }
 
             return tasksWithLayout.map(({ task, startMinutes, endMinutes, column, totalColumns, isBackground, inOverlapGroup }) => {
-              const durationMinutes = endMinutes - startMinutes;
+              let durationMinutes = endMinutes - startMinutes;
+
+              // Safety check: if duration is negative or unreasonably long, cap it
+              if (durationMinutes < 0 || durationMinutes > 720) { // Max 12 hours
+                console.warn('Invalid task duration:', task.text, 'Duration:', durationMinutes, 'Start:', task.startTime, 'End:', task.endTime);
+                durationMinutes = 60; // Default to 1 hour
+              }
+
               const top = startMinutes * 1.5 * todayZoomLevel;
               const height = Math.max(durationMinutes * 1.5 * todayZoomLevel, 28);
               const [startHour, startMinute] = task.startTime!.split(':').map(Number);
@@ -466,7 +489,10 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions }: T
                       const handleMouseMove = (moveEvent: MouseEvent) => {
                         const deltaY = moveEvent.clientY - startY;
                         const deltaMinutes = Math.round(deltaY / (1.5 * todayZoomLevel)); // 1.5px per minute * zoom
-                        const newStartMinutes = Math.max(0, Math.min(1439, originalStartMinutes + deltaMinutes));
+                        let newStartMinutes = originalStartMinutes + deltaMinutes;
+
+                        // Cap at 0-1439 (00:00 - 23:59)
+                        newStartMinutes = Math.max(0, Math.min(1439, newStartMinutes));
 
                         // Ensure start time is before end time (at least 15 min duration)
                         if (newStartMinutes < endMinutes - 15) {
@@ -506,7 +532,10 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions }: T
                       const handleMouseMove = (moveEvent: MouseEvent) => {
                         const deltaY = moveEvent.clientY - startY;
                         const deltaMinutes = Math.round(deltaY / (1.5 * todayZoomLevel)); // 1.5px per minute * zoom
-                        const newEndMinutes = Math.max(0, Math.min(1439, originalEndMinutes + deltaMinutes));
+                        let newEndMinutes = originalEndMinutes + deltaMinutes;
+
+                        // Cap at 0-1439 (00:00 - 23:59)
+                        newEndMinutes = Math.max(0, Math.min(1439, newEndMinutes));
 
                         // Ensure end time is after start time (at least 15 min duration)
                         if (newEndMinutes > startMinutes + 15) {
