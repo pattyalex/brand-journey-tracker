@@ -1215,7 +1215,11 @@ const HomePage = () => {
                                           placeholder="9:00"
                                           className="text-xs h-6 w-12 border-0 shadow-none focus-visible:ring-0 p-0 text-center bg-transparent time-editor"
                                         />
-                                        <Select value={editingStartAmPm} onValueChange={(value: "AM" | "PM") => setEditingStartAmPm(value)}>
+                                        <Select value={editingStartAmPm} onValueChange={(value: "AM" | "PM") => {
+                                          setEditingStartAmPm(value);
+                                          // Auto-save after a short delay to allow user to change end time too
+                                          setTimeout(() => handleSaveEditingTime(), 100);
+                                        }}>
                                           <SelectTrigger className="h-6 w-10 text-xs border-0 shadow-none focus:ring-0 p-0 time-editor">
                                             <SelectValue />
                                           </SelectTrigger>
@@ -1252,7 +1256,11 @@ const HomePage = () => {
                                           placeholder="5:00"
                                           className="text-xs h-6 w-12 border-0 shadow-none focus-visible:ring-0 p-0 text-center bg-transparent time-editor"
                                         />
-                                        <Select value={editingEndAmPm} onValueChange={(value: "AM" | "PM") => setEditingEndAmPm(value)}>
+                                        <Select value={editingEndAmPm} onValueChange={(value: "AM" | "PM") => {
+                                          setEditingEndAmPm(value);
+                                          // Auto-save after a short delay
+                                          setTimeout(() => handleSaveEditingTime(), 100);
+                                        }}>
                                           <SelectTrigger className="h-6 w-10 text-xs border-0 shadow-none focus:ring-0 p-0 time-editor">
                                             <SelectValue />
                                           </SelectTrigger>
