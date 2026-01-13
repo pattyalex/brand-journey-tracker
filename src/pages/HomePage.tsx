@@ -41,7 +41,8 @@ import {
   TrendingUp,
   Target,
   Pin,
-  Lightbulb
+  Lightbulb,
+  ArrowRight
 } from "lucide-react";
 import AIRecommendations from '@/components/analytics/AIRecommendations';
 import VerificationGuard from '@/components/VerificationGuard';
@@ -1715,15 +1716,27 @@ const HomePage = () => {
 
               {/* Mission Statement Section */}
               <section className="break-inside-avoid mb-6">
-                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl relative">
                   <CardContent className="py-8 px-6">
                     {missionStatement ? (
-                      <p
-                        className="text-4xl leading-relaxed text-gray-700 text-center"
-                        style={{ fontFamily: "'Sacramento', cursive" }}
-                      >
-                        {missionStatement}
-                      </p>
+                      <>
+                        <p
+                          className="text-4xl leading-relaxed text-gray-700 text-center mb-4"
+                          style={{ fontFamily: "'Allura', cursive" }}
+                        >
+                          {missionStatement}
+                        </p>
+                        <div className="flex justify-center">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate('/strategy-growth')}
+                            className="text-gray-400 hover:text-gray-600 text-xs"
+                          >
+                            Edit <ArrowRight className="h-3 w-3 ml-1" />
+                          </Button>
+                        </div>
+                      </>
                     ) : (
                       <div className="space-y-3 flex flex-col items-center">
                         <p className="text-base text-gray-400 italic text-center">
