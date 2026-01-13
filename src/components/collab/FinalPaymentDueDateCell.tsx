@@ -34,9 +34,9 @@ const FinalPaymentDueDateCell = ({ value, onChange }: FinalPaymentDueDateCellPro
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button 
-          variant="ghost" 
-          className="h-8 w-full justify-start text-left font-normal"
+        <Button
+          variant="ghost"
+          className={cn("h-8 w-full justify-start text-left font-normal", !date && "text-gray-400")}
         >
           {date ? (
             format(date, "MMM d, yyyy")

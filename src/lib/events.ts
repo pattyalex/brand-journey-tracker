@@ -2,25 +2,30 @@ export const EVENTS = {
   allTasksUpdated: 'allTasksUpdated',
   monthlyGoalsUpdated: 'monthlyGoalsUpdated',
   scheduledContentUpdated: 'scheduledContentUpdated',
+  plannerDataUpdated: 'plannerDataUpdated',
 } as const;
 
 type EventName = (typeof EVENTS)[keyof typeof EVENTS];
 
-type EventHandler = (event: Event) => void;
+type CustomEventHandler = (event: CustomEvent) => void;
 
 export const emit = (
   target: Window | Document,
   name: EventName,
   detail?: any
 ): void => {
-  target.dispatchEvent(new CustomEvent(name, { detail }));
+  const event = new CustomEvent(name, { detail });
+  target.dispatchEvent(event);
 };
 
 export const on = (
   target: Window | Document,
   name: EventName,
-  handler: EventHandler
+  handler: CustomEventHandler
 ): (() => void) => {
-  target.addEventListener(name, handler);
-  return () => target.removeEventListener(name, handler);
+  const wrappedHandler = (event: Event) => {
+    handler(event as CustomEvent);
+  };
+  target.addEventListener(name, wrappedHandler);
+  return () => target.removeEventListener(name, wrappedHandler);
 };

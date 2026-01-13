@@ -20,10 +20,11 @@ const CollabFilters = ({
   setPaymentStatusFilter,
 }: CollabFiltersProps) => {
   return (
-    <div className="flex gap-4">
-      <Select value={statusFilter} onValueChange={setStatusFilter}>
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Status" />
+    <div className="flex gap-3 items-center flex-wrap">
+      <span className="text-xs text-gray-500 font-medium">Filter by:</span>
+      <Select value={statusFilter} onValueChange={setStatusFilter} defaultValue="Contract Signed">
+        <SelectTrigger className="w-[160px] h-9 border border-gray-300 bg-white hover:border-indigo-400 focus:ring-1 focus:ring-indigo-300 text-sm">
+          <SelectValue placeholder="Contract Signed" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Statuses</SelectItem>
@@ -36,11 +37,11 @@ const CollabFilters = ({
       </Select>
 
       <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Payment Status" />
+        <SelectTrigger className="w-[160px] h-9 border border-gray-300 bg-white hover:border-indigo-400 focus:ring-1 focus:ring-indigo-300 text-sm">
+          <SelectValue placeholder="All Payments" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All Payment Statuses</SelectItem>
+          <SelectItem value="all">All Payments</SelectItem>
           <SelectItem value="paid">Paid</SelectItem>
           <SelectItem value="unpaid">Unpaid</SelectItem>
           <SelectItem value="overdue">Overdue</SelectItem>

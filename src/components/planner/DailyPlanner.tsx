@@ -206,6 +206,7 @@ export const DailyPlanner = () => {
 
   const {
     handleToggleWeeklyTask,
+    handleDeleteWeeklyTask,
     handleEditItem,
     handlePreviousDay,
     handleNextDay,
@@ -278,6 +279,8 @@ export const DailyPlanner = () => {
             allTasks={allTasks}
             setAllTasks={setAllTasks}
             setPlannerData={setPlannerData}
+            savePlannerData={persistence.savePlannerData}
+            saveAllTasks={persistence.saveAllTasks}
             getTimezoneDisplay={getTimezoneDisplay}
             handleTimezoneChange={handleTimezoneChange}
             selectedTimezone={selectedTimezone}

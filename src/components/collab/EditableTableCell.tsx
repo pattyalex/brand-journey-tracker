@@ -8,13 +8,15 @@ interface EditableTableCellProps {
   onChange: (value: string) => void;
   className?: string;
   type?: string;
+  placeholder?: string;
 }
 
-const EditableTableCell = ({ 
-  value, 
-  onChange, 
+const EditableTableCell = ({
+  value,
+  onChange,
   className,
-  type = "text"
+  type = "text",
+  placeholder = "Click to add"
 }: EditableTableCellProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
@@ -26,7 +28,7 @@ const EditableTableCell = ({
     }
   }, [isEditing]);
 
-  const handleDoubleClick = () => {
+  const handleClick = () => {
     setIsEditing(true);
   };
 
@@ -53,15 +55,16 @@ const EditableTableCell = ({
       onChange={(e) => setEditValue(e.target.value)}
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
-      className={cn("m-0 h-8 min-w-[100px]", className)}
+      placeholder={placeholder}
+      className={cn("m-0 h-8 min-w-[100px] border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0", className)}
     />
   ) : (
-    <div 
-      onDoubleClick={handleDoubleClick} 
-      className={cn("cursor-pointer hover:bg-gray-50 p-1 rounded text-left w-full !text-left", className)}
+    <div
+      onClick={handleClick}
+      className={cn("cursor-pointer hover:bg-gray-50 p-1 rounded text-left w-full !text-left", value ? "" : "text-gray-400", className)}
       style={{textAlign: 'left'}}
     >
-      {value}
+      {value || placeholder}
     </div>
   );
 };

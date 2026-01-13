@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Brain, Lightbulb, Palette, Plus, X, Check, GripVertical, Trash2, FileEdit, Globe, ImageIcon, Upload, Link } from "lucide-react";
+import { Brain, Lightbulb, Palette, Plus, X, Check, GripVertical, Trash2, FileEdit, Globe, ImageIcon, Upload, Link, Pin } from "lucide-react";
 import BrainDump from "@/components/BrainDump";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { StorageKeys, getJSON, setJSON } from "@/lib/storage";
 
 type TabType = "brain-dump" | "content-ideas" | "vision-board";
 
@@ -33,7 +34,9 @@ const ContentIdeation = () => {
   const [customColumns, setCustomColumns] = useState<CustomColumn[]>([]);
   const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [newColumnName, setNewColumnName] = useState("");
-  const [contentIdeas, setContentIdeas] = useState<ContentIdea[]>([
+
+  // Load content ideas from localStorage or use default examples
+  const defaultContentIdeas: ContentIdea[] = [
     {
       id: "1",
       idea: "Spring outfits",
@@ -56,7 +59,11 @@ const ContentIdeation = () => {
       caption: "Small habits, big results. Which one are you trying tomorrow?",
       customValues: {}
     }
-  ]);
+  ];
+
+  const [contentIdeas, setContentIdeas] = useState<ContentIdea[]>(() => {
+    return getJSON<ContentIdea[]>(StorageKeys.contentIdeas, defaultContentIdeas);
+  });
 
   // Define standard columns to be able to delete them
   const [standardColumns] = useState([
@@ -71,6 +78,55 @@ const ContentIdeation = () => {
 
   // Track visible/hidden columns
   const [hiddenStandardColumns, setHiddenStandardColumns] = useState<string[]>([]);
+
+  // Track pinned content ideas (max 5)
+  const [pinnedIds, setPinnedIds] = useState<string[]>([]);
+
+  // Load pinned items from localStorage on mount
+  useEffect(() => {
+    const saved = getJSON<string[]>(StorageKeys.pinnedContentIdeas, []);
+    setPinnedIds(saved);
+  }, []);
+
+  // Save content ideas to localStorage whenever they change
+  useEffect(() => {
+    setJSON(StorageKeys.contentIdeas, contentIdeas);
+  }, [contentIdeas]);
+
+  // Handle pin/unpin content idea
+  const handleTogglePin = (ideaId: string) => {
+    setPinnedIds((prev) => {
+      let updated: string[];
+
+      if (prev.includes(ideaId)) {
+        // Unpin
+        updated = prev.filter(id => id !== ideaId);
+        toast({
+          title: "Unpinned",
+          description: "Content idea removed from dashboard"
+        });
+      } else {
+        // Pin - check limit
+        if (prev.length >= 5) {
+          toast({
+            title: "Maximum reached",
+            description: "You can only pin up to 5 content ideas",
+            variant: "destructive"
+          });
+          return prev;
+        }
+        updated = [...prev, ideaId];
+        toast({
+          title: "Pinned to dashboard",
+          description: "This content idea will appear in 'Next to Work On'"
+        });
+      }
+
+      // Save to localStorage
+      setJSON(StorageKeys.pinnedContentIdeas, updated);
+      return updated;
+    });
+  };
 
   const handleAddCustomColumn = () => {
     if (newColumnName.trim() === "") {
@@ -395,6 +451,14 @@ const ContentIdeation = () => {
                             </th>
                           ))}
 
+                          {/* Pin Column */}
+                          <th className="px-4 py-3 text-center font-medium text-xs uppercase tracking-wider w-[80px] bg-gradient-to-br from-amber-700 to-amber-600 border-r border-amber-500">
+                            <div className="flex items-center justify-center gap-1">
+                              <Pin className="h-3 w-3" />
+                              <span>Pin</span>
+                            </div>
+                          </th>
+
                           {/* Add Custom Column */}
                           <th className="px-4 py-3 text-left font-medium text-xs uppercase tracking-wider min-w-[140px] bg-gray-700">
                             {isAddingColumn ? (
@@ -467,11 +531,11 @@ const ContentIdeation = () => {
 
                             {/* Custom Column Values */}
                             {customColumns.map(column => (
-                              <td 
-                                key={`${idea.id}-${column.id}`} 
+                              <td
+                                key={`${idea.id}-${column.id}`}
                                 className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200 bg-purple-50"
                               >
-                                <Input 
+                                <Input
                                   value={idea.customValues[column.id] || ""}
                                   onChange={(e) => handleUpdateCustomValue(idea.id, column.id, e.target.value)}
                                   className="border-0 focus:ring-0 h-6 p-0 text-sm bg-transparent"
@@ -480,6 +544,24 @@ const ContentIdeation = () => {
                               </td>
                             ))}
 
+                            {/* Pin Cell */}
+                            <td className="px-4 py-3 text-center border-r border-gray-200 bg-gradient-to-br from-amber-50 to-amber-100">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleTogglePin(idea.id)}
+                                className={`h-7 w-7 p-0 transition-all ${
+                                  pinnedIds.includes(idea.id)
+                                    ? 'text-amber-600 hover:text-amber-700 bg-amber-200 hover:bg-amber-300'
+                                    : 'text-gray-400 hover:text-amber-600 hover:bg-amber-100'
+                                }`}
+                                title={pinnedIds.includes(idea.id) ? "Unpin from dashboard" : "Pin to dashboard"}
+                              >
+                                <Pin className={`h-4 w-4 transition-transform ${pinnedIds.includes(idea.id) ? 'rotate-45' : ''}`} />
+                              </Button>
+                            </td>
+
                             {/* Empty cell for the "Add Column" header */}
                             <td className="px-4 py-3 text-sm text-gray-700 border-r border-gray-200 bg-gray-50">
                             </td>
@@ -487,12 +569,12 @@ const ContentIdeation = () => {
                         ))}
                         {/* Add New Idea Row */}
                         <tr className="hover:bg-gray-50 bg-gray-50">
-                          <td 
+                          <td
                             colSpan={
-                              standardColumns.filter(col => !hiddenStandardColumns.includes(col.id)).length + 
-                              customColumns.length + 
-                              1
-                            } 
+                              standardColumns.filter(col => !hiddenStandardColumns.includes(col.id)).length +
+                              customColumns.length +
+                              2 // +1 for pin column, +1 for add column
+                            }
                             className="px-4 py-3 text-center"
                           >
                             <Button

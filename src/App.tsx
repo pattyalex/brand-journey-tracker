@@ -16,10 +16,8 @@ import OnboardingFlow from './pages/OnboardingFlow';
 import LandingPage from './pages/LandingPage';
 
 // Lazy load all other pages
-const BankOfContent = lazy(() => import('./pages/BankOfContent'));
 const ContentIdeation = lazy(() => import('./pages/ContentIdeation'));
 const ContentPlanning = lazy(() => import('./pages/ContentPlanning'));
-const ContentCalendar = lazy(() => import('./pages/ContentCalendar'));
 const Production = lazy(() => import('./pages/Production'));
 const StrategyGrowth = lazy(() => import("./pages/StrategyGrowth"));
 const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
@@ -110,11 +108,6 @@ function App() {
                   <HomePage />
                 </ProtectedRoute>
               } />
-              <Route path="/bank-of-content" element={
-                <ProtectedRoute>
-                  <BankOfContent />
-                </ProtectedRoute>
-              } />
               <Route path="/content-ideation" element={
                 <ProtectedRoute>
                   <ContentIdeation />
@@ -123,11 +116,6 @@ function App() {
               <Route path="/content-planning" element={
                 <ProtectedRoute>
                   <ContentPlanning />
-                </ProtectedRoute>
-              } />
-              <Route path="/content-calendar" element={
-                <ProtectedRoute>
-                  <ContentCalendar />
                 </ProtectedRoute>
               } />
               <Route path="/production" element={

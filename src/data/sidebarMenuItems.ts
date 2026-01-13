@@ -1,24 +1,12 @@
 
-import { Home, FolderOpen, FileText, Settings, Database, CreditCard, Calendar, TrendingUp, BarChart, HelpCircle, CheckSquare, Clipboard, CheckCircle, Handshake, Clapperboard, Sparkles } from 'lucide-react';
+import { Home, FolderOpen, FileText, Settings, CreditCard, TrendingUp, BarChart, HelpCircle, CheckSquare, Clipboard, CheckCircle, Handshake, Clapperboard, Sparkles, Calendar } from 'lucide-react';
 import { MenuItem } from '@/types/sidebar';
 
 export const defaultMenuItems: MenuItem[] = [
-  { title: 'Home Page', icon: Home, url: '/home-page', isDeletable: false },
-  { title: 'Planner', icon: CheckCircle, url: '/task-board', isDeletable: false },
+  { title: 'Dashboard', icon: Home, url: '/home-page', isDeletable: false },
+  { title: 'Planner and Calendar', icon: Calendar, url: '/task-board', isDeletable: false },
   {
     title: 'Content Hub',
-    icon: Database,
-    url: '/bank-of-content',
-    isDeletable: false
-  },
-  {
-    title: 'Calendar',
-    icon: Calendar,
-    url: '/content-calendar',
-    isDeletable: false
-  },
-  {
-    title: 'Production',
     icon: Clapperboard,
     url: '/production',
     isDeletable: false
@@ -30,7 +18,7 @@ export const defaultMenuItems: MenuItem[] = [
     isDeletable: false
   },
   {
-    title: 'Strategy and Growth',
+    title: 'Strategy and Goals',
     icon: TrendingUp,
     url: '/strategy-growth',
     isDeletable: false

@@ -91,14 +91,14 @@ const BriefContractCell = ({ value, onChange }: BriefContractCellProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           className="h-8 w-full justify-start text-left font-normal"
         >
           <div className="flex items-center">
             <FileText size={16} className="text-blue-500 mr-2" />
-            <span className="truncate">
-              {files.length > 0 ? `${files.length} file(s)` : "None"}
+            <span className={`truncate ${files.length === 0 ? 'text-gray-400' : ''}`}>
+              {files.length === 1 ? files[0].name : files.length > 1 ? `${files.length} file(s)` : "None"}
             </span>
           </div>
         </Button>

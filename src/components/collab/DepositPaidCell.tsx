@@ -79,10 +79,10 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           className={cn(
-            "h-8 w-full justify-center font-normal",
+            "w-full justify-center font-normal hover:bg-transparent p-0",
             isYes ? "text-green-600" : (isNo ? "text-red-500" : "text-gray-500")
           )}
         >

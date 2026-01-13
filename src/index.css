@@ -196,7 +196,13 @@
   .brand-collab-table td > div,
   .brand-collab-table td * {
     text-align: left !important;
-    padding-left: 4px;
+  }
+
+  /* Vertically center table cell content */
+  .brand-collab-table th,
+  .brand-collab-table td {
+    padding-top: 16px !important;
+    padding-bottom: 16px !important;
   }
 
   /* Add styling for brief/contract terms header to add more space */

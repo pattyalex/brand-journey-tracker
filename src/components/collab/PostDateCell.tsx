@@ -33,11 +33,11 @@ const PostDateCell = ({ value, onChange }: PostDateCellProps) => {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button 
-          variant="ghost" 
-          className="h-8 w-full justify-start text-left font-normal pl-0 pr-2"
+        <Button
+          variant="ghost"
+          className="w-full justify-start text-left font-normal hover:bg-transparent p-0"
         >
-          <span className="truncate text-left">
+          <span className={cn("truncate text-left", !date && "text-gray-400")}>
             {date ? format(date, "MMM d, yyyy") : "Not set"}
           </span>
         </Button>

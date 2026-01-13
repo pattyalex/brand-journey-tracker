@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, MoreVertical, Trash2, Edit, Sparkles, Check, Plus, ArrowLeft, Lightbulb } from "lucide-react";
+import { PlusCircle, MoreVertical, Trash2, Edit, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -601,6 +601,46 @@ const Production = () => {
         ),
       }))
     );
+  };
+
+  const handleTogglePin = (cardId: string) => {
+    setColumns((prev) => {
+      const newColumns = prev.map((col) => ({
+        ...col,
+        cards: col.cards.map((card) => {
+          if (card.id === cardId) {
+            const newPinnedState = !card.isPinned;
+
+            // Check if trying to pin and already at max
+            if (newPinnedState) {
+              const currentPinnedCount = prev.reduce((count, c) =>
+                count + c.cards.filter(card => card.isPinned).length, 0
+              );
+
+              if (currentPinnedCount >= 5) {
+                toast.error("Maximum reached", {
+                  description: "You can only pin up to 5 content cards"
+                });
+                return card;
+              }
+
+              toast.success("Pinned to dashboard", {
+                description: "This content will appear in 'Next to Work On'"
+              });
+            } else {
+              toast.success("Unpinned", {
+                description: "Content removed from dashboard"
+              });
+            }
+
+            return { ...card, isPinned: newPinnedState };
+          }
+          return card;
+        }),
+      }));
+
+      return newColumns;
+    });
   };
 
   const handleOpenScriptEditor = (card: ProductionCard) => {
@@ -1250,6 +1290,28 @@ const Production = () => {
                                       <Edit className="h-2.5 w-2.5 text-gray-400 hover:text-blue-600" />
                                     </Button>
                                   )}
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className={cn(
+                                      "h-3.5 w-3.5 p-0 rounded transition-colors",
+                                      card.isPinned
+                                        ? "bg-amber-100 hover:bg-amber-200"
+                                        : "hover:bg-amber-50"
+                                    )}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleTogglePin(card.id);
+                                    }}
+                                    title={card.isPinned ? "Unpin from dashboard" : "Pin to dashboard"}
+                                  >
+                                    <Pin className={cn(
+                                      "h-2.5 w-2.5 transition-transform",
+                                      card.isPinned
+                                        ? "text-amber-600 rotate-45"
+                                        : "text-gray-400 hover:text-amber-600"
+                                    )} />
+                                  </Button>
                                   <Button
                                     size="sm"
                                     variant="ghost"

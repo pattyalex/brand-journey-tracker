@@ -17,6 +17,7 @@ export interface ProductionCard {
   propsText?: string;
   filmingNotes?: string;
   status?: "to-start" | "needs-work" | "ready" | null;
+  isPinned?: boolean;
 }
 
 export interface KanbanColumn {

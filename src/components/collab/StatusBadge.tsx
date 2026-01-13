@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
 interface StatusBadgeProps {
@@ -9,13 +9,28 @@ interface StatusBadgeProps {
 
 const StatusBadge = ({ status, onChange }: StatusBadgeProps) => {
   const [isEditing, setIsEditing] = useState(false);
+  const selectRef = useRef<HTMLSelectElement>(null);
+
+  useEffect(() => {
+    if (isEditing && selectRef.current) {
+      selectRef.current.focus();
+      // Use showPicker if available (modern browsers)
+      if ('showPicker' in selectRef.current) {
+        try {
+          (selectRef.current as any).showPicker();
+        } catch (e) {
+          // Fallback if showPicker fails
+        }
+      }
+    }
+  }, [isEditing]);
   
   const getStatusColorClasses = (status: string) => {
     switch (status.toLowerCase()) {
       case 'pitched':
         return 'bg-blue-100 text-blue-800';
       case 'inbound':
-        return 'bg-teal-100 text-teal-800';
+        return 'bg-orange-100 text-orange-800';
       case 'in negotiation':
         return 'bg-yellow-100 text-yellow-800';
       case 'contract signed':
@@ -36,21 +51,22 @@ const StatusBadge = ({ status, onChange }: StatusBadgeProps) => {
   
   return isEditing ? (
     <select
+      ref={selectRef}
       value={status}
       onChange={handleStatusChange}
       onBlur={() => setIsEditing(false)}
       className="text-xs p-1 rounded border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
       autoFocus
     >
-      <option value="Pitched">Pitched</option>
       <option value="Inbound">Inbound</option>
+      <option value="Pitched">Pitched</option>
       <option value="In Negotiation">In Negotiation</option>
       <option value="Contract Signed">Contract Signed</option>
       <option value="Content Submitted">Content Submitted</option>
       <option value="Posted">Posted</option>
     </select>
   ) : (
-    <span 
+    <span
       onClick={() => setIsEditing(true)}
       className={cn(
         "cursor-pointer inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",

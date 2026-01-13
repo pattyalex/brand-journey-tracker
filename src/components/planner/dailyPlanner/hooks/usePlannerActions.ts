@@ -678,6 +678,7 @@ export const usePlannerActions = ({
         isCompleted: !updatedPlannerData[dayIndex].items[itemIndex].isCompleted
       };
       setPlannerData(updatedPlannerData);
+      savePlannerData(updatedPlannerData);
     }
   };
 
@@ -730,6 +731,7 @@ export const usePlannerActions = ({
         isCompleted: !updatedPlannerData[dayIndex].items[itemIndex].isCompleted
       };
       setPlannerData(updatedPlannerData);
+      savePlannerData(updatedPlannerData);
     }
   };
 
@@ -845,7 +847,7 @@ export const usePlannerActions = ({
     const startTime24 = dialogStartTime ? convert12To24Hour(dialogStartTime) : undefined;
     const endTime24 = dialogEndTime ? convert12To24Hour(dialogEndTime) : undefined;
 
-    if (editingTask) {
+    if (editingTask && editingTask.id) {
       // Editing existing task
       handleEditItem(
         editingTask.id,
@@ -882,14 +884,17 @@ export const usePlannerActions = ({
           items: [...updatedPlannerData[dayIndex].items, newItem]
         };
         setPlannerData(updatedPlannerData);
+        savePlannerData(updatedPlannerData);
       } else {
-        setPlannerData([...plannerData, {
+        const updatedPlannerData = [...plannerData, {
           date: newItem.date,
           items: [newItem],
           tasks: "",
           greatDay: "",
           grateful: ""
-        }]);
+        }];
+        setPlannerData(updatedPlannerData);
+        savePlannerData(updatedPlannerData);
       }
     }
 
@@ -2280,5 +2285,8 @@ export const usePlannerActions = ({
     handleWeeklyTaskTimeChange,
     handleUpdateTaskCompletion,
     handleTaskResizeStart,
+    savePlannerData,
+    saveAllTasks,
+    saveScheduledContent,
   };
 };

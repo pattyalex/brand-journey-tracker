@@ -14,6 +14,8 @@ interface WeekViewProps {
   allTasks: PlannerItem[];
   setAllTasks: React.Dispatch<React.SetStateAction<PlannerItem[]>>;
   setPlannerData: React.Dispatch<React.SetStateAction<PlannerDay[]>>;
+  savePlannerData: (data: PlannerDay[]) => void;
+  saveAllTasks: (tasks: PlannerItem[]) => void;
   getTimezoneDisplay: () => string;
   handleTimezoneChange: (timezone: string) => void;
   selectedTimezone: string;
@@ -58,6 +60,8 @@ export const WeekView = ({
   allTasks,
   setAllTasks,
   setPlannerData,
+  savePlannerData,
+  saveAllTasks,
   getTimezoneDisplay,
   handleTimezoneChange,
   selectedTimezone,
@@ -340,6 +344,7 @@ export const WeekView = ({
                                     }
 
                                     setPlannerData(updatedPlannerData);
+                                    savePlannerData(updatedPlannerData);
                                   } else if (fromDate && fromDate === dayString) {
                                     // Task moving within the same day to a different time
                                     const dayIndex = plannerData.findIndex(d => d.date === fromDate);
@@ -374,6 +379,7 @@ export const WeekView = ({
                                     };
 
                                     setPlannerData(updatedPlannerData);
+                                    savePlannerData(updatedPlannerData);
                                   } else if (fromDate && fromDate !== dayString) {
                                     // Task moving between days - update time
                                     const fromDayIndex = plannerData.findIndex(d => d.date === fromDate);
@@ -423,6 +429,7 @@ export const WeekView = ({
                                     }
 
                                     setPlannerData(updatedPlannerData);
+                                    savePlannerData(updatedPlannerData);
                                   }
                                 }}
                               />
