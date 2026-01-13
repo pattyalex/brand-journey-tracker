@@ -1586,11 +1586,11 @@ const HomePage = () => {
                     </p>
                   </CardHeader>
                   <CardContent>
-                    <div className="columns-1 sm:columns-2 gap-4">
+                    <div className="space-y-4">
                       {pinnedContent.map((content) => (
                         <div
                           key={content.id}
-                          className="relative group break-inside-avoid mb-4"
+                          className="relative group mb-4"
                         >
                           {/* Pin visual at the top */}
                           <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10">
