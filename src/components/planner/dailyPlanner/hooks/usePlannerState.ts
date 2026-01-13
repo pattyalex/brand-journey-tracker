@@ -224,6 +224,16 @@ export const usePlannerState = ({
     const minute = match[2];
     const period = match[3].toLowerCase();
 
+    // Validate hour is in 12-hour format (1-12)
+    // If user enters 13-23, wrap to 1-11 (they probably meant 1:30 not 13:30 with AM/PM)
+    if (hour > 12) {
+      hour = hour % 12;
+      if (hour === 0) hour = 12;
+    }
+
+    // Ensure hour is at least 1
+    if (hour < 1) hour = 1;
+
     if (period === 'pm' && hour !== 12) {
       hour += 12;
     } else if (period === 'am' && hour === 12) {
