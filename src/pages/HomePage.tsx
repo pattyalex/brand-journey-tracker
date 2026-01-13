@@ -1726,10 +1726,7 @@ const HomePage = () => {
                       </p>
                     ) : (
                       <div className="space-y-3 flex flex-col items-center">
-                        <p
-                          className="text-2xl text-gray-400 text-center"
-                          style={{ fontFamily: "'Sacramento', cursive" }}
-                        >
+                        <p className="text-base text-gray-400 italic text-center">
                           Your mission statement will appear here as a daily reminder
                         </p>
                         <Button
