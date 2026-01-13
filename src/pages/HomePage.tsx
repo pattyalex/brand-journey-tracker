@@ -1716,18 +1716,20 @@ const HomePage = () => {
               {/* Mission Statement Section */}
               <section className="break-inside-avoid mb-6">
                 <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-xl font-bold flex items-center gap-2">
-                      <Lightbulb className="h-5 w-5 text-amber-500" />
-                      Mission Statement
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
+                  <CardContent className="py-8 px-6">
                     {missionStatement ? (
-                      <p className="text-base leading-relaxed text-gray-700">{missionStatement}</p>
+                      <p
+                        className="text-2xl leading-relaxed text-gray-700 text-center"
+                        style={{ fontFamily: "'Dancing Script', cursive" }}
+                      >
+                        {missionStatement}
+                      </p>
                     ) : (
                       <div className="space-y-3 flex flex-col items-center">
-                        <p className="text-base text-gray-400 italic text-center">
+                        <p
+                          className="text-lg text-gray-400 italic text-center"
+                          style={{ fontFamily: "'Dancing Script', cursive" }}
+                        >
                           Your mission statement will appear here as a daily reminder
                         </p>
                         <Button
