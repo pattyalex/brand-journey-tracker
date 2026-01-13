@@ -1726,7 +1726,7 @@ const HomePage = () => {
                         >
                           {missionStatement}
                         </p>
-                        <div className="flex justify-center">
+                        <div className="flex justify-end">
                           <Button
                             variant="ghost"
                             size="sm"
