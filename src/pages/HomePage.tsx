@@ -1186,7 +1186,7 @@ const HomePage = () => {
                                   )}
                                   <div className="flex items-center gap-3">
                                     {editingTimeTaskId === task.id ? (
-                                      <div className="flex items-center gap-1" onBlur={handleSaveEditingTime}>
+                                      <div className="flex items-center gap-1">
                                         <Input
                                           autoFocus
                                           type="text"
@@ -1195,6 +1195,13 @@ const HomePage = () => {
                                             const input = e.target.value;
                                             if (input === '' || /^[\d:]+$/.test(input)) {
                                               setEditingStartTime(input);
+                                            }
+                                          }}
+                                          onBlur={(e) => {
+                                            // Only save if clicking outside the time editing area
+                                            const relatedTarget = e.relatedTarget as HTMLElement;
+                                            if (!relatedTarget || !relatedTarget.closest('.time-editor')) {
+                                              handleSaveEditingTime();
                                             }
                                           }}
                                           onKeyDown={(e) => {
@@ -1206,13 +1213,13 @@ const HomePage = () => {
                                             }
                                           }}
                                           placeholder="9:00"
-                                          className="text-xs h-6 w-12 border-0 shadow-none focus-visible:ring-0 p-0 text-center bg-transparent"
+                                          className="text-xs h-6 w-12 border-0 shadow-none focus-visible:ring-0 p-0 text-center bg-transparent time-editor"
                                         />
                                         <Select value={editingStartAmPm} onValueChange={(value: "AM" | "PM") => setEditingStartAmPm(value)}>
-                                          <SelectTrigger className="h-6 w-10 text-xs border-0 shadow-none focus:ring-0 p-0">
+                                          <SelectTrigger className="h-6 w-10 text-xs border-0 shadow-none focus:ring-0 p-0 time-editor">
                                             <SelectValue />
                                           </SelectTrigger>
-                                          <SelectContent>
+                                          <SelectContent className="time-editor">
                                             <SelectItem value="AM">AM</SelectItem>
                                             <SelectItem value="PM">PM</SelectItem>
                                           </SelectContent>
@@ -1227,6 +1234,13 @@ const HomePage = () => {
                                               setEditingEndTime(input);
                                             }
                                           }}
+                                          onBlur={(e) => {
+                                            // Only save if clicking outside the time editing area
+                                            const relatedTarget = e.relatedTarget as HTMLElement;
+                                            if (!relatedTarget || !relatedTarget.closest('.time-editor')) {
+                                              handleSaveEditingTime();
+                                            }
+                                          }}
                                           onKeyDown={(e) => {
                                             if (e.key === 'Enter') {
                                               e.preventDefault();
@@ -1236,13 +1250,13 @@ const HomePage = () => {
                                             }
                                           }}
                                           placeholder="5:00"
-                                          className="text-xs h-6 w-12 border-0 shadow-none focus-visible:ring-0 p-0 text-center bg-transparent"
+                                          className="text-xs h-6 w-12 border-0 shadow-none focus-visible:ring-0 p-0 text-center bg-transparent time-editor"
                                         />
                                         <Select value={editingEndAmPm} onValueChange={(value: "AM" | "PM") => setEditingEndAmPm(value)}>
-                                          <SelectTrigger className="h-6 w-10 text-xs border-0 shadow-none focus:ring-0 p-0">
+                                          <SelectTrigger className="h-6 w-10 text-xs border-0 shadow-none focus:ring-0 p-0 time-editor">
                                             <SelectValue />
                                           </SelectTrigger>
-                                          <SelectContent>
+                                          <SelectContent className="time-editor">
                                             <SelectItem value="AM">AM</SelectItem>
                                             <SelectItem value="PM">PM</SelectItem>
                                           </SelectContent>
