@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, MoreVertical, Trash2, Edit, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin } from "lucide-react";
+import { PlusCircle, MoreVertical, Trash2, Edit, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -39,7 +39,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import TitleHookSuggestions from "@/components/content/TitleHookSuggestions";
 import ScriptEditorDialog from "./production/components/ScriptEditorDialog";
 import BrainDumpGuidanceDialog from "./production/components/BrainDumpGuidanceDialog";
-import { KanbanColumn, ProductionCard } from "./production/types";
+import { KanbanColumn, ProductionCard, StoryboardScene } from "./production/types";
+import StoryboardEditorDialog from "./production/components/StoryboardEditorDialog";
 import { columnColors, cardColors, defaultColumns } from "./production/utils/productionConstants";
 import { getAllAngleTemplates, getFormatColors, getPlatformColors } from "./production/utils/productionHelpers";
 
@@ -118,6 +119,10 @@ const Production = () => {
   // Script editor modal state
   const [isScriptEditorOpen, setIsScriptEditorOpen] = useState(false);
   const [editingScriptCard, setEditingScriptCard] = useState<ProductionCard | null>(null);
+
+  // Storyboard editor modal state
+  const [isStoryboardDialogOpen, setIsStoryboardDialogOpen] = useState(false);
+  const [editingStoryboardCard, setEditingStoryboardCard] = useState<ProductionCard | null>(null);
   const [brainDumpSuggestion, setBrainDumpSuggestion] = useState<string>("");
   const [showBrainDumpSuggestion, setShowBrainDumpSuggestion] = useState(false);
   const [cardTitle, setCardTitle] = useState("");
@@ -756,6 +761,29 @@ const Production = () => {
     setCardStatus(null);
   };
 
+  // Storyboard editor handlers
+  const handleOpenStoryboard = (card: ProductionCard) => {
+    setEditingStoryboardCard(card);
+    setIsStoryboardDialogOpen(true);
+  };
+
+  const handleSaveStoryboard = (storyboard: StoryboardScene[], title?: string) => {
+    if (!editingStoryboardCard) return;
+
+    setColumns((prev) =>
+      prev.map((col) => ({
+        ...col,
+        cards: col.cards.map((card) =>
+          card.id === editingStoryboardCard.id
+            ? { ...card, storyboard, ...(title !== undefined && { title }) }
+            : card
+        ),
+      }))
+    );
+
+    setEditingStoryboardCard(null);
+  };
+
   const handleScriptEditorOpenChange = (open: boolean) => {
     if (!open) {
       resetScriptEditorState();
@@ -1231,8 +1259,8 @@ const Production = () => {
                               onDragEnd={handleDragEnd}
                               onDragOver={(e) => handleCardDragOver(e, column.id, cardIndex)}
                               onClick={(e) => {
-                                // Open edit modal for Shape Ideas and Ideate cards on single click (with delay to detect double-click)
-                                if ((column.id === "shape-ideas" || column.id === "ideate") && !isEditing) {
+                                // Open edit modal for Shape Ideas, Ideate, and To Film cards on single click (with delay to detect double-click)
+                                if ((column.id === "shape-ideas" || column.id === "ideate" || column.id === "to-film") && !isEditing) {
                                   e.stopPropagation();
                                   // Clear any existing timeout
                                   if (clickTimeoutRef.current) {
@@ -1242,6 +1270,8 @@ const Production = () => {
                                   clickTimeoutRef.current = setTimeout(() => {
                                     if (column.id === "shape-ideas") {
                                       handleOpenScriptEditor(card);
+                                    } else if (column.id === "to-film") {
+                                      handleOpenStoryboard(card);
                                     } else if (column.id === "ideate") {
                                       handleOpenIdeateCardEditor(card);
                                     }
@@ -1265,7 +1295,7 @@ const Production = () => {
                               className={cn(
                                 "group backdrop-blur-sm rounded-xl shadow-lg relative",
                                 column.id === "ideate" ? "py-4 px-2" : "p-2",
-                                (column.id === "shape-ideas" || column.id === "ideate") && !isEditing ? "cursor-pointer" : (!isEditing && "cursor-grab active:cursor-grabbing"),
+                                (column.id === "shape-ideas" || column.id === "ideate" || column.id === "to-film") && !isEditing ? "cursor-pointer" : (!isEditing && "cursor-grab active:cursor-grabbing"),
                                 !isDragging && "hover:shadow-lg transition-all duration-200",
                                 isThisCardDragged ? "opacity-40 scale-[0.98]" : "",
                                 card.isCompleted && "opacity-60",
@@ -1334,6 +1364,19 @@ const Production = () => {
                                       }}
                                     >
                                       <Edit className="h-2.5 w-2.5 text-gray-400 hover:text-blue-600" />
+                                    </Button>
+                                  )}
+                                  {column.id === "to-film" && (
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-3.5 w-3.5 p-0 rounded hover:bg-amber-50"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenStoryboard(card);
+                                      }}
+                                    >
+                                      <Clapperboard className="h-2.5 w-2.5 text-gray-400 hover:text-amber-600" />
                                     </Button>
                                   )}
                                   {column.id !== "posted" && (
@@ -3479,6 +3522,13 @@ Make each idea unique, creative, and directly tied to both the original content 
           setTitle={setIdeateCardTitle}
           notes={ideateCardNotes}
           setNotes={setIdeateCardNotes}
+        />
+
+        <StoryboardEditorDialog
+          open={isStoryboardDialogOpen}
+          onOpenChange={setIsStoryboardDialogOpen}
+          card={editingStoryboardCard}
+          onSave={handleSaveStoryboard}
         />
       </div>
     </Layout>

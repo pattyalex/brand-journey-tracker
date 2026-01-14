@@ -1,3 +1,13 @@
+export interface StoryboardScene {
+  id: string;
+  order: number;
+  title: string;
+  visualNotes: string;
+  color: 'amber' | 'teal' | 'rose' | 'violet' | 'sky' | 'lime' | 'fuchsia' | 'cyan';
+  highlightStart: number;
+  highlightEnd: number;
+}
+
 export interface ProductionCard {
   id: string;
   title: string;
@@ -18,6 +28,7 @@ export interface ProductionCard {
   filmingNotes?: string;
   status?: "to-start" | "needs-work" | "ready" | null;
   isPinned?: boolean;
+  storyboard?: StoryboardScene[];
 }
 
 export interface KanbanColumn {
