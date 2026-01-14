@@ -1648,16 +1648,27 @@ const HomePage = () => {
                         return (
                         <div
                           key={content.id}
-                          draggable
-                          onDragStart={() => handleDragStart(index)}
-                          onDragOver={(e) => handleDragOver(e, index)}
-                          onDrop={(e) => handleDrop(e, index)}
+                          draggable={true}
+                          onDragStart={(e) => {
+                            handleDragStart(index);
+                            e.dataTransfer.effectAllowed = 'move';
+                          }}
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDragOver(e, index);
+                          }}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDrop(e, index);
+                          }}
                           onDragEnd={handleDragEnd}
-                          className={`relative group mb-4 ${draggedCardIndex === index ? 'opacity-50' : ''} ${dragOverCardIndex === index ? 'scale-105' : ''}`}
+                          className={`relative group mb-4 transition-all ${draggedCardIndex === index ? 'opacity-40 scale-95' : ''} ${dragOverCardIndex === index && dragOverCardIndex !== draggedCardIndex ? 'scale-105' : ''}`}
                           style={{
-                            transform: `rotate(${rotation}deg) translateX(${xOffset})`,
+                            transform: draggedCardIndex === index ? 'rotate(0deg)' : `rotate(${rotation}deg) translateX(${xOffset})`,
                             transition: 'all 0.3s ease',
-                            cursor: 'move'
+                            cursor: 'grab'
                           }}
                         >
                           {/* Pin visual at the top */}
@@ -1672,17 +1683,22 @@ const HomePage = () => {
 
                           {/* Content card with pinned effect */}
                           <div
-                            className="relative bg-gradient-to-br from-amber-50 via-white to-amber-50/30 border border-amber-100 rounded-2xl p-4 pt-6 pb-3 shadow-md hover:shadow-xl transition-all cursor-move max-w-[85%] mx-auto min-h-[80px]"
+                            className="relative bg-gradient-to-br from-amber-50 via-white to-amber-50/30 border border-amber-100 rounded-2xl p-4 pt-6 pb-3 shadow-md hover:shadow-xl transition-all cursor-grab active:cursor-grabbing max-w-[85%] mx-auto min-h-[80px]"
                             style={{
-                              transform: 'none'
+                              transform: 'none',
+                              pointerEvents: draggedCardIndex === index ? 'none' : 'auto'
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.parentElement!.style.transform = `rotate(0deg) translateX(0%) translateY(-4px)`;
-                              e.currentTarget.parentElement!.style.zIndex = '10';
+                              if (draggedCardIndex === null) {
+                                e.currentTarget.parentElement!.style.transform = `rotate(0deg) translateX(0%) translateY(-4px)`;
+                                e.currentTarget.parentElement!.style.zIndex = '10';
+                              }
                             }}
                             onMouseLeave={(e) => {
-                              e.currentTarget.parentElement!.style.transform = `rotate(${rotation}deg) translateX(${xOffset})`;
-                              e.currentTarget.parentElement!.style.zIndex = '';
+                              if (draggedCardIndex === null) {
+                                e.currentTarget.parentElement!.style.transform = `rotate(${rotation}deg) translateX(${xOffset})`;
+                                e.currentTarget.parentElement!.style.zIndex = '';
+                              }
                             }}
                           >
                             {/* Tape effect at top corners */}
@@ -1744,7 +1760,11 @@ const HomePage = () => {
                                 variant="ghost"
                                 size="sm"
                                 className="h-6 text-xs text-amber-700 hover:text-amber-900"
-                                onClick={() => navigate('/production')}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate('/production');
+                                }}
+                                onMouseDown={(e) => e.stopPropagation()}
                               >
                                 View →
                               </Button>
