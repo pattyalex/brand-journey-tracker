@@ -1832,7 +1832,7 @@ const HomePage = () => {
               </section>
 
               {/* Monthly Goals Section */}
-              <section className="break-inside-avoid mt-12">
+              <section className="mt-12">
                 <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-center">
