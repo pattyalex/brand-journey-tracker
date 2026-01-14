@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -78,6 +79,8 @@ const InlineCardInput: React.FC<{
 };
 
 const Production = () => {
+  const [searchParams] = useSearchParams();
+  const columnRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const [columns, setColumns] = useState<KanbanColumn[]>(defaultColumns);
   const [draggedCard, setDraggedCard] = useState<ProductionCard | null>(null);
   const [dropIndicator, setDropIndicator] = useState<{ columnId: string; index: number } | null>(null);
@@ -93,6 +96,7 @@ const Production = () => {
   const [editingCardId, setEditingCardId] = useState<string | null>(null);
   const [editTrigger, setEditTrigger] = useState<'click' | 'doubleclick' | null>(null);
   const [clickPosition, setClickPosition] = useState<number | null>(null);
+  const [highlightedColumn, setHighlightedColumn] = useState<string | null>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const textRefs = useRef<Map<string, HTMLElement>>(new Map());
@@ -233,6 +237,23 @@ const Production = () => {
     setDropPosition(null);
     setDraggedOverColumn(null);
   }, []);
+
+  // Handle scrolling to specific column from URL parameter
+  useEffect(() => {
+    const scrollToColumn = searchParams.get('scrollTo');
+    if (scrollToColumn && columnRefs.current.has(scrollToColumn)) {
+      // Wait for DOM to be fully rendered
+      setTimeout(() => {
+        const columnElement = columnRefs.current.get(scrollToColumn);
+        if (columnElement) {
+          columnElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          // Highlight the column briefly
+          setHighlightedColumn(scrollToColumn);
+          setTimeout(() => setHighlightedColumn(null), 2000);
+        }
+      }, 300);
+    }
+  }, [searchParams]);
 
   // Load Bank of Ideas from localStorage
   useEffect(() => {
@@ -1109,6 +1130,9 @@ const Production = () => {
                 onDrop={(e) => handleDrop(e, column.id)}
               >
                 <div
+                  ref={(el) => {
+                    if (el) columnRefs.current.set(column.id, el);
+                  }}
                   className={cn(
                     "h-full flex flex-col rounded-2xl transition-all duration-300",
                     draggedOverColumn === column.id && draggedCard
@@ -1116,6 +1140,7 @@ const Production = () => {
                         ? "ring-2 ring-offset-2 ring-red-400 opacity-60"
                         : "ring-2 ring-offset-2 ring-indigo-400 scale-105"
                       : "",
+                    highlightedColumn === column.id ? "ring-4 ring-purple-500 ring-offset-4 shadow-2xl scale-105" : "",
                     colors.bg,
                     "border-2",
                     colors.border
