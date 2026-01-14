@@ -105,6 +105,12 @@ const HomePage = () => {
   const endTimeInputRef = useRef<HTMLInputElement>(null);
   const endAmPmButtonRef = useRef<HTMLButtonElement>(null);
 
+  // Refs for editing existing task times
+  const editStartTimeInputRef = useRef<HTMLInputElement>(null);
+  const editStartAmPmButtonRef = useRef<HTMLButtonElement>(null);
+  const editEndTimeInputRef = useRef<HTMLInputElement>(null);
+  const editEndAmPmButtonRef = useRef<HTMLButtonElement>(null);
+
   // Today's Top 3 Priorities
   interface Priority {
     id: number;
@@ -1145,7 +1151,7 @@ const HomePage = () => {
 
             {/* Grid Layout Container - Fixed positions, Pinterest style */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 fade-in items-start">
-              {/* Left Column - Priorities, Tasks, Next to Work On */}
+              {/* Left Column - Priorities, Next to Work On */}
               <div className="space-y-12">
               {/* Today's Top 3 Priorities Section */}
               <section>
@@ -1215,410 +1221,6 @@ const HomePage = () => {
                         );
                       })}
                     </div>
-                  </CardContent>
-                </Card>
-              </section>
-
-              {/* Today's Tasks Section */}
-              <section>
-                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-center mb-2">
-                      <CardTitle className="text-xl flex items-center gap-2">
-                        <CheckSquare className="h-5 w-5 text-blue-600" />
-                        Today's Tasks
-                      </CardTitle>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setIsAddingTodayTask(true)}
-                          className="h-7 w-7 p-0"
-                        >
-                          <PlusCircle className="h-3.5 w-3.5" />
-                        </Button>
-                        {todaysTasks.length > 0 && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => navigate('/task-board?view=today')}
-                            className="h-7 text-xs px-2"
-                          >
-                            View All →
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-1 pb-4">
-                    <ScrollArea className="h-[280px]">
-                      <div className="space-y-2">
-                        {todaysTasks.length === 0 && !isAddingTodayTask ? (
-                          <div className="flex flex-col items-center justify-center py-8 text-center">
-                            <CheckSquare className="h-12 w-12 text-gray-300 mb-2" />
-                            <p className="text-sm text-gray-500">No tasks scheduled for today</p>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => navigate('/task-board?view=today')}
-                              className="mt-3"
-                            >
-                              Plan Your Day
-                            </Button>
-                          </div>
-                        ) : todaysTasks.length > 0 ? (
-                          todaysTasks.map((task) => (
-                            <div
-                              key={task.id}
-                              className="flex items-start gap-3 p-2 hover:bg-gray-50 rounded group"
-                              style={{
-                                backgroundColor: task.color ? `${task.color}15` : 'transparent'
-                              }}
-                            >
-                              <Checkbox
-                                id={`today-task-${task.id}`}
-                                checked={task.isCompleted}
-                                onCheckedChange={() => handleToggleTodayTask(task.id)}
-                                className="h-4 w-4 rounded mt-0.5 flex-shrink-0 data-[state=checked]:bg-green-500 data-[state=checked]:text-white border-gray-300"
-                              />
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between gap-2">
-                                  {editingTodayTaskId === task.id ? (
-                                    <Input
-                                      autoFocus
-                                      value={editingTodayTaskText}
-                                      onChange={(e) => setEditingTodayTaskText(e.target.value)}
-                                      onBlur={handleSaveEditingTodayTask}
-                                      onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                          handleSaveEditingTodayTask();
-                                        } else if (e.key === 'Escape') {
-                                          handleCancelEditingTodayTask();
-                                        }
-                                      }}
-                                      className="text-sm flex-1 border-0 shadow-none focus-visible:ring-0 p-0 h-auto bg-transparent"
-                                    />
-                                  ) : (
-                                    <span
-                                      onClick={() => handleStartEditingTodayTask(task)}
-                                      className={`text-sm cursor-pointer ${
-                                        task.isCompleted ? 'line-through text-gray-500' : 'text-gray-900'
-                                      }`}
-                                    >
-                                      {task.text}
-                                    </span>
-                                  )}
-                                  <div className="flex items-center gap-3">
-                                    {editingTimeTaskId === task.id ? (
-                                      <div className="flex items-center gap-1">
-                                        <Input
-                                          autoFocus
-                                          type="text"
-                                          value={editingStartTime}
-                                          onChange={(e) => {
-                                            const input = e.target.value;
-                                            if (input === '' || /^[\d:]+$/.test(input)) {
-                                              setEditingStartTime(input);
-                                            }
-                                          }}
-                                          onBlur={(e) => {
-                                            // Only save if clicking outside the time editing area
-                                            const relatedTarget = e.relatedTarget as HTMLElement;
-                                            if (!relatedTarget || !relatedTarget.closest('.time-editor')) {
-                                              handleSaveEditingTime();
-                                            }
-                                          }}
-                                          onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                              e.preventDefault();
-                                              handleSaveEditingTime();
-                                            } else if (e.key === 'Escape') {
-                                              handleCancelEditingTime();
-                                            }
-                                          }}
-                                          placeholder="9:00"
-                                          className="text-xs h-6 w-12 border-0 shadow-none focus-visible:ring-0 p-0 text-center bg-transparent time-editor"
-                                        />
-                                        <Select value={editingStartAmPm} onValueChange={(value: "AM" | "PM") => setEditingStartAmPm(value)}>
-                                          <SelectTrigger
-                                            className="h-6 w-10 text-xs border-0 shadow-none focus:ring-0 p-0 time-editor"
-                                            onKeyDown={(e) => {
-                                              if (e.key === 'Enter') {
-                                                e.preventDefault();
-                                                handleSaveEditingTime();
-                                              } else if (e.key === 'Escape') {
-                                                handleCancelEditingTime();
-                                              }
-                                            }}
-                                          >
-                                            <SelectValue />
-                                          </SelectTrigger>
-                                          <SelectContent className="time-editor">
-                                            <SelectItem value="AM">AM</SelectItem>
-                                            <SelectItem value="PM">PM</SelectItem>
-                                          </SelectContent>
-                                        </Select>
-                                        <span className="text-xs">-</span>
-                                        <Input
-                                          type="text"
-                                          value={editingEndTime}
-                                          onChange={(e) => {
-                                            const input = e.target.value;
-                                            if (input === '' || /^[\d:]+$/.test(input)) {
-                                              setEditingEndTime(input);
-                                            }
-                                          }}
-                                          onBlur={(e) => {
-                                            // Only save if clicking outside the time editing area
-                                            const relatedTarget = e.relatedTarget as HTMLElement;
-                                            if (!relatedTarget || !relatedTarget.closest('.time-editor')) {
-                                              handleSaveEditingTime();
-                                            }
-                                          }}
-                                          onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                              e.preventDefault();
-                                              handleSaveEditingTime();
-                                            } else if (e.key === 'Escape') {
-                                              handleCancelEditingTime();
-                                            }
-                                          }}
-                                          placeholder="5:00"
-                                          className="text-xs h-6 w-12 border-0 shadow-none focus-visible:ring-0 p-0 text-center bg-transparent time-editor"
-                                        />
-                                        <Select value={editingEndAmPm} onValueChange={(value: "AM" | "PM") => setEditingEndAmPm(value)}>
-                                          <SelectTrigger
-                                            className="h-6 w-10 text-xs border-0 shadow-none focus:ring-0 p-0 time-editor"
-                                            onKeyDown={(e) => {
-                                              if (e.key === 'Enter') {
-                                                e.preventDefault();
-                                                handleSaveEditingTime();
-                                              } else if (e.key === 'Escape') {
-                                                handleCancelEditingTime();
-                                              }
-                                            }}
-                                          >
-                                            <SelectValue />
-                                          </SelectTrigger>
-                                          <SelectContent className="time-editor">
-                                            <SelectItem value="AM">AM</SelectItem>
-                                            <SelectItem value="PM">PM</SelectItem>
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                    ) : (
-                                      task.startTime && (
-                                        <span
-                                          onClick={() => handleStartEditingTime(task)}
-                                          className="text-xs font-medium text-blue-600 whitespace-nowrap cursor-pointer hover:underline"
-                                        >
-                                          {formatTime(task.startTime)}
-                                          {task.endTime && ` - ${formatTime(task.endTime)}`}
-                                        </span>
-                                      )
-                                    )}
-                                    <button
-                                      onClick={() => handleDeleteTodayTask(task.id)}
-                                      className="opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50 rounded"
-                                      title="Delete task"
-                                    >
-                                      <Trash2 className="h-3.5 w-3.5 text-gray-400 hover:text-red-500" />
-                                    </button>
-                                  </div>
-                                </div>
-                                {task.description && (
-                                  <p className="text-xs text-gray-500 mt-0.5">{task.description}</p>
-                                )}
-                              </div>
-                            </div>
-                          ))
-                        ) : null}
-
-                        {/* Add Task Form - appears after tasks */}
-                        {isAddingTodayTask && (
-                          <div ref={addTaskFormRef} className="flex items-start gap-3 p-2">
-                            <Checkbox
-                              disabled
-                              className="h-4 w-4 rounded mt-0.5 flex-shrink-0 border-gray-300 opacity-40"
-                            />
-                            <div className="flex-1 min-w-0 flex items-center gap-2">
-                              <Input
-                                autoFocus
-                                value={newTodayTaskText}
-                                onChange={(e) => setNewTodayTaskText(e.target.value)}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                    startTimeInputRef.current?.focus();
-                                  } else if (e.key === 'Escape') {
-                                    setIsAddingTodayTask(false);
-                                    setNewTodayTaskText('');
-                                    setNewTodayTaskStartTime('');
-                                    setNewTodayTaskStartAmPm('AM');
-                                    setNewTodayTaskEndTime('');
-                                    setNewTodayTaskEndAmPm('PM');
-                                  }
-                                }}
-                                placeholder="Task name..."
-                                className="text-sm h-7 border-0 border-b border-gray-300 rounded-none shadow-none focus-visible:ring-0 focus-visible:border-gray-400 flex-1 px-0"
-                              />
-                              <Input
-                                ref={startTimeInputRef}
-                                type="text"
-                                value={newTodayTaskStartTime}
-                                onChange={(e) => {
-                                  const input = e.target.value;
-                                  // Allow digits, colon, and empty
-                                  if (input === '' || /^[\d:]+$/.test(input)) {
-                                    setNewTodayTaskStartTime(input);
-                                  }
-                                }}
-                                onBlur={(e) => {
-                                  // Format the time on blur
-                                  const { hours, minutes } = parseTimeInput(e.target.value);
-                                  if (hours) {
-                                    setNewTodayTaskStartTime(`${hours}:${minutes}`);
-                                  }
-                                }}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                    // Format before moving to next field
-                                    const { hours, minutes } = parseTimeInput(newTodayTaskStartTime);
-                                    if (hours) {
-                                      setNewTodayTaskStartTime(`${hours}:${minutes}`);
-                                    }
-                                    startAmPmButtonRef.current?.click();
-                                  }
-                                }}
-                                placeholder="9:00"
-                                className="text-xs h-7 border-0 border-b border-gray-300 rounded-none shadow-none focus-visible:ring-0 focus-visible:border-gray-400 w-14 px-0 text-center"
-                              />
-                              <Select
-                                value={newTodayTaskStartAmPm}
-                                onValueChange={(value: "AM" | "PM") => {
-                                  setNewTodayTaskStartAmPm(value);
-                                  // Move to next field after selection
-                                  setTimeout(() => endTimeInputRef.current?.focus(), 0);
-                                }}
-                              >
-                                <SelectTrigger
-                                  ref={startAmPmButtonRef}
-                                  className="h-7 w-14 text-xs border-0 border-b border-gray-300 rounded-none shadow-none focus:ring-0"
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                      e.preventDefault();
-                                      endTimeInputRef.current?.focus();
-                                    }
-                                  }}
-                                >
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="AM">AM</SelectItem>
-                                  <SelectItem value="PM">PM</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <span className="text-xs text-gray-400">-</span>
-                              <Input
-                                ref={endTimeInputRef}
-                                type="text"
-                                value={newTodayTaskEndTime}
-                                onChange={(e) => {
-                                  const input = e.target.value;
-                                  // Allow digits, colon, and empty
-                                  if (input === '' || /^[\d:]+$/.test(input)) {
-                                    setNewTodayTaskEndTime(input);
-                                  }
-                                }}
-                                onBlur={(e) => {
-                                  // Format the time on blur
-                                  const { hours, minutes } = parseTimeInput(e.target.value);
-                                  if (hours) {
-                                    setNewTodayTaskEndTime(`${hours}:${minutes}`);
-                                  }
-                                }}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                    // Format before moving to next field
-                                    const { hours, minutes } = parseTimeInput(newTodayTaskEndTime);
-                                    if (hours) {
-                                      setNewTodayTaskEndTime(`${hours}:${minutes}`);
-                                    }
-                                    endAmPmButtonRef.current?.click();
-                                  }
-                                }}
-                                placeholder="5:00"
-                                className="text-xs h-7 border-0 border-b border-gray-300 rounded-none shadow-none focus-visible:ring-0 focus-visible:border-gray-400 w-14 px-0 text-center"
-                              />
-                              <Select
-                                value={newTodayTaskEndAmPm}
-                                onValueChange={(value: "AM" | "PM") => {
-                                  setNewTodayTaskEndAmPm(value);
-                                  // Submit after selection
-                                  setTimeout(() => handleAddTodayTask(), 0);
-                                }}
-                              >
-                                <SelectTrigger
-                                  ref={endAmPmButtonRef}
-                                  className="h-7 w-14 text-xs border-0 border-b border-gray-300 rounded-none shadow-none focus:ring-0"
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                      e.preventDefault();
-                                      handleAddTodayTask();
-                                    }
-                                  }}
-                                >
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="AM">AM</SelectItem>
-                                  <SelectItem value="PM">PM</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </ScrollArea>
-                    {todaysTasks.length > 0 && (() => {
-                      const progress = Math.round((todaysTasks.filter(t => t.isCompleted).length / todaysTasks.length) * 100);
-
-                      // Determine color based on progress
-                      let colorClass = '';
-                      let textColorClass = '';
-
-                      if (progress === 100) {
-                        colorClass = 'bg-gradient-to-r from-green-500 to-green-600';
-                        textColorClass = 'text-green-600';
-                      } else if (progress >= 67) {
-                        colorClass = 'bg-gradient-to-r from-yellow-400 to-green-500';
-                        textColorClass = 'text-green-600';
-                      } else {
-                        colorClass = 'bg-gradient-to-r from-yellow-500 to-yellow-600';
-                        textColorClass = 'text-yellow-600';
-                      }
-
-                      return (
-                        <div className="space-y-1 mt-3 px-1">
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">Progress</span>
-                            <span className={`font-semibold ${textColorClass}`}>
-                              {progress}% complete
-                            </span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                            <div
-                              className={`h-2 rounded-full transition-all duration-300 ${colorClass}`}
-                              style={{
-                                width: `${progress}%`
-                              }}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })()}
                   </CardContent>
                 </Card>
               </section>
@@ -1792,8 +1394,439 @@ const HomePage = () => {
               </div>
               {/* End Left Column */}
 
-              {/* Right Column - Mission Statement, Monthly Goals, Content Calendar */}
+              {/* Right Column - Today's Tasks, Mission Statement, Monthly Goals, Content Calendar */}
               <div className="space-y-12">
+
+              {/* Today's Tasks Section */}
+              <section>
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-center mb-2">
+                      <CardTitle className="text-xl flex items-center gap-2">
+                        <CheckSquare className="h-5 w-5 text-blue-600" />
+                        Today's Tasks
+                      </CardTitle>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsAddingTodayTask(true)}
+                          className="h-7 w-7 p-0"
+                        >
+                          <PlusCircle className="h-3.5 w-3.5" />
+                        </Button>
+                        {todaysTasks.length > 0 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate('/task-board?view=today')}
+                            className="h-7 text-xs px-2"
+                          >
+                            View All →
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-1 pb-4">
+                    <ScrollArea className="h-[280px]">
+                      <div className="space-y-2">
+                        {todaysTasks.length === 0 && !isAddingTodayTask ? (
+                          <div className="flex flex-col items-center justify-center py-8 text-center">
+                            <CheckSquare className="h-12 w-12 text-gray-300 mb-2" />
+                            <p className="text-sm text-gray-500">No tasks scheduled for today</p>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => navigate('/task-board?view=today')}
+                              className="mt-3"
+                            >
+                              Plan Your Day
+                            </Button>
+                          </div>
+                        ) : todaysTasks.length > 0 ? (
+                          todaysTasks.map((task) => (
+                            <div
+                              key={task.id}
+                              className="flex items-start gap-3 p-2 hover:bg-gray-50 rounded group"
+                              style={{
+                                backgroundColor: task.color ? `${task.color}15` : 'transparent'
+                              }}
+                            >
+                              <Checkbox
+                                id={`today-task-${task.id}`}
+                                checked={task.isCompleted}
+                                onCheckedChange={() => handleToggleTodayTask(task.id)}
+                                className="h-4 w-4 rounded mt-0.5 flex-shrink-0 data-[state=checked]:bg-green-500 data-[state=checked]:text-white border-gray-300"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between gap-2">
+                                  {editingTodayTaskId === task.id ? (
+                                    <Input
+                                      autoFocus
+                                      value={editingTodayTaskText}
+                                      onChange={(e) => setEditingTodayTaskText(e.target.value)}
+                                      onBlur={handleSaveEditingTodayTask}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          handleSaveEditingTodayTask();
+                                        } else if (e.key === 'Escape') {
+                                          handleCancelEditingTodayTask();
+                                        }
+                                      }}
+                                      className="text-sm flex-1 border-0 shadow-none focus-visible:ring-0 p-0 h-auto bg-transparent"
+                                    />
+                                  ) : (
+                                    <span
+                                      onClick={() => handleStartEditingTodayTask(task)}
+                                      className={`text-sm cursor-pointer ${
+                                        task.isCompleted ? 'line-through text-gray-500' : 'text-gray-900'
+                                      }`}
+                                    >
+                                      {task.text}
+                                    </span>
+                                  )}
+                                  <div className="flex items-center gap-3">
+                                    {editingTimeTaskId === task.id ? (
+                                      <div className="flex items-center gap-1">
+                                        <Input
+                                          ref={editStartTimeInputRef}
+                                          autoFocus
+                                          type="text"
+                                          value={editingStartTime}
+                                          onChange={(e) => {
+                                            const input = e.target.value;
+                                            if (input === '' || /^[\d:]+$/.test(input)) {
+                                              setEditingStartTime(input);
+                                            }
+                                          }}
+                                          onBlur={(e) => {
+                                            // Only save if clicking outside the time editing area
+                                            const relatedTarget = e.relatedTarget as HTMLElement;
+                                            if (!relatedTarget || !relatedTarget.closest('.time-editor')) {
+                                              handleSaveEditingTime();
+                                            }
+                                          }}
+                                          onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                              e.preventDefault();
+                                              // Format before moving to next field
+                                              const { hours, minutes } = parseTimeInput(editingStartTime);
+                                              if (hours) {
+                                                setEditingStartTime(`${hours}:${minutes}`);
+                                              }
+                                              // Move to AM/PM dropdown instead of saving
+                                              editStartAmPmButtonRef.current?.click();
+                                            } else if (e.key === 'Escape') {
+                                              handleCancelEditingTime();
+                                            }
+                                          }}
+                                          placeholder="9:00"
+                                          className="text-xs h-6 w-12 border-0 shadow-none focus-visible:ring-0 p-0 text-center bg-transparent time-editor"
+                                        />
+                                        <Select value={editingStartAmPm} onValueChange={(value: "AM" | "PM") => {
+                                          setEditingStartAmPm(value);
+                                          // After changing AM/PM, move to end time
+                                          setTimeout(() => editEndTimeInputRef.current?.focus(), 0);
+                                        }}>
+                                          <SelectTrigger
+                                            ref={editStartAmPmButtonRef}
+                                            className="h-6 w-10 text-xs border-0 shadow-none focus:ring-0 p-0 time-editor"
+                                            onKeyDown={(e) => {
+                                              if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                // Move to end time instead of saving
+                                                editEndTimeInputRef.current?.focus();
+                                              } else if (e.key === 'Escape') {
+                                                handleCancelEditingTime();
+                                              }
+                                            }}
+                                          >
+                                            <SelectValue />
+                                          </SelectTrigger>
+                                          <SelectContent className="time-editor">
+                                            <SelectItem value="AM">AM</SelectItem>
+                                            <SelectItem value="PM">PM</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                        <span className="text-xs">-</span>
+                                        <Input
+                                          ref={editEndTimeInputRef}
+                                          type="text"
+                                          value={editingEndTime}
+                                          onChange={(e) => {
+                                            const input = e.target.value;
+                                            if (input === '' || /^[\d:]+$/.test(input)) {
+                                              setEditingEndTime(input);
+                                            }
+                                          }}
+                                          onBlur={(e) => {
+                                            // Only save if clicking outside the time editing area
+                                            const relatedTarget = e.relatedTarget as HTMLElement;
+                                            if (!relatedTarget || !relatedTarget.closest('.time-editor')) {
+                                              handleSaveEditingTime();
+                                            }
+                                          }}
+                                          onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                              e.preventDefault();
+                                              // Format before moving to next field
+                                              const { hours, minutes } = parseTimeInput(editingEndTime);
+                                              if (hours) {
+                                                setEditingEndTime(`${hours}:${minutes}`);
+                                              }
+                                              // Move to end AM/PM dropdown instead of saving
+                                              editEndAmPmButtonRef.current?.click();
+                                            } else if (e.key === 'Escape') {
+                                              handleCancelEditingTime();
+                                            }
+                                          }}
+                                          placeholder="5:00"
+                                          className="text-xs h-6 w-12 border-0 shadow-none focus-visible:ring-0 p-0 text-center bg-transparent time-editor"
+                                        />
+                                        <Select value={editingEndAmPm} onValueChange={(value: "AM" | "PM") => {
+                                          setEditingEndAmPm(value);
+                                          // After changing end AM/PM, save
+                                          setTimeout(() => handleSaveEditingTime(), 0);
+                                        }}>
+                                          <SelectTrigger
+                                            ref={editEndAmPmButtonRef}
+                                            className="h-6 w-10 text-xs border-0 shadow-none focus:ring-0 p-0 time-editor"
+                                            onKeyDown={(e) => {
+                                              if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                // Now save since this is the last field
+                                                handleSaveEditingTime();
+                                              } else if (e.key === 'Escape') {
+                                                handleCancelEditingTime();
+                                              }
+                                            }}
+                                          >
+                                            <SelectValue />
+                                          </SelectTrigger>
+                                          <SelectContent className="time-editor">
+                                            <SelectItem value="AM">AM</SelectItem>
+                                            <SelectItem value="PM">PM</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                    ) : (
+                                      task.startTime && (
+                                        <span
+                                          onClick={() => handleStartEditingTime(task)}
+                                          className="text-xs font-medium text-blue-600 whitespace-nowrap cursor-pointer hover:underline"
+                                        >
+                                          {formatTime(task.startTime)}
+                                          {task.endTime && ` - ${formatTime(task.endTime)}`}
+                                        </span>
+                                      )
+                                    )}
+                                    <button
+                                      onClick={() => handleDeleteTodayTask(task.id)}
+                                      className="opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50 rounded"
+                                      title="Delete task"
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5 text-gray-400 hover:text-red-500" />
+                                    </button>
+                                  </div>
+                                </div>
+                                {task.description && (
+                                  <p className="text-xs text-gray-500 mt-0.5">{task.description}</p>
+                                )}
+                              </div>
+                            </div>
+                          ))
+                        ) : null}
+
+                        {/* Add Task Form - appears after tasks */}
+                        {isAddingTodayTask && (
+                          <div ref={addTaskFormRef} className="flex items-start gap-3 p-2">
+                            <div className="h-4 w-4 rounded mt-0.5 flex-shrink-0 border border-gray-300" />
+                            <div className="flex-1 min-w-0 space-y-2">
+                              <Input
+                                autoFocus
+                                value={newTodayTaskText}
+                                onChange={(e) => setNewTodayTaskText(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    // Move to start time input
+                                    startTimeInputRef.current?.focus();
+                                  } else if (e.key === 'Escape') {
+                                    setIsAddingTodayTask(false);
+                                    setNewTodayTaskText('');
+                                    setNewTodayTaskStartTime('');
+                                    setNewTodayTaskStartAmPm('AM');
+                                    setNewTodayTaskEndTime('');
+                                    setNewTodayTaskEndAmPm('PM');
+                                  }
+                                }}
+                                placeholder="Task name..."
+                                className="text-sm flex-1 border-0 shadow-none focus-visible:ring-0 p-0 h-auto bg-transparent"
+                              />
+                              <div className="flex items-center gap-2 text-xs">
+                                <Input
+                                  ref={startTimeInputRef}
+                                  type="text"
+                                  value={newTodayTaskStartTime}
+                                  onChange={(e) => {
+                                    const input = e.target.value;
+                                    // Allow digits, colon, and empty
+                                    if (input === '' || /^[\d:]+$/.test(input)) {
+                                      setNewTodayTaskStartTime(input);
+                                    }
+                                  }}
+                                  onBlur={(e) => {
+                                    // Format the time on blur
+                                    const { hours, minutes } = parseTimeInput(e.target.value);
+                                    if (hours) {
+                                      setNewTodayTaskStartTime(`${hours}:${minutes}`);
+                                    }
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      // Format before moving to next field
+                                      const { hours, minutes } = parseTimeInput(newTodayTaskStartTime);
+                                      if (hours) {
+                                        setNewTodayTaskStartTime(`${hours}:${minutes}`);
+                                      }
+                                      startAmPmButtonRef.current?.click();
+                                    }
+                                  }}
+                                  placeholder="9:00"
+                                  className="text-xs h-7 border-0 border-b border-gray-300 rounded-none shadow-none focus-visible:ring-0 focus-visible:border-gray-400 w-14 px-0 text-center"
+                                />
+                                <Select
+                                  value={newTodayTaskStartAmPm}
+                                  onValueChange={(value: "AM" | "PM") => {
+                                    setNewTodayTaskStartAmPm(value);
+                                    // Move to next field after selection
+                                    setTimeout(() => endTimeInputRef.current?.focus(), 0);
+                                  }}
+                                >
+                                  <SelectTrigger
+                                    ref={startAmPmButtonRef}
+                                    className="h-7 w-14 text-xs border-0 border-b border-gray-300 rounded-none shadow-none focus:ring-0"
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        endTimeInputRef.current?.focus();
+                                      }
+                                    }}
+                                  >
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="AM">AM</SelectItem>
+                                    <SelectItem value="PM">PM</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <span className="text-xs text-gray-400">-</span>
+                                <Input
+                                  ref={endTimeInputRef}
+                                  type="text"
+                                  value={newTodayTaskEndTime}
+                                  onChange={(e) => {
+                                    const input = e.target.value;
+                                    // Allow digits, colon, and empty
+                                    if (input === '' || /^[\d:]+$/.test(input)) {
+                                      setNewTodayTaskEndTime(input);
+                                    }
+                                  }}
+                                  onBlur={(e) => {
+                                    // Format the time on blur
+                                    const { hours, minutes } = parseTimeInput(e.target.value);
+                                    if (hours) {
+                                      setNewTodayTaskEndTime(`${hours}:${minutes}`);
+                                    }
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      // Format before moving to next field
+                                      const { hours, minutes } = parseTimeInput(newTodayTaskEndTime);
+                                      if (hours) {
+                                        setNewTodayTaskEndTime(`${hours}:${minutes}`);
+                                      }
+                                      endAmPmButtonRef.current?.click();
+                                    }
+                                  }}
+                                  placeholder="5:00"
+                                  className="text-xs h-7 border-0 border-b border-gray-300 rounded-none shadow-none focus-visible:ring-0 focus-visible:border-gray-400 w-14 px-0 text-center"
+                                />
+                                <Select
+                                  value={newTodayTaskEndAmPm}
+                                  onValueChange={(value: "AM" | "PM") => {
+                                    setNewTodayTaskEndAmPm(value);
+                                    // Submit after selection
+                                    setTimeout(() => handleAddTodayTask(), 0);
+                                  }}
+                                >
+                                  <SelectTrigger
+                                    ref={endAmPmButtonRef}
+                                    className="h-7 w-14 text-xs border-0 border-b border-gray-300 rounded-none shadow-none focus:ring-0"
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleAddTodayTask();
+                                      }
+                                    }}
+                                  >
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="AM">AM</SelectItem>
+                                    <SelectItem value="PM">PM</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </ScrollArea>
+                    {todaysTasks.length > 0 && (() => {
+                      const progress = Math.round((todaysTasks.filter(t => t.isCompleted).length / todaysTasks.length) * 100);
+
+                      // Determine color based on progress
+                      let colorClass = '';
+                      let textColorClass = '';
+
+                      if (progress === 100) {
+                        colorClass = 'bg-gradient-to-r from-green-500 to-green-600';
+                        textColorClass = 'text-green-600';
+                      } else if (progress >= 67) {
+                        colorClass = 'bg-gradient-to-r from-yellow-400 to-green-500';
+                        textColorClass = 'text-green-600';
+                      } else {
+                        colorClass = 'bg-gradient-to-r from-yellow-500 to-yellow-600';
+                        textColorClass = 'text-yellow-600';
+                      }
+
+                      return (
+                        <div className="space-y-1 mt-3 px-1">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-muted-foreground">Progress</span>
+                            <span className={`font-semibold ${textColorClass}`}>
+                              {progress}% complete
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                            <div
+                              className={`h-2 rounded-full transition-all duration-300 ${colorClass}`}
+                              style={{
+                                width: `${progress}%`
+                              }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </CardContent>
+                </Card>
+              </section>
+
               {/* Mission Statement Section */}
               <section>
                 <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl relative">
