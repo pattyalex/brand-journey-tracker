@@ -166,6 +166,8 @@ const HomePage = () => {
   }
 
   const [pinnedContent, setPinnedContent] = useState<ProductionCard[]>([]);
+  const [draggedCardIndex, setDraggedCardIndex] = useState<number | null>(null);
+  const [dragOverCardIndex, setDragOverCardIndex] = useState<number | null>(null);
 
   // Mission Statement and Vision Board from Strategy & Growth
   const [missionStatement, setMissionStatement] = useState("");
@@ -1024,6 +1026,53 @@ const HomePage = () => {
     setString('todaysPriorities', JSON.stringify(priorities));
   }, [priorities]);
 
+  // Handle drag and drop for pinned content cards
+  const handleDragStart = (index: number) => {
+    setDraggedCardIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    setDragOverCardIndex(index);
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+
+    if (draggedCardIndex === null) return;
+
+    const newPinnedContent = [...pinnedContent];
+    const draggedCard = newPinnedContent[draggedCardIndex];
+
+    // Remove the dragged card from its original position
+    newPinnedContent.splice(draggedCardIndex, 1);
+
+    // Insert it at the new position
+    newPinnedContent.splice(dropIndex, 0, draggedCard);
+
+    setPinnedContent(newPinnedContent);
+    setDraggedCardIndex(null);
+    setDragOverCardIndex(null);
+
+    // Persist the new order to localStorage
+    const productionData = getJSON('productionKanbanData') || { lists: [] };
+    productionData.lists.forEach((list: ProductionList) => {
+      list.cards.forEach((card: ProductionCard) => {
+        // Update pinned status in the data based on new order
+        const newIndex = newPinnedContent.findIndex(c => c.id === card.id);
+        if (newIndex !== -1) {
+          card.pinnedOrder = newIndex;
+        }
+      });
+    });
+    setJSON('productionKanbanData', productionData);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedCardIndex(null);
+    setDragOverCardIndex(null);
+  };
+
   // Navigation shortcuts
   const shortcuts = [
     { 
@@ -1599,10 +1648,16 @@ const HomePage = () => {
                         return (
                         <div
                           key={content.id}
-                          className="relative group mb-4"
+                          draggable
+                          onDragStart={() => handleDragStart(index)}
+                          onDragOver={(e) => handleDragOver(e, index)}
+                          onDrop={(e) => handleDrop(e, index)}
+                          onDragEnd={handleDragEnd}
+                          className={`relative group mb-4 ${draggedCardIndex === index ? 'opacity-50' : ''} ${dragOverCardIndex === index ? 'scale-105' : ''}`}
                           style={{
                             transform: `rotate(${rotation}deg) translateX(${xOffset})`,
-                            transition: 'all 0.3s ease'
+                            transition: 'all 0.3s ease',
+                            cursor: 'move'
                           }}
                         >
                           {/* Pin visual at the top */}
@@ -1610,9 +1665,14 @@ const HomePage = () => {
                             <Pin className="h-6 w-6 text-amber-500 fill-amber-400 drop-shadow-md rotate-45" />
                           </div>
 
+                          {/* Priority Number Badge */}
+                          <div className="absolute -top-1 -left-1 z-20 w-7 h-7 bg-amber-500 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+                            {index + 1}
+                          </div>
+
                           {/* Content card with pinned effect */}
                           <div
-                            className="relative bg-gradient-to-br from-amber-50 via-white to-amber-50/30 border border-amber-100 rounded-2xl p-4 pt-6 pb-3 shadow-md hover:shadow-xl transition-all cursor-pointer max-w-[85%] mx-auto min-h-[80px]"
+                            className="relative bg-gradient-to-br from-amber-50 via-white to-amber-50/30 border border-amber-100 rounded-2xl p-4 pt-6 pb-3 shadow-md hover:shadow-xl transition-all cursor-move max-w-[85%] mx-auto min-h-[80px]"
                             style={{
                               transform: 'none'
                             }}
