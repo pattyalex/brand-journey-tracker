@@ -23,8 +23,37 @@ export const getPlatformColors = (platform: string): { bg: string; text: string;
 
 export const getFormatColors = (format: string): { bg: string; text: string; hover: string } => {
   const lowercased = format.toLowerCase();
-  if (lowercased.includes("carousel")) {
+
+  // Video formats - all purple
+  const videoFormats = [
+    "talking to camera",
+    "static",
+    "walking",
+    "grwm",
+    "get ready with me",
+    "voice-over",
+    "voice over",
+    "voiceover",
+    "b-roll",
+    "broll",
+    "silent video",
+    "text overlay",
+    "cinematic",
+    "montage",
+    "pov",
+    "first-person",
+    "green screen",
+    "split screen",
+    "duet",
+    "stitch"
+  ];
+
+  if (videoFormats.some(vf => lowercased.includes(vf))) {
     return { bg: "bg-purple-100", text: "text-purple-700", hover: "hover:bg-purple-200" };
+  }
+
+  if (lowercased.includes("carousel")) {
+    return { bg: "bg-pink-100", text: "text-pink-700", hover: "hover:bg-pink-200" };
   }
   if (lowercased.includes("vlog")) {
     return { bg: "bg-indigo-100", text: "text-indigo-700", hover: "hover:bg-indigo-200" };
@@ -32,16 +61,14 @@ export const getFormatColors = (format: string): { bg: string; text: string; hov
   if (lowercased.includes("reel")) {
     return { bg: "bg-orange-100", text: "text-orange-700", hover: "hover:bg-orange-200" };
   }
-  if (lowercased.includes("b-roll") || lowercased.includes("broll")) {
-    return { bg: "bg-amber-100", text: "text-amber-700", hover: "hover:bg-amber-200" };
-  }
   if (lowercased.includes("story") || lowercased.includes("stories")) {
     return { bg: "bg-violet-100", text: "text-violet-700", hover: "hover:bg-violet-200" };
   }
   if (lowercased.includes("short")) {
     return { bg: "bg-cyan-100", text: "text-cyan-700", hover: "hover:bg-cyan-200" };
   }
-  return { bg: "bg-purple-100", text: "text-purple-700", hover: "hover:bg-purple-200" };
+  // Default to gray for unknown formats
+  return { bg: "bg-gray-100", text: "text-gray-700", hover: "hover:bg-gray-200" };
 };
 
 export const getAllAngleTemplates = (idea: string) => [

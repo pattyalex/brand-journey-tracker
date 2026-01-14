@@ -40,7 +40,7 @@ import TitleHookSuggestions from "@/components/content/TitleHookSuggestions";
 import ScriptEditorDialog from "./production/components/ScriptEditorDialog";
 import BrainDumpGuidanceDialog from "./production/components/BrainDumpGuidanceDialog";
 import { KanbanColumn, ProductionCard } from "./production/types";
-import { columnColors, defaultColumns } from "./production/utils/productionConstants";
+import { columnColors, cardColors, defaultColumns } from "./production/utils/productionConstants";
 import { getAllAngleTemplates, getFormatColors, getPlatformColors } from "./production/utils/productionHelpers";
 
 
@@ -1263,13 +1263,13 @@ const Production = () => {
                                 }
                               }}
                               className={cn(
-                                "group backdrop-blur-sm rounded-xl shadow-sm relative",
+                                "group backdrop-blur-sm rounded-xl shadow-lg relative",
                                 column.id === "ideate" ? "py-4 px-2" : "p-2",
                                 (column.id === "shape-ideas" || column.id === "ideate") && !isEditing ? "cursor-pointer" : (!isEditing && "cursor-grab active:cursor-grabbing"),
                                 !isDragging && "hover:shadow-lg transition-all duration-200",
                                 isThisCardDragged ? "opacity-40 scale-[0.98]" : "",
                                 card.isCompleted && "opacity-60",
-                                card.isNew ? "border-2 border-purple-600 bg-purple-100" : "bg-white/90 border border-gray-100"
+                                card.isNew ? "border-2 border-purple-600 bg-purple-100" : `${cardColors[column.id]?.bg || "bg-white/90"} border ${cardColors[column.id]?.border || "border-gray-100"}`
                               )}
                               style={{
                                 willChange: isDragging ? 'transform' : 'auto',
@@ -1282,13 +1282,7 @@ const Production = () => {
                                 JUST ADDED
                               </div>
                             )}
-                            <div className="flex items-center gap-2">
-                              <Checkbox
-                                checked={card.isCompleted}
-                                onCheckedChange={() => handleToggleComplete(card.id)}
-                                className="flex-shrink-0"
-                              />
-                              <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
+                            <div className="flex items-center justify-between gap-2">
                                 {isEditing ? (
                                   <input
                                     ref={editInputRef}
@@ -1378,7 +1372,6 @@ const Production = () => {
                                     <Trash2 className="h-2.5 w-2.5 text-gray-400 hover:text-red-600" />
                                   </Button>
                                 </div>
-                              </div>
                             </div>
                             {/* Tags for cards with metadata */}
                             {column.id !== "ideate" && ((card.platforms && card.platforms.length > 0) || (card.formats && card.formats.length > 0) || card.status) && (
@@ -1401,7 +1394,7 @@ const Production = () => {
                                 })}
                                 {card.status && (
                                   <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                                    card.status === 'to-start' ? 'bg-gray-200 text-gray-700' :
+                                    card.status === 'to-start' ? 'bg-white text-gray-600 border border-gray-300' :
                                     card.status === 'needs-work' ? 'bg-yellow-100 text-yellow-700' :
                                     'bg-green-100 text-green-700'
                                   }`}>
@@ -1452,15 +1445,21 @@ const Production = () => {
                         <div
                           key={`add-button-${column.id}`}
                           className={cn(
-                            "p-2 rounded-lg border shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer",
-                            colors.buttonBg,
-                            colors.border
+                            "group/btn px-2 py-1 rounded-full border border-dashed hover:border-solid transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95",
+                            // More intense button backgrounds
+                            column.id === "ideate" ? "bg-purple-200/80 hover:bg-purple-300 border-purple-400" :
+                            column.id === "shape-ideas" ? "bg-blue-200/80 hover:bg-blue-300 border-blue-400" :
+                            column.id === "to-film" ? "bg-amber-200/80 hover:bg-amber-300 border-amber-400" :
+                            column.id === "to-edit" ? "bg-rose-200/80 hover:bg-rose-300 border-rose-400" :
+                            column.id === "to-schedule" ? "bg-indigo-200/80 hover:bg-indigo-300 border-indigo-400" :
+                            "bg-emerald-200/80 hover:bg-emerald-300 border-emerald-400",
+                            colors.buttonText
                           )}
                           onClick={() => handleStartAddingCard(column.id)}
                         >
-                          <div className={cn("flex items-center gap-2", colors.buttonText)}>
-                            <PlusCircle className="h-4 w-4" />
-                            <span className="text-sm font-medium">
+                          <div className={cn("flex items-center gap-1.5", colors.buttonText)}>
+                            <PlusCircle className="h-3.5 w-3.5 group-hover/btn:rotate-90 transition-transform duration-200" />
+                            <span className="text-xs font-semibold">
                               {column.id === 'ideate' ? 'Add quick idea' : 'Add new'}
                             </span>
                           </div>
@@ -1469,15 +1468,15 @@ const Production = () => {
 
                       {/* Help me generate ideas button - only for ideate column */}
                       {column.id === 'ideate' && (
-                        <div className="p-2 rounded-lg border shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer bg-purple-100 hover:bg-purple-200 border-purple-300 hover:border-purple-400"
+                        <div className="group/btn px-2 py-1 rounded-full border border-dashed hover:border-solid transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95 bg-purple-200/80 hover:bg-purple-300 border-purple-400"
                           onClick={() => {
                             setSelectedIdeateCard(null);
                             setIsIdeateDialogOpen(true);
                           }}
                         >
-                          <div className="flex items-center gap-2 text-purple-600">
-                            <Lightbulb className="h-4 w-4" />
-                            <span className="text-sm font-medium">Help me generate ideas</span>
+                          <div className="flex items-center gap-1.5 text-purple-700">
+                            <Lightbulb className="h-3.5 w-3.5 group-hover/btn:animate-pulse" />
+                            <span className="text-xs font-semibold">Help me generate ideas</span>
                           </div>
                         </div>
                       )}
