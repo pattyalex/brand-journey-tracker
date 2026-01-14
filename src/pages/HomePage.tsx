@@ -1586,11 +1586,24 @@ const HomePage = () => {
                     </p>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      {pinnedContent.map((content) => (
+                    <div className="space-y-8">
+                      {pinnedContent.map((content, index) => {
+                        // Create rotation pattern: left, right, straight, left, right...
+                        const rotations = [-2.5, 1.8, 0, -1.5, 2.2, -2, 1.5, 0, -2.8, 1.2];
+                        const rotation = rotations[index % rotations.length];
+
+                        // Add slight horizontal offsets for more organic feel
+                        const xOffsets = ['-2%', '3%', '0%', '2%', '-3%', '-1%', '2.5%', '0%', '-2.5%', '1.5%'];
+                        const xOffset = xOffsets[index % xOffsets.length];
+
+                        return (
                         <div
                           key={content.id}
                           className="relative group mb-4"
+                          style={{
+                            transform: `rotate(${rotation}deg) translateX(${xOffset})`,
+                            transition: 'all 0.3s ease'
+                          }}
                         >
                           {/* Pin visual at the top */}
                           <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10">
@@ -1598,7 +1611,20 @@ const HomePage = () => {
                           </div>
 
                           {/* Content card with pinned effect */}
-                          <div className="relative bg-gradient-to-br from-amber-50 via-white to-amber-50/30 border border-amber-100 rounded-2xl p-4 pt-6 shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1 cursor-pointer">
+                          <div
+                            className="relative bg-gradient-to-br from-amber-50 via-white to-amber-50/30 border border-amber-100 rounded-2xl p-4 pt-6 shadow-md hover:shadow-xl transition-all cursor-pointer"
+                            style={{
+                              transform: 'none'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.parentElement!.style.transform = `rotate(0deg) translateX(0%) translateY(-4px)`;
+                              e.currentTarget.parentElement!.style.zIndex = '10';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.parentElement!.style.transform = `rotate(${rotation}deg) translateX(${xOffset})`;
+                              e.currentTarget.parentElement!.style.zIndex = '';
+                            }}
+                          >
                             {/* Tape effect at top corners */}
                             <div className="absolute top-0 left-0 w-8 h-6 bg-amber-100/60 border border-amber-200 -rotate-12 -translate-x-1 -translate-y-2"></div>
                             <div className="absolute top-0 right-0 w-8 h-6 bg-amber-100/60 border border-amber-200 rotate-12 translate-x-1 -translate-y-2"></div>
@@ -1665,7 +1691,8 @@ const HomePage = () => {
                             </div>
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </CardContent>
                 </Card>
