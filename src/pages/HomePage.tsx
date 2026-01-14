@@ -1831,53 +1831,8 @@ const HomePage = () => {
                 </Card>
               </section>
 
-              {/* Content Calendar */}
+              {/* Monthly Goals Section */}
               <section className="break-inside-avoid mt-12">
-                <Card
-                  className="border-0 shadow-md hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-br from-white via-purple-50/20 to-blue-50/30 rounded-2xl"
-                  onClick={() => navigate('/task-board?view=calendar')}
-                >
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-center">
-                      <CardTitle className="text-xl font-bold flex items-center gap-2">
-                        <Calendar className="h-5 w-5 text-purple-600" />
-                        Content Calendar
-                      </CardTitle>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 text-xs px-2 hover:bg-purple-100"
-                      >
-                        View →
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="min-h-[200px] flex items-center justify-center">
-                      <div className="text-center space-y-3">
-                        <div className="inline-block p-4 bg-purple-100 rounded-full">
-                          <Calendar className="h-12 w-12 text-purple-600" />
-                        </div>
-                        <p className="text-sm text-muted-foreground">View your content schedule</p>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="mt-2"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate('/task-board?view=calendar');
-                          }}
-                        >
-                          Open Calendar
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </section>
-
-              {/* Monthly Goals Section - Moved to bottom */}
-              <section className="break-inside-avoid md:col-span-2 mt-12">
                 <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-center">
@@ -2014,6 +1969,51 @@ const HomePage = () => {
                         +{getCurrentMonthGoals().length - 8} more goals
                       </p>
                     )}
+                  </CardContent>
+                </Card>
+              </section>
+
+              {/* Content Calendar */}
+              <section className="break-inside-avoid mt-12">
+                <Card
+                  className="border-0 shadow-md hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-br from-white via-purple-50/20 to-blue-50/30 rounded-2xl"
+                  onClick={() => navigate('/task-board?view=calendar')}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="text-xl font-bold flex items-center gap-2">
+                        <Calendar className="h-5 w-5 text-purple-600" />
+                        Content Calendar
+                      </CardTitle>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs px-2 hover:bg-purple-100"
+                      >
+                        View →
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="min-h-[200px] flex items-center justify-center">
+                      <div className="text-center space-y-3">
+                        <div className="inline-block p-4 bg-purple-100 rounded-full">
+                          <Calendar className="h-12 w-12 text-purple-600" />
+                        </div>
+                        <p className="text-sm text-muted-foreground">View your content schedule</p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="mt-2"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate('/task-board?view=calendar');
+                          }}
+                        >
+                          Open Calendar
+                        </Button>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               </section>
