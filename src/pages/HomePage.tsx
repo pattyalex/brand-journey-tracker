@@ -1685,7 +1685,7 @@ const HomePage = () => {
                           </div>
 
                           {/* Priority Number Badge */}
-                          <div className="absolute -top-1 -left-1 z-20 w-7 h-7 bg-amber-500 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+                          <div className="absolute -top-1 -left-1 z-20 w-8 h-8 bg-gradient-to-br from-amber-400 to-amber-600 text-white rounded-full flex items-center justify-center text-base font-bold shadow-lg ring-2 ring-white ring-offset-0">
                             {index + 1}
                           </div>
 
