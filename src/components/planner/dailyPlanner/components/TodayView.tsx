@@ -327,8 +327,17 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions }: T
               const [startHour, startMinute] = task.startTime!.split(':').map(Number);
               const [endHour, endMinute] = task.endTime!.split(':').map(Number);
               const startTotalMinutes = startHour * 60 + startMinute;
-              const endTotalMinutes = endHour * 60 + endMinute;
-              const durationMinutes = endTotalMinutes - startTotalMinutes;
+              let endTotalMinutes = endHour * 60 + endMinute;
+
+              // Handle overnight tasks (e.g., 10 PM - 2 AM)
+              // If end time is before start time, it means the task spans midnight
+              // For display purposes, extend it to midnight (end of current day)
+              let durationMinutes = endTotalMinutes - startTotalMinutes;
+              if (durationMinutes < 0) {
+                // Task goes overnight - display until midnight
+                endTotalMinutes = 1440; // 24:00 = midnight
+                durationMinutes = endTotalMinutes - startTotalMinutes;
+              }
 
               return {
                 task,

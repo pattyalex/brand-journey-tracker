@@ -99,6 +99,7 @@ const HomePage = () => {
   const [editingStartAmPm, setEditingStartAmPm] = useState<"AM" | "PM">("AM");
   const [editingEndTime, setEditingEndTime] = useState("");
   const [editingEndAmPm, setEditingEndAmPm] = useState<"AM" | "PM">("PM");
+  const [isSelectOpen, setIsSelectOpen] = useState(false);
   const addTaskFormRef = useRef<HTMLDivElement>(null);
   const startTimeInputRef = useRef<HTMLInputElement>(null);
   const startAmPmButtonRef = useRef<HTMLButtonElement>(null);
@@ -110,6 +111,7 @@ const HomePage = () => {
   const editStartAmPmButtonRef = useRef<HTMLButtonElement>(null);
   const editEndTimeInputRef = useRef<HTMLInputElement>(null);
   const editEndAmPmButtonRef = useRef<HTMLButtonElement>(null);
+  const timeEditorRef = useRef<HTMLDivElement>(null);
 
   // Today's Top 3 Priorities
   interface Priority {
@@ -332,7 +334,49 @@ const HomePage = () => {
     };
   }, [isAddingTodayTask]);
 
-  // Set greeting based on time of day
+  // Handle click outside to save time edit
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // Don't save if a Select dropdown is open
+      if (isSelectOpen) {
+        return;
+      }
+
+      const target = event.target as HTMLElement;
+
+      // Check if click is on a Select dropdown (which renders in a portal)
+      // Check multiple selectors to catch all Select dropdown elements
+      if (
+        target.closest('[role="listbox"]') ||
+        target.closest('[data-radix-popper-content-wrapper]') ||
+        target.closest('[data-radix-select-content]') ||
+        target.closest('[data-radix-select-viewport]') ||
+        target.closest('[role="option"]') ||
+        target.getAttribute('role') === 'option' ||
+        target.getAttribute('role') === 'listbox'
+      ) {
+        return;
+      }
+
+      if (timeEditorRef.current && !timeEditorRef.current.contains(event.target as Node)) {
+        if (editingTimeTaskId) {
+          handleSaveEditingTime();
+        }
+      }
+    };
+
+    if (editingTimeTaskId) {
+      // Use a slight delay to ensure the event listener is set up after the editor opens
+      const timeoutId = setTimeout(() => {
+        document.addEventListener('mousedown', handleClickOutside);
+      }, 100);
+
+      return () => {
+        clearTimeout(timeoutId);
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [editingTimeTaskId, isSelectOpen]);
   useEffect(() => {
     const getCurrentGreeting = () => {
       const hour = new Date().getHours();
@@ -653,7 +697,7 @@ const HomePage = () => {
     }
   };
 
-  const handleSaveEditingTime = () => {
+  const handleSaveEditingTime = (overrideStartAmPm?: "AM" | "PM", overrideEndAmPm?: "AM" | "PM") => {
     if (!editingTimeTaskId) return;
 
     const plannerDataStr = getString(StorageKeys.plannerData);
@@ -664,9 +708,13 @@ const HomePage = () => {
         const todayIndex = plannerData.findIndex((day: any) => day.date === today);
 
         if (todayIndex >= 0) {
+          // Use override values if provided, otherwise use state
+          const startAmPm = overrideStartAmPm ?? editingStartAmPm;
+          const endAmPm = overrideEndAmPm ?? editingEndAmPm;
+
           // Convert times, use defaults if empty (9:00 AM - 5:00 PM)
-          const startTime24 = editingStartTime ? convertTo24Hour(editingStartTime, editingStartAmPm) : '09:00';
-          const endTime24 = editingEndTime ? convertTo24Hour(editingEndTime, editingEndAmPm) : '17:00';
+          const startTime24 = editingStartTime ? convertTo24Hour(editingStartTime, startAmPm) : '09:00';
+          const endTime24 = editingEndTime ? convertTo24Hour(editingEndTime, endAmPm) : '17:00';
 
           const updatedPlannerData = [...plannerData];
           updatedPlannerData[todayIndex] = {
@@ -1488,7 +1536,7 @@ const HomePage = () => {
                                   )}
                                   <div className="flex items-center gap-3">
                                     {editingTimeTaskId === task.id ? (
-                                      <div className="flex items-center gap-1">
+                                      <div ref={timeEditorRef} className="flex items-center gap-1 time-editor">
                                         <Input
                                           ref={editStartTimeInputRef}
                                           autoFocus
@@ -1498,13 +1546,6 @@ const HomePage = () => {
                                             const input = e.target.value;
                                             if (input === '' || /^[\d:]+$/.test(input)) {
                                               setEditingStartTime(input);
-                                            }
-                                          }}
-                                          onBlur={(e) => {
-                                            // Only save if clicking outside the time editing area
-                                            const relatedTarget = e.relatedTarget as HTMLElement;
-                                            if (!relatedTarget || !relatedTarget.closest('.time-editor')) {
-                                              handleSaveEditingTime();
                                             }
                                           }}
                                           onKeyDown={(e) => {
@@ -1522,16 +1563,25 @@ const HomePage = () => {
                                             }
                                           }}
                                           placeholder="9:00"
-                                          className="text-xs h-6 w-12 border-0 shadow-none focus-visible:ring-0 p-0 text-center bg-transparent time-editor"
+                                          className="text-xs h-6 w-12 border-0 shadow-none focus-visible:ring-0 p-0 text-center bg-transparent"
                                         />
-                                        <Select value={editingStartAmPm} onValueChange={(value: "AM" | "PM") => {
-                                          setEditingStartAmPm(value);
-                                          // After changing AM/PM, move to end time
-                                          setTimeout(() => editEndTimeInputRef.current?.focus(), 0);
-                                        }}>
+                                        <Select
+                                          value={editingStartAmPm}
+                                          onValueChange={(value: "AM" | "PM") => {
+                                            setEditingStartAmPm(value);
+                                            // After changing AM/PM, move to end time
+                                            setTimeout(() => editEndTimeInputRef.current?.focus(), 0);
+                                          }}
+                                          onOpenChange={(open) => {
+                                            setIsSelectOpen(open);
+                                          }}
+                                        >
                                           <SelectTrigger
                                             ref={editStartAmPmButtonRef}
-                                            className="h-6 w-10 text-xs border-0 shadow-none focus:ring-0 p-0 time-editor"
+                                            className="h-6 w-10 text-xs border-0 shadow-none focus:ring-0 p-0"
+                                            onPointerDown={(e) => {
+                                              e.stopPropagation();
+                                            }}
                                             onKeyDown={(e) => {
                                               if (e.key === 'Enter') {
                                                 e.preventDefault();
@@ -1544,7 +1594,7 @@ const HomePage = () => {
                                           >
                                             <SelectValue />
                                           </SelectTrigger>
-                                          <SelectContent className="time-editor">
+                                          <SelectContent>
                                             <SelectItem value="AM">AM</SelectItem>
                                             <SelectItem value="PM">PM</SelectItem>
                                           </SelectContent>
@@ -1558,13 +1608,6 @@ const HomePage = () => {
                                             const input = e.target.value;
                                             if (input === '' || /^[\d:]+$/.test(input)) {
                                               setEditingEndTime(input);
-                                            }
-                                          }}
-                                          onBlur={(e) => {
-                                            // Only save if clicking outside the time editing area
-                                            const relatedTarget = e.relatedTarget as HTMLElement;
-                                            if (!relatedTarget || !relatedTarget.closest('.time-editor')) {
-                                              handleSaveEditingTime();
                                             }
                                           }}
                                           onKeyDown={(e) => {
@@ -1582,16 +1625,25 @@ const HomePage = () => {
                                             }
                                           }}
                                           placeholder="5:00"
-                                          className="text-xs h-6 w-12 border-0 shadow-none focus-visible:ring-0 p-0 text-center bg-transparent time-editor"
+                                          className="text-xs h-6 w-12 border-0 shadow-none focus-visible:ring-0 p-0 text-center bg-transparent"
                                         />
-                                        <Select value={editingEndAmPm} onValueChange={(value: "AM" | "PM") => {
-                                          setEditingEndAmPm(value);
-                                          // After changing end AM/PM, save
-                                          setTimeout(() => handleSaveEditingTime(), 0);
-                                        }}>
+                                        <Select
+                                          value={editingEndAmPm}
+                                          onValueChange={(value: "AM" | "PM") => {
+                                            setEditingEndAmPm(value);
+                                            // After changing end AM/PM, save with the new value
+                                            setTimeout(() => handleSaveEditingTime(editingStartAmPm, value), 0);
+                                          }}
+                                          onOpenChange={(open) => {
+                                            setIsSelectOpen(open);
+                                          }}
+                                        >
                                           <SelectTrigger
                                             ref={editEndAmPmButtonRef}
-                                            className="h-6 w-10 text-xs border-0 shadow-none focus:ring-0 p-0 time-editor"
+                                            className="h-6 w-10 text-xs border-0 shadow-none focus:ring-0 p-0"
+                                            onPointerDown={(e) => {
+                                              e.stopPropagation();
+                                            }}
                                             onKeyDown={(e) => {
                                               if (e.key === 'Enter') {
                                                 e.preventDefault();
@@ -1604,7 +1656,7 @@ const HomePage = () => {
                                           >
                                             <SelectValue />
                                           </SelectTrigger>
-                                          <SelectContent className="time-editor">
+                                          <SelectContent>
                                             <SelectItem value="AM">AM</SelectItem>
                                             <SelectItem value="PM">PM</SelectItem>
                                           </SelectContent>

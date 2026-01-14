@@ -117,20 +117,24 @@ export const usePlannerPersistence = ({
           }
 
           // Check for negative duration after fix
+          // Allow tasks to span midnight (e.g., 11 PM - 2 AM is valid)
+          // Only fix if the duration would be impossibly short (< 5 minutes) within same day
           if (item.startTime && item.endTime) {
             const [startH, startM] = item.startTime.split(':').map(Number);
             const [endH, endM] = item.endTime.split(':').map(Number);
             const startMins = startH * 60 + startM;
             const endMins = endH * 60 + endM;
 
-            if (endMins <= startMins) {
+            // Only fix if end time is within 5 minutes of start time (likely an error)
+            // Allow tasks that span midnight (end < start is OK for overnight tasks)
+            if (endMins > startMins && (endMins - startMins) < 5) {
               // Set end time to start time + 1 hour (or 23:59 if that exceeds day)
               const newEndMins = Math.min(startMins + 60, 1439);
               const newEndH = Math.floor(newEndMins / 60);
               const newEndM = newEndMins % 60;
               item.endTime = `${String(newEndH).padStart(2, '0')}:${String(newEndM).padStart(2, '0')}`;
               needsSave = true;
-              console.warn('Fixed invalid endTime for task:', item.text, 'was:', `${endH}:${endM}`);
+              console.warn('Fixed too-short duration for task:', item.text, 'was:', `${endH}:${endM}`);
             }
           }
         });
