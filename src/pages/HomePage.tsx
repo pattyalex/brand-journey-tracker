@@ -23,6 +23,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   Calendar,
   CheckSquare,
   Edit,
@@ -179,8 +190,41 @@ const HomePage = () => {
   }
 
   const [pinnedContent, setPinnedContent] = useState<ProductionCard[]>([]);
+  const [isUsingPlaceholders, setIsUsingPlaceholders] = useState(false);
   const [draggedCardIndex, setDraggedCardIndex] = useState<number | null>(null);
   const [dragOverCardIndex, setDragOverCardIndex] = useState<number | null>(null);
+
+  // Default placeholder cards for new users or when no content is pinned
+  const defaultPlaceholderCards: ProductionCard[] = [
+    {
+      id: 'placeholder-1',
+      title: 'Pin your priority content here',
+      description: 'Go to Content Hub and click the pin icon on any content card you want to prioritize. Your pinned cards will appear here so you can focus on what matters most.',
+      columnId: 'placeholder',
+      isPinned: false,
+      formats: ['Carousel'],
+      platforms: ['Instagram']
+    },
+    {
+      id: 'placeholder-2',
+      title: 'Auto-filled from Content Hub',
+      description: "When you don't have any pinned content, we'll automatically show your most recent ideas from the Content Hub. Start creating content to see it here!",
+      columnId: 'placeholder',
+      isPinned: false,
+      formats: ['Vlog'],
+      platforms: ['TikTok']
+    },
+    {
+      id: 'placeholder-3',
+      title: 'Example: 5 morning habits that changed my life',
+      columnId: 'placeholder',
+      isPinned: false,
+      hook: 'I used to wake up exhausted every day until I discovered these 5 simple morning rituals...',
+      script: 'First thing I do is drink a full glass of water before touching my phone. Then I spend just 5 minutes stretching...',
+      formats: ['Talking-to-camera video'],
+      platforms: ['TikTok', 'Instagram']
+    }
+  ];
 
   // Mission Statement and Vision Board from Strategy & Growth
   const [missionStatement, setMissionStatement] = useState("");
@@ -256,6 +300,10 @@ const HomePage = () => {
     id: string;
     name: string;
     completedDates: string[]; // Array of date strings in 'YYYY-MM-DD' format
+    goal?: {
+      target: number;           // e.g., 5
+      period: 'week' | 'month'; // "per week" or "per month"
+    };
   }
   const [habits, setHabits] = useState<Habit[]>(() => {
     const saved = getString('workHabits');
@@ -273,6 +321,11 @@ const HomePage = () => {
   const [newHabitName, setNewHabitName] = useState("");
   const [editingHabitId, setEditingHabitId] = useState<string | null>(null);
   const [editingHabitName, setEditingHabitName] = useState("");
+  const [editingGoalHabitId, setEditingGoalHabitId] = useState<string | null>(null);
+  const [editingGoalTarget, setEditingGoalTarget] = useState<string>("5");
+  const [editingGoalPeriod, setEditingGoalPeriod] = useState<'week' | 'month'>('week');
+  const [newHabitGoalTarget, setNewHabitGoalTarget] = useState<string>("");
+  const [newHabitGoalPeriod, setNewHabitGoalPeriod] = useState<'week' | 'month'>('week');
 
   // Auto-dismiss celebration after 3.5 seconds
   useEffect(() => {
@@ -555,7 +608,31 @@ const HomePage = () => {
         });
       });
 
-      setPinnedContent(pinned);
+      // If user has pinned content, use it
+      if (pinned.length > 0) {
+        setPinnedContent(pinned);
+        setIsUsingPlaceholders(false);
+        return;
+      }
+
+      // Otherwise, try to auto-pull recent content from Content Hub
+      const allCards: ProductionCard[] = [];
+      productionData.forEach(column => {
+        column.cards.forEach(card => {
+          allCards.push(card);
+        });
+      });
+
+      // If there's content in Content Hub, show the first 3 items
+      if (allCards.length > 0) {
+        setPinnedContent(allCards.slice(0, 3));
+        setIsUsingPlaceholders(false);
+        return;
+      }
+
+      // No content at all - show placeholder cards
+      setPinnedContent(defaultPlaceholderCards);
+      setIsUsingPlaceholders(true);
     };
 
     loadPinnedContent();
@@ -1234,12 +1311,24 @@ const HomePage = () => {
 
   const addHabit = () => {
     if (newHabitName.trim()) {
-      setHabits(prev => [...prev, {
+      const newHabit: Habit = {
         id: `habit_${Date.now()}`,
         name: newHabitName.trim(),
         completedDates: []
-      }]);
+      };
+
+      // Add goal if target was specified
+      if (newHabitGoalTarget && parseInt(newHabitGoalTarget) > 0) {
+        newHabit.goal = {
+          target: parseInt(newHabitGoalTarget),
+          period: newHabitGoalPeriod
+        };
+      }
+
+      setHabits(prev => [...prev, newHabit]);
       setNewHabitName("");
+      setNewHabitGoalTarget("");
+      setNewHabitGoalPeriod('week');
       setIsAddingHabit(false);
     }
   };
@@ -1268,6 +1357,79 @@ const HomePage = () => {
   const cancelEditingHabit = () => {
     setEditingHabitId(null);
     setEditingHabitName("");
+  };
+
+  // Calculate progress for a habit based on its goal period
+  const calculateHabitProgress = (habit: Habit): { completed: number; target: number } | null => {
+    if (!habit.goal) return null;
+
+    const { target, period } = habit.goal;
+    const now = new Date();
+
+    let startDate: Date;
+    let endDate: Date;
+
+    if (period === 'week') {
+      // Use current week (Monday to Sunday)
+      const currentDay = now.getDay();
+      startDate = new Date(now);
+      startDate.setDate(now.getDate() - (currentDay === 0 ? 6 : currentDay - 1));
+      startDate.setHours(0, 0, 0, 0);
+
+      endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 6);
+      endDate.setHours(23, 59, 59, 999);
+    } else {
+      // Use current month
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    }
+
+    const startStr = getDateString(startDate);
+    const endStr = getDateString(endDate);
+
+    const completed = habit.completedDates.filter(dateStr => {
+      return dateStr >= startStr && dateStr <= endStr;
+    }).length;
+
+    return { completed, target };
+  };
+
+  // Determine progress color based on completion
+  const getProgressColor = (completed: number, target: number): string => {
+    if (completed >= target) return 'text-green-600';
+    if (completed >= target * 0.5) return 'text-amber-500';
+    return 'text-gray-400';
+  };
+
+  // Goal management functions
+  const startEditingGoal = (habit: Habit) => {
+    setEditingGoalHabitId(habit.id);
+    setEditingGoalTarget(habit.goal?.target.toString() || "5");
+    setEditingGoalPeriod(habit.goal?.period || 'week');
+  };
+
+  const saveGoal = () => {
+    if (editingGoalHabitId) {
+      const target = parseInt(editingGoalTarget);
+      if (target > 0 && target <= 31) {
+        setHabits(prev => prev.map(h =>
+          h.id === editingGoalHabitId
+            ? { ...h, goal: { target, period: editingGoalPeriod } }
+            : h
+        ));
+      }
+    }
+    setEditingGoalHabitId(null);
+  };
+
+  const removeGoal = (habitId: string) => {
+    setHabits(prev => prev.map(h =>
+      h.id === habitId
+        ? { ...h, goal: undefined }
+        : h
+    ));
+    setEditingGoalHabitId(null);
   };
 
   // Handle drag and drop for pinned content cards
@@ -1552,7 +1714,6 @@ const HomePage = () => {
               </AnimatePresence>
 
               {/* Next to Work On Section */}
-              {pinnedContent.length > 0 && (
               <section className="mt-48 pt-12">
                 <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
                   <CardHeader className="pb-4">
@@ -1561,12 +1722,16 @@ const HomePage = () => {
                       Next to Work On
                     </CardTitle>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Pinned content cards from your Content Hub
+                      {isUsingPlaceholders
+                        ? "Get started by pinning content from your Content Hub"
+                        : pinnedContent.some(c => c.isPinned)
+                          ? "Pinned content cards from your Content Hub"
+                          : "Recent content from your Content Hub"}
                     </p>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-8">
-                      {pinnedContent.map((content, index) => {
+                      {pinnedContent.slice(0, pinnedContent.some(c => c.isPinned) ? 5 : 3).map((content, index) => {
                         // Create rotation pattern: left, right, straight, left, right...
                         const rotations = [-2.5, 1.8, 0, -1.5, 2.2, -2, 1.5, 0, -2.8, 1.2];
                         const rotation = rotations[index % rotations.length];
@@ -1621,10 +1786,15 @@ const HomePage = () => {
 
                           {/* Content card with pinned effect */}
                           <div
-                            className="relative bg-gradient-to-br from-amber-50 via-white to-amber-50/30 border border-amber-100 rounded-2xl p-4 pt-6 pb-3 shadow-md hover:shadow-xl transition-all cursor-grab active:cursor-grabbing max-w-[85%] mx-auto min-h-[80px]"
+                            className={`relative bg-gradient-to-br from-amber-50 via-white to-amber-50/30 border border-amber-100 rounded-2xl p-4 pt-6 pb-3 shadow-md hover:shadow-xl transition-all max-w-[85%] mx-auto min-h-[80px] ${isUsingPlaceholders ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'}`}
                             style={{
                               transform: 'none',
                               pointerEvents: draggedCardIndex === index ? 'none' : 'auto'
+                            }}
+                            onClick={() => {
+                              if (isUsingPlaceholders) {
+                                navigate('/production');
+                              }
                             }}
                             onMouseEnter={(e) => {
                               if (draggedCardIndex === null) {
@@ -1644,7 +1814,7 @@ const HomePage = () => {
                             <div className="absolute top-0 right-0 w-8 h-6 bg-amber-100/60 border border-amber-200 rotate-12 translate-x-1 -translate-y-2"></div>
 
                             {/* Content */}
-                            <div className="space-y-2">
+                            <div className="space-y-2 pb-6">
                               <div className="flex items-start gap-2">
                                 <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
                                 <h3 className="font-semibold text-sm text-gray-900 line-clamp-2">
@@ -1673,8 +1843,14 @@ const HomePage = () => {
                                 </p>
                               )}
 
+                              {content.script && (
+                                <p className="text-xs text-gray-500 mt-2 pt-2 border-t border-amber-200 line-clamp-2">
+                                  {content.script}
+                                </p>
+                              )}
+
                               {content.description && (
-                                <p className="text-xs text-gray-500 line-clamp-2 mt-2 pt-2 border-t border-amber-200">
+                                <p className={`text-xs text-gray-500 mt-2 pt-2 border-t border-amber-200 ${isUsingPlaceholders ? '' : 'line-clamp-2'}`}>
                                   {content.description}
                                 </p>
                               )}
@@ -1697,14 +1873,14 @@ const HomePage = () => {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-6 text-xs text-amber-700 hover:text-amber-900"
+                                className="h-6 text-xs text-amber-700 hover:text-amber-900 hover:bg-amber-100"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   navigate('/production');
                                 }}
                                 onMouseDown={(e) => e.stopPropagation()}
                               >
-                                View →
+                                {isUsingPlaceholders ? 'Start Creating' : 'View'} <ArrowRight className="h-3 w-3 ml-1" />
                               </Button>
                             </div>
                           </div>
@@ -1716,7 +1892,6 @@ const HomePage = () => {
                   </CardContent>
                 </Card>
               </section>
-              )}
 
               {/* Work Habits Section */}
               <section className="mt-12">
@@ -1806,14 +1981,111 @@ const HomePage = () => {
                                           className="flex-1 h-7 text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0 px-1"
                                         />
                                       ) : (
-                                        <span
-                                          className="truncate cursor-pointer hover:text-green-600 transition-colors"
-                                          onClick={() => startEditingHabit(habit.id, habit.name)}
-                                        >
-                                          {habit.name}
-                                        </span>
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                          <span
+                                            className="truncate cursor-pointer hover:text-green-600 transition-colors"
+                                            onClick={() => startEditingHabit(habit.id, habit.name)}
+                                          >
+                                            {habit.name}
+                                          </span>
+                                          {/* Goal Progress Indicator */}
+                                          {(() => {
+                                            const progress = calculateHabitProgress(habit);
+                                            if (!progress) return null;
+                                            const { completed, target } = progress;
+                                            return (
+                                              <span
+                                                className={`text-[10px] font-medium ${getProgressColor(completed, target)} flex-shrink-0`}
+                                                title={`${completed}/${target} ${habit.goal?.period === 'week' ? 'this week' : 'this month'}`}
+                                              >
+                                                {completed}/{target}
+                                              </span>
+                                            );
+                                          })()}
+                                        </div>
                                       )}
                                     </div>
+                                    {/* Goal Edit Button with Popover */}
+                                    <Popover
+                                      open={editingGoalHabitId === habit.id}
+                                      onOpenChange={(open) => {
+                                        if (open) startEditingGoal(habit);
+                                        else setEditingGoalHabitId(null);
+                                      }}
+                                    >
+                                      <TooltipProvider delayDuration={100}>
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <PopoverTrigger asChild>
+                                              <button
+                                                className={`${habit.goal ? 'opacity-70' : 'opacity-0 group-hover:opacity-100'} transition-opacity text-gray-400 hover:text-green-600 flex-shrink-0`}
+                                              >
+                                                <Target className="h-3 w-3" />
+                                              </button>
+                                            </PopoverTrigger>
+                                          </TooltipTrigger>
+                                          <TooltipContent side="top" className="text-xs px-2 py-1 min-w-0">
+                                            Set goal
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      </TooltipProvider>
+                                      <PopoverContent className="w-64 p-4 bg-white border border-gray-200 shadow-xl rounded-xl" align="start" sideOffset={8}>
+                                        <div className="space-y-4">
+                                          <div className="flex items-center gap-2">
+                                            <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
+                                              <Target className="h-4 w-4 text-green-600" />
+                                            </div>
+                                            <div>
+                                              <div className="text-sm font-semibold text-gray-900">Set Goal</div>
+                                              <div className="text-[10px] text-gray-500">Track your progress</div>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                                            <Input
+                                              type="number"
+                                              min="1"
+                                              max="31"
+                                              value={editingGoalTarget}
+                                              onChange={(e) => setEditingGoalTarget(e.target.value)}
+                                              className="h-10 w-16 text-center text-lg font-semibold border-gray-200 rounded-lg"
+                                              placeholder="5"
+                                            />
+                                            <span className="text-sm text-gray-600">days per</span>
+                                            <Select
+                                              value={editingGoalPeriod}
+                                              onValueChange={(v: 'week' | 'month') => setEditingGoalPeriod(v)}
+                                            >
+                                              <SelectTrigger className="h-10 w-24 text-sm font-medium border-gray-200 rounded-lg">
+                                                <SelectValue />
+                                              </SelectTrigger>
+                                              <SelectContent>
+                                                <SelectItem value="week">week</SelectItem>
+                                                <SelectItem value="month">month</SelectItem>
+                                              </SelectContent>
+                                            </Select>
+                                          </div>
+                                          <div className="flex gap-2">
+                                            <Button
+                                              size="sm"
+                                              onClick={saveGoal}
+                                              className="h-9 text-sm font-medium bg-green-600 hover:bg-green-700 flex-1 rounded-lg shadow-sm"
+                                            >
+                                              Save Goal
+                                            </Button>
+                                            {habit.goal && (
+                                              <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => removeGoal(habit.id)}
+                                                className="h-9 text-sm font-medium text-gray-500 hover:text-red-600 hover:border-red-200 hover:bg-red-50 rounded-lg"
+                                              >
+                                                Remove
+                                              </Button>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </PopoverContent>
+                                    </Popover>
                                     <button
                                       onClick={() => deleteHabit(habit.id)}
                                       className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500 flex-shrink-0"
@@ -1856,7 +2128,7 @@ const HomePage = () => {
                             {isAddingHabit && (
                               <tr className="border-b bg-green-50/30">
                                 <td className="px-3 py-2 sticky left-0 bg-green-50/30 z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]" colSpan={8}>
-                                  <div className="flex items-center gap-2">
+                                  <div className="flex items-center gap-2 flex-wrap">
                                     <Input
                                       autoFocus
                                       placeholder="Enter habit name..."
@@ -1867,10 +2139,37 @@ const HomePage = () => {
                                         if (e.key === 'Escape') {
                                           setIsAddingHabit(false);
                                           setNewHabitName("");
+                                          setNewHabitGoalTarget("");
                                         }
                                       }}
-                                      className="flex-1 h-8 text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                                      className="flex-1 h-8 text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0 min-w-[120px]"
                                     />
+                                    {/* Optional Goal Setting */}
+                                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                                      <span>Goal:</span>
+                                      <Input
+                                        type="number"
+                                        min="1"
+                                        max="31"
+                                        placeholder="5"
+                                        value={newHabitGoalTarget}
+                                        onChange={(e) => setNewHabitGoalTarget(e.target.value)}
+                                        className="h-7 w-12 text-xs px-2"
+                                      />
+                                      <span>/</span>
+                                      <Select
+                                        value={newHabitGoalPeriod}
+                                        onValueChange={(v: 'week' | 'month') => setNewHabitGoalPeriod(v)}
+                                      >
+                                        <SelectTrigger className="h-7 w-16 text-xs border-gray-200">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="week">week</SelectItem>
+                                          <SelectItem value="month">month</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
                                     <Button
                                       size="sm"
                                       onClick={addHabit}
@@ -1884,6 +2183,7 @@ const HomePage = () => {
                                       onClick={() => {
                                         setIsAddingHabit(false);
                                         setNewHabitName("");
+                                        setNewHabitGoalTarget("");
                                       }}
                                       className="h-8 px-3 text-sm"
                                     >
