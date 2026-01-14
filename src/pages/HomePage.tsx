@@ -1789,7 +1789,7 @@ const HomePage = () => {
               )}
 
               {/* Mission Statement Section */}
-              <section className="break-inside-avoid mt-12">
+              <section className="break-inside-avoid mt-20">
                 <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl relative">
                   <CardContent className="py-8 px-6">
                     {missionStatement ? (
