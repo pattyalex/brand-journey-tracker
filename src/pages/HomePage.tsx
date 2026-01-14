@@ -1646,6 +1646,14 @@ const HomePage = () => {
                         const xOffset = xOffsets[index % xOffsets.length];
 
                         return (
+                        <div key={`card-wrapper-${content.id}`} className="relative">
+                          {/* Insertion indicator - shows where card will be dropped */}
+                          {dragOverCardIndex === index && draggedCardIndex !== null && draggedCardIndex !== index && (
+                            <div className="absolute -top-4 left-0 right-0 flex justify-center z-30">
+                              <div className="w-[85%] h-1 bg-amber-500 rounded-full shadow-lg animate-pulse"></div>
+                            </div>
+                          )}
+
                         <div
                           key={content.id}
                           draggable={true}
@@ -1664,7 +1672,7 @@ const HomePage = () => {
                             handleDrop(e, index);
                           }}
                           onDragEnd={handleDragEnd}
-                          className={`relative group mb-4 transition-all ${draggedCardIndex === index ? 'opacity-40 scale-95' : ''} ${dragOverCardIndex === index && dragOverCardIndex !== draggedCardIndex ? 'scale-105' : ''}`}
+                          className={`relative group mb-4 transition-all ${draggedCardIndex === index ? 'opacity-40 scale-95' : ''}`}
                           style={{
                             transform: draggedCardIndex === index ? 'rotate(0deg)' : `rotate(${rotation}deg) translateX(${xOffset})`,
                             transition: 'all 0.3s ease',
@@ -1770,6 +1778,7 @@ const HomePage = () => {
                               </Button>
                             </div>
                           </div>
+                        </div>
                         </div>
                         );
                       })}
