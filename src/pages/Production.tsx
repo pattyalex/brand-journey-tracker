@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { StorageKeys, getString, setString } from "@/lib/storage";
+import { EVENTS, emit } from "@/lib/events";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -295,6 +296,8 @@ const Production = () => {
   // Save data to localStorage whenever columns change
   useEffect(() => {
     setString(StorageKeys.productionKanban, JSON.stringify(columns));
+    // Emit event so other pages (like Dashboard) can update
+    emit(window, EVENTS.productionKanbanUpdated, columns);
   }, [columns]);
 
   // Clean up any cards with empty titles
@@ -537,9 +540,17 @@ const Production = () => {
         // Adding to target column (from different column)
         const filtered = column.cards.filter(filterCard);
         // Set status to 'to-start' if moving to shape-ideas column and card doesn't already have a status
-        const cardToAdd = column.id === 'shape-ideas' && !draggedCard.status
-          ? { ...draggedCard, columnId: column.id, status: 'to-start' as const }
-          : { ...draggedCard, columnId: column.id };
+        // Auto-unpin if moving to 'posted' column (finished work shouldn't be on dashboard)
+        let cardToAdd = { ...draggedCard, columnId: column.id };
+        if (column.id === 'shape-ideas' && !draggedCard.status) {
+          cardToAdd = { ...cardToAdd, status: 'to-start' as const };
+        }
+        if (column.id === 'posted' && draggedCard.isPinned) {
+          cardToAdd = { ...cardToAdd, isPinned: false };
+          toast.info("Auto-unpinned", {
+            description: "Posted content is removed from your dashboard"
+          });
+        }
         filtered.splice(savedDropPosition.index, 0, cardToAdd);
         return { ...column, cards: filtered };
       }
@@ -1237,17 +1248,33 @@ const Production = () => {
                                   }, 250);
                                 }
                               }}
+                              onMouseEnter={(e) => {
+                                if (!isDragging && !isEditing) {
+                                  e.currentTarget.style.transform = 'rotate(0deg) translateY(-3px)';
+                                  e.currentTarget.style.zIndex = '10';
+                                }
+                              }}
+                              onMouseLeave={(e) => {
+                                if (!isDragging && !isEditing) {
+                                  const rotations = [-1.5, 1.2, -0.8, 1.5, -1, 0.8, -1.2, 1, -0.5, 1.3];
+                                  const rotation = rotations[cardIndex % rotations.length];
+                                  e.currentTarget.style.transform = `rotate(${rotation}deg)`;
+                                  e.currentTarget.style.zIndex = '';
+                                }
+                              }}
                               className={cn(
-                                "group backdrop-blur-sm rounded-lg shadow-sm relative",
+                                "group backdrop-blur-sm rounded-xl shadow-sm relative",
                                 column.id === "ideate" ? "py-4 px-2" : "p-2",
                                 (column.id === "shape-ideas" || column.id === "ideate") && !isEditing ? "cursor-pointer" : (!isEditing && "cursor-grab active:cursor-grabbing"),
-                                !isDragging && "hover:shadow-md transition-shadow duration-150",
+                                !isDragging && "hover:shadow-lg transition-all duration-200",
                                 isThisCardDragged ? "opacity-40 scale-[0.98]" : "",
                                 card.isCompleted && "opacity-60",
-                                card.isNew ? "border-2 border-purple-600 bg-purple-100" : "bg-white/80 border border-white"
+                                card.isNew ? "border-2 border-purple-600 bg-purple-100" : "bg-white/90 border border-gray-100"
                               )}
                               style={{
-                                willChange: isDragging ? 'transform' : 'auto'
+                                willChange: isDragging ? 'transform' : 'auto',
+                                transform: `rotate(${[-1.5, 1.2, -0.8, 1.5, -1, 0.8, -1.2, 1, -0.5, 1.3][cardIndex % 10]}deg)`,
+                                transition: 'transform 0.2s ease, box-shadow 0.2s ease'
                               }}
                             >
                             {card.isNew && (
@@ -1315,28 +1342,30 @@ const Production = () => {
                                       <Edit className="h-2.5 w-2.5 text-gray-400 hover:text-blue-600" />
                                     </Button>
                                   )}
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className={cn(
-                                      "h-3.5 w-3.5 p-0 rounded transition-colors",
-                                      card.isPinned
-                                        ? "bg-amber-100 hover:bg-amber-200"
-                                        : "hover:bg-amber-50"
-                                    )}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleTogglePin(card.id);
-                                    }}
-                                    title={card.isPinned ? "Unpin from dashboard" : "Pin to dashboard"}
-                                  >
-                                    <Pin className={cn(
-                                      "h-2.5 w-2.5 transition-transform",
-                                      card.isPinned
-                                        ? "text-amber-600 rotate-45"
-                                        : "text-gray-400 hover:text-amber-600"
-                                    )} />
-                                  </Button>
+                                  {column.id !== "posted" && (
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className={cn(
+                                        "h-3.5 w-3.5 p-0 rounded transition-colors",
+                                        card.isPinned
+                                          ? "bg-amber-100 hover:bg-amber-200"
+                                          : "hover:bg-amber-50"
+                                      )}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleTogglePin(card.id);
+                                      }}
+                                      title={card.isPinned ? "Unpin from dashboard" : "Pin to dashboard"}
+                                    >
+                                      <Pin className={cn(
+                                        "h-2.5 w-2.5 transition-transform",
+                                        card.isPinned
+                                          ? "text-amber-600 rotate-45"
+                                          : "text-gray-400 hover:text-amber-600"
+                                      )} />
+                                    </Button>
+                                  )}
                                   <Button
                                     size="sm"
                                     variant="ghost"

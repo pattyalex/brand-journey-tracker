@@ -3,6 +3,7 @@ export const EVENTS = {
   monthlyGoalsUpdated: 'monthlyGoalsUpdated',
   scheduledContentUpdated: 'scheduledContentUpdated',
   plannerDataUpdated: 'plannerDataUpdated',
+  productionKanbanUpdated: 'productionKanbanUpdated',
 } as const;
 
 type EventName = (typeof EVENTS)[keyof typeof EVENTS];

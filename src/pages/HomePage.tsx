@@ -175,6 +175,7 @@ const HomePage = () => {
     title: string;
     description?: string;
     columnId: string;
+    columnName?: string; // The name of the column this card is in (e.g., "To Film", "Shape Ideas")
     isPinned?: boolean;
     platforms?: string[];
     formats?: string[];
@@ -191,6 +192,19 @@ const HomePage = () => {
 
   const [pinnedContent, setPinnedContent] = useState<ProductionCard[]>([]);
   const [isUsingPlaceholders, setIsUsingPlaceholders] = useState(false);
+
+  // Column colors and emojis matching Content Hub
+  const columnTagStyles: Record<string, { bg: string; text: string; border: string; emoji: string; displayName?: string }> = {
+    ideate: { bg: "bg-purple-100", text: "text-purple-700", border: "border-purple-200", emoji: "💡", displayName: "To Ideate Further" },
+    "shape-ideas": { bg: "bg-blue-100", text: "text-blue-700", border: "border-blue-200", emoji: "🧠", displayName: "To Shape Idea" },
+    "to-film": { bg: "bg-amber-100", text: "text-amber-700", border: "border-amber-200", emoji: "🎥" },
+    "to-edit": { bg: "bg-rose-100", text: "text-rose-700", border: "border-rose-200", emoji: "💻" },
+    "to-schedule": { bg: "bg-indigo-100", text: "text-indigo-700", border: "border-indigo-200", emoji: "📅" },
+  };
+
+  const getColumnTagStyle = (columnId: string) => {
+    return columnTagStyles[columnId] || { bg: "bg-gray-100", text: "text-gray-700", border: "border-gray-200", emoji: "📍" };
+  };
   const [draggedCardIndex, setDraggedCardIndex] = useState<number | null>(null);
   const [dragOverCardIndex, setDragOverCardIndex] = useState<number | null>(null);
 
@@ -598,12 +612,12 @@ const HomePage = () => {
     const loadPinnedContent = () => {
       const productionData = getJSON<KanbanColumn[]>(StorageKeys.productionKanban, []);
 
-      // Get all pinned cards from all columns
+      // Get all pinned cards from all columns (include column name)
       const pinned: ProductionCard[] = [];
       productionData.forEach(column => {
         column.cards.forEach(card => {
           if (card.isPinned) {
-            pinned.push(card);
+            pinned.push({ ...card, columnName: column.title });
           }
         });
       });
@@ -615,11 +629,11 @@ const HomePage = () => {
         return;
       }
 
-      // Otherwise, try to auto-pull recent content from Content Hub
+      // Otherwise, try to auto-pull recent content from Content Hub (include column name)
       const allCards: ProductionCard[] = [];
       productionData.forEach(column => {
         column.cards.forEach(card => {
-          allCards.push(card);
+          allCards.push({ ...card, columnName: column.title });
         });
       });
 
@@ -637,15 +651,23 @@ const HomePage = () => {
 
     loadPinnedContent();
 
-    // Listen for changes to production kanban data
+    // Listen for changes to production kanban data (from other tabs)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === StorageKeys.productionKanban) {
         loadPinnedContent();
       }
     };
 
+    // Listen for changes from same tab via custom event
+    const unsubscribe = on(window, EVENTS.productionKanbanUpdated, () => {
+      loadPinnedContent();
+    });
+
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      unsubscribe();
+    };
   }, []);
 
   // Load Mission Statement and Vision Board from Strategy & Growth
@@ -1862,10 +1884,20 @@ const HomePage = () => {
                                   'bg-green-100 text-green-700'
                                 }`}>
                                   {content.status === 'to-start' ? 'To start' :
-                                   content.status === 'needs-work' ? 'Needs work' :
+                                   content.status === 'needs-work' ? 'Needs more work' :
                                    'Ready to film'}
                                 </div>
                               )}
+
+                              {/* Column/Stage indicator */}
+                              {content.columnName && !isUsingPlaceholders && (() => {
+                                const tagStyle = getColumnTagStyle(content.columnId);
+                                return (
+                                  <div className={`inline-block text-[10px] px-2 py-0.5 rounded-full font-medium ${tagStyle.bg} ${tagStyle.text} border ${tagStyle.border}`}>
+                                    {tagStyle.emoji} {tagStyle.displayName || content.columnName}
+                                  </div>
+                                );
+                              })()}
                             </div>
 
                             {/* Click hint */}
