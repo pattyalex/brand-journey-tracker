@@ -1612,7 +1612,7 @@ const HomePage = () => {
 
                           {/* Content card with pinned effect */}
                           <div
-                            className="relative bg-gradient-to-br from-amber-50 via-white to-amber-50/30 border border-amber-100 rounded-2xl p-4 pt-6 shadow-md hover:shadow-xl transition-all cursor-pointer"
+                            className="relative bg-gradient-to-br from-amber-50 via-white to-amber-50/30 border border-amber-100 rounded-2xl p-5 pt-7 pb-6 shadow-md hover:shadow-xl transition-all cursor-pointer max-w-[85%] mx-auto min-h-[140px]"
                             style={{
                               transform: 'none'
                             }}
