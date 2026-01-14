@@ -15,10 +15,16 @@ import {
   Plus,
   Trash2,
   Sparkles,
+  Video,
+  Loader2,
+  Check,
+  Camera,
   X,
-  GripVertical,
 } from "lucide-react";
 import { ProductionCard, StoryboardScene } from "../types";
+import { shotTemplates, getShotTemplateById, ShotTemplate } from "../utils/shotTemplates";
+import { suggestShotsForScene, ShotSuggestion } from "../utils/shotSuggestionService";
+import { toast } from "sonner";
 
 // Color palette for scenes
 const sceneColors = {
@@ -33,6 +39,136 @@ const sceneColors = {
 };
 
 const colorOrder: (keyof typeof sceneColors)[] = ['amber', 'teal', 'rose', 'violet', 'sky', 'lime', 'fuchsia', 'cyan'];
+
+// Shot overlay visual component
+const ShotOverlay: React.FC<{ overlayType: ShotTemplate['overlay_type']; className?: string }> = ({ overlayType, className }) => {
+  const baseClass = "absolute inset-0 pointer-events-none";
+
+  switch (overlayType) {
+    case 'talking-center':
+      return (
+        <div className={cn(baseClass, className)}>
+          <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
+            <circle cx="50" cy="40" r="15" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3,2" />
+            <rect x="35" y="55" width="30" height="25" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3,2" />
+          </svg>
+        </div>
+      );
+    case 'talking-thirds':
+      return (
+        <div className={cn(baseClass, className)}>
+          <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
+            <line x1="33" y1="0" x2="33" y2="100" stroke="currentColor" strokeWidth="0.5" />
+            <line x1="66" y1="0" x2="66" y2="100" stroke="currentColor" strokeWidth="0.5" />
+            <line x1="0" y1="33" x2="100" y2="33" stroke="currentColor" strokeWidth="0.5" />
+            <line x1="0" y1="66" x2="100" y2="66" stroke="currentColor" strokeWidth="0.5" />
+            <circle cx="33" cy="33" r="12" fill="none" stroke="currentColor" strokeWidth="1" />
+          </svg>
+        </div>
+      );
+    case 'hands-detail':
+      return (
+        <div className={cn(baseClass, className)}>
+          <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
+            <rect x="20" y="30" width="60" height="40" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3,2" rx="5" />
+            <path d="M 35 50 Q 50 35, 65 50" fill="none" stroke="currentColor" strokeWidth="1" />
+          </svg>
+        </div>
+      );
+    case 'workspace':
+      return (
+        <div className={cn(baseClass, className)}>
+          <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
+            <rect x="10" y="60" width="80" height="30" fill="none" stroke="currentColor" strokeWidth="1" rx="2" />
+            <circle cx="70" cy="35" r="12" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3,2" />
+          </svg>
+        </div>
+      );
+    case 'walking-pov':
+      return (
+        <div className={cn(baseClass, className)}>
+          <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
+            <path d="M 20 90 L 50 40 L 80 90" fill="none" stroke="currentColor" strokeWidth="1" />
+            <line x1="50" y1="40" x2="50" y2="10" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
+          </svg>
+        </div>
+      );
+    case 'reaction':
+      return (
+        <div className={cn(baseClass, className)}>
+          <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
+            <circle cx="50" cy="45" r="20" fill="none" stroke="currentColor" strokeWidth="1.5" />
+            <circle cx="43" cy="42" r="3" fill="currentColor" />
+            <circle cx="57" cy="42" r="3" fill="currentColor" />
+            <path d="M 40 52 Q 50 58, 60 52" fill="none" stroke="currentColor" strokeWidth="1" />
+          </svg>
+        </div>
+      );
+    case 'product-focus':
+      return (
+        <div className={cn(baseClass, className)}>
+          <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
+            <rect x="30" y="30" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.5" rx="5" />
+            <line x1="25" y1="25" x2="35" y2="35" stroke="currentColor" strokeWidth="1" />
+            <line x1="75" y1="25" x2="65" y2="35" stroke="currentColor" strokeWidth="1" />
+            <line x1="25" y1="75" x2="35" y2="65" stroke="currentColor" strokeWidth="1" />
+            <line x1="75" y1="75" x2="65" y2="65" stroke="currentColor" strokeWidth="1" />
+          </svg>
+        </div>
+      );
+    case 'side-profile':
+      return (
+        <div className={cn(baseClass, className)}>
+          <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
+            <ellipse cx="40" cy="45" rx="18" ry="22" fill="none" stroke="currentColor" strokeWidth="1" />
+            <path d="M 58 45 L 75 45" stroke="currentColor" strokeWidth="1" strokeDasharray="3,2" />
+          </svg>
+        </div>
+      );
+    case 'overhead':
+      return (
+        <div className={cn(baseClass, className)}>
+          <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
+            <rect x="20" y="20" width="60" height="60" fill="none" stroke="currentColor" strokeWidth="1" rx="3" />
+            <circle cx="50" cy="50" r="5" fill="currentColor" />
+            <line x1="50" y1="10" x2="50" y2="20" stroke="currentColor" strokeWidth="1" />
+          </svg>
+        </div>
+      );
+    case 'screen-share':
+      return (
+        <div className={cn(baseClass, className)}>
+          <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
+            <rect x="15" y="25" width="70" height="45" fill="none" stroke="currentColor" strokeWidth="1.5" rx="3" />
+            <line x1="40" y1="70" x2="60" y2="70" stroke="currentColor" strokeWidth="1" />
+            <rect x="35" y="70" width="30" height="8" fill="none" stroke="currentColor" strokeWidth="1" />
+          </svg>
+        </div>
+      );
+    case 'wide-context':
+      return (
+        <div className={cn(baseClass, className)}>
+          <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
+            <rect x="5" y="20" width="90" height="60" fill="none" stroke="currentColor" strokeWidth="1" rx="2" />
+            <circle cx="50" cy="50" r="8" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
+          </svg>
+        </div>
+      );
+    case 'transition':
+      return (
+        <div className={cn(baseClass, className)}>
+          <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
+            <line x1="20" y1="50" x2="80" y2="50" stroke="currentColor" strokeWidth="2" />
+            <polygon points="75,45 85,50 75,55" fill="currentColor" />
+            <line x1="30" y1="35" x2="30" y2="65" stroke="currentColor" strokeWidth="1" strokeDasharray="3,2" />
+            <line x1="70" y1="35" x2="70" y2="65" stroke="currentColor" strokeWidth="1" strokeDasharray="3,2" />
+          </svg>
+        </div>
+      );
+    default:
+      return null;
+  }
+};
 
 interface StoryboardEditorDialogProps {
   open: boolean;
@@ -53,6 +189,12 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   const [createScenePosition, setCreateScenePosition] = useState({ x: 0, y: 0 });
   const [cardTitle, setCardTitle] = useState("");
   const [isEditingTitle, setIsEditingTitle] = useState(false);
+
+  // Shot suggestion state
+  const [suggestingSceneId, setSuggestingSceneId] = useState<string | null>(null);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState<(ShotSuggestion & { template: ShotTemplate })[]>([]);
+
   const scriptRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
 
@@ -67,6 +209,8 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
       setCardTitle(card.title);
     }
     setIsEditingTitle(false);
+    setSuggestingSceneId(null);
+    setSuggestions([]);
   }, [card]);
 
   // Save on close
@@ -187,6 +331,57 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   // Delete scene
   const deleteScene = useCallback((id: string) => {
     setScenes(prev => prev.filter(scene => scene.id !== id));
+  }, []);
+
+  // Handle suggest shots
+  const handleSuggestShots = useCallback(async (scene: StoryboardScene) => {
+    setSuggestingSceneId(scene.id);
+    setIsLoadingSuggestions(true);
+    setSuggestions([]);
+
+    const scriptExcerpt = scene.highlightStart >= 0 && card?.script
+      ? card.script.slice(scene.highlightStart, scene.highlightEnd)
+      : '';
+
+    const result = await suggestShotsForScene(
+      scene.title,
+      scene.visualNotes,
+      scriptExcerpt,
+      card?.formats?.[0],
+      card?.platforms?.[0]
+    );
+
+    setIsLoadingSuggestions(false);
+
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+
+    // Enrich suggestions with full template data
+    const enrichedSuggestions = result.suggestions
+      .map(s => {
+        const template = getShotTemplateById(s.template_id);
+        if (!template) return null;
+        return { ...s, template };
+      })
+      .filter((s): s is ShotSuggestion & { template: ShotTemplate } => s !== null);
+
+    setSuggestions(enrichedSuggestions);
+  }, [card]);
+
+  // Handle shot selection
+  const handleSelectShot = useCallback((sceneId: string, templateId: string) => {
+    updateScene(sceneId, { selectedShotTemplateId: templateId });
+    setSuggestingSceneId(null);
+    setSuggestions([]);
+    toast.success("Shot type selected!");
+  }, [updateScene]);
+
+  // Close suggestions panel
+  const handleCloseSuggestions = useCallback(() => {
+    setSuggestingSceneId(null);
+    setSuggestions([]);
   }, []);
 
   // Render script with highlights
@@ -395,6 +590,11 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                   <div className="grid grid-cols-3 gap-4">
                     {scenes.map((scene, idx) => {
                       const colors = sceneColors[scene.color];
+                      const selectedTemplate = scene.selectedShotTemplateId
+                        ? getShotTemplateById(scene.selectedShotTemplateId)
+                        : null;
+                      const isSuggesting = suggestingSceneId === scene.id;
+
                       return (
                         <motion.div
                           key={scene.id}
@@ -403,21 +603,39 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                           exit={{ opacity: 0, scale: 0.9 }}
                           transition={{ delay: idx * 0.05 }}
                           className={cn(
-                            "relative rounded-2xl p-4 border-2 transition-all hover:shadow-lg group aspect-square flex flex-col",
+                            "relative rounded-2xl p-4 border-2 transition-all hover:shadow-lg group aspect-square flex flex-col overflow-hidden",
                             colors.bg,
                             colors.border
                           )}
                         >
+                          {/* Shot overlay visualization */}
+                          {selectedTemplate && (
+                            <ShotOverlay
+                              overlayType={selectedTemplate.overlay_type}
+                              className={colors.text}
+                            />
+                          )}
+
                           {/* Scene number badge */}
-                          <div className={cn(
-                            "w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-md flex-shrink-0 mb-2",
-                            colors.dot
-                          )}>
-                            {idx + 1}
+                          <div className="flex items-center justify-between mb-2 relative z-10">
+                            <div className={cn(
+                              "w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-md flex-shrink-0",
+                              colors.dot
+                            )}>
+                              {idx + 1}
+                            </div>
+
+                            {/* Selected shot badge */}
+                            {selectedTemplate && (
+                              <div className="flex items-center gap-1 bg-white/80 rounded-full px-2 py-0.5 text-[10px] font-medium text-gray-600 shadow-sm">
+                                <Camera className="w-3 h-3" />
+                                <span className="truncate max-w-[80px]">{selectedTemplate.user_facing_name}</span>
+                              </div>
+                            )}
                           </div>
 
                           {/* Scene content */}
-                          <div className="flex-1 flex flex-col min-h-0">
+                          <div className="flex-1 flex flex-col min-h-0 relative z-10">
                             <input
                               type="text"
                               value={scene.title}
@@ -450,15 +668,87 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                             )}
                           </div>
 
+                          {/* Suggest Shots button */}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={cn(
+                              "absolute bottom-2 left-2 transition-all h-7 px-2 rounded-lg text-[10px] font-medium",
+                              isSuggesting
+                                ? "opacity-100 bg-purple-100 text-purple-700"
+                                : "opacity-0 group-hover:opacity-100 bg-white/80 hover:bg-purple-50 text-gray-600 hover:text-purple-700"
+                            )}
+                            onClick={() => handleSuggestShots(scene)}
+                            disabled={isLoadingSuggestions}
+                          >
+                            {isLoadingSuggestions && isSuggesting ? (
+                              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                            ) : (
+                              <Video className="w-3 h-3 mr-1" />
+                            )}
+                            Suggest shots
+                          </Button>
+
                           {/* Delete button */}
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0 hover:bg-red-50 hover:text-red-600 rounded-lg"
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0 hover:bg-red-50 hover:text-red-600 rounded-lg z-10"
                             onClick={() => deleteScene(scene.id)}
                           >
                             <Trash2 className="w-3 h-3" />
                           </Button>
+
+                          {/* Shot Suggestions Panel */}
+                          <AnimatePresence>
+                            {isSuggesting && suggestions.length > 0 && (
+                              <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 10 }}
+                                className="absolute inset-0 bg-white/95 backdrop-blur-sm rounded-2xl p-3 z-20 flex flex-col"
+                              >
+                                <div className="flex items-center justify-between mb-2">
+                                  <h4 className="text-xs font-semibold text-gray-700 flex items-center gap-1">
+                                    <Sparkles className="w-3 h-3 text-purple-500" />
+                                    Suggested shots
+                                  </h4>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-5 w-5 p-0 hover:bg-gray-100 rounded"
+                                    onClick={handleCloseSuggestions}
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                                <div className="flex-1 overflow-y-auto space-y-2">
+                                  {suggestions.map((suggestion) => (
+                                    <button
+                                      key={suggestion.template_id}
+                                      className="w-full text-left p-2 rounded-xl border-2 border-gray-200 hover:border-purple-400 hover:bg-purple-50 transition-all group/item"
+                                      onClick={() => handleSelectShot(scene.id, suggestion.template_id)}
+                                    >
+                                      <div className="flex items-start gap-2">
+                                        <div className="w-6 h-6 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0 group-hover/item:bg-purple-200 transition-colors">
+                                          <Camera className="w-3 h-3 text-purple-600" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-[11px] font-semibold text-gray-800 truncate">
+                                            {suggestion.template.user_facing_name}
+                                          </p>
+                                          <p className="text-[10px] text-gray-500 line-clamp-1">
+                                            {suggestion.reason}
+                                          </p>
+                                        </div>
+                                        <Check className="w-4 h-4 text-purple-500 opacity-0 group-hover/item:opacity-100 transition-opacity flex-shrink-0" />
+                                      </div>
+                                    </button>
+                                  ))}
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </motion.div>
                       );
                     })}

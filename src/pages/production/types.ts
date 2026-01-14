@@ -6,6 +6,7 @@ export interface StoryboardScene {
   color: 'amber' | 'teal' | 'rose' | 'violet' | 'sky' | 'lime' | 'fuchsia' | 'cyan';
   highlightStart: number;
   highlightEnd: number;
+  selectedShotTemplateId?: string;
 }
 
 export interface ProductionCard {
