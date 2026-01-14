@@ -99,13 +99,13 @@ const Layout = ({ children, hideSidebar = false }: LayoutProps) => {
         </header>
 
         {/* Main content area */}
-        <div className="flex flex-1 w-full">
+        <div className="flex flex-1 w-full overflow-hidden">
           {shouldShowSidebar && (
-            <div className="[&_aside]:top-14">
+            <div className="[&_aside]:top-14 flex-shrink-0">
               <Sidebar />
             </div>
           )}
-          <main className={`flex-1 p-6 overflow-auto relative ${!shouldShowSidebar ? 'w-full' : ''}`}>
+          <main className={`flex-1 p-6 overflow-auto relative h-full ${!shouldShowSidebar ? 'w-full' : ''}`}>
             {shouldShowSidebar && <ToggleSidebarButton />}
             {children}
             <Toaster/>

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { PlannerDay, PlannerItem } from "@/types/planner";
 import { PlannerView } from "../types";
 import { TIMEZONES, getDateString } from "../utils/plannerUtils";
@@ -16,12 +17,24 @@ export const usePlannerState = ({
   todayScrollPosition: initialTodayScrollPosition,
   weeklyScrollPosition: initialWeeklyScrollPosition,
 }: PlannerInitialSettings) => {
+  const [searchParams] = useSearchParams();
+
+  // Get initial view from URL parameter, default to 'today'
+  const getInitialView = (): PlannerView => {
+    const viewParam = searchParams.get('view');
+    const validViews: PlannerView[] = ['today', 'day', 'week', 'calendar', 'month'];
+    if (viewParam && validViews.includes(viewParam as PlannerView)) {
+      return viewParam as PlannerView;
+    }
+    return 'today';
+  };
+
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [plannerData, setPlannerData] = useState<PlannerDay[]>([]);
   const [copyToDate, setCopyToDate] = useState<Date | undefined>(undefined);
   const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
   const [deleteAfterCopy, setDeleteAfterCopy] = useState(false);
-  const [currentView, setCurrentView] = useState<PlannerView>('today');
+  const [currentView, setCurrentView] = useState<PlannerView>(getInitialView());
   const [selectedTimezone, setSelectedTimezone] = useState<string>(initialSelectedTimezone);
   const [calendarFilterMode, setCalendarFilterMode] = useState<'all' | 'content'>('all');
 
@@ -109,6 +122,15 @@ export const usePlannerState = ({
   const [weeklyEditColor, setWeeklyEditColor] = useState<string>("");
   const [weeklyEditTitle, setWeeklyEditTitle] = useState<string>("");
   const [weeklyEditingTitle, setWeeklyEditingTitle] = useState<boolean>(false);
+
+  // Update view when URL parameter changes
+  useEffect(() => {
+    const viewParam = searchParams.get('view');
+    const validViews: PlannerView[] = ['today', 'day', 'week', 'calendar', 'month'];
+    if (viewParam && validViews.includes(viewParam as PlannerView)) {
+      setCurrentView(viewParam as PlannerView);
+    }
+  }, [searchParams]);
   const [isDraggingOverAllTasks, setIsDraggingOverAllTasks] = useState(false);
   const [draggingTaskText, setDraggingTaskText] = useState<string>("");
 

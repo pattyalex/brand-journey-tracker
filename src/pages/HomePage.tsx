@@ -42,8 +42,13 @@ import {
   Target,
   Pin,
   Lightbulb,
-  ArrowRight
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle
 } from "lucide-react";
+import { format, startOfWeek, addDays, isSameDay, startOfMonth, endOfMonth, endOfWeek, eachDayOfInterval } from "date-fns";
+import { motion, AnimatePresence } from "framer-motion";
 import AIRecommendations from '@/components/analytics/AIRecommendations';
 import VerificationGuard from '@/components/VerificationGuard';
 import { StorageKeys, getString, setString, setJSON, getJSON } from "@/lib/storage";
@@ -181,6 +186,9 @@ const HomePage = () => {
   const [missionStatement, setMissionStatement] = useState("");
   const [visionBoardImages, setVisionBoardImages] = useState<string[]>([]);
 
+  // Celebration state for completing all priorities
+  const [showCelebration, setShowCelebration] = useState(false);
+
   // State for adding monthly goals
   const [isAddingMonthlyGoal, setIsAddingMonthlyGoal] = useState(false);
   const [newMonthlyGoalText, setNewMonthlyGoalText] = useState("");
@@ -204,6 +212,22 @@ const HomePage = () => {
     };
   }
 
+  // Content Calendar state - synced with planner page
+  interface ContentCalendarItem {
+    id: string;
+    text: string;
+    section: "morning" | "midday" | "afternoon" | "evening";
+    isCompleted: boolean;
+    date: string;
+    startTime?: string;
+    endTime?: string;
+    description?: string;
+    color?: string;
+    isContentCalendar?: boolean;
+  }
+  const [contentCalendarData, setContentCalendarData] = useState<ContentCalendarItem[]>([]);
+  const [calendarCurrentMonth, setCalendarCurrentMonth] = useState(new Date());
+
   const [monthlyGoalsData, setMonthlyGoalsData] = useState<MonthlyGoalsData>(() => {
     const saved = getString(StorageKeys.monthlyGoalsData);
     if (saved) {
@@ -226,6 +250,39 @@ const HomePage = () => {
 
   // State to track connected social media platforms
   const [connectedPlatforms, setConnectedPlatforms] = useState<string[]>([]);
+
+  // Habit Tracker state
+  interface Habit {
+    id: string;
+    name: string;
+    completedDates: string[]; // Array of date strings in 'YYYY-MM-DD' format
+  }
+  const [habits, setHabits] = useState<Habit[]>(() => {
+    const saved = getString('workHabits');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
+  const [habitWeekOffset, setHabitWeekOffset] = useState(0); // 0 = current week, -1 = last week, 1 = next week
+  const [isAddingHabit, setIsAddingHabit] = useState(false);
+  const [newHabitName, setNewHabitName] = useState("");
+  const [editingHabitId, setEditingHabitId] = useState<string | null>(null);
+  const [editingHabitName, setEditingHabitName] = useState("");
+
+  // Auto-dismiss celebration after 3.5 seconds
+  useEffect(() => {
+    if (showCelebration) {
+      const timer = setTimeout(() => {
+        setShowCelebration(false);
+      }, 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [showCelebration]);
 
   // Load All Tasks from localStorage
   useEffect(() => {
@@ -295,6 +352,53 @@ const HomePage = () => {
     // Listen for custom events (same-tab sync)
     const handleCustomEvent = (e: CustomEvent) => {
       loadTodaysTasks();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    const unsubscribe = on(window, EVENTS.plannerDataUpdated, handleCustomEvent);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      unsubscribe();
+    };
+  }, []);
+
+  // Load Content Calendar data from plannerData
+  useEffect(() => {
+    const loadContentCalendarData = () => {
+      const plannerDataStr = getString(StorageKeys.plannerData);
+      if (plannerDataStr) {
+        try {
+          const plannerData = JSON.parse(plannerDataStr);
+          // Collect all tasks marked as content calendar across all days
+          const contentTasks: ContentCalendarItem[] = [];
+          plannerData.forEach((day: any) => {
+            if (day.items) {
+              day.items.forEach((item: ContentCalendarItem) => {
+                if (item.isContentCalendar) {
+                  contentTasks.push(item);
+                }
+              });
+            }
+          });
+          setContentCalendarData(contentTasks);
+        } catch (error) {
+          console.error('Failed to load content calendar data:', error);
+        }
+      }
+    };
+
+    loadContentCalendarData();
+
+    // Listen for changes to plannerData
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'plannerData' && e.newValue) {
+        loadContentCalendarData();
+      }
+    };
+
+    // Listen for custom events (same-tab sync)
+    const handleCustomEvent = (e: CustomEvent) => {
+      loadContentCalendarData();
     };
 
     window.addEventListener('storage', handleStorageChange);
@@ -1073,12 +1177,98 @@ const HomePage = () => {
     );
     setPriorities(updatedPriorities);
     setString('todaysPriorities', JSON.stringify(updatedPriorities));
+
+    // Check if all priorities are now completed
+    const allCompleted = updatedPriorities.every(p => p.isCompleted && p.text.trim() !== '');
+    const wasCompleted = priorities.every(p => p.isCompleted && p.text.trim() !== '');
+
+    // Only show celebration when transitioning from not-all-complete to all-complete
+    if (allCompleted && !wasCompleted) {
+      // Delay celebration by 500ms for better UX
+      setTimeout(() => {
+        setShowCelebration(true);
+      }, 500);
+    }
   };
 
   // Save priorities to localStorage whenever they change
   useEffect(() => {
     setString('todaysPriorities', JSON.stringify(priorities));
   }, [priorities]);
+
+  // Save habits to localStorage whenever they change
+  useEffect(() => {
+    setString('workHabits', JSON.stringify(habits));
+  }, [habits]);
+
+  // Habit Tracker Functions
+  const getWeekDays = (offset: number = 0) => {
+    const now = new Date();
+    const currentDay = now.getDay();
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - (currentDay === 0 ? 6 : currentDay - 1) + (offset * 7));
+
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(monday);
+      day.setDate(monday.getDate() + i);
+      days.push(day);
+    }
+    return days;
+  };
+
+  const toggleHabit = (habitId: string, dateStr: string) => {
+    setHabits(prev => prev.map(habit => {
+      if (habit.id === habitId) {
+        const isCompleted = habit.completedDates.includes(dateStr);
+        return {
+          ...habit,
+          completedDates: isCompleted
+            ? habit.completedDates.filter(d => d !== dateStr)
+            : [...habit.completedDates, dateStr]
+        };
+      }
+      return habit;
+    }));
+  };
+
+  const addHabit = () => {
+    if (newHabitName.trim()) {
+      setHabits(prev => [...prev, {
+        id: `habit_${Date.now()}`,
+        name: newHabitName.trim(),
+        completedDates: []
+      }]);
+      setNewHabitName("");
+      setIsAddingHabit(false);
+    }
+  };
+
+  const deleteHabit = (habitId: string) => {
+    setHabits(prev => prev.filter(h => h.id !== habitId));
+  };
+
+  const startEditingHabit = (habitId: string, currentName: string) => {
+    setEditingHabitId(habitId);
+    setEditingHabitName(currentName);
+  };
+
+  const saveEditingHabit = () => {
+    if (editingHabitId && editingHabitName.trim()) {
+      setHabits(prev => prev.map(h =>
+        h.id === editingHabitId
+          ? { ...h, name: editingHabitName.trim() }
+          : h
+      ));
+    }
+    setEditingHabitId(null);
+    setEditingHabitName("");
+  };
+
+  const cancelEditingHabit = () => {
+    setEditingHabitId(null);
+    setEditingHabitName("");
+  };
 
   // Handle drag and drop for pinned content cards
   const handleDragStart = (index: number) => {
@@ -1182,7 +1372,7 @@ const HomePage = () => {
   // Add Priority Dialog component is moved inside the main component
   return (
       <Layout>
-        <ScrollArea className="h-screen">
+        <ScrollArea className="h-full">
           <div className="container px-6 md:px-8 pt-0 pb-10">
             {/* Greeting Section - Top Banner */}
             <section className="mb-8 fade-in">
@@ -1216,8 +1406,8 @@ const HomePage = () => {
                       {priorities.map((priority, index) => {
                         const colors = [
                           { bg: 'bg-gradient-to-br from-blue-50/50 to-blue-100/30', border: 'border-blue-200', text: 'text-blue-800', number: 'bg-blue-400' },
-                          { bg: 'bg-gradient-to-br from-purple-50/50 to-purple-100/30', border: 'border-purple-200', text: 'text-purple-800', number: 'bg-purple-400' },
-                          { bg: 'bg-gradient-to-br from-amber-50/50 to-amber-100/30', border: 'border-amber-200', text: 'text-amber-800', number: 'bg-amber-400' }
+                          { bg: 'bg-gradient-to-br from-amber-50/50 to-amber-100/30', border: 'border-amber-200', text: 'text-amber-800', number: 'bg-amber-400' },
+                          { bg: 'bg-gradient-to-br from-purple-50/50 to-purple-100/30', border: 'border-purple-200', text: 'text-purple-800', number: 'bg-purple-400' }
                         ];
                         const color = colors[index];
 
@@ -1272,6 +1462,94 @@ const HomePage = () => {
                   </CardContent>
                 </Card>
               </section>
+
+              {/* Celebration - Inline between sections */}
+              <AnimatePresence>
+                {showCelebration && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    className="my-8"
+                  >
+                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 p-[2px] shadow-2xl">
+                      <div className="relative bg-white rounded-2xl p-6">
+                        {/* Animated background particles */}
+                        <div className="absolute inset-0 overflow-hidden rounded-2xl">
+                          {[...Array(12)].map((_, i) => (
+                            <motion.div
+                              key={i}
+                              className="absolute"
+                              initial={{
+                                x: `${Math.random() * 100}%`,
+                                y: `${Math.random() * 100}%`,
+                                scale: 0
+                              }}
+                              animate={{
+                                scale: [0, 1, 0],
+                                rotate: [0, 180, 360]
+                              }}
+                              transition={{
+                                duration: 2,
+                                delay: i * 0.1,
+                                repeat: Infinity,
+                                repeatDelay: 1
+                              }}
+                            >
+                              <div className="text-2xl opacity-20">
+                                {['✨', '⭐', '🎉', '💫'][i % 4]}
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+
+                        {/* Content */}
+                        <div className="relative z-10 flex items-center gap-4">
+                          <motion.div
+                            animate={{
+                              rotate: [0, -10, 10, -10, 0],
+                              scale: [1, 1.1, 1, 1.1, 1]
+                            }}
+                            transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 1 }}
+                            className="flex-shrink-0"
+                          >
+                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-lg">
+                              <span className="text-3xl">🎉</span>
+                            </div>
+                          </motion.div>
+
+                          <div className="flex-1">
+                            <h3 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-1">
+                              Amazing Work!
+                            </h3>
+                            <p className="text-gray-700 text-sm">
+                              You've completed all your top priorities for today. Keep crushing it! 💪
+                            </p>
+                          </div>
+
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setShowCelebration(false)}
+                            className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"
+                          >
+                            ✕
+                          </motion.button>
+                        </div>
+
+                        {/* Progress indicator */}
+                        <motion.div
+                          className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400"
+                          initial={{ width: "100%" }}
+                          animate={{ width: "0%" }}
+                          transition={{ duration: 3.5, ease: "linear" }}
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Next to Work On Section */}
               {pinnedContent.length > 0 && (
@@ -1439,6 +1717,203 @@ const HomePage = () => {
                 </Card>
               </section>
               )}
+
+              {/* Work Habits Section */}
+              <section className="mt-12">
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl overflow-hidden">
+                  <CardHeader className="pb-3 pt-4 bg-gradient-to-r from-green-50 to-emerald-50">
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="text-lg font-bold flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        Work Habits
+                      </CardTitle>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsAddingHabit(true)}
+                        className="h-7 text-xs text-green-600 hover:text-green-700 hover:bg-green-100"
+                      >
+                        <Plus className="h-3.5 w-3.5 mr-1" />
+                        Add Habit
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    {/* Week Navigation */}
+                    <div className="flex items-center justify-between px-3 py-2 bg-gray-50 border-b">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setHabitWeekOffset(prev => prev - 1)}
+                        className="h-7 w-7 p-0"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <span className="text-xs font-medium text-gray-700">
+                        {habitWeekOffset === 0 ? 'This Week' :
+                         habitWeekOffset === -1 ? 'Last Week' :
+                         habitWeekOffset === 1 ? 'Next Week' :
+                         `Week ${habitWeekOffset > 0 ? '+' + habitWeekOffset : habitWeekOffset}`}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setHabitWeekOffset(prev => prev + 1)}
+                        className="h-7 w-7 p-0"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    {/* Habits Grid */}
+                    {habits.length > 0 || isAddingHabit ? (
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="border-b bg-gray-50/50">
+                              <th className="text-left px-3 py-2 text-xs font-semibold text-gray-600 sticky left-0 bg-gray-50/50 z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">Habit</th>
+                              {getWeekDays(habitWeekOffset).map((day, idx) => {
+                                const isToday = getDateString(day) === getDateString(new Date());
+                                return (
+                                  <th key={idx} className="text-center px-0.5 py-2 w-10">
+                                    <div className={`text-[9px] font-medium ${isToday ? 'text-green-600' : 'text-gray-600'}`}>
+                                      {format(day, 'EEE')}
+                                    </div>
+                                    <div className={`text-[10px] ${isToday ? 'text-green-600 font-bold' : 'text-gray-400'}`}>
+                                      {format(day, 'd')}
+                                    </div>
+                                  </th>
+                                );
+                              })}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {habits.map((habit, habitIdx) => (
+                              <tr key={habit.id} className={`border-b hover:bg-gray-50/50 transition-colors group ${habitIdx % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                                <td className={`px-3 py-2 text-sm font-medium text-gray-800 sticky left-0 z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)] ${habitIdx % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                                  <div className="flex items-center justify-between gap-2">
+                                    <div className="flex items-center flex-1 min-w-0">
+                                      {editingHabitId === habit.id ? (
+                                        <Input
+                                          autoFocus
+                                          value={editingHabitName}
+                                          onChange={(e) => setEditingHabitName(e.target.value)}
+                                          onKeyDown={(e) => {
+                                            if (e.key === 'Enter') saveEditingHabit();
+                                            if (e.key === 'Escape') cancelEditingHabit();
+                                          }}
+                                          onBlur={saveEditingHabit}
+                                          className="flex-1 h-7 text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0 px-1"
+                                        />
+                                      ) : (
+                                        <span
+                                          className="truncate cursor-pointer hover:text-green-600 transition-colors"
+                                          onClick={() => startEditingHabit(habit.id, habit.name)}
+                                        >
+                                          {habit.name}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <button
+                                      onClick={() => deleteHabit(habit.id)}
+                                      className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500 flex-shrink-0"
+                                      title="Delete habit"
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </button>
+                                  </div>
+                                </td>
+                                {getWeekDays(habitWeekOffset).map((day, dayIdx) => {
+                                  const dateStr = getDateString(day);
+                                  const isCompleted = habit.completedDates.includes(dateStr);
+                                  const isToday = dateStr === getDateString(new Date());
+
+                                  return (
+                                    <td key={dayIdx} className="text-center px-0.5 py-1">
+                                      <button
+                                        onClick={() => toggleHabit(habit.id, dateStr)}
+                                        className={`w-6 h-6 rounded border transition-all ${
+                                          isCompleted
+                                            ? 'bg-green-500 border-green-500 text-white shadow-sm hover:bg-green-600'
+                                            : isToday
+                                            ? 'border-green-300 hover:border-green-400 hover:bg-green-50'
+                                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                        }`}
+                                      >
+                                        {isCompleted && (
+                                          <svg className="w-3.5 h-3.5 mx-auto" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path d="M5 13l4 4L19 7"></path>
+                                          </svg>
+                                        )}
+                                      </button>
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            ))}
+
+                            {/* Add Habit Row */}
+                            {isAddingHabit && (
+                              <tr className="border-b bg-green-50/30">
+                                <td className="px-3 py-2 sticky left-0 bg-green-50/30 z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]" colSpan={8}>
+                                  <div className="flex items-center gap-2">
+                                    <Input
+                                      autoFocus
+                                      placeholder="Enter habit name..."
+                                      value={newHabitName}
+                                      onChange={(e) => setNewHabitName(e.target.value)}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') addHabit();
+                                        if (e.key === 'Escape') {
+                                          setIsAddingHabit(false);
+                                          setNewHabitName("");
+                                        }
+                                      }}
+                                      className="flex-1 h-8 text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                                    />
+                                    <Button
+                                      size="sm"
+                                      onClick={addHabit}
+                                      className="h-8 px-4 text-sm bg-green-600 hover:bg-green-700"
+                                    >
+                                      Add
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => {
+                                        setIsAddingHabit(false);
+                                        setNewHabitName("");
+                                      }}
+                                      className="h-8 px-3 text-sm"
+                                    >
+                                      Cancel
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className="p-8 text-center">
+                        <CheckCircle className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                        <p className="text-sm text-gray-500 mb-4">No habits yet. Start tracking your work habits!</p>
+                        <Button
+                          size="sm"
+                          onClick={() => setIsAddingHabit(true)}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add Your First Habit
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </section>
+
               </div>
               {/* End Left Column */}
 
@@ -1446,7 +1921,7 @@ const HomePage = () => {
               <div className="space-y-12">
 
               {/* Today's Tasks Section */}
-              <section className="mt-20">
+              <section className="mt-24">
                 <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-center mb-2">
@@ -1885,12 +2360,17 @@ const HomePage = () => {
                   <CardContent className="py-8 px-6">
                     {missionStatement ? (
                       <>
-                        <p
-                          className="text-2xl leading-relaxed text-gray-800 text-center mb-4 font-serif italic"
-                          style={{ fontFamily: "'Playfair Display', serif" }}
-                        >
-                          {missionStatement}
-                        </p>
+                        <div className="mb-8">
+                          <span className="text-gray-400 text-xs">Mission Statement</span>
+                        </div>
+                        <div className="flex items-center justify-center min-h-[120px] py-4">
+                          <p
+                            className="text-2xl leading-relaxed text-gray-800 text-center font-serif italic"
+                            style={{ fontFamily: "'Playfair Display', serif" }}
+                          >
+                            {missionStatement}
+                          </p>
+                        </div>
                         <div className="flex justify-end">
                           <Button
                             variant="ghost"
@@ -2071,45 +2551,120 @@ const HomePage = () => {
 
             {/* Content Calendar - Full Width */}
             <section className="mt-12">
-              <Card
-                className="border-0 shadow-md hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-br from-white via-purple-50/20 to-blue-50/30 rounded-2xl"
-                onClick={() => navigate('/task-board?view=calendar')}
-              >
+              <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-gradient-to-br from-white via-purple-50/20 to-blue-50/30 rounded-2xl">
                 <CardHeader className="pb-3">
                   <div className="flex justify-between items-center">
-                    <CardTitle className="text-xl font-bold flex items-center gap-2">
-                      <Calendar className="h-5 w-5 text-purple-600" />
-                      Content Calendar
-                    </CardTitle>
+                    <div className="flex items-center gap-4">
+                      <CardTitle className="text-xl font-bold flex items-center gap-2">
+                        <Calendar className="h-5 w-5 text-purple-600" />
+                        Content Calendar
+                      </CardTitle>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setCalendarCurrentMonth(new Date(calendarCurrentMonth.getFullYear(), calendarCurrentMonth.getMonth() - 1))}
+                          className="h-7 w-7 p-0"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <span className="text-sm font-medium min-w-[120px] text-center">
+                          {format(calendarCurrentMonth, 'MMMM yyyy')}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setCalendarCurrentMonth(new Date(calendarCurrentMonth.getFullYear(), calendarCurrentMonth.getMonth() + 1))}
+                          className="h-7 w-7 p-0"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
                     <Button
                       variant="ghost"
                       size="sm"
                       className="h-7 text-xs px-2 hover:bg-purple-100"
+                      onClick={() => navigate('/task-board?view=calendar')}
                     >
-                      View →
+                      View Full Calendar →
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="min-h-[200px] flex items-center justify-center">
-                    <div className="text-center space-y-3">
-                      <div className="inline-block p-4 bg-purple-100 rounded-full">
-                        <Calendar className="h-12 w-12 text-purple-600" />
-                      </div>
-                      <p className="text-sm text-muted-foreground">View your content schedule</p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="mt-2"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate('/task-board?view=calendar');
-                        }}
-                      >
-                        Open Calendar
-                      </Button>
+                  {/* Calendar Grid */}
+                  <div className="space-y-2">
+                    {/* Day Headers */}
+                    <div className="grid grid-cols-7 gap-1 mb-2">
+                      {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                        <div key={day} className="text-center text-xs font-semibold text-gray-600 py-1">
+                          {day}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Calendar Days */}
+                    <div className="grid grid-cols-7 gap-1">
+                      {(() => {
+                        const monthStart = startOfMonth(calendarCurrentMonth);
+                        const monthEnd = endOfMonth(calendarCurrentMonth);
+                        const startDate = startOfWeek(monthStart);
+                        const endDate = endOfWeek(monthEnd);
+                        const days = eachDayOfInterval({ start: startDate, end: endDate });
+
+                        return days.map(day => {
+                          const dayString = getDateString(day);
+                          const dayTasks = contentCalendarData.filter(task => task.date === dayString);
+                          const isCurrentMonth = day.getMonth() === calendarCurrentMonth.getMonth();
+                          const isToday = isSameDay(day, new Date());
+
+                          return (
+                            <div
+                              key={dayString}
+                              className={`min-h-[80px] p-2 rounded-lg border transition-all ${
+                                isCurrentMonth ? 'bg-white border-gray-200' : 'bg-gray-50/50 border-gray-100'
+                              } ${isToday ? 'ring-2 ring-purple-400' : ''} hover:shadow-sm cursor-pointer`}
+                              onClick={() => navigate('/task-board?view=calendar')}
+                            >
+                              <div className={`text-xs font-medium mb-1 ${
+                                isToday ? 'text-purple-600 font-bold' : isCurrentMonth ? 'text-gray-700' : 'text-gray-400'
+                              }`}>
+                                {format(day, 'd')}
+                              </div>
+                              <div className="space-y-1">
+                                {dayTasks.slice(0, 2).map(task => (
+                                  <div
+                                    key={task.id}
+                                    className={`text-[10px] px-1.5 py-0.5 rounded truncate ${
+                                      task.color ? `bg-${task.color}-100 text-${task.color}-700` : 'bg-purple-100 text-purple-700'
+                                    }`}
+                                    title={task.text}
+                                  >
+                                    {task.text}
+                                  </div>
+                                ))}
+                                {dayTasks.length > 2 && (
+                                  <div className="text-[9px] text-gray-500 pl-1">
+                                    +{dayTasks.length - 2} more
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        });
+                      })()}
                     </div>
                   </div>
+
+                  {/* Empty State */}
+                  {contentCalendarData.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      <p className="text-sm mb-2">No content scheduled yet</p>
+                      <p className="text-xs text-gray-400">
+                        Go to <button onClick={() => navigate('/production?scrollTo=to-schedule')} className="text-purple-600 hover:underline">Content Hub</button> to schedule content
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </section>
