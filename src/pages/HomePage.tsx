@@ -1145,6 +1145,8 @@ const HomePage = () => {
 
             {/* Grid Layout Container - Fixed positions, Pinterest style */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 fade-in items-start">
+              {/* Left Column - Priorities, Tasks, Next to Work On */}
+              <div className="space-y-12">
               {/* Today's Top 3 Priorities Section */}
               <section>
                 <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
@@ -1218,7 +1220,7 @@ const HomePage = () => {
               </section>
 
               {/* Today's Tasks Section */}
-              <section className="mt-20">
+              <section>
                 <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-center mb-2">
@@ -1623,7 +1625,7 @@ const HomePage = () => {
 
               {/* Next to Work On Section */}
               {pinnedContent.length > 0 && (
-              <section className="mb-6 -mt-20">
+              <section>
                 <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
                   <CardHeader className="pb-4">
                     <CardTitle className="text-xl font-bold flex items-center gap-2">
@@ -1787,9 +1789,13 @@ const HomePage = () => {
                 </Card>
               </section>
               )}
+              </div>
+              {/* End Left Column */}
 
+              {/* Right Column - Mission Statement, Monthly Goals, Content Calendar */}
+              <div className="space-y-12">
               {/* Mission Statement Section */}
-              <section className="break-inside-avoid mt-20">
+              <section>
                 <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl relative">
                   <CardContent className="py-8 px-6">
                     {missionStatement ? (
@@ -1832,7 +1838,7 @@ const HomePage = () => {
               </section>
 
               {/* Monthly Goals Section */}
-              <section className="mt-6">
+              <section>
                 <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-center">
@@ -1974,7 +1980,7 @@ const HomePage = () => {
               </section>
 
               {/* Content Calendar */}
-              <section className="break-inside-avoid mt-12">
+              <section>
                 <Card
                   className="border-0 shadow-md hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-br from-white via-purple-50/20 to-blue-50/30 rounded-2xl"
                   onClick={() => navigate('/task-board?view=calendar')}
@@ -2017,6 +2023,8 @@ const HomePage = () => {
                   </CardContent>
                 </Card>
               </section>
+              </div>
+              {/* End Right Column */}
 
             </div>
             {/* End Grid Container */}
