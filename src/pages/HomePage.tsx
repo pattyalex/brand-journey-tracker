@@ -1623,7 +1623,7 @@ const HomePage = () => {
 
               {/* Next to Work On Section */}
               {pinnedContent.length > 0 && (
-              <section className="mb-6 mt-6">
+              <section className="mb-6 mt-3">
                 <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
                   <CardHeader className="pb-4">
                     <CardTitle className="text-xl font-bold flex items-center gap-2">
