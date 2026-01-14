@@ -1218,7 +1218,7 @@ const HomePage = () => {
               </section>
 
               {/* Today's Tasks Section */}
-              <section className="-mt-12">
+              <section className="mt-20">
                 <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-center mb-2">
