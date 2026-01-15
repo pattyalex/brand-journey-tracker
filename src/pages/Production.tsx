@@ -767,7 +767,7 @@ const Production = () => {
     setIsStoryboardDialogOpen(true);
   };
 
-  const handleSaveStoryboard = (storyboard: StoryboardScene[], title?: string) => {
+  const handleSaveStoryboard = (storyboard: StoryboardScene[], title?: string, script?: string) => {
     if (!editingStoryboardCard) return;
 
     setColumns((prev) =>
@@ -775,7 +775,7 @@ const Production = () => {
         ...col,
         cards: col.cards.map((card) =>
           card.id === editingStoryboardCard.id
-            ? { ...card, storyboard, ...(title !== undefined && { title }) }
+            ? { ...card, storyboard, ...(title !== undefined && { title }), ...(script !== undefined && { script }) }
             : card
         ),
       }))
