@@ -742,14 +742,14 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
 
                           {/* Shot name - centered */}
                           {selectedTemplate && (
-                            <div className="flex items-center justify-center gap-1 -mt-1 relative z-10">
+                            <div className="flex items-center justify-center gap-1 -mt-2 relative z-10">
                               <Video className="w-3 h-3 text-purple-500" />
                               <span className="text-xs font-medium text-gray-600">{selectedTemplate.user_facing_name}</span>
                             </div>
                           )}
 
                           {/* Top half - Shot image */}
-                          <div className="flex-1 flex items-center justify-center relative z-10">
+                          <div className="h-[100px] flex items-center justify-center relative z-10">
                             {selectedTemplate && shotIllustrations[selectedTemplate.id] ? (
                               <button
                                 onClick={() => handleOpenLibrary(scene.id)}
@@ -772,17 +772,17 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                           </div>
 
                           {/* Bottom half - Visual notes and script */}
-                          <div className="relative z-10">
+                          <div className="relative z-10 mt-auto">
                             {/* Visual notes */}
                             <textarea
                               value={scene.visualNotes}
                               onChange={(e) => updateScene(scene.id, { visualNotes: e.target.value })}
-                              className="text-xs bg-white/60 border border-gray-200 rounded-lg w-full resize-none focus:outline-none focus:ring-1 focus:ring-amber-300 text-gray-700 placeholder:text-gray-400 p-2 h-[55px]"
+                              className="mt-1 text-xs bg-white/60 border border-gray-200 rounded-lg w-full resize-none focus:outline-none focus:ring-1 focus:ring-amber-300 text-gray-700 placeholder:text-gray-400 p-2 h-[55px]"
                               placeholder="Describe your visual..."
                             />
 
-                            {/* Show linked script excerpt - editable */}
-                            {scene.highlightStart >= 0 && scriptContent && (
+                            {/* Script excerpt - editable */}
+                            {scene.highlightStart >= 0 && scriptContent ? (
                               <textarea
                                 value={scriptContent.slice(scene.highlightStart, scene.highlightEnd)}
                                 onChange={(e) => {
@@ -814,11 +814,23 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                                   }));
                                 }}
                                 className={cn(
-                                  "mt-1 text-xs px-2 py-1.5 rounded-lg border h-[50px] w-full resize-none italic focus:outline-none focus:ring-1 focus:ring-amber-300",
+                                  "text-xs px-2 py-1.5 rounded-lg border h-[50px] w-full resize-none italic focus:outline-none focus:ring-1 focus:ring-amber-300",
                                   colors.bg,
                                   colors.border,
                                   colors.text
                                 )}
+                              />
+                            ) : (
+                              <textarea
+                                value={scene.scriptExcerpt || ''}
+                                onChange={(e) => updateScene(scene.id, { scriptExcerpt: e.target.value })}
+                                className={cn(
+                                  "text-xs px-2 py-1.5 rounded-lg border h-[50px] w-full resize-none italic focus:outline-none focus:ring-1 focus:ring-amber-300",
+                                  colors.bg,
+                                  colors.border,
+                                  colors.text
+                                )}
+                                placeholder="What you'll say in this scene..."
                               />
                             )}
                           </div>

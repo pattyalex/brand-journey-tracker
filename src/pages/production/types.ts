@@ -7,6 +7,7 @@ export interface StoryboardScene {
   highlightStart: number;
   highlightEnd: number;
   selectedShotTemplateId?: string;
+  scriptExcerpt?: string; // For manually entered script when no highlight exists
 }
 
 export interface ProductionCard {
