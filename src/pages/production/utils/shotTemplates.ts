@@ -1,98 +1,227 @@
 // Shot Template Library - Single source of truth for all shot types
-// The AI MUST only select from these template IDs
 
 export interface ShotTemplate {
   id: string;
+  category: 'talking' | 'detail' | 'context' | 'pattern-break';
+  categoryLabel: string;
   user_facing_name: string;
   description: string;
+  when_to_use: string[];
+  why_it_matters: string[];
   internal_tags: string[];
-  overlay_type: 'talking-center' | 'talking-thirds' | 'hands-detail' | 'workspace' | 'walking-pov' | 'reaction' | 'product-focus' | 'side-profile' | 'overhead' | 'screen-share' | 'transition' | 'wide-context';
 }
 
+export const shotCategories = [
+  { id: 'talking', label: 'Talking / Face-Based Shots', icon: 'user' },
+  { id: 'detail', label: 'Detail / B-Roll Shots', icon: 'hand' },
+  { id: 'context', label: 'Context / Environment', icon: 'layout' },
+  { id: 'pattern-break', label: 'Pattern Breaks / Texture', icon: 'sparkles' },
+] as const;
+
 export const shotTemplates: ShotTemplate[] = [
+  // Talking / Face-Based Shots
   {
-    id: "everyday-talking",
-    user_facing_name: "Everyday talking shot",
-    description: "Natural, conversational framing - like you're chatting with a friend",
-    internal_tags: ["medium", "talking", "conversational", "default", "intro"],
-    overlay_type: "talking-center"
+    id: "wide-shot",
+    category: "talking",
+    categoryLabel: "Talking / Face-Based",
+    user_facing_name: "Wide Shot",
+    description: "Camera is set farther away, showing more of your body (waist-up, three-quarter, or full body). You can be talking, acting, or silent.",
+    when_to_use: [
+      "You want to set the scene and give context",
+      "You want more of your body/space in frame",
+      "Showing outfit, posture, or environment",
+      "Opening a video or topic",
+      "You want grounded, 'expert' energy",
+      "Filming lifestyle moments or calm content",
+      "Planning to add text, graphics, or masks later"
+    ],
+    why_it_matters: [
+      "Sets context and location fast",
+      "Feels confident and composed",
+      "Makes the video feel more intentional and cinematic"
+    ],
+    internal_tags: ["wide", "establishing", "context", "intro", "lifestyle"]
   },
   {
-    id: "lean-in-emphasis",
-    user_facing_name: "Lean in for emphasis",
-    description: "Get closer to the camera for an important or emotional point",
-    internal_tags: ["close", "talking", "emphasis", "emotional", "hook", "cta"],
-    overlay_type: "talking-thirds"
+    id: "medium-shot",
+    category: "talking",
+    categoryLabel: "Talking / Face-Based",
+    user_facing_name: "Medium Shot",
+    description: "Camera is placed at a comfortable distance, framing you from the chest up. This is the most natural and conversational framing.",
+    when_to_use: [
+      "Explaining or teaching something",
+      "Sharing thoughts or advice",
+      "Recording the main body of a video",
+      "You want a friendly, relatable tone",
+      "You want focus on your face without intensity"
+    ],
+    why_it_matters: [
+      "Feels natural and easy to watch",
+      "Most readable and flattering on mobile",
+      "Works for almost any type of content",
+      "Creates consistency across videos"
+    ],
+    internal_tags: ["medium", "talking", "conversational", "default", "teaching"]
   },
+  {
+    id: "close-up-shot",
+    category: "talking",
+    categoryLabel: "Talking / Face-Based",
+    user_facing_name: "Close-Up Shot",
+    description: "Camera is closer to your face, filling most of the frame. Talking is optional, but facial expression is key.",
+    when_to_use: [
+      "Delivering the most important line",
+      "Emphasizing a key point",
+      "Sharing something emotional or personal",
+      "Adding intensity or intimacy",
+      "Breaking the rhythm of wider shots"
+    ],
+    why_it_matters: [
+      "Instantly grabs attention",
+      "Increases emotional impact",
+      "Keeps viewers engaged during key moments"
+    ],
+    internal_tags: ["close", "emphasis", "emotional", "hook", "intense"]
+  },
+
+  // Detail / B-Roll Shots
   {
     id: "hands-doing",
-    user_facing_name: "Hands doing something",
-    description: "Show your hands typing, writing, holding, or demonstrating",
-    internal_tags: ["close", "b-roll", "hands", "detail", "tutorial", "demo"],
-    overlay_type: "hands-detail"
+    category: "detail",
+    categoryLabel: "Detail / B-Roll",
+    user_facing_name: "Hands Doing Something",
+    description: "Camera focuses on your hands while you're writing, typing, holding an object, preparing food, skincare, etc.",
+    when_to_use: [
+      "Adding visual variety",
+      "Recording voiceovers",
+      "Explaining a process",
+      "Covering cuts in editing",
+      "You don't want to be on camera"
+    ],
+    why_it_matters: [
+      "Prevents face fatigue",
+      "Makes edits smoother",
+      "Adds texture and realism"
+    ],
+    internal_tags: ["hands", "b-roll", "detail", "process", "voiceover"]
   },
+  {
+    id: "close-detail",
+    category: "detail",
+    categoryLabel: "Detail / B-Roll",
+    user_facing_name: "Close Detail Shot",
+    description: "Camera is very close to an object or detail, showing texture, movement, or small actions.",
+    when_to_use: [
+      "Highlighting a product or object",
+      "Showing quality or detail",
+      "Creating aesthetic or satisfying visuals",
+      "Slowing the pace of a video"
+    ],
+    why_it_matters: [
+      "Elevates production value",
+      "Makes content feel more polished",
+      "Draws attention to what matters"
+    ],
+    internal_tags: ["detail", "product", "close", "aesthetic", "texture"]
+  },
+
+  // Context / Environment
   {
     id: "at-desk",
-    user_facing_name: "At your desk or workspace",
-    description: "Show context with your setup, desk, or work environment visible",
-    internal_tags: ["wide", "context", "workspace", "setup", "intro", "lifestyle"],
-    overlay_type: "workspace"
+    category: "context",
+    categoryLabel: "Context / Environment",
+    user_facing_name: "In Your Environment",
+    description: "The camera shows you within your real environment — your workspace, studio, kitchen, gym, office, café, or any place that represents what you're doing. You may be visible fully or partially.",
+    when_to_use: [
+      "Grounding the viewer in your world",
+      "Adding authenticity and context to your message",
+      "Creating behind-the-scenes or day-in-the-life content",
+      "Showing where the magic happens"
+    ],
+    why_it_matters: [
+      "Builds trust by showing your real space",
+      "Adds depth and personality to your content",
+      "Makes viewers feel like insiders"
+    ],
+    internal_tags: ["workspace", "environment", "behind-scenes", "authentic", "context"]
   },
   {
-    id: "walking-through",
-    user_facing_name: "Moving through the space",
-    description: "Walk and talk, or show movement through your environment",
-    internal_tags: ["medium", "walking", "pov", "dynamic", "vlog", "transition"],
-    overlay_type: "walking-pov"
+    id: "moving-through",
+    category: "context",
+    categoryLabel: "Context / Environment",
+    user_facing_name: "Moving Through the Space",
+    description: "Camera captures movement—walking, entering a room, or moving through an environment.",
+    when_to_use: [
+      "Filming routines or lifestyle content",
+      "Transitioning between ideas",
+      "Adding energy or momentum",
+      "Recording voiceovers"
+    ],
+    why_it_matters: [
+      "Adds motion and flow",
+      "Keeps the video from feeling static",
+      "Helps maintain viewer attention"
+    ],
+    internal_tags: ["movement", "walking", "transition", "dynamic", "lifestyle"]
+  },
+
+  // Pattern Breaks / Texture
+  {
+    id: "quiet-cutaway",
+    category: "pattern-break",
+    categoryLabel: "Pattern Breaks / Texture",
+    user_facing_name: "Quiet Cutaway",
+    description: "A short, neutral shot that isn't the main action (e.g. adjusting something, looking away, pausing).",
+    when_to_use: [
+      "Transitioning between ideas",
+      "Pacing the edit",
+      "Giving the viewer a moment to breathe",
+      "Breaking up longer talking sections"
+    ],
+    why_it_matters: [
+      "Improves rhythm and flow",
+      "Makes edits feel intentional",
+      "Prevents visual overload"
+    ],
+    internal_tags: ["cutaway", "transition", "pause", "pacing", "breath"]
+  },
+  {
+    id: "neutral-visual",
+    category: "context",
+    categoryLabel: "Pattern Breaks / Texture",
+    user_facing_name: "Neutral Visual",
+    description: "A simple visual of your surroundings or objects (e.g. window, coffee cup, notes, laptop closing, city view).",
+    when_to_use: [
+      "Adding atmosphere or mood",
+      "Showing where you are",
+      "Layering under voiceover",
+      "Transitioning between sections"
+    ],
+    why_it_matters: [
+      "Adds cinematic texture",
+      "Grounds the viewer in a place",
+      "Makes content feel elevated and thoughtful"
+    ],
+    internal_tags: ["atmosphere", "mood", "b-roll", "cinematic", "environment"]
   },
   {
     id: "reaction-moment",
-    user_facing_name: "Reaction moment",
-    description: "A nod, smile, surprised look, or thoughtful pause as a cutaway",
-    internal_tags: ["close", "reaction", "cutaway", "emotion", "b-roll"],
-    overlay_type: "reaction"
-  },
-  {
-    id: "product-closeup",
-    user_facing_name: "Show the thing",
-    description: "Focus on a product, object, or item you're talking about",
-    internal_tags: ["close", "product", "detail", "showcase", "b-roll", "demo"],
-    overlay_type: "product-focus"
-  },
-  {
-    id: "side-angle",
-    user_facing_name: "From the side",
-    description: "A different angle that adds visual variety and cinematic feel",
-    internal_tags: ["medium", "side", "profile", "cinematic", "variety", "b-roll"],
-    overlay_type: "side-profile"
-  },
-  {
-    id: "overhead-view",
-    user_facing_name: "Bird's eye view",
-    description: "Looking down at your desk, hands, or workspace from above",
-    internal_tags: ["overhead", "top-down", "b-roll", "aesthetic", "flatlay", "tutorial"],
-    overlay_type: "overhead"
-  },
-  {
-    id: "screen-demo",
-    user_facing_name: "Screen or device demo",
-    description: "Show what's on your screen, phone, or device",
-    internal_tags: ["screen", "demo", "tutorial", "tech", "walkthrough"],
-    overlay_type: "screen-share"
-  },
-  {
-    id: "scene-setter",
-    user_facing_name: "Set the scene",
-    description: "Wide shot showing the full environment or location context",
-    internal_tags: ["wide", "establishing", "context", "intro", "location", "b-roll"],
-    overlay_type: "wide-context"
-  },
-  {
-    id: "quick-transition",
-    user_facing_name: "Quick transition shot",
-    description: "A brief visual break between scenes - movement blur, object pass-by",
-    internal_tags: ["transition", "b-roll", "fast", "dynamic", "cut"],
-    overlay_type: "transition"
+    category: "pattern-break",
+    categoryLabel: "Pattern Breaks / Texture",
+    user_facing_name: "Reaction Moment",
+    description: "A brief moment of natural reaction—nodding, smiling, pausing, or taking a breath.",
+    when_to_use: [
+      "Adding personality",
+      "Creating comedic or emotional beats",
+      "Making scripted content feel natural",
+      "Breaking monotony"
+    ],
+    why_it_matters: [
+      "Humanizes the video",
+      "Improves pacing",
+      "Makes content feel less scripted and more real"
+    ],
+    internal_tags: ["reaction", "emotion", "personality", "human", "natural"]
   }
 ];
 
@@ -104,4 +233,9 @@ export const getShotTemplateById = (id: string): ShotTemplate | undefined => {
 // Get all template IDs (for AI validation)
 export const getAllTemplateIds = (): string[] => {
   return shotTemplates.map(t => t.id);
+};
+
+// Get templates by category
+export const getTemplatesByCategory = (category: ShotTemplate['category']): ShotTemplate[] => {
+  return shotTemplates.filter(t => t.category === category);
 };

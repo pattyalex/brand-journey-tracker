@@ -551,7 +551,8 @@ IMPORTANT RULES:
 1. You MUST only select from the provided shot template IDs below. NEVER invent new shot types.
 2. Return exactly 2-3 recommendations.
 3. Keep reasons short (1 sentence max).
-4. Consider the scene's emotional tone, purpose, and content type.
+4. DO NOT repeat the shot name in your reason. Start directly with why it works (e.g., "Works well for..." or "Creates intimacy..." or "Adds visual variety...").
+5. Consider the scene's emotional tone, purpose, and content type.
 
 AVAILABLE SHOT TEMPLATES (use ONLY these IDs):
 ${templateReference}
@@ -561,8 +562,8 @@ VALID TEMPLATE IDs: ${validTemplateIds.join(', ')}
 Respond ONLY with valid JSON in this exact format:
 {
   "suggestions": [
-    {"template_id": "exact-id-from-list", "reason": "Brief reason why this shot works"},
-    {"template_id": "exact-id-from-list", "reason": "Brief reason why this shot works"}
+    {"template_id": "exact-id-from-list", "reason": "Works well for [brief reason]"},
+    {"template_id": "exact-id-from-list", "reason": "Creates [brief effect/benefit]"}
   ]
 }`;
 

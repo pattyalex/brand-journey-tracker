@@ -20,11 +20,13 @@ import {
   Check,
   Camera,
   X,
+  BookOpen,
 } from "lucide-react";
 import { ProductionCard, StoryboardScene } from "../types";
 import { shotTemplates, getShotTemplateById, ShotTemplate } from "../utils/shotTemplates";
 import { suggestShotsForScene, ShotSuggestion } from "../utils/shotSuggestionService";
 import { toast } from "sonner";
+import ShotLibraryDialog from "./ShotLibraryDialog";
 
 // Color palette for scenes
 const sceneColors = {
@@ -39,136 +41,6 @@ const sceneColors = {
 };
 
 const colorOrder: (keyof typeof sceneColors)[] = ['amber', 'teal', 'rose', 'violet', 'sky', 'lime', 'fuchsia', 'cyan'];
-
-// Shot overlay visual component
-const ShotOverlay: React.FC<{ overlayType: ShotTemplate['overlay_type']; className?: string }> = ({ overlayType, className }) => {
-  const baseClass = "absolute inset-0 pointer-events-none";
-
-  switch (overlayType) {
-    case 'talking-center':
-      return (
-        <div className={cn(baseClass, className)}>
-          <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
-            <circle cx="50" cy="40" r="15" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3,2" />
-            <rect x="35" y="55" width="30" height="25" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3,2" />
-          </svg>
-        </div>
-      );
-    case 'talking-thirds':
-      return (
-        <div className={cn(baseClass, className)}>
-          <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
-            <line x1="33" y1="0" x2="33" y2="100" stroke="currentColor" strokeWidth="0.5" />
-            <line x1="66" y1="0" x2="66" y2="100" stroke="currentColor" strokeWidth="0.5" />
-            <line x1="0" y1="33" x2="100" y2="33" stroke="currentColor" strokeWidth="0.5" />
-            <line x1="0" y1="66" x2="100" y2="66" stroke="currentColor" strokeWidth="0.5" />
-            <circle cx="33" cy="33" r="12" fill="none" stroke="currentColor" strokeWidth="1" />
-          </svg>
-        </div>
-      );
-    case 'hands-detail':
-      return (
-        <div className={cn(baseClass, className)}>
-          <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
-            <rect x="20" y="30" width="60" height="40" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3,2" rx="5" />
-            <path d="M 35 50 Q 50 35, 65 50" fill="none" stroke="currentColor" strokeWidth="1" />
-          </svg>
-        </div>
-      );
-    case 'workspace':
-      return (
-        <div className={cn(baseClass, className)}>
-          <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
-            <rect x="10" y="60" width="80" height="30" fill="none" stroke="currentColor" strokeWidth="1" rx="2" />
-            <circle cx="70" cy="35" r="12" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3,2" />
-          </svg>
-        </div>
-      );
-    case 'walking-pov':
-      return (
-        <div className={cn(baseClass, className)}>
-          <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
-            <path d="M 20 90 L 50 40 L 80 90" fill="none" stroke="currentColor" strokeWidth="1" />
-            <line x1="50" y1="40" x2="50" y2="10" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-          </svg>
-        </div>
-      );
-    case 'reaction':
-      return (
-        <div className={cn(baseClass, className)}>
-          <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
-            <circle cx="50" cy="45" r="20" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            <circle cx="43" cy="42" r="3" fill="currentColor" />
-            <circle cx="57" cy="42" r="3" fill="currentColor" />
-            <path d="M 40 52 Q 50 58, 60 52" fill="none" stroke="currentColor" strokeWidth="1" />
-          </svg>
-        </div>
-      );
-    case 'product-focus':
-      return (
-        <div className={cn(baseClass, className)}>
-          <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
-            <rect x="30" y="30" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.5" rx="5" />
-            <line x1="25" y1="25" x2="35" y2="35" stroke="currentColor" strokeWidth="1" />
-            <line x1="75" y1="25" x2="65" y2="35" stroke="currentColor" strokeWidth="1" />
-            <line x1="25" y1="75" x2="35" y2="65" stroke="currentColor" strokeWidth="1" />
-            <line x1="75" y1="75" x2="65" y2="65" stroke="currentColor" strokeWidth="1" />
-          </svg>
-        </div>
-      );
-    case 'side-profile':
-      return (
-        <div className={cn(baseClass, className)}>
-          <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
-            <ellipse cx="40" cy="45" rx="18" ry="22" fill="none" stroke="currentColor" strokeWidth="1" />
-            <path d="M 58 45 L 75 45" stroke="currentColor" strokeWidth="1" strokeDasharray="3,2" />
-          </svg>
-        </div>
-      );
-    case 'overhead':
-      return (
-        <div className={cn(baseClass, className)}>
-          <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
-            <rect x="20" y="20" width="60" height="60" fill="none" stroke="currentColor" strokeWidth="1" rx="3" />
-            <circle cx="50" cy="50" r="5" fill="currentColor" />
-            <line x1="50" y1="10" x2="50" y2="20" stroke="currentColor" strokeWidth="1" />
-          </svg>
-        </div>
-      );
-    case 'screen-share':
-      return (
-        <div className={cn(baseClass, className)}>
-          <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
-            <rect x="15" y="25" width="70" height="45" fill="none" stroke="currentColor" strokeWidth="1.5" rx="3" />
-            <line x1="40" y1="70" x2="60" y2="70" stroke="currentColor" strokeWidth="1" />
-            <rect x="35" y="70" width="30" height="8" fill="none" stroke="currentColor" strokeWidth="1" />
-          </svg>
-        </div>
-      );
-    case 'wide-context':
-      return (
-        <div className={cn(baseClass, className)}>
-          <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
-            <rect x="5" y="20" width="90" height="60" fill="none" stroke="currentColor" strokeWidth="1" rx="2" />
-            <circle cx="50" cy="50" r="8" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-          </svg>
-        </div>
-      );
-    case 'transition':
-      return (
-        <div className={cn(baseClass, className)}>
-          <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
-            <line x1="20" y1="50" x2="80" y2="50" stroke="currentColor" strokeWidth="2" />
-            <polygon points="75,45 85,50 75,55" fill="currentColor" />
-            <line x1="30" y1="35" x2="30" y2="65" stroke="currentColor" strokeWidth="1" strokeDasharray="3,2" />
-            <line x1="70" y1="35" x2="70" y2="65" stroke="currentColor" strokeWidth="1" strokeDasharray="3,2" />
-          </svg>
-        </div>
-      );
-    default:
-      return null;
-  }
-};
 
 interface StoryboardEditorDialogProps {
   open: boolean;
@@ -194,6 +66,10 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   const [suggestingSceneId, setSuggestingSceneId] = useState<string | null>(null);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<(ShotSuggestion & { template: ShotTemplate })[]>([]);
+
+  // Shot library state
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  const [librarySceneId, setLibrarySceneId] = useState<string | null>(null);
 
   const scriptRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
@@ -378,6 +254,21 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
     toast.success("Shot type selected!");
   }, [updateScene]);
 
+  // Handle opening shot library
+  const handleOpenLibrary = useCallback((sceneId: string) => {
+    setLibrarySceneId(sceneId);
+    setIsLibraryOpen(true);
+  }, []);
+
+  // Handle shot selection from library
+  const handleLibrarySelect = useCallback((templateId: string) => {
+    if (librarySceneId) {
+      updateScene(librarySceneId, { selectedShotTemplateId: templateId });
+      toast.success("Shot type selected!");
+    }
+    setLibrarySceneId(null);
+  }, [librarySceneId, updateScene]);
+
   // Close suggestions panel
   const handleCloseSuggestions = useCallback(() => {
     setSuggestingSceneId(null);
@@ -446,6 +337,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   if (!card) return null;
 
   return (
+    <>
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[1100px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-gradient-to-br from-amber-50 via-white to-orange-50">
         {/* Header */}
@@ -608,28 +500,54 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                             colors.border
                           )}
                         >
-                          {/* Shot overlay visualization */}
-                          {selectedTemplate && (
-                            <ShotOverlay
-                              overlayType={selectedTemplate.overlay_type}
-                              className={colors.text}
-                            />
-                          )}
-
-                          {/* Scene number badge */}
+                          {/* Scene header */}
                           <div className="flex items-center justify-between mb-2 relative z-10">
-                            <div className={cn(
-                              "w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-md flex-shrink-0",
-                              colors.dot
-                            )}>
-                              {idx + 1}
+                            <div className="flex items-center gap-2">
+                              <div className={cn(
+                                "w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-md flex-shrink-0",
+                                colors.dot
+                              )}>
+                                {idx + 1}
+                              </div>
+
+                              {/* Suggest Shots button - always visible */}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className={cn(
+                                  "h-8 px-2.5 rounded-lg text-xs font-medium transition-all",
+                                  isSuggesting
+                                    ? "bg-purple-100 text-purple-700 border border-purple-300"
+                                    : "bg-white/90 hover:bg-purple-50 text-gray-600 hover:text-purple-700 border border-gray-200"
+                                )}
+                                onClick={() => handleSuggestShots(scene)}
+                                disabled={isLoadingSuggestions}
+                              >
+                                {isLoadingSuggestions && isSuggesting ? (
+                                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                                ) : (
+                                  <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                                )}
+                                Suggest shots
+                              </Button>
+
+                              {/* Shot Library button */}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 px-2.5 rounded-lg text-xs font-medium bg-white/90 hover:bg-indigo-50 text-gray-600 hover:text-indigo-700 border border-gray-200 transition-all"
+                                onClick={() => handleOpenLibrary(scene.id)}
+                              >
+                                <BookOpen className="w-3.5 h-3.5 mr-1.5" />
+                                Shot Library
+                              </Button>
                             </div>
 
                             {/* Selected shot badge */}
                             {selectedTemplate && (
-                              <div className="flex items-center gap-1 bg-white/80 rounded-full px-2 py-0.5 text-[10px] font-medium text-gray-600 shadow-sm">
-                                <Camera className="w-3 h-3" />
-                                <span className="truncate max-w-[80px]">{selectedTemplate.user_facing_name}</span>
+                              <div className="flex items-center gap-1.5 bg-white/90 rounded-lg px-2.5 py-1 text-xs font-medium text-gray-700 shadow-sm border border-gray-200">
+                                <Camera className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
+                                <span>{selectedTemplate.user_facing_name}</span>
                               </div>
                             )}
                           </div>
@@ -667,27 +585,6 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                               </div>
                             )}
                           </div>
-
-                          {/* Suggest Shots button */}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className={cn(
-                              "absolute bottom-2 left-2 transition-all h-7 px-2 rounded-lg text-[10px] font-medium",
-                              isSuggesting
-                                ? "opacity-100 bg-purple-100 text-purple-700"
-                                : "opacity-0 group-hover:opacity-100 bg-white/80 hover:bg-purple-50 text-gray-600 hover:text-purple-700"
-                            )}
-                            onClick={() => handleSuggestShots(scene)}
-                            disabled={isLoadingSuggestions}
-                          >
-                            {isLoadingSuggestions && isSuggesting ? (
-                              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                            ) : (
-                              <Video className="w-3 h-3 mr-1" />
-                            )}
-                            Suggest shots
-                          </Button>
 
                           {/* Delete button */}
                           <Button
@@ -734,10 +631,10 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                                           <Camera className="w-3 h-3 text-purple-600" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                          <p className="text-[11px] font-semibold text-gray-800 truncate">
+                                          <p className="text-[11px] font-semibold text-gray-800">
                                             {suggestion.template.user_facing_name}
                                           </p>
-                                          <p className="text-[10px] text-gray-500 line-clamp-1">
+                                          <p className="text-[10px] text-gray-500 leading-snug">
                                             {suggestion.reason}
                                           </p>
                                         </div>
@@ -771,6 +668,15 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
         </div>
       </DialogContent>
     </Dialog>
+
+      {/* Shot Library Dialog */}
+      <ShotLibraryDialog
+        open={isLibraryOpen}
+        onOpenChange={setIsLibraryOpen}
+        onSelectShot={handleLibrarySelect}
+        currentShotId={librarySceneId ? scenes.find(s => s.id === librarySceneId)?.selectedShotTemplateId : undefined}
+      />
+    </>
   );
 };
 
