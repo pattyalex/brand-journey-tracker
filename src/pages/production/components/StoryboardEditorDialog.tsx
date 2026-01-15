@@ -83,9 +83,6 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   onSave,
 }) => {
   const [scenes, setScenes] = useState<StoryboardScene[]>([]);
-  const [selectedText, setSelectedText] = useState<{ start: number; end: number; text: string } | null>(null);
-  const [showCreateScene, setShowCreateScene] = useState(false);
-  const [createScenePosition, setCreateScenePosition] = useState({ x: 0, y: 0 });
   const [cardTitle, setCardTitle] = useState("");
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [scriptContent, setScriptContent] = useState("");
@@ -99,10 +96,6 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   // Shot library state
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [librarySceneId, setLibrarySceneId] = useState<string | null>(null);
-
-  // Highlight editing state
-  const [selectedHighlight, setSelectedHighlight] = useState<string | null>(null);
-  const [highlightMenuPosition, setHighlightMenuPosition] = useState({ x: 0, y: 0 });
 
   const scriptRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
@@ -151,75 +144,8 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
     return colorOrder[scenes.length % colorOrder.length];
   }, [scenes]);
 
-  // Handle text selection in script
-  const handleTextSelection = useCallback(() => {
-    const selection = window.getSelection();
-    if (!selection || selection.isCollapsed || !scriptRef.current) {
-      setShowCreateScene(false);
-      setSelectedText(null);
-      return;
-    }
-
-    const text = selection.toString().trim();
-    if (!text) {
-      setShowCreateScene(false);
-      setSelectedText(null);
-      return;
-    }
-
-    // Get selection range relative to script content
-    const range = selection.getRangeAt(0);
-    const preSelectionRange = range.cloneRange();
-    preSelectionRange.selectNodeContents(scriptRef.current);
-    preSelectionRange.setEnd(range.startContainer, range.startOffset);
-    const start = preSelectionRange.toString().length;
-    const end = start + text.length;
-
-    // Check if selection overlaps with existing scenes
-    const overlaps = scenes.some(scene =>
-      (start < scene.highlightEnd && end > scene.highlightStart)
-    );
-
-    if (overlaps) {
-      setShowCreateScene(false);
-      setSelectedText(null);
-      return;
-    }
-
-    setSelectedText({ start, end, text });
-
-    // Position the create scene button near the selection
-    const rect = range.getBoundingClientRect();
-    const containerRect = scriptRef.current.getBoundingClientRect();
-    setCreateScenePosition({
-      x: rect.left - containerRect.left + rect.width / 2,
-      y: rect.bottom - containerRect.top + 8,
-    });
-    setShowCreateScene(true);
-  }, [scenes]);
-
-  // Create new scene from selection
-  const handleCreateScene = useCallback(() => {
-    if (!selectedText) return;
-
-    const newScene: StoryboardScene = {
-      id: `scene-${Date.now()}`,
-      order: scenes.length,
-      title: `Scene ${scenes.length + 1}`,
-      visualNotes: '',
-      color: getNextColor(),
-      highlightStart: selectedText.start,
-      highlightEnd: selectedText.end,
-    };
-
-    setScenes(prev => [...prev, newScene].sort((a, b) => a.highlightStart - b.highlightStart));
-    setShowCreateScene(false);
-    setSelectedText(null);
-    window.getSelection()?.removeAllRanges();
-  }, [selectedText, scenes.length, getNextColor]);
-
-  // Add scene without highlight
-  const handleAddEmptyScene = useCallback(() => {
+  // Add scene
+  const handleAddScene = useCallback(() => {
     const newScene: StoryboardScene = {
       id: `scene-${Date.now()}`,
       order: scenes.length,
@@ -228,6 +154,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
       color: getNextColor(),
       highlightStart: -1,
       highlightEnd: -1,
+      scriptExcerpt: '',
     };
     setScenes(prev => [...prev, newScene]);
   }, [scenes.length, getNextColor]);
@@ -310,124 +237,88 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
     setSuggestions([]);
   }, []);
 
-  // Handle highlight click
-  const handleHighlightClick = useCallback((sceneId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const rect = (e.target as HTMLElement).getBoundingClientRect();
-    const containerRect = scriptRef.current?.getBoundingClientRect();
-    if (containerRect) {
-      setHighlightMenuPosition({
-        x: rect.left - containerRect.left + rect.width / 2,
-        y: rect.bottom - containerRect.top + 5,
-      });
-    }
-    setSelectedHighlight(sceneId);
-  }, []);
+  // Normalize apostrophes and quotes for matching
+  const normalize = (text: string) => text
+    .replace(/[\u0027\u0060\u2018\u2019\u02BC\u2032]/g, "'")  // All apostrophe variants → '
+    .replace(/[\u0022\u201C\u201D\u201E]/g, '"')  // All quote variants → "
+    .toLowerCase();
 
-  // Expand highlight by word
-  const expandHighlight = useCallback((direction: 'left' | 'right') => {
-    if (!selectedHighlight) return;
-    const scene = scenes.find(s => s.id === selectedHighlight);
-    if (!scene) return;
-
-    const script = scriptContent;
-
-    if (direction === 'left' && scene.highlightStart > 0) {
-      // Find previous word boundary
-      let newStart = scene.highlightStart - 1;
-      while (newStart > 0 && script[newStart - 1] !== ' ' && script[newStart - 1] !== '\n') {
-        newStart--;
-      }
-      updateScene(scene.id, { highlightStart: newStart });
-    } else if (direction === 'right' && scene.highlightEnd < script.length) {
-      // Find next word boundary
-      let newEnd = scene.highlightEnd + 1;
-      while (newEnd < script.length && script[newEnd] !== ' ' && script[newEnd] !== '\n') {
-        newEnd++;
-      }
-      updateScene(scene.id, { highlightEnd: newEnd });
-    }
-  }, [selectedHighlight, scenes, scriptContent, updateScene]);
-
-  // Shrink highlight by word
-  const shrinkHighlight = useCallback((direction: 'left' | 'right') => {
-    if (!selectedHighlight) return;
-    const scene = scenes.find(s => s.id === selectedHighlight);
-    if (!scene) return;
-
-    const script = scriptContent;
-    const highlightedText = script.slice(scene.highlightStart, scene.highlightEnd);
-
-    if (direction === 'left') {
-      // Find next word boundary from start
-      let newStart = scene.highlightStart + 1;
-      while (newStart < scene.highlightEnd && script[newStart - 1] !== ' ' && script[newStart - 1] !== '\n') {
-        newStart++;
-      }
-      // Skip the space
-      while (newStart < scene.highlightEnd && (script[newStart] === ' ' || script[newStart] === '\n')) {
-        newStart++;
-      }
-      if (newStart < scene.highlightEnd) {
-        updateScene(scene.id, { highlightStart: newStart });
-      }
-    } else if (direction === 'right') {
-      // Find previous word boundary from end
-      let newEnd = scene.highlightEnd - 1;
-      while (newEnd > scene.highlightStart && script[newEnd] !== ' ' && script[newEnd] !== '\n') {
-        newEnd--;
-      }
-      if (newEnd > scene.highlightStart) {
-        updateScene(scene.id, { highlightEnd: newEnd });
-      }
-    }
-  }, [selectedHighlight, scenes, scriptContent, updateScene]);
-
-  // Render script with highlights
-  const renderScript = useCallback(() => {
+  // Render script with highlights based on scene scriptExcerpts
+  const renderScript = () => {
     if (!scriptContent) return null;
 
     const script = scriptContent;
-    const sortedScenes = [...scenes]
-      .filter(s => s.highlightStart >= 0)
-      .sort((a, b) => a.highlightStart - b.highlightStart);
+    const normalizedScript = normalize(script);
 
-    if (sortedScenes.length === 0) {
+    // Build a map of positions to highlight with their colors
+    const positionColors: Map<number, { end: number; color: keyof typeof sceneColors; title: string }> = new Map();
+
+    // Process each scene
+    for (const scene of scenes) {
+      const textToFind = scene.scriptExcerpt?.trim();
+      if (!textToFind || textToFind.length < 3) continue;
+
+      const normalizedSearch = normalize(textToFind);
+
+      // Find in script (normalized search)
+      const foundIndex = normalizedScript.indexOf(normalizedSearch);
+      if (foundIndex !== -1) {
+        // Only add if this position isn't already taken
+        let overlaps = false;
+        for (const [pos, data] of positionColors) {
+          if ((foundIndex >= pos && foundIndex < data.end) ||
+              (foundIndex + textToFind.length > pos && foundIndex + textToFind.length <= data.end)) {
+            overlaps = true;
+            break;
+          }
+        }
+        if (!overlaps) {
+          positionColors.set(foundIndex, {
+            end: foundIndex + textToFind.length,
+            color: scene.color,
+            title: scene.title
+          });
+        }
+      }
+    }
+
+    if (positionColors.size === 0) {
       return <span className="text-gray-700 leading-relaxed whitespace-pre-wrap">{script}</span>;
     }
+
+    // Sort positions
+    const sortedPositions = Array.from(positionColors.entries()).sort((a, b) => a[0] - b[0]);
 
     const elements: React.ReactNode[] = [];
     let lastEnd = 0;
 
-    sortedScenes.forEach((scene, idx) => {
+    sortedPositions.forEach(([start, data], idx) => {
       // Text before highlight
-      if (scene.highlightStart > lastEnd) {
+      if (start > lastEnd) {
         elements.push(
           <span key={`text-${idx}`} className="text-gray-700">
-            {script.slice(lastEnd, scene.highlightStart)}
+            {script.slice(lastEnd, start)}
           </span>
         );
       }
 
       // Highlighted text
-      const colors = sceneColors[scene.color];
+      const colors = sceneColors[data.color];
       elements.push(
         <mark
-          key={`highlight-${scene.id}`}
+          key={`highlight-${idx}`}
           className={cn(
-            "px-1 py-0.5 rounded transition-all cursor-pointer",
+            "px-1 py-0.5 rounded",
             colors.highlight,
-            colors.text,
-            selectedHighlight === scene.id && "ring-2 ring-offset-1 ring-gray-400"
+            colors.text
           )}
-          title={`${scene.title} - Click to edit`}
-          onClick={(e) => handleHighlightClick(scene.id, e)}
+          title={data.title}
         >
-          {script.slice(scene.highlightStart, scene.highlightEnd)}
+          {script.slice(start, data.end)}
         </mark>
       );
 
-      lastEnd = scene.highlightEnd;
+      lastEnd = data.end;
     });
 
     // Text after last highlight
@@ -440,7 +331,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
     }
 
     return <div className="leading-relaxed whitespace-pre-wrap">{elements}</div>;
-  }, [scriptContent, scenes, selectedHighlight, handleHighlightClick]);
+  };
 
   if (!card) return null;
 
@@ -475,7 +366,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                   Script
                 </h3>
                 <p className="text-[10px] text-amber-600/80 mt-0.5">
-                  Select text to create a scene
+                  Add scenes and write what you'll say
                 </p>
               </div>
               {!isEditingScript ? (
@@ -526,120 +417,18 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
             <div
               className="p-4 relative flex-1 overflow-y-auto"
               ref={scriptRef}
-              onMouseUp={!isEditingScript ? handleTextSelection : undefined}
             >
               {isEditingScript ? (
                 <textarea
                   autoFocus
                   value={scriptContent}
                   onChange={(e) => setScriptContent(e.target.value)}
-                  onBlur={() => setIsEditingScript(false)}
                   className="w-full h-full text-sm text-gray-700 leading-relaxed bg-transparent border-none p-0 resize-none focus:outline-none focus:ring-0"
                   placeholder="Write your script here..."
                 />
               ) : scriptContent ? (
-                <div className="-m-2 p-2" onClick={() => setSelectedHighlight(null)}>
+                <div className="-m-2 p-2">
                   {renderScript()}
-
-                  {/* Create Scene Popup */}
-                  <AnimatePresence>
-                    {showCreateScene && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.9, y: -10 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: -10 }}
-                        className="absolute z-10"
-                        style={{
-                          left: createScenePosition.x,
-                          top: createScenePosition.y,
-                          transform: 'translateX(-50%)',
-                        }}
-                      >
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCreateScene();
-                          }}
-                          className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg shadow-amber-200/50 rounded-full px-4"
-                        >
-                          <Plus className="w-4 h-4 mr-1" />
-                          Create Scene
-                        </Button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Highlight Edit Menu */}
-                  <AnimatePresence>
-                    {selectedHighlight && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.9, y: -10 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: -10 }}
-                        className="absolute z-20 bg-white rounded-xl shadow-xl border border-gray-200 p-2"
-                        style={{
-                          left: highlightMenuPosition.x,
-                          top: highlightMenuPosition.y,
-                          transform: 'translateX(-50%)',
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => expandHighlight('left')}
-                            className="h-7 px-2 text-xs hover:bg-gray-100"
-                            title="Expand left"
-                          >
-                            ← Expand
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => shrinkHighlight('left')}
-                            className="h-7 px-2 text-xs hover:bg-gray-100"
-                            title="Shrink from left"
-                          >
-                            Shrink →
-                          </Button>
-                          <div className="w-px h-5 bg-gray-200" />
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => shrinkHighlight('right')}
-                            className="h-7 px-2 text-xs hover:bg-gray-100"
-                            title="Shrink from right"
-                          >
-                            ← Shrink
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => expandHighlight('right')}
-                            className="h-7 px-2 text-xs hover:bg-gray-100"
-                            title="Expand right"
-                          >
-                            Expand →
-                          </Button>
-                          <div className="w-px h-5 bg-gray-200" />
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              deleteScene(selectedHighlight);
-                              setSelectedHighlight(null);
-                            }}
-                            className="h-7 px-2 text-xs text-red-600 hover:bg-red-50 hover:text-red-700"
-                            title="Delete selection"
-                          >
-                            <Trash2 className="w-3 h-3 mr-1" />
-                            Remove
-                          </Button>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
                 </div>
               ) : (
                 <div
@@ -746,10 +535,10 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                   </div>
                   <h4 className="text-gray-700 font-semibold text-sm mb-1">Start Your Storyboard</h4>
                   <p className="text-xs text-gray-400 max-w-[200px] mb-4">
-                    Select text from your script to create scenes
+                    Add scenes and describe what you'll say in each
                   </p>
                   <Button
-                    onClick={handleAddEmptyScene}
+                    onClick={handleAddScene}
                     variant="outline"
                     size="sm"
                     className="border-2 border-dashed border-amber-300 text-amber-700 hover:bg-amber-50 hover:border-amber-400 rounded-lg text-xs"
@@ -842,57 +631,17 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                             />
 
                             {/* Script excerpt - editable */}
-                            {scene.highlightStart >= 0 && scriptContent ? (
-                              <textarea
-                                value={scriptContent.slice(scene.highlightStart, scene.highlightEnd)}
-                                onChange={(e) => {
-                                  const newText = e.target.value;
-                                  const oldText = scriptContent.slice(scene.highlightStart, scene.highlightEnd);
-                                  const lengthDiff = newText.length - oldText.length;
-
-                                  // Update the script content
-                                  const newScript =
-                                    scriptContent.slice(0, scene.highlightStart) +
-                                    newText +
-                                    scriptContent.slice(scene.highlightEnd);
-                                  setScriptContent(newScript);
-
-                                  // Update this scene's highlight end
-                                  updateScene(scene.id, { highlightEnd: scene.highlightStart + newText.length });
-
-                                  // Update all scenes that come after this one
-                                  setScenes(prev => prev.map(s => {
-                                    if (s.id === scene.id) return s;
-                                    if (s.highlightStart > scene.highlightEnd) {
-                                      return {
-                                        ...s,
-                                        highlightStart: s.highlightStart + lengthDiff,
-                                        highlightEnd: s.highlightEnd + lengthDiff
-                                      };
-                                    }
-                                    return s;
-                                  }));
-                                }}
-                                className={cn(
-                                  "text-xs px-2 py-1.5 rounded-lg border h-[50px] w-full resize-none italic focus:outline-none focus:ring-1 focus:ring-amber-300",
-                                  colors.bg,
-                                  colors.border,
-                                  colors.text
-                                )}
-                              />
-                            ) : (
-                              <textarea
-                                value={scene.scriptExcerpt || ''}
-                                onChange={(e) => updateScene(scene.id, { scriptExcerpt: e.target.value })}
-                                className={cn(
-                                  "text-xs px-2 py-1.5 rounded-lg border h-[50px] w-full resize-none italic focus:outline-none focus:ring-1 focus:ring-amber-300",
-                                  colors.bg,
-                                  colors.border,
-                                  colors.text
-                                )}
-                                placeholder="What you'll say in this scene..."
-                              />
-                            )}
+                            <textarea
+                              value={scene.scriptExcerpt || ''}
+                              onChange={(e) => updateScene(scene.id, { scriptExcerpt: e.target.value })}
+                              className={cn(
+                                "text-xs px-2 py-1.5 rounded-lg border h-[50px] w-full resize-none italic focus:outline-none focus:ring-1 focus:ring-amber-300",
+                                colors.bg,
+                                colors.border,
+                                colors.text
+                              )}
+                              placeholder="What you'll say in this scene..."
+                            />
                           </div>
 
                           {/* Shot Suggestions Panel */}
@@ -953,7 +702,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                     <motion.button
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      onClick={handleAddEmptyScene}
+                      onClick={handleAddScene}
                       className="h-[258px] border-2 border-dashed border-amber-300 rounded-xl text-amber-600 hover:border-amber-400 hover:bg-amber-50/50 transition-all flex flex-col items-center justify-center gap-1 group"
                     >
                       <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
