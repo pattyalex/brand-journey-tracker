@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { ProductionCard, StoryboardScene } from "../types";
 import { shotTemplates, getShotTemplateById, ShotTemplate } from "../utils/shotTemplates";
+import { getPlatformColors } from "../utils/productionHelpers";
 import { suggestShotsForScene, ShotSuggestion } from "../utils/shotSuggestionService";
 import { toast } from "sonner";
 import ShotLibraryDialog from "./ShotLibraryDialog";
@@ -479,19 +480,17 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
               </div>
               {!isEditingScript ? (
                 <Button
-                  variant="ghost"
                   size="sm"
                   onClick={() => setIsEditingScript(true)}
-                  className="h-7 px-2 text-[10px] text-amber-700 hover:bg-amber-100 border border-amber-200"
+                  className="h-7 px-3 text-xs font-medium bg-amber-500 hover:bg-amber-600 text-white rounded-lg shadow-sm"
                 >
                   Edit
                 </Button>
               ) : (
                 <Button
-                  variant="ghost"
                   size="sm"
                   onClick={() => setIsEditingScript(false)}
-                  className="h-7 px-2 text-[10px] text-amber-700 hover:bg-amber-100 border border-amber-200"
+                  className="h-7 px-3 text-xs font-medium bg-green-500 hover:bg-green-600 text-white rounded-lg shadow-sm"
                 >
                   Done
                 </Button>
@@ -634,7 +633,8 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                             className="h-7 px-2 text-xs text-red-600 hover:bg-red-50 hover:text-red-700"
                             title="Delete selection"
                           >
-                            <Trash2 className="w-3 h-3" />
+                            <Trash2 className="w-3 h-3 mr-1" />
+                            Remove
                           </Button>
                         </div>
                       </motion.div>
@@ -657,6 +657,73 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                   </div>
                 </div>
               )}
+
+              {/* Card details - Formats, Platform, Filming Plan */}
+              <div className="mt-4 pt-4 border-t border-amber-100/60 space-y-3">
+                {/* Formats (How it's shot) */}
+                {card?.formats && card.formats.length > 0 && (
+                  <div>
+                    <h4 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-1">How it's shot</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {card.formats.map((format, idx) => (
+                        <span key={idx} className="px-2 py-0.5 bg-purple-100 text-purple-700 text-[10px] rounded-full font-medium">
+                          {format}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Platforms */}
+                {card?.platforms && card.platforms.length > 0 && (
+                  <div>
+                    <h4 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Platform</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {card.platforms.map((platform, idx) => {
+                        const platformColors = getPlatformColors(platform);
+                        return (
+                          <span key={idx} className={`px-2 py-0.5 text-[10px] rounded-full font-medium ${platformColors.bg} ${platformColors.text}`}>
+                            {platform}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Filming Plan */}
+                {(card?.locationText || card?.outfitText || card?.propsText || card?.filmingNotes) && (
+                  <div>
+                    <h4 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Filming Plan</h4>
+                    <div className="space-y-1 text-[11px] text-gray-600">
+                      {card?.locationText && (
+                        <div className="flex items-start gap-1">
+                          <span className="font-medium text-gray-500">📍</span>
+                          <span>{card.locationText}</span>
+                        </div>
+                      )}
+                      {card?.outfitText && (
+                        <div className="flex items-start gap-1">
+                          <span className="font-medium text-gray-500">👕</span>
+                          <span>{card.outfitText}</span>
+                        </div>
+                      )}
+                      {card?.propsText && (
+                        <div className="flex items-start gap-1">
+                          <span className="font-medium text-gray-500">🎬</span>
+                          <span>{card.propsText}</span>
+                        </div>
+                      )}
+                      {card?.filmingNotes && (
+                        <div className="flex items-start gap-1">
+                          <span className="font-medium text-gray-500">📝</span>
+                          <span>{card.filmingNotes}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -709,11 +776,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.9 }}
                           transition={{ delay: idx * 0.05 }}
-                          className={cn(
-                            "relative rounded-xl p-2 border-2 transition-all hover:shadow-md group flex flex-col overflow-hidden h-[258px]",
-                            colors.bg,
-                            colors.border
-                          )}
+                          className="relative rounded-xl p-2 border-2 border-gray-200 bg-white transition-all hover:shadow-md group flex flex-col overflow-hidden h-[258px]"
                         >
                           {/* Scene header - title on left, delete on right */}
                           <div className="flex items-center justify-between relative z-10">
@@ -722,10 +785,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                               type="text"
                               value={scene.title}
                               onChange={(e) => updateScene(scene.id, { title: e.target.value })}
-                              className={cn(
-                                "font-bold bg-transparent border-none w-20 focus:outline-none focus:ring-0 placeholder:text-gray-400 text-xs",
-                                colors.text
-                              )}
+                              className="font-bold bg-transparent border-none w-20 focus:outline-none focus:ring-0 placeholder:text-gray-400 text-xs text-gray-800"
                               placeholder="Scene..."
                             />
 
