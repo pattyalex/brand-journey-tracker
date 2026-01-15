@@ -61,61 +61,61 @@ const ShotIllustration: React.FC<{ shotId: string; className?: string }> = ({ sh
     case 'wide-shot':
       // PNG illustration - full body in room
       return (
-        <img src={wideShotIllustration} alt="Wide shot" className={cn("w-full h-full object-cover scale-150", className)} />
+        <img src={wideShotIllustration} alt="Wide shot" className={cn("w-full h-full object-contain", className)} />
       );
 
     case 'medium-shot':
       // PNG illustration - chest up talking
       return (
-        <img src={mediumShotIllustration} alt="Medium shot" className={cn("w-full h-full object-cover scale-150", className)} />
+        <img src={mediumShotIllustration} alt="Medium shot" className={cn("w-full h-full object-contain", className)} />
       );
 
     case 'close-up-shot':
       // PNG illustration - face close up
       return (
-        <img src={closeUpShotIllustration} alt="Close-up shot" className={cn("w-full h-full object-cover scale-150", className)} />
+        <img src={closeUpShotIllustration} alt="Close-up shot" className={cn("w-full h-full object-contain", className)} />
       );
 
     case 'hands-doing':
       // PNG illustration - hands cooking
       return (
-        <img src={handsDoingIllustration} alt="Hands doing something" className={cn("w-full h-full object-cover scale-150", className)} />
+        <img src={handsDoingIllustration} alt="Hands doing something" className={cn("w-full h-full object-contain", className)} />
       );
 
     case 'close-detail':
       // PNG illustration - close-up of sneakers
       return (
-        <img src={closeDetailIllustration} alt="Close detail shot" className={cn("w-full h-full object-cover scale-150", className)} />
+        <img src={closeDetailIllustration} alt="Close detail shot" className={cn("w-full h-full object-contain", className)} />
       );
 
     case 'at-desk':
       // PNG illustration - in your environment
       return (
-        <img src={atDeskIllustration} alt="In your environment" className={cn("w-full h-full object-cover scale-150", className)} />
+        <img src={atDeskIllustration} alt="In your environment" className={cn("w-full h-full object-contain", className)} />
       );
 
     case 'neutral-visual':
       // PNG illustration - city view
       return (
-        <img src={neutralVisualIllustration} alt="Neutral visual" className={cn("w-full h-full object-cover scale-150", className)} />
+        <img src={neutralVisualIllustration} alt="Neutral visual" className={cn("w-full h-full object-contain", className)} />
       );
 
     case 'moving-through':
       // PNG illustration - walking with dog
       return (
-        <img src={movingThroughIllustration} alt="Moving through space" className={cn("w-full h-full object-cover scale-150", className)} />
+        <img src={movingThroughIllustration} alt="Moving through space" className={cn("w-full h-full object-contain", className)} />
       );
 
     case 'quiet-cutaway':
       // PNG illustration - person adjusting shirt
       return (
-        <img src={quietCutawayIllustration} alt="Quiet cutaway" className={cn("w-full h-full object-cover scale-150", className)} />
+        <img src={quietCutawayIllustration} alt="Quiet cutaway" className={cn("w-full h-full object-contain", className)} />
       );
 
     case 'reaction-moment':
       // PNG illustration - surprised reaction
       return (
-        <img src={reactionMomentIllustration} alt="Reaction moment" className={cn("w-full h-full object-cover scale-150", className)} />
+        <img src={reactionMomentIllustration} alt="Reaction moment" className={cn("w-full h-full object-contain", className)} />
       );
 
     default:
@@ -227,12 +227,7 @@ const ShotLibraryDialog: React.FC<ShotLibraryDialogProps> = ({
                   >
                     <div className="flex items-start gap-4">
                       {/* Shot illustration */}
-                      <div className={cn(
-                        "w-16 h-20 flex-shrink-0 rounded-xl flex items-center justify-center",
-                        isSelected ? "bg-white/60" : "bg-gray-50"
-                      )}>
-                        <ShotIllustration shotId={template.id} className="w-12 h-16" />
-                      </div>
+                      <ShotIllustration shotId={template.id} className="w-20 h-20 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <h3 className={cn(
@@ -280,9 +275,7 @@ const ShotLibraryDialog: React.FC<ShotLibraryDialogProps> = ({
                 <div className="space-y-5">
                   {/* Shot illustration - large */}
                   <div className="flex justify-center">
-                    <div className="w-32 h-40 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center border border-gray-200">
-                      <ShotIllustration shotId={selectedShot.id} className="w-24 h-32" />
-                    </div>
+                    <ShotIllustration shotId={selectedShot.id} className="w-40 h-40" />
                   </div>
 
                   {/* Shot title */}
