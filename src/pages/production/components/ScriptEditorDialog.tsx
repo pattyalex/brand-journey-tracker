@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { getFormatColors, getPlatformColors } from "../utils/productionHelpers";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
-import { MoreHorizontal, Video, Camera, ChevronDown, X, Circle, Wrench, CheckCircle2 } from "lucide-react";
+import { MoreHorizontal, Video, Camera, ChevronDown, X, Circle, Wrench, CheckCircle2, MapPin, Shirt, Boxes, NotebookPen, PenLine, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Helper to get platform icon
@@ -155,193 +155,194 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
           />
         </div>
 
-        {/* Format and Platform Section */}
-        <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-6 border border-purple-100">
-          <div className="grid grid-cols-2 gap-6">
-            {/* Format Selection - Compact Inline */}
-            <div className="space-y-3">
-              <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                <span className="text-lg">📹</span> How It's Shot
-              </label>
-              <div className="flex items-center gap-3 flex-wrap">
-                <Select
-                  onValueChange={(value) => {
-                    if (value === "other") {
-                      setShowCustomFormatInput(true);
-                    } else if (value && !formatTags.includes(value)) {
+        {/* Format and Platform Section - Clean minimal design */}
+        <div className="grid grid-cols-2 gap-8">
+          {/* Format Selection */}
+          <div className="space-y-2">
+            <h4 className="text-[11px] font-semibold text-blue-400 uppercase tracking-wider">
+              How It's Shot
+            </h4>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Select
+                onValueChange={(value) => {
+                  if (value === "other") {
+                    setShowCustomFormatInput(true);
+                  } else if (value && !formatTags.includes(value)) {
+                    setShowCustomFormatInput(false);
+                    setFormatTags([...formatTags, value]);
+                  }
+                }}
+              >
+                <SelectTrigger className="w-auto bg-transparent border-0 shadow-none p-0 h-auto gap-1 hover:bg-gray-100 rounded-lg px-2 py-1" iconClassName="hidden">
+                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel className="text-sm font-medium text-gray-500">Video</SelectLabel>
+                    <SelectItem value="Talking to camera"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Talking to camera</span></SelectItem>
+                    <SelectItem value="Voice-over"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Voice-over</span></SelectItem>
+                    <SelectItem value="Vlog"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Vlog</span></SelectItem>
+                    <SelectItem value="Tutorial"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Tutorial</span></SelectItem>
+                    <SelectItem value="GRWM"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />GRWM</span></SelectItem>
+                  </SelectGroup>
+                  <SelectGroup>
+                    <SelectLabel className="text-sm font-medium text-gray-500">Photo</SelectLabel>
+                    <SelectItem value="Photo post"><span className="flex items-center gap-2"><Camera className="w-4 h-4 text-gray-400" />Photo post</span></SelectItem>
+                    <SelectItem value="Carousel"><span className="flex items-center gap-2"><Camera className="w-4 h-4 text-gray-400" />Carousel</span></SelectItem>
+                    <SelectItem value="Text post"><span className="flex items-center gap-2"><Camera className="w-4 h-4 text-gray-400" />Text post</span></SelectItem>
+                  </SelectGroup>
+                  <SelectGroup>
+                    <SelectItem value="other"><span className="flex items-center gap-2"><MoreHorizontal className="w-4 h-4 text-gray-400" />Other...</span></SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              {formatTags.length === 0 && (
+                <span className="text-[13px] text-gray-400">Select format</span>
+              )}
+              {formatTags.map((tag, idx) => (
+                <span
+                  key={idx}
+                  className="inline-flex items-center gap-1.5 text-[13px] text-gray-700"
+                >
+                  {isStaticFormat(tag) ? <Camera className="w-3.5 h-3.5 text-gray-400" /> : <Video className="w-3.5 h-3.5 text-gray-400" />}
+                  {tag}
+                  <button
+                    onClick={() => onRemoveFormatTag(tag)}
+                    className="text-gray-300 hover:text-gray-500 transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+            {showCustomFormatInput && (
+              <div className="flex gap-2 mt-1">
+                <input
+                  type="text"
+                  value={customFormatInput}
+                  onChange={(e) => setCustomFormatInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && customFormatInput.trim()) {
+                      e.preventDefault();
+                      if (!formatTags.includes(customFormatInput.trim())) {
+                        setFormatTags([...formatTags, customFormatInput.trim()]);
+                      }
+                      setCustomFormatInput("");
                       setShowCustomFormatInput(false);
-                      setFormatTags([...formatTags, value]);
                     }
                   }}
-                >
-                  <SelectTrigger className="w-auto bg-white border-0 shadow-none p-0 h-auto gap-1 hover:bg-gray-100 rounded-lg px-2 py-1" iconClassName="hidden">
-                    <ChevronDown className="w-4 h-4 text-gray-400" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel className="text-sm font-medium text-gray-500">Video</SelectLabel>
-                      <SelectItem value="Talking to camera"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Talking to camera</span></SelectItem>
-                      <SelectItem value="Voice-over"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Voice-over</span></SelectItem>
-                      <SelectItem value="Vlog"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Vlog</span></SelectItem>
-                      <SelectItem value="Tutorial"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Tutorial</span></SelectItem>
-                      <SelectItem value="GRWM"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />GRWM</span></SelectItem>
-                    </SelectGroup>
-                    <SelectGroup>
-                      <SelectLabel className="text-sm font-medium text-gray-500">Photo</SelectLabel>
-                      <SelectItem value="Photo post"><span className="flex items-center gap-2"><Camera className="w-4 h-4 text-gray-400" />Photo post</span></SelectItem>
-                      <SelectItem value="Carousel"><span className="flex items-center gap-2"><Camera className="w-4 h-4 text-gray-400" />Carousel</span></SelectItem>
-                      <SelectItem value="Text post"><span className="flex items-center gap-2"><Camera className="w-4 h-4 text-gray-400" />Text post</span></SelectItem>
-                    </SelectGroup>
-                    <SelectGroup>
-                      <SelectItem value="other"><span className="flex items-center gap-2"><MoreHorizontal className="w-4 h-4 text-gray-400" />Other...</span></SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                {formatTags.length === 0 && (
-                  <span className="text-sm text-gray-400">Select format</span>
-                )}
-                {formatTags.map((tag, idx) => (
-                  <span
-                    key={idx}
-                    className="inline-flex items-center gap-1.5 text-sm text-gray-600"
-                  >
-                    {isStaticFormat(tag) ? <Camera className="w-3.5 h-3.5 text-gray-400" /> : <Video className="w-3.5 h-3.5 text-gray-400" />}
-                    {tag}
-                    <button
-                      onClick={() => onRemoveFormatTag(tag)}
-                      className="text-gray-300 hover:text-gray-500 transition-colors"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </span>
-                ))}
-              </div>
-              {showCustomFormatInput && (
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={customFormatInput}
-                    onChange={(e) => setCustomFormatInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && customFormatInput.trim()) {
-                        e.preventDefault();
-                        if (!formatTags.includes(customFormatInput.trim())) {
-                          setFormatTags([...formatTags, customFormatInput.trim()]);
-                        }
-                        setCustomFormatInput("");
-                        setShowCustomFormatInput(false);
-                      }
-                    }}
-                    placeholder="Enter format..."
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent"
-                    autoFocus
-                  />
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      if (customFormatInput.trim() && !formatTags.includes(customFormatInput.trim())) {
-                        setFormatTags([...formatTags, customFormatInput.trim()]);
-                        setCustomFormatInput("");
-                        setShowCustomFormatInput(false);
-                      }
-                    }}
-                    size="sm"
-                    variant="outline"
-                  >
-                    Add
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            {/* Platform Selection - Clickable Icons */}
-            <div className="space-y-3">
-              <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                <span className="text-lg">📱</span> Platforms
-              </label>
-              <div className="flex items-center gap-2 flex-wrap">
-                {[
-                  { name: "Instagram", icon: <SiInstagram className="w-5 h-5" /> },
-                  { name: "TikTok", icon: <SiTiktok className="w-5 h-5" /> },
-                  { name: "YouTube", icon: <SiYoutube className="w-5 h-5" /> },
-                  { name: "Facebook", icon: <SiFacebook className="w-5 h-5" /> },
-                  { name: "LinkedIn", icon: <SiLinkedin className="w-5 h-5" /> },
-                  { name: "X / Threads", icon: <RiTwitterXLine className="w-5 h-5" /> },
-                ].map((platform) => {
-                  const isSelected = platformTags.includes(platform.name);
-                  return (
-                    <button
-                      key={platform.name}
-                      type="button"
-                      onClick={() => {
-                        if (isSelected) {
-                          onRemovePlatformTag(platform.name);
-                        } else {
-                          setPlatformTags([...platformTags, platform.name]);
-                        }
-                      }}
-                      className={`p-2.5 rounded-xl transition-all duration-200 ${
-                        isSelected
-                          ? "bg-gray-800 text-white shadow-md scale-105"
-                          : "bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
-                      }`}
-                      title={platform.name}
-                    >
-                      {platform.icon}
-                    </button>
-                  );
-                })}
-                <button
+                  placeholder="Enter format..."
+                  className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-transparent"
+                  autoFocus
+                />
+                <Button
                   type="button"
-                  onClick={() => setShowCustomPlatformInput(!showCustomPlatformInput)}
-                  className={`p-2.5 rounded-xl transition-all duration-200 ${
-                    showCustomPlatformInput
-                      ? "bg-gray-800 text-white"
-                      : "bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
-                  }`}
-                  title="Add other platform"
+                  onClick={() => {
+                    if (customFormatInput.trim() && !formatTags.includes(customFormatInput.trim())) {
+                      setFormatTags([...formatTags, customFormatInput.trim()]);
+                      setCustomFormatInput("");
+                      setShowCustomFormatInput(false);
+                    }
+                  }}
+                  size="sm"
+                  variant="outline"
+                  className="h-auto py-1.5"
                 >
-                  <MoreHorizontal className="w-5 h-5" />
-                </button>
+                  Add
+                </Button>
               </div>
+            )}
+          </div>
 
-              {showCustomPlatformInput && (
-                <div className="flex gap-2 mt-2">
-                  <input
-                    type="text"
-                    value={customPlatformInput}
-                    onChange={(e) => setCustomPlatformInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && customPlatformInput.trim()) {
-                        e.preventDefault();
-                        if (!platformTags.includes(customPlatformInput.trim())) {
-                          setPlatformTags([...platformTags, customPlatformInput.trim()]);
-                        }
-                        setCustomPlatformInput("");
-                        setShowCustomPlatformInput(false);
-                      }
-                    }}
-                    placeholder="Enter platform name..."
-                    className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all"
-                    autoFocus
-                  />
-                  <Button
+          {/* Platform Selection */}
+          <div className="space-y-2">
+            <h4 className="text-[11px] font-semibold text-blue-400 uppercase tracking-wider">
+              Platforms
+            </h4>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {[
+                { name: "Instagram", icon: <SiInstagram className="w-4 h-4" /> },
+                { name: "TikTok", icon: <SiTiktok className="w-4 h-4" /> },
+                { name: "YouTube", icon: <SiYoutube className="w-4 h-4" /> },
+                { name: "Facebook", icon: <SiFacebook className="w-4 h-4" /> },
+                { name: "LinkedIn", icon: <SiLinkedin className="w-4 h-4" /> },
+                { name: "X / Threads", icon: <RiTwitterXLine className="w-4 h-4" /> },
+              ].map((platform) => {
+                const isSelected = platformTags.includes(platform.name);
+                return (
+                  <button
+                    key={platform.name}
                     type="button"
                     onClick={() => {
-                      if (customPlatformInput.trim() && !platformTags.includes(customPlatformInput.trim())) {
-                        setPlatformTags([...platformTags, customPlatformInput.trim()]);
-                        setCustomPlatformInput("");
-                        setShowCustomPlatformInput(false);
+                      if (isSelected) {
+                        onRemovePlatformTag(platform.name);
+                      } else {
+                        setPlatformTags([...platformTags, platform.name]);
                       }
                     }}
-                    size="sm"
-                    className="bg-gray-800 hover:bg-gray-900"
+                    className={cn(
+                      "p-2 rounded-lg transition-all",
+                      isSelected
+                        ? "bg-gray-500 text-white"
+                        : "text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    )}
+                    title={platform.name}
                   >
-                    Add
-                  </Button>
-                </div>
-              )}
+                    {platform.icon}
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                onClick={() => setShowCustomPlatformInput(!showCustomPlatformInput)}
+                className={cn(
+                  "p-2 rounded-lg transition-all",
+                  showCustomPlatformInput
+                    ? "bg-gray-500 text-white"
+                    : "text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                )}
+                title="Add other platform"
+              >
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
             </div>
+
+            {showCustomPlatformInput && (
+              <div className="flex gap-2 mt-1">
+                <input
+                  type="text"
+                  value={customPlatformInput}
+                  onChange={(e) => setCustomPlatformInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && customPlatformInput.trim()) {
+                      e.preventDefault();
+                      if (!platformTags.includes(customPlatformInput.trim())) {
+                        setPlatformTags([...platformTags, customPlatformInput.trim()]);
+                      }
+                      setCustomPlatformInput("");
+                      setShowCustomPlatformInput(false);
+                    }
+                  }}
+                  placeholder="Enter platform name..."
+                  className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-transparent"
+                  autoFocus
+                />
+                <Button
+                  type="button"
+                  onClick={() => {
+                    if (customPlatformInput.trim() && !platformTags.includes(customPlatformInput.trim())) {
+                      setPlatformTags([...platformTags, customPlatformInput.trim()]);
+                      setCustomPlatformInput("");
+                      setShowCustomPlatformInput(false);
+                    }
+                  }}
+                  size="sm"
+                  className="h-auto py-1.5 bg-gray-500 hover:bg-gray-600"
+                >
+                  Add
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -396,182 +397,142 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
           </div>
         </div>
 
-        {/* Filming Plan Section */}
-        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-100">
-          <div className="space-y-6">
-            <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-              <span className="text-lg">🎬</span> Filming Plan
-            </label>
+        {/* Filming Plan Section - Clean minimal design */}
+        <div className="space-y-3">
+          <h4 className="text-[11px] font-semibold text-blue-400 uppercase tracking-wider">
+            Filming Plan
+          </h4>
 
-            <div className="space-y-4">
-              {/* Location */}
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  Location
-                </label>
-                <input
-                  ref={locationInputRef}
-                  type="text"
-                  value={locationText}
-                  onChange={(e) => setLocationText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      outfitInputRef.current?.focus();
-                    }
-                  }}
-                  placeholder="Where do you want to shoot this content?"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-gray-400"
-                />
-              </div>
+          <div className="space-y-1">
+            {/* Location */}
+            <div className="flex items-center gap-3 group">
+              <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <input
+                ref={locationInputRef}
+                type="text"
+                value={locationText}
+                onChange={(e) => setLocationText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    outfitInputRef.current?.focus();
+                  }
+                }}
+                placeholder="Add location..."
+                className="flex-1 text-[13px] text-gray-700 bg-transparent border-none outline-none placeholder:text-gray-400 hover:bg-gray-50 focus:bg-gray-50 rounded px-2 py-1.5 -ml-2 transition-colors"
+              />
+            </div>
 
-              {/* Outfit */}
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  Outfit
-                </label>
-                <input
-                  ref={outfitInputRef}
-                  type="text"
-                  value={outfitText}
-                  onChange={(e) => setOutfitText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      propsInputRef.current?.focus();
-                    }
-                  }}
-                  placeholder="What do you want to wear?"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-gray-400"
-                />
-              </div>
+            {/* Outfit */}
+            <div className="flex items-center gap-3 group">
+              <Shirt className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <input
+                ref={outfitInputRef}
+                type="text"
+                value={outfitText}
+                onChange={(e) => setOutfitText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    propsInputRef.current?.focus();
+                  }
+                }}
+                placeholder="Add outfit..."
+                className="flex-1 text-[13px] text-gray-700 bg-transparent border-none outline-none placeholder:text-gray-400 hover:bg-gray-50 focus:bg-gray-50 rounded px-2 py-1.5 -ml-2 transition-colors"
+              />
+            </div>
 
-              {/* Props */}
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  Props
-                </label>
-                <input
-                  ref={propsInputRef}
-                  type="text"
-                  value={propsText}
-                  onChange={(e) => setPropsText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      notesInputRef.current?.focus();
-                    }
-                  }}
-                  placeholder="What props do you need?"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-gray-400"
-                />
-              </div>
+            {/* Props */}
+            <div className="flex items-center gap-3 group">
+              <Boxes className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <input
+                ref={propsInputRef}
+                type="text"
+                value={propsText}
+                onChange={(e) => setPropsText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    notesInputRef.current?.focus();
+                  }
+                }}
+                placeholder="Add props..."
+                className="flex-1 text-[13px] text-gray-700 bg-transparent border-none outline-none placeholder:text-gray-400 hover:bg-gray-50 focus:bg-gray-50 rounded px-2 py-1.5 -ml-2 transition-colors"
+              />
+            </div>
 
-              {/* Notes and Reminders */}
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  Notes &amp; Reminders
-                </label>
-                <Textarea
-                  ref={notesInputRef}
-                  value={filmingNotes}
-                  onChange={(e) => setFilmingNotes(e.target.value)}
-                  placeholder="Add any additional notes or reminders..."
-                  className="min-h-[100px] resize-none bg-gray-50 border border-gray-200 rounded-lg text-sm placeholder:text-gray-400 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                />
-              </div>
+            {/* Notes */}
+            <div className="flex items-start gap-3 group">
+              <NotebookPen className="w-4 h-4 text-gray-400 flex-shrink-0 mt-1.5" />
+              <textarea
+                ref={notesInputRef}
+                value={filmingNotes}
+                onChange={(e) => setFilmingNotes(e.target.value)}
+                placeholder="Add notes..."
+                rows={2}
+                className="flex-1 text-[13px] text-gray-700 bg-transparent border-none outline-none resize-none placeholder:text-gray-400 hover:bg-gray-50 focus:bg-gray-50 rounded px-2 py-1.5 -ml-2 transition-colors"
+              />
             </div>
           </div>
         </div>
 
-        {/* Status Section */}
-        <div className="bg-white rounded-xl border border-blue-100 shadow-sm overflow-hidden">
-          <div className="px-4 py-3 bg-blue-50/40 border-b border-gray-200">
-            <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-              <Circle className="w-4 h-4 text-blue-500" /> Scripting Status
-            </h3>
-            <p className="text-xs text-gray-500 mt-1">Track where you are in the scripting process</p>
-          </div>
-          <div className="p-4">
-            <div className="grid grid-cols-3 gap-3">
-              {/* To Start */}
-              <button
-                type="button"
-                onClick={() => setCardStatus('to-start')}
-                className={cn(
-                  "p-4 rounded-xl border-2 transition-all text-left",
-                  cardStatus === 'to-start'
-                    ? "border-blue-400 bg-blue-50"
-                    : "border-gray-200 bg-gray-50/50 hover:border-gray-300 hover:bg-gray-50"
-                )}
-              >
-                <div className={cn(
-                  "flex items-center gap-2 mb-2",
-                  cardStatus === 'to-start' ? "text-blue-600" : "text-gray-500"
-                )}>
-                  <Circle className="w-4 h-4" />
-                  <span className="font-semibold text-sm">To Start Scripting</span>
-                </div>
-                <p className={cn(
-                  "text-xs",
-                  cardStatus === 'to-start' ? "text-blue-600" : "text-gray-400"
-                )}>
-                  Haven't started yet
-                </p>
-              </button>
+        {/* Status Section - Clean minimal design */}
+        <div className="space-y-3">
+          <h4 className="text-[11px] font-semibold text-blue-400 uppercase tracking-wider">
+            Scripting Status
+          </h4>
 
-              {/* Needs More Work */}
-              <button
-                type="button"
-                onClick={() => setCardStatus('needs-work')}
-                className={cn(
-                  "p-4 rounded-xl border-2 transition-all text-left",
-                  cardStatus === 'needs-work'
-                    ? "border-amber-400 bg-amber-50"
-                    : "border-gray-200 bg-gray-50/50 hover:border-gray-300 hover:bg-gray-50"
-                )}
-              >
-                <div className={cn(
-                  "flex items-center gap-2 mb-2",
-                  cardStatus === 'needs-work' ? "text-amber-600" : "text-gray-500"
-                )}>
-                  <Wrench className="w-4 h-4" />
-                  <span className="font-semibold text-sm">Needs More Work</span>
-                </div>
-                <p className={cn(
-                  "text-xs",
-                  cardStatus === 'needs-work' ? "text-amber-600" : "text-gray-400"
-                )}>
-                  In progress, needs refinement
-                </p>
-              </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setCardStatus('to-start')}
+              className={cn(
+                "flex items-center gap-2 px-3 py-2 rounded-xl text-[13px] font-medium transition-all",
+                cardStatus === 'to-start'
+                  ? "bg-blue-100 text-blue-700"
+                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+              )}
+            >
+              <PenLine className="w-3.5 h-3.5 flex-shrink-0" />
+              <div className="text-left">
+                <div>To Start Scripting</div>
+                <div className={cn("text-[10px] font-normal", cardStatus === 'to-start' ? "text-blue-600" : "text-gray-400")}>Haven't started yet</div>
+              </div>
+            </button>
 
-              {/* Scripted */}
-              <button
-                type="button"
-                onClick={() => setCardStatus('ready')}
-                className={cn(
-                  "p-4 rounded-xl border-2 transition-all text-left",
-                  cardStatus === 'ready'
-                    ? "border-emerald-400 bg-emerald-50"
-                    : "border-gray-200 bg-gray-50/50 hover:border-gray-300 hover:bg-gray-50"
-                )}
-              >
-                <div className={cn(
-                  "flex items-center gap-2 mb-2",
-                  cardStatus === 'ready' ? "text-emerald-600" : "text-gray-500"
-                )}>
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="font-semibold text-sm">Scripted</span>
-                </div>
-                <p className={cn(
-                  "text-xs",
-                  cardStatus === 'ready' ? "text-emerald-600" : "text-gray-400"
-                )}>
-                  Ready to move to filming
-                </p>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setCardStatus('needs-work')}
+              className={cn(
+                "flex items-center gap-2 px-3 py-2 rounded-xl text-[13px] font-medium transition-all",
+                cardStatus === 'needs-work'
+                  ? "bg-amber-100 text-amber-700"
+                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+              )}
+            >
+              <Wrench className="w-3.5 h-3.5 flex-shrink-0" />
+              <div className="text-left">
+                <div>Needs More Work</div>
+                <div className={cn("text-[10px] font-normal", cardStatus === 'needs-work' ? "text-amber-600" : "text-gray-400")}>In progress</div>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setCardStatus('ready')}
+              className={cn(
+                "flex items-center gap-2 px-3 py-2 rounded-xl text-[13px] font-medium transition-all",
+                cardStatus === 'ready'
+                  ? "bg-emerald-100 text-emerald-700"
+                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+              )}
+            >
+              <Check className="w-3.5 h-3.5 flex-shrink-0" />
+              <div className="text-left">
+                <div>Scripted</div>
+                <div className={cn("text-[10px] font-normal", cardStatus === 'ready' ? "text-emerald-600" : "text-gray-400")}>Ready to film</div>
+              </div>
+            </button>
           </div>
         </div>
       </div>
