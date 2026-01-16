@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, MoreVertical, Trash2, Edit, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard } from "lucide-react";
+import { PlusCircle, MoreVertical, Trash2, Pencil, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -82,6 +82,7 @@ const InlineCardInput: React.FC<{
 
 const Production = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const columnRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const [columns, setColumns] = useState<KanbanColumn[]>(defaultColumns);
   const [draggedCard, setDraggedCard] = useState<ProductionCard | null>(null);
@@ -662,7 +663,11 @@ const Production = () => {
               }
 
               toast.success("Pinned to dashboard", {
-                description: "This content will appear in 'Next to Work On'"
+                description: "This content will appear in 'Next to Work On'",
+                action: {
+                  label: "Go to Dashboard",
+                  onClick: () => navigate("/")
+                }
               });
             } else {
               toast.success("Unpinned", {
@@ -1153,8 +1158,8 @@ const Production = () => {
 
   return (
     <Layout>
-      <div className="w-full h-[calc(100vh-4rem)] mx-auto px-8 py-6 overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="flex gap-5 h-[calc(100%-2rem)] overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+      <div className="w-full h-[calc(100vh-5rem)] pl-0 pr-3 pt-0 pb-0 overflow-hidden bg-gray-50">
+        <div className="flex gap-4 h-full overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
           {columns.map((column, index) => {
             const colors = columnColors[column.id];
             return (
@@ -1163,7 +1168,7 @@ const Production = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="flex-shrink-0 w-80"
+                className="flex-shrink-0 w-[340px]"
                 onDragOver={(e) => handleDragOver(e, column.id)}
                 onDragLeave={handleDragLeave}
                 onDrop={(e) => handleDrop(e, column.id)}
@@ -1209,7 +1214,7 @@ const Production = () => {
                       </div>
                     )}
                     <AnimatePresence>
-                      {column.cards.filter(card => card.title && card.title.trim() && !card.title.toLowerCase().includes('add quick idea')).map((card, cardIndex) => {
+                      {column.cards.filter(card => card.title && card.title.trim() && !card.title.toLowerCase().includes('add quick idea')).sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0)).map((card, cardIndex) => {
                         const isEditing = editingCardId === card.id;
 
                         // Find dragged card's current index in this column
@@ -1286,7 +1291,7 @@ const Production = () => {
                               }}
                               onMouseLeave={(e) => {
                                 if (!isDragging && !isEditing) {
-                                  const rotations = [-1.5, 1.2, -0.8, 1.5, -1, 0.8, -1.2, 1, -0.5, 1.3];
+                                  const rotations = [-0.4, 0.3, -0.2, 0.4, -0.25, 0.2, -0.3, 0.25, -0.15, 0.35];
                                   const rotation = rotations[cardIndex % rotations.length];
                                   e.currentTarget.style.transform = `rotate(${rotation}deg)`;
                                   e.currentTarget.style.zIndex = '';
@@ -1303,7 +1308,7 @@ const Production = () => {
                               )}
                               style={{
                                 willChange: isDragging ? 'transform' : 'auto',
-                                transform: `rotate(${[-1.5, 1.2, -0.8, 1.5, -1, 0.8, -1.2, 1, -0.5, 1.3][cardIndex % 10]}deg)`,
+                                transform: `rotate(${[-0.4, 0.3, -0.2, 0.4, -0.25, 0.2, -0.3, 0.25, -0.15, 0.35][cardIndex % 10]}deg)`,
                                 transition: 'transform 0.2s ease, box-shadow 0.2s ease'
                               }}
                             >
@@ -1363,7 +1368,7 @@ const Production = () => {
                                         handleOpenScriptEditor(card);
                                       }}
                                     >
-                                      <Edit className="h-2.5 w-2.5 text-gray-400 hover:text-blue-600" />
+                                      <Pencil className="h-2.5 w-2.5 text-gray-400 hover:text-blue-600" />
                                     </Button>
                                   )}
                                   {column.id === "to-film" && (
@@ -1498,7 +1503,39 @@ const Production = () => {
                             "bg-emerald-200/80 hover:bg-emerald-300 border-emerald-400",
                             colors.buttonText
                           )}
-                          onClick={() => handleStartAddingCard(column.id)}
+                          onClick={() => {
+                            if (column.id === 'shape-ideas') {
+                              // Create a new card and open script editor directly
+                              const newCard: ProductionCard = {
+                                id: `card-${Date.now()}`,
+                                title: '',
+                                columnId: 'shape-ideas',
+                                isCompleted: false,
+                              };
+                              setColumns((prev) =>
+                                prev.map((col) =>
+                                  col.id === 'shape-ideas' ? { ...col, cards: [...col.cards, newCard] } : col
+                                )
+                              );
+                              handleOpenScriptEditor(newCard);
+                            } else if (column.id === 'to-film') {
+                              // Create a new card and open storyboard editor directly
+                              const newCard: ProductionCard = {
+                                id: `card-${Date.now()}`,
+                                title: '',
+                                columnId: 'to-film',
+                                isCompleted: false,
+                              };
+                              setColumns((prev) =>
+                                prev.map((col) =>
+                                  col.id === 'to-film' ? { ...col, cards: [...col.cards, newCard] } : col
+                                )
+                              );
+                              handleOpenStoryboard(newCard);
+                            } else {
+                              handleStartAddingCard(column.id);
+                            }
+                          }}
                         >
                           <div className={cn("flex items-center gap-1.5", colors.buttonText)}>
                             <PlusCircle className="h-3.5 w-3.5 group-hover/btn:rotate-90 transition-transform duration-200" />

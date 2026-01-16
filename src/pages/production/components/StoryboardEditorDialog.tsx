@@ -73,16 +73,16 @@ const shotIllustrations: Record<string, string> = {
   'reaction-moment': reactionMomentIllustration,
 };
 
-// Color palette for scenes
+// Color palette for scenes - softer, less intense
 const sceneColors = {
-  amber: { bg: 'bg-amber-100', border: 'border-amber-400', highlight: 'bg-amber-200/70', text: 'text-amber-700', dot: 'bg-gradient-to-br from-amber-400 to-amber-600' },
-  teal: { bg: 'bg-teal-100', border: 'border-teal-400', highlight: 'bg-teal-200/70', text: 'text-teal-700', dot: 'bg-gradient-to-br from-teal-400 to-teal-600' },
-  rose: { bg: 'bg-rose-100', border: 'border-rose-400', highlight: 'bg-rose-200/70', text: 'text-rose-700', dot: 'bg-gradient-to-br from-rose-400 to-rose-600' },
-  violet: { bg: 'bg-violet-100', border: 'border-violet-400', highlight: 'bg-violet-200/70', text: 'text-violet-700', dot: 'bg-gradient-to-br from-violet-400 to-violet-600' },
-  sky: { bg: 'bg-sky-100', border: 'border-sky-400', highlight: 'bg-sky-200/70', text: 'text-sky-700', dot: 'bg-gradient-to-br from-sky-400 to-sky-600' },
-  lime: { bg: 'bg-lime-100', border: 'border-lime-400', highlight: 'bg-lime-200/70', text: 'text-lime-700', dot: 'bg-gradient-to-br from-lime-400 to-lime-600' },
-  fuchsia: { bg: 'bg-fuchsia-100', border: 'border-fuchsia-400', highlight: 'bg-fuchsia-200/70', text: 'text-fuchsia-700', dot: 'bg-gradient-to-br from-fuchsia-400 to-fuchsia-600' },
-  cyan: { bg: 'bg-cyan-100', border: 'border-cyan-400', highlight: 'bg-cyan-200/70', text: 'text-cyan-700', dot: 'bg-gradient-to-br from-cyan-400 to-cyan-600' },
+  amber: { bg: 'bg-amber-50', border: 'border-amber-200', highlight: 'bg-amber-100/50', text: 'text-amber-600', dot: 'bg-gradient-to-br from-amber-300 to-amber-400' },
+  teal: { bg: 'bg-teal-50', border: 'border-teal-200', highlight: 'bg-teal-100/50', text: 'text-teal-600', dot: 'bg-gradient-to-br from-teal-300 to-teal-400' },
+  rose: { bg: 'bg-rose-50', border: 'border-rose-200', highlight: 'bg-rose-100/50', text: 'text-rose-600', dot: 'bg-gradient-to-br from-rose-300 to-rose-400' },
+  violet: { bg: 'bg-violet-50', border: 'border-violet-200', highlight: 'bg-violet-100/50', text: 'text-violet-600', dot: 'bg-gradient-to-br from-violet-300 to-violet-400' },
+  sky: { bg: 'bg-sky-50', border: 'border-sky-200', highlight: 'bg-sky-100/50', text: 'text-sky-600', dot: 'bg-gradient-to-br from-sky-300 to-sky-400' },
+  lime: { bg: 'bg-lime-50', border: 'border-lime-200', highlight: 'bg-lime-100/50', text: 'text-lime-600', dot: 'bg-gradient-to-br from-lime-300 to-lime-400' },
+  fuchsia: { bg: 'bg-fuchsia-50', border: 'border-fuchsia-200', highlight: 'bg-fuchsia-100/50', text: 'text-fuchsia-600', dot: 'bg-gradient-to-br from-fuchsia-300 to-fuchsia-400' },
+  cyan: { bg: 'bg-cyan-50', border: 'border-cyan-200', highlight: 'bg-cyan-100/50', text: 'text-cyan-600', dot: 'bg-gradient-to-br from-cyan-300 to-cyan-400' },
 };
 
 const colorOrder: (keyof typeof sceneColors)[] = ['amber', 'teal', 'rose', 'violet', 'sky', 'lime', 'fuchsia', 'cyan'];
