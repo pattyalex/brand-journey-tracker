@@ -641,6 +641,125 @@ Remember: Only use template IDs from the provided list.`;
   }
 });
 
+// Generate storyboard from script endpoint
+app.post('/api/generate-storyboard', async (req, res) => {
+  try {
+    const { script, format, platform, shotTemplates } = req.body;
+    const apiKey = process.env.VITE_ANTHROPIC_API_KEY;
+
+    if (!apiKey || apiKey === 'your_claude_api_key_here') {
+      return res.status(400).json({ error: 'Claude API key not configured' });
+    }
+
+    if (!script || script.trim().length < 10) {
+      return res.status(400).json({ error: 'Script is too short' });
+    }
+
+    console.log('Generating storyboard with Claude API...');
+
+    // Build template reference for the prompt
+    const templateReference = shotTemplates.map(t =>
+      `- "${t.id}": ${t.user_facing_name} - ${t.description.slice(0, 100)}...`
+    ).join('\n');
+
+    const validTemplateIds = shotTemplates.map(t => t.id);
+
+    const systemPrompt = `You are a professional video director helping content creators plan their shoots.
+Your task is to analyze a script and break it into filmable scenes, selecting the most appropriate shot type for each.
+
+AVAILABLE SHOT TYPES (you MUST only use these exact IDs):
+${templateReference}
+
+CRITICAL RULES:
+1. Break the script into logical moments/scenes (each line or sentence that represents one shot)
+2. For "scriptLine" you MUST use the EXACT TEXT copied directly from the script - do NOT paraphrase or summarize
+3. For each scene, select the MOST appropriate shot from the available options using ONLY the provided IDs
+4. Write a practical, beginner-friendly filming description (framing + simple direction)
+5. Keep descriptions concise but actionable (1-2 sentences)
+6. Vary the shot types for visual interest - don't use the same shot repeatedly
+7. Consider the content type: ${format || 'video'} for ${platform || 'social media'}
+
+IMPORTANT: The "scriptLine" field must contain EXACT quotes from the script, not summaries or descriptions.
+
+RESPOND WITH ONLY a JSON array in this exact format (no other text):
+[
+  {
+    "scriptLine": "Copy the EXACT text from the script here - no paraphrasing",
+    "shotTemplateId": "one-of-the-valid-shot-ids",
+    "filmingDescription": "Brief, practical direction for how to film this shot"
+  }
+]`;
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-3-haiku-20240307',
+        max_tokens: 2000,
+        system: systemPrompt,
+        messages: [
+          { role: 'user', content: `Here is the script to break into filmable scenes:\n\n${script}` }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('Claude API error:', response.status, errorData);
+      return res.status(response.status).json({ error: `Claude API error: ${response.status}` });
+    }
+
+    const data = await response.json();
+    const content = data.content[0].text;
+
+    // Parse the JSON response
+    let scenes = [];
+    try {
+      const jsonMatch = content.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        if (Array.isArray(parsed)) {
+          for (const item of parsed) {
+            if (item.scriptLine && item.shotTemplateId && item.filmingDescription) {
+              // Validate shot ID - default to medium-shot if invalid
+              const shotId = validTemplateIds.includes(item.shotTemplateId)
+                ? item.shotTemplateId
+                : 'medium-shot';
+
+              const template = shotTemplates.find(t => t.id === shotId);
+
+              scenes.push({
+                scriptLine: item.scriptLine,
+                shotTemplateId: shotId,
+                shotName: template?.user_facing_name || 'Medium Shot',
+                filmingDescription: item.filmingDescription
+              });
+            }
+          }
+        }
+      }
+    } catch (parseError) {
+      console.error('Failed to parse AI response:', content);
+      return res.status(500).json({ error: 'Failed to parse AI response' });
+    }
+
+    if (scenes.length === 0) {
+      return res.status(500).json({ error: 'Could not generate scenes from script. Please try again.' });
+    }
+
+    console.log('Storyboard generated:', scenes.length, 'scenes');
+    res.json({ scenes });
+
+  } catch (error) {
+    console.error('Error generating storyboard:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
