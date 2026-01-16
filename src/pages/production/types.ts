@@ -10,6 +10,26 @@ export interface StoryboardScene {
   scriptExcerpt?: string; // For manually entered script when no highlight exists
 }
 
+export type EditingStatus = "to-start-editing" | "needs-more-editing" | "ready-to-schedule";
+
+export interface EditingChecklistItem {
+  id: string;
+  text: string;
+  checked: boolean;
+  isExample?: boolean;
+}
+
+export interface EditingChecklist {
+  items: EditingChecklistItem[];
+  notes: string;
+  externalLinks: Array<{
+    id: string;
+    label: string;
+    url: string;
+  }>;
+  status: EditingStatus | null;
+}
+
 export interface ProductionCard {
   id: string;
   title: string;
@@ -31,6 +51,7 @@ export interface ProductionCard {
   status?: "to-start" | "needs-work" | "ready" | null;
   isPinned?: boolean;
   storyboard?: StoryboardScene[];
+  editingChecklist?: EditingChecklist;
 }
 
 export interface KanbanColumn {

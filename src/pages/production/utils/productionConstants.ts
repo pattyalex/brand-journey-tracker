@@ -21,7 +21,7 @@ export const cardColors: Record<string, { bg: string; border: string }> = {
 
 export const defaultColumns: KanbanColumn[] = [
   { id: "ideate", title: "Ideate", cards: [] },
-  { id: "shape-ideas", title: "Shape Ideas", cards: [] },
+  { id: "shape-ideas", title: "Script Ideas", cards: [] },
   { id: "to-film", title: "To Film", cards: [] },
   { id: "to-edit", title: "To Edit", cards: [] },
   { id: "to-schedule", title: "To Schedule", cards: [] },

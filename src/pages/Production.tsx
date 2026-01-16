@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, MoreVertical, Trash2, Pencil, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard, Video, Circle, Wrench, CheckCircle2, Camera } from "lucide-react";
+import { PlusCircle, MoreVertical, Trash2, Pencil, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard, Video, Circle, Wrench, CheckCircle2, Camera, CheckSquare, Scissors } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine, RiPushpinFill } from "react-icons/ri";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -41,8 +41,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import TitleHookSuggestions from "@/components/content/TitleHookSuggestions";
 import ScriptEditorDialog from "./production/components/ScriptEditorDialog";
 import BrainDumpGuidanceDialog from "./production/components/BrainDumpGuidanceDialog";
-import { KanbanColumn, ProductionCard, StoryboardScene } from "./production/types";
+import { KanbanColumn, ProductionCard, StoryboardScene, EditingChecklist } from "./production/types";
 import StoryboardEditorDialog from "./production/components/StoryboardEditorDialog";
+import EditChecklistDialog from "./production/components/EditChecklistDialog";
 import { columnColors, cardColors, defaultColumns } from "./production/utils/productionConstants";
 import { getAllAngleTemplates, getFormatColors, getPlatformColors } from "./production/utils/productionHelpers";
 
@@ -154,6 +155,10 @@ const Production = () => {
   // Storyboard editor modal state
   const [isStoryboardDialogOpen, setIsStoryboardDialogOpen] = useState(false);
   const [editingStoryboardCard, setEditingStoryboardCard] = useState<ProductionCard | null>(null);
+
+  // Edit checklist modal state
+  const [isEditChecklistDialogOpen, setIsEditChecklistDialogOpen] = useState(false);
+  const [editingEditCard, setEditingEditCard] = useState<ProductionCard | null>(null);
   const [brainDumpSuggestion, setBrainDumpSuggestion] = useState<string>("");
   const [showBrainDumpSuggestion, setShowBrainDumpSuggestion] = useState(false);
   const [cardTitle, setCardTitle] = useState("");
@@ -322,7 +327,15 @@ const Production = () => {
     const savedData = getString(StorageKeys.productionKanban);
     if (savedData) {
       try {
-        setColumns(JSON.parse(savedData));
+        const savedColumns = JSON.parse(savedData);
+        // Merge saved cards with current default column titles (in case titles changed)
+        setColumns(defaultColumns.map(defaultCol => {
+          const savedCol = savedColumns.find((sc: KanbanColumn) => sc.id === defaultCol.id);
+          return {
+            ...defaultCol,
+            cards: savedCol?.cards || [],
+          };
+        }));
       } catch (error) {
         console.error("Failed to load production data:", error);
       }
@@ -587,6 +600,19 @@ const Production = () => {
             description: "Posted content is removed from your dashboard"
           });
         }
+        // Auto-set editing status to 'to-start-editing' when moving to 'to-edit' column
+        if (column.id === 'to-edit' && !draggedCard.editingChecklist?.status) {
+          cardToAdd = {
+            ...cardToAdd,
+            editingChecklist: {
+              ...cardToAdd.editingChecklist,
+              items: cardToAdd.editingChecklist?.items || [],
+              notes: cardToAdd.editingChecklist?.notes || '',
+              externalLinks: cardToAdd.editingChecklist?.externalLinks || [],
+              status: 'to-start-editing' as const
+            }
+          };
+        }
         filtered.splice(savedDropPosition.index, 0, cardToAdd);
         return { ...column, cards: filtered };
       }
@@ -802,7 +828,7 @@ const Production = () => {
     setIsStoryboardDialogOpen(true);
   };
 
-  const handleSaveStoryboard = (storyboard: StoryboardScene[], title?: string, script?: string) => {
+  const handleSaveStoryboard = (storyboard: StoryboardScene[], title?: string, script?: string, hook?: string) => {
     if (!editingStoryboardCard) return;
 
     setColumns((prev) =>
@@ -810,13 +836,41 @@ const Production = () => {
         ...col,
         cards: col.cards.map((card) =>
           card.id === editingStoryboardCard.id
-            ? { ...card, storyboard, ...(title !== undefined && { title }), ...(script !== undefined && { script }) }
+            ? { ...card, storyboard, ...(title !== undefined && { title }), ...(script !== undefined && { script }), ...(hook !== undefined && { hook }) }
             : card
         ),
       }))
     );
 
     setEditingStoryboardCard(null);
+  };
+
+  // Edit checklist handlers
+  const handleOpenEditChecklist = (card: ProductionCard) => {
+    setEditingEditCard(card);
+    setIsEditChecklistDialogOpen(true);
+  };
+
+  const handleSaveEditChecklist = (checklist: EditingChecklist, title?: string, script?: string) => {
+    if (!editingEditCard) return;
+
+    setColumns((prev) =>
+      prev.map((col) => ({
+        ...col,
+        cards: col.cards.map((card) =>
+          card.id === editingEditCard.id
+            ? {
+                ...card,
+                editingChecklist: checklist,
+                ...(title !== undefined && { title }),
+                ...(script !== undefined && { script })
+              }
+            : card
+        ),
+      }))
+    );
+
+    setEditingEditCard(null);
   };
 
   const handleScriptEditorOpenChange = (open: boolean) => {
@@ -1294,8 +1348,8 @@ const Production = () => {
                               onDragEnd={handleDragEnd}
                               onDragOver={(e) => handleCardDragOver(e, column.id, cardIndex)}
                               onClick={(e) => {
-                                // Open edit modal for Shape Ideas, Ideate, and To Film cards on single click (with delay to detect double-click)
-                                if ((column.id === "shape-ideas" || column.id === "ideate" || column.id === "to-film") && !isEditing) {
+                                // Open edit modal for Shape Ideas, Ideate, To Film, and To Edit cards on single click (with delay to detect double-click)
+                                if ((column.id === "shape-ideas" || column.id === "ideate" || column.id === "to-film" || column.id === "to-edit") && !isEditing) {
                                   e.stopPropagation();
                                   // Clear any existing timeout
                                   if (clickTimeoutRef.current) {
@@ -1309,6 +1363,8 @@ const Production = () => {
                                       handleOpenStoryboard(card);
                                     } else if (column.id === "ideate") {
                                       handleOpenIdeateCardEditor(card);
+                                    } else if (column.id === "to-edit") {
+                                      handleOpenEditChecklist(card);
                                     }
                                   }, 250);
                                 }
@@ -1330,7 +1386,7 @@ const Production = () => {
                               className={cn(
                                 "group rounded-xl relative shadow-[2px_3px_0px_rgba(0,0,0,0.06)]",
                                 column.id === "ideate" ? "py-4 px-2" : "p-2",
-                                (column.id === "shape-ideas" || column.id === "ideate" || column.id === "to-film") && !isEditing ? "cursor-pointer" : (!isEditing && "cursor-grab active:cursor-grabbing"),
+                                (column.id === "shape-ideas" || column.id === "ideate" || column.id === "to-film" || column.id === "to-edit") && !isEditing ? "cursor-pointer" : (!isEditing && "cursor-grab active:cursor-grabbing"),
                                 !isDragging && "transition-all duration-200",
                                 isThisCardDragged ? "opacity-40 scale-[0.98]" : "",
                                 card.isCompleted && "opacity-60",
@@ -1426,6 +1482,19 @@ const Production = () => {
                                       <Clapperboard className="h-2.5 w-2.5 text-gray-400 hover:text-amber-600" />
                                     </Button>
                                   )}
+                                  {column.id === "to-edit" && (
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-3.5 w-3.5 p-0 rounded hover:bg-rose-50"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenEditChecklist(card);
+                                      }}
+                                    >
+                                      <Scissors className="h-2.5 w-2.5 text-gray-400 hover:text-rose-600" />
+                                    </Button>
+                                  )}
                                   {column.id !== "posted" && !card.isPinned && (
                                     <Button
                                       size="sm"
@@ -1454,9 +1523,10 @@ const Production = () => {
                                 </div>
                             </div>
                             {/* Tags for cards with metadata */}
-                            {column.id !== "ideate" && ((card.formats && card.formats.length > 0) || card.status || (card.platforms && card.platforms.length > 0)) && (() => {
+                            {column.id !== "ideate" && ((card.formats && card.formats.length > 0) || card.status || card.editingChecklist?.status || (card.platforms && card.platforms.length > 0)) && (() => {
                               const formats = card.formats || [];
-                              const hasStatus = !!card.status;
+                              const hasStatus = !!card.status || !!card.editingChecklist?.status;
+                              const editingStatus = card.editingChecklist?.status;
                               const platforms = card.platforms || [];
                               const hasPlatforms = platforms.length > 0;
 
@@ -1516,12 +1586,26 @@ const Production = () => {
                                   {hasStatus && (
                                     <div className={hasPlatforms ? "flex items-center justify-between" : ""}>
                                       <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full text-gray-500 font-medium">
-                                        {card.status === 'to-start' && <Circle className="w-2.5 h-2.5" />}
-                                        {card.status === 'needs-work' && <Wrench className="w-2.5 h-2.5" />}
-                                        {card.status === 'ready' && <CheckCircle2 className="w-2.5 h-2.5" />}
-                                        {card.status === 'to-start' ? 'To start' :
-                                         card.status === 'needs-work' ? 'Needs more work' :
-                                         'Ready to film'}
+                                        {/* Show editing status for To Edit column, otherwise show filming status */}
+                                        {column.id === 'to-edit' ? (
+                                          <>
+                                            {editingStatus === 'to-start-editing' && <Circle className="w-2.5 h-2.5" />}
+                                            {editingStatus === 'needs-more-editing' && <Wrench className="w-2.5 h-2.5" />}
+                                            {editingStatus === 'ready-to-schedule' && <CheckCircle2 className="w-2.5 h-2.5" />}
+                                            {editingStatus === 'to-start-editing' ? 'To start editing' :
+                                             editingStatus === 'needs-more-editing' ? 'Needs more work' :
+                                             editingStatus === 'ready-to-schedule' ? 'Ready to schedule' : ''}
+                                          </>
+                                        ) : (
+                                          <>
+                                            {card.status === 'to-start' && <Circle className="w-2.5 h-2.5" />}
+                                            {card.status === 'needs-work' && <Wrench className="w-2.5 h-2.5" />}
+                                            {card.status === 'ready' && <CheckCircle2 className="w-2.5 h-2.5" />}
+                                            {card.status === 'to-start' ? 'To start scripting' :
+                                             card.status === 'needs-work' ? 'Needs more work' :
+                                             card.status === 'ready' ? 'Ready to film' : ''}
+                                          </>
+                                        )}
                                       </span>
                                       {hasPlatforms && renderPlatformIcons()}
                                     </div>
@@ -1614,6 +1698,20 @@ const Production = () => {
                                 )
                               );
                               handleOpenStoryboard(newCard);
+                            } else if (column.id === 'to-edit') {
+                              // Create a new card and open edit checklist dialog directly
+                              const newCard: ProductionCard = {
+                                id: `card-${Date.now()}`,
+                                title: '',
+                                columnId: 'to-edit',
+                                isCompleted: false,
+                              };
+                              setColumns((prev) =>
+                                prev.map((col) =>
+                                  col.id === 'to-edit' ? { ...col, cards: [...col.cards, newCard] } : col
+                                )
+                              );
+                              handleOpenEditChecklist(newCard);
                             } else {
                               handleStartAddingCard(column.id);
                             }
@@ -3648,6 +3746,13 @@ Make each idea unique, creative, and directly tied to both the original content 
           onOpenChange={setIsStoryboardDialogOpen}
           card={editingStoryboardCard}
           onSave={handleSaveStoryboard}
+        />
+
+        <EditChecklistDialog
+          isOpen={isEditChecklistDialogOpen}
+          onOpenChange={setIsEditChecklistDialogOpen}
+          card={editingEditCard}
+          onSave={handleSaveEditChecklist}
         />
       </div>
     </Layout>

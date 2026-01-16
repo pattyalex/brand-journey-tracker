@@ -2,7 +2,6 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   DndContext,
   closestCenter,
-  KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
@@ -11,7 +10,6 @@ import {
 import {
   arrayMove,
   SortableContext,
-  sortableKeyboardCoordinates,
   rectSortingStrategy,
   useSortable,
 } from "@dnd-kit/sortable";
@@ -38,10 +36,15 @@ import {
   Camera,
   X,
   BookOpen,
+  MapPin,
+  Shirt,
+  Boxes,
+  NotebookPen,
 } from "lucide-react";
 import { ProductionCard, StoryboardScene } from "../types";
 import { shotTemplates, getShotTemplateById, ShotTemplate } from "../utils/shotTemplates";
-import { getPlatformColors } from "../utils/productionHelpers";
+import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
+import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { suggestShotsForScene, ShotSuggestion } from "../utils/shotSuggestionService";
 import { generateStoryboardFromScript, convertToStoryboardScenes } from "../utils/storyboardGenerationService";
 import { toast } from "sonner";
@@ -91,7 +94,7 @@ interface StoryboardEditorDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   card: ProductionCard | null;
-  onSave: (storyboard: StoryboardScene[], title?: string, script?: string) => void;
+  onSave: (storyboard: StoryboardScene[], title?: string, script?: string, hook?: string) => void;
 }
 
 // Sortable Scene Card Component
@@ -258,7 +261,7 @@ const SortableSceneCard: React.FC<SortableSceneCardProps> = ({
                       <Camera className="w-3 h-3 text-purple-600" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-semibold text-gray-800">
+                      <p className="text-[10px] font-semibold text-gray-800">
                         {suggestion.template.user_facing_name}
                       </p>
                       <p className="text-[10px] text-gray-500 leading-snug">
@@ -286,6 +289,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   const [scenes, setScenes] = useState<StoryboardScene[]>([]);
   const [cardTitle, setCardTitle] = useState("");
   const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [hookContent, setHookContent] = useState("");
   const [scriptContent, setScriptContent] = useState("");
   const [isEditingScript, setIsEditingScript] = useState(false);
 
@@ -314,6 +318,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
     if (card?.title) {
       setCardTitle(card.title);
     }
+    setHookContent(card?.hook || card?.title || "");
     setScriptContent(card?.script || "");
     setIsEditingTitle(false);
     setIsEditingScript(false);
@@ -324,10 +329,10 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   // Save on close
   const handleClose = useCallback((open: boolean) => {
     if (!open && card) {
-      onSave(scenes, cardTitle, scriptContent);
+      onSave(scenes, cardTitle, scriptContent, hookContent);
     }
     onOpenChange(open);
-  }, [card, scenes, cardTitle, scriptContent, onSave, onOpenChange]);
+  }, [card, scenes, cardTitle, scriptContent, hookContent, onSave, onOpenChange]);
 
   // Focus title input when editing
   useEffect(() => {
@@ -381,9 +386,6 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
       activationConstraint: {
         distance: 8, // 8px movement before drag starts
       },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
     })
   );
 
@@ -549,7 +551,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
     }
 
     if (positionColors.size === 0) {
-      return <span className="text-gray-700 leading-relaxed whitespace-pre-wrap">{script}</span>;
+      return <span className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">{script}</span>;
     }
 
     // Sort positions
@@ -596,7 +598,97 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
       );
     }
 
-    return <div className="leading-relaxed whitespace-pre-wrap">{elements}</div>;
+    return <div className="text-[13px] leading-relaxed whitespace-pre-wrap">{elements}</div>;
+  };
+
+  // Render hook with highlights based on scene scriptExcerpts
+  const renderHook = () => {
+    if (!hookContent) return null;
+
+    const hook = hookContent;
+    const normalizedHook = normalize(hook);
+
+    // Build a map of positions to highlight with their colors
+    const positionColors: Map<number, { end: number; color: keyof typeof sceneColors; title: string }> = new Map();
+
+    // Process each scene
+    for (const scene of scenes) {
+      const textToFind = scene.scriptExcerpt?.trim();
+      if (!textToFind || textToFind.length < 3) continue;
+
+      const normalizedSearch = normalize(textToFind);
+
+      // Find in hook (normalized search)
+      const foundIndex = normalizedHook.indexOf(normalizedSearch);
+      if (foundIndex !== -1) {
+        // Only add if this position isn't already taken
+        let overlaps = false;
+        for (const [pos, data] of positionColors) {
+          if ((foundIndex >= pos && foundIndex < data.end) ||
+              (foundIndex + textToFind.length > pos && foundIndex + textToFind.length <= data.end)) {
+            overlaps = true;
+            break;
+          }
+        }
+        if (!overlaps) {
+          positionColors.set(foundIndex, {
+            end: foundIndex + textToFind.length,
+            color: scene.color,
+            title: scene.title
+          });
+        }
+      }
+    }
+
+    if (positionColors.size === 0) {
+      return <span className="text-[13px] text-gray-700 leading-relaxed">{hook}</span>;
+    }
+
+    // Sort positions
+    const sortedPositions = Array.from(positionColors.entries()).sort((a, b) => a[0] - b[0]);
+
+    const elements: React.ReactNode[] = [];
+    let lastEnd = 0;
+
+    sortedPositions.forEach(([start, data], idx) => {
+      // Text before highlight
+      if (start > lastEnd) {
+        elements.push(
+          <span key={`hook-text-${idx}`} className="text-gray-700">
+            {hook.slice(lastEnd, start)}
+          </span>
+        );
+      }
+
+      // Highlighted text
+      const colors = sceneColors[data.color];
+      elements.push(
+        <mark
+          key={`hook-highlight-${idx}`}
+          className={cn(
+            "px-1 py-0.5 rounded",
+            colors.highlight,
+            colors.text
+          )}
+          title={data.title}
+        >
+          {hook.slice(start, data.end)}
+        </mark>
+      );
+
+      lastEnd = data.end;
+    });
+
+    // Text after last highlight
+    if (lastEnd < hook.length) {
+      elements.push(
+        <span key="hook-text-end" className="text-gray-700">
+          {hook.slice(lastEnd)}
+        </span>
+      );
+    }
+
+    return <span className="text-[13px] leading-relaxed">{elements}</span>;
   };
 
   if (!card) return null;
@@ -625,15 +717,12 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
         <div className="flex-1 flex overflow-hidden">
           {/* Script Section - Left side */}
           <div className="w-[320px] flex-shrink-0 border-r border-amber-100 bg-white/40 flex flex-col">
-            <div className="px-4 py-3 bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-100/80 flex items-center justify-between">
+            <div className="px-4 py-4 bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-100/80 flex items-center justify-between">
               <div>
                 <h3 className="font-semibold text-amber-800 flex items-center gap-2 text-sm">
                   <FileText className="w-4 h-4" />
                   Script
                 </h3>
-                <p className="text-[10px] text-amber-600/80 mt-0.5">
-                  Add scenes and write what you'll say
-                </p>
               </div>
               {!isEditingScript ? (
                 <Button
@@ -653,78 +742,83 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                 </Button>
               )}
             </div>
-            {/* Title at top of script section */}
-            <div className="px-4 pt-3 pb-2 border-b border-amber-100/60">
-              {isEditingTitle ? (
-                <input
-                  ref={titleInputRef}
-                  type="text"
-                  value={cardTitle}
-                  onChange={(e) => setCardTitle(e.target.value)}
-                  onBlur={() => setIsEditingTitle(false)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === 'Escape') {
-                      setIsEditingTitle(false);
-                    }
-                  }}
-                  className="text-base font-semibold text-amber-800 w-full bg-transparent border-none p-0 focus:outline-none focus:ring-0"
-                />
-              ) : (
-                <h2
-                  className="text-base font-semibold text-amber-800 cursor-pointer hover:text-amber-900 transition-colors"
-                  onClick={() => setIsEditingTitle(true)}
-                  title="Click to edit title"
-                >
-                  {cardTitle}
-                </h2>
-              )}
-            </div>
-
             <div
               className="p-4 relative flex-1 overflow-y-auto"
               ref={scriptRef}
             >
-              {isEditingScript ? (
-                <textarea
-                  autoFocus
-                  value={scriptContent}
-                  onChange={(e) => setScriptContent(e.target.value)}
-                  className="w-full h-full text-sm text-gray-700 leading-relaxed bg-transparent border-none p-0 resize-none focus:outline-none focus:ring-0"
-                  placeholder="Write your script here..."
-                />
-              ) : scriptContent ? (
-                <div className="-m-2 p-2">
-                  {renderScript()}
-                </div>
-              ) : (
-                <div
-                  onClick={() => setIsEditingScript(true)}
-                  className="flex items-center gap-4 py-4 text-center cursor-pointer hover:bg-amber-50/50 rounded-lg transition-colors"
-                >
-                  <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
-                    <FileText className="w-6 h-6 text-amber-400" />
+              {/* Hook section */}
+              <div className="mb-4">
+                <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Hook</p>
+                {isEditingScript ? (
+                  <input
+                    type="text"
+                    value={hookContent}
+                    onChange={(e) => setHookContent(e.target.value)}
+                    className="w-full text-[13px] text-gray-700 leading-relaxed bg-transparent border-none p-0 focus:outline-none focus:ring-0"
+                    placeholder="Enter your hook..."
+                  />
+                ) : (
+                  <p className="text-[13px] leading-relaxed">
+                    {hookContent ? renderHook() : <span className="text-gray-400 italic">No hook added</span>}
+                  </p>
+                )}
+              </div>
+
+              {/* Script section */}
+              <div>
+                <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Script</p>
+                {isEditingScript ? (
+                  <textarea
+                    autoFocus
+                    value={scriptContent}
+                    onChange={(e) => setScriptContent(e.target.value)}
+                    className="w-full h-full min-h-[200px] text-[13px] text-gray-700 leading-relaxed bg-transparent border-none p-0 resize-none focus:outline-none focus:ring-0"
+                    placeholder="Write your script here..."
+                  />
+                ) : scriptContent ? (
+                  <div className="-mx-2 px-2">
+                    {renderScript()}
                   </div>
-                  <div className="text-left">
-                    <h4 className="text-gray-600 font-medium">Click to add script</h4>
-                    <p className="text-sm text-gray-400">
-                      Add a script to start creating your storyboard
-                    </p>
+                ) : (
+                  <div
+                    onClick={() => setIsEditingScript(true)}
+                    className="flex items-center gap-4 py-4 text-center cursor-pointer hover:bg-amber-50/50 rounded-lg transition-colors"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
+                      <FileText className="w-6 h-6 text-amber-400" />
+                    </div>
+                    <div className="text-left">
+                      <h4 className="text-xs text-gray-600 font-medium">Click to add script</h4>
+                      <p className="text-xs text-gray-400">
+                        Add a script to start creating your storyboard
+                      </p>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
               {/* Card details - Formats, Platform, Filming Plan */}
               <div className="mt-4 pt-4 border-t border-amber-100/60 space-y-3">
                 {/* Formats (How it's shot) */}
                 {card?.formats && card.formats.length > 0 && (
                   <div>
-                    <h4 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-1">How it's shot</h4>
-                    <div className="flex flex-wrap gap-1">
-                      {card.formats.map((format, idx) => (
-                        <span key={idx} className="px-2 py-0.5 bg-purple-100 text-purple-700 text-[10px] rounded-full font-medium">
-                          {format}
-                        </span>
-                      ))}
+                    <h4 className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">How it's shot</h4>
+                    <div className="space-y-1">
+                      {card.formats.map((format, idx) => {
+                        const isPhoto = ['photo post', 'carousel', 'text post', 'photo', 'static'].some(
+                          p => format.toLowerCase().includes(p)
+                        );
+                        return (
+                          <div key={idx} className="flex items-center gap-2 text-[13px] text-gray-600">
+                            {isPhoto ? (
+                              <Camera className="w-4 h-4 text-gray-400" />
+                            ) : (
+                              <Video className="w-4 h-4 text-gray-400" />
+                            )}
+                            <span>{format}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -732,14 +826,23 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                 {/* Platforms */}
                 {card?.platforms && card.platforms.length > 0 && (
                   <div>
-                    <h4 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Platform</h4>
-                    <div className="flex flex-wrap gap-1">
+                    <h4 className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Platform</h4>
+                    <div className="flex items-center gap-3">
                       {card.platforms.map((platform, idx) => {
-                        const platformColors = getPlatformColors(platform);
-                        return (
-                          <span key={idx} className={`px-2 py-0.5 text-[10px] rounded-full font-medium ${platformColors.bg} ${platformColors.text}`}>
-                            {platform}
-                          </span>
+                        const lowercased = platform.toLowerCase();
+                        let Icon = null;
+                        if (lowercased.includes("youtube")) Icon = SiYoutube;
+                        else if (lowercased.includes("tiktok") || lowercased === "tt") Icon = SiTiktok;
+                        else if (lowercased.includes("instagram") || lowercased === "ig") Icon = SiInstagram;
+                        else if (lowercased.includes("facebook")) Icon = SiFacebook;
+                        else if (lowercased.includes("linkedin")) Icon = SiLinkedin;
+                        else if (lowercased.includes("twitter") || lowercased.includes("x.com") || lowercased.includes("x /")) Icon = RiTwitterXLine;
+                        else if (lowercased.includes("threads")) Icon = RiThreadsLine;
+
+                        return Icon ? (
+                          <Icon key={idx} className="w-4 h-4 text-gray-500" title={platform} />
+                        ) : (
+                          <span key={idx} className="text-[13px] text-gray-500">{platform}</span>
                         );
                       })}
                     </div>
@@ -749,29 +852,29 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                 {/* Filming Plan */}
                 {(card?.locationText || card?.outfitText || card?.propsText || card?.filmingNotes) && (
                   <div>
-                    <h4 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Filming Plan</h4>
-                    <div className="space-y-1 text-[11px] text-gray-600">
+                    <h4 className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Filming Plan</h4>
+                    <div className="space-y-1 text-[13px] text-gray-600">
                       {card?.locationText && (
-                        <div className="flex items-start gap-1">
-                          <span className="font-medium text-gray-500">📍</span>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
                           <span>{card.locationText}</span>
                         </div>
                       )}
                       {card?.outfitText && (
-                        <div className="flex items-start gap-1">
-                          <span className="font-medium text-gray-500">👕</span>
+                        <div className="flex items-center gap-2">
+                          <Shirt className="w-4 h-4 text-gray-400 flex-shrink-0" />
                           <span>{card.outfitText}</span>
                         </div>
                       )}
                       {card?.propsText && (
-                        <div className="flex items-start gap-1">
-                          <span className="font-medium text-gray-500">🎬</span>
+                        <div className="flex items-center gap-2">
+                          <Boxes className="w-4 h-4 text-gray-400 flex-shrink-0" />
                           <span>{card.propsText}</span>
                         </div>
                       )}
                       {card?.filmingNotes && (
-                        <div className="flex items-start gap-1">
-                          <span className="font-medium text-gray-500">📝</span>
+                        <div className="flex items-center gap-2">
+                          <NotebookPen className="w-4 h-4 text-gray-400 flex-shrink-0" />
                           <span>{card.filmingNotes}</span>
                         </div>
                       )}

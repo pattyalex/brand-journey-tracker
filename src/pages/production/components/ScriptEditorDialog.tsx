@@ -18,7 +18,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { getFormatColors, getPlatformColors } from "../utils/productionHelpers";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
-import { MoreHorizontal, Video, Camera, ChevronDown, X } from "lucide-react";
+import { MoreHorizontal, Video, Camera, ChevronDown, X, Circle, Wrench, CheckCircle2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 // Helper to get platform icon
 const getPlatformIcon = (platform: string): React.ReactNode => {
@@ -389,7 +390,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
             <Textarea
               value={scriptContent}
               onChange={(e) => setScriptContent(e.target.value)}
-              placeholder="Refine and finalize your script here..."
+              placeholder="Write your script here..."
               className="min-h-[300px] resize-none border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm leading-relaxed bg-gray-50"
             />
           </div>
@@ -484,37 +485,93 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
         </div>
 
         {/* Status Section */}
-        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-100">
-          <div className="space-y-4">
-            <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-              <span className="text-lg">✓</span> Status
-            </label>
-
-            <RadioGroup value={cardStatus || ""} onValueChange={(value) => setCardStatus(value as Exclude<CardStatus, null>)}>
+        <div className="bg-white rounded-xl border border-blue-100 shadow-sm overflow-hidden">
+          <div className="px-4 py-3 bg-blue-50/40 border-b border-gray-200">
+            <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+              <Circle className="w-4 h-4 text-blue-500" /> Scripting Status
+            </h3>
+            <p className="text-xs text-gray-500 mt-1">Track where you are in the scripting process</p>
+          </div>
+          <div className="p-4">
+            <div className="grid grid-cols-3 gap-3">
               {/* To Start */}
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-white/50 hover:bg-white/80 transition-colors">
-                <RadioGroupItem value="to-start" id="status-to-start" className="text-gray-500" />
-                <label htmlFor="status-to-start" className="text-sm font-medium text-gray-700 cursor-pointer flex-1">
-                  To start
-                </label>
-              </div>
+              <button
+                type="button"
+                onClick={() => setCardStatus('to-start')}
+                className={cn(
+                  "p-4 rounded-xl border-2 transition-all text-left",
+                  cardStatus === 'to-start'
+                    ? "border-blue-400 bg-blue-50"
+                    : "border-gray-200 bg-gray-50/50 hover:border-gray-300 hover:bg-gray-50"
+                )}
+              >
+                <div className={cn(
+                  "flex items-center gap-2 mb-2",
+                  cardStatus === 'to-start' ? "text-blue-600" : "text-gray-500"
+                )}>
+                  <Circle className="w-4 h-4" />
+                  <span className="font-semibold text-sm">To Start Scripting</span>
+                </div>
+                <p className={cn(
+                  "text-xs",
+                  cardStatus === 'to-start' ? "text-blue-600" : "text-gray-400"
+                )}>
+                  Haven't started yet
+                </p>
+              </button>
 
               {/* Needs More Work */}
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-white/50 hover:bg-white/80 transition-colors">
-                <RadioGroupItem value="needs-work" id="status-needs-work" className="text-yellow-500" />
-                <label htmlFor="status-needs-work" className="text-sm font-medium text-gray-700 cursor-pointer flex-1">
-                  Needs more work
-                </label>
-              </div>
+              <button
+                type="button"
+                onClick={() => setCardStatus('needs-work')}
+                className={cn(
+                  "p-4 rounded-xl border-2 transition-all text-left",
+                  cardStatus === 'needs-work'
+                    ? "border-amber-400 bg-amber-50"
+                    : "border-gray-200 bg-gray-50/50 hover:border-gray-300 hover:bg-gray-50"
+                )}
+              >
+                <div className={cn(
+                  "flex items-center gap-2 mb-2",
+                  cardStatus === 'needs-work' ? "text-amber-600" : "text-gray-500"
+                )}>
+                  <Wrench className="w-4 h-4" />
+                  <span className="font-semibold text-sm">Needs More Work</span>
+                </div>
+                <p className={cn(
+                  "text-xs",
+                  cardStatus === 'needs-work' ? "text-amber-600" : "text-gray-400"
+                )}>
+                  In progress, needs refinement
+                </p>
+              </button>
 
               {/* Ready to Film */}
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-white/50 hover:bg-white/80 transition-colors">
-                <RadioGroupItem value="ready" id="status-ready" className="text-green-600" />
-                <label htmlFor="status-ready" className="text-sm font-medium text-gray-700 cursor-pointer flex-1">
-                  Ready to film
-                </label>
-              </div>
-            </RadioGroup>
+              <button
+                type="button"
+                onClick={() => setCardStatus('ready')}
+                className={cn(
+                  "p-4 rounded-xl border-2 transition-all text-left",
+                  cardStatus === 'ready'
+                    ? "border-emerald-400 bg-emerald-50"
+                    : "border-gray-200 bg-gray-50/50 hover:border-gray-300 hover:bg-gray-50"
+                )}
+              >
+                <div className={cn(
+                  "flex items-center gap-2 mb-2",
+                  cardStatus === 'ready' ? "text-emerald-600" : "text-gray-500"
+                )}>
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span className="font-semibold text-sm">Ready to Film</span>
+                </div>
+                <p className={cn(
+                  "text-xs",
+                  cardStatus === 'ready' ? "text-emerald-600" : "text-gray-400"
+                )}>
+                  Script complete, ready to shoot!
+                </p>
+              </button>
+            </div>
           </div>
         </div>
       </div>
