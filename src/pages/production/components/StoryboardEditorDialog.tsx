@@ -40,6 +40,10 @@ import {
   Shirt,
   Boxes,
   NotebookPen,
+  Circle,
+  PlayCircle,
+  Wrench,
+  CheckCircle2,
 } from "lucide-react";
 import { ProductionCard, StoryboardScene } from "../types";
 import { shotTemplates, getShotTemplateById, ShotTemplate } from "../utils/shotTemplates";
@@ -94,7 +98,7 @@ interface StoryboardEditorDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   card: ProductionCard | null;
-  onSave: (storyboard: StoryboardScene[], title?: string, script?: string, hook?: string) => void;
+  onSave: (storyboard: StoryboardScene[], title?: string, script?: string, hook?: string, status?: "to-start" | "needs-work" | "ready" | null) => void;
 }
 
 // Sortable Scene Card Component
@@ -292,6 +296,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   const [hookContent, setHookContent] = useState("");
   const [scriptContent, setScriptContent] = useState("");
   const [isEditingScript, setIsEditingScript] = useState(false);
+  const [filmingStatus, setFilmingStatus] = useState<"to-start" | "needs-work" | "ready" | null>(null);
 
   // Shot suggestion state
   const [suggestingSceneId, setSuggestingSceneId] = useState<string | null>(null);
@@ -307,6 +312,9 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
 
   const scriptRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const leftPanelRef = useRef<HTMLDivElement>(null);
+  const rightPanelRef = useRef<HTMLDivElement>(null);
+
 
   // Initialize scenes, title, and script from card
   useEffect(() => {
@@ -320,6 +328,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
     }
     setHookContent(card?.hook || card?.title || "");
     setScriptContent(card?.script || "");
+    setFilmingStatus(card?.status || null);
     setIsEditingTitle(false);
     setIsEditingScript(false);
     setSuggestingSceneId(null);
@@ -329,10 +338,10 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   // Save on close
   const handleClose = useCallback((open: boolean) => {
     if (!open && card) {
-      onSave(scenes, cardTitle, scriptContent, hookContent);
+      onSave(scenes, cardTitle, scriptContent, hookContent, filmingStatus);
     }
     onOpenChange(open);
-  }, [card, scenes, cardTitle, scriptContent, hookContent, onSave, onOpenChange]);
+  }, [card, scenes, cardTitle, scriptContent, hookContent, filmingStatus, onSave, onOpenChange]);
 
   // Focus title input when editing
   useEffect(() => {
@@ -714,38 +723,41 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
         </DialogHeader>
 
         {/* Main content - side by side layout */}
-        <div className="flex-1 flex overflow-hidden">
-          {/* Script Section - Left side */}
-          <div className="w-[320px] flex-shrink-0 border-r border-amber-100 bg-white/40 flex flex-col">
-            <div className="px-4 py-4 bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-100/80 flex items-center justify-between">
-              <div>
+        <div
+          ref={leftPanelRef}
+          className="flex-1 overflow-y-auto"
+        >
+          <div className="flex" style={{ height: 'calc(100vh - 180px)' }}>
+            {/* Script Section - Left side */}
+            <div className="w-[320px] flex-shrink-0 border-r border-amber-100 bg-white/40">
+            <div
+              className="p-4"
+              ref={scriptRef}
+            >
+              {/* Script Header */}
+              <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-amber-800 flex items-center gap-2 text-sm">
                   <FileText className="w-4 h-4" />
                   Script
                 </h3>
+                {!isEditingScript ? (
+                  <Button
+                    size="sm"
+                    onClick={() => setIsEditingScript(true)}
+                    className="h-7 px-3 text-xs font-medium bg-amber-500 hover:bg-amber-600 text-white rounded-lg shadow-sm"
+                  >
+                    Edit
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    onClick={() => setIsEditingScript(false)}
+                    className="h-7 px-3 text-xs font-medium bg-green-500 hover:bg-green-600 text-white rounded-lg shadow-sm"
+                  >
+                    Done
+                  </Button>
+                )}
               </div>
-              {!isEditingScript ? (
-                <Button
-                  size="sm"
-                  onClick={() => setIsEditingScript(true)}
-                  className="h-7 px-3 text-xs font-medium bg-amber-500 hover:bg-amber-600 text-white rounded-lg shadow-sm"
-                >
-                  Edit
-                </Button>
-              ) : (
-                <Button
-                  size="sm"
-                  onClick={() => setIsEditingScript(false)}
-                  className="h-7 px-3 text-xs font-medium bg-green-500 hover:bg-green-600 text-white rounded-lg shadow-sm"
-                >
-                  Done
-                </Button>
-              )}
-            </div>
-            <div
-              className="p-4 relative flex-1 overflow-y-auto"
-              ref={scriptRef}
-            >
               {/* Hook section */}
               <div className="mb-4">
                 <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Hook</p>
@@ -882,12 +894,14 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                   </div>
                 )}
               </div>
+
             </div>
           </div>
 
           {/* Storyboard Section - Right side */}
-          <div className="flex-1 bg-white/30 flex flex-col overflow-hidden">
-            <div className="px-4 py-3 bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-100/80 flex-shrink-0 flex items-center justify-between">
+          <div className="flex-1 bg-white/30 flex flex-col">
+            {/* Sticky Header */}
+            <div className="flex-shrink-0 px-4 py-3 bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-100/80 flex items-center justify-between">
               <div>
                 <h3 className="font-semibold text-amber-800 flex items-center gap-2 text-sm">
                   <Film className="w-4 h-4" />
@@ -914,7 +928,12 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                 </Button>
               )}
             </div>
-            <div className="p-4 flex-1 overflow-y-auto">
+            {/* Scrollable scenes area */}
+            <div
+              ref={rightPanelRef}
+              className="flex-1 overflow-y-auto p-4"
+              onWheel={(e) => e.stopPropagation()}
+            >
               {scenes.length === 0 ? (
                 <div className="flex flex-col items-center text-center pt-24 h-full">
                   {/* AI Generate Button */}
@@ -1023,6 +1042,107 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                   </SortableContext>
                 </DndContext>
               )}
+            </div>
+          </div>
+          </div>
+
+          {/* Filming Status Section - Full Width at Bottom */}
+          <div className="px-6 py-4 bg-white border-t border-amber-100">
+            <div className="bg-white rounded-xl border border-amber-100 shadow-sm overflow-hidden">
+              <div className="px-4 py-3 bg-amber-50/40 border-b border-gray-200">
+                <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                  <Circle className="w-4 h-4 text-amber-400" /> Filming Status
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">Track where you are in the filming process</p>
+              </div>
+              <div className="p-3 space-y-2">
+                <button
+                  onClick={() => setFilmingStatus("to-start")}
+                  className={cn(
+                    "w-full p-3 rounded-lg border-2 transition-all text-left",
+                    filmingStatus === "to-start"
+                      ? "border-amber-400 bg-amber-50"
+                      : "border-gray-200 bg-gray-50/50 hover:border-gray-300 hover:bg-gray-50"
+                  )}
+                >
+                  <div className={cn(
+                    "flex items-center gap-2",
+                    filmingStatus === "to-start" ? "text-amber-600" : "text-gray-500"
+                  )}>
+                    <PlayCircle className="w-4 h-4" />
+                    <span className="font-semibold text-sm">To Start Filming</span>
+                  </div>
+                  <p className={cn(
+                    "text-xs mt-1 ml-6",
+                    filmingStatus === "to-start" ? "text-amber-600" : "text-gray-400"
+                  )}>
+                    Haven't started yet
+                  </p>
+                </button>
+                <button
+                  onClick={() => setFilmingStatus("needs-work")}
+                  className={cn(
+                    "w-full p-3 rounded-lg border-2 transition-all text-left",
+                    filmingStatus === "needs-work"
+                      ? "border-orange-400 bg-orange-50"
+                      : "border-gray-200 bg-gray-50/50 hover:border-gray-300 hover:bg-gray-50"
+                  )}
+                >
+                  <div className={cn(
+                    "flex items-center gap-2",
+                    filmingStatus === "needs-work" ? "text-orange-600" : "text-gray-500"
+                  )}>
+                    <Wrench className="w-4 h-4" />
+                    <span className="font-semibold text-sm">Needs More Work</span>
+                  </div>
+                  <p className={cn(
+                    "text-xs mt-1 ml-6",
+                    filmingStatus === "needs-work" ? "text-orange-600" : "text-gray-400"
+                  )}>
+                    In progress, needs refinement
+                  </p>
+                </button>
+                <button
+                  onClick={() => setFilmingStatus("ready")}
+                  className={cn(
+                    "w-full p-3 rounded-lg border-2 transition-all text-left",
+                    filmingStatus === "ready"
+                      ? "border-emerald-400 bg-emerald-50"
+                      : "border-gray-200 bg-gray-50/50 hover:border-gray-300 hover:bg-gray-50"
+                  )}
+                >
+                  <div className={cn(
+                    "flex items-center gap-2",
+                    filmingStatus === "ready" ? "text-emerald-600" : "text-gray-500"
+                  )}>
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span className="font-semibold text-sm">Ready to Edit</span>
+                  </div>
+                  <p className={cn(
+                    "text-xs mt-1 ml-6",
+                    filmingStatus === "ready" ? "text-emerald-600" : "text-gray-400"
+                  )}>
+                    Filming complete!
+                  </p>
+                </button>
+              </div>
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => handleClose(false)}
+                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => handleClose(false)}
+                className="bg-amber-500 hover:bg-amber-600 text-white"
+              >
+                Save Changes
+              </Button>
             </div>
           </div>
         </div>
