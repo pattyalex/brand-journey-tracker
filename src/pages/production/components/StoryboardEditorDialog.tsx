@@ -727,37 +727,70 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
           ref={leftPanelRef}
           className="flex-1 overflow-y-auto"
         >
-          <div className="flex" style={{ height: 'calc(100vh - 180px)' }}>
+          {/* Headers row - both headers scroll together */}
+          <div className="flex border-b border-amber-100/80">
+            {/* Script Header */}
+            <div className="w-[320px] flex-shrink-0 px-4 py-3 bg-gradient-to-r from-amber-50 to-orange-50 border-r border-amber-100 flex items-center justify-between">
+              <h3 className="font-semibold text-amber-800 flex items-center gap-2 text-sm">
+                <FileText className="w-4 h-4" />
+                Script
+              </h3>
+              {!isEditingScript ? (
+                <Button
+                  size="sm"
+                  onClick={() => setIsEditingScript(true)}
+                  className="h-7 px-3 text-xs font-medium bg-amber-500 hover:bg-amber-600 text-white rounded-lg shadow-sm"
+                >
+                  Edit
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  onClick={() => setIsEditingScript(false)}
+                  className="h-7 px-3 text-xs font-medium bg-green-500 hover:bg-green-600 text-white rounded-lg shadow-sm"
+                >
+                  Done
+                </Button>
+              )}
+            </div>
+            {/* Storyboard Header */}
+            <div className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-50 to-orange-50 flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-amber-800 flex items-center gap-2 text-sm">
+                  <Film className="w-4 h-4" />
+                  Storyboard
+                </h3>
+                <p className="text-[10px] text-amber-600/80 mt-0.5">
+                  {scenes.length} scene{scenes.length !== 1 ? 's' : ''}
+                </p>
+              </div>
+              {scenes.length > 0 && scriptContent && (
+                <Button
+                  onClick={handleGenerateStoryboard}
+                  disabled={isGeneratingStoryboard}
+                  size="sm"
+                  className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-lg text-xs shadow-sm"
+                >
+                  {isGeneratingStoryboard ? (
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-3 h-3 mr-1" />
+                  )}
+                  Regenerate
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Content row */}
+          <div className="flex" style={{ height: 'calc(100vh - 230px)' }}>
             {/* Script Section - Left side */}
             <div className="w-[320px] flex-shrink-0 border-r border-amber-100 bg-white/40">
-            <div
-              className="p-4"
-              ref={scriptRef}
-            >
-              {/* Script Header */}
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-amber-800 flex items-center gap-2 text-sm">
-                  <FileText className="w-4 h-4" />
-                  Script
-                </h3>
-                {!isEditingScript ? (
-                  <Button
-                    size="sm"
-                    onClick={() => setIsEditingScript(true)}
-                    className="h-7 px-3 text-xs font-medium bg-amber-500 hover:bg-amber-600 text-white rounded-lg shadow-sm"
-                  >
-                    Edit
-                  </Button>
-                ) : (
-                  <Button
-                    size="sm"
-                    onClick={() => setIsEditingScript(false)}
-                    className="h-7 px-3 text-xs font-medium bg-green-500 hover:bg-green-600 text-white rounded-lg shadow-sm"
-                  >
-                    Done
-                  </Button>
-                )}
-              </div>
+              {/* Script Content */}
+              <div
+                className="h-full overflow-y-auto p-4"
+                ref={scriptRef}
+              >
               {/* Hook section */}
               <div className="mb-4">
                 <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Hook</p>
@@ -895,43 +928,13 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                 )}
               </div>
 
-            </div>
-          </div>
-
-          {/* Storyboard Section - Right side */}
-          <div className="flex-1 bg-white/30 flex flex-col">
-            {/* Sticky Header */}
-            <div className="flex-shrink-0 px-4 py-3 bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-100/80 flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold text-amber-800 flex items-center gap-2 text-sm">
-                  <Film className="w-4 h-4" />
-                  Storyboard
-                </h3>
-                <p className="text-[10px] text-amber-600/80 mt-0.5">
-                  {scenes.length} scene{scenes.length !== 1 ? 's' : ''}
-                </p>
               </div>
-              {/* Regenerate button - only visible when user already has scenes */}
-              {scenes.length > 0 && scriptContent && (
-                <Button
-                  onClick={handleGenerateStoryboard}
-                  disabled={isGeneratingStoryboard}
-                  size="sm"
-                  className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-lg text-xs shadow-sm"
-                >
-                  {isGeneratingStoryboard ? (
-                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                  ) : (
-                    <Sparkles className="w-3 h-3 mr-1" />
-                  )}
-                  Regenerate
-                </Button>
-              )}
             </div>
-            {/* Scrollable scenes area */}
+
+            {/* Storyboard Section - Right side (scenes only, header is above) */}
             <div
               ref={rightPanelRef}
-              className="flex-1 overflow-y-auto p-4"
+              className="flex-1 bg-white/30 h-full overflow-y-auto p-4"
               onWheel={(e) => e.stopPropagation()}
             >
               {scenes.length === 0 ? (
@@ -1044,37 +1047,39 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
               )}
             </div>
           </div>
-          </div>
 
           {/* Filming Status Section - Full Width at Bottom */}
           <div className="px-6 py-4 bg-white border-t border-amber-100">
-            <div className="bg-white rounded-xl border border-amber-100 shadow-sm overflow-hidden">
-              <div className="px-4 py-3 bg-amber-50/40 border-b border-gray-200">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-100">
                 <h3 className="font-semibold text-gray-800 flex items-center gap-2">
                   <Circle className="w-4 h-4 text-amber-400" /> Filming Status
                 </h3>
                 <p className="text-xs text-gray-500 mt-1">Track where you are in the filming process</p>
               </div>
-              <div className="p-3 space-y-2">
+              <div className="p-4 grid grid-cols-3 gap-3">
                 <button
                   onClick={() => setFilmingStatus("to-start")}
                   className={cn(
-                    "w-full p-3 rounded-lg border-2 transition-all text-left",
+                    "p-4 rounded-xl border-2 transition-all text-left",
                     filmingStatus === "to-start"
-                      ? "border-amber-400 bg-amber-50"
-                      : "border-gray-200 bg-gray-50/50 hover:border-gray-300 hover:bg-gray-50"
+                      ? "border-orange-400 bg-orange-50"
+                      : "border-gray-200 bg-white hover:border-gray-300"
                   )}
                 >
                   <div className={cn(
                     "flex items-center gap-2",
-                    filmingStatus === "to-start" ? "text-amber-600" : "text-gray-500"
+                    filmingStatus === "to-start" ? "text-orange-500" : "text-gray-400"
                   )}>
                     <PlayCircle className="w-4 h-4" />
-                    <span className="font-semibold text-sm">To Start Filming</span>
+                    <span className={cn(
+                      "font-semibold text-sm",
+                      filmingStatus === "to-start" ? "text-orange-500" : "text-gray-700"
+                    )}>To Start Filming</span>
                   </div>
                   <p className={cn(
                     "text-xs mt-1 ml-6",
-                    filmingStatus === "to-start" ? "text-amber-600" : "text-gray-400"
+                    filmingStatus === "to-start" ? "text-orange-400" : "text-gray-400"
                   )}>
                     Haven't started yet
                   </p>
@@ -1082,22 +1087,25 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                 <button
                   onClick={() => setFilmingStatus("needs-work")}
                   className={cn(
-                    "w-full p-3 rounded-lg border-2 transition-all text-left",
+                    "p-4 rounded-xl border-2 transition-all text-left",
                     filmingStatus === "needs-work"
-                      ? "border-orange-400 bg-orange-50"
-                      : "border-gray-200 bg-gray-50/50 hover:border-gray-300 hover:bg-gray-50"
+                      ? "border-amber-400 bg-amber-50"
+                      : "border-gray-200 bg-white hover:border-gray-300"
                   )}
                 >
                   <div className={cn(
                     "flex items-center gap-2",
-                    filmingStatus === "needs-work" ? "text-orange-600" : "text-gray-500"
+                    filmingStatus === "needs-work" ? "text-amber-600" : "text-gray-400"
                   )}>
                     <Wrench className="w-4 h-4" />
-                    <span className="font-semibold text-sm">Needs More Work</span>
+                    <span className={cn(
+                      "font-semibold text-sm",
+                      filmingStatus === "needs-work" ? "text-amber-600" : "text-gray-700"
+                    )}>Needs More Work</span>
                   </div>
                   <p className={cn(
                     "text-xs mt-1 ml-6",
-                    filmingStatus === "needs-work" ? "text-orange-600" : "text-gray-400"
+                    filmingStatus === "needs-work" ? "text-amber-500" : "text-gray-400"
                   )}>
                     In progress, needs refinement
                   </p>
@@ -1105,24 +1113,27 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                 <button
                   onClick={() => setFilmingStatus("ready")}
                   className={cn(
-                    "w-full p-3 rounded-lg border-2 transition-all text-left",
+                    "p-4 rounded-xl border-2 transition-all text-left",
                     filmingStatus === "ready"
                       ? "border-emerald-400 bg-emerald-50"
-                      : "border-gray-200 bg-gray-50/50 hover:border-gray-300 hover:bg-gray-50"
+                      : "border-gray-200 bg-white hover:border-gray-300"
                   )}
                 >
                   <div className={cn(
                     "flex items-center gap-2",
-                    filmingStatus === "ready" ? "text-emerald-600" : "text-gray-500"
+                    filmingStatus === "ready" ? "text-emerald-600" : "text-gray-400"
                   )}>
                     <CheckCircle2 className="w-4 h-4" />
-                    <span className="font-semibold text-sm">Ready to Edit</span>
+                    <span className={cn(
+                      "font-semibold text-sm",
+                      filmingStatus === "ready" ? "text-emerald-600" : "text-gray-700"
+                    )}>Filmed</span>
                   </div>
                   <p className={cn(
                     "text-xs mt-1 ml-6",
-                    filmingStatus === "ready" ? "text-emerald-600" : "text-gray-400"
+                    filmingStatus === "ready" ? "text-emerald-500" : "text-gray-400"
                   )}>
-                    Filming complete!
+                    Ready to move to editing
                   </p>
                 </button>
               </div>

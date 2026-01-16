@@ -182,9 +182,9 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
     },
     {
       value: "ready-to-schedule",
-      label: "Ready to Schedule",
+      label: "Edited",
       icon: <CheckCircle2 className="w-4 h-4" />,
-      description: "Editing complete!"
+      description: "Ready to move to scheduling"
     },
   ];
 

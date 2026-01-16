@@ -546,7 +546,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                 </p>
               </button>
 
-              {/* Ready to Film */}
+              {/* Scripted */}
               <button
                 type="button"
                 onClick={() => setCardStatus('ready')}
@@ -562,13 +562,13 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                   cardStatus === 'ready' ? "text-emerald-600" : "text-gray-500"
                 )}>
                   <CheckCircle2 className="w-4 h-4" />
-                  <span className="font-semibold text-sm">Ready to Film</span>
+                  <span className="font-semibold text-sm">Scripted</span>
                 </div>
                 <p className={cn(
                   "text-xs",
                   cardStatus === 'ready' ? "text-emerald-600" : "text-gray-400"
                 )}>
-                  Script complete, ready to shoot!
+                  Ready to move to filming
                 </p>
               </button>
             </div>

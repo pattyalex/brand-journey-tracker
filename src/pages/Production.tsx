@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, MoreVertical, Trash2, Pencil, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard, Video, Circle, Wrench, CheckCircle2, Camera, CheckSquare, Scissors } from "lucide-react";
+import { PlusCircle, MoreVertical, Trash2, Pencil, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard, Video, Circle, Wrench, CheckCircle2, Camera, CheckSquare, Scissors, PlayCircle, PenLine } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine, RiPushpinFill } from "react-icons/ri";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -588,20 +588,29 @@ const Production = () => {
       } else if (column.id === actualTargetColumnId) {
         // Adding to target column (from different column)
         const filtered = column.cards.filter(filterCard);
-        // Set status to 'to-start' if moving to shape-ideas column and card doesn't already have a status
+        // Auto-set status when moving between columns
         // Auto-unpin if moving to 'posted' column (finished work shouldn't be on dashboard)
         let cardToAdd = { ...draggedCard, columnId: column.id };
+
+        // Set status to 'to-start' if moving to shape-ideas column and card doesn't already have a status
         if (column.id === 'shape-ideas' && !draggedCard.status) {
           cardToAdd = { ...cardToAdd, status: 'to-start' as const };
         }
+
+        // Auto-set filming status to 'to-start' when moving to 'to-film' column
+        if (column.id === 'to-film') {
+          cardToAdd = { ...cardToAdd, status: 'to-start' as const };
+        }
+
         if (column.id === 'posted' && draggedCard.isPinned) {
           cardToAdd = { ...cardToAdd, isPinned: false };
           toast.info("Auto-unpinned", {
             description: "Posted content is removed from your dashboard"
           });
         }
+
         // Auto-set editing status to 'to-start-editing' when moving to 'to-edit' column
-        if (column.id === 'to-edit' && !draggedCard.editingChecklist?.status) {
+        if (column.id === 'to-edit') {
           cardToAdd = {
             ...cardToAdd,
             editingChecklist: {
@@ -1466,7 +1475,7 @@ const Production = () => {
                                         handleOpenScriptEditor(card);
                                       }}
                                     >
-                                      <Pencil className="h-2.5 w-2.5 text-gray-400 hover:text-blue-600" />
+                                      <PenLine className="h-2.5 w-2.5 text-gray-400 hover:text-blue-600" />
                                     </Button>
                                   )}
                                   {column.id === "to-film" && (
@@ -1589,21 +1598,30 @@ const Production = () => {
                                         {/* Show editing status for To Edit column, otherwise show filming status */}
                                         {column.id === 'to-edit' ? (
                                           <>
-                                            {editingStatus === 'to-start-editing' && <Circle className="w-2.5 h-2.5" />}
+                                            {editingStatus === 'to-start-editing' && <Scissors className="w-2.5 h-2.5" />}
                                             {editingStatus === 'needs-more-editing' && <Wrench className="w-2.5 h-2.5" />}
-                                            {editingStatus === 'ready-to-schedule' && <CheckCircle2 className="w-2.5 h-2.5" />}
+                                            {editingStatus === 'ready-to-schedule' && <Check className="w-2.5 h-2.5" />}
                                             {editingStatus === 'to-start-editing' ? 'To start editing' :
                                              editingStatus === 'needs-more-editing' ? 'Needs more work' :
-                                             editingStatus === 'ready-to-schedule' ? 'Ready to schedule' : ''}
+                                             editingStatus === 'ready-to-schedule' ? 'Edited' : ''}
+                                          </>
+                                        ) : column.id === 'to-film' ? (
+                                          <>
+                                            {card.status === 'to-start' && <Clapperboard className="w-2.5 h-2.5" />}
+                                            {card.status === 'needs-work' && <Wrench className="w-2.5 h-2.5" />}
+                                            {card.status === 'ready' && <Check className="w-2.5 h-2.5" />}
+                                            {card.status === 'to-start' ? 'To start filming' :
+                                             card.status === 'needs-work' ? 'Needs more work' :
+                                             card.status === 'ready' ? 'Filmed' : ''}
                                           </>
                                         ) : (
                                           <>
-                                            {card.status === 'to-start' && <Circle className="w-2.5 h-2.5" />}
+                                            {card.status === 'to-start' && <PenLine className="w-2.5 h-2.5" />}
                                             {card.status === 'needs-work' && <Wrench className="w-2.5 h-2.5" />}
-                                            {card.status === 'ready' && <CheckCircle2 className="w-2.5 h-2.5" />}
+                                            {card.status === 'ready' && <Check className="w-2.5 h-2.5" />}
                                             {card.status === 'to-start' ? 'To start scripting' :
                                              card.status === 'needs-work' ? 'Needs more work' :
-                                             card.status === 'ready' ? 'Ready to film' : ''}
+                                             card.status === 'ready' ? 'Scripted' : ''}
                                           </>
                                         )}
                                       </span>
