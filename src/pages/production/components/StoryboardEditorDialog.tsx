@@ -26,6 +26,7 @@ import { ProductionCard, StoryboardScene } from "../types";
 import { shotTemplates, getShotTemplateById, ShotTemplate } from "../utils/shotTemplates";
 import { getPlatformColors } from "../utils/productionHelpers";
 import { suggestShotsForScene, ShotSuggestion } from "../utils/shotSuggestionService";
+import { generateStoryboardFromScript, convertToStoryboardScenes } from "../utils/storyboardGenerationService";
 import { toast } from "sonner";
 import ShotLibraryDialog from "./ShotLibraryDialog";
 
@@ -96,6 +97,9 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   // Shot library state
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [librarySceneId, setLibrarySceneId] = useState<string | null>(null);
+
+  // AI generation state
+  const [isGeneratingStoryboard, setIsGeneratingStoryboard] = useState(false);
 
   const scriptRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
@@ -236,6 +240,42 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
     setSuggestingSceneId(null);
     setSuggestions([]);
   }, []);
+
+  // AI-powered storyboard generation
+  const handleGenerateStoryboard = useCallback(async () => {
+    if (!scriptContent || scriptContent.trim().length < 10) {
+      toast.error("Please add a script first before generating a storyboard.");
+      return;
+    }
+
+    setIsGeneratingStoryboard(true);
+    toast.loading("AI is analyzing your script...", { id: "generating-storyboard" });
+
+    const result = await generateStoryboardFromScript(
+      scriptContent,
+      card?.formats?.[0],
+      card?.platforms?.[0]
+    );
+
+    setIsGeneratingStoryboard(false);
+    toast.dismiss("generating-storyboard");
+
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+
+    if (result.scenes.length === 0) {
+      toast.error("No scenes were generated. Please try again.");
+      return;
+    }
+
+    // Convert to StoryboardScene format and set
+    const storyboardScenes = convertToStoryboardScenes(result.scenes);
+    setScenes(storyboardScenes);
+
+    toast.success(`Generated ${storyboardScenes.length} scenes from your script!`);
+  }, [scriptContent, card]);
 
   // Normalize apostrophes and quotes for matching
   const normalize = (text: string) => text
@@ -518,34 +558,90 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
 
           {/* Storyboard Section - Right side */}
           <div className="flex-1 bg-white/30 flex flex-col overflow-hidden">
-            <div className="px-4 py-3 bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-100/80 flex-shrink-0">
-              <h3 className="font-semibold text-amber-800 flex items-center gap-2 text-sm">
-                <Film className="w-4 h-4" />
-                Storyboard
-              </h3>
-              <p className="text-[10px] text-amber-600/80 mt-0.5">
-                {scenes.length} scene{scenes.length !== 1 ? 's' : ''}
-              </p>
+            <div className="px-4 py-3 bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-100/80 flex-shrink-0 flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-amber-800 flex items-center gap-2 text-sm">
+                  <Film className="w-4 h-4" />
+                  Storyboard
+                </h3>
+                <p className="text-[10px] text-amber-600/80 mt-0.5">
+                  {scenes.length} scene{scenes.length !== 1 ? 's' : ''}
+                </p>
+              </div>
+              {/* Auto-generate button - only visible when user has scenes (clicked Add Manually) */}
+              {scenes.length > 0 && scriptContent && (
+                <Button
+                  onClick={handleGenerateStoryboard}
+                  disabled={isGeneratingStoryboard}
+                  size="sm"
+                  className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-lg text-xs shadow-sm"
+                >
+                  {isGeneratingStoryboard ? (
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-3 h-3 mr-1" />
+                  )}
+                  Auto-Generate
+                </Button>
+              )}
             </div>
             <div className="p-4 flex-1 overflow-y-auto">
               {scenes.length === 0 ? (
-                <div className="flex flex-col items-center justify-center text-center py-8 h-full">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center mb-3 shadow-inner">
-                    <Sparkles className="w-6 h-6 text-amber-400" />
-                  </div>
-                  <h4 className="text-gray-700 font-semibold text-sm mb-1">Start Your Storyboard</h4>
-                  <p className="text-xs text-gray-400 max-w-[200px] mb-4">
-                    Add scenes and describe what you'll say in each
-                  </p>
-                  <Button
-                    onClick={handleAddScene}
-                    variant="outline"
-                    size="sm"
-                    className="border-2 border-dashed border-amber-300 text-amber-700 hover:bg-amber-50 hover:border-amber-400 rounded-lg text-xs"
+                <div className="flex flex-col items-center text-center pt-24 h-full">
+                  {/* AI Generate Button */}
+                  <button
+                    onClick={handleGenerateStoryboard}
+                    disabled={isGeneratingStoryboard || !scriptContent}
+                    className={cn(
+                      "w-16 h-16 rounded-2xl flex items-center justify-center mb-4 shadow-lg transition-all",
+                      scriptContent
+                        ? "bg-gradient-to-br from-amber-100 to-orange-100 hover:from-amber-200 hover:to-orange-200 cursor-pointer hover:scale-105"
+                        : "bg-gray-100 cursor-not-allowed opacity-50"
+                    )}
                   >
-                    <Plus className="w-3 h-3 mr-1" />
-                    Add Scene
-                  </Button>
+                    {isGeneratingStoryboard ? (
+                      <Loader2 className="w-7 h-7 text-amber-500 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-7 h-7 text-amber-500" />
+                    )}
+                  </button>
+                  <h4 className="text-gray-700 font-semibold text-sm mb-1">Start Your Storyboard</h4>
+                  <p className="text-xs text-gray-400 max-w-[220px] mb-4">
+                    {scriptContent
+                      ? "Auto-generate scenes from your script, or add them manually"
+                      : "Add a script first to auto-generate, or create scenes manually"}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    {scriptContent && (
+                      <Button
+                        onClick={handleGenerateStoryboard}
+                        disabled={isGeneratingStoryboard}
+                        size="sm"
+                        className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-lg text-xs shadow-md"
+                      >
+                        {isGeneratingStoryboard ? (
+                          <>
+                            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                            Generating...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-3 h-3 mr-1" />
+                            Auto-Generate
+                          </>
+                        )}
+                      </Button>
+                    )}
+                    <Button
+                      onClick={handleAddScene}
+                      variant="outline"
+                      size="sm"
+                      className="border-2 border-dashed border-amber-300 text-amber-700 hover:bg-amber-50 hover:border-amber-400 rounded-lg text-xs"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      Add Manually
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div>
