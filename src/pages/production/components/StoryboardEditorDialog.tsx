@@ -1,5 +1,22 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -76,6 +93,189 @@ interface StoryboardEditorDialogProps {
   card: ProductionCard | null;
   onSave: (storyboard: StoryboardScene[], title?: string, script?: string) => void;
 }
+
+// Sortable Scene Card Component
+interface SortableSceneCardProps {
+  scene: StoryboardScene;
+  sceneNumber: number;
+  colors: typeof sceneColors[keyof typeof sceneColors];
+  selectedTemplate: ShotTemplate | null;
+  isSuggesting: boolean;
+  isLoadingSuggestions: boolean;
+  suggestions: ShotSuggestion[];
+  onUpdate: (id: string, updates: Partial<StoryboardScene>) => void;
+  onDelete: (id: string) => void;
+  onOpenLibrary: (id: string) => void;
+  onCloseSuggestions: () => void;
+  onSelectShot: (sceneId: string, templateId: string) => void;
+}
+
+const SortableSceneCard: React.FC<SortableSceneCardProps> = ({
+  scene,
+  sceneNumber,
+  colors,
+  selectedTemplate,
+  isSuggesting,
+  isLoadingSuggestions,
+  suggestions,
+  onUpdate,
+  onDelete,
+  onOpenLibrary,
+  onCloseSuggestions,
+  onSelectShot,
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: scene.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={cn(
+        "relative rounded-xl p-2 border-2 bg-white hover:shadow-md group flex flex-col overflow-hidden h-[258px] cursor-grab active:cursor-grabbing",
+        isDragging ? "shadow-2xl border-amber-400 ring-2 ring-amber-300 z-50" : "border-gray-200"
+      )}
+    >
+      {/* Scene header */}
+      <div className="flex items-center justify-between relative z-10">
+        <span className="font-bold text-xs text-gray-800">Scene {sceneNumber}</span>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="opacity-0 group-hover:opacity-100 transition-opacity h-5 w-5 p-0 hover:bg-red-50 hover:text-red-600 rounded flex-shrink-0"
+          onClick={(e) => { e.stopPropagation(); onDelete(scene.id); }}
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          <Trash2 className="w-3 h-3" />
+        </Button>
+      </div>
+
+      {/* Shot name */}
+      {selectedTemplate && (
+        <div className="flex items-center justify-center gap-1 -mt-2 relative z-10">
+          <Video className="w-3 h-3 text-purple-500" />
+          <span className="text-xs font-medium text-gray-600">{selectedTemplate.user_facing_name}</span>
+        </div>
+      )}
+
+      {/* Shot image */}
+      <div className="h-[100px] flex items-center justify-center relative z-10">
+        {selectedTemplate && shotIllustrations[selectedTemplate.id] ? (
+          <button
+            onClick={(e) => { e.stopPropagation(); onOpenLibrary(scene.id); }}
+            onMouseDown={(e) => e.stopPropagation()}
+            className="w-full h-full max-h-[90px] rounded-lg bg-white/80 border border-gray-200 overflow-hidden shadow-sm flex items-center justify-center hover:border-amber-400 transition-colors"
+          >
+            <img
+              src={shotIllustrations[selectedTemplate.id]}
+              alt={selectedTemplate.user_facing_name}
+              className="h-full object-contain"
+            />
+          </button>
+        ) : (
+          <button
+            onClick={(e) => { e.stopPropagation(); onOpenLibrary(scene.id); }}
+            onMouseDown={(e) => e.stopPropagation()}
+            className="w-14 h-14 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-amber-400 hover:bg-amber-50 transition-all group/add"
+          >
+            <Plus className="w-6 h-6 text-gray-400 group-hover/add:text-amber-500 transition-colors" />
+          </button>
+        )}
+      </div>
+
+      {/* Visual notes and script */}
+      <div className="relative z-10 mt-auto">
+        <textarea
+          value={scene.visualNotes}
+          onChange={(e) => onUpdate(scene.id, { visualNotes: e.target.value })}
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          className="mt-1 text-xs bg-white/60 border border-gray-200 rounded-lg w-full resize-none focus:outline-none focus:ring-1 focus:ring-amber-300 text-gray-700 placeholder:text-gray-400 p-2 h-[55px]"
+          placeholder="Describe your visual..."
+        />
+        <textarea
+          value={scene.scriptExcerpt || ''}
+          onChange={(e) => onUpdate(scene.id, { scriptExcerpt: e.target.value })}
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          className={cn(
+            "text-xs px-2 py-1.5 rounded-lg border h-[50px] w-full resize-none italic focus:outline-none focus:ring-1 focus:ring-amber-300",
+            colors.bg,
+            colors.border,
+            colors.text
+          )}
+          placeholder="What you'll say..."
+        />
+      </div>
+
+      {/* Shot Suggestions Panel */}
+      <AnimatePresence>
+        {isSuggesting && suggestions.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="absolute inset-0 bg-white/95 backdrop-blur-sm rounded-2xl p-3 z-20 flex flex-col"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-xs font-semibold text-gray-700 flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-purple-500" />
+                Suggested shots
+              </h4>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-5 w-5 p-0 hover:bg-gray-100 rounded"
+                onClick={(e) => { e.stopPropagation(); onCloseSuggestions(); }}
+                onMouseDown={(e) => e.stopPropagation()}
+              >
+                <X className="w-3 h-3" />
+              </Button>
+            </div>
+            <div className="flex-1 overflow-y-auto space-y-2">
+              {suggestions.map((suggestion) => (
+                <button
+                  key={suggestion.template_id}
+                  className="w-full text-left p-2 rounded-xl border-2 border-gray-200 hover:border-purple-400 hover:bg-purple-50 transition-all group/item"
+                  onClick={(e) => { e.stopPropagation(); onSelectShot(scene.id, suggestion.template_id); }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-start gap-2">
+                    <div className="w-6 h-6 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0 group-hover/item:bg-purple-200 transition-colors">
+                      <Camera className="w-3 h-3 text-purple-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-semibold text-gray-800">
+                        {suggestion.template.user_facing_name}
+                      </p>
+                      <p className="text-[10px] text-gray-500 leading-snug">
+                        {suggestion.reason}
+                      </p>
+                    </div>
+                    <Check className="w-4 h-4 text-purple-500 opacity-0 group-hover/item:opacity-100 transition-opacity flex-shrink-0" />
+                  </div>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   open,
@@ -173,6 +373,32 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   // Delete scene
   const deleteScene = useCallback((id: string) => {
     setScenes(prev => prev.filter(scene => scene.id !== id));
+  }, []);
+
+  // Configure sensors for drag and drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px movement before drag starts
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Handle drag end
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setScenes(prev => {
+        const oldIndex = prev.findIndex(s => s.id === active.id);
+        const newIndex = prev.findIndex(s => s.id === over.id);
+        const newScenes = arrayMove(prev, oldIndex, newIndex);
+        return newScenes.map((scene, idx) => ({ ...scene, order: idx }));
+      });
+    }
   }, []);
 
   // Handle suggest shots
@@ -568,7 +794,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                   {scenes.length} scene{scenes.length !== 1 ? 's' : ''}
                 </p>
               </div>
-              {/* Auto-generate button - only visible when user has scenes (clicked Add Manually) */}
+              {/* Regenerate button - only visible when user already has scenes */}
               {scenes.length > 0 && scriptContent && (
                 <Button
                   onClick={handleGenerateStoryboard}
@@ -581,7 +807,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                   ) : (
                     <Sparkles className="w-3 h-3 mr-1" />
                   )}
-                  Auto-Generate
+                  Regenerate
                 </Button>
               )}
             </div>
@@ -644,168 +870,55 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                   </div>
                 </div>
               ) : (
-                <div>
-                  {/* Grid of scene cards - 3 per row, smaller */}
-                  <div className="grid grid-cols-3 gap-2">
-                    {scenes.map((scene, idx) => {
-                      const colors = sceneColors[scene.color];
-                      const selectedTemplate = scene.selectedShotTemplateId
-                        ? getShotTemplateById(scene.selectedShotTemplateId)
-                        : null;
-                      const isSuggesting = suggestingSceneId === scene.id;
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={scenes.map(s => s.id)}
+                    strategy={rectSortingStrategy}
+                  >
+                    <div className="grid grid-cols-3 gap-2">
+                      {scenes.map((scene, index) => {
+                        const colors = sceneColors[scene.color];
+                        const selectedTemplate = scene.selectedShotTemplateId
+                          ? getShotTemplateById(scene.selectedShotTemplateId)
+                          : null;
+                        const isSuggesting = suggestingSceneId === scene.id;
 
-                      return (
-                        <motion.div
-                          key={scene.id}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.9 }}
-                          transition={{ delay: idx * 0.05 }}
-                          className="relative rounded-xl p-2 border-2 border-gray-200 bg-white transition-all hover:shadow-md group flex flex-col overflow-hidden h-[258px]"
-                        >
-                          {/* Scene header - title on left, delete on right */}
-                          <div className="flex items-center justify-between relative z-10">
-                            {/* Scene title */}
-                            <input
-                              type="text"
-                              value={scene.title}
-                              onChange={(e) => updateScene(scene.id, { title: e.target.value })}
-                              className="font-bold bg-transparent border-none w-20 focus:outline-none focus:ring-0 placeholder:text-gray-400 text-xs text-gray-800"
-                              placeholder="Scene..."
-                            />
+                        return (
+                          <SortableSceneCard
+                            key={scene.id}
+                            scene={scene}
+                            sceneNumber={index + 1}
+                            colors={colors}
+                            selectedTemplate={selectedTemplate}
+                            isSuggesting={isSuggesting}
+                            isLoadingSuggestions={isLoadingSuggestions}
+                            suggestions={suggestions}
+                            onUpdate={updateScene}
+                            onDelete={deleteScene}
+                            onOpenLibrary={handleOpenLibrary}
+                            onCloseSuggestions={handleCloseSuggestions}
+                            onSelectShot={handleSelectShot}
+                          />
+                        );
+                      })}
 
-                            {/* Delete button */}
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="opacity-0 group-hover:opacity-100 transition-opacity h-5 w-5 p-0 hover:bg-red-50 hover:text-red-600 rounded flex-shrink-0"
-                              onClick={() => deleteScene(scene.id)}
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </Button>
-                          </div>
-
-                          {/* Shot name - centered */}
-                          {selectedTemplate && (
-                            <div className="flex items-center justify-center gap-1 -mt-2 relative z-10">
-                              <Video className="w-3 h-3 text-purple-500" />
-                              <span className="text-xs font-medium text-gray-600">{selectedTemplate.user_facing_name}</span>
-                            </div>
-                          )}
-
-                          {/* Top half - Shot image */}
-                          <div className="h-[100px] flex items-center justify-center relative z-10">
-                            {selectedTemplate && shotIllustrations[selectedTemplate.id] ? (
-                              <button
-                                onClick={() => handleOpenLibrary(scene.id)}
-                                className="w-full h-full max-h-[90px] rounded-lg bg-white/80 border border-gray-200 overflow-hidden shadow-sm flex items-center justify-center hover:border-amber-400 transition-colors"
-                              >
-                                <img
-                                  src={shotIllustrations[selectedTemplate.id]}
-                                  alt={selectedTemplate.user_facing_name}
-                                  className="h-full object-contain"
-                                />
-                              </button>
-                            ) : (
-                              <button
-                                onClick={() => handleOpenLibrary(scene.id)}
-                                className="w-14 h-14 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-amber-400 hover:bg-amber-50 transition-all group/add"
-                              >
-                                <Plus className="w-6 h-6 text-gray-400 group-hover/add:text-amber-500 transition-colors" />
-                              </button>
-                            )}
-                          </div>
-
-                          {/* Bottom half - Visual notes and script */}
-                          <div className="relative z-10 mt-auto">
-                            {/* Visual notes */}
-                            <textarea
-                              value={scene.visualNotes}
-                              onChange={(e) => updateScene(scene.id, { visualNotes: e.target.value })}
-                              className="mt-1 text-xs bg-white/60 border border-gray-200 rounded-lg w-full resize-none focus:outline-none focus:ring-1 focus:ring-amber-300 text-gray-700 placeholder:text-gray-400 p-2 h-[55px]"
-                              placeholder="Describe your visual..."
-                            />
-
-                            {/* Script excerpt - editable */}
-                            <textarea
-                              value={scene.scriptExcerpt || ''}
-                              onChange={(e) => updateScene(scene.id, { scriptExcerpt: e.target.value })}
-                              className={cn(
-                                "text-xs px-2 py-1.5 rounded-lg border h-[50px] w-full resize-none italic focus:outline-none focus:ring-1 focus:ring-amber-300",
-                                colors.bg,
-                                colors.border,
-                                colors.text
-                              )}
-                              placeholder="What you'll say in this scene..."
-                            />
-                          </div>
-
-                          {/* Shot Suggestions Panel */}
-                          <AnimatePresence>
-                            {isSuggesting && suggestions.length > 0 && (
-                              <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 10 }}
-                                className="absolute inset-0 bg-white/95 backdrop-blur-sm rounded-2xl p-3 z-20 flex flex-col"
-                              >
-                                <div className="flex items-center justify-between mb-2">
-                                  <h4 className="text-xs font-semibold text-gray-700 flex items-center gap-1">
-                                    <Sparkles className="w-3 h-3 text-purple-500" />
-                                    Suggested shots
-                                  </h4>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-5 w-5 p-0 hover:bg-gray-100 rounded"
-                                    onClick={handleCloseSuggestions}
-                                  >
-                                    <X className="w-3 h-3" />
-                                  </Button>
-                                </div>
-                                <div className="flex-1 overflow-y-auto space-y-2">
-                                  {suggestions.map((suggestion) => (
-                                    <button
-                                      key={suggestion.template_id}
-                                      className="w-full text-left p-2 rounded-xl border-2 border-gray-200 hover:border-purple-400 hover:bg-purple-50 transition-all group/item"
-                                      onClick={() => handleSelectShot(scene.id, suggestion.template_id)}
-                                    >
-                                      <div className="flex items-start gap-2">
-                                        <div className="w-6 h-6 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0 group-hover/item:bg-purple-200 transition-colors">
-                                          <Camera className="w-3 h-3 text-purple-600" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                          <p className="text-[11px] font-semibold text-gray-800">
-                                            {suggestion.template.user_facing_name}
-                                          </p>
-                                          <p className="text-[10px] text-gray-500 leading-snug">
-                                            {suggestion.reason}
-                                          </p>
-                                        </div>
-                                        <Check className="w-4 h-4 text-purple-500 opacity-0 group-hover/item:opacity-100 transition-opacity flex-shrink-0" />
-                                      </div>
-                                    </button>
-                                  ))}
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </motion.div>
-                      );
-                    })}
-
-                    {/* Add Scene Card */}
-                    <motion.button
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      onClick={handleAddScene}
-                      className="h-[258px] border-2 border-dashed border-amber-300 rounded-xl text-amber-600 hover:border-amber-400 hover:bg-amber-50/50 transition-all flex flex-col items-center justify-center gap-1 group"
-                    >
-                      <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
-                      <span className="font-medium text-[10px]">Add Scene</span>
-                    </motion.button>
-                  </div>
-                </div>
+                      {/* Add Scene Card */}
+                      <motion.button
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        onClick={handleAddScene}
+                        className="h-[258px] border-2 border-dashed border-amber-300 rounded-xl text-amber-600 hover:border-amber-400 hover:bg-amber-50/50 transition-all flex flex-col items-center justify-center gap-1 group"
+                      >
+                        <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
+                        <span className="font-medium text-[10px]">Add Scene</span>
+                      </motion.button>
+                    </div>
+                  </SortableContext>
+                </DndContext>
               )}
             </div>
           </div>
