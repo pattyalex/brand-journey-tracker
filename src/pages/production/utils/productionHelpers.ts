@@ -1,30 +1,30 @@
 export const getPlatformColors = (platform: string): { bg: string; text: string; hover: string } => {
   const lowercased = platform.toLowerCase();
   if (lowercased.includes("instagram") || lowercased === "ig") {
-    return { bg: "bg-pink-100", text: "text-pink-700", hover: "hover:bg-pink-200" };
+    return { bg: "bg-pink-50 border border-pink-200", text: "text-pink-600", hover: "hover:bg-pink-100" };
   }
   if (lowercased.includes("tiktok") || lowercased === "tt") {
-    return { bg: "bg-gray-900", text: "text-white", hover: "hover:bg-gray-800" };
+    return { bg: "bg-gray-50 border border-gray-300", text: "text-gray-700", hover: "hover:bg-gray-100" };
   }
   if (lowercased.includes("youtube")) {
-    return { bg: "bg-red-600", text: "text-white", hover: "hover:bg-red-700" };
+    return { bg: "bg-red-50 border border-red-200", text: "text-red-600", hover: "hover:bg-red-100" };
   }
   if (lowercased.includes("facebook")) {
-    return { bg: "bg-blue-600", text: "text-white", hover: "hover:bg-blue-700" };
+    return { bg: "bg-blue-50 border border-blue-200", text: "text-blue-600", hover: "hover:bg-blue-100" };
   }
   if (lowercased.includes("twitter") || lowercased.includes("x.com") || lowercased.includes("x /") || lowercased.includes("threads")) {
-    return { bg: "bg-gray-500", text: "text-white", hover: "hover:bg-gray-600" };
+    return { bg: "bg-gray-50 border border-gray-300", text: "text-gray-600", hover: "hover:bg-gray-100" };
   }
   if (lowercased.includes("linkedin")) {
-    return { bg: "bg-indigo-100", text: "text-indigo-700", hover: "hover:bg-indigo-200" };
+    return { bg: "bg-indigo-50 border border-indigo-200", text: "text-indigo-600", hover: "hover:bg-indigo-100" };
   }
-  return { bg: "bg-white border border-gray-300", text: "text-gray-900", hover: "hover:bg-gray-100" };
+  return { bg: "bg-white border border-gray-200", text: "text-gray-600", hover: "hover:bg-gray-50" };
 };
 
 export const getFormatColors = (format: string): { bg: string; text: string; hover: string } => {
   const lowercased = format.toLowerCase();
 
-  // Video formats - all purple
+  // Video formats - all purple (outline style)
   const videoFormats = [
     "talking to camera",
     "static",
@@ -49,26 +49,26 @@ export const getFormatColors = (format: string): { bg: string; text: string; hov
   ];
 
   if (videoFormats.some(vf => lowercased.includes(vf))) {
-    return { bg: "bg-purple-100", text: "text-purple-700", hover: "hover:bg-purple-200" };
+    return { bg: "bg-purple-50 border border-purple-200", text: "text-purple-600", hover: "hover:bg-purple-100" };
   }
 
   if (lowercased.includes("carousel")) {
-    return { bg: "bg-pink-100", text: "text-pink-700", hover: "hover:bg-pink-200" };
+    return { bg: "bg-pink-50 border border-pink-200", text: "text-pink-600", hover: "hover:bg-pink-100" };
   }
   if (lowercased.includes("vlog")) {
-    return { bg: "bg-indigo-100", text: "text-indigo-700", hover: "hover:bg-indigo-200" };
+    return { bg: "bg-indigo-50 border border-indigo-200", text: "text-indigo-600", hover: "hover:bg-indigo-100" };
   }
   if (lowercased.includes("reel")) {
-    return { bg: "bg-orange-100", text: "text-orange-700", hover: "hover:bg-orange-200" };
+    return { bg: "bg-orange-50 border border-orange-200", text: "text-orange-600", hover: "hover:bg-orange-100" };
   }
   if (lowercased.includes("story") || lowercased.includes("stories")) {
-    return { bg: "bg-violet-100", text: "text-violet-700", hover: "hover:bg-violet-200" };
+    return { bg: "bg-violet-50 border border-violet-200", text: "text-violet-600", hover: "hover:bg-violet-100" };
   }
   if (lowercased.includes("short")) {
-    return { bg: "bg-cyan-100", text: "text-cyan-700", hover: "hover:bg-cyan-200" };
+    return { bg: "bg-cyan-50 border border-cyan-200", text: "text-cyan-600", hover: "hover:bg-cyan-100" };
   }
   // Default to gray for unknown formats
-  return { bg: "bg-gray-100", text: "text-gray-700", hover: "hover:bg-gray-200" };
+  return { bg: "bg-gray-50 border border-gray-200", text: "text-gray-600", hover: "hover:bg-gray-100" };
 };
 
 export const getAllAngleTemplates = (idea: string) => [

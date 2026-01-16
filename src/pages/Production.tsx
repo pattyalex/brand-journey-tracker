@@ -1194,7 +1194,7 @@ const Production = () => {
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <div className={cn("w-1 h-6 rounded-full", colors.badge)}></div>
-                        <h2 className={cn("font-semibold text-sm", colors.text)}>
+                        <h2 className={cn("font-bold text-lg", colors.text)}>
                           {column.title}
                         </h2>
                       </div>
@@ -1298,10 +1298,10 @@ const Production = () => {
                                 }
                               }}
                               className={cn(
-                                "group backdrop-blur-sm rounded-xl shadow-lg relative",
+                                "group rounded-xl relative shadow-[2px_3px_0px_rgba(0,0,0,0.06)]",
                                 column.id === "ideate" ? "py-4 px-2" : "p-2",
                                 (column.id === "shape-ideas" || column.id === "ideate" || column.id === "to-film") && !isEditing ? "cursor-pointer" : (!isEditing && "cursor-grab active:cursor-grabbing"),
-                                !isDragging && "hover:shadow-lg transition-all duration-200",
+                                !isDragging && "transition-all duration-200",
                                 isThisCardDragged ? "opacity-40 scale-[0.98]" : "",
                                 card.isCompleted && "opacity-60",
                                 card.isNew ? "border-2 border-purple-600 bg-purple-100" : `${cardColors[column.id]?.bg || "bg-white/90"} border ${cardColors[column.id]?.border || "border-gray-100"}`
@@ -1309,7 +1309,7 @@ const Production = () => {
                               style={{
                                 willChange: isDragging ? 'transform' : 'auto',
                                 transform: `rotate(${[-0.4, 0.3, -0.2, 0.4, -0.25, 0.2, -0.3, 0.25, -0.15, 0.35][cardIndex % 10]}deg)`,
-                                transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                                transition: 'transform 0.2s ease'
                               }}
                             >
                             {card.isNew && (
@@ -1341,7 +1341,7 @@ const Production = () => {
                                       if (el) textRefs.current.set(card.id, el);
                                     }}
                                     className={cn(
-                                      "font-medium text-sm text-gray-900 break-words leading-tight flex-1 cursor-pointer",
+                                      "font-semibold text-sm text-gray-800 break-words leading-tight flex-1 cursor-pointer",
                                       card.isCompleted && "line-through text-gray-500"
                                     )}
                                     onDoubleClick={(e) => {
@@ -1494,13 +1494,13 @@ const Production = () => {
                           key={`add-button-${column.id}`}
                           className={cn(
                             "group/btn px-2 py-1 rounded-full border border-dashed hover:border-solid transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95",
-                            // More intense button backgrounds
-                            column.id === "ideate" ? "bg-purple-200/80 hover:bg-purple-300 border-purple-400" :
-                            column.id === "shape-ideas" ? "bg-blue-200/80 hover:bg-blue-300 border-blue-400" :
-                            column.id === "to-film" ? "bg-amber-200/80 hover:bg-amber-300 border-amber-400" :
-                            column.id === "to-edit" ? "bg-rose-200/80 hover:bg-rose-300 border-rose-400" :
-                            column.id === "to-schedule" ? "bg-indigo-200/80 hover:bg-indigo-300 border-indigo-400" :
-                            "bg-emerald-200/80 hover:bg-emerald-300 border-emerald-400",
+                            // Subtle button backgrounds
+                            column.id === "ideate" ? "bg-purple-50 hover:bg-purple-100 border-purple-300" :
+                            column.id === "shape-ideas" ? "bg-blue-50 hover:bg-blue-100 border-blue-300" :
+                            column.id === "to-film" ? "bg-amber-50 hover:bg-amber-100 border-amber-300" :
+                            column.id === "to-edit" ? "bg-rose-50 hover:bg-rose-100 border-rose-300" :
+                            column.id === "to-schedule" ? "bg-indigo-50 hover:bg-indigo-100 border-indigo-300" :
+                            "bg-emerald-50 hover:bg-emerald-100 border-emerald-300",
                             colors.buttonText
                           )}
                           onClick={() => {
