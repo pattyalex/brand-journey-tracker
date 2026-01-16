@@ -3,7 +3,9 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, MoreVertical, Trash2, Pencil, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard } from "lucide-react";
+import { PlusCircle, MoreVertical, Trash2, Pencil, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard, Video, Circle, Wrench, CheckCircle2, Camera } from "lucide-react";
+import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
+import { RiTwitterXLine, RiThreadsLine, RiPushpinFill } from "react-icons/ri";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -44,6 +46,34 @@ import StoryboardEditorDialog from "./production/components/StoryboardEditorDial
 import { columnColors, cardColors, defaultColumns } from "./production/utils/productionConstants";
 import { getAllAngleTemplates, getFormatColors, getPlatformColors } from "./production/utils/productionHelpers";
 
+// Platform icon helper - returns icon component for each platform
+const getPlatformIcon = (platform: string): React.ReactNode => {
+  const lowercased = platform.toLowerCase();
+  const iconClass = "w-3.5 h-3.5 text-gray-500";
+
+  if (lowercased.includes("youtube")) {
+    return <SiYoutube className={iconClass} />;
+  }
+  if (lowercased.includes("tiktok") || lowercased === "tt") {
+    return <SiTiktok className={iconClass} />;
+  }
+  if (lowercased.includes("instagram") || lowercased === "ig") {
+    return <SiInstagram className={iconClass} />;
+  }
+  if (lowercased.includes("facebook")) {
+    return <SiFacebook className={iconClass} />;
+  }
+  if (lowercased.includes("linkedin")) {
+    return <SiLinkedin className={iconClass} />;
+  }
+  if (lowercased.includes("twitter") || lowercased.includes("x.com") || lowercased.includes("x /")) {
+    return <RiTwitterXLine className={iconClass} />;
+  }
+  if (lowercased.includes("threads")) {
+    return <RiThreadsLine className={iconClass} />;
+  }
+  return null;
+};
 
 const InlineCardInput: React.FC<{
   onSave: (title: string) => void;
@@ -1340,10 +1370,7 @@ const Production = () => {
                                     ref={(el) => {
                                       if (el) textRefs.current.set(card.id, el);
                                     }}
-                                    className={cn(
-                                      "font-semibold text-sm text-gray-800 break-words leading-tight flex-1 cursor-pointer",
-                                      card.isCompleted && "line-through text-gray-500"
-                                    )}
+                                    className="font-semibold text-sm text-gray-800 break-words leading-tight flex-1 cursor-pointer"
                                     onDoubleClick={(e) => {
                                       e.stopPropagation();
                                       // Clear the single-click timeout to prevent modal from opening
@@ -1356,6 +1383,21 @@ const Production = () => {
                                   >
                                     {card.title}
                                   </h3>
+                                )}
+                                {/* Pin button - always visible when pinned */}
+                                {column.id !== "posted" && card.isPinned && (
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-6 w-6 p-0.5 rounded-lg hover:bg-gray-100 flex-shrink-0"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleTogglePin(card.id);
+                                    }}
+                                    title="Unpin from dashboard"
+                                  >
+                                    <Pin className="h-4 w-4 rotate-45 fill-yellow-400 stroke-orange-500" strokeWidth={2} />
+                                  </Button>
                                 )}
                                 <div className="flex flex-row gap-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                                   {column.id === "shape-ideas" && (
@@ -1384,28 +1426,18 @@ const Production = () => {
                                       <Clapperboard className="h-2.5 w-2.5 text-gray-400 hover:text-amber-600" />
                                     </Button>
                                   )}
-                                  {column.id !== "posted" && (
+                                  {column.id !== "posted" && !card.isPinned && (
                                     <Button
                                       size="sm"
                                       variant="ghost"
-                                      className={cn(
-                                        "h-3.5 w-3.5 p-0 rounded transition-colors",
-                                        card.isPinned
-                                          ? "bg-amber-100 hover:bg-amber-200"
-                                          : "hover:bg-amber-50"
-                                      )}
+                                      className="h-3.5 w-3.5 p-0 rounded transition-colors hover:bg-amber-50"
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleTogglePin(card.id);
                                       }}
-                                      title={card.isPinned ? "Unpin from dashboard" : "Pin to dashboard"}
+                                      title="Pin to dashboard"
                                     >
-                                      <Pin className={cn(
-                                        "h-2.5 w-2.5 transition-transform",
-                                        card.isPinned
-                                          ? "text-amber-600 rotate-45"
-                                          : "text-gray-400 hover:text-amber-600"
-                                      )} />
+                                      <Pin className="h-2.5 w-2.5 text-gray-400 hover:text-amber-600" />
                                     </Button>
                                   )}
                                   <Button
@@ -1422,37 +1454,87 @@ const Production = () => {
                                 </div>
                             </div>
                             {/* Tags for cards with metadata */}
-                            {column.id !== "ideate" && ((card.platforms && card.platforms.length > 0) || (card.formats && card.formats.length > 0) || card.status) && (
-                              <div className="flex gap-1.5 mt-2 flex-wrap">
-                                {card.formats?.map((format, idx) => {
-                                  const colors = getFormatColors(format);
-                                  return (
-                                    <span key={`format-${idx}`} className={`text-[10px] px-2 py-0.5 rounded-full ${colors.bg} ${colors.text} font-medium`}>
-                                      {format}
-                                    </span>
-                                  );
-                                })}
-                                {card.platforms?.map((platform, idx) => {
-                                  const colors = getPlatformColors(platform);
-                                  return (
-                                    <span key={`platform-${idx}`} className={`text-[10px] px-2 py-0.5 rounded-full ${colors.bg} ${colors.text} font-medium`}>
-                                      {platform}
-                                    </span>
-                                  );
-                                })}
-                                {card.status && (
-                                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                                    card.status === 'to-start' ? 'bg-white text-gray-600 border border-gray-300' :
-                                    card.status === 'needs-work' ? 'bg-yellow-100 text-yellow-700' :
-                                    'bg-green-100 text-green-700'
-                                  }`}>
-                                    {card.status === 'to-start' ? 'To start' :
-                                     card.status === 'needs-work' ? 'Needs more work' :
-                                     'Ready to film'}
-                                  </span>
-                                )}
-                              </div>
-                            )}
+                            {column.id !== "ideate" && ((card.formats && card.formats.length > 0) || card.status || (card.platforms && card.platforms.length > 0)) && (() => {
+                              const formats = card.formats || [];
+                              const hasStatus = !!card.status;
+                              const platforms = card.platforms || [];
+                              const hasPlatforms = platforms.length > 0;
+
+                              // Determine which is the last tag row
+                              const lastFormatIndex = hasStatus ? -1 : formats.length - 1;
+
+                              const staticFormats = [
+                                'single photo post',
+                                'curated photo carousel',
+                                'casual photo dump',
+                                'text-only post',
+                                'carousel with text slides',
+                                'notes-app style screenshot',
+                                'tweet-style slide'
+                              ];
+
+                              const renderPlatformIcons = () => (
+                                <div className="flex gap-1.5 items-center">
+                                  {platforms.map((platform, idx) => {
+                                    const icon = getPlatformIcon(platform);
+                                    return icon ? (
+                                      <span key={`platform-${idx}`} title={platform}>
+                                        {icon}
+                                      </span>
+                                    ) : null;
+                                  })}
+                                </div>
+                              );
+
+                              return (
+                                <div className="flex flex-col gap-1 mt-2">
+                                  {/* Format tags - all except last if no status */}
+                                  {formats.map((format, idx) => {
+                                    const isStatic = staticFormats.some(sf => format.toLowerCase().includes(sf) || sf.includes(format.toLowerCase()));
+                                    const isLastRow = !hasStatus && idx === formats.length - 1;
+
+                                    if (isLastRow && hasPlatforms) {
+                                      return (
+                                        <div key={`format-${idx}`} className="flex items-center justify-between">
+                                          <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full text-gray-500 font-medium">
+                                            {isStatic ? <Camera className="w-2.5 h-2.5" /> : <Video className="w-2.5 h-2.5" />}
+                                            {format}
+                                          </span>
+                                          {renderPlatformIcons()}
+                                        </div>
+                                      );
+                                    }
+
+                                    return (
+                                      <span key={`format-${idx}`} className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full text-gray-500 font-medium">
+                                        {isStatic ? <Camera className="w-2.5 h-2.5" /> : <Video className="w-2.5 h-2.5" />}
+                                        {format}
+                                      </span>
+                                    );
+                                  })}
+                                  {/* Status tag - last row */}
+                                  {hasStatus && (
+                                    <div className={hasPlatforms ? "flex items-center justify-between" : ""}>
+                                      <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full text-gray-500 font-medium">
+                                        {card.status === 'to-start' && <Circle className="w-2.5 h-2.5" />}
+                                        {card.status === 'needs-work' && <Wrench className="w-2.5 h-2.5" />}
+                                        {card.status === 'ready' && <CheckCircle2 className="w-2.5 h-2.5" />}
+                                        {card.status === 'to-start' ? 'To start' :
+                                         card.status === 'needs-work' ? 'Needs more work' :
+                                         'Ready to film'}
+                                      </span>
+                                      {hasPlatforms && renderPlatformIcons()}
+                                    </div>
+                                  )}
+                                  {/* If only platforms, no formats or status */}
+                                  {!hasStatus && formats.length === 0 && hasPlatforms && (
+                                    <div className="flex items-center justify-end">
+                                      {renderPlatformIcons()}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </motion.div>
                           </React.Fragment>
                         );
@@ -1493,7 +1575,7 @@ const Production = () => {
                         <div
                           key={`add-button-${column.id}`}
                           className={cn(
-                            "group/btn px-2 py-1 rounded-full border border-dashed hover:border-solid transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95",
+                            "group/btn px-4 py-2 rounded-full border border-dashed hover:border-solid transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95",
                             // Subtle button backgrounds
                             column.id === "ideate" ? "bg-purple-50 hover:bg-purple-100 border-purple-300" :
                             column.id === "shape-ideas" ? "bg-blue-50 hover:bg-blue-100 border-blue-300" :
@@ -1537,9 +1619,9 @@ const Production = () => {
                             }
                           }}
                         >
-                          <div className={cn("flex items-center gap-1.5", colors.buttonText)}>
-                            <PlusCircle className="h-3.5 w-3.5 group-hover/btn:rotate-90 transition-transform duration-200" />
-                            <span className="text-xs font-semibold">
+                          <div className={cn("flex items-center gap-2", colors.buttonText)}>
+                            <PlusCircle className="h-4 w-4 group-hover/btn:rotate-90 transition-transform duration-200" />
+                            <span className="text-sm font-semibold">
                               {column.id === 'ideate' ? 'Add quick idea' : 'Add new'}
                             </span>
                           </div>
@@ -1548,15 +1630,15 @@ const Production = () => {
 
                       {/* Help me generate ideas button - only for ideate column */}
                       {column.id === 'ideate' && (
-                        <div className="group/btn px-2 py-1 rounded-full border border-dashed hover:border-solid transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95 bg-purple-200/80 hover:bg-purple-300 border-purple-400"
+                        <div className="group/btn px-4 py-2 rounded-full border border-dashed hover:border-solid transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95 bg-purple-200/80 hover:bg-purple-300 border-purple-400"
                           onClick={() => {
                             setSelectedIdeateCard(null);
                             setIsIdeateDialogOpen(true);
                           }}
                         >
-                          <div className="flex items-center gap-1.5 text-purple-700">
-                            <Lightbulb className="h-3.5 w-3.5 group-hover/btn:animate-pulse" />
-                            <span className="text-xs font-semibold">Help me generate ideas</span>
+                          <div className="flex items-center gap-2 text-purple-700">
+                            <Lightbulb className="h-4 w-4 group-hover/btn:animate-pulse" />
+                            <span className="text-sm font-semibold">Help me generate ideas</span>
                           </div>
                         </div>
                       )}

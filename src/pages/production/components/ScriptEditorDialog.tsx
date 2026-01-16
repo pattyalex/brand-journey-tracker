@@ -16,6 +16,39 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { getFormatColors, getPlatformColors } from "../utils/productionHelpers";
+import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
+import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
+import { MoreHorizontal, Video, Camera, ChevronDown, X } from "lucide-react";
+
+// Helper to get platform icon
+const getPlatformIcon = (platform: string): React.ReactNode => {
+  const lowercased = platform.toLowerCase();
+  const iconClass = "w-4 h-4 text-gray-500";
+
+  if (lowercased.includes("youtube")) return <SiYoutube className={iconClass} />;
+  if (lowercased.includes("tiktok") || lowercased === "tt") return <SiTiktok className={iconClass} />;
+  if (lowercased.includes("instagram") || lowercased === "ig") return <SiInstagram className={iconClass} />;
+  if (lowercased.includes("facebook")) return <SiFacebook className={iconClass} />;
+  if (lowercased.includes("linkedin")) return <SiLinkedin className={iconClass} />;
+  if (lowercased.includes("twitter") || lowercased.includes("x.com") || lowercased.includes("x /")) return <RiTwitterXLine className={iconClass} />;
+  if (lowercased.includes("threads")) return <RiThreadsLine className={iconClass} />;
+  return null;
+};
+
+// Static formats that should show camera icon
+const staticFormats = [
+  'single photo post',
+  'curated photo carousel',
+  'casual photo dump',
+  'text-only post',
+  'carousel with text slides',
+  'notes-app style screenshot',
+  'tweet-style slide'
+];
+
+const isStaticFormat = (format: string): boolean => {
+  return staticFormats.some(sf => format.toLowerCase().includes(sf) || sf.includes(format.toLowerCase()));
+};
 
 type CardStatus = "to-start" | "needs-work" | "ready" | null;
 
@@ -124,63 +157,64 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
         {/* Format and Platform Section */}
         <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-6 border border-purple-100">
           <div className="grid grid-cols-2 gap-6">
-            {/* Format Tags */}
+            {/* Format Selection - Compact Inline */}
             <div className="space-y-3">
-              <label className="text-sm font-semibold text-gray-700">
-                How it&apos;s shot
+              <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <span className="text-lg">📹</span> How It's Shot
               </label>
-              <Select
-                onValueChange={(value) => {
-                  if (value === "custom") {
-                    setShowCustomFormatInput(true);
-                  } else {
-                    setShowCustomFormatInput(false);
-                    if (!formatTags.includes(value)) {
+              <div className="flex items-center gap-3 flex-wrap">
+                <Select
+                  onValueChange={(value) => {
+                    if (value === "other") {
+                      setShowCustomFormatInput(true);
+                    } else if (value && !formatTags.includes(value)) {
+                      setShowCustomFormatInput(false);
                       setFormatTags([...formatTags, value]);
                     }
-                  }
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select format" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>🎥 Video Formats</SelectLabel>
-                    <SelectItem value="Talking to camera (static)">Talking to camera (static)</SelectItem>
-                    <SelectItem value="Talking to camera (walking)">Talking to camera (walking)</SelectItem>
-                    <SelectItem value="GRWM (Get Ready With Me)">GRWM (Get Ready With Me)</SelectItem>
-                    <SelectItem value="Voice-over (B-roll)">Voice-over (B-roll)</SelectItem>
-                    <SelectItem value="Silent video with text overlay">Silent video with text overlay</SelectItem>
-                    <SelectItem value="Cinematic montage">Cinematic montage</SelectItem>
-                    <SelectItem value="POV (first-person camera)">POV (first-person camera)</SelectItem>
-                    <SelectItem value="Green screen">Green screen</SelectItem>
-                    <SelectItem value="Split screen">Split screen</SelectItem>
-                    <SelectItem value="Duet">Duet</SelectItem>
-                    <SelectItem value="Stitch">Stitch</SelectItem>
-                    <SelectItem value="Lip-sync">Lip-sync</SelectItem>
-                    <SelectItem value="Skit / acting">Skit / acting</SelectItem>
-                    <SelectItem value="Reaction video">Reaction video</SelectItem>
-                    <SelectItem value="Tutorial / demo">Tutorial / demo</SelectItem>
-                    <SelectItem value="Vlog-style">Vlog-style</SelectItem>
-                  </SelectGroup>
-                  <SelectGroup>
-                    <SelectLabel>📸 Static Formats</SelectLabel>
-                    <SelectItem value="Single photo post">Single photo post</SelectItem>
-                    <SelectItem value="Curated photo carousel">Curated photo carousel</SelectItem>
-                    <SelectItem value="Casual photo dump">Casual photo dump</SelectItem>
-                    <SelectItem value="Text-only post">Text-only post</SelectItem>
-                    <SelectItem value="Carousel with text slides">Carousel with text slides</SelectItem>
-                    <SelectItem value="Notes-app style screenshot">Notes-app style screenshot</SelectItem>
-                    <SelectItem value="Tweet-style slide">Tweet-style slide</SelectItem>
-                  </SelectGroup>
-                  <SelectGroup>
-                    <SelectLabel>🔁 Other</SelectLabel>
-                    <SelectItem value="custom">Write your own format</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-
+                  }}
+                >
+                  <SelectTrigger className="w-auto bg-white border-0 shadow-none p-0 h-auto gap-1 hover:bg-gray-100 rounded-lg px-2 py-1" iconClassName="hidden">
+                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel className="text-sm font-medium text-gray-500">Video</SelectLabel>
+                      <SelectItem value="Talking to camera"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Talking to camera</span></SelectItem>
+                      <SelectItem value="Voice-over"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Voice-over</span></SelectItem>
+                      <SelectItem value="Vlog"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Vlog</span></SelectItem>
+                      <SelectItem value="Tutorial"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Tutorial</span></SelectItem>
+                      <SelectItem value="GRWM"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />GRWM</span></SelectItem>
+                    </SelectGroup>
+                    <SelectGroup>
+                      <SelectLabel className="text-sm font-medium text-gray-500">Photo</SelectLabel>
+                      <SelectItem value="Photo post"><span className="flex items-center gap-2"><Camera className="w-4 h-4 text-gray-400" />Photo post</span></SelectItem>
+                      <SelectItem value="Carousel"><span className="flex items-center gap-2"><Camera className="w-4 h-4 text-gray-400" />Carousel</span></SelectItem>
+                      <SelectItem value="Text post"><span className="flex items-center gap-2"><Camera className="w-4 h-4 text-gray-400" />Text post</span></SelectItem>
+                    </SelectGroup>
+                    <SelectGroup>
+                      <SelectItem value="other"><span className="flex items-center gap-2"><MoreHorizontal className="w-4 h-4 text-gray-400" />Other...</span></SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                {formatTags.length === 0 && (
+                  <span className="text-sm text-gray-400">Select format</span>
+                )}
+                {formatTags.map((tag, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center gap-1.5 text-sm text-gray-600"
+                  >
+                    {isStaticFormat(tag) ? <Camera className="w-3.5 h-3.5 text-gray-400" /> : <Video className="w-3.5 h-3.5 text-gray-400" />}
+                    {tag}
+                    <button
+                      onClick={() => onRemoveFormatTag(tag)}
+                      className="text-gray-300 hover:text-gray-500 transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </span>
+                ))}
+              </div>
               {showCustomFormatInput && (
                 <div className="flex gap-2">
                   <input
@@ -197,11 +231,12 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                         setShowCustomFormatInput(false);
                       }
                     }}
-                    placeholder="Enter custom format..."
-                    className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                    placeholder="Enter format..."
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent"
                     autoFocus
                   />
                   <Button
+                    type="button"
                     onClick={() => {
                       if (customFormatInput.trim() && !formatTags.includes(customFormatInput.trim())) {
                         setFormatTags([...formatTags, customFormatInput.trim()]);
@@ -210,71 +245,67 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                       }
                     }}
                     size="sm"
-                    className="bg-purple-500 hover:bg-purple-600"
+                    variant="outline"
                   >
                     Add
                   </Button>
                 </div>
               )}
-
-              {formatTags.length > 0 && (
-                <div className="flex gap-2 flex-wrap">
-                  {formatTags.map((tag, idx) => {
-                    const colors = getFormatColors(tag);
-                    return (
-                      <span
-                        key={idx}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full ${colors.bg} ${colors.text} text-sm font-medium`}
-                      >
-                        {tag}
-                        <button
-                          onClick={() => onRemoveFormatTag(tag)}
-                          className={`${colors.hover} rounded-full p-0.5 transition-colors`}
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
             </div>
 
-            {/* Platform Tags */}
+            {/* Platform Selection - Clickable Icons */}
             <div className="space-y-3">
-              <label className="text-sm font-semibold text-gray-700">
-                Platform
+              <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <span className="text-lg">📱</span> Platforms
               </label>
-              <Select
-                onValueChange={(value) => {
-                  if (value === "other") {
-                    setShowCustomPlatformInput(true);
-                  } else {
-                    setShowCustomPlatformInput(false);
-                    if (!platformTags.includes(value)) {
-                      setPlatformTags([...platformTags, value]);
-                    }
-                  }
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select platform" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Instagram">Instagram</SelectItem>
-                  <SelectItem value="TikTok">TikTok</SelectItem>
-                  <SelectItem value="YouTube">YouTube</SelectItem>
-                  <SelectItem value="Facebook">Facebook</SelectItem>
-                  <SelectItem value="LinkedIn">LinkedIn</SelectItem>
-                  <SelectItem value="X / Threads">X / Threads</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-2 flex-wrap">
+                {[
+                  { name: "Instagram", icon: <SiInstagram className="w-5 h-5" /> },
+                  { name: "TikTok", icon: <SiTiktok className="w-5 h-5" /> },
+                  { name: "YouTube", icon: <SiYoutube className="w-5 h-5" /> },
+                  { name: "Facebook", icon: <SiFacebook className="w-5 h-5" /> },
+                  { name: "LinkedIn", icon: <SiLinkedin className="w-5 h-5" /> },
+                  { name: "X / Threads", icon: <RiTwitterXLine className="w-5 h-5" /> },
+                ].map((platform) => {
+                  const isSelected = platformTags.includes(platform.name);
+                  return (
+                    <button
+                      key={platform.name}
+                      type="button"
+                      onClick={() => {
+                        if (isSelected) {
+                          onRemovePlatformTag(platform.name);
+                        } else {
+                          setPlatformTags([...platformTags, platform.name]);
+                        }
+                      }}
+                      className={`p-2.5 rounded-xl transition-all duration-200 ${
+                        isSelected
+                          ? "bg-gray-800 text-white shadow-md scale-105"
+                          : "bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+                      }`}
+                      title={platform.name}
+                    >
+                      {platform.icon}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  onClick={() => setShowCustomPlatformInput(!showCustomPlatformInput)}
+                  className={`p-2.5 rounded-xl transition-all duration-200 ${
+                    showCustomPlatformInput
+                      ? "bg-gray-800 text-white"
+                      : "bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+                  }`}
+                  title="Add other platform"
+                >
+                  <MoreHorizontal className="w-5 h-5" />
+                </button>
+              </div>
 
               {showCustomPlatformInput && (
-                <div className="flex gap-2">
+                <div className="flex gap-2 mt-2">
                   <input
                     type="text"
                     value={customPlatformInput}
@@ -289,11 +320,12 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                         setShowCustomPlatformInput(false);
                       }
                     }}
-                    placeholder="Enter custom platform..."
-                    className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder="Enter platform name..."
+                    className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all"
                     autoFocus
                   />
                   <Button
+                    type="button"
                     onClick={() => {
                       if (customPlatformInput.trim() && !platformTags.includes(customPlatformInput.trim())) {
                         setPlatformTags([...platformTags, customPlatformInput.trim()]);
@@ -302,34 +334,10 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                       }
                     }}
                     size="sm"
-                    className="bg-blue-500 hover:bg-blue-600"
+                    className="bg-gray-800 hover:bg-gray-900"
                   >
                     Add
                   </Button>
-                </div>
-              )}
-
-              {platformTags.length > 0 && (
-                <div className="flex gap-2 flex-wrap">
-                  {platformTags.map((tag, idx) => {
-                    const colors = getPlatformColors(tag);
-                    return (
-                      <span
-                        key={idx}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full ${colors.bg} ${colors.text} text-sm font-medium`}
-                      >
-                        {tag}
-                        <button
-                          onClick={() => onRemovePlatformTag(tag)}
-                          className={`${colors.hover} rounded-full p-0.5 transition-colors`}
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      </span>
-                    );
-                  })}
                 </div>
               )}
             </div>
