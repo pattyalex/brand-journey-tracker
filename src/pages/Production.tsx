@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, MoreVertical, Trash2, Pencil, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard, Video, Circle, Wrench, CheckCircle2, Camera, CheckSquare, Scissors, PlayCircle, PenLine, CalendarDays, X } from "lucide-react";
+import { PlusCircle, MoreVertical, Trash2, Pencil, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard, Video, Circle, Wrench, CheckCircle2, Camera, CheckSquare, Scissors, PlayCircle, PenLine, CalendarDays, X, Maximize2, PartyPopper } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine, RiPushpinFill } from "react-icons/ri";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -44,7 +44,7 @@ import BrainDumpGuidanceDialog from "./production/components/BrainDumpGuidanceDi
 import { KanbanColumn, ProductionCard, StoryboardScene, EditingChecklist, SchedulingStatus } from "./production/types";
 import StoryboardEditorDialog from "./production/components/StoryboardEditorDialog";
 import EditChecklistDialog from "./production/components/EditChecklistDialog";
-import ScheduleDialog from "./production/components/ScheduleDialog";
+import ExpandedScheduleView from "./production/components/ExpandedScheduleView";
 import { columnColors, cardColors, defaultColumns } from "./production/utils/productionConstants";
 import { getAllAngleTemplates, getFormatColors, getPlatformColors } from "./production/utils/productionHelpers";
 
@@ -161,9 +161,8 @@ const Production = () => {
   const [isEditChecklistDialogOpen, setIsEditChecklistDialogOpen] = useState(false);
   const [editingEditCard, setEditingEditCard] = useState<ProductionCard | null>(null);
 
-  // Schedule dialog modal state
-  const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false);
-  const [editingScheduleCard, setEditingScheduleCard] = useState<ProductionCard | null>(null);
+  // Schedule expanded view state
+  const [isScheduleColumnExpanded, setIsScheduleColumnExpanded] = useState(false);
   const [brainDumpSuggestion, setBrainDumpSuggestion] = useState<string>("");
   const [showBrainDumpSuggestion, setShowBrainDumpSuggestion] = useState(false);
   const [cardTitle, setCardTitle] = useState("");
@@ -901,12 +900,6 @@ const Production = () => {
     setEditingEditCard(null);
   };
 
-  // Schedule dialog handler
-  const handleOpenScheduleDialog = (card: ProductionCard | null) => {
-    setEditingScheduleCard(card);
-    setIsScheduleDialogOpen(true);
-  };
-
   const handleScheduleContent = (cardId: string, date: Date) => {
     const dateString = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
     const formattedDate = date.toLocaleDateString('en-US', {
@@ -933,12 +926,6 @@ const Production = () => {
     toast.success(`Scheduled for ${formattedDate}`, {
       description: "Content has been added to your calendar"
     });
-
-    // Only close dialog if a specific card was opened (not from "See Content Calendar")
-    if (editingScheduleCard) {
-      setIsScheduleDialogOpen(false);
-      setEditingScheduleCard(null);
-    }
   };
 
   const handleUnscheduleContent = (cardId: string) => {
@@ -956,10 +943,19 @@ const Production = () => {
         ),
       }))
     );
+  };
 
-    toast.success("Content unscheduled", {
-      description: "Moved back to content to schedule"
-    });
+  const handleUpdateScheduledColor = (cardId: string, color: 'indigo' | 'rose' | 'amber' | 'emerald' | 'sky' | 'violet' | 'orange' | 'cyan' | 'sage') => {
+    setColumns((prev) =>
+      prev.map((col) => ({
+        ...col,
+        cards: col.cards.map((card) =>
+          card.id === cardId
+            ? { ...card, scheduledColor: color }
+            : card
+        ),
+      }))
+    );
   };
 
   const handleScriptEditorOpenChange = (open: boolean) => {
@@ -1455,7 +1451,7 @@ const Production = () => {
                                     } else if (column.id === "to-edit") {
                                       handleOpenEditChecklist(card);
                                     } else if (column.id === "to-schedule") {
-                                      handleOpenScheduleDialog(card);
+                                      setIsScheduleColumnExpanded(true);
                                     }
                                   }, 250);
                                 }
@@ -1586,19 +1582,6 @@ const Production = () => {
                                       <Scissors className="h-2.5 w-2.5 text-gray-400 hover:text-rose-600" />
                                     </Button>
                                   )}
-                                  {column.id === "to-schedule" && (
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-3.5 w-3.5 p-0 rounded hover:bg-indigo-50"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleOpenScheduleDialog(card);
-                                      }}
-                                    >
-                                      <CalendarDays className="h-2.5 w-2.5 text-gray-400 hover:text-indigo-600" />
-                                    </Button>
-                                  )}
                                   {column.id !== "posted" && !card.isPinned && (
                                     <Button
                                       size="sm"
@@ -1711,12 +1694,19 @@ const Production = () => {
                                              card.status === 'ready' ? 'Filmed' : ''}
                                           </>
                                         ) : column.id === 'to-schedule' ? (
-                                          <>
-                                            {schedulingStatus === 'to-schedule' && <CalendarDays className="w-2.5 h-2.5" />}
-                                            {schedulingStatus === 'scheduled' && <Check className="w-2.5 h-2.5" />}
-                                            {schedulingStatus === 'to-schedule' ? 'To schedule' :
-                                             schedulingStatus === 'scheduled' ? 'Scheduled' : ''}
-                                          </>
+                                          (() => {
+                                            const isPublished = schedulingStatus === 'scheduled' && card.scheduledDate && new Date(card.scheduledDate) < new Date(new Date().toDateString());
+                                            return (
+                                              <>
+                                                {schedulingStatus === 'to-schedule' && <CalendarDays className="w-2.5 h-2.5" />}
+                                                {schedulingStatus === 'scheduled' && !isPublished && <Check className="w-2.5 h-2.5" />}
+                                                {isPublished && <PartyPopper className="w-2.5 h-2.5" />}
+                                                {schedulingStatus === 'to-schedule' ? 'To schedule' :
+                                                 isPublished ? 'Published' :
+                                                 schedulingStatus === 'scheduled' ? 'Scheduled' : ''}
+                                              </>
+                                            );
+                                          })()
                                         ) : (
                                           <>
                                             {card.status === 'to-start' && <PenLine className="w-2.5 h-2.5" />}
@@ -1776,7 +1766,7 @@ const Production = () => {
                             onCancel={handleCancelAddingCard}
                           />
                         </div>
-                      ) : (
+                      ) : column.id !== 'to-schedule' ? (
                         <div
                           key={`add-button-${column.id}`}
                           className={cn(
@@ -1786,7 +1776,6 @@ const Production = () => {
                             column.id === "shape-ideas" ? "bg-blue-50 hover:bg-blue-100 border-blue-300" :
                             column.id === "to-film" ? "bg-amber-50 hover:bg-amber-100 border-amber-300" :
                             column.id === "to-edit" ? "bg-rose-50 hover:bg-rose-100 border-rose-300" :
-                            column.id === "to-schedule" ? "bg-indigo-50 hover:bg-indigo-100 border-indigo-300" :
                             "bg-emerald-50 hover:bg-emerald-100 border-emerald-300",
                             colors.buttonText
                           )}
@@ -1833,24 +1822,29 @@ const Production = () => {
                                 )
                               );
                               handleOpenEditChecklist(newCard);
-                            } else if (column.id === 'to-schedule') {
-                              // Open schedule dialog (no new card created)
-                              handleOpenScheduleDialog(null);
                             } else {
                               handleStartAddingCard(column.id);
                             }
                           }}
                         >
                           <div className={cn("flex items-center gap-2", colors.buttonText)}>
-                            {column.id === 'to-schedule' ? (
-                              <CalendarDays className="h-4 w-4" />
-                            ) : (
-                              <PlusCircle className="h-4 w-4 group-hover/btn:rotate-90 transition-transform duration-200" />
-                            )}
+                            <PlusCircle className="h-4 w-4 group-hover/btn:rotate-90 transition-transform duration-200" />
                             <span className="text-sm font-semibold">
-                              {column.id === 'ideate' ? 'Add quick idea' :
-                               column.id === 'to-schedule' ? 'See Content Calendar' : 'Add new'}
+                              {column.id === 'ideate' ? 'Add quick idea' : 'Add new'}
                             </span>
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {/* Expand button - only for to-schedule column */}
+                      {column.id === 'to-schedule' && (
+                        <div
+                          className="group/btn px-4 py-2 rounded-full border border-dashed hover:border-solid transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95 bg-indigo-100 hover:bg-indigo-200 border-indigo-300"
+                          onClick={() => setIsScheduleColumnExpanded(true)}
+                        >
+                          <div className="flex items-center gap-2 text-indigo-700">
+                            <Maximize2 className="h-4 w-4" />
+                            <span className="text-sm font-semibold">Expand</span>
                           </div>
                         </div>
                       )}
@@ -3888,14 +3882,16 @@ Make each idea unique, creative, and directly tied to both the original content 
           onSave={handleSaveEditChecklist}
         />
 
-        <ScheduleDialog
-          isOpen={isScheduleDialogOpen}
-          onOpenChange={setIsScheduleDialogOpen}
-          card={editingScheduleCard}
-          allCards={columns.find(col => col.id === 'to-schedule')?.cards || []}
-          onSchedule={handleScheduleContent}
-          onUnschedule={handleUnscheduleContent}
-        />
+        {/* Expanded Schedule Column View */}
+        {isScheduleColumnExpanded && (
+          <ExpandedScheduleView
+            cards={columns.find(col => col.id === 'to-schedule')?.cards || []}
+            onClose={() => setIsScheduleColumnExpanded(false)}
+            onSchedule={handleScheduleContent}
+            onUnschedule={handleUnscheduleContent}
+            onUpdateColor={handleUpdateScheduledColor}
+          />
+        )}
       </div>
     </Layout>
   );

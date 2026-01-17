@@ -8,7 +8,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarDays, ChevronLeft, ChevronRight, Video, Camera, GripVertical, Check, X } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Video, Camera, Check, X, Pin } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
@@ -69,6 +69,7 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
   const [dragOverUnschedule, setDragOverUnschedule] = useState(false);
   const [selectedCardForDetails, setSelectedCardForDetails] = useState<ProductionCard | null>(null);
   const [popoverCardId, setPopoverCardId] = useState<string | null>(null);
+  const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -280,23 +281,43 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[1100px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-white">
         {/* Main content - split panels */}
-        <div className="flex-1 overflow-hidden grid grid-cols-[380px_1fr]">
+        <div className={cn(
+          "flex-1 overflow-hidden grid transition-all duration-300",
+          isLeftPanelCollapsed ? "grid-cols-[48px_1fr]" : "grid-cols-[380px_1fr]"
+        )}>
           {/* Left Panel - Content Overview or Card List */}
-          <div className="border-r border-gray-100 flex flex-col bg-gray-50/30 min-h-0">
+          <div className="border-r border-indigo-100 flex flex-col bg-indigo-100/60 min-h-0 relative">
+            {/* Collapse/Expand Button */}
+            <button
+              onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
+              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 w-6 h-12 bg-white border border-gray-200 rounded-r-lg shadow-sm hover:bg-gray-50 flex items-center justify-center transition-colors"
+            >
+              <ChevronLeft className={cn(
+                "w-4 h-4 text-gray-600 transition-transform duration-300",
+                isLeftPanelCollapsed && "rotate-180"
+              )} />
+            </button>
+
             {/* Header */}
-            <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-100 flex-shrink-0">
-              <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+            <div className={cn(
+              "flex items-center gap-3 px-6 py-4 border-b border-gray-100 flex-shrink-0 transition-all duration-300",
+              isLeftPanelCollapsed && "px-2 justify-center"
+            )}>
+              <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
                 <CalendarDays className="w-4 h-4 text-purple-500" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">
-                {isListMode ? "Content to Schedule" : "Content Overview"}
-              </h2>
+              {!isLeftPanelCollapsed && (
+                <h2 className="text-lg font-bold text-gray-900">
+                  {isListMode ? "Content to Schedule" : "Content Overview"}
+                </h2>
+              )}
             </div>
 
             {/* Body - scrollable and drop zone for unscheduling */}
             <div
               className={cn(
-                "flex-1 min-h-0 overflow-y-auto p-4 transition-colors",
+                "flex-1 min-h-0 overflow-y-auto transition-all duration-300",
+                isLeftPanelCollapsed ? "p-0 opacity-0 overflow-hidden" : "p-4 opacity-100",
                 dragOverUnschedule && "bg-purple-50 ring-2 ring-inset ring-purple-300"
               )}
               onDragOver={(e) => {
@@ -329,42 +350,102 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
                       <p className="text-sm font-medium">Drop here to unschedule</p>
                     </div>
                   ) : (
-                    unscheduledCards.map((c) => (
-                      <div
-                        key={c.id}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, c.id)}
-                        onDragEnd={handleDragEnd}
-                        onClick={() => setSelectedCardForDetails(selectedCardForDetails?.id === c.id ? null : c)}
-                        className={cn(
-                          "p-3 rounded-lg border bg-white cursor-grab active:cursor-grabbing transition-all",
-                          "hover:border-purple-300 hover:shadow-sm",
-                          draggedCardId === c.id && "opacity-50 scale-[0.98]",
-                          selectedCardForDetails?.id === c.id && "border-purple-400 bg-purple-50"
-                        )}
-                      >
-                        <div className="flex items-start gap-2">
-                          <GripVertical className="w-4 h-4 text-gray-300 flex-shrink-0 mt-0.5" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[13px] font-medium text-gray-900 truncate">
+                    unscheduledCards.map((c) => {
+                      const formats = c.formats || [];
+                      const hasStatus = !!c.schedulingStatus;
+                      const schedulingStatus = c.schedulingStatus;
+                      const platforms = c.platforms || [];
+                      const hasPlatforms = platforms.length > 0;
+
+                      const renderPlatformIcons = () => (
+                        <div className="flex gap-1.5 items-center">
+                          {platforms.map((platform, idx) => {
+                            const icon = getPlatformIcon(platform, "w-3 h-3 text-gray-400");
+                            return icon ? (
+                              <span key={`platform-${idx}`} title={platform}>
+                                {icon}
+                              </span>
+                            ) : null;
+                          })}
+                        </div>
+                      );
+
+                      return (
+                        <div
+                          key={c.id}
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, c.id)}
+                          onDragEnd={handleDragEnd}
+                          onClick={() => setSelectedCardForDetails(selectedCardForDetails?.id === c.id ? null : c)}
+                          className={cn(
+                            "p-2 rounded-xl border border-gray-200 bg-white/90 cursor-grab active:cursor-grabbing transition-all shadow-[2px_3px_0px_rgba(0,0,0,0.06)]",
+                            "hover:border-purple-300 hover:shadow-md",
+                            draggedCardId === c.id && "opacity-40 scale-[0.98]",
+                            selectedCardForDetails?.id === c.id && "border-purple-400 bg-purple-50"
+                          )}
+                        >
+                          {/* Title row with pin */}
+                          <div className="flex items-start justify-between gap-2">
+                            <h3 className="font-semibold text-sm text-gray-800 break-words leading-tight flex-1">
                               {c.hook || c.title || "Untitled content"}
-                            </p>
-                            {c.platforms && c.platforms.length > 0 && (
-                              <div className="flex items-center gap-1.5 mt-1">
-                                {c.platforms.slice(0, 3).map((platform, idx) => (
-                                  <span key={idx} className="text-gray-400">
-                                    {getPlatformIcon(platform, "w-3.5 h-3.5")}
-                                  </span>
-                                ))}
-                                {c.platforms.length > 3 && (
-                                  <span className="text-[10px] text-gray-400">+{c.platforms.length - 3}</span>
-                                )}
-                              </div>
+                            </h3>
+                            {c.isPinned && (
+                              <Pin className="w-3 h-3 text-amber-500 flex-shrink-0 fill-amber-500" />
                             )}
                           </div>
+
+                          {/* Format and Status Tags - matching kanban design */}
+                          {(formats.length > 0 || hasStatus || hasPlatforms) && (
+                            <div className="flex flex-col gap-1 mt-2">
+                              {/* Format tags */}
+                              {formats.map((format, idx) => {
+                                const isStatic = isStaticFormat(format);
+                                const isLastRow = !hasStatus && idx === formats.length - 1;
+
+                                if (isLastRow && hasPlatforms) {
+                                  return (
+                                    <div key={`format-${idx}`} className="flex items-center justify-between">
+                                      <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full text-gray-500 font-medium">
+                                        {isStatic ? <Camera className="w-2.5 h-2.5" /> : <Video className="w-2.5 h-2.5" />}
+                                        {format}
+                                      </span>
+                                      {renderPlatformIcons()}
+                                    </div>
+                                  );
+                                }
+
+                                return (
+                                  <span key={`format-${idx}`} className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full text-gray-500 font-medium">
+                                    {isStatic ? <Camera className="w-2.5 h-2.5" /> : <Video className="w-2.5 h-2.5" />}
+                                    {format}
+                                  </span>
+                                );
+                              })}
+
+                              {/* Status tag row */}
+                              {hasStatus && (
+                                <div className={hasPlatforms ? "flex items-center justify-between" : ""}>
+                                  <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full text-gray-500 font-medium">
+                                    {schedulingStatus === 'to-schedule' && <CalendarDays className="w-2.5 h-2.5" />}
+                                    {schedulingStatus === 'scheduled' && <Check className="w-2.5 h-2.5" />}
+                                    {schedulingStatus === 'to-schedule' ? 'To schedule' :
+                                     schedulingStatus === 'scheduled' ? 'Scheduled' : ''}
+                                  </span>
+                                  {hasPlatforms && renderPlatformIcons()}
+                                </div>
+                              )}
+
+                              {/* If only platforms, no formats or status */}
+                              {!hasStatus && formats.length === 0 && hasPlatforms && (
+                                <div className="flex items-center justify-end">
+                                  {renderPlatformIcons()}
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
 
                   {/* Selected card details */}

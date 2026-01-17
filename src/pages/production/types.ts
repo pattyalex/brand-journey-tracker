@@ -58,6 +58,7 @@ export interface ProductionCard {
   customPhotoFormats?: string[];
   schedulingStatus?: SchedulingStatus | null;
   scheduledDate?: string; // ISO date string
+  scheduledColor?: 'indigo' | 'rose' | 'amber' | 'emerald' | 'sky' | 'violet' | 'orange' | 'cyan' | 'sage';
 }
 
 export interface KanbanColumn {
