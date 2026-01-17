@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { getFormatColors, getPlatformColors } from "../utils/productionHelpers";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
-import { MoreHorizontal, Video, Camera, ChevronDown, X, Circle, Wrench, CheckCircle2, MapPin, Shirt, Boxes, NotebookPen, PenLine, Check } from "lucide-react";
+import { MoreHorizontal, Video, Camera, ChevronDown, X, Circle, Wrench, CheckCircle2, MapPin, Shirt, Boxes, NotebookPen, PenLine, Check, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Helper to get platform icon
@@ -84,6 +84,10 @@ interface ScriptEditorDialogProps {
   setCustomPlatformInput: (value: string) => void;
   onRemoveFormatTag: (tag: string) => void;
   onRemovePlatformTag: (tag: string) => void;
+  customVideoFormats: string[];
+  setCustomVideoFormats: (value: string[]) => void;
+  customPhotoFormats: string[];
+  setCustomPhotoFormats: (value: string[]) => void;
   locationText: string;
   setLocationText: (value: string) => void;
   outfitText: string;
@@ -127,6 +131,10 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   setCustomPlatformInput,
   onRemoveFormatTag,
   onRemovePlatformTag,
+  customVideoFormats,
+  setCustomVideoFormats,
+  customPhotoFormats,
+  setCustomPhotoFormats,
   locationText,
   setLocationText,
   outfitText,
@@ -137,7 +145,45 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   setFilmingNotes,
   cardStatus,
   setCardStatus,
-}) => (
+}) => {
+  const [addingFormatType, setAddingFormatType] = React.useState<'video' | 'photo' | null>(null);
+
+  const handleAddCustomFormat = (format: string) => {
+    if (!format.trim()) return;
+    const trimmed = format.trim();
+
+    // Add to the appropriate custom formats list
+    if (addingFormatType === 'video') {
+      if (!customVideoFormats.includes(trimmed)) {
+        setCustomVideoFormats([...customVideoFormats, trimmed]);
+      }
+    } else if (addingFormatType === 'photo') {
+      if (!customPhotoFormats.includes(trimmed)) {
+        setCustomPhotoFormats([...customPhotoFormats, trimmed]);
+      }
+    }
+
+    // Also add to selected formats if not already there
+    if (!formatTags.includes(trimmed)) {
+      setFormatTags([...formatTags, trimmed]);
+    }
+
+    setCustomFormatInput("");
+    setShowCustomFormatInput(false);
+    setAddingFormatType(null);
+  };
+
+  const handleRemoveCustomFormat = (format: string, type: 'video' | 'photo') => {
+    if (type === 'video') {
+      setCustomVideoFormats(customVideoFormats.filter(f => f !== format));
+    } else {
+      setCustomPhotoFormats(customPhotoFormats.filter(f => f !== format));
+    }
+    // Also remove from selected formats
+    onRemoveFormatTag(format);
+  };
+
+  return (
   <Dialog open={isOpen} onOpenChange={onOpenChange}>
     <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] overflow-hidden border-0 shadow-2xl flex flex-col bg-gradient-to-br from-gray-50 to-white">
       <div className="flex-1 overflow-y-auto px-6 pt-6 pb-6 space-y-6">
@@ -165,10 +211,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
             <div className="flex items-center gap-2 flex-wrap">
               <Select
                 onValueChange={(value) => {
-                  if (value === "other") {
-                    setShowCustomFormatInput(true);
-                  } else if (value && !formatTags.includes(value)) {
-                    setShowCustomFormatInput(false);
+                  if (value && !formatTags.includes(value)) {
                     setFormatTags([...formatTags, value]);
                   }
                 }}
@@ -184,16 +227,111 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                     <SelectItem value="Vlog"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Vlog</span></SelectItem>
                     <SelectItem value="Tutorial"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Tutorial</span></SelectItem>
                     <SelectItem value="GRWM"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />GRWM</span></SelectItem>
+                    {customVideoFormats.map((format) => (
+                      <SelectItem key={format} value={format}>
+                        <span className="flex items-center gap-2 w-full">
+                          <Video className="w-4 h-4 text-gray-400" />
+                          <span className="flex-1">{format}</span>
+                          <span
+                            role="button"
+                            onPointerDown={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              handleRemoveCustomFormat(format, 'video');
+                            }}
+                            className="text-gray-300 hover:text-red-500 transition-colors ml-2 cursor-pointer"
+                          >
+                            <X className="w-3 h-3" />
+                          </span>
+                        </span>
+                      </SelectItem>
+                    ))}
                   </SelectGroup>
+                  <div
+                    className="flex items-center gap-2 px-2 py-1.5 cursor-text border-b border-gray-100 mb-1"
+                    onPointerDown={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                    }}
+                  >
+                    <Video className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                    <input
+                      type="text"
+                      placeholder="+ Add video format..."
+                      className="flex-1 text-xs text-gray-500 bg-transparent border-none outline-none placeholder:text-gray-400 focus:placeholder:text-transparent"
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => {
+                        e.stopPropagation();
+                        if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                          e.preventDefault();
+                          const value = e.currentTarget.value.trim();
+                          if (!customVideoFormats.includes(value)) {
+                            setCustomVideoFormats([...customVideoFormats, value]);
+                          }
+                          if (!formatTags.includes(value)) {
+                            setFormatTags([...formatTags, value]);
+                          }
+                          e.currentTarget.value = '';
+                        }
+                      }}
+                    />
+                  </div>
                   <SelectGroup>
                     <SelectLabel className="text-sm font-medium text-gray-500">Photo</SelectLabel>
                     <SelectItem value="Photo post"><span className="flex items-center gap-2"><Camera className="w-4 h-4 text-gray-400" />Photo post</span></SelectItem>
                     <SelectItem value="Carousel"><span className="flex items-center gap-2"><Camera className="w-4 h-4 text-gray-400" />Carousel</span></SelectItem>
                     <SelectItem value="Text post"><span className="flex items-center gap-2"><Camera className="w-4 h-4 text-gray-400" />Text post</span></SelectItem>
+                    {customPhotoFormats.map((format) => (
+                      <SelectItem key={format} value={format}>
+                        <span className="flex items-center gap-2 w-full">
+                          <Camera className="w-4 h-4 text-gray-400" />
+                          <span className="flex-1">{format}</span>
+                          <span
+                            role="button"
+                            onPointerDown={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              handleRemoveCustomFormat(format, 'photo');
+                            }}
+                            className="text-gray-300 hover:text-red-500 transition-colors ml-2 cursor-pointer"
+                          >
+                            <X className="w-3 h-3" />
+                          </span>
+                        </span>
+                      </SelectItem>
+                    ))}
                   </SelectGroup>
-                  <SelectGroup>
-                    <SelectItem value="other"><span className="flex items-center gap-2"><MoreHorizontal className="w-4 h-4 text-gray-400" />Other...</span></SelectItem>
-                  </SelectGroup>
+                  <div
+                    className="flex items-center gap-2 px-2 py-1.5 cursor-text"
+                    onPointerDown={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                    }}
+                  >
+                    <Camera className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                    <input
+                      type="text"
+                      placeholder="+ Add photo format..."
+                      className="flex-1 text-xs text-gray-500 bg-transparent border-none outline-none placeholder:text-gray-400 focus:placeholder:text-transparent"
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => {
+                        e.stopPropagation();
+                        if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                          e.preventDefault();
+                          const value = e.currentTarget.value.trim();
+                          if (!customPhotoFormats.includes(value)) {
+                            setCustomPhotoFormats([...customPhotoFormats, value]);
+                          }
+                          if (!formatTags.includes(value)) {
+                            setFormatTags([...formatTags, value]);
+                          }
+                          e.currentTarget.value = '';
+                        }
+                      }}
+                    />
+                  </div>
                 </SelectContent>
               </Select>
               {formatTags.length === 0 && (
@@ -215,43 +353,6 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                 </span>
               ))}
             </div>
-            {showCustomFormatInput && (
-              <div className="flex gap-2 mt-1">
-                <input
-                  type="text"
-                  value={customFormatInput}
-                  onChange={(e) => setCustomFormatInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && customFormatInput.trim()) {
-                      e.preventDefault();
-                      if (!formatTags.includes(customFormatInput.trim())) {
-                        setFormatTags([...formatTags, customFormatInput.trim()]);
-                      }
-                      setCustomFormatInput("");
-                      setShowCustomFormatInput(false);
-                    }
-                  }}
-                  placeholder="Enter format..."
-                  className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-transparent"
-                  autoFocus
-                />
-                <Button
-                  type="button"
-                  onClick={() => {
-                    if (customFormatInput.trim() && !formatTags.includes(customFormatInput.trim())) {
-                      setFormatTags([...formatTags, customFormatInput.trim()]);
-                      setCustomFormatInput("");
-                      setShowCustomFormatInput(false);
-                    }
-                  }}
-                  size="sm"
-                  variant="outline"
-                  className="h-auto py-1.5"
-                >
-                  Add
-                </Button>
-              </div>
-            )}
           </div>
 
           {/* Platform Selection */}
@@ -555,6 +656,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
       </div>
     </DialogContent>
   </Dialog>
-);
+  );
+};
 
 export default ScriptEditorDialog;

@@ -12,6 +12,8 @@ export interface StoryboardScene {
 
 export type EditingStatus = "to-start-editing" | "needs-more-editing" | "ready-to-schedule";
 
+export type SchedulingStatus = "to-schedule" | "scheduled";
+
 export interface EditingChecklistItem {
   id: string;
   text: string;
@@ -52,6 +54,10 @@ export interface ProductionCard {
   isPinned?: boolean;
   storyboard?: StoryboardScene[];
   editingChecklist?: EditingChecklist;
+  customVideoFormats?: string[];
+  customPhotoFormats?: string[];
+  schedulingStatus?: SchedulingStatus | null;
+  scheduledDate?: string; // ISO date string
 }
 
 export interface KanbanColumn {

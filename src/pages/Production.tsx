@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, MoreVertical, Trash2, Pencil, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard, Video, Circle, Wrench, CheckCircle2, Camera, CheckSquare, Scissors, PlayCircle, PenLine } from "lucide-react";
+import { PlusCircle, MoreVertical, Trash2, Pencil, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard, Video, Circle, Wrench, CheckCircle2, Camera, CheckSquare, Scissors, PlayCircle, PenLine, CalendarDays, X } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine, RiPushpinFill } from "react-icons/ri";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -41,9 +41,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import TitleHookSuggestions from "@/components/content/TitleHookSuggestions";
 import ScriptEditorDialog from "./production/components/ScriptEditorDialog";
 import BrainDumpGuidanceDialog from "./production/components/BrainDumpGuidanceDialog";
-import { KanbanColumn, ProductionCard, StoryboardScene, EditingChecklist } from "./production/types";
+import { KanbanColumn, ProductionCard, StoryboardScene, EditingChecklist, SchedulingStatus } from "./production/types";
 import StoryboardEditorDialog from "./production/components/StoryboardEditorDialog";
 import EditChecklistDialog from "./production/components/EditChecklistDialog";
+import ScheduleDialog from "./production/components/ScheduleDialog";
 import { columnColors, cardColors, defaultColumns } from "./production/utils/productionConstants";
 import { getAllAngleTemplates, getFormatColors, getPlatformColors } from "./production/utils/productionHelpers";
 
@@ -159,6 +160,10 @@ const Production = () => {
   // Edit checklist modal state
   const [isEditChecklistDialogOpen, setIsEditChecklistDialogOpen] = useState(false);
   const [editingEditCard, setEditingEditCard] = useState<ProductionCard | null>(null);
+
+  // Schedule dialog modal state
+  const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false);
+  const [editingScheduleCard, setEditingScheduleCard] = useState<ProductionCard | null>(null);
   const [brainDumpSuggestion, setBrainDumpSuggestion] = useState<string>("");
   const [showBrainDumpSuggestion, setShowBrainDumpSuggestion] = useState(false);
   const [cardTitle, setCardTitle] = useState("");
@@ -172,6 +177,8 @@ const Production = () => {
   const [showCustomFormatInput, setShowCustomFormatInput] = useState(false);
   const [customPlatformInput, setCustomPlatformInput] = useState("");
   const [showCustomPlatformInput, setShowCustomPlatformInput] = useState(false);
+  const [customVideoFormats, setCustomVideoFormats] = useState<string[]>([]);
+  const [customPhotoFormats, setCustomPhotoFormats] = useState<string[]>([]);
   // Filming checklist state
   const [locationChecked, setLocationChecked] = useState(false);
   const [locationText, setLocationText] = useState("");
@@ -622,6 +629,14 @@ const Production = () => {
             }
           };
         }
+
+        // Auto-set scheduling status to 'to-schedule' when moving to 'to-schedule' column
+        if (column.id === 'to-schedule') {
+          cardToAdd = {
+            ...cardToAdd,
+            schedulingStatus: 'to-schedule' as const
+          };
+        }
         filtered.splice(savedDropPosition.index, 0, cardToAdd);
         return { ...column, cards: filtered };
       }
@@ -768,6 +783,8 @@ const Production = () => {
     setPropsText(card.propsText || "");
     setFilmingNotes(card.filmingNotes || "");
     setCardStatus(card.status || null);
+    setCustomVideoFormats(card.customVideoFormats || []);
+    setCustomPhotoFormats(card.customPhotoFormats || []);
     // Check if card has brain dump notes from Ideate column
     if (card.description && card.description.trim()) {
       setBrainDumpSuggestion(card.description);
@@ -802,6 +819,8 @@ const Production = () => {
                 propsText,
                 filmingNotes,
                 status: cardStatus,
+                customVideoFormats,
+                customPhotoFormats,
               }
             : card
         ),
@@ -880,6 +899,67 @@ const Production = () => {
     );
 
     setEditingEditCard(null);
+  };
+
+  // Schedule dialog handler
+  const handleOpenScheduleDialog = (card: ProductionCard | null) => {
+    setEditingScheduleCard(card);
+    setIsScheduleDialogOpen(true);
+  };
+
+  const handleScheduleContent = (cardId: string, date: Date) => {
+    const dateString = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+    const formattedDate = date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+
+    setColumns((prev) =>
+      prev.map((col) => ({
+        ...col,
+        cards: col.cards.map((card) =>
+          card.id === cardId
+            ? {
+                ...card,
+                schedulingStatus: 'scheduled' as const,
+                scheduledDate: dateString,
+              }
+            : card
+        ),
+      }))
+    );
+
+    toast.success(`Scheduled for ${formattedDate}`, {
+      description: "Content has been added to your calendar"
+    });
+
+    // Only close dialog if a specific card was opened (not from "See Content Calendar")
+    if (editingScheduleCard) {
+      setIsScheduleDialogOpen(false);
+      setEditingScheduleCard(null);
+    }
+  };
+
+  const handleUnscheduleContent = (cardId: string) => {
+    setColumns((prev) =>
+      prev.map((col) => ({
+        ...col,
+        cards: col.cards.map((card) =>
+          card.id === cardId
+            ? {
+                ...card,
+                schedulingStatus: 'to-schedule' as const,
+                scheduledDate: undefined,
+              }
+            : card
+        ),
+      }))
+    );
+
+    toast.success("Content unscheduled", {
+      description: "Moved back to content to schedule"
+    });
   };
 
   const handleScriptEditorOpenChange = (open: boolean) => {
@@ -1357,8 +1437,8 @@ const Production = () => {
                               onDragEnd={handleDragEnd}
                               onDragOver={(e) => handleCardDragOver(e, column.id, cardIndex)}
                               onClick={(e) => {
-                                // Open edit modal for Shape Ideas, Ideate, To Film, and To Edit cards on single click (with delay to detect double-click)
-                                if ((column.id === "shape-ideas" || column.id === "ideate" || column.id === "to-film" || column.id === "to-edit") && !isEditing) {
+                                // Open edit modal for Shape Ideas, Ideate, To Film, To Edit, and To Schedule cards on single click (with delay to detect double-click)
+                                if ((column.id === "shape-ideas" || column.id === "ideate" || column.id === "to-film" || column.id === "to-edit" || column.id === "to-schedule") && !isEditing) {
                                   e.stopPropagation();
                                   // Clear any existing timeout
                                   if (clickTimeoutRef.current) {
@@ -1374,6 +1454,8 @@ const Production = () => {
                                       handleOpenIdeateCardEditor(card);
                                     } else if (column.id === "to-edit") {
                                       handleOpenEditChecklist(card);
+                                    } else if (column.id === "to-schedule") {
+                                      handleOpenScheduleDialog(card);
                                     }
                                   }, 250);
                                 }
@@ -1395,7 +1477,7 @@ const Production = () => {
                               className={cn(
                                 "group rounded-xl relative shadow-[2px_3px_0px_rgba(0,0,0,0.06)]",
                                 column.id === "ideate" ? "py-4 px-2" : "p-2",
-                                (column.id === "shape-ideas" || column.id === "ideate" || column.id === "to-film" || column.id === "to-edit") && !isEditing ? "cursor-pointer" : (!isEditing && "cursor-grab active:cursor-grabbing"),
+                                (column.id === "shape-ideas" || column.id === "ideate" || column.id === "to-film" || column.id === "to-edit" || column.id === "to-schedule") && !isEditing ? "cursor-pointer" : (!isEditing && "cursor-grab active:cursor-grabbing"),
                                 !isDragging && "transition-all duration-200",
                                 isThisCardDragged ? "opacity-40 scale-[0.98]" : "",
                                 card.isCompleted && "opacity-60",
@@ -1504,6 +1586,19 @@ const Production = () => {
                                       <Scissors className="h-2.5 w-2.5 text-gray-400 hover:text-rose-600" />
                                     </Button>
                                   )}
+                                  {column.id === "to-schedule" && (
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-3.5 w-3.5 p-0 rounded hover:bg-indigo-50"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenScheduleDialog(card);
+                                      }}
+                                    >
+                                      <CalendarDays className="h-2.5 w-2.5 text-gray-400 hover:text-indigo-600" />
+                                    </Button>
+                                  )}
                                   {column.id !== "posted" && !card.isPinned && (
                                     <Button
                                       size="sm"
@@ -1532,10 +1627,11 @@ const Production = () => {
                                 </div>
                             </div>
                             {/* Tags for cards with metadata */}
-                            {column.id !== "ideate" && ((card.formats && card.formats.length > 0) || card.status || card.editingChecklist?.status || (card.platforms && card.platforms.length > 0)) && (() => {
+                            {column.id !== "ideate" && ((card.formats && card.formats.length > 0) || card.status || card.editingChecklist?.status || card.schedulingStatus || (card.platforms && card.platforms.length > 0)) && (() => {
                               const formats = card.formats || [];
-                              const hasStatus = !!card.status || !!card.editingChecklist?.status;
+                              const hasStatus = !!card.status || !!card.editingChecklist?.status || !!card.schedulingStatus;
                               const editingStatus = card.editingChecklist?.status;
+                              const schedulingStatus = card.schedulingStatus;
                               const platforms = card.platforms || [];
                               const hasPlatforms = platforms.length > 0;
 
@@ -1613,6 +1709,13 @@ const Production = () => {
                                             {card.status === 'to-start' ? 'To start filming' :
                                              card.status === 'needs-work' ? 'Needs more work' :
                                              card.status === 'ready' ? 'Filmed' : ''}
+                                          </>
+                                        ) : column.id === 'to-schedule' ? (
+                                          <>
+                                            {schedulingStatus === 'to-schedule' && <CalendarDays className="w-2.5 h-2.5" />}
+                                            {schedulingStatus === 'scheduled' && <Check className="w-2.5 h-2.5" />}
+                                            {schedulingStatus === 'to-schedule' ? 'To schedule' :
+                                             schedulingStatus === 'scheduled' ? 'Scheduled' : ''}
                                           </>
                                         ) : (
                                           <>
@@ -1730,15 +1833,23 @@ const Production = () => {
                                 )
                               );
                               handleOpenEditChecklist(newCard);
+                            } else if (column.id === 'to-schedule') {
+                              // Open schedule dialog (no new card created)
+                              handleOpenScheduleDialog(null);
                             } else {
                               handleStartAddingCard(column.id);
                             }
                           }}
                         >
                           <div className={cn("flex items-center gap-2", colors.buttonText)}>
-                            <PlusCircle className="h-4 w-4 group-hover/btn:rotate-90 transition-transform duration-200" />
+                            {column.id === 'to-schedule' ? (
+                              <CalendarDays className="h-4 w-4" />
+                            ) : (
+                              <PlusCircle className="h-4 w-4 group-hover/btn:rotate-90 transition-transform duration-200" />
+                            )}
                             <span className="text-sm font-semibold">
-                              {column.id === 'ideate' ? 'Add quick idea' : 'Add new'}
+                              {column.id === 'ideate' ? 'Add quick idea' :
+                               column.id === 'to-schedule' ? 'See Content Calendar' : 'Add new'}
                             </span>
                           </div>
                         </div>
@@ -3746,6 +3857,10 @@ Make each idea unique, creative, and directly tied to both the original content 
           setFilmingNotes={setFilmingNotes}
           cardStatus={cardStatus}
           setCardStatus={(value) => setCardStatus(value)}
+          customVideoFormats={customVideoFormats}
+          setCustomVideoFormats={setCustomVideoFormats}
+          customPhotoFormats={customPhotoFormats}
+          setCustomPhotoFormats={setCustomPhotoFormats}
         />
 
         <BrainDumpGuidanceDialog
@@ -3771,6 +3886,15 @@ Make each idea unique, creative, and directly tied to both the original content 
           onOpenChange={setIsEditChecklistDialogOpen}
           card={editingEditCard}
           onSave={handleSaveEditChecklist}
+        />
+
+        <ScheduleDialog
+          isOpen={isScheduleDialogOpen}
+          onOpenChange={setIsScheduleDialogOpen}
+          card={editingScheduleCard}
+          allCards={columns.find(col => col.id === 'to-schedule')?.cards || []}
+          onSchedule={handleScheduleContent}
+          onUnschedule={handleUnscheduleContent}
         />
       </div>
     </Layout>
