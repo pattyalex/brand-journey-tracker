@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, MoreVertical, Trash2, Pencil, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard, Video, Circle, Wrench, CheckCircle2, Camera, CheckSquare, Scissors, PlayCircle, PenLine, CalendarDays, X, Maximize2, PartyPopper } from "lucide-react";
+import { PlusCircle, MoreVertical, Trash2, Pencil, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard, Video, Circle, Wrench, CheckCircle2, Camera, CheckSquare, Scissors, PlayCircle, PenLine, CalendarDays, X, Maximize2, PartyPopper, Archive, FolderOpen, ChevronRight, RefreshCw } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine, RiPushpinFill } from "react-icons/ri";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -45,6 +45,7 @@ import { KanbanColumn, ProductionCard, StoryboardScene, EditingChecklist, Schedu
 import StoryboardEditorDialog from "./production/components/StoryboardEditorDialog";
 import EditChecklistDialog from "./production/components/EditChecklistDialog";
 import ExpandedScheduleView from "./production/components/ExpandedScheduleView";
+import ArchiveDialog from "./production/components/ArchiveDialog";
 import { columnColors, cardColors, defaultColumns } from "./production/utils/productionConstants";
 import { getAllAngleTemplates, getFormatColors, getPlatformColors } from "./production/utils/productionHelpers";
 
@@ -163,6 +164,10 @@ const Production = () => {
 
   // Schedule expanded view state
   const [isScheduleColumnExpanded, setIsScheduleColumnExpanded] = useState(false);
+
+  // Archive state
+  const [archivedCards, setArchivedCards] = useState<ProductionCard[]>([]);
+  const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
   const [brainDumpSuggestion, setBrainDumpSuggestion] = useState<string>("");
   const [showBrainDumpSuggestion, setShowBrainDumpSuggestion] = useState(false);
   const [cardTitle, setCardTitle] = useState("");
@@ -193,6 +198,7 @@ const Production = () => {
   const outfitInputRef = useRef<HTMLInputElement>(null);
   const propsInputRef = useRef<HTMLInputElement>(null);
   const notesInputRef = useRef<HTMLTextAreaElement>(null);
+  const deletedCardRef = useRef<{ card: ProductionCard; columnId: string; index: number } | null>(null);
   const [addedAngleText, setAddedAngleText] = useState<string | null>(null);
   const [bankIdeas, setBankIdeas] = useState<Array<{ id: string; text: string; isPlaceholder?: boolean }>>([]);
   const [newBankIdeaText, setNewBankIdeaText] = useState("");
@@ -557,6 +563,33 @@ const Production = () => {
       return;
     }
 
+    // Handle archiving when dropped on Posted column
+    if (actualTargetColumnId === "posted") {
+      const cardToArchive = {
+        ...draggedCard,
+        columnId: "posted",
+        isPinned: false,
+        archivedAt: new Date().toISOString()
+      };
+
+      // Remove from source column
+      setColumns((prev) =>
+        prev.map((col) => ({
+          ...col,
+          cards: col.cards.filter((c) => c.id !== draggedCard.id),
+        }))
+      );
+
+      // Add to archived cards
+      setArchivedCards((prev) => [cardToArchive, ...prev]);
+      setDraggedCard(null);
+
+      toast.success("Content archived! 🎉", {
+        description: "You can view it anytime in your archive"
+      });
+      return;
+    }
+
     const isSameColumn = sourceColumnId === actualTargetColumnId;
 
     // Create updated columns
@@ -701,12 +734,64 @@ const Production = () => {
   };
 
   const handleDeleteCard = (cardId: string) => {
-    setColumns((prev) =>
-      prev.map((col) => ({
-        ...col,
-        cards: col.cards.filter((card) => card.id !== cardId),
-      }))
-    );
+    // Find the card and its position before deleting
+    let deletedCard: ProductionCard | null = null;
+    let deletedColumnId: string | null = null;
+    let deletedIndex: number = -1;
+
+    columns.forEach((col) => {
+      const index = col.cards.findIndex((card) => card.id === cardId);
+      if (index !== -1) {
+        deletedCard = col.cards[index];
+        deletedColumnId = col.id;
+        deletedIndex = index;
+      }
+    });
+
+    if (deletedCard && deletedColumnId !== null) {
+      // Store the deleted card info for potential undo
+      deletedCardRef.current = {
+        card: deletedCard,
+        columnId: deletedColumnId,
+        index: deletedIndex,
+      };
+
+      // Remove the card
+      setColumns((prev) =>
+        prev.map((col) => ({
+          ...col,
+          cards: col.cards.filter((card) => card.id !== cardId),
+        }))
+      );
+
+      // Show toast with undo option
+      toast("Card deleted", {
+        description: deletedCard.hook || deletedCard.title || "Untitled card",
+        action: {
+          label: "Undo",
+          onClick: () => {
+            if (deletedCardRef.current) {
+              const { card, columnId, index } = deletedCardRef.current;
+              setColumns((prev) =>
+                prev.map((col) => {
+                  if (col.id === columnId) {
+                    const newCards = [...col.cards];
+                    // Insert at original position, or at end if position no longer valid
+                    const insertIndex = Math.min(index, newCards.length);
+                    newCards.splice(insertIndex, 0, card);
+                    return { ...col, cards: newCards };
+                  }
+                  return col;
+                })
+              );
+              deletedCardRef.current = null;
+              toast.success("Card restored");
+            }
+          },
+        },
+        duration: 7000,
+      });
+    }
   };
 
   const handleToggleComplete = (cardId: string) => {
@@ -956,6 +1041,35 @@ const Production = () => {
         ),
       }))
     );
+  };
+
+  // Repurpose archived content - creates a copy in Script Ideas
+  const handleRepurposeContent = (card: ProductionCard) => {
+    const repurposedCard: ProductionCard = {
+      id: `card-${Date.now()}`,
+      title: card.title,
+      hook: card.hook,
+      script: card.script,
+      platforms: card.platforms,
+      formats: card.formats,
+      customVideoFormats: card.customVideoFormats,
+      customPhotoFormats: card.customPhotoFormats,
+      columnId: 'shape-ideas',
+      status: 'to-start' as const,
+      isCompleted: false,
+    };
+
+    setColumns((prev) =>
+      prev.map((col) =>
+        col.id === 'shape-ideas'
+          ? { ...col, cards: [repurposedCard, ...col.cards] }
+          : col
+      )
+    );
+
+    toast.success("Content repurposed! 🔄", {
+      description: "A copy has been added to Script Ideas"
+    });
   };
 
   const handleScriptEditorOpenChange = (open: boolean) => {
@@ -1359,52 +1473,110 @@ const Production = () => {
                     colors.border
                   )}
                 >
-                  <div className="p-4 pb-6">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <div className={cn("w-1 h-6 rounded-full", colors.badge)}></div>
-                        <h2 className={cn("font-bold text-lg", colors.text)}>
-                          {column.title}
-                        </h2>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-1.5 scrollbar-none hover:scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent relative">
-                    {/* Not Allowed Overlay for Ideate Column */}
-                    {column.id === "ideate" && draggedCard && draggedOverColumn === column.id &&
-                     columns.find(col => col.cards.some(c => c.id === draggedCard.id))?.id !== "ideate" && (
-                      <div className="absolute inset-0 bg-red-50/90 backdrop-blur-sm rounded-lg z-20 flex items-center justify-center pointer-events-none">
-                        <div className="text-center px-6">
-                          <div className="text-4xl mb-3">🚫</div>
-                          <p className="text-sm font-semibold text-red-700 mb-1">Cannot Move Back</p>
-                          <p className="text-xs text-red-600">Content flows forward only</p>
+                  {/* Special Archive UI for Posted column */}
+                  {column.id === "posted" ? (
+                    <>
+                      {/* Column header - same as other columns */}
+                      <div className="p-4 pb-4">
+                        <div className="flex items-center gap-2">
+                          <div className={cn("w-1 h-6 rounded-full", colors.badge)}></div>
+                          <h2 className={cn("font-bold text-lg", colors.text)}>
+                            {column.title}
+                          </h2>
                         </div>
                       </div>
-                    )}
-                    <AnimatePresence>
-                      {column.cards.filter(card => card.title && card.title.trim() && !card.title.toLowerCase().includes('add quick idea')).sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0)).map((card, cardIndex) => {
-                        const isEditing = editingCardId === card.id;
 
-                        // Find dragged card's current index in this column
-                        const filteredCards = column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea'));
-                        const draggedCardIndex = draggedCard ? filteredCards.findIndex(c => c.id === draggedCard.id) : -1;
+                      {/* Minimal archive drop zone */}
+                      <div className="flex-1 flex flex-col items-center justify-center px-4">
+                        <motion.div
+                          className={cn(
+                            "flex flex-col items-center transition-all duration-200",
+                            draggedOverColumn === "posted" && draggedCard
+                              ? "opacity-100 scale-100"
+                              : "opacity-60"
+                          )}
+                        >
+                          <Archive className={cn(
+                            "w-8 h-8 mb-3 transition-colors",
+                            draggedOverColumn === "posted" && draggedCard
+                              ? "text-emerald-500"
+                              : "text-emerald-300"
+                          )} />
 
-                        // Don't show indicator at or adjacent to the dragged card's original position in the same column
-                        const isNearOriginalPosition = draggedCardIndex !== -1 &&
-                                                       dropPosition?.columnId === column.id &&
-                                                       (dropPosition?.index === draggedCardIndex ||
-                                                        dropPosition?.index === draggedCardIndex + 1);
+                          <p className={cn(
+                            "text-sm text-center transition-colors max-w-[180px]",
+                            draggedOverColumn === "posted" && draggedCard
+                              ? "text-emerald-600 font-medium"
+                              : "text-emerald-400"
+                          )}>
+                            {draggedOverColumn === "posted" && draggedCard
+                              ? "Release to archive"
+                              : "Drop published content here to archive"
+                            }
+                          </p>
+                        </motion.div>
+                      </div>
 
-                        const showDropIndicatorBefore = dropPosition?.columnId === column.id &&
-                                                         dropPosition?.index === cardIndex &&
-                                                         !isNearOriginalPosition;
+                      {/* Bottom section - archive link */}
+                      <div className="px-4 pb-4 flex flex-col items-center">
+                        {archivedCards.length > 0 && (
+                          <button
+                            onClick={() => setIsArchiveDialogOpen(true)}
+                            className="text-sm text-emerald-600 hover:text-emerald-700 font-medium hover:underline transition-colors"
+                          >
+                            View archive ({archivedCards.length})
+                          </button>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="p-4 pb-6">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <div className={cn("w-1 h-6 rounded-full", colors.badge)}></div>
+                            <h2 className={cn("font-bold text-lg", colors.text)}>
+                              {column.title}
+                            </h2>
+                          </div>
+                        </div>
+                      </div>
 
-                        const isDragging = draggedCard !== null;
-                        const isThisCardDragged = draggedCard?.id === card.id;
+                      <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-1.5 scrollbar-none hover:scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent relative">
+                        {/* Not Allowed Overlay for Ideate Column */}
+                        {column.id === "ideate" && draggedCard && draggedOverColumn === column.id &&
+                         columns.find(col => col.cards.some(c => c.id === draggedCard.id))?.id !== "ideate" && (
+                          <div className="absolute inset-0 bg-red-50/90 backdrop-blur-sm rounded-lg z-20 flex items-center justify-center pointer-events-none">
+                            <div className="text-center px-6">
+                              <div className="text-4xl mb-3">🚫</div>
+                              <p className="text-sm font-semibold text-red-700 mb-1">Cannot Move Back</p>
+                              <p className="text-xs text-red-600">Content flows forward only</p>
+                            </div>
+                          </div>
+                        )}
+                        <AnimatePresence>
+                          {column.cards.filter(card => card.title && card.title.trim() && !card.title.toLowerCase().includes('add quick idea')).sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0)).map((card, cardIndex) => {
+                            const isEditing = editingCardId === card.id;
 
-                        return (
-                          <React.Fragment key={card.id}>
+                            // Find dragged card's current index in this column
+                            const filteredCards = column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea'));
+                            const draggedCardIndex = draggedCard ? filteredCards.findIndex(c => c.id === draggedCard.id) : -1;
+
+                            // Don't show indicator at or adjacent to the dragged card's original position in the same column
+                            const isNearOriginalPosition = draggedCardIndex !== -1 &&
+                                                           dropPosition?.columnId === column.id &&
+                                                           (dropPosition?.index === draggedCardIndex ||
+                                                            dropPosition?.index === draggedCardIndex + 1);
+
+                            const showDropIndicatorBefore = dropPosition?.columnId === column.id &&
+                                                             dropPosition?.index === cardIndex &&
+                                                             !isNearOriginalPosition;
+
+                            const isDragging = draggedCard !== null;
+                            const isThisCardDragged = draggedCard?.id === card.id;
+
+                            return (
+                              <React.Fragment key={card.id}>
                             {/* Drop indicator - fixed height to prevent layout shift */}
                             <div className="relative h-0">
                               {showDropIndicatorBefore && draggedCard && (
@@ -1836,15 +2008,15 @@ const Production = () => {
                         </div>
                       ) : null}
 
-                      {/* Expand button - only for to-schedule column */}
+                      {/* See Content Calendar button - only for to-schedule column */}
                       {column.id === 'to-schedule' && (
                         <div
                           className="group/btn px-4 py-2 rounded-full border border-dashed hover:border-solid transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95 bg-indigo-100 hover:bg-indigo-200 border-indigo-300"
                           onClick={() => setIsScheduleColumnExpanded(true)}
                         >
-                          <div className="flex items-center gap-2 text-indigo-700">
-                            <Maximize2 className="h-4 w-4" />
-                            <span className="text-sm font-semibold">Expand</span>
+                          <div className="flex items-center gap-2 text-indigo-600">
+                            <CalendarDays className="h-4 w-4" />
+                            <span className="text-sm font-semibold">See Content Calendar</span>
                           </div>
                         </div>
                       )}
@@ -1865,6 +2037,8 @@ const Production = () => {
                       )}
                     </AnimatePresence>
                   </div>
+                    </>
+                  )}
                 </div>
               </motion.div>
             );
@@ -3892,6 +4066,14 @@ Make each idea unique, creative, and directly tied to both the original content 
             onUpdateColor={handleUpdateScheduledColor}
           />
         )}
+
+        {/* Archive Dialog */}
+        <ArchiveDialog
+          isOpen={isArchiveDialogOpen}
+          onOpenChange={setIsArchiveDialogOpen}
+          archivedCards={archivedCards}
+          onRepurpose={handleRepurposeContent}
+        />
       </div>
     </Layout>
   );
