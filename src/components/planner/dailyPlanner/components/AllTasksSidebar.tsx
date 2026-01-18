@@ -1,7 +1,7 @@
 import { PlannerItem } from "@/types/planner";
-import { Button } from "@/components/ui/button";
 import { PlannerSection } from "@/components/planner/PlannerSection";
-import { ChevronLeft, ChevronRight as ChevronRightCollapse } from "lucide-react";
+import { ChevronLeft, ListTodo } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface AllTasksSidebarProps {
   isAllTasksCollapsed: boolean;
@@ -39,73 +39,69 @@ export const AllTasksSidebar = ({
 }: AllTasksSidebarProps) => {
   return (
     <div
-      className={`${isAllTasksCollapsed ? 'w-16' : 'w-80'} flex-shrink-0 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-200 ${isAllTasksCollapsed ? 'p-2' : 'p-5'} transition-all duration-300 shadow-sm`}
+      className={cn(
+        "h-full flex-shrink-0 bg-gradient-to-br from-purple-50 to-pink-50 border-r border-purple-100 transition-all duration-300 relative",
+        isAllTasksCollapsed ? 'w-12' : 'w-[320px] min-w-[300px]'
+      )}
       onDragEnter={(e) => {
-        console.log('👉 DRAG ENTER ALL TASKS');
         e.preventDefault();
         setIsDraggingOverAllTasks(true);
       }}
       onDragOver={(e) => {
-        console.log('⬆️ DRAG OVER ALL TASKS');
         e.preventDefault();
-        // Don't stopPropagation - let it bubble to children
       }}
       onDragLeave={(e) => {
-        // Only hide if we're leaving the container, not entering a child
         if (e.currentTarget === e.target || !e.currentTarget.contains(e.relatedTarget as Node)) {
           setIsDraggingOverAllTasks(false);
         }
       }}
       onDrop={(e) => {
-        // Don't handle the drop here - let it bubble to PlannerSection
-        // Just clean up the drag state
-        console.log('🎯 Parent container onDrop triggered');
         setIsDraggingOverAllTasks(false);
       }}
     >
-      {isAllTasksCollapsed ? (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-6 w-6"
-          onClick={() => setIsAllTasksCollapsed(!isAllTasksCollapsed)}
-        >
-          <ChevronRightCollapse className="h-5 w-5" strokeWidth={2.5} />
-        </Button>
-      ) : (
-        <div className="h-full flex flex-col">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-purple-600">
-              All Tasks
-            </h2>
-            <button
-              onClick={() => setIsAllTasksCollapsed(!isAllTasksCollapsed)}
-              className="text-gray-400 hover:text-gray-600 transition-colors p-1.5 hover:bg-gray-100 rounded"
-              title="Collapse sidebar"
-            >
-              <ChevronLeft className="h-5 w-5" strokeWidth={2.5} />
-            </button>
-          </div>
+      {/* Collapse/Expand Button */}
+      <button
+        onClick={() => setIsAllTasksCollapsed(!isAllTasksCollapsed)}
+        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 w-6 h-12 bg-white border border-gray-200 rounded-r-lg shadow-sm hover:bg-gray-50 flex items-center justify-center transition-colors"
+      >
+        <ChevronLeft className={cn(
+          "w-4 h-4 text-gray-600 transition-transform duration-300",
+          isAllTasksCollapsed && "rotate-180"
+        )} />
+      </button>
 
-          {/* Content */}
-          <div className="flex-1 overflow-hidden">
-            <PlannerSection
-              title=""
-              items={allTasks}
-              section="morning"
-              onToggleItem={handleToggleAllTask}
-              onDeleteItem={handleDeleteAllTask}
-              onEditItem={handleEditAllTask}
-              onAddItem={handleAddAllTask}
-              onReorderItems={handleReorderAllTasks}
-              isAllTasksSection={true}
-              onDropTaskFromWeekly={handleDropTaskFromWeeklyToAllTasks}
-              onDropTaskFromCalendar={handleDropTaskFromCalendarToAllTasks}
-            />
+      {/* Content */}
+      <div className={cn(
+        "h-full flex flex-col transition-all duration-300",
+        isAllTasksCollapsed ? "px-2 py-4 opacity-0 overflow-hidden" : "px-5 py-4 opacity-100"
+      )}>
+        {/* Header */}
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+            <ListTodo className="w-4 h-4 text-purple-500" />
           </div>
+          <h2 className="text-lg font-bold text-gray-900">
+            All Tasks
+          </h2>
         </div>
-      )}
+
+        {/* Tasks */}
+        <div className="flex-1 overflow-hidden">
+          <PlannerSection
+            title=""
+            items={allTasks}
+            section="morning"
+            onToggleItem={handleToggleAllTask}
+            onDeleteItem={handleDeleteAllTask}
+            onEditItem={handleEditAllTask}
+            onAddItem={handleAddAllTask}
+            onReorderItems={handleReorderAllTasks}
+            isAllTasksSection={true}
+            onDropTaskFromWeekly={handleDropTaskFromWeeklyToAllTasks}
+            onDropTaskFromCalendar={handleDropTaskFromCalendarToAllTasks}
+          />
+        </div>
+      </div>
     </div>
   );
 };

@@ -7,6 +7,7 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   useSidebar
 } from "@/components/ui/sidebar";
@@ -49,8 +50,11 @@ const Sidebar = () => {
 
   return (
     <SidebarContainer>
-      <SidebarContent className="pt-16">
-        <SidebarGroup>
+      <SidebarHeader className="px-4 pt-2 pb-1 border-b">
+        <h1 className="text-base font-bold text-primary">Hey Megan</h1>
+      </SidebarHeader>
+      <SidebarContent className="pt-2">
+        <SidebarGroup className="pt-0">
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (

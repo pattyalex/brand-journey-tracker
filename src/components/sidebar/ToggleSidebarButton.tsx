@@ -16,7 +16,7 @@ const ToggleSidebarButton = () => {
     <Button
       variant="ghost"
       size="icon"
-      className={cn("fixed top-[4.5rem] z-50 h-8 w-8 transition-all duration-200", leftPosition)}
+      className={cn("fixed top-[2.75rem] z-50 h-8 w-8 transition-all duration-200", leftPosition)}
       onClick={toggleSidebar}
       aria-label="Toggle Sidebar"
     >

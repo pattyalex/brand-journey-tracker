@@ -1,4 +1,4 @@
-export type PlannerView = 'today' | 'week' | 'month' | 'day' | 'calendar';
+export type PlannerView = 'today' | 'week' | 'month' | 'day' | 'calendar' | 'content-calendar-new';
 
 export interface TimezoneOption {
   label: string;

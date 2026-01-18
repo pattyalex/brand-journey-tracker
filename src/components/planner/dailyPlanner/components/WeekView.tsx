@@ -91,8 +91,8 @@ export const WeekView = ({
 }: WeekViewProps) => {
   return (
     <>
-      <CardContent className="px-0">
-        <div className="flex flex-col bg-white">
+      <CardContent className="px-0 h-full flex flex-col">
+        <div className="flex flex-col flex-1 min-h-0 bg-white">
           {/* Fixed header row */}
           <div className="flex border-b border-gray-200">
             {/* Time column header */}
@@ -163,7 +163,7 @@ export const WeekView = ({
 
           {/* Scrollable timeline area */}
           <div ref={weeklyScrollRef}>
-            <ScrollArea className="h-[calc(100vh-320px)]">
+            <ScrollArea className="flex-1">
               <div className="flex">
                 {/* Time column */}
                 <div className="flex-shrink-0 bg-white border-r border-gray-200" style={{ width: '40px' }}>

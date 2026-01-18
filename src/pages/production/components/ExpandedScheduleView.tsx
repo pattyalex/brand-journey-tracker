@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Popover,
   PopoverContent,
@@ -8,7 +8,8 @@ import { CalendarDays, ChevronLeft, ChevronRight, Video, Camera, Check, X, Pin, 
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
-import { ProductionCard } from "../types";
+import { ProductionCard, KanbanColumn } from "../types";
+import { StorageKeys, getString, setString } from "@/lib/storage";
 
 // Helper to get platform icon
 const getPlatformIcon = (platform: string, size: string = "w-5 h-5"): React.ReactNode => {
@@ -58,19 +59,27 @@ const scheduleColors = {
 type ScheduleColorKey = keyof typeof scheduleColors;
 
 interface ExpandedScheduleViewProps {
-  cards: ProductionCard[];
-  onClose: () => void;
+  /** When true, renders inline without modal wrapper and loads data from localStorage */
+  embedded?: boolean;
+  /** Cards to display - required when not embedded */
+  cards?: ProductionCard[];
+  /** Close handler - required when not embedded */
+  onClose?: () => void;
   onSchedule?: (cardId: string, date: Date) => void;
   onUnschedule?: (cardId: string) => void;
   onUpdateColor?: (cardId: string, color: ScheduleColorKey) => void;
+  /** Optional header component to render above the calendar in the right panel */
+  headerComponent?: React.ReactNode;
 }
 
 const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
-  cards,
+  embedded = false,
+  cards: propCards,
   onClose,
-  onSchedule,
-  onUnschedule,
-  onUpdateColor,
+  onSchedule: propOnSchedule,
+  onUnschedule: propOnUnschedule,
+  onUpdateColor: propOnUpdateColor,
+  headerComponent,
 }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
@@ -78,6 +87,113 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   const [dragOverUnschedule, setDragOverUnschedule] = useState(false);
   const [popoverCardId, setPopoverCardId] = useState<string | null>(null);
   const [selectedCard, setSelectedCard] = useState<ProductionCard | null>(null);
+
+  // For embedded mode: manage columns state internally
+  const [columns, setColumns] = useState<KanbanColumn[]>([]);
+
+  // Load production data from localStorage when embedded
+  useEffect(() => {
+    if (embedded) {
+      const savedData = getString(StorageKeys.productionKanban);
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          setColumns(parsed);
+        } catch (e) {
+          console.error("Error parsing production data:", e);
+        }
+      }
+    }
+  }, [embedded]);
+
+  // Save columns to localStorage when embedded
+  const saveColumns = (newColumns: KanbanColumn[]) => {
+    setColumns(newColumns);
+    setString(StorageKeys.productionKanban, JSON.stringify(newColumns));
+  };
+
+  // Get cards from localStorage when embedded, otherwise use props
+  const toScheduleCards = useMemo(() => {
+    if (embedded) {
+      const toScheduleColumn = columns.find(col => col.id === 'to-schedule');
+      return toScheduleColumn?.cards || [];
+    }
+    return propCards || [];
+  }, [embedded, columns, propCards]);
+
+  // Internal handlers for embedded mode
+  const handleScheduleInternal = (cardId: string, date: Date) => {
+    const newColumns = columns.map(col => {
+      if (col.id === 'to-schedule') {
+        return {
+          ...col,
+          cards: col.cards.map(card => {
+            if (card.id === cardId) {
+              return {
+                ...card,
+                schedulingStatus: 'scheduled' as const,
+                scheduledDate: date.toISOString(),
+              };
+            }
+            return card;
+          }),
+        };
+      }
+      return col;
+    });
+    saveColumns(newColumns);
+  };
+
+  const handleUnscheduleInternal = (cardId: string) => {
+    const newColumns = columns.map(col => {
+      if (col.id === 'to-schedule') {
+        return {
+          ...col,
+          cards: col.cards.map(card => {
+            if (card.id === cardId) {
+              return {
+                ...card,
+                schedulingStatus: 'to-schedule' as const,
+                scheduledDate: undefined,
+              };
+            }
+            return card;
+          }),
+        };
+      }
+      return col;
+    });
+    saveColumns(newColumns);
+  };
+
+  const handleUpdateColorInternal = (cardId: string, color: ScheduleColorKey) => {
+    const newColumns = columns.map(col => {
+      if (col.id === 'to-schedule') {
+        return {
+          ...col,
+          cards: col.cards.map(card => {
+            if (card.id === cardId) {
+              return {
+                ...card,
+                scheduledColor: color,
+              };
+            }
+            return card;
+          }),
+        };
+      }
+      return col;
+    });
+    saveColumns(newColumns);
+  };
+
+  // Use internal or prop handlers based on mode
+  const onSchedule = embedded ? handleScheduleInternal : propOnSchedule;
+  const onUnschedule = embedded ? handleUnscheduleInternal : propOnUnschedule;
+  const onUpdateColor = embedded ? handleUpdateColorInternal : propOnUpdateColor;
+
+  // Use toScheduleCards instead of cards
+  const cards = toScheduleCards;
   const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
 
   const today = new Date();
@@ -110,13 +226,14 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
     "July", "August", "September", "October", "November", "December"
   ];
 
-  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
   // Get calendar days for the current month view
   const calendarDays = useMemo(() => {
     const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
     const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
-    const startingDayOfWeek = firstDayOfMonth.getDay();
+    // Adjust so Monday = 0, Sunday = 6
+    const startingDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7;
     const daysInMonth = lastDayOfMonth.getDate();
 
     const days: { date: Date; isCurrentMonth: boolean; isToday: boolean }[] = [];
@@ -268,13 +385,13 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
     );
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-2xl shadow-2xl flex flex-col w-[1200px] max-w-[95vw] h-[calc(100vh-6rem)] max-h-[800px] overflow-hidden">
+  // Content component - shared between modal and embedded modes
+  const content = (
+    <>
       {/* Main content - split panels */}
       <div className={cn(
         "flex-1 overflow-hidden grid transition-all duration-300",
-        isLeftPanelCollapsed ? "grid-cols-[48px_1fr]" : "grid-cols-[380px_1fr]"
+        isLeftPanelCollapsed ? "grid-cols-[48px_1fr]" : "grid-cols-[320px_1fr]"
       )}>
         {/* Left Panel - Content to Schedule */}
         <div
@@ -507,42 +624,52 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
 
         {/* Right Panel - Calendar */}
         <div className="flex flex-col overflow-hidden bg-gray-50/50">
-          {/* Calendar Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <CalendarDays className="w-5 h-5 text-indigo-500" />
-                <span className="text-lg font-bold text-gray-900">Content Calendar</span>
+          {/* Calendar Header - only show in modal mode */}
+          {!embedded && (
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <CalendarDays className="w-5 h-5 text-indigo-500" />
+                  <span className="text-lg font-bold text-gray-900">Content Calendar</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={goToPreviousMonth}
+                    className="p-1 hover:bg-gray-100 rounded transition-colors"
+                  >
+                    <ChevronLeft className="w-5 h-5 text-gray-600" />
+                  </button>
+                  <span className="text-base font-medium text-gray-700 min-w-[140px] text-center">
+                    {monthNames[currentMonth]} {currentYear}
+                  </span>
+                  <button
+                    onClick={goToNextMonth}
+                    className="p-1 hover:bg-gray-100 rounded transition-colors"
+                  >
+                    <ChevronRight className="w-5 h-5 text-gray-600" />
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
+              {onClose && (
                 <button
-                  onClick={goToPreviousMonth}
-                  className="p-1 hover:bg-gray-100 rounded transition-colors"
+                  onClick={onClose}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <ChevronLeft className="w-5 h-5 text-gray-600" />
+                  <X className="w-5 h-5 text-gray-500" />
                 </button>
-                <span className="text-base font-medium text-gray-700 min-w-[140px] text-center">
-                  {monthNames[currentMonth]} {currentYear}
-                </span>
-                <button
-                  onClick={goToNextMonth}
-                  className="p-1 hover:bg-gray-100 rounded transition-colors"
-                >
-                  <ChevronRight className="w-5 h-5 text-gray-600" />
-                </button>
-              </div>
+              )}
             </div>
-            {/* Close button */}
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <X className="w-5 h-5 text-gray-500" />
-            </button>
-          </div>
+          )}
+
+          {/* External header component when embedded */}
+          {embedded && headerComponent && (
+            <div className="flex-shrink-0 px-6 bg-white">
+              {headerComponent}
+            </div>
+          )}
 
           {/* Calendar Grid */}
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex-1 overflow-y-auto px-6 pb-6">
             {/* Day headers */}
             <div className="grid grid-cols-7 mb-2">
               {daysOfWeek.map((day) => (
@@ -569,7 +696,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                     onDragLeave={handleDragLeave}
                     onDrop={(e) => handleDrop(e, day.date)}
                     className={cn(
-                      isLeftPanelCollapsed ? "rounded-lg border min-h-[120px] relative p-2" : "aspect-square rounded-lg border min-h-[90px] relative p-1.5",
+                      isLeftPanelCollapsed ? "rounded-lg border min-h-[120px] relative p-2" : "rounded-lg border min-h-[120px] relative p-1.5",
                       day.isCurrentMonth
                         ? "bg-white border-gray-200 text-gray-900"
                         : "bg-gray-50 border-gray-100 text-gray-400",
@@ -740,6 +867,23 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
           </div>
         </div>
       </div>
+    </>
+  );
+
+  // Render based on mode
+  if (embedded) {
+    return (
+      <div className="bg-white flex flex-col h-full overflow-hidden">
+        {content}
+      </div>
+    );
+  }
+
+  // Modal mode
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="bg-white rounded-2xl shadow-2xl flex flex-col w-[1200px] max-w-[95vw] h-[calc(100vh-6rem)] max-h-[800px] overflow-hidden">
+        {content}
       </div>
     </div>
   );

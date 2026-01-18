@@ -4,7 +4,7 @@ import { DailyPlanner } from "@/components/planner/DailyPlanner";
 const TaskBoard = () => {
   return (
     <Layout>
-      <div className="w-full max-w-[1600px] mx-auto px-8 pt-2 pb-6 fade-in">
+      <div className="w-full h-full fade-in">
         <DailyPlanner />
       </div>
     </Layout>

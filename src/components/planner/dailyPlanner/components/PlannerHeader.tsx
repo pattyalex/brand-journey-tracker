@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { PlannerView } from "../types";
+import { TimezoneOption } from "../utils/plannerUtils";
 
 interface PlannerHeaderProps {
   currentView: PlannerView;
@@ -16,6 +17,11 @@ interface PlannerHeaderProps {
   daysWithItems: Date[];
   handlePreviousDay: () => void;
   handleNextDay: () => void;
+  // Timezone props for Monthly view
+  getTimezoneDisplay?: () => string;
+  handleTimezoneChange?: (timezone: string) => void;
+  selectedTimezone?: string;
+  timezones?: TimezoneOption[];
 }
 
 export const PlannerHeader = ({
@@ -28,10 +34,14 @@ export const PlannerHeader = ({
   handleDateSelect,
   daysWithItems,
   handlePreviousDay,
-  handleNextDay
+  handleNextDay,
+  getTimezoneDisplay,
+  handleTimezoneChange,
+  selectedTimezone,
+  timezones,
 }: PlannerHeaderProps) => {
   return (
-    <div className="mb-6">
+    <div className="mb-3 pt-[15px]">
       <div className="flex items-center justify-between">
         {/* Left: View Tabs */}
         <div className="inline-flex items-center gap-0 bg-white rounded-lg shadow-sm border border-gray-200 p-1">
@@ -53,7 +63,7 @@ export const PlannerHeader = ({
                 : 'text-gray-700 hover:bg-gray-50'
             }`}
           >
-            This Week
+            Weekly
           </button>
           <button
             onClick={() => setCurrentView('calendar')}
@@ -63,7 +73,17 @@ export const PlannerHeader = ({
                 : 'text-gray-700 hover:bg-gray-50'
             }`}
           >
-            Calendar
+            Monthly
+          </button>
+          <button
+            onClick={() => setCurrentView('content-calendar-new')}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+              currentView === 'content-calendar-new'
+                ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-sm'
+                : 'text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Content Calendar
           </button>
         </div>
 
@@ -120,6 +140,44 @@ export const PlannerHeader = ({
             </>
           ) : (
             <>
+              {/* Timezone selector for Monthly view */}
+              {getTimezoneDisplay && handleTimezoneChange && timezones && (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button className="text-xs text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-md transition-colors cursor-pointer flex items-center gap-1 mr-2">
+                      <span className="font-medium">{getTimezoneDisplay()}</span>
+                      <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56 p-2 bg-white" align="end">
+                    <div className="space-y-1">
+                      <div className="px-2 py-1.5 text-xs font-semibold text-gray-700">Select Timezone</div>
+                      <button
+                        onClick={() => handleTimezoneChange('auto')}
+                        className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-gray-100 transition-colors ${selectedTimezone === 'auto' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'}`}
+                      >
+                        Auto (detect)
+                      </button>
+                      <div className="h-px bg-gray-200 my-1"></div>
+                      {timezones.map((tz) => (
+                        <button
+                          key={tz.value}
+                          onClick={() => handleTimezoneChange(tz.value)}
+                          className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-gray-100 transition-colors ${selectedTimezone === tz.value ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'}`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex flex-col">
+                              <span>{tz.label}</span>
+                              <span className="text-[10px] text-gray-400">{tz.name}</span>
+                            </div>
+                            <span className="text-xs text-gray-400">{tz.offset}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              )}
               <Button variant="ghost" size="icon" onClick={() => setSelectedDate(prev => addMonths(prev, -1))} className="h-9 w-9">
                 <ChevronLeft className="h-4 w-4" />
               </Button>

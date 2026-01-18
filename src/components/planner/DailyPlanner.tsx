@@ -11,6 +11,7 @@ import { PlannerHeader } from "./dailyPlanner/components/PlannerHeader";
 import { TodayView } from "./dailyPlanner/components/TodayView";
 import { WeekView } from "./dailyPlanner/components/WeekView";
 import { CalendarView } from "./dailyPlanner/components/CalendarView";
+import ExpandedScheduleView from "@/pages/production/components/ExpandedScheduleView";
 import { TaskDialog } from "./dailyPlanner/components/TaskDialog";
 import {
   AlertDialog,
@@ -223,9 +224,38 @@ export const DailyPlanner = () => {
     handleOpenTaskDialog,
   } = actions;
 
+  // Content Calendar view has its own layout
+  if (currentView === 'content-calendar-new') {
+    return (
+      <div className="h-full">
+        <ExpandedScheduleView
+          embedded={true}
+          headerComponent={
+            <PlannerHeader
+              currentView={currentView}
+              setCurrentView={setCurrentView}
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
+              calendarOpen={calendarOpen}
+              setCalendarOpen={setCalendarOpen}
+              handleDateSelect={handleDateSelect}
+              daysWithItems={daysWithItems}
+              handlePreviousDay={handlePreviousDay}
+              handleNextDay={handleNextDay}
+              getTimezoneDisplay={getTimezoneDisplay}
+              handleTimezoneChange={handleTimezoneChange}
+              selectedTimezone={selectedTimezone}
+              timezones={TIMEZONES}
+            />
+          }
+        />
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <div className="flex gap-4">
+    <div className="h-full">
+      <div className="flex h-full">
         {/* All Tasks Section - Left Side - Visible in Today, Day, This Week, and Calendar views */}
         {(currentView === 'today' || currentView === 'week' || currentView === 'day' || currentView === 'calendar') && (
           <AllTasksSidebar
@@ -243,10 +273,8 @@ export const DailyPlanner = () => {
           />
         )}
 
-
         {/* Main Planner - Right Side */}
-        <div className="flex-1">
-          <Card className="border-none shadow-none bg-gradient-to-br from-white via-blue-50/20 to-purple-50/20 rounded-xl p-6">
+        <div className="flex-1 pl-6 bg-white h-full flex flex-col">
             {/* Header with Tabs and Date Navigation */}
             <PlannerHeader
               currentView={currentView}
@@ -259,83 +287,92 @@ export const DailyPlanner = () => {
               daysWithItems={daysWithItems}
               handlePreviousDay={handlePreviousDay}
               handleNextDay={handleNextDay}
+              getTimezoneDisplay={getTimezoneDisplay}
+              handleTimezoneChange={handleTimezoneChange}
+              selectedTimezone={selectedTimezone}
+              timezones={TIMEZONES}
             />
 
         {currentView === 'today' && (
-          <TodayView
-            state={state}
-            derived={derived}
-            refs={refs}
-            helpers={helpers}
-            setters={setters}
-            actions={actions}
-          />
+          <div className="flex-1 overflow-hidden">
+            <TodayView
+              state={state}
+              derived={derived}
+              refs={refs}
+              helpers={helpers}
+              setters={setters}
+              actions={actions}
+            />
+          </div>
         )}
 
         {currentView === 'week' && (
-          <WeekView
-            selectedDate={selectedDate}
-            plannerData={plannerData}
-            allTasks={allTasks}
-            setAllTasks={setAllTasks}
-            setPlannerData={setPlannerData}
-            savePlannerData={persistence.savePlannerData}
-            saveAllTasks={persistence.saveAllTasks}
-            getTimezoneDisplay={getTimezoneDisplay}
-            handleTimezoneChange={handleTimezoneChange}
-            selectedTimezone={selectedTimezone}
-            timezones={TIMEZONES}
-            weeklyScrollRef={weeklyScrollRef}
-            isTaskDialogOpen={isTaskDialogOpen}
-            weeklyDraggingCreate={weeklyDraggingCreate}
-            weeklyDragCreateStart={weeklyDragCreateStart}
-            weeklyDragCreateEnd={weeklyDragCreateEnd}
-            setWeeklyDraggingCreate={setWeeklyDraggingCreate}
-            setWeeklyDragCreateStart={setWeeklyDragCreateStart}
-            setWeeklyDragCreateEnd={setWeeklyDragCreateEnd}
-            setDraggedWeeklyTaskId={setDraggedWeeklyTaskId}
-            isResizingRef={isResizingRef}
-            setEditingTask={setEditingTask}
-            setDialogTaskTitle={setDialogTaskTitle}
-            setDialogTaskDescription={setDialogTaskDescription}
-            setDialogStartTime={setDialogStartTime}
-            setDialogEndTime={setDialogEndTime}
-            setDialogTaskColor={setDialogTaskColor}
-            setDialogAddToContentCalendar={setDialogAddToContentCalendar}
-            setIsTaskDialogOpen={setIsTaskDialogOpen}
-            handleEditItem={handleEditItem}
-            handleToggleWeeklyTask={handleToggleWeeklyTask}
-            handleDeleteWeeklyTask={handleDeleteWeeklyTask}
-            convert24To12Hour={convert24To12Hour}
-          />
+          <div className="flex-1 overflow-hidden">
+            <WeekView
+              selectedDate={selectedDate}
+              plannerData={plannerData}
+              allTasks={allTasks}
+              setAllTasks={setAllTasks}
+              setPlannerData={setPlannerData}
+              savePlannerData={persistence.savePlannerData}
+              saveAllTasks={persistence.saveAllTasks}
+              getTimezoneDisplay={getTimezoneDisplay}
+              handleTimezoneChange={handleTimezoneChange}
+              selectedTimezone={selectedTimezone}
+              timezones={TIMEZONES}
+              weeklyScrollRef={weeklyScrollRef}
+              isTaskDialogOpen={isTaskDialogOpen}
+              weeklyDraggingCreate={weeklyDraggingCreate}
+              weeklyDragCreateStart={weeklyDragCreateStart}
+              weeklyDragCreateEnd={weeklyDragCreateEnd}
+              setWeeklyDraggingCreate={setWeeklyDraggingCreate}
+              setWeeklyDragCreateStart={setWeeklyDragCreateStart}
+              setWeeklyDragCreateEnd={setWeeklyDragCreateEnd}
+              setDraggedWeeklyTaskId={setDraggedWeeklyTaskId}
+              isResizingRef={isResizingRef}
+              setEditingTask={setEditingTask}
+              setDialogTaskTitle={setDialogTaskTitle}
+              setDialogTaskDescription={setDialogTaskDescription}
+              setDialogStartTime={setDialogStartTime}
+              setDialogEndTime={setDialogEndTime}
+              setDialogTaskColor={setDialogTaskColor}
+              setDialogAddToContentCalendar={setDialogAddToContentCalendar}
+              setIsTaskDialogOpen={setIsTaskDialogOpen}
+              handleEditItem={handleEditItem}
+              handleToggleWeeklyTask={handleToggleWeeklyTask}
+              handleDeleteWeeklyTask={handleDeleteWeeklyTask}
+              convert24To12Hour={convert24To12Hour}
+            />
+          </div>
         )}
 
         {currentView === 'calendar' && (
-          <CalendarView
-            calendarFilterMode={calendarFilterMode}
-            setCalendarFilterMode={setCalendarFilterMode}
-            getTimezoneDisplay={getTimezoneDisplay}
-            handleTimezoneChange={handleTimezoneChange}
-            selectedTimezone={selectedTimezone}
-            timezones={TIMEZONES}
-            selectedDate={selectedDate}
-            setSelectedDate={setSelectedDate}
-            setCurrentView={setCurrentView}
-            plannerData={plannerData}
-            allTasks={allTasks}
-            setAllTasks={setAllTasks}
-            setPlannerData={setPlannerData}
-            setPendingTaskFromAllTasks={setPendingTaskFromAllTasks}
-            setEditingTask={setEditingTask}
-            setDialogTaskTitle={setDialogTaskTitle}
-            setDialogTaskDescription={setDialogTaskDescription}
-            setDialogStartTime={setDialogStartTime}
-            setDialogEndTime={setDialogEndTime}
-            setDialogTaskColor={setDialogTaskColor}
-            setDialogAddToContentCalendar={setDialogAddToContentCalendar}
-            setIsTaskDialogOpen={setIsTaskDialogOpen}
-          />
+          <div className="flex-1 overflow-hidden">
+            <CalendarView
+              getTimezoneDisplay={getTimezoneDisplay}
+              handleTimezoneChange={handleTimezoneChange}
+              selectedTimezone={selectedTimezone}
+              timezones={TIMEZONES}
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
+              setCurrentView={setCurrentView}
+              plannerData={plannerData}
+              allTasks={allTasks}
+              setAllTasks={setAllTasks}
+              setPlannerData={setPlannerData}
+              setPendingTaskFromAllTasks={setPendingTaskFromAllTasks}
+              setEditingTask={setEditingTask}
+              setDialogTaskTitle={setDialogTaskTitle}
+              setDialogTaskDescription={setDialogTaskDescription}
+              setDialogStartTime={setDialogStartTime}
+              setDialogEndTime={setDialogEndTime}
+              setDialogTaskColor={setDialogTaskColor}
+              setDialogAddToContentCalendar={setDialogAddToContentCalendar}
+              setIsTaskDialogOpen={setIsTaskDialogOpen}
+            />
+          </div>
         )}
+
 
         {currentView === 'month' && (
           <CardContent className="px-4 py-4">
@@ -567,7 +604,6 @@ export const DailyPlanner = () => {
             </div>
           </CardContent>
         )}
-          </Card>
         </div>
       </div>
 

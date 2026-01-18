@@ -5,10 +5,7 @@ import ToggleSidebarButton from "./sidebar/ToggleSidebarButton";
 import { Toaster } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation, useNavigate } from "react-router-dom";
-import { SignInButton, SignUpButton, UserButton, useUser } from "@clerk/clerk-react";
-import { Button } from "@/components/ui/button";
-import { MembershipPage } from "@/components/MembershipPage";
-import { CreditCard } from "lucide-react";
+import { useUser } from "@clerk/clerk-react";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -52,65 +49,18 @@ const Layout = ({ children, hideSidebar = false }: LayoutProps) => {
 
   return (
     <SidebarProvider key={sidebarKey}>
-      <div className="min-h-screen flex flex-col w-full bg-background">
-        {/* Header with branding and auth */}
-        <header className="sticky top-0 z-50 w-full border-b bg-background">
-          <div className="flex h-14 items-center justify-between px-6">
-            {/* Logo/Branding */}
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-primary">Hey Megan</h1>
-            </div>
-
-            {/* Auth buttons */}
-            <div className="flex items-center gap-2">
-              {isSignedIn ? (
-                <UserButton
-                  afterSignOutUrl="/"
-                  appearance={{
-                    elements: {
-                      avatarBox: "h-8 w-8"
-                    }
-                  }}
-                >
-                  <UserButton.UserProfilePage
-                    label="Membership"
-                    labelIcon={<CreditCard size={16} />}
-                    url="membership"
-                  >
-                    <MembershipPage />
-                  </UserButton.UserProfilePage>
-                </UserButton>
-              ) : (
-                <>
-                  <SignInButton mode="modal">
-                    <Button variant="ghost" size="sm">
-                      Sign In
-                    </Button>
-                  </SignInButton>
-                  <SignUpButton mode="modal">
-                    <Button size="sm">
-                      Sign Up
-                    </Button>
-                  </SignUpButton>
-                </>
-              )}
-            </div>
-          </div>
-        </header>
-
+      <div className="h-screen flex w-full bg-background overflow-hidden">
         {/* Main content area */}
-        <div className="flex flex-1 w-full overflow-hidden">
-          {shouldShowSidebar && (
-            <div className="[&_aside]:top-14 flex-shrink-0">
-              <Sidebar />
-            </div>
-          )}
-          <main className={`flex-1 p-6 overflow-auto relative h-full bg-gray-50 ${!shouldShowSidebar ? 'w-full' : ''}`}>
-            {shouldShowSidebar && <ToggleSidebarButton />}
-            {children}
-            <Toaster/>
-          </main>
-        </div>
+        {shouldShowSidebar && (
+          <div className="flex-shrink-0 h-full">
+            <Sidebar />
+          </div>
+        )}
+        <main className={`flex-1 overflow-auto relative h-full bg-gray-50 ${!shouldShowSidebar ? 'w-full' : ''}`}>
+          {shouldShowSidebar && <ToggleSidebarButton />}
+          {children}
+          <Toaster/>
+        </main>
       </div>
     </SidebarProvider>
   );

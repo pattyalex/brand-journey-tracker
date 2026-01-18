@@ -5,6 +5,9 @@ import {
   SidebarMenuButton
 } from "@/components/ui/sidebar";
 import { MenuItem } from '@/types/sidebar';
+import { UserButton } from "@clerk/clerk-react";
+import { MembershipPage } from "@/components/MembershipPage";
+import { CreditCard } from "lucide-react";
 
 interface SidebarFooterSectionProps {
   settingsItem: MenuItem;
@@ -26,6 +29,28 @@ const SidebarFooterSection = ({ settingsItem, myAccountItem, helpItem }: Sidebar
             </SidebarMenuButton>
           </SidebarMenuItem>
         )}
+
+        <SidebarMenuItem>
+          <div className="flex items-center gap-2 px-2 py-2">
+            <UserButton
+              afterSignOutUrl="/"
+              appearance={{
+                elements: {
+                  avatarBox: "h-8 w-8"
+                }
+              }}
+            >
+              <UserButton.UserProfilePage
+                label="Membership"
+                labelIcon={<CreditCard size={16} />}
+                url="membership"
+              >
+                <MembershipPage />
+              </UserButton.UserProfilePage>
+            </UserButton>
+            <span className="text-sm">Profile</span>
+          </div>
+        </SidebarMenuItem>
 
         <SidebarMenuItem>
           <SidebarMenuButton asChild>
