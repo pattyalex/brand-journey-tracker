@@ -59,7 +59,8 @@ export const TaskDialog = ({ state, derived, refs, setters, actions }: TaskDialo
   }
 }}>
   <DialogContent
-    className="sm:max-w-[500px] p-0 gap-0 bg-white"
+    className="sm:max-w-[500px] p-0 gap-0 bg-[#ffffff] z-[200]"
+    style={{ backgroundColor: '#ffffff' }}
     onOpenAutoFocus={(e) => e.preventDefault()}
   >
     <DialogHeader className="px-6 pt-6 pb-4">

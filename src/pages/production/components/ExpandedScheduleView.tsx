@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Popover,
   PopoverContent,
@@ -8,6 +9,7 @@ import { CalendarDays, ChevronLeft, ChevronRight, Video, Camera, Check, X, Pin, 
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
+import { CardContent } from "@/components/ui/card";
 import { ProductionCard, KanbanColumn } from "../types";
 import { StorageKeys, getString, setString } from "@/lib/storage";
 
@@ -81,6 +83,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   onUpdateColor: propOnUpdateColor,
   headerComponent,
 }) => {
+  const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
   const [dragOverDate, setDragOverDate] = useState<string | null>(null);
@@ -261,8 +264,9 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
       });
     }
 
-    // Next month days to fill the grid (6 rows × 7 days = 42)
-    const remainingDays = 42 - days.length;
+    // Next month days - only fill to complete the last week that contains current month days
+    const totalDaysNeeded = Math.ceil(days.length / 7) * 7;
+    const remainingDays = totalDaysNeeded - days.length;
     for (let day = 1; day <= remainingDays; day++) {
       const date = new Date(currentYear, currentMonth + 1, day);
       days.push({
@@ -390,9 +394,9 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
     <>
       {/* Main content - split panels */}
       <div className={cn(
-        "flex-1 overflow-hidden grid transition-all duration-300",
+        "flex-1 overflow-hidden grid transition-all duration-300 min-h-0",
         isLeftPanelCollapsed ? "grid-cols-[48px_1fr]" : "grid-cols-[320px_1fr]"
-      )}>
+      )} style={{ gridTemplateRows: '1fr' }}>
         {/* Left Panel - Content to Schedule */}
         <div
           className={cn(
@@ -449,8 +453,23 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
               {unscheduledCards.length === 0 && !dragOverUnschedule ? (
                 <div className="text-center py-8 text-gray-400">
                   <CalendarDays className="w-10 h-10 mx-auto mb-3 opacity-50" />
-                  <p className="text-sm">No content to schedule</p>
-                  <p className="text-xs mt-1">Drag content cards here from previous columns</p>
+                  <p className="text-sm font-medium">No content to schedule</p>
+                  {embedded ? (
+                    <p className="text-xs mt-1 leading-relaxed px-2">
+                      Visit Content Hub and drag cards into the<br />
+                      <button
+                        onClick={() => navigate('/production')}
+                        className="text-indigo-500 hover:text-indigo-600 font-medium underline underline-offset-2 hover:no-underline transition-colors"
+                      >
+                        "To Schedule"
+                      </button>
+                      {" "}column to add content here
+                    </p>
+                  ) : (
+                    <p className="text-xs mt-1 leading-relaxed px-2">
+                      Drag cards into the "To Schedule" column<br />to add content here
+                    </p>
+                  )}
                 </div>
               ) : unscheduledCards.length === 0 && dragOverUnschedule ? (
                 <div className="text-center py-8 text-indigo-500">
@@ -623,7 +642,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
         </div>
 
         {/* Right Panel - Calendar */}
-        <div className="flex flex-col overflow-hidden bg-gray-50/50">
+        <div className="flex flex-col h-full overflow-hidden bg-gray-50/50">
           {/* Calendar Header - only show in modal mode */}
           {!embedded && (
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
@@ -669,9 +688,9 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
           )}
 
           {/* Calendar Grid */}
-          <div className="flex-1 overflow-y-auto px-6 pb-6">
+          <CardContent className="pl-6 pr-4 flex-1 flex flex-col min-h-0 overflow-hidden">
             {/* Day headers */}
-            <div className="grid grid-cols-7 mb-2">
+            <div className="grid grid-cols-7 mb-2 flex-shrink-0">
               {daysOfWeek.map((day) => (
                 <div
                   key={day}
@@ -682,8 +701,9 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
               ))}
             </div>
 
-            {/* Calendar days grid */}
-            <div className="grid grid-cols-7 gap-1.5">
+            {/* Calendar days grid - scrollable */}
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              <div className="grid grid-cols-7 gap-1.5 h-full" style={{ gridAutoRows: 'minmax(120px, 1fr)' }}>
               {calendarDays.map((day, idx) => {
                 const dateStr = day.date.toISOString().split('T')[0];
                 const isDragOver = dragOverDate === dateStr;
@@ -856,15 +876,10 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                   </div>
                 );
               })}
+              </div>
             </div>
 
-            {/* Help text */}
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-500">
-                Drag content onto a date to schedule
-              </p>
-            </div>
-          </div>
+          </CardContent>
         </div>
       </div>
     </>
@@ -873,7 +888,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   // Render based on mode
   if (embedded) {
     return (
-      <div className="bg-white flex flex-col h-full overflow-hidden">
+      <div className="bg-white flex flex-col h-full flex-1 overflow-hidden">
         {content}
       </div>
     );
@@ -881,8 +896,14 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
 
   // Modal mode
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-2xl shadow-2xl flex flex-col w-[1200px] max-w-[95vw] h-[calc(100vh-6rem)] max-h-[800px] overflow-hidden">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-2xl flex flex-col w-[1200px] max-w-[95vw] h-[calc(100vh-6rem)] max-h-[800px] overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         {content}
       </div>
     </div>

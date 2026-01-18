@@ -65,7 +65,7 @@ export const CalendarView = ({
         </div>
 
         {/* Calendar Days */}
-        <div className="grid grid-cols-7 gap-1.5 flex-1">
+        <div className="grid grid-cols-7 gap-1.5 flex-1" style={{ gridAutoRows: '1fr' }}>
           {(() => {
             const monthStart = startOfMonth(selectedDate);
             const monthEnd = endOfMonth(selectedDate);

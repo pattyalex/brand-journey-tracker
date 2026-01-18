@@ -228,7 +228,7 @@ export const PlannerCheckItem = ({
       ) : (
         <div
           ref={scrollableRef}
-          className="group flex items-center w-full py-2.5 px-3 border border-gray-200 rounded-lg relative overflow-visible hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer"
+          className="group flex items-center w-full py-2.5 px-3 border border-gray-200 rounded-lg relative overflow-visible hover:border-gray-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
           style={{ backgroundColor: item.color || 'white' }}
           draggable={true}
           onDragStart={(e) => {

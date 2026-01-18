@@ -162,8 +162,7 @@ export const WeekView = ({
           </div>
 
           {/* Scrollable timeline area */}
-          <div ref={weeklyScrollRef}>
-            <ScrollArea className="flex-1">
+          <div ref={weeklyScrollRef} className="flex-1 min-h-0 overflow-auto">
               <div className="flex">
                 {/* Time column */}
                 <div className="flex-shrink-0 bg-white border-r border-gray-200" style={{ width: '40px' }}>
@@ -192,7 +191,7 @@ export const WeekView = ({
                         className="absolute left-0 right-0"
                         style={{
                           top: `${hour * 48}px`,
-                          borderTop: '1px solid #f9fafb'
+                          borderTop: '1px solid #eceef0'
                         }}
                       />
                     ))}
@@ -214,7 +213,7 @@ export const WeekView = ({
                         key={dayString}
                         data-day-column={dayString}
                         className={`${dayColor} transition-colors`}
-                        style={{ borderRight: index < 6 ? '1px solid #f3f4f6' : 'none' }}
+                        style={{ borderRight: index < 6 ? '1px solid #eceef0' : 'none' }}
                       >
                         {/* Timeline container */}
                         <div className="relative" data-timeline style={{ height: '1152px' }}>
@@ -826,7 +825,6 @@ export const WeekView = ({
                   })}
                 </div>
               </div>
-            </ScrollArea>
           </div>
         </div>
       </CardContent>

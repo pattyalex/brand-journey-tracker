@@ -2016,7 +2016,7 @@ const Production = () => {
                         >
                           <div className="flex items-center gap-2 text-indigo-600">
                             <CalendarDays className="h-4 w-4" />
-                            <span className="text-sm font-semibold">See Content Calendar</span>
+                            <span className="text-sm font-semibold">Schedule in Content Calendar</span>
                           </div>
                         </div>
                       )}
