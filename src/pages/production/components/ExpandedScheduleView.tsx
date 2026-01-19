@@ -6,7 +6,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarDays, ChevronLeft, ChevronRight, Video, Camera, Check, X, Pin, PartyPopper, Lightbulb, Send, Plus } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Video, Camera, Check, X, Pin, PartyPopper, Lightbulb, Send, Plus, ArrowRight, TrendingUp, Clock, Sparkles } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
@@ -573,6 +573,66 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
 
   const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+  // Stats for the current month (embedded mode)
+  const monthlyStats = useMemo(() => {
+    if (!embedded) return { scheduled: 0, posted: 0, planned: 0 };
+
+    const startOfMonth = new Date(currentYear, currentMonth, 1);
+    const endOfMonth = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59);
+
+    let scheduled = 0;
+    let posted = 0;
+    let planned = 0;
+
+    // Count scheduled content
+    cards.forEach(c => {
+      if (c.schedulingStatus === 'scheduled' && c.scheduledDate) {
+        const schedDate = new Date(c.scheduledDate);
+        if (schedDate >= startOfMonth && schedDate <= endOfMonth) {
+          if (schedDate < today) {
+            posted++;
+          } else {
+            scheduled++;
+          }
+        }
+      }
+    });
+
+    // Count planned content
+    plannedIdeateCards.forEach(c => {
+      if (c.plannedDate) {
+        const planDate = new Date(c.plannedDate);
+        if (planDate >= startOfMonth && planDate <= endOfMonth) {
+          planned++;
+        }
+      }
+    });
+
+    return { scheduled, posted, planned };
+  }, [embedded, currentMonth, currentYear, cards, plannedIdeateCards, today]);
+
+  // Upcoming content for the next 7 days (embedded mode)
+  const upcomingContent = useMemo(() => {
+    if (!embedded) return [];
+
+    const next7Days: { date: Date; scheduled: ProductionCard[]; planned: ProductionCard[] }[] = [];
+
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      const dateStr = date.toISOString().split('T')[0];
+
+      const scheduledForDay = scheduledCardsByDate[dateStr] || [];
+      const plannedForDay = plannedCardsByDate[dateStr] || [];
+
+      if (scheduledForDay.length > 0 || plannedForDay.length > 0) {
+        next7Days.push({ date, scheduled: scheduledForDay, planned: plannedForDay });
+      }
+    }
+
+    return next7Days;
+  }, [embedded, today, scheduledCardsByDate, plannedCardsByDate]);
+
   // Get calendar days for the current month view
   const calendarDays = useMemo(() => {
     const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
@@ -777,11 +837,12 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
         "flex-1 overflow-hidden grid transition-all duration-300 min-h-0",
         isLeftPanelCollapsed ? "grid-cols-[48px_1fr]" : "grid-cols-[320px_1fr]"
       )} style={{ gridTemplateRows: '1fr' }}>
-        {/* Left Panel - Content to Schedule */}
+        {/* Left Panel - Content to Schedule / Your Week */}
         <div
           className={cn(
-            "border-r border-indigo-100 flex flex-col bg-indigo-100/60 min-h-0 transition-all duration-300 relative",
-            dragOverUnschedule && "bg-indigo-200 ring-2 ring-inset ring-indigo-400"
+            "border-r flex flex-col min-h-0 transition-all duration-300 relative",
+            embedded ? "border-violet-100 bg-violet-50/40" : "border-indigo-100 bg-indigo-100/60",
+            !embedded && dragOverUnschedule && "bg-indigo-200 ring-2 ring-inset ring-indigo-400"
           )}
           onDragOver={(e) => {
             e.preventDefault();
@@ -811,15 +872,23 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
 
           {/* Header */}
           <div className={cn(
-            "flex items-center gap-3 px-6 py-4 border-b border-indigo-100 flex-shrink-0 transition-all duration-300",
+            "flex items-center gap-3 px-6 py-4 border-b flex-shrink-0 transition-all duration-300",
+            embedded ? "border-violet-100" : "border-indigo-100",
             isLeftPanelCollapsed && "px-2 justify-center"
           )}>
-            <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
-              <CalendarDays className="w-4 h-4 text-indigo-500" />
+            <div className={cn(
+              "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
+              embedded ? "bg-violet-100" : "bg-indigo-100"
+            )}>
+              {embedded ? (
+                <Sparkles className="w-4 h-4 text-violet-500" />
+              ) : (
+                <CalendarDays className="w-4 h-4 text-indigo-500" />
+              )}
             </div>
             {!isLeftPanelCollapsed && (
               <h2 className="text-lg font-bold text-gray-900">
-                Content to Schedule
+                {embedded ? "Your Week" : "Content to Schedule"}
               </h2>
             )}
           </div>
@@ -829,27 +898,128 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
             "flex-1 min-h-0 overflow-y-auto transition-all duration-300",
             isLeftPanelCollapsed ? "p-0 opacity-0 overflow-hidden" : "p-4 opacity-100"
           )}>
+            {/* Embedded mode: Show hybrid panel with stats and upcoming */}
+            {embedded ? (
+              <div className="space-y-5">
+                {/* Monthly Stats */}
+                <div className="bg-gradient-to-br from-violet-50 to-indigo-50 rounded-xl p-4 border border-violet-100/50">
+                  <div className="flex items-center gap-2 mb-3">
+                    <TrendingUp className="w-4 h-4 text-violet-500" />
+                    <h3 className="text-sm font-semibold text-gray-800">
+                      {monthNames[currentMonth]} Overview
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-emerald-600">{monthlyStats.posted}</div>
+                      <div className="text-[10px] text-gray-500 uppercase tracking-wide mt-0.5">Posted</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-indigo-600">{monthlyStats.scheduled}</div>
+                      <div className="text-[10px] text-gray-500 uppercase tracking-wide mt-0.5">Scheduled</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-violet-600">{monthlyStats.planned}</div>
+                      <div className="text-[10px] text-gray-500 uppercase tracking-wide mt-0.5">Planned</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* This Week Section */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Clock className="w-4 h-4 text-gray-500" />
+                    <h3 className="text-sm font-semibold text-gray-800">Coming Up</h3>
+                  </div>
+
+                  {upcomingContent.length === 0 ? (
+                    <div className="text-center py-6 bg-gray-50 rounded-xl border border-gray-100">
+                      <CalendarDays className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                      <p className="text-sm text-gray-500">No content scheduled this week</p>
+                      <p className="text-xs text-gray-400 mt-1">Time to plan ahead!</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {upcomingContent.map(({ date, scheduled, planned }) => {
+                        const isToday = date.toDateString() === today.toDateString();
+                        const dayLabel = isToday ? 'Today' : date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+                        return (
+                          <div key={date.toISOString()} className="bg-white rounded-lg border border-gray-100 p-3 hover:border-violet-200 transition-colors">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className={cn(
+                                "text-xs font-medium",
+                                isToday ? "text-violet-600" : "text-gray-600"
+                              )}>
+                                {dayLabel}
+                              </span>
+                              <span className="text-[10px] text-gray-400">
+                                {scheduled.length + planned.length} item{scheduled.length + planned.length !== 1 ? 's' : ''}
+                              </span>
+                            </div>
+                            <div className="space-y-1.5">
+                              {scheduled.map(card => (
+                                <div
+                                  key={card.id}
+                                  className="text-xs px-2 py-1.5 rounded-md truncate"
+                                  style={{
+                                    backgroundColor: scheduleColors[(card.scheduledColor || 'indigo') as ScheduleColorKey].bg,
+                                    color: scheduleColors[(card.scheduledColor || 'indigo') as ScheduleColorKey].text
+                                  }}
+                                >
+                                  <div className="flex items-center gap-1.5">
+                                    <Check className="w-3 h-3 flex-shrink-0" />
+                                    <span className="truncate">{card.hook || card.title}</span>
+                                  </div>
+                                </div>
+                              ))}
+                              {planned.map(card => (
+                                <div
+                                  key={card.id}
+                                  className="text-xs px-2 py-1.5 rounded-md truncate bg-violet-50/70 border border-dashed border-violet-300 text-violet-700"
+                                >
+                                  <div className="flex items-center gap-1.5">
+                                    <Lightbulb className="w-3 h-3 flex-shrink-0 text-violet-400" />
+                                    <span className="truncate">{card.hook || card.title}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* CTA to Content Hub */}
+                <div className="pt-2">
+                  <button
+                    onClick={() => navigate('/production')}
+                    className="w-full group relative overflow-hidden bg-gradient-to-r from-indigo-500 to-violet-500 text-white rounded-xl p-4 text-left transition-all hover:shadow-lg hover:shadow-indigo-200/50"
+                  >
+                    <div className="relative z-10">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold text-sm">Ready to create?</h4>
+                          <p className="text-xs text-indigo-100 mt-0.5">Head to Content Hub to develop your ideas</p>
+                        </div>
+                        <ArrowRight className="w-5 h-5 text-white/80 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
+                </div>
+              </div>
+            ) : (
             <div className="space-y-2">
               {unscheduledCards.length === 0 && !dragOverUnschedule ? (
                 <div className="text-center py-8 text-gray-400">
                   <CalendarDays className="w-10 h-10 mx-auto mb-3 opacity-50" />
                   <p className="text-sm font-medium">No content to schedule</p>
-                  {embedded ? (
-                    <p className="text-xs mt-1 leading-relaxed px-2">
-                      Visit Content Hub and drag cards into the<br />
-                      <button
-                        onClick={() => navigate('/production')}
-                        className="text-indigo-500 hover:text-indigo-600 font-medium underline underline-offset-2 hover:no-underline transition-colors"
-                      >
-                        "To Schedule"
-                      </button>
-                      {" "}column to add content here
-                    </p>
-                  ) : (
-                    <p className="text-xs mt-1 leading-relaxed px-2">
-                      Drag cards into the "To Schedule" column<br />to add content here
-                    </p>
-                  )}
+                  <p className="text-xs mt-1 leading-relaxed px-2">
+                    Drag cards into the "To Schedule" column<br />to add content here
+                  </p>
                 </div>
               ) : unscheduledCards.length === 0 && dragOverUnschedule ? (
                 <div className="text-center py-8 text-indigo-500">
@@ -1018,6 +1188,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                 </div>
               )}
             </div>
+            )}
           </div>
         </div>
 

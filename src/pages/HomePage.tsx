@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from '@clerk/clerk-react';
 import Layout from "@/components/Layout";
@@ -56,7 +56,9 @@ import {
   ArrowRight,
   ChevronLeft,
   ChevronRight,
-  CheckCircle
+  CheckCircle,
+  Clock,
+  Check
 } from "lucide-react";
 import { format, startOfWeek, addDays, isSameDay, startOfMonth, endOfMonth, endOfWeek, eachDayOfInterval } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
@@ -64,6 +66,7 @@ import AIRecommendations from '@/components/analytics/AIRecommendations';
 import VerificationGuard from '@/components/VerificationGuard';
 import { StorageKeys, getString, setString, setJSON, getJSON } from "@/lib/storage";
 import { EVENTS, emit, on } from "@/lib/events";
+import { KanbanColumn } from "./production/types";
 
 // Helper to get date string in same format as Planner (local timezone, not UTC)
 const getDateString = (date: Date): string => {
@@ -81,6 +84,116 @@ const HomePage = () => {
   });
   const [goals, setGoals] = useState([]);
   const [moodboardImages, setMoodboardImages] = useState<string[]>([]);
+
+  // Calculate monthly stats from production kanban
+  const monthlyStats = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    const startOfMonth = new Date(currentYear, currentMonth, 1);
+    const endOfMonth = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59);
+
+    let scheduled = 0;
+    let posted = 0;
+    let planned = 0;
+
+    const savedData = getString(StorageKeys.productionKanban);
+    if (savedData) {
+      try {
+        const columns: KanbanColumn[] = JSON.parse(savedData);
+
+        // Find to-schedule column for scheduled/posted content
+        const toScheduleColumn = columns.find(col => col.id === 'to-schedule');
+        toScheduleColumn?.cards.forEach(c => {
+          if (c.schedulingStatus === 'scheduled' && c.scheduledDate) {
+            const schedDate = new Date(c.scheduledDate);
+            if (schedDate >= startOfMonth && schedDate <= endOfMonth) {
+              if (schedDate < today) {
+                posted++;
+              } else {
+                scheduled++;
+              }
+            }
+          }
+        });
+
+        // Find ideate column for planned content
+        const ideateColumn = columns.find(col => col.id === 'ideate');
+        ideateColumn?.cards.forEach(c => {
+          if (c.plannedDate) {
+            const planDate = new Date(c.plannedDate);
+            if (planDate >= startOfMonth && planDate <= endOfMonth) {
+              planned++;
+            }
+          }
+        });
+      } catch (e) {
+        console.error("Error parsing production data:", e);
+      }
+    }
+
+    const monthNames = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+
+    return { scheduled, posted, planned, monthName: monthNames[currentMonth] };
+  }, []);
+
+  // Upcoming content for the next 7 days
+  const upcomingContent = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const savedData = getString(StorageKeys.productionKanban);
+    if (!savedData) return [];
+
+    try {
+      const columns: KanbanColumn[] = JSON.parse(savedData);
+      const toScheduleColumn = columns.find(col => col.id === 'to-schedule');
+      const ideateColumn = columns.find(col => col.id === 'ideate');
+
+      // Build maps by date
+      const scheduledByDate: Record<string, typeof toScheduleColumn.cards> = {};
+      const plannedByDate: Record<string, typeof ideateColumn.cards> = {};
+
+      toScheduleColumn?.cards.forEach(c => {
+        if (c.schedulingStatus === 'scheduled' && c.scheduledDate) {
+          const dateKey = c.scheduledDate.split('T')[0];
+          if (!scheduledByDate[dateKey]) scheduledByDate[dateKey] = [];
+          scheduledByDate[dateKey].push(c);
+        }
+      });
+
+      ideateColumn?.cards.forEach(c => {
+        if (c.plannedDate) {
+          const dateKey = c.plannedDate.split('T')[0];
+          if (!plannedByDate[dateKey]) plannedByDate[dateKey] = [];
+          plannedByDate[dateKey].push(c);
+        }
+      });
+
+      // Get next 7 days
+      const result: { date: Date; scheduled: any[]; planned: any[] }[] = [];
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + i);
+        const dateStr = getDateString(date);
+
+        const scheduledForDay = scheduledByDate[dateStr] || [];
+        const plannedForDay = plannedByDate[dateStr] || [];
+
+        if (scheduledForDay.length > 0 || plannedForDay.length > 0) {
+          result.push({ date, scheduled: scheduledForDay, planned: plannedForDay });
+        }
+      }
+
+      return result;
+    } catch (e) {
+      return [];
+    }
+  }, []);
 
   // All Tasks from planner - load from localStorage
   interface PlannerItem {
@@ -2881,124 +2994,81 @@ const HomePage = () => {
             </div>
             {/* End Grid Container */}
 
-            {/* Content Calendar - Full Width */}
-            <section className="mt-12">
-              <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-gradient-to-br from-white via-purple-50/20 to-blue-50/30 rounded-2xl">
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-4">
-                      <CardTitle className="text-xl font-bold flex items-center gap-2">
-                        <Calendar className="h-5 w-5 text-purple-600" />
-                        Content Calendar
-                      </CardTitle>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setCalendarCurrentMonth(new Date(calendarCurrentMonth.getFullYear(), calendarCurrentMonth.getMonth() - 1))}
-                          className="h-7 w-7 p-0"
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <span className="text-sm font-medium min-w-[120px] text-center">
-                          {format(calendarCurrentMonth, 'MMMM yyyy')}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setCalendarCurrentMonth(new Date(calendarCurrentMonth.getFullYear(), calendarCurrentMonth.getMonth() + 1))}
-                          className="h-7 w-7 p-0"
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 text-xs px-2 hover:bg-purple-100"
-                      onClick={() => navigate('/task-board?view=calendar')}
-                    >
-                      View Full Calendar →
-                    </Button>
+            {/* Content Stats Row */}
+            <section className="mt-12 flex flex-wrap gap-4">
+              {/* Monthly Overview Stats */}
+              <div className="bg-gradient-to-br from-violet-50 to-indigo-50 rounded-xl p-4 border border-violet-100/50 shadow-sm">
+                <div className="flex items-center gap-2 mb-3">
+                  <TrendingUp className="w-4 h-4 text-violet-500" />
+                  <h3 className="text-sm font-semibold text-gray-800">
+                    {monthlyStats.monthName} Overview
+                  </h3>
+                </div>
+                <div className="flex gap-6">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-emerald-600">{monthlyStats.posted}</div>
+                    <div className="text-[10px] text-gray-500 uppercase tracking-wide">Posted</div>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  {/* Calendar Grid */}
-                  <div className="space-y-2">
-                    {/* Day Headers */}
-                    <div className="grid grid-cols-7 gap-1 mb-2">
-                      {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                        <div key={day} className="text-center text-xs font-semibold text-gray-600 py-1">
-                          {day}
-                        </div>
-                      ))}
-                    </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-indigo-600">{monthlyStats.scheduled}</div>
+                    <div className="text-[10px] text-gray-500 uppercase tracking-wide">Scheduled</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-violet-600">{monthlyStats.planned}</div>
+                    <div className="text-[10px] text-gray-500 uppercase tracking-wide">Planned</div>
+                  </div>
+                </div>
+              </div>
 
-                    {/* Calendar Days */}
-                    <div className="grid grid-cols-7 gap-1">
-                      {(() => {
-                        const monthStart = startOfMonth(calendarCurrentMonth);
-                        const monthEnd = endOfMonth(calendarCurrentMonth);
-                        const startDate = startOfWeek(monthStart);
-                        const endDate = endOfWeek(monthEnd);
-                        const days = eachDayOfInterval({ start: startDate, end: endDate });
+              {/* Coming Up */}
+              {upcomingContent.length > 0 && (
+                <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm max-w-sm">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Clock className="w-4 h-4 text-gray-500" />
+                    <h3 className="text-sm font-semibold text-gray-800">Coming Up</h3>
+                  </div>
+                  <div className="space-y-2 max-h-[140px] overflow-y-auto">
+                    {upcomingContent.slice(0, 3).map(({ date, scheduled, planned }) => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      const isToday = date.toDateString() === today.toDateString();
+                      const dayLabel = isToday ? 'Today' : date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 
-                        return days.map(day => {
-                          const dayString = getDateString(day);
-                          const dayTasks = contentCalendarData.filter(task => task.date === dayString);
-                          const isCurrentMonth = day.getMonth() === calendarCurrentMonth.getMonth();
-                          const isToday = isSameDay(day, new Date());
-
-                          return (
+                      return (
+                        <div key={date.toISOString()}>
+                          <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">{dayLabel}</div>
+                          {scheduled.slice(0, 2).map((card: any) => (
                             <div
-                              key={dayString}
-                              className={`min-h-[80px] p-2 rounded-lg border transition-all ${
-                                isCurrentMonth ? 'bg-white border-gray-200' : 'bg-gray-50/50 border-gray-100'
-                              } ${isToday ? 'ring-2 ring-purple-400' : ''} hover:shadow-sm cursor-pointer`}
-                              onClick={() => navigate('/task-board?view=calendar')}
+                              key={card.id}
+                              className="text-xs px-2 py-1.5 rounded-md mb-1 flex items-center gap-1.5"
+                              style={{
+                                backgroundColor: card.scheduledColor ?
+                                  { indigo: '#e0e7ff', rose: '#ffe4e6', amber: '#fef3c7', emerald: '#d1fae5', sky: '#e0f2fe', violet: '#ede9fe', orange: '#ffedd5', cyan: '#cffafe', sage: '#DCE5D4' }[card.scheduledColor] || '#e0e7ff'
+                                  : '#e0e7ff',
+                                color: card.scheduledColor ?
+                                  { indigo: '#4338ca', rose: '#be123c', amber: '#b45309', emerald: '#047857', sky: '#0369a1', violet: '#6d28d9', orange: '#c2410c', cyan: '#0e7490', sage: '#5F6B52' }[card.scheduledColor] || '#4338ca'
+                                  : '#4338ca'
+                              }}
                             >
-                              <div className={`text-xs font-medium mb-1 ${
-                                isToday ? 'text-purple-600 font-bold' : isCurrentMonth ? 'text-gray-700' : 'text-gray-400'
-                              }`}>
-                                {format(day, 'd')}
-                              </div>
-                              <div className="space-y-1">
-                                {dayTasks.slice(0, 2).map(task => (
-                                  <div
-                                    key={task.id}
-                                    className={`text-[10px] px-1.5 py-0.5 rounded truncate ${
-                                      task.color ? `bg-${task.color}-100 text-${task.color}-700` : 'bg-purple-100 text-purple-700'
-                                    }`}
-                                    title={task.text}
-                                  >
-                                    {task.text}
-                                  </div>
-                                ))}
-                                {dayTasks.length > 2 && (
-                                  <div className="text-[9px] text-gray-500 pl-1">
-                                    +{dayTasks.length - 2} more
-                                  </div>
-                                )}
-                              </div>
+                              <Check className="w-3 h-3 flex-shrink-0" />
+                              <span className="truncate">{card.hook || card.title}</span>
                             </div>
-                          );
-                        });
-                      })()}
-                    </div>
+                          ))}
+                          {planned.slice(0, 2).map((card: any) => (
+                            <div
+                              key={card.id}
+                              className="text-xs px-2 py-1.5 rounded-md mb-1 bg-violet-50/70 border border-dashed border-violet-300 text-violet-700 flex items-center gap-1.5"
+                            >
+                              <Lightbulb className="w-3 h-3 flex-shrink-0 text-violet-400" />
+                              <span className="truncate">{card.hook || card.title}</span>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })}
                   </div>
-
-                  {/* Empty State */}
-                  {contentCalendarData.length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
-                      <p className="text-sm mb-2">No content scheduled yet</p>
-                      <p className="text-xs text-gray-400">
-                        Go to <button onClick={() => navigate('/production?scrollTo=to-schedule')} className="text-purple-600 hover:underline">Content Hub</button> to schedule content
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                </div>
+              )}
             </section>
           </div>
         </ScrollArea>

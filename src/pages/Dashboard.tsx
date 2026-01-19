@@ -1,36 +1,98 @@
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Layout from "@/components/Layout";
 import { FolderOpen, Handshake, TrendingUp, CheckCircle } from "lucide-react";
+import { StorageKeys, getString } from "@/lib/storage";
+import { KanbanColumn } from "./production/types";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+
+  // Calculate monthly stats from localStorage
+  const monthlyStats = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    const startOfMonth = new Date(currentYear, currentMonth, 1);
+    const endOfMonth = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59);
+
+    let scheduled = 0;
+    let posted = 0;
+    let planned = 0;
+
+    const savedData = getString(StorageKeys.productionKanban);
+    if (savedData) {
+      try {
+        const columns: KanbanColumn[] = JSON.parse(savedData);
+
+        // Find to-schedule column for scheduled/posted content
+        const toScheduleColumn = columns.find(col => col.id === 'to-schedule');
+        toScheduleColumn?.cards.forEach(c => {
+          if (c.schedulingStatus === 'scheduled' && c.scheduledDate) {
+            const schedDate = new Date(c.scheduledDate);
+            if (schedDate >= startOfMonth && schedDate <= endOfMonth) {
+              if (schedDate < today) {
+                posted++;
+              } else {
+                scheduled++;
+              }
+            }
+          }
+        });
+
+        // Find ideate column for planned content
+        const ideateColumn = columns.find(col => col.id === 'ideate');
+        ideateColumn?.cards.forEach(c => {
+          if (c.plannedDate) {
+            const planDate = new Date(c.plannedDate);
+            if (planDate >= startOfMonth && planDate <= endOfMonth) {
+              planned++;
+            }
+          }
+        });
+      } catch (e) {
+        console.error("Error parsing production data:", e);
+      }
+    }
+
+    const monthNames = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+
+    return { scheduled, posted, planned, monthName: monthNames[currentMonth] };
+  }, []);
 
   return (
     <Layout>
       <div className="max-w-6xl mx-auto px-6 py-8 fade-in">
         <h1 className="text-3xl font-bold mb-6">Welcome to your Dashboard</h1>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="p-6">
-            <h3 className="text-lg font-medium mb-2">Content Ideas</h3>
-            <div className="text-3xl font-bold">12</div>
-            <p className="text-sm text-muted-foreground mt-1">4 new this week</p>
-          </Card>
-
-          <Card className="p-6">
-            <h3 className="text-lg font-medium mb-2">Scheduled Content</h3>
-            <div className="text-3xl font-bold">8</div>
-            <p className="text-sm text-muted-foreground mt-1">Next post in 2 days</p>
-          </Card>
-
-          <Card className="p-6">
-            <h3 className="text-lg font-medium mb-2">Active Brand Deals</h3>
-            <div className="text-3xl font-bold">3</div>
-            <p className="text-sm text-muted-foreground mt-1">1 pending approval</p>
-          </Card>
+        {/* Monthly Overview Stats */}
+        <div className="bg-gradient-to-br from-violet-50 to-indigo-50 rounded-xl p-6 border border-violet-100/50 mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingUp className="w-5 h-5 text-violet-500" />
+            <h3 className="text-lg font-semibold text-gray-800">
+              {monthlyStats.monthName} Overview
+            </h3>
+          </div>
+          <div className="grid grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-emerald-600">{monthlyStats.posted}</div>
+              <div className="text-xs text-gray-500 uppercase tracking-wide mt-1">Posted</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-indigo-600">{monthlyStats.scheduled}</div>
+              <div className="text-xs text-gray-500 uppercase tracking-wide mt-1">Scheduled</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-violet-600">{monthlyStats.planned}</div>
+              <div className="text-xs text-gray-500 uppercase tracking-wide mt-1">Planned</div>
+            </div>
+          </div>
         </div>
 
         {/* Recent Activity */}

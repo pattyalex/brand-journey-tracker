@@ -1,3 +1,4 @@
+import { useState, useCallback } from "react";
 import { addDays, addMonths, endOfMonth, endOfWeek, format, startOfMonth, startOfWeek, subDays, subMonths, eachDayOfInterval, isSameDay } from "date-fns";
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { toast } from "sonner";
@@ -42,6 +43,31 @@ import { usePlannerActions } from "./dailyPlanner/hooks/usePlannerActions";
 export const DailyPlanner = () => {
   const initialSettings = getPlannerInitialSettings();
   const { state, setters, refs, derived, helpers } = usePlannerState(initialSettings);
+
+  // State for weekly add dialog (task/content choice)
+  const [weeklyAddDialogState, setWeeklyAddDialogState] = useState<{
+    open: boolean;
+    dayString: string;
+    startTime: string;
+    endTime: string;
+  }>({ open: false, dayString: '', startTime: '', endTime: '' });
+
+  // State for today add dialog (task/content choice)
+  const [todayAddDialogState, setTodayAddDialogState] = useState<{
+    open: boolean;
+    startTime: string;
+    endTime: string;
+  }>({ open: false, startTime: '', endTime: '' });
+
+  // Callback for when drag-to-create completes in 'both' or 'content' mode
+  const handleWeeklyAddDialogOpen = useCallback((dayString: string, startTime: string, endTime: string) => {
+    setWeeklyAddDialogState({ open: true, dayString, startTime, endTime });
+  }, []);
+
+  // Callback for Today view drag-to-create in 'both' or 'content' mode
+  const handleTodayAddDialogOpen = useCallback((startTime: string, endTime: string) => {
+    setTodayAddDialogState({ open: true, startTime, endTime });
+  }, []);
 
   const persistence = usePlannerPersistence({
     plannerData: state.plannerData,
@@ -154,6 +180,9 @@ export const DailyPlanner = () => {
     saveWeeklyScrollPosition: persistence.saveWeeklyScrollPosition,
     saveSelectedTimezone: persistence.saveSelectedTimezone,
     saveTodayZoomLevel: persistence.saveTodayZoomLevel,
+    contentDisplayMode: state.contentDisplayMode,
+    onWeeklyAddDialogOpen: handleWeeklyAddDialogOpen,
+    onTodayAddDialogOpen: handleTodayAddDialogOpen,
   });
 
   const {
@@ -171,12 +200,17 @@ export const DailyPlanner = () => {
     contentCalendarData,
     isTaskDialogOpen,
     calendarOpen,
+    showTasks,
+    showContent,
+    contentDisplayMode,
+    productionContent,
   } = state;
 
   const {
     setSelectedDate,
     setCurrentView,
     setCalendarFilterMode,
+    setContentDisplayMode,
     setDialogTaskTitle,
     setDialogTaskDescription,
     setDialogStartTime,
@@ -256,8 +290,8 @@ export const DailyPlanner = () => {
   return (
     <div className="h-full">
       <div className="flex h-full">
-        {/* All Tasks Section - Left Side - Visible in Today, Day, This Week, and Calendar views */}
-        {(currentView === 'today' || currentView === 'week' || currentView === 'day' || currentView === 'calendar') && (
+        {/* Sidebar - Left Side - Visible in Today, This Week, and Calendar views */}
+        {(currentView === 'today' || currentView === 'week' || currentView === 'calendar') && (
           <AllTasksSidebar
             isAllTasksCollapsed={isAllTasksCollapsed}
             setIsAllTasksCollapsed={setIsAllTasksCollapsed}
@@ -270,6 +304,10 @@ export const DailyPlanner = () => {
             handleReorderAllTasks={handleReorderAllTasks}
             handleDropTaskFromWeeklyToAllTasks={handleDropTaskFromWeeklyToAllTasks}
             handleDropTaskFromCalendarToAllTasks={handleDropTaskFromCalendarToAllTasks}
+            contentDisplayMode={contentDisplayMode}
+            setContentDisplayMode={setContentDisplayMode}
+            selectedDate={selectedDate}
+            productionContent={productionContent}
           />
         )}
 
@@ -302,6 +340,8 @@ export const DailyPlanner = () => {
               helpers={helpers}
               setters={setters}
               actions={actions}
+              todayAddDialogState={todayAddDialogState}
+              setTodayAddDialogState={setTodayAddDialogState}
             />
           </div>
         )}
@@ -342,6 +382,12 @@ export const DailyPlanner = () => {
               handleToggleWeeklyTask={handleToggleWeeklyTask}
               handleDeleteWeeklyTask={handleDeleteWeeklyTask}
               convert24To12Hour={convert24To12Hour}
+              showTasks={showTasks}
+              showContent={showContent}
+              contentDisplayMode={contentDisplayMode}
+              productionContent={productionContent}
+              weeklyAddDialogState={weeklyAddDialogState}
+              setWeeklyAddDialogState={setWeeklyAddDialogState}
             />
           </div>
         )}
@@ -369,6 +415,10 @@ export const DailyPlanner = () => {
               setDialogTaskColor={setDialogTaskColor}
               setDialogAddToContentCalendar={setDialogAddToContentCalendar}
               setIsTaskDialogOpen={setIsTaskDialogOpen}
+              showTasks={showTasks}
+              showContent={showContent}
+              contentDisplayMode={contentDisplayMode}
+              productionContent={productionContent}
             />
           </div>
         )}

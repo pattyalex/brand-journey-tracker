@@ -1,12 +1,33 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { eachDayOfInterval, endOfWeek, format, isSameDay, startOfWeek } from "date-fns";
-import { Trash2 } from "lucide-react";
+import { Trash2, Video, Lightbulb, X, Clock, FileText, Palette, ArrowRight, Check, ListTodo } from "lucide-react";
 import { CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "sonner";
 import { PlannerDay, PlannerItem } from "@/types/planner";
 import { TimezoneOption } from "../types";
 import { getDateString } from "../utils/plannerUtils";
+import { ProductionCard, KanbanColumn } from "@/pages/production/types";
+import { ContentDisplayMode } from "../hooks/usePlannerState";
+import { StorageKeys, getString, setString } from "@/lib/storage";
+import { EVENTS, emit } from "@/lib/events";
+import { cn } from "@/lib/utils";
+
+// Color mappings for content items
+const scheduleColors: Record<string, { bg: string; text: string }> = {
+  indigo: { bg: '#e0e7ff', text: '#4338ca' },
+  rose: { bg: '#ffe4e6', text: '#be123c' },
+  amber: { bg: '#fef3c7', text: '#b45309' },
+  emerald: { bg: '#d1fae5', text: '#047857' },
+  sky: { bg: '#e0f2fe', text: '#0369a1' },
+  violet: { bg: '#ede9fe', text: '#6d28d9' },
+  orange: { bg: '#ffedd5', text: '#c2410c' },
+  cyan: { bg: '#cffafe', text: '#0e7490' },
+  sage: { bg: '#DCE5D4', text: '#5F6B52' },
+};
 
 interface WeekViewProps {
   selectedDate: Date;
@@ -52,6 +73,25 @@ interface WeekViewProps {
   handleToggleWeeklyTask: (id: string, dayString: string) => void;
   handleDeleteWeeklyTask: (id: string, dayString: string) => void;
   convert24To12Hour: (time: string) => string;
+  showTasks?: boolean;
+  showContent?: boolean;
+  contentDisplayMode?: ContentDisplayMode;
+  productionContent?: {
+    scheduled: ProductionCard[];
+    planned: ProductionCard[];
+  };
+  weeklyAddDialogState?: {
+    open: boolean;
+    dayString: string;
+    startTime: string;
+    endTime: string;
+  };
+  setWeeklyAddDialogState?: React.Dispatch<React.SetStateAction<{
+    open: boolean;
+    dayString: string;
+    startTime: string;
+    endTime: string;
+  }>>;
 }
 
 export const WeekView = ({
@@ -88,7 +128,164 @@ export const WeekView = ({
   handleToggleWeeklyTask,
   handleDeleteWeeklyTask,
   convert24To12Hour,
+  showTasks = true,
+  showContent = false,
+  contentDisplayMode = 'tasks',
+  productionContent = { scheduled: [], planned: [] },
+  weeklyAddDialogState,
+  setWeeklyAddDialogState,
 }: WeekViewProps) => {
+  const navigate = useNavigate();
+
+  // Color palette options
+  const colorOptions = [
+    { name: 'gray', bg: '#f3f4f6', hex: '#f3f4f6' },
+    { name: 'rose', bg: '#fecdd3', hex: '#fecdd3' },
+    { name: 'pink', bg: '#fbcfe8', hex: '#fbcfe8' },
+    { name: 'purple', bg: '#e9d5ff', hex: '#e9d5ff' },
+    { name: 'indigo', bg: '#c7d2fe', hex: '#c7d2fe' },
+    { name: 'sky', bg: '#bae6fd', hex: '#bae6fd' },
+    { name: 'teal', bg: '#99f6e4', hex: '#99f6e4' },
+    { name: 'green', bg: '#bbf7d0', hex: '#bbf7d0' },
+    { name: 'lime', bg: '#d9f99d', hex: '#d9f99d' },
+    { name: 'yellow', bg: '#fef08a', hex: '#fef08a' },
+    { name: 'orange', bg: '#fed7aa', hex: '#fed7aa' },
+  ];
+
+  // State for add dialog - sync with external state if provided
+  const [addDialogTab, setAddDialogTab] = useState<'task' | 'content'>('task');
+
+  // Use external state if available, otherwise use local state
+  const addDialogOpen = weeklyAddDialogState?.open ?? false;
+  const addDialogDate = weeklyAddDialogState?.dayString ?? "";
+  const addDialogStartTime = weeklyAddDialogState?.startTime ?? "";
+  const addDialogEndTime = weeklyAddDialogState?.endTime ?? "";
+
+  const closeAddDialog = () => {
+    if (setWeeklyAddDialogState) {
+      setWeeklyAddDialogState({ open: false, dayString: '', startTime: '', endTime: '' });
+    }
+  };
+
+  // Task form state
+  const [taskTitle, setTaskTitle] = useState("");
+  const [taskStartTime, setTaskStartTime] = useState("");
+  const [taskEndTime, setTaskEndTime] = useState("");
+  const [taskDescription, setTaskDescription] = useState("");
+  const [taskColor, setTaskColor] = useState("");
+  const [taskIncludeInContentCalendar, setTaskIncludeInContentCalendar] = useState(false);
+
+  // Content form state
+  const [contentHook, setContentHook] = useState("");
+  const [contentNotes, setContentNotes] = useState("");
+  const [contentColor, setContentColor] = useState("violet");
+
+  // Reset form state
+  const resetFormState = () => {
+    setTaskTitle("");
+    setTaskStartTime("");
+    setTaskEndTime("");
+    setTaskDescription("");
+    setTaskColor("");
+    setTaskIncludeInContentCalendar(false);
+    setContentHook("");
+    setContentNotes("");
+    setContentColor("violet");
+  };
+
+  // Sync task times with dialog state when it opens
+  useEffect(() => {
+    if (addDialogOpen && addDialogStartTime) {
+      setTaskStartTime(addDialogStartTime);
+      setTaskEndTime(addDialogEndTime);
+    }
+  }, [addDialogOpen, addDialogStartTime, addDialogEndTime]);
+
+  // Handle creating a task from the dialog
+  const handleCreateTaskFromDialog = () => {
+    if (!taskTitle.trim()) {
+      toast.error('Please enter a task title');
+      return;
+    }
+
+    const newTask: PlannerItem = {
+      id: `task-${Date.now()}`,
+      text: taskTitle.trim(),
+      completed: false,
+      section: 'morning',
+      date: addDialogDate,
+      startTime: taskStartTime || addDialogStartTime || undefined,
+      endTime: taskEndTime || addDialogEndTime || undefined,
+      description: taskDescription || undefined,
+      color: taskColor || undefined,
+      isContentCalendar: taskIncludeInContentCalendar,
+    };
+
+    // Add to planner data
+    const dayIndex = plannerData.findIndex(d => d.date === addDialogDate);
+    const updatedPlannerData = [...plannerData];
+
+    if (dayIndex >= 0) {
+      updatedPlannerData[dayIndex] = {
+        ...updatedPlannerData[dayIndex],
+        items: [...updatedPlannerData[dayIndex].items, newTask]
+      };
+    } else {
+      updatedPlannerData.push({
+        date: addDialogDate,
+        items: [newTask],
+        tasks: "",
+        greatDay: "",
+        grateful: ""
+      });
+    }
+
+    setPlannerData(updatedPlannerData);
+    savePlannerData(updatedPlannerData);
+    toast.success('Task created for ' + format(new Date(addDialogDate), 'MMM d'));
+    closeAddDialog();
+    resetFormState();
+  };
+
+  // Handle creating planned content from the dialog
+  const handleCreateContentFromDialog = () => {
+    if (!contentHook.trim()) {
+      toast.error('Please enter a hook/title for your content');
+      return;
+    }
+
+    const savedData = getString(StorageKeys.productionKanban);
+    if (savedData) {
+      try {
+        const columns: KanbanColumn[] = JSON.parse(savedData);
+        const ideateColumn = columns.find(c => c.id === 'ideate');
+
+        if (ideateColumn) {
+          const newCard: ProductionCard = {
+            id: `card-${Date.now()}`,
+            title: contentHook.trim(),
+            hook: contentHook.trim(),
+            description: contentNotes || undefined,
+            columnId: 'ideate',
+            plannedDate: addDialogDate,
+            plannedColor: contentColor as any,
+            isNew: true,
+          };
+          ideateColumn.cards.push(newCard);
+          setString(StorageKeys.productionKanban, JSON.stringify(columns));
+          emit(window, EVENTS.productionKanbanUpdated);
+          emit(window, EVENTS.scheduledContentUpdated);
+          toast.success('Content idea added for ' + format(new Date(addDialogDate), 'MMM d'));
+        }
+      } catch (err) {
+        console.error('Error adding planned content:', err);
+      }
+    }
+
+    closeAddDialog();
+    resetFormState();
+  };
+
   return (
     <>
       <CardContent className="px-0 h-full flex flex-col">
@@ -436,7 +633,7 @@ export const WeekView = ({
                           ))}
 
                           {/* Tasks positioned absolutely by time */}
-                          {(() => {
+                          {showTasks && (() => {
                             const tasksWithTimes = (dayData?.items || []).filter(item => item.startTime && item.endTime);
 
                             // Calculate time ranges and detect overlaps
@@ -728,9 +925,48 @@ export const WeekView = ({
                             });
                           })()}
 
-                          {/* Tasks without time in list format */}
+                          {/* Content items and Tasks without time in list format */}
                           <div className="absolute top-0 left-0 right-0 px-1 py-2 space-y-1">
-                            {(() => {
+                            {/* Scheduled content */}
+                            {showContent && (() => {
+                              const scheduledContent = productionContent.scheduled.filter(c =>
+                                c.scheduledDate?.split('T')[0] === dayString
+                              );
+                              return scheduledContent.map((content) => {
+                                const colorKey = content.scheduledColor || 'indigo';
+                                const colors = scheduleColors[colorKey] || scheduleColors.indigo;
+                                return (
+                                  <div
+                                    key={content.id}
+                                    className="text-[11px] px-2 py-1.5 rounded-md flex items-center gap-1"
+                                    style={{ backgroundColor: colors.bg, color: colors.text, opacity: isPast ? 0.5 : 1 }}
+                                  >
+                                    <Video className="w-3 h-3 flex-shrink-0" />
+                                    <span className="flex-1 truncate leading-tight">{content.hook || content.title}</span>
+                                  </div>
+                                );
+                              });
+                            })()}
+
+                            {/* Planned content */}
+                            {showContent && (() => {
+                              const plannedContent = productionContent.planned.filter(c =>
+                                c.plannedDate?.split('T')[0] === dayString
+                              );
+                              return plannedContent.map((content) => (
+                                <div
+                                  key={content.id}
+                                  className="text-[11px] px-2 py-1.5 rounded-md border border-dashed border-violet-300 bg-violet-50 text-violet-700 flex items-center gap-1"
+                                  style={{ opacity: isPast ? 0.5 : 1 }}
+                                >
+                                  <Lightbulb className="w-3 h-3 flex-shrink-0" />
+                                  <span className="flex-1 truncate leading-tight">{content.hook || content.title}</span>
+                                </div>
+                              ));
+                            })()}
+
+                            {/* Tasks without time */}
+                            {showTasks && (() => {
                               const tasksWithoutTimes = (dayData?.items || []).filter(item => !item.startTime || !item.endTime);
                               return tasksWithoutTimes.map((item) => (
                                 <div
@@ -828,6 +1064,273 @@ export const WeekView = ({
           </div>
         </div>
       </CardContent>
+
+      {/* Add Task/Content Dialog */}
+      {addDialogOpen && (
+        <div className="fixed inset-0 z-[100]">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/30"
+            onClick={() => {
+              closeAddDialog();
+              resetFormState();
+            }}
+          />
+
+          {/* Dialog Container - centers the dialog */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            {/* Dialog */}
+            <div className="pointer-events-auto bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4">
+              {/* Close button */}
+              <div className="flex justify-end px-6 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    closeAddDialog();
+                    resetFormState();
+                  }}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+
+            {/* Tabs - only show in "both" mode */}
+            {contentDisplayMode === 'both' && (
+              <div className="flex px-6 gap-1 mb-4">
+                <button
+                  type="button"
+                  onClick={() => setAddDialogTab('task')}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer select-none",
+                    addDialogTab === 'task'
+                      ? "bg-purple-100 text-purple-700"
+                      : "text-gray-600 hover:bg-gray-100"
+                  )}
+                >
+                  <ListTodo className="w-4 h-4" />
+                  Add Task
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAddDialogTab('content')}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer select-none",
+                    addDialogTab === 'content'
+                      ? "bg-violet-100 text-violet-700"
+                      : "text-gray-600 hover:bg-gray-100"
+                  )}
+                >
+                  <Lightbulb className="w-4 h-4" />
+                  Add Content
+                </button>
+              </div>
+            )}
+
+            {/* Task Form */}
+            {addDialogTab === 'task' && (
+              <div className="px-6 pb-6 space-y-4 relative">
+                {/* Title */}
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Add title"
+                    value={taskTitle}
+                    onChange={(e) => setTaskTitle(e.target.value)}
+                    className="w-full text-lg border-b border-gray-200 pb-2 focus:outline-none focus:border-indigo-500 placeholder:text-gray-400"
+                  />
+                </div>
+
+                {/* Time */}
+                <div className="flex items-center gap-3">
+                  <Clock className="w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Start time"
+                    value={taskStartTime}
+                    onChange={(e) => setTaskStartTime(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <span className="text-gray-400">—</span>
+                  <input
+                    type="text"
+                    placeholder="End time"
+                    value={taskEndTime}
+                    onChange={(e) => setTaskEndTime(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                {/* Description */}
+                <div className="flex items-start gap-3">
+                  <FileText className="w-5 h-5 text-gray-400 mt-2" />
+                  <textarea
+                    placeholder="Add description"
+                    value={taskDescription}
+                    onChange={(e) => setTaskDescription(e.target.value)}
+                    rows={2}
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                  />
+                </div>
+
+                {/* Color Palette */}
+                <div className="flex items-center gap-3">
+                  <Palette className="w-5 h-5 text-gray-400" />
+                  <div className="flex flex-wrap gap-2">
+                    {colorOptions.map((color) => (
+                      <button
+                        key={color.name}
+                        onClick={() => setTaskColor(taskColor === color.hex ? '' : color.hex)}
+                        className={cn(
+                          "w-8 h-8 rounded-full transition-all",
+                          taskColor === color.hex ? "ring-2 ring-offset-2 ring-gray-400" : "hover:scale-110"
+                        )}
+                        style={{ backgroundColor: color.bg }}
+                      >
+                        {taskColor === color.hex && (
+                          <X className="w-4 h-4 mx-auto text-gray-500" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Include in content calendar */}
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <Checkbox
+                    checked={taskIncludeInContentCalendar}
+                    onCheckedChange={(checked) => setTaskIncludeInContentCalendar(checked === true)}
+                    className="h-5 w-5"
+                  />
+                  <span className="text-sm text-gray-700">Include in content calendar</span>
+                </label>
+
+                {/* Actions */}
+                <div className="flex justify-end gap-3 pt-4">
+                  <button
+                    onClick={() => {
+                      closeAddDialog();
+                      resetFormState();
+                    }}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleCreateTaskFromDialog}
+                    className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+                  >
+                    Create
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Content Form */}
+            {addDialogTab === 'content' && (
+              <div className="px-6 pb-6 space-y-4 relative">
+                {/* Hook/Title */}
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Add hook"
+                    value={contentHook}
+                    onChange={(e) => setContentHook(e.target.value)}
+                    className="w-full text-lg border-b border-gray-200 pb-2 focus:outline-none focus:border-violet-500 placeholder:text-gray-400"
+                  />
+                </div>
+
+                {/* Notes */}
+                <div className="flex items-start gap-3">
+                  <FileText className="w-5 h-5 text-gray-400 mt-2" />
+                  <textarea
+                    placeholder="Add notes..."
+                    value={contentNotes}
+                    onChange={(e) => setContentNotes(e.target.value)}
+                    rows={3}
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none"
+                  />
+                </div>
+
+                {/* Color Palette */}
+                <div className="flex items-center gap-3">
+                  <Palette className="w-5 h-5 text-gray-400" />
+                  <div className="flex flex-wrap gap-2">
+                    {['violet', 'indigo', 'rose', 'amber', 'emerald', 'sky', 'orange', 'cyan'].map((color) => {
+                      const colorMap: Record<string, string> = {
+                        violet: '#ede9fe',
+                        indigo: '#e0e7ff',
+                        rose: '#ffe4e6',
+                        amber: '#fef3c7',
+                        emerald: '#d1fae5',
+                        sky: '#e0f2fe',
+                        orange: '#ffedd5',
+                        cyan: '#cffafe',
+                      };
+                      return (
+                        <button
+                          key={color}
+                          onClick={() => setContentColor(color)}
+                          className={cn(
+                            "w-8 h-8 rounded-full transition-all",
+                            contentColor === color ? "ring-2 ring-offset-2 ring-violet-400" : "hover:scale-110"
+                          )}
+                          style={{ backgroundColor: colorMap[color] }}
+                        >
+                          {contentColor === color && (
+                            <Check className="w-4 h-4 mx-auto text-violet-600" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Content Hub CTA */}
+                <button
+                  onClick={() => {
+                    closeAddDialog();
+                    resetFormState();
+                    navigate('/production');
+                  }}
+                  className="w-full flex items-center justify-between p-3 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl border border-violet-100 hover:border-violet-200 transition-colors group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center">
+                      <Video className="w-4 h-4 text-violet-600" />
+                    </div>
+                    <div className="text-left">
+                      <div className="text-sm font-medium text-gray-800">Need more details?</div>
+                      <div className="text-xs text-gray-500">Go to Content Hub for full editing</div>
+                    </div>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-violet-500 group-hover:translate-x-1 transition-transform" />
+                </button>
+
+                {/* Actions */}
+                <div className="flex justify-end gap-3 pt-2">
+                  <button
+                    onClick={() => {
+                      closeAddDialog();
+                      resetFormState();
+                    }}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleCreateContentFromDialog}
+                    className="px-6 py-2 text-sm font-medium text-white bg-violet-600 rounded-lg hover:bg-violet-700 transition-colors"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            )}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

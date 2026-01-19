@@ -15,6 +15,7 @@ interface UsePlannerActionsArgs {
   greatDay: string;
   grateful: string;
   currentView: string;
+  contentDisplayMode?: 'tasks' | 'content' | 'both';
   todayZoomLevel: number;
   todayScrollPosition: number;
   weeklyScrollPosition: number;
@@ -100,6 +101,8 @@ interface UsePlannerActionsArgs {
   saveWeeklyScrollPosition: (scrollPosition: number) => void;
   saveSelectedTimezone: (timezone: string) => void;
   saveTodayZoomLevel: (zoomLevel: number) => void;
+  onWeeklyAddDialogOpen?: (dayString: string, startTime: string, endTime: string) => void;
+  onTodayAddDialogOpen?: (startTime: string, endTime: string) => void;
 }
 
 export const usePlannerActions = ({
@@ -198,6 +201,9 @@ export const usePlannerActions = ({
   saveWeeklyScrollPosition,
   saveSelectedTimezone,
   saveTodayZoomLevel,
+  contentDisplayMode = 'tasks',
+  onWeeklyAddDialogOpen,
+  onTodayAddDialogOpen,
 }: UsePlannerActionsArgs) => {
   const handleOpenTaskDialog = (hour: number, itemToEdit?: PlannerItem, startTime?: string, endTime?: string) => {
     if (itemToEdit) {
@@ -285,8 +291,17 @@ export const usePlannerActions = ({
           setDragCreateStart(null);
           setDragCreateEnd(null);
 
-          // Open dialog
-          handleOpenTaskDialog(startHour, undefined, startTimeStr, endTimeStr);
+          // Convert to 12-hour format for dialog display
+          const startTime12 = convert24To12Hour(startTimeStr);
+          const endTime12 = convert24To12Hour(endTimeStr);
+
+          // Check if we should open the add choice dialog (for 'both' or 'content' mode)
+          if ((contentDisplayMode === 'both' || contentDisplayMode === 'content') && onTodayAddDialogOpen) {
+            onTodayAddDialogOpen(startTime12, endTime12);
+          } else {
+            // Open task dialog (default 'tasks' mode)
+            handleOpenTaskDialog(startHour, undefined, startTimeStr, endTimeStr);
+          }
         } else {
           // Cancel the drag
           setIsDraggingCreate(false);
@@ -388,22 +403,27 @@ export const usePlannerActions = ({
               return newState;
             });
 
-            // Open dialog with pre-filled times
-            setEditingTask({
-              id: '',
-              date: dayString,
-              text: '',
-              section: 'morning',
-              isCompleted: false,
-              order: 0
-            } as PlannerItem);
-            setDialogTaskTitle('');
-            setDialogTaskDescription('');
-            setDialogStartTime(startTime12);
-            setDialogEndTime(endTime12);
-            setDialogTaskColor('');
-            setDialogAddToContentCalendar(false);
-            setIsTaskDialogOpen(true);
+            // Check if we should open the add choice dialog (for 'both' or 'content' mode)
+            if ((contentDisplayMode === 'both' || contentDisplayMode === 'content') && onWeeklyAddDialogOpen) {
+              onWeeklyAddDialogOpen(dayString, startTime12, endTime12);
+            } else {
+              // Open task dialog with pre-filled times (default 'tasks' mode)
+              setEditingTask({
+                id: '',
+                date: dayString,
+                text: '',
+                section: 'morning',
+                isCompleted: false,
+                order: 0
+              } as PlannerItem);
+              setDialogTaskTitle('');
+              setDialogTaskDescription('');
+              setDialogStartTime(startTime12);
+              setDialogEndTime(endTime12);
+              setDialogTaskColor('');
+              setDialogAddToContentCalendar(false);
+              setIsTaskDialogOpen(true);
+            }
           } else {
             // Cancel the drag
             setWeeklyDraggingCreate(prev => ({ ...prev, [dayString]: false }));

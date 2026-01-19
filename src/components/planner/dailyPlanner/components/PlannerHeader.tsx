@@ -44,47 +44,39 @@ export const PlannerHeader = ({
     <div className="mb-3 pt-[15px]">
       <div className="flex items-center justify-between">
         {/* Left: View Tabs */}
-        <div className="inline-flex items-center gap-0 bg-white rounded-lg shadow-sm border border-gray-200 p-1">
-          <button
-            onClick={() => setCurrentView('today')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-              currentView === 'today'
-                ? 'bg-blue-500 text-white shadow-sm'
-                : 'text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            Today
-          </button>
-          <button
-            onClick={() => setCurrentView('week')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-              currentView === 'week'
-                ? 'bg-purple-500 text-white shadow-sm'
-                : 'text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            Weekly
-          </button>
-          <button
-            onClick={() => setCurrentView('calendar')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-              currentView === 'calendar'
-                ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm'
-                : 'text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            Monthly
-          </button>
-          <button
-            onClick={() => setCurrentView('content-calendar-new')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-              currentView === 'content-calendar-new'
-                ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-sm'
-                : 'text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            Content Calendar
-          </button>
+        <div className="flex items-center gap-3">
+          <div className="inline-flex items-center gap-0 bg-white rounded-lg shadow-sm border border-gray-200 p-1">
+            <button
+              onClick={() => setCurrentView('today')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                currentView === 'today'
+                  ? 'bg-blue-500 text-white shadow-sm'
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              Today
+            </button>
+            <button
+              onClick={() => setCurrentView('week')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                currentView === 'week'
+                  ? 'bg-purple-500 text-white shadow-sm'
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              Weekly
+            </button>
+            <button
+              onClick={() => setCurrentView('calendar')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                currentView === 'calendar'
+                  ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm'
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              Monthly
+            </button>
+          </div>
         </div>
 
         {/* Right: Date Navigation */}

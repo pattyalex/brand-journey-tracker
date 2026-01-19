@@ -3,6 +3,16 @@ import { useSearchParams } from "react-router-dom";
 import { PlannerDay, PlannerItem } from "@/types/planner";
 import { PlannerView } from "../types";
 import { TIMEZONES, getDateString } from "../utils/plannerUtils";
+import { StorageKeys, getString } from "@/lib/storage";
+import { KanbanColumn, ProductionCard } from "@/pages/production/types";
+import { EVENTS, on } from "@/lib/events";
+
+export type ContentDisplayMode = 'tasks' | 'content' | 'both';
+
+export interface ContentDisplaySettings {
+  showTasks: boolean;
+  showContent: boolean;
+}
 
 export interface PlannerInitialSettings {
   selectedTimezone: string;
@@ -37,6 +47,19 @@ export const usePlannerState = ({
   const [currentView, setCurrentView] = useState<PlannerView>(getInitialView());
   const [selectedTimezone, setSelectedTimezone] = useState<string>(initialSelectedTimezone);
   const [calendarFilterMode, setCalendarFilterMode] = useState<'all' | 'content'>('all');
+
+  // Content display mode: 'tasks', 'content', or 'both'
+  const [contentDisplayMode, setContentDisplayMode] = useState<ContentDisplayMode>('tasks');
+
+  // Derived values for convenience
+  const showTasks = contentDisplayMode === 'tasks' || contentDisplayMode === 'both';
+  const showContent = contentDisplayMode === 'content' || contentDisplayMode === 'both';
+
+  // Production content (scheduled and planned items from Content Hub)
+  const [productionContent, setProductionContent] = useState<{
+    scheduled: ProductionCard[];
+    planned: ProductionCard[];
+  }>({ scheduled: [], planned: [] });
 
   // Zoom level for Today view (0.5 = 50%, 1 = 100%, 2 = 200%)
   const [todayZoomLevel, setTodayZoomLevel] = useState<number>(initialTodayZoomLevel);
@@ -131,6 +154,50 @@ export const usePlannerState = ({
       setCurrentView(viewParam as PlannerView);
     }
   }, [searchParams]);
+
+  // Load production content (scheduled and planned items from Content Hub)
+  useEffect(() => {
+    const loadProductionContent = () => {
+      const savedData = getString(StorageKeys.productionKanban);
+      if (!savedData) {
+        setProductionContent({ scheduled: [], planned: [] });
+        return;
+      }
+
+      try {
+        const columns: KanbanColumn[] = JSON.parse(savedData);
+
+        // Get scheduled content from to-schedule column
+        const toScheduleColumn = columns.find(col => col.id === 'to-schedule');
+        const scheduledCards = toScheduleColumn?.cards.filter(
+          c => c.schedulingStatus === 'scheduled' && c.scheduledDate
+        ) || [];
+
+        // Get planned content from ideate column
+        const ideateColumn = columns.find(col => col.id === 'ideate');
+        const plannedCards = ideateColumn?.cards.filter(c => c.plannedDate) || [];
+
+        setProductionContent({
+          scheduled: scheduledCards,
+          planned: plannedCards
+        });
+      } catch (e) {
+        console.error("Error loading production content:", e);
+        setProductionContent({ scheduled: [], planned: [] });
+      }
+    };
+
+    loadProductionContent();
+
+    // Listen for content calendar updates
+    const unsubscribe = on(window, EVENTS.scheduledContentUpdated, loadProductionContent);
+    const unsubscribe2 = on(window, EVENTS.productionKanbanUpdated, loadProductionContent);
+    return () => {
+      unsubscribe();
+      unsubscribe2();
+    };
+  }, []);
+
   const [isDraggingOverAllTasks, setIsDraggingOverAllTasks] = useState(false);
   const [draggingTaskText, setDraggingTaskText] = useState<string>("");
 
@@ -316,6 +383,10 @@ export const usePlannerState = ({
       weeklyEditingTitle,
       isDraggingOverAllTasks,
       draggingTaskText,
+      showTasks,
+      showContent,
+      contentDisplayMode,
+      productionContent,
     },
     setters: {
       setSelectedDate,
@@ -326,6 +397,7 @@ export const usePlannerState = ({
       setCurrentView,
       setSelectedTimezone,
       setCalendarFilterMode,
+      setContentDisplayMode,
       setTodayZoomLevel,
       setTodayScrollPosition,
       setWeeklyScrollPosition,
