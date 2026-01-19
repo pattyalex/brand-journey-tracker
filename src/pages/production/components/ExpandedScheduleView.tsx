@@ -1,11 +1,12 @@
 import React, { useState, useMemo, useEffect } from "react";
+import { flushSync } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarDays, ChevronLeft, ChevronRight, Video, Camera, Check, X, Pin, PartyPopper } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Video, Camera, Check, X, Pin, PartyPopper, Lightbulb, Send, Plus } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
@@ -45,17 +46,17 @@ const isStaticFormat = (format: string): boolean => {
   return staticFormats.some(sf => format.toLowerCase().includes(sf) || sf.includes(format.toLowerCase()));
 };
 
-// Color options for scheduled content
+// Color options for scheduled content - using hex values for inline styles
 const scheduleColors = {
-  indigo: { bg: 'bg-indigo-100', text: 'text-indigo-700', hover: 'hover:bg-indigo-200', dot: 'bg-indigo-300' },
-  rose: { bg: 'bg-rose-100', text: 'text-rose-700', hover: 'hover:bg-rose-200', dot: 'bg-rose-300' },
-  amber: { bg: 'bg-amber-100', text: 'text-amber-700', hover: 'hover:bg-amber-200', dot: 'bg-amber-300' },
-  emerald: { bg: 'bg-emerald-100', text: 'text-emerald-700', hover: 'hover:bg-emerald-200', dot: 'bg-emerald-300' },
-  sky: { bg: 'bg-sky-100', text: 'text-sky-700', hover: 'hover:bg-sky-200', dot: 'bg-sky-300' },
-  violet: { bg: 'bg-violet-100', text: 'text-violet-700', hover: 'hover:bg-violet-200', dot: 'bg-violet-300' },
-  orange: { bg: 'bg-orange-100', text: 'text-orange-700', hover: 'hover:bg-orange-200', dot: 'bg-orange-300' },
-  cyan: { bg: 'bg-cyan-100', text: 'text-cyan-700', hover: 'hover:bg-cyan-200', dot: 'bg-cyan-300' },
-  sage: { bg: 'bg-[#DCE5D4]', text: 'text-[#5F6B52]', hover: 'hover:bg-[#CAD4C0]', dot: 'bg-[#A8B89E]' },
+  indigo: { bg: '#e0e7ff', text: '#4338ca', dot: 'bg-indigo-300' },
+  rose: { bg: '#ffe4e6', text: '#be123c', dot: 'bg-rose-300' },
+  amber: { bg: '#fef3c7', text: '#b45309', dot: 'bg-amber-300' },
+  emerald: { bg: '#d1fae5', text: '#047857', dot: 'bg-emerald-300' },
+  sky: { bg: '#e0f2fe', text: '#0369a1', dot: 'bg-sky-300' },
+  violet: { bg: '#ede9fe', text: '#6d28d9', dot: 'bg-violet-300' },
+  orange: { bg: '#ffedd5', text: '#c2410c', dot: 'bg-orange-300' },
+  cyan: { bg: '#cffafe', text: '#0e7490', dot: 'bg-cyan-300' },
+  sage: { bg: '#DCE5D4', text: '#5F6B52', dot: 'bg-[#A8B89E]' },
 };
 
 type ScheduleColorKey = keyof typeof scheduleColors;
@@ -90,6 +91,20 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   const [dragOverUnschedule, setDragOverUnschedule] = useState(false);
   const [popoverCardId, setPopoverCardId] = useState<string | null>(null);
   const [selectedCard, setSelectedCard] = useState<ProductionCard | null>(null);
+
+  // State for adding new content idea (embedded mode only)
+  const [addIdeaPopoverDate, setAddIdeaPopoverDate] = useState<string | null>(null);
+  const [newIdeaHook, setNewIdeaHook] = useState("");
+  const [newIdeaNotes, setNewIdeaNotes] = useState("");
+  const [newIdeaColor, setNewIdeaColor] = useState<string>("indigo");
+
+  // State for editing scheduled card in popover
+  const [editingScheduledHook, setEditingScheduledHook] = useState<string>("");
+  const [editingScheduledNotes, setEditingScheduledNotes] = useState<string>("");
+  const [editingScheduledColor, setEditingScheduledColor] = useState<ScheduleColorKey>("indigo");
+
+  // Render version counter to force re-renders when colors change
+  const [colorUpdateVersion, setColorUpdateVersion] = useState(0);
 
   // For embedded mode: manage columns state internally
   const [columns, setColumns] = useState<KanbanColumn[]>([]);
@@ -170,12 +185,16 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   };
 
   const handleUpdateColorInternal = (cardId: string, color: ScheduleColorKey) => {
+    console.log("🎨 handleUpdateColorInternal called:", cardId, color);
+
+    // Update columns state directly - this is the single source of truth
     const newColumns = columns.map(col => {
       if (col.id === 'to-schedule') {
         return {
           ...col,
           cards: col.cards.map(card => {
             if (card.id === cardId) {
+              console.log("🎨 Updating card color:", cardId, "->", color);
               return {
                 ...card,
                 scheduledColor: color,
@@ -187,13 +206,188 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
       }
       return col;
     });
-    saveColumns(newColumns);
+
+    // Use flushSync to force synchronous state updates
+    // This ensures the DOM updates immediately, even inside a Popover
+    flushSync(() => {
+      saveColumns(newColumns);
+      setColorUpdateVersion(v => v + 1);
+    });
+    console.log("🎨 Color updated and saved, forced sync re-render");
+  };
+
+  // Function to update a scheduled card's hook and notes
+  const handleUpdateScheduledCard = (cardId: string, newHook: string, newNotes: string) => {
+    const savedData = getString(StorageKeys.productionKanban);
+    if (!savedData) return;
+
+    try {
+      const currentColumns: KanbanColumn[] = JSON.parse(savedData);
+      const toScheduleIndex = currentColumns.findIndex(col => col.id === 'to-schedule');
+      if (toScheduleIndex < 0) return;
+
+      currentColumns[toScheduleIndex] = {
+        ...currentColumns[toScheduleIndex],
+        cards: currentColumns[toScheduleIndex].cards.map(card =>
+          card.id === cardId
+            ? { ...card, hook: newHook, title: newHook, description: newNotes }
+            : card
+        )
+      };
+
+      setString(StorageKeys.productionKanban, JSON.stringify(currentColumns));
+      setColumns(currentColumns);
+    } catch (e) {
+      console.error("Error updating scheduled card:", e);
+    }
+  };
+
+  // Function to send a scheduled card to Script Ideas column for development
+  const handleSendScheduledToScriptIdeas = (card: ProductionCard) => {
+    const savedData = getString(StorageKeys.productionKanban);
+    if (!savedData) return;
+
+    try {
+      const currentColumns: KanbanColumn[] = JSON.parse(savedData);
+      // Column ID is 'shape-ideas' but displays as "Script Ideas"
+      const scriptIdeasIndex = currentColumns.findIndex(col => col.id === 'shape-ideas');
+      if (scriptIdeasIndex < 0) return;
+
+      // Create new card for Script Ideas column with calendar origin tracking
+      const newCard: ProductionCard = {
+        id: `idea-${Date.now()}`,
+        title: editingScheduledHook || card.hook || card.title,
+        hook: editingScheduledHook || card.hook || card.title,
+        description: editingScheduledNotes || card.description,
+        columnId: 'shape-ideas',
+        isNew: true,
+        fromCalendar: true,
+        plannedDate: card.scheduledDate,
+      };
+
+      currentColumns[scriptIdeasIndex] = {
+        ...currentColumns[scriptIdeasIndex],
+        cards: [newCard, ...currentColumns[scriptIdeasIndex].cards]
+      };
+
+      setString(StorageKeys.productionKanban, JSON.stringify(currentColumns));
+      setColumns(currentColumns);
+      setPopoverCardId(null);
+
+      // Navigate to Content Hub
+      navigate('/production');
+    } catch (e) {
+      console.error("Error sending to Script Ideas:", e);
+    }
   };
 
   // Use internal or prop handlers based on mode
   const onSchedule = embedded ? handleScheduleInternal : propOnSchedule;
   const onUnschedule = embedded ? handleUnscheduleInternal : propOnUnschedule;
   const onUpdateColor = embedded ? handleUpdateColorInternal : propOnUpdateColor;
+
+  // Function to save idea directly to calendar (scheduled on the selected date)
+  const handleSaveToCalendar = () => {
+    if (!newIdeaHook.trim() || !addIdeaPopoverDate) return;
+
+    // Load current columns from localStorage
+    const savedData = getString(StorageKeys.productionKanban);
+    if (!savedData) return;
+
+    try {
+      const currentColumns: KanbanColumn[] = JSON.parse(savedData);
+
+      // Find the to-schedule column
+      const toScheduleIndex = currentColumns.findIndex(col => col.id === 'to-schedule');
+      if (toScheduleIndex < 0) return;
+
+      // Create new card - scheduled on the selected date
+      const newCard: ProductionCard = {
+        id: `calendar-idea-${Date.now()}`,
+        title: newIdeaHook,
+        hook: newIdeaHook,
+        description: newIdeaNotes,
+        columnId: 'to-schedule',
+        schedulingStatus: 'scheduled',
+        scheduledDate: addIdeaPopoverDate,
+        scheduledColor: newIdeaColor as ProductionCard['scheduledColor'],
+        fromCalendar: true,
+        plannedDate: addIdeaPopoverDate,
+      };
+
+      // Add to to-schedule column
+      currentColumns[toScheduleIndex] = {
+        ...currentColumns[toScheduleIndex],
+        cards: [newCard, ...currentColumns[toScheduleIndex].cards]
+      };
+
+      // Save back to localStorage
+      setString(StorageKeys.productionKanban, JSON.stringify(currentColumns));
+
+      // Also update local state
+      setColumns(currentColumns);
+
+      // Reset form and close popover
+      setNewIdeaHook("");
+      setNewIdeaNotes("");
+      setNewIdeaColor("indigo");
+      setAddIdeaPopoverDate(null);
+    } catch (e) {
+      console.error("Error saving idea to calendar:", e);
+    }
+  };
+
+  // Function to send new idea to Script Ideas column in Content Hub (for development)
+  const handleSendToScriptIdeas = () => {
+    if (!newIdeaHook.trim() || !addIdeaPopoverDate) return;
+
+    // Load current columns from localStorage
+    const savedData = getString(StorageKeys.productionKanban);
+    if (!savedData) return;
+
+    try {
+      const currentColumns: KanbanColumn[] = JSON.parse(savedData);
+
+      // Find the script-ideas column (ID is 'shape-ideas' but displays as "Script Ideas")
+      const scriptIdeasIndex = currentColumns.findIndex(col => col.id === 'shape-ideas');
+      if (scriptIdeasIndex < 0) return;
+
+      // Create new card with calendar origin tracking
+      const newCard: ProductionCard = {
+        id: `idea-${Date.now()}`,
+        title: newIdeaHook,
+        hook: newIdeaHook,
+        description: newIdeaNotes,
+        columnId: 'shape-ideas',
+        isNew: true,
+        fromCalendar: true,
+        plannedDate: addIdeaPopoverDate,
+      };
+
+      // Add to script-ideas column
+      currentColumns[scriptIdeasIndex] = {
+        ...currentColumns[scriptIdeasIndex],
+        cards: [newCard, ...currentColumns[scriptIdeasIndex].cards]
+      };
+
+      // Save back to localStorage
+      setString(StorageKeys.productionKanban, JSON.stringify(currentColumns));
+
+      // Also update local state if needed
+      setColumns(currentColumns);
+
+      // Reset form and close popover
+      setNewIdeaHook("");
+      setNewIdeaNotes("");
+      setNewIdeaColor("indigo");
+      setAddIdeaPopoverDate(null);
+
+      // Navigate to Content Hub
+      navigate('/production');
+    } catch (e) {
+      console.error("Error saving idea:", e);
+    }
+  };
 
   // Use toScheduleCards instead of cards
   const cards = toScheduleCards;
@@ -218,7 +412,8 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
       }
     });
     return map;
-  }, [cards]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cards, colorUpdateVersion]);
 
   // Calendar calculations
   const currentMonth = currentDate.getMonth();
@@ -710,28 +905,64 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                 const scheduledForDay = scheduledCardsByDate[dateStr] || [];
 
                 return (
-                  <div
+                  <Popover
                     key={idx}
-                    onDragOver={(e) => handleDragOver(e, dateStr)}
-                    onDragLeave={handleDragLeave}
-                    onDrop={(e) => handleDrop(e, day.date)}
-                    className={cn(
-                      isLeftPanelCollapsed ? "rounded-lg border min-h-[120px] relative p-2" : "rounded-lg border min-h-[120px] relative p-1.5",
-                      day.isCurrentMonth
-                        ? "bg-white border-gray-200 text-gray-900"
-                        : "bg-gray-50 border-gray-100 text-gray-400",
-                      isDragOver && "bg-indigo-100 border-indigo-400 border-2 scale-105"
-                    )}
+                    open={embedded && addIdeaPopoverDate === dateStr}
+                    onOpenChange={(open) => {
+                      if (embedded) {
+                        setAddIdeaPopoverDate(open ? dateStr : null);
+                        if (!open) {
+                          setNewIdeaHook("");
+                          setNewIdeaNotes("");
+                          setNewIdeaColor("indigo");
+                        }
+                      }
+                    }}
                   >
-                    <span className={cn(
-                      "absolute top-1.5 left-2 text-sm font-medium",
-                      day.isToday && "text-indigo-600 font-bold"
-                    )}>
-                      {day.date.getDate()}
-                    </span>
+                    <PopoverTrigger asChild>
+                      <div
+                        onDragOver={(e) => handleDragOver(e, dateStr)}
+                        onDragLeave={handleDragLeave}
+                        onDrop={(e) => handleDrop(e, day.date)}
+                        onClick={(e) => {
+                          // Only open add idea popover in embedded mode when clicking empty area
+                          if (embedded && e.target === e.currentTarget) {
+                            setAddIdeaPopoverDate(dateStr);
+                          }
+                        }}
+                        className={cn(
+                          "group",
+                          isLeftPanelCollapsed ? "rounded-lg border min-h-[120px] relative p-2" : "rounded-lg border min-h-[120px] relative p-1.5",
+                          day.isCurrentMonth
+                            ? "bg-white border-gray-200 text-gray-900 hover:bg-gray-50"
+                            : "bg-gray-50 border-gray-100 text-gray-400",
+                          isDragOver && "bg-indigo-100 border-indigo-400 border-2 scale-105",
+                          embedded && "cursor-pointer"
+                        )}
+                      >
+                        <span className={cn(
+                          "absolute top-1.5 left-2 text-sm font-medium",
+                          day.isToday && "text-indigo-600 font-bold"
+                        )}>
+                          {day.date.getDate()}
+                        </span>
 
-                    {/* Scheduled content indicators - scrollable */}
-                    {scheduledForDay.length > 0 && (
+                        {/* Add button for embedded mode */}
+                        {embedded && day.isCurrentMonth && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setAddIdeaPopoverDate(dateStr);
+                            }}
+                            className="absolute top-1 right-1 w-5 h-5 rounded-full bg-indigo-100 hover:bg-indigo-200 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity group-hover:opacity-100"
+                            style={{ opacity: addIdeaPopoverDate === dateStr ? 1 : undefined }}
+                          >
+                            <Plus className="w-3 h-3 text-indigo-600" />
+                          </button>
+                        )}
+
+                        {/* Scheduled content indicators - scrollable */}
+                        {scheduledForDay.length > 0 && (
                       <div className="absolute top-7 left-1 right-1 bottom-1 flex flex-col gap-1 overflow-y-auto">
                         {scheduledForDay.map((scheduledCard) => {
                           const isPublished = day.date < today;
@@ -739,7 +970,14 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                           <Popover
                             key={scheduledCard.id}
                             open={popoverCardId === scheduledCard.id}
-                            onOpenChange={(open) => setPopoverCardId(open ? scheduledCard.id : null)}
+                            onOpenChange={(open) => {
+                              if (open) {
+                                setEditingScheduledHook(scheduledCard.hook || scheduledCard.title || "");
+                                setEditingScheduledNotes(scheduledCard.description || "");
+                                setEditingScheduledColor(scheduledCard.scheduledColor || "indigo");
+                              }
+                              setPopoverCardId(open ? scheduledCard.id : null);
+                            }}
                           >
                             <PopoverTrigger asChild>
                               <div
@@ -761,21 +999,27 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                 }}
                                 className={cn(
                                   "text-[11px] px-2 py-1.5 rounded-md cursor-grab active:cursor-grabbing transition-colors",
-                                  isPublished
-                                    ? "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                                    : scheduledCard.scheduledColor && scheduleColors[scheduledCard.scheduledColor]
-                                      ? `${scheduleColors[scheduledCard.scheduledColor].bg} ${scheduleColors[scheduledCard.scheduledColor].text} ${scheduleColors[scheduledCard.scheduledColor].hover}`
-                                      : "bg-indigo-100 text-indigo-700 hover:bg-indigo-200",
+                                  isPublished && "bg-gray-100 text-gray-500",
                                   draggedCardId === scheduledCard.id && "opacity-50"
                                 )}
+                                style={!isPublished ? (() => {
+                                  const colorKey = scheduledCard.scheduledColor || 'indigo';
+                                  const colorConfig = scheduleColors[colorKey as ScheduleColorKey];
+                                  return {
+                                    backgroundColor: colorConfig?.bg || '#e0e7ff',
+                                    color: colorConfig?.text || '#4338ca'
+                                  };
+                                })() : undefined}
                                 title={scheduledCard.hook || scheduledCard.title}
                               >
                                 {/* Title row */}
                                 <div className="flex items-start gap-1.5">
-                                  {isPublished ? (
-                                    <PartyPopper className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-gray-600" />
-                                  ) : (
-                                    <Check className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                                  {!scheduledCard.fromCalendar && (
+                                    isPublished ? (
+                                      <PartyPopper className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-gray-600" />
+                                    ) : (
+                                      <Check className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                                    )
                                   )}
                                   <span className="leading-tight">{scheduledCard.hook || scheduledCard.title || "Scheduled"}</span>
                                 </div>
@@ -807,9 +1051,20 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                 <div className="flex items-center justify-between px-4 py-3 bg-indigo-50 border-b border-indigo-100">
                                   <div className="flex items-center gap-2">
                                     <div className="w-6 h-6 rounded-md bg-indigo-100 flex items-center justify-center">
-                                      <CalendarDays className="w-3.5 h-3.5 text-indigo-500" />
+                                      {scheduledCard.fromCalendar ? (
+                                        <Lightbulb className="w-3.5 h-3.5 text-indigo-500" />
+                                      ) : (
+                                        <CalendarDays className="w-3.5 h-3.5 text-indigo-500" />
+                                      )}
                                     </div>
-                                    <span className="text-sm font-semibold text-indigo-900">Content Overview</span>
+                                    <div className="flex flex-col">
+                                      <span className="text-sm font-semibold text-indigo-900">
+                                        {scheduledCard.fromCalendar ? "Add Quick Idea" : "Content Overview"}
+                                      </span>
+                                      {scheduledCard.fromCalendar && (
+                                        <span className="text-[10px] text-indigo-500">Develop in Content Hub later</span>
+                                      )}
+                                    </div>
                                   </div>
                                   <button
                                     onClick={(e) => {
@@ -822,47 +1077,138 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                   </button>
                                 </div>
                                 <div className="p-4" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
-                                  {renderContentDetails(scheduledCard)}
+                                  {/* Cards from Calendar - Simple editable form */}
+                                  {scheduledCard.fromCalendar ? (
+                                    <div className="space-y-4">
+                                      {/* Editable Hook */}
+                                      <div>
+                                        <label className="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider mb-1.5 block">
+                                          Hook
+                                        </label>
+                                        <input
+                                          type="text"
+                                          value={editingScheduledHook}
+                                          onChange={(e) => setEditingScheduledHook(e.target.value)}
+                                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                          placeholder="What's the hook?"
+                                        />
+                                      </div>
 
-                                  {/* Color Picker */}
-                                  {!isPublished && (
-                                    <div
-                                      className="mt-4 pt-4 border-t border-gray-100"
-                                      onClick={(e) => e.stopPropagation()}
-                                      onDrop={(e) => { e.stopPropagation(); e.preventDefault(); }}
-                                      onDragOver={(e) => { e.stopPropagation(); e.preventDefault(); }}
-                                    >
-                                      <h4 className="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider mb-2">
-                                        Label Color
-                                      </h4>
-                                      <div className="flex gap-2">
-                                        {(Object.keys(scheduleColors) as ScheduleColorKey[]).map((colorKey) => (
-                                          <button
-                                            type="button"
-                                            key={colorKey}
-                                            onMouseDown={(e) => {
-                                              e.stopPropagation();
-                                              setDraggedCardId(null);
-                                            }}
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              e.preventDefault();
-                                              setDraggedCardId(null);
-                                              if (onUpdateColor) {
-                                                onUpdateColor(scheduledCard.id, colorKey);
-                                              }
-                                            }}
-                                            className={cn(
-                                              "w-6 h-6 rounded-full transition-all",
-                                              scheduleColors[colorKey].dot,
-                                              scheduledCard.scheduledColor === colorKey
-                                                ? "ring-2 ring-offset-2 ring-gray-400 scale-110"
-                                                : "hover:scale-110",
-                                              !scheduledCard.scheduledColor && colorKey === 'indigo' && "ring-2 ring-offset-2 ring-gray-400 scale-110"
-                                            )}
-                                            title={colorKey.charAt(0).toUpperCase() + colorKey.slice(1)}
-                                          />
-                                        ))}
+                                      {/* Editable Notes */}
+                                      <div>
+                                        <label className="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider mb-1.5 block">
+                                          Notes
+                                        </label>
+                                        <textarea
+                                          value={editingScheduledNotes}
+                                          onChange={(e) => setEditingScheduledNotes(e.target.value)}
+                                          placeholder="Any additional notes..."
+                                          rows={3}
+                                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                                        />
+                                      </div>
+
+                                      {/* Color Picker - Modern Elevated Design */}
+                                      <div className="bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl p-4 border border-gray-100 shadow-sm">
+                                        <h4 className="text-xs font-semibold text-gray-600 mb-3 flex items-center gap-2">
+                                          <div className="w-1.5 h-1.5 rounded-full bg-indigo-400"></div>
+                                          Choose a color
+                                        </h4>
+                                        <div className="grid grid-cols-5 gap-2.5">
+                                          {(Object.keys(scheduleColors) as ScheduleColorKey[]).map((colorKey) => {
+                                            const isSelected = editingScheduledColor === colorKey;
+                                            return (
+                                              <button
+                                                type="button"
+                                                key={colorKey}
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  e.preventDefault();
+                                                  console.log("🎨 Color button clicked:", colorKey);
+                                                  setEditingScheduledColor(colorKey);
+                                                  handleUpdateColorInternal(scheduledCard.id, colorKey);
+                                                }}
+                                                className={cn(
+                                                  "w-10 h-10 rounded-xl transition-all duration-200 flex items-center justify-center shadow-sm border-2",
+                                                  isSelected
+                                                    ? "scale-105 shadow-md border-white ring-2 ring-offset-1"
+                                                    : "border-transparent hover:scale-110 hover:shadow-md"
+                                                )}
+                                                style={{
+                                                  backgroundColor: scheduleColors[colorKey].bg,
+                                                  ...(isSelected && { ringColor: scheduleColors[colorKey].text })
+                                                }}
+                                                title={colorKey.charAt(0).toUpperCase() + colorKey.slice(1)}
+                                              >
+                                                {isSelected && (
+                                                  <Check
+                                                    className="w-4 h-4"
+                                                    style={{ color: scheduleColors[colorKey].text }}
+                                                  />
+                                                )}
+                                              </button>
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+
+                                      {/* Action Buttons */}
+                                      <div className="pt-3 border-t border-gray-100 space-y-2">
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleUpdateScheduledCard(scheduledCard.id, editingScheduledHook, editingScheduledNotes);
+                                            setPopoverCardId(null);
+                                          }}
+                                          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-all"
+                                        >
+                                          <Check className="w-4 h-4" />
+                                          Save
+                                        </button>
+
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleSendScheduledToScriptIdeas(scheduledCard);
+                                          }}
+                                          className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border-2 border-purple-200 text-purple-600 hover:bg-purple-50 hover:border-purple-300 transition-all"
+                                        >
+                                          <Send className="w-3.5 h-3.5" />
+                                          Develop Idea in Content Hub
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    /* Cards from Content Hub - Show full details */
+                                    <div>
+                                      {renderContentDetails(scheduledCard)}
+
+                                      {/* Color Picker for Content Hub cards too */}
+                                      <div className="mt-4 pt-4 border-t border-gray-100">
+                                        <h4 className="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider mb-2">
+                                          Label Color
+                                        </h4>
+                                        <div className="flex gap-2">
+                                          {(Object.keys(scheduleColors) as ScheduleColorKey[]).map((colorKey) => (
+                                            <button
+                                              type="button"
+                                              key={colorKey}
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setEditingScheduledColor(colorKey);
+                                                handleUpdateColorInternal(scheduledCard.id, colorKey);
+                                              }}
+                                              className={cn(
+                                                "w-6 h-6 rounded-full transition-all",
+                                                scheduleColors[colorKey].dot,
+                                                editingScheduledColor === colorKey
+                                                  ? "ring-2 ring-offset-2 ring-gray-400 scale-110"
+                                                  : "hover:scale-110"
+                                              )}
+                                              title={colorKey.charAt(0).toUpperCase() + colorKey.slice(1)}
+                                            />
+                                          ))}
+                                        </div>
                                       </div>
                                     </div>
                                   )}
@@ -873,7 +1219,122 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                         );})}
                       </div>
                     )}
-                  </div>
+                      </div>
+                    </PopoverTrigger>
+
+                    {/* Add Idea Popover Content - only for embedded mode */}
+                    {embedded && (
+                      <PopoverContent
+                        className="w-80 p-0 shadow-xl border-0"
+                        side="right"
+                        align="start"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="bg-white rounded-lg">
+                          {/* Header */}
+                          <div className="flex items-center justify-between px-4 py-3 bg-indigo-50 border-b border-indigo-100">
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-md bg-indigo-100 flex items-center justify-center">
+                                <Lightbulb className="w-3.5 h-3.5 text-indigo-500" />
+                              </div>
+                              <span className="text-sm font-semibold text-indigo-900">New Content Idea</span>
+                            </div>
+                            <button
+                              onClick={() => {
+                                setAddIdeaPopoverDate(null);
+                                setNewIdeaHook("");
+                                setNewIdeaNotes("");
+                                setNewIdeaColor("indigo");
+                              }}
+                              className="p-1 hover:bg-indigo-100 rounded transition-colors"
+                            >
+                              <X className="w-4 h-4 text-indigo-400" />
+                            </button>
+                          </div>
+
+                          {/* Form */}
+                          <div className="p-4 space-y-4">
+                            {/* Hook */}
+                            <div>
+                              <label className="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider mb-1.5 block">
+                                Hook
+                              </label>
+                              <input
+                                type="text"
+                                value={newIdeaHook}
+                                onChange={(e) => setNewIdeaHook(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' && newIdeaHook.trim()) {
+                                    e.preventDefault();
+                                    handleSaveToCalendar();
+                                  }
+                                }}
+                                placeholder="What's the hook for this content?"
+                                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                autoFocus
+                              />
+                              <p className="text-[10px] text-gray-400 mt-1">Press Enter to save to calendar</p>
+                            </div>
+
+                            {/* Notes */}
+                            <div>
+                              <label className="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider mb-1.5 block">
+                                Notes
+                              </label>
+                              <textarea
+                                value={newIdeaNotes}
+                                onChange={(e) => setNewIdeaNotes(e.target.value)}
+                                placeholder="Any additional notes or ideas..."
+                                rows={3}
+                                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                              />
+                            </div>
+
+                            {/* Color Palette */}
+                            <div>
+                              <label className="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider mb-2 block">
+                                Color
+                              </label>
+                              <div className="flex gap-2">
+                                {(Object.keys(scheduleColors) as Array<keyof typeof scheduleColors>).map((colorKey) => (
+                                  <button
+                                    key={colorKey}
+                                    type="button"
+                                    onClick={() => setNewIdeaColor(colorKey)}
+                                    className={cn(
+                                      "w-6 h-6 rounded-full transition-all",
+                                      scheduleColors[colorKey].dot,
+                                      newIdeaColor === colorKey
+                                        ? "ring-2 ring-offset-2 ring-gray-400 scale-110"
+                                        : "hover:scale-110"
+                                    )}
+                                    title={colorKey.charAt(0).toUpperCase() + colorKey.slice(1)}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Divider */}
+                            <div className="border-t border-gray-100 pt-3">
+                              <button
+                                onClick={handleSendToScriptIdeas}
+                                disabled={!newIdeaHook.trim()}
+                                className={cn(
+                                  "w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-all border",
+                                  newIdeaHook.trim()
+                                    ? "border-indigo-200 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300"
+                                    : "border-gray-100 text-gray-300 cursor-not-allowed"
+                                )}
+                              >
+                                <Send className="w-3 h-3" />
+                                Develop Idea in Content Hub
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    )}
+                  </Popover>
                 );
               })}
               </div>

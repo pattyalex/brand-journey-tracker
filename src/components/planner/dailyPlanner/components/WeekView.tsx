@@ -595,7 +595,7 @@ export const WeekView = ({
                                       setDialogAddToContentCalendar(item.isContentCalendar || false);
                                       setIsTaskDialogOpen(true);
                                     }}
-                                    className="h-full relative rounded cursor-pointer hover:brightness-95 transition-all overflow-hidden"
+                                    className="h-full relative rounded cursor-pointer hover:brightness-95 transition-all"
                                     style={{
                                       backgroundColor: item.color || '#e5e7eb',
                                       opacity: isPast ? 0.6 : 0.9,
@@ -700,8 +700,8 @@ export const WeekView = ({
                                         onClick={(e) => e.stopPropagation()}
                                         className="mt-0.5 h-2.5 w-2.5 flex-shrink-0"
                                       />
-                                      <div className="flex-1 flex flex-col pr-2">
-                                        <div className={`text-[11px] font-medium leading-tight ${item.isCompleted ? 'line-through opacity-70' : ''} text-gray-900 break-normal`}>
+                                      <div className="flex-1 min-w-0 flex flex-col">
+                                        <div className={`text-[11px] font-medium leading-tight ${item.isCompleted ? 'line-through opacity-70' : ''} text-gray-900 truncate`}>
                                           {item.text}
                                         </div>
                                         {(item.startTime || item.endTime) && (
@@ -717,9 +717,9 @@ export const WeekView = ({
                                           e.stopPropagation();
                                           handleDeleteWeeklyTask(item.id, dayString);
                                         }}
-                                        className="p-0.5 rounded text-gray-400 hover:text-red-600 hover:bg-white/50 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        className="p-0.5 rounded text-gray-400 hover:text-red-600 hover:bg-white/50 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                                       >
-                                        <Trash2 size={10} />
+                                        <Trash2 size={12} />
                                       </button>
                                     </div>
                                   </div>

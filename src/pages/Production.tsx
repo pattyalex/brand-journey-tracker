@@ -1662,6 +1662,17 @@ const Production = () => {
                                 JUST ADDED
                               </div>
                             )}
+                            {/* Calendar origin indicator */}
+                            {card.fromCalendar && (
+                              <div className="flex items-center gap-1 mb-1.5">
+                                <div className="flex items-center gap-1 px-1.5 py-0.5 bg-indigo-50 rounded-md border border-indigo-100">
+                                  <CalendarDays className="w-3 h-3 text-indigo-500" />
+                                  <span className="text-[9px] font-medium text-indigo-600">
+                                    {card.plannedDate ? `Planned for ${new Date(card.plannedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : 'From Calendar'}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
                             <div className="flex items-center justify-between gap-2">
                                 {isEditing ? (
                                   <input

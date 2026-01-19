@@ -59,6 +59,8 @@ export interface ProductionCard {
   schedulingStatus?: SchedulingStatus | null;
   scheduledDate?: string; // ISO date string
   scheduledColor?: 'indigo' | 'rose' | 'amber' | 'emerald' | 'sky' | 'violet' | 'orange' | 'cyan' | 'sage';
+  fromCalendar?: boolean; // True if this idea originated from the Content Calendar
+  plannedDate?: string; // The date this idea was originally planned for
 }
 
 export interface KanbanColumn {
