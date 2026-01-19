@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { flushSync } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import {
@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { CardContent } from "@/components/ui/card";
 import { ProductionCard, KanbanColumn } from "../types";
 import { StorageKeys, getString, setString } from "@/lib/storage";
+import { EVENTS, emit, on } from "@/lib/events";
 
 // Helper to get platform icon
 const getPlatformIcon = (platform: string, size: string = "w-5 h-5"): React.ReactNode => {
@@ -73,6 +74,12 @@ interface ExpandedScheduleViewProps {
   onUpdateColor?: (cardId: string, color: ScheduleColorKey) => void;
   /** Optional header component to render above the calendar in the right panel */
   headerComponent?: React.ReactNode;
+  /** When true, shows a compact calendar-only view for planning an idea */
+  planningMode?: boolean;
+  /** The card being planned (required when planningMode is true) */
+  planningCard?: ProductionCard | null;
+  /** Callback when a date is selected for planning */
+  onPlanDate?: (cardId: string, date: Date) => void;
 }
 
 const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
@@ -83,10 +90,14 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   onUnschedule: propOnUnschedule,
   onUpdateColor: propOnUpdateColor,
   headerComponent,
+  planningMode = false,
+  planningCard,
+  onPlanDate,
 }) => {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
+  const [draggedPlannedCardId, setDraggedPlannedCardId] = useState<string | null>(null);
   const [dragOverDate, setDragOverDate] = useState<string | null>(null);
   const [dragOverUnschedule, setDragOverUnschedule] = useState(false);
   const [popoverCardId, setPopoverCardId] = useState<string | null>(null);
@@ -106,38 +117,159 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   // Render version counter to force re-renders when colors change
   const [colorUpdateVersion, setColorUpdateVersion] = useState(0);
 
+  // Resize state for planning mode
+  const [planningSize, setPlanningSize] = useState({ width: 450, height: 500 });
+  // Pending planned date (before user confirms with Save)
+  const [pendingPlanDate, setPendingPlanDate] = useState<Date | null>(null);
+  // Drag state for planning mode
+  const [isDraggingPlanCard, setIsDraggingPlanCard] = useState(false);
+  const [planDragOverDate, setPlanDragOverDate] = useState<string | null>(null);
+
+  // Initialize pending date with card's existing planned date when planning card changes
+  useEffect(() => {
+    if (planningCard?.plannedDate) {
+      setPendingPlanDate(new Date(planningCard.plannedDate));
+    } else {
+      setPendingPlanDate(null);
+    }
+  }, [planningCard?.id, planningCard?.plannedDate]);
+
+  const isResizing = useRef(false);
+  const resizeStart = useRef({ x: 0, y: 0, width: 450, height: 500 });
+
+  // Handle resize from bottom-right corner (expand right and down)
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    isResizing.current = true;
+    resizeStart.current = {
+      x: e.clientX,
+      y: e.clientY,
+      width: planningSize.width,
+      height: planningSize.height,
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing.current) return;
+      const deltaX = e.clientX - resizeStart.current.x;
+      const deltaY = e.clientY - resizeStart.current.y;
+      setPlanningSize({
+        width: Math.max(350, Math.min(800, resizeStart.current.width + deltaX)),
+        height: Math.max(400, Math.min(700, resizeStart.current.height + deltaY)),
+      });
+    };
+
+    const handleMouseUp = () => {
+      isResizing.current = false;
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }, [planningSize]);
+
+  // Handle resize from top-right corner (expand right and up)
+  const handleResizeStartTopRight = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    isResizing.current = true;
+    resizeStart.current = {
+      x: e.clientX,
+      y: e.clientY,
+      width: planningSize.width,
+      height: planningSize.height,
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing.current) return;
+      const deltaX = e.clientX - resizeStart.current.x;
+      const deltaY = e.clientY - resizeStart.current.y;
+      setPlanningSize({
+        width: Math.max(350, Math.min(800, resizeStart.current.width + deltaX)),
+        height: Math.max(400, Math.min(700, resizeStart.current.height - deltaY)), // Subtract deltaY for upward expansion
+      });
+    };
+
+    const handleMouseUp = () => {
+      isResizing.current = false;
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }, [planningSize]);
+
   // For embedded mode: manage columns state internally
   const [columns, setColumns] = useState<KanbanColumn[]>([]);
 
-  // Load production data from localStorage when embedded
-  useEffect(() => {
-    if (embedded) {
-      const savedData = getString(StorageKeys.productionKanban);
-      if (savedData) {
-        try {
-          const parsed = JSON.parse(savedData);
-          setColumns(parsed);
-        } catch (e) {
-          console.error("Error parsing production data:", e);
-        }
+  // Load production data from localStorage when embedded or in planning mode
+  const loadColumnsFromStorage = useCallback(() => {
+    const savedData = getString(StorageKeys.productionKanban);
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        setColumns(parsed);
+      } catch (e) {
+        console.error("Error parsing production data:", e);
       }
     }
-  }, [embedded]);
+  }, []);
 
-  // Save columns to localStorage when embedded
+  useEffect(() => {
+    if (embedded || planningMode) {
+      loadColumnsFromStorage();
+    }
+  }, [embedded, planningMode, loadColumnsFromStorage]);
+
+  // Listen for updates from other calendar instances for real-time sync
+  useEffect(() => {
+    if (embedded || planningMode) {
+      const cleanup = on(window, EVENTS.productionKanbanUpdated, () => {
+        loadColumnsFromStorage();
+      });
+      return cleanup;
+    }
+  }, [embedded, planningMode, loadColumnsFromStorage]);
+
+  // Save columns to localStorage and emit event for real-time sync
   const saveColumns = (newColumns: KanbanColumn[]) => {
     setColumns(newColumns);
     setString(StorageKeys.productionKanban, JSON.stringify(newColumns));
+    // Emit event so other calendar instances can sync
+    emit(window, EVENTS.productionKanbanUpdated, { source: 'calendar' });
   };
 
-  // Get cards from localStorage when embedded, otherwise use props
+  // Get cards from localStorage when embedded or planningMode, otherwise use props
   const toScheduleCards = useMemo(() => {
-    if (embedded) {
+    if (embedded || planningMode) {
       const toScheduleColumn = columns.find(col => col.id === 'to-schedule');
       return toScheduleColumn?.cards || [];
     }
     return propCards || [];
-  }, [embedded, columns, propCards]);
+  }, [embedded, planningMode, columns, propCards]);
+
+  // Get planned cards from Ideate column (cards with plannedDate but not yet in production)
+  // For modal mode, we need to load from localStorage since we don't have columns in state
+  const plannedIdeateCards = useMemo(() => {
+    if (embedded || planningMode) {
+      const ideateColumn = columns.find(col => col.id === 'ideate');
+      return ideateColumn?.cards.filter(c => c.plannedDate) || [];
+    }
+    // For modal mode, load from localStorage to get planned items
+    const savedData = getString(StorageKeys.productionKanban);
+    if (savedData) {
+      try {
+        const parsed: KanbanColumn[] = JSON.parse(savedData);
+        const ideateColumn = parsed.find(col => col.id === 'ideate');
+        return ideateColumn?.cards.filter(c => c.plannedDate) || [];
+      } catch (e) {
+        return [];
+      }
+    }
+    return [];
+  }, [embedded, planningMode, columns]);
 
   // Internal handlers for embedded mode
   const handleScheduleInternal = (cardId: string, date: Date) => {
@@ -415,6 +547,21 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cards, colorUpdateVersion]);
 
+  // Create a map of planned (tentative) cards from Ideate by date
+  const plannedCardsByDate = useMemo(() => {
+    const map: Record<string, ProductionCard[]> = {};
+    plannedIdeateCards.forEach(c => {
+      if (c.plannedDate) {
+        const dateKey = c.plannedDate.split('T')[0];
+        if (!map[dateKey]) {
+          map[dateKey] = [];
+        }
+        map[dateKey].push(c);
+      }
+    });
+    return map;
+  }, [plannedIdeateCards]);
+
   // Calendar calculations
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
@@ -490,13 +637,17 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
 
   const handleDragEnd = () => {
     setDraggedCardId(null);
+    setDraggedPlannedCardId(null);
     setDragOverDate(null);
   };
 
   const handleDragOver = (e: React.DragEvent, dateStr: string) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-    setDragOverDate(dateStr);
+    // Show drag feedback for both scheduled and planned cards
+    if (draggedCardId || draggedPlannedCardId) {
+      setDragOverDate(dateStr);
+    }
   };
 
   const handleDragLeave = () => {
@@ -505,11 +656,45 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
 
   const handleDrop = (e: React.DragEvent, date: Date) => {
     e.preventDefault();
+    // Handle dropping a scheduled card
     if (draggedCardId && onSchedule) {
       onSchedule(draggedCardId, date);
     }
+    // Handle dropping a planned card (update its planned date)
+    if (draggedPlannedCardId) {
+      handleUpdatePlannedCardDate(draggedPlannedCardId, date);
+    }
     setDraggedCardId(null);
+    setDraggedPlannedCardId(null);
     setDragOverDate(null);
+  };
+
+  // Handler for updating a planned card's date via drag and drop
+  const handleUpdatePlannedCardDate = (cardId: string, newDate: Date) => {
+    const savedData = getString(StorageKeys.productionKanban);
+    if (!savedData) return;
+
+    try {
+      const currentColumns: KanbanColumn[] = JSON.parse(savedData);
+      const updatedColumns = currentColumns.map(col => ({
+        ...col,
+        cards: col.cards.map(card =>
+          card.id === cardId
+            ? { ...card, plannedDate: newDate.toISOString() }
+            : card
+        )
+      }));
+
+      setString(StorageKeys.productionKanban, JSON.stringify(updatedColumns));
+      emit(window, EVENTS.productionKanbanUpdated, { source: 'calendar' });
+
+      // Reload columns to reflect the change
+      if (embedded || planningMode) {
+        loadColumnsFromStorage();
+      }
+    } catch (e) {
+      console.error("Error updating planned card date:", e);
+    }
   };
 
   // Render content details for popover
@@ -903,6 +1088,8 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                 const dateStr = day.date.toISOString().split('T')[0];
                 const isDragOver = dragOverDate === dateStr;
                 const scheduledForDay = scheduledCardsByDate[dateStr] || [];
+                const plannedForDay = plannedCardsByDate[dateStr] || [];
+                const hasContent = scheduledForDay.length > 0 || plannedForDay.length > 0;
 
                 return (
                   <Popover
@@ -925,6 +1112,12 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                         onDragLeave={handleDragLeave}
                         onDrop={(e) => handleDrop(e, day.date)}
                         onClick={(e) => {
+                          // In planning mode, clicking a date sets the planned date
+                          if (planningMode && planningCard && onPlanDate && day.isCurrentMonth) {
+                            e.stopPropagation();
+                            onPlanDate(planningCard.id, day.date);
+                            return;
+                          }
                           // Only open add idea popover in embedded mode when clicking empty area
                           if (embedded && e.target === e.currentTarget) {
                             setAddIdeaPopoverDate(dateStr);
@@ -937,7 +1130,8 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                             ? "bg-white border-gray-200 text-gray-900 hover:bg-gray-50"
                             : "bg-gray-50 border-gray-100 text-gray-400",
                           isDragOver && "bg-indigo-100 border-indigo-400 border-2 scale-105",
-                          embedded && "cursor-pointer"
+                          (embedded || planningMode) && "cursor-pointer",
+                          planningMode && day.isCurrentMonth && "hover:bg-violet-50 hover:border-violet-300"
                         )}
                       >
                         <span className={cn(
@@ -961,9 +1155,10 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                           </button>
                         )}
 
-                        {/* Scheduled content indicators - scrollable */}
-                        {scheduledForDay.length > 0 && (
+                        {/* Content indicators - scrollable (both scheduled and planned) */}
+                        {hasContent && (
                       <div className="absolute top-7 left-1 right-1 bottom-1 flex flex-col gap-1 overflow-y-auto">
+                        {/* Scheduled content (from To Schedule column) */}
                         {scheduledForDay.map((scheduledCard) => {
                           const isPublished = day.date < today;
                           return (
@@ -1126,7 +1321,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                                   e.preventDefault();
                                                   console.log("🎨 Color button clicked:", colorKey);
                                                   setEditingScheduledColor(colorKey);
-                                                  handleUpdateColorInternal(scheduledCard.id, colorKey);
+                                                  onUpdateColor?.(scheduledCard.id, colorKey);
                                                 }}
                                                 className={cn(
                                                   "w-10 h-10 rounded-xl transition-all duration-200 flex items-center justify-center shadow-sm border-2",
@@ -1196,7 +1391,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                               onClick={(e) => {
                                                 e.stopPropagation();
                                                 setEditingScheduledColor(colorKey);
-                                                handleUpdateColorInternal(scheduledCard.id, colorKey);
+                                                onUpdateColor?.(scheduledCard.id, colorKey);
                                               }}
                                               className={cn(
                                                 "w-6 h-6 rounded-full transition-all",
@@ -1217,6 +1412,36 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                             </PopoverContent>
                           </Popover>
                         );})}
+
+                        {/* Planned content from Ideate column - lighter/dashed styling */}
+                        {plannedForDay.map((plannedCard) => (
+                          <div
+                            key={`planned-${plannedCard.id}`}
+                            draggable
+                            onDragStart={(e) => {
+                              e.stopPropagation();
+                              setDraggedPlannedCardId(plannedCard.id);
+                              setPopoverCardId(null);
+                              e.dataTransfer.effectAllowed = 'move';
+                            }}
+                            onDragEnd={() => {
+                              setDraggedPlannedCardId(null);
+                              setDragOverDate(null);
+                            }}
+                            className={cn(
+                              "text-[11px] px-2 py-1.5 rounded-md transition-colors cursor-grab active:cursor-grabbing",
+                              "bg-violet-50/70 border border-dashed border-violet-300 text-violet-700",
+                              draggedPlannedCardId === plannedCard.id && "opacity-50"
+                            )}
+                            title={`Planned: ${plannedCard.title}`}
+                          >
+                            {/* Title row */}
+                            <div className="flex items-start gap-1.5">
+                              <Lightbulb className="w-3 h-3 flex-shrink-0 mt-0.5 text-violet-400" />
+                              <span className="leading-tight opacity-80">{plannedCard.hook || plannedCard.title || "Planned idea"}</span>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
                       </div>
@@ -1346,10 +1571,257 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
     </>
   );
 
+  // Planning mode content - compact calendar view for planning an idea
+  const planningContent = (
+    <div className="flex flex-col h-full">
+      {/* Header showing what idea is being planned */}
+      <div className="flex items-center justify-between px-4 py-3 bg-violet-50 border-b border-violet-100">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center">
+            <CalendarDays className="w-4 h-4 text-violet-600" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-violet-900">Plan this idea</h3>
+            <p className="text-xs text-violet-600 truncate max-w-[300px]">
+              {planningCard?.title || planningCard?.hook || "Select a date"}
+            </p>
+          </div>
+        </div>
+        {onClose && (
+          <button
+            onClick={() => {
+              setPendingPlanDate(null);
+              onClose();
+            }}
+            className="p-1.5 hover:bg-violet-100 rounded-lg transition-colors"
+          >
+            <X className="w-4 h-4 text-violet-500" />
+          </button>
+        )}
+      </div>
+
+      {/* Month navigation */}
+      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100">
+        <button
+          onClick={goToPreviousMonth}
+          className="p-1 hover:bg-gray-100 rounded transition-colors"
+        >
+          <ChevronLeft className="w-5 h-5 text-gray-600" />
+        </button>
+        <span className="text-sm font-medium text-gray-700">
+          {monthNames[currentMonth]} {currentYear}
+        </span>
+        <button
+          onClick={goToNextMonth}
+          className="p-1 hover:bg-gray-100 rounded transition-colors"
+        >
+          <ChevronRight className="w-5 h-5 text-gray-600" />
+        </button>
+      </div>
+
+      {/* Calendar Grid */}
+      <div className="flex-1 overflow-auto p-3">
+        {/* Day headers */}
+        <div className="grid grid-cols-7 mb-2">
+          {daysOfWeek.map((day) => (
+            <div key={day} className="text-center text-xs font-medium text-gray-500 py-1">
+              {day}
+            </div>
+          ))}
+        </div>
+
+        {/* Calendar days */}
+        <div className="grid grid-cols-7 gap-1">
+          {calendarDays.map((day, idx) => {
+            const dateStr = day.date.toISOString().split('T')[0];
+            const scheduledForDay = scheduledCardsByDate[dateStr] || [];
+            const plannedForDay = plannedCardsByDate[dateStr] || [];
+            // Check if this is the pending plan date
+            const pendingDateStr = pendingPlanDate?.toISOString().split('T')[0];
+            const isPendingDate = pendingDateStr === dateStr;
+            const isDragOver = planDragOverDate === dateStr;
+            const hasContent = scheduledForDay.length > 0 || plannedForDay.length > 0 || isPendingDate;
+
+            return (
+              <div
+                key={idx}
+                onClick={() => {
+                  if (planningCard && day.isCurrentMonth) {
+                    setPendingPlanDate(day.date);
+                  }
+                }}
+                onDragOver={(e) => {
+                  if (isDraggingPlanCard && day.isCurrentMonth) {
+                    e.preventDefault();
+                    setPlanDragOverDate(dateStr);
+                  }
+                }}
+                onDragLeave={() => {
+                  setPlanDragOverDate(null);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (isDraggingPlanCard && day.isCurrentMonth) {
+                    setPendingPlanDate(day.date);
+                    setPlanDragOverDate(null);
+                    setIsDraggingPlanCard(false);
+                  }
+                }}
+                className={cn(
+                  "min-h-[70px] rounded-lg border p-1.5 transition-all",
+                  day.isCurrentMonth
+                    ? "bg-white border-gray-200 text-gray-900 cursor-pointer hover:bg-violet-50/50"
+                    : "bg-gray-50 border-gray-100 text-gray-400",
+                  isPendingDate && "bg-violet-50/70",
+                  isDragOver && day.isCurrentMonth && "bg-violet-100"
+                )}
+              >
+                <span className={cn(
+                  "text-xs font-medium",
+                  day.isToday && "text-violet-600 font-bold"
+                )}>
+                  {day.date.getDate()}
+                </span>
+
+                {/* Content indicators */}
+                {hasContent && (
+                  <div className="mt-1 space-y-0.5">
+                    {/* Show pending planned card - draggable */}
+                    {isPendingDate && planningCard && (
+                      <div
+                        draggable
+                        onDragStart={(e) => {
+                          setIsDraggingPlanCard(true);
+                          e.dataTransfer.effectAllowed = 'move';
+                        }}
+                        onDragEnd={() => {
+                          setIsDraggingPlanCard(false);
+                          setPlanDragOverDate(null);
+                        }}
+                        className={cn(
+                          "text-[9px] px-1 py-0.5 rounded border border-dashed border-violet-300 bg-violet-50 text-violet-600 truncate cursor-grab active:cursor-grabbing",
+                          isDraggingPlanCard && "opacity-50"
+                        )}
+                      >
+                        {planningCard.hook || planningCard.title}
+                      </div>
+                    )}
+                    {scheduledForDay.slice(0, isPendingDate ? 1 : 2).map((card) => (
+                      <div
+                        key={card.id}
+                        className="text-[9px] px-1 py-0.5 rounded bg-indigo-100 text-indigo-700 truncate"
+                      >
+                        {card.hook || card.title}
+                      </div>
+                    ))}
+                    {plannedForDay.filter(c => c.id !== planningCard?.id).slice(0, isPendingDate ? 1 : 2).map((card) => (
+                      <div
+                        key={card.id}
+                        className="text-[9px] px-1 py-0.5 rounded border border-dashed border-violet-300 bg-violet-50 text-violet-600 truncate"
+                      >
+                        {card.hook || card.title}
+                      </div>
+                    ))}
+                    {(scheduledForDay.length + plannedForDay.filter(c => c.id !== planningCard?.id).length) > (isPendingDate ? 1 : 2) && (
+                      <div className="text-[8px] text-gray-400 px-1">
+                        +{scheduledForDay.length + plannedForDay.filter(c => c.id !== planningCard?.id).length - (isPendingDate ? 1 : 2)} more
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Footer with Save/Cancel or instruction */}
+      <div className="px-4 py-3 bg-gray-50 border-t">
+        {pendingPlanDate ? (
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-violet-600 font-medium">
+              {pendingPlanDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPendingPlanDate(null)}
+                className="px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (planningCard && onPlanDate && pendingPlanDate) {
+                    onPlanDate(planningCard.id, pendingPlanDate);
+                    setPendingPlanDate(null);
+                  }
+                }}
+                className="px-3 py-1.5 text-xs bg-violet-600 text-white hover:bg-violet-700 rounded-lg transition-colors font-medium"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-xs text-gray-500 text-center">
+            Click a date to plan your idea
+          </p>
+        )}
+      </div>
+    </div>
+  );
+
   // Render based on mode
+  if (planningMode) {
+    return (
+      <div
+        className="bg-white flex flex-col overflow-hidden rounded-lg relative"
+        style={{ width: planningSize.width, height: planningSize.height }}
+      >
+        {planningContent}
+        {/* Top-right resize handle */}
+        <div
+          onMouseDown={handleResizeStartTopRight}
+          className="absolute top-0 right-0 w-4 h-4 cursor-ne-resize group"
+          title="Drag to resize"
+        >
+          <svg
+            className="w-4 h-4 text-gray-300 group-hover:text-violet-400 transition-colors rotate-90"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path d="M22 22H20V20H22V22ZM22 18H20V16H22V18ZM18 22H16V20H18V22ZM22 14H20V12H22V14ZM18 18H16V16H18V18ZM14 22H12V20H14V22ZM18 14H16V12H18V14ZM14 18H12V16H14V18ZM10 22H8V20H10V22Z" />
+          </svg>
+        </div>
+        {/* Bottom-right resize handle */}
+        <div
+          onMouseDown={handleResizeStart}
+          className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize group"
+          title="Drag to resize"
+        >
+          <svg
+            className="w-4 h-4 text-gray-300 group-hover:text-violet-400 transition-colors"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path d="M22 22H20V20H22V22ZM22 18H20V16H22V18ZM18 22H16V20H18V22ZM22 14H20V12H22V14ZM18 18H16V16H18V18ZM14 22H12V20H14V22ZM18 14H16V12H18V14ZM14 18H12V16H14V18ZM10 22H8V20H10V22Z" />
+          </svg>
+        </div>
+      </div>
+    );
+  }
+
   if (embedded) {
     return (
-      <div className="bg-white flex flex-col h-full flex-1 overflow-hidden">
+      <div
+        className="bg-white flex flex-col h-full flex-1 overflow-hidden"
+        onClick={() => {
+          // Close any open popover when clicking on the content area
+          if (popoverCardId) {
+            setPopoverCardId(null);
+          }
+        }}
+      >
         {content}
       </div>
     );
@@ -1363,7 +1835,13 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
     >
       <div
         className="bg-white rounded-2xl shadow-2xl flex flex-col w-[1200px] max-w-[95vw] h-[calc(100vh-6rem)] max-h-[800px] overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          // Close any open popover when clicking on the modal content area
+          if (popoverCardId) {
+            setPopoverCardId(null);
+          }
+        }}
       >
         {content}
       </div>

@@ -18,6 +18,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -169,8 +174,19 @@ const Production = () => {
   const [archivedCards, setArchivedCards] = useState<ProductionCard[]>([]);
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
   const [brainDumpSuggestion, setBrainDumpSuggestion] = useState<string>("");
+
+  // Planned to scheduled conversion dialog state
+  const [showPlannedToScheduledDialog, setShowPlannedToScheduledDialog] = useState(false);
+  const [pendingScheduleMove, setPendingScheduleMove] = useState<{
+    card: ProductionCard;
+    dropPosition: { columnId: string; index: number };
+    sourceColumnId: string;
+  } | null>(null);
   const [showBrainDumpSuggestion, setShowBrainDumpSuggestion] = useState(false);
   const [cardTitle, setCardTitle] = useState("");
+
+  // Planning state for Ideate cards
+  const [planningCardId, setPlanningCardId] = useState<string | null>(null);
   const [cardHook, setCardHook] = useState("");
   const [scriptContent, setScriptContent] = useState("");
   const [platformTags, setPlatformTags] = useState<string[]>([]);
@@ -563,6 +579,19 @@ const Production = () => {
       return;
     }
 
+    // Check if moving a card with planned date to "to-schedule" column
+    if (actualTargetColumnId === "to-schedule" && draggedCard.plannedDate && sourceColumnId !== "to-schedule") {
+      // Store the pending move and show the dialog
+      setPendingScheduleMove({
+        card: draggedCard,
+        dropPosition: savedDropPosition,
+        sourceColumnId: sourceColumnId,
+      });
+      setShowPlannedToScheduledDialog(true);
+      setDraggedCard(null);
+      return;
+    }
+
     // Handle archiving when dropped on Posted column
     if (actualTargetColumnId === "posted") {
       const cardToArchive = {
@@ -847,6 +876,102 @@ const Production = () => {
 
       return newColumns;
     });
+  };
+
+  // Handler to set planned date for Ideate cards
+  const handleSetPlannedDate = (cardId: string, date: Date | undefined) => {
+    if (!date) {
+      // Clear the planned date
+      setColumns((prev) =>
+        prev.map((col) => ({
+          ...col,
+          cards: col.cards.map((card) =>
+            card.id === cardId
+              ? { ...card, plannedDate: undefined, plannedColor: undefined }
+              : card
+          ),
+        }))
+      );
+      toast.success("Planning removed");
+    } else {
+      // Set the planned date
+      setColumns((prev) =>
+        prev.map((col) => ({
+          ...col,
+          cards: col.cards.map((card) =>
+            card.id === cardId
+              ? { ...card, plannedDate: date.toISOString(), plannedColor: 'violet' as const }
+              : card
+          ),
+        }))
+      );
+      toast.success("Idea planned", {
+        description: `Planned for ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+      });
+    }
+    setPlanningCardId(null);
+    setPlanningDate(undefined);
+  };
+
+  // Handle the planned-to-scheduled conversion dialog choice
+  const handlePlannedToScheduledChoice = (useAsScheduled: boolean) => {
+    if (!pendingScheduleMove) return;
+
+    const { card, dropPosition, sourceColumnId } = pendingScheduleMove;
+
+    setColumns((prev) => {
+      return prev.map((column) => {
+        if (column.id === sourceColumnId) {
+          // Remove from source column
+          return {
+            ...column,
+            cards: column.cards.filter((c) => c.id !== card.id),
+          };
+        } else if (column.id === "to-schedule") {
+          // Add to target column with appropriate scheduling
+          const filtered = column.cards.filter(
+            (c) => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')
+          );
+
+          let cardToAdd: ProductionCard = {
+            ...card,
+            columnId: "to-schedule",
+            schedulingStatus: 'to-schedule' as const,
+          };
+
+          if (useAsScheduled && card.plannedDate) {
+            // Use the planned date as the scheduled date
+            cardToAdd = {
+              ...cardToAdd,
+              scheduledDate: card.plannedDate,
+              schedulingStatus: 'scheduled' as const,
+              plannedDate: undefined,
+              plannedColor: undefined,
+            };
+          } else {
+            // Clear the planned date, let them schedule manually
+            cardToAdd = {
+              ...cardToAdd,
+              plannedDate: undefined,
+              plannedColor: undefined,
+            };
+          }
+
+          filtered.splice(dropPosition.index, 0, cardToAdd);
+          return { ...column, cards: filtered };
+        }
+        return column;
+      });
+    });
+
+    if (useAsScheduled && card.plannedDate) {
+      toast.success("Scheduled!", {
+        description: `Scheduled for ${new Date(card.plannedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+      });
+    }
+
+    setShowPlannedToScheduledDialog(false);
+    setPendingScheduleMove(null);
   };
 
   const handleOpenScriptEditor = (card: ProductionCard) => {
@@ -1673,6 +1798,62 @@ const Production = () => {
                                 </div>
                               </div>
                             )}
+                            {/* Planned date indicator - clickable to edit */}
+                            {column.id !== "posted" && column.id !== "to-schedule" && !card.fromCalendar && card.plannedDate && (
+                              <div className="flex items-center gap-1 mb-1 -mt-0.5">
+                                <Popover
+                                  open={planningCardId === card.id}
+                                  onOpenChange={(open) => {
+                                    if (open) {
+                                      setPlanningCardId(card.id);
+                                    } else {
+                                      setPlanningCardId(null);
+                                    }
+                                  }}
+                                >
+                                  <PopoverTrigger asChild>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                      }}
+                                      className="flex items-center gap-1 px-1.5 py-0.5 bg-violet-50 rounded-md border border-violet-200 hover:bg-violet-100 hover:border-violet-300 transition-colors cursor-pointer"
+                                    >
+                                      <CalendarDays className="w-3 h-3 text-violet-500" />
+                                      <span className="text-[9px] font-medium text-violet-600">
+                                        Planned: {new Date(card.plannedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                      </span>
+                                    </button>
+                                  </PopoverTrigger>
+                                  <PopoverContent
+                                    className="w-auto p-0 border-0 shadow-2xl"
+                                    align="center"
+                                    side="right"
+                                    sideOffset={8}
+                                    collisionPadding={16}
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <ExpandedScheduleView
+                                      planningMode={true}
+                                      planningCard={card}
+                                      onPlanDate={(cardId, date) => {
+                                        handleSetPlannedDate(cardId, date);
+                                      }}
+                                      onClose={() => setPlanningCardId(null)}
+                                    />
+                                  </PopoverContent>
+                                </Popover>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSetPlannedDate(card.id, undefined);
+                                  }}
+                                  className="hover:bg-violet-100 rounded p-0.5"
+                                  title="Remove from calendar"
+                                >
+                                  <X className="w-2.5 h-2.5 text-violet-400 hover:text-violet-600" />
+                                </button>
+                              </div>
+                            )}
                             <div className="flex items-center justify-between gap-2">
                                 {isEditing ? (
                                   <input
@@ -1726,6 +1907,50 @@ const Production = () => {
                                   </Button>
                                 )}
                                 <div className="flex flex-row gap-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                                  {/* Plan button */}
+                                  {column.id !== "posted" && column.id !== "to-schedule" && !card.plannedDate && (
+                                    <Popover
+                                      open={planningCardId === card.id}
+                                      onOpenChange={(open) => {
+                                        if (open) {
+                                          setPlanningCardId(card.id);
+                                        } else {
+                                          setPlanningCardId(null);
+                                        }
+                                      }}
+                                    >
+                                      <PopoverTrigger asChild>
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          className="h-3.5 w-3.5 p-0 rounded hover:bg-violet-50"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                          }}
+                                          title="Plan on calendar"
+                                        >
+                                          <CalendarDays className="h-2.5 w-2.5 text-gray-400 hover:text-violet-600" />
+                                        </Button>
+                                      </PopoverTrigger>
+                                      <PopoverContent
+                                        className="w-auto p-0 border-0 shadow-2xl"
+                                        align="center"
+                                        side="right"
+                                        sideOffset={8}
+                                        collisionPadding={16}
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <ExpandedScheduleView
+                                          planningMode={true}
+                                          planningCard={card}
+                                          onPlanDate={(cardId, date) => {
+                                            handleSetPlannedDate(cardId, date);
+                                          }}
+                                          onClose={() => setPlanningCardId(null)}
+                                        />
+                                      </PopoverContent>
+                                    </Popover>
+                                  )}
                                   {column.id === "shape-ideas" && (
                                     <Button
                                       size="sm"
@@ -4085,6 +4310,50 @@ Make each idea unique, creative, and directly tied to both the original content 
           archivedCards={archivedCards}
           onRepurpose={handleRepurposeContent}
         />
+
+        {/* Planned to Scheduled Conversion Dialog */}
+        <Dialog open={showPlannedToScheduledDialog} onOpenChange={(open) => {
+          if (!open) {
+            setShowPlannedToScheduledDialog(false);
+            setPendingScheduleMove(null);
+          }
+        }}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <CalendarDays className="w-5 h-5 text-violet-500" />
+                Use planned date?
+              </DialogTitle>
+              <DialogDescription>
+                This idea was planned for{" "}
+                <span className="font-medium text-violet-600">
+                  {pendingScheduleMove?.card.plannedDate &&
+                    new Date(pendingScheduleMove.card.plannedDate).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      month: 'long',
+                      day: 'numeric'
+                    })
+                  }
+                </span>
+                . Would you like to use this as the scheduled date?
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex gap-2 sm:gap-0">
+              <Button
+                variant="outline"
+                onClick={() => handlePlannedToScheduledChoice(false)}
+              >
+                No, I'll schedule later
+              </Button>
+              <Button
+                onClick={() => handlePlannedToScheduledChoice(true)}
+                className="bg-violet-600 hover:bg-violet-700"
+              >
+                Yes, schedule it
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );

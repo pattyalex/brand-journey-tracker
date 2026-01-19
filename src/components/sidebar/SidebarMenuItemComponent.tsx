@@ -2,7 +2,7 @@
 import { Trash2, ChevronDown, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { MenuItem } from '@/types/sidebar';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   SidebarMenuItem,
   SidebarMenuButton,
@@ -12,6 +12,7 @@ import {
   SidebarMenuSubButton
 } from "@/components/ui/sidebar";
 import { getString, setString, sidebarExpanded } from '@/lib/storage';
+import { cn } from '@/lib/utils';
 
 interface SidebarMenuItemProps {
   item: MenuItem;
@@ -24,8 +25,13 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
     const savedState = getString(sidebarExpanded(item.title));
     return savedState ? JSON.parse(savedState) : false;
   });
-  
+
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Check if this item or any of its sub-items is active
+  const isActive = location.pathname === item.url;
+  const isSubItemActive = item.subItems?.some(sub => location.pathname === sub.url) || false;
   
   // Save expanded state to localStorage whenever it changes
   useEffect(() => {
@@ -53,17 +59,20 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
 
   return (
     <SidebarMenuItem key={item.title}>
-      <SidebarMenuButton asChild>
-        <a 
-          href={item.url} 
-          className="flex items-center gap-2"
+      <SidebarMenuButton asChild isActive={isActive || isSubItemActive}>
+        <a
+          href={item.url}
+          className={cn(
+            "flex items-center gap-2",
+            (isActive || isSubItemActive) && "bg-gray-100 font-medium"
+          )}
           onClick={handleMenuItemClick}
         >
           <item.icon size={20} />
           <span>{item.title}</span>
           {item.subItems && item.subItems.length > 0 && (
-            <span 
-              className="ml-auto cursor-pointer" 
+            <span
+              className="ml-auto cursor-pointer"
               onClick={handleArrowClick}
               data-expand-arrow="true"
             >
@@ -89,19 +98,29 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
       
       {item.subItems && item.subItems.length > 0 && isExpanded && (
         <SidebarMenuSub>
-          {item.subItems.map((subItem) => (
-            <SidebarMenuSubItem key={subItem.title}>
-              <SidebarMenuSubButton 
-                asChild 
-                size="md"
-              >
-                <a href={subItem.url} className="flex items-center gap-2">
-                  <subItem.icon size={16} />
-                  <span>{subItem.title}</span>
-                </a>
-              </SidebarMenuSubButton>
-            </SidebarMenuSubItem>
-          ))}
+          {item.subItems.map((subItem) => {
+            const isSubActive = location.pathname === subItem.url;
+            return (
+              <SidebarMenuSubItem key={subItem.title}>
+                <SidebarMenuSubButton
+                  asChild
+                  size="md"
+                  isActive={isSubActive}
+                >
+                  <a
+                    href={subItem.url}
+                    className={cn(
+                      "flex items-center gap-2",
+                      isSubActive && "bg-gray-100 font-medium"
+                    )}
+                  >
+                    <subItem.icon size={16} />
+                    <span>{subItem.title}</span>
+                  </a>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
+            );
+          })}
         </SidebarMenuSub>
       )}
     </SidebarMenuItem>

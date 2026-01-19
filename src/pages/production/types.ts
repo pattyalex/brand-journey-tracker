@@ -60,7 +60,8 @@ export interface ProductionCard {
   scheduledDate?: string; // ISO date string
   scheduledColor?: 'indigo' | 'rose' | 'amber' | 'emerald' | 'sky' | 'violet' | 'orange' | 'cyan' | 'sage';
   fromCalendar?: boolean; // True if this idea originated from the Content Calendar
-  plannedDate?: string; // The date this idea was originally planned for
+  plannedDate?: string; // The date this idea is tentatively planned for (used in Ideate column)
+  plannedColor?: 'indigo' | 'rose' | 'amber' | 'emerald' | 'sky' | 'violet' | 'orange' | 'cyan' | 'sage'; // Color for planned items on calendar
 }
 
 export interface KanbanColumn {
