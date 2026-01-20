@@ -494,7 +494,7 @@ export const CalendarView = ({
 
                   {/* Task and Content indicators - scrollable */}
                   <div
-                    className="flex-1 min-h-0 flex flex-col gap-0.5 overflow-y-auto mt-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent"
+                    className="flex-1 min-h-0 flex flex-col gap-0 overflow-y-auto mt-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent"
                     onDragOver={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -545,7 +545,10 @@ export const CalendarView = ({
                           e.currentTarget.style.opacity = '1';
                         }}
                         className="group text-[11px] px-2 py-1 rounded-md cursor-grab active:cursor-grabbing transition-colors hover:shadow-sm flex-shrink-0"
-                        style={{ backgroundColor: task.color || '#e0e7ff' }}
+                        style={{
+                          backgroundColor: task.color || '#e0e7ff',
+                          boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.8)'
+                        }}
                       >
                         <div className="flex items-center gap-1">
                           <div className="flex-1 truncate leading-tight">{task.text}</div>

@@ -71,63 +71,55 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
     productionContent,
   } = state;
 
-  // Color palette options - organized by color groups (5 shades each, light to dark)
+  // Color palette options - organized by color groups (4 shades each, light to dark)
   const colorGroups = {
     pink: [
-      { name: 'pink-1', hex: '#fdf2f8' },
-      { name: 'pink-2', hex: '#fce7f3' },
-      { name: 'pink-3', hex: '#fbcfe8' },
-      { name: 'pink-4', hex: '#f9a8d4' },
-      { name: 'pink-5', hex: '#f472b6' },
+      { name: 'pink-1', hex: '#fce7f3' },
+      { name: 'pink-2', hex: '#fbcfe8' },
+      { name: 'pink-3', hex: '#f8b4d9' },
+      { name: 'pink-4', hex: '#f68dc5' },
     ],
     purple: [
-      { name: 'purple-1', hex: '#faf5ff' },
-      { name: 'purple-2', hex: '#f3e8ff' },
-      { name: 'purple-3', hex: '#e9d5ff' },
-      { name: 'purple-4', hex: '#d8b4fe' },
-      { name: 'purple-5', hex: '#c084fc' },
+      { name: 'purple-1', hex: '#f3e8ff' },
+      { name: 'purple-2', hex: '#e9d5ff' },
+      { name: 'purple-3', hex: '#dcc4fe' },
+      { name: 'purple-4', hex: '#cc9cfd' },
     ],
     blue: [
-      { name: 'blue-1', hex: '#eff6ff' },
-      { name: 'blue-2', hex: '#dbeafe' },
-      { name: 'blue-3', hex: '#bfdbfe' },
-      { name: 'blue-4', hex: '#93c5fd' },
-      { name: 'blue-5', hex: '#60a5fa' },
+      { name: 'blue-1', hex: '#dbeafe' },
+      { name: 'blue-2', hex: '#bfdbfe' },
+      { name: 'blue-3', hex: '#a5cdfc' },
+      { name: 'blue-4', hex: '#7ab5fb' },
     ],
     green: [
-      { name: 'green-1', hex: '#f0fdf4' },
-      { name: 'green-2', hex: '#dcfce7' },
-      { name: 'green-3', hex: '#bbf7d0' },
-      { name: 'green-4', hex: '#86efac' },
-      { name: 'green-5', hex: '#4ade80' },
+      { name: 'green-1', hex: '#e6f2eb' },
+      { name: 'green-2', hex: '#c8e6d0' },
+      { name: 'green-3', hex: '#a5d9b5' },
+      { name: 'green-4', hex: '#7ec998' },
     ],
     sage: [
-      { name: 'sage-1', hex: '#f6f7f4' },
-      { name: 'sage-2', hex: '#e8ebe4' },
-      { name: 'sage-3', hex: '#d4dbc9' },
-      { name: 'sage-4', hex: '#b7c4a1' },
-      { name: 'sage-5', hex: '#9aab7f' },
+      { name: 'sage-1', hex: '#e8ebe4' },
+      { name: 'sage-2', hex: '#d4dbc9' },
+      { name: 'sage-3', hex: '#c2ccb0' },
+      { name: 'sage-4', hex: '#a8b790' },
     ],
     brown: [
-      { name: 'brown-1', hex: '#faf7f5' },
-      { name: 'brown-2', hex: '#f5ebe0' },
-      { name: 'brown-3', hex: '#e6d5c3' },
-      { name: 'brown-4', hex: '#d4a574' },
-      { name: 'brown-5', hex: '#b8956c' },
+      { name: 'brown-1', hex: '#f5ebe0' },
+      { name: 'brown-2', hex: '#e6d5c3' },
+      { name: 'brown-3', hex: '#dbc0a0' },
+      { name: 'brown-4', hex: '#c69d70' },
     ],
     yellow: [
-      { name: 'yellow-1', hex: '#fefce8' },
-      { name: 'yellow-2', hex: '#fef9c3' },
-      { name: 'yellow-3', hex: '#fef08a' },
-      { name: 'yellow-4', hex: '#fde047' },
-      { name: 'yellow-5', hex: '#facc15' },
+      { name: 'yellow-1', hex: '#faf6e8' },
+      { name: 'yellow-2', hex: '#f5f0d5' },
+      { name: 'yellow-3', hex: '#fef3c7' },
+      { name: 'yellow-4', hex: '#fde68a' },
     ],
     rosewood: [
-      { name: 'rosewood-1', hex: '#f5eaea' },
-      { name: 'rosewood-2', hex: '#e5d4d4' },
-      { name: 'rosewood-3', hex: '#c9aaaa' },
-      { name: 'rosewood-4', hex: '#ad8a8a' },
-      { name: 'rosewood-5', hex: '#927071' },
+      { name: 'rosewood-1', hex: '#f5e8e8' },
+      { name: 'rosewood-2', hex: '#e8d4d4' },
+      { name: 'rosewood-3', hex: '#d9c0c0' },
+      { name: 'rosewood-4', hex: '#c9abab' },
     ],
   };
 
@@ -856,8 +848,8 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                 durationMinutes = 1439; // Cap at 23:59 (full day minus 1 minute)
               }
 
-              const top = startMinutes * 1.5 * todayZoomLevel;
-              const height = Math.max(durationMinutes * 1.5 * todayZoomLevel, 28);
+              const top = (startMinutes * 1.5 * todayZoomLevel) + 0.5;
+              const height = Math.max(durationMinutes * 1.5 * todayZoomLevel, 28) - 1;
               const [startHour, startMinute] = task.startTime!.split(':').map(Number);
 
               // Calculate width and position for overlapping tasks
@@ -1288,7 +1280,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                         </button>
 
                         {/* Color grid */}
-                        <div className="grid grid-cols-5 gap-1.5">
+                        <div className="grid grid-cols-4 gap-1.5">
                           {Object.values(colorGroups).flat().map((color) => (
                             <button
                               key={color.name}
