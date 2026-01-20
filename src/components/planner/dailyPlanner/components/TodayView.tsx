@@ -140,7 +140,6 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
   const [taskEndTime, setTaskEndTime] = useState(addDialogEndTime);
   const [taskDescription, setTaskDescription] = useState("");
   const [taskColor, setTaskColor] = useState("");
-  const [taskIncludeInContentCalendar, setTaskIncludeInContentCalendar] = useState(false);
 
   // Content form state
   const [contentHook, setContentHook] = useState("");
@@ -154,7 +153,6 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
     setTaskEndTime("");
     setTaskDescription("");
     setTaskColor("");
-    setTaskIncludeInContentCalendar(false);
     setContentHook("");
     setContentNotes("");
     setContentColor("violet");
@@ -1123,33 +1121,34 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
 
       {/* Add Task/Content Dialog */}
       {addDialogOpen && (
-        <div className="fixed inset-0 z-[100]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
           {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/30"
+            className="absolute inset-0 bg-black/15"
             onClick={() => {
               closeAddDialog();
               resetFormState();
             }}
           />
 
-          {/* Dialog Container */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            {/* Dialog */}
-            <div className="pointer-events-auto bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4">
-              {/* Close button */}
-              <div className="flex justify-end px-6 pt-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    closeAddDialog();
-                    resetFormState();
-                  }}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
-                >
-                  <X className="w-5 h-5 text-gray-500" />
-                </button>
-              </div>
+          {/* Dialog */}
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+            {/* Close button */}
+            <div className="flex justify-end px-6 pt-4">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (setTodayAddDialogState) {
+                    setTodayAddDialogState({ open: false, startTime: '', endTime: '' });
+                  }
+                  resetFormState();
+                }}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer relative z-10"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
 
             {/* Tabs - only show in "both" mode */}
             {contentDisplayMode === 'both' && (
@@ -1187,20 +1186,15 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
             {addDialogTab === 'task' && (
               <div className="px-6 pb-6 space-y-4 relative">
                 {/* Header - only show when not in "both" mode */}
-                {contentDisplayMode === 'tasks' && (
-                  <div className="flex items-center gap-3 mb-2">
-                    <ListTodo className="w-5 h-5 text-gray-500" />
-                    <span className="text-base font-medium text-gray-700">Add Task</span>
-                  </div>
-                )}
                 {/* Title */}
                 <div>
                   <input
                     type="text"
-                    placeholder="Add title"
+                    placeholder="Add task"
                     value={taskTitle}
                     onChange={(e) => setTaskTitle(e.target.value)}
-                    className="w-full text-lg border-b border-gray-200 pb-2 focus:outline-none focus:border-indigo-500 placeholder:text-gray-400"
+                    autoFocus
+                    className="w-full text-lg border-b border-gray-200 pb-2 focus:outline-none placeholder:text-gray-400"
                   />
                 </div>
 
@@ -1301,16 +1295,6 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                     </PopoverContent>
                   </Popover>
                 </div>
-
-                {/* Include in content calendar */}
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <Checkbox
-                    checked={taskIncludeInContentCalendar}
-                    onCheckedChange={(checked) => setTaskIncludeInContentCalendar(checked === true)}
-                    className="h-5 w-5"
-                  />
-                  <span className="text-sm text-gray-700">Include in content calendar</span>
-                </label>
 
                 {/* Actions */}
                 <div className="flex justify-end gap-3 pt-4">
@@ -1469,7 +1453,6 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                 </div>
               </div>
             )}
-            </div>
           </div>
         </div>
       )}

@@ -1278,33 +1278,30 @@ export const WeekView = ({
 
       {/* Add Task/Content Dialog */}
       {addDialogOpen && (
-        <div className="fixed inset-0 z-[200]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
           {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/30"
+            className="absolute inset-0 bg-black/15"
             onClick={() => {
               closeAddDialog();
               resetFormState();
             }}
           />
 
-          {/* Dialog Container - centers the dialog */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            {/* Dialog */}
-            <div className="pointer-events-auto bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4">
-              {/* Close button */}
-              <div className="flex justify-end px-6 pt-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    closeAddDialog();
-                    resetFormState();
-                  }}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
-                >
-                  <X className="w-5 h-5 text-gray-500" />
-                </button>
-              </div>
+          {/* Dialog */}
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+            {/* Close button */}
+            <div className="flex justify-end px-6 pt-4">
+              <button
+                onClick={() => {
+                  closeAddDialog();
+                  resetFormState();
+                }}
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
 
             {/* Tabs - only show in "both" mode */}
             {contentDisplayMode === 'both' && (
@@ -1341,21 +1338,15 @@ export const WeekView = ({
             {/* Task Form */}
             {addDialogTab === 'task' && (
               <div className="px-6 pb-6 space-y-4 relative">
-                {/* Header - only show when not in "both" mode */}
-                {contentDisplayMode === 'tasks' && (
-                  <div className="flex items-center gap-3 mb-2">
-                    <ListTodo className="w-5 h-5 text-gray-500" />
-                    <span className="text-base font-medium text-gray-700">Add Task</span>
-                  </div>
-                )}
                 {/* Title */}
                 <div>
                   <input
                     type="text"
-                    placeholder="Add title"
+                    placeholder="Add task"
                     value={taskTitle}
                     onChange={(e) => setTaskTitle(e.target.value)}
-                    className="w-full text-lg border-b border-gray-200 pb-2 focus:outline-none focus:border-indigo-500 placeholder:text-gray-400"
+                    autoFocus
+                    className="w-full text-lg border-b border-gray-200 pb-2 focus:outline-none placeholder:text-gray-400"
                   />
                 </div>
 
@@ -1580,7 +1571,6 @@ export const WeekView = ({
                 </div>
               </div>
             )}
-            </div>
           </div>
         </div>
       )}

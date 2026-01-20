@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import {
   X,
   Lightbulb,
@@ -181,7 +181,7 @@ export const ContentDialog = ({
                   {content.scheduledDate && (
                     <>
                       <p className="text-sm text-gray-500">
-                        {format(new Date(content.scheduledDate), 'EEEE, MMMM d, yyyy')}
+                        {format(new Date(content.scheduledDate + 'T12:00:00'), 'EEEE, MMMM d, yyyy')}
                       </p>
                       {/* Progress lines - 5th highlighted for scheduled content */}
                       <div className="flex gap-1 mt-2">
@@ -299,7 +299,7 @@ export const ContentDialog = ({
                 <h2 className="text-lg font-semibold text-gray-900">Edit Content Idea</h2>
                 {content.plannedDate && (
                   <p className="text-sm text-gray-500">
-                    Planned for {format(new Date(content.plannedDate), 'MMM d, yyyy')}
+                    Planned for {format(new Date(content.plannedDate + 'T12:00:00'), 'MMM d, yyyy')}
                   </p>
                 )}
               </div>

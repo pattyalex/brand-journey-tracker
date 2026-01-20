@@ -1,10 +1,6 @@
 import { useState, useEffect } from "react";
-import { Edit, Clock, X as XIcon, Plus, Palette, PaintBucket } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Clock, X as XIcon, Plus, Palette, ListTodo, FileText } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { PlannerDerived, PlannerRefs, PlannerSetters, PlannerState } from "../hooks/usePlannerState";
 import { usePlannerActions } from "../hooks/usePlannerActions";
@@ -128,7 +124,6 @@ export const TaskDialog = ({ state, derived, refs, setters, actions }: TaskDialo
     dialogStartTime,
     dialogEndTime,
     dialogTaskColor,
-    dialogAddToContentCalendar,
   } = state;
 
   const { titleInputRef, startTimeInputRef, endTimeInputRef, descriptionInputRef } = refs;
@@ -138,7 +133,6 @@ export const TaskDialog = ({ state, derived, refs, setters, actions }: TaskDialo
     setDialogStartTime,
     setDialogEndTime,
     setDialogTaskColor,
-    setDialogAddToContentCalendar,
   } = setters;
   const {
     handleCancelTaskDialog,
@@ -193,358 +187,353 @@ export const TaskDialog = ({ state, derived, refs, setters, actions }: TaskDialo
     setEditingInspiration([]);
   };
 
+  if (!isTaskDialogOpen) return null;
+
   return (
-<Dialog open={isTaskDialogOpen} onOpenChange={(open) => {
-  if (!open) {
-    handleCancelTaskDialog();
-  }
-}}>
-  <DialogContent
-    className="sm:max-w-[500px] p-0 gap-0 bg-[#ffffff] z-[200]"
-    style={{ backgroundColor: '#ffffff' }}
-    onOpenAutoFocus={(e) => e.preventDefault()}
-  >
-    <DialogHeader className="px-6 pt-6 pb-2">
-      <DialogTitle className="flex items-center gap-3">
-        <Edit className="w-5 h-5 text-gray-500" />
-        <span className="text-base font-medium text-gray-700">{editingTask?.id ? 'Edit Task' : 'Add Task'}</span>
-      </DialogTitle>
-    </DialogHeader>
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/15"
+        onClick={handleCancelTaskDialog}
+      />
 
-    <div className="px-6 pb-6 space-y-5">
-      {/* Task Title */}
-      <div>
-        <Input
-          ref={titleInputRef}
-          placeholder="Add title"
-          value={dialogTaskTitle}
-          onChange={(e) => setDialogTaskTitle(e.target.value)}
-          onFocus={handleTitleFocus}
-          onKeyDown={handleTitleKeyDown}
-          autoFocus={false}
-          className="text-lg border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-gray-400 placeholder:text-gray-400"
-        />
-      </div>
-
-      {/* Time inputs */}
-      <div className="flex items-center gap-3">
-        <Clock size={18} className="text-gray-500 flex-shrink-0" />
-        <div className="flex items-center gap-2 flex-1">
-          <Input
-            ref={startTimeInputRef}
-            type="text"
-            value={dialogStartTime}
-            onChange={handleStartTimeChange}
-            onFocus={handleStartTimeFocus}
-            onBlur={handleStartTimeBlur}
-            onKeyDown={handleStartTimeKeyDown}
-            placeholder="9:00 am"
-            className="flex-1 h-9 text-sm"
-            maxLength={8}
-          />
-          <span className="text-gray-400">—</span>
-          <Input
-            ref={endTimeInputRef}
-            type="text"
-            value={dialogEndTime}
-            onChange={handleEndTimeChange}
-            onFocus={handleEndTimeFocus}
-            onBlur={handleEndTimeBlur}
-            onKeyDown={handleEndTimeKeyDown}
-            placeholder="10:00 pm"
-            className="flex-1 h-9 text-sm"
-            maxLength={8}
-          />
+      {/* Dialog */}
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+        {/* Close button */}
+        <div className="flex justify-end px-6 pt-4">
+          <button
+            onClick={handleCancelTaskDialog}
+            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <XIcon className="w-5 h-5 text-gray-500" />
+          </button>
         </div>
-      </div>
 
-      {/* Description */}
-      <div className="flex items-start gap-3">
-        <Edit size={18} className="text-gray-500 flex-shrink-0 mt-2" />
-        <Textarea
-          ref={descriptionInputRef}
-          placeholder="Add description"
-          value={dialogTaskDescription}
-          onChange={(e) => setDialogTaskDescription(e.target.value)}
-          rows={3}
-          className="flex-1 resize-none text-sm"
-        />
-      </div>
+        {/* Content */}
+        <div className="px-6 pb-6 space-y-4">
+          {/* Task Title */}
+          <div>
+            <input
+              ref={titleInputRef}
+              type="text"
+              placeholder="Add task"
+              value={dialogTaskTitle}
+              onChange={(e) => setDialogTaskTitle(e.target.value)}
+              onFocus={handleTitleFocus}
+              onKeyDown={handleTitleKeyDown}
+              autoFocus
+              className="w-full text-lg border-b border-gray-200 pb-2 focus:outline-none placeholder:text-gray-400"
+            />
+          </div>
 
-      {/* User's Custom Palette - Always Visible */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">My Palette</span>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          {userPalette.map((color, idx) => (
-            <button
-              key={`palette-${idx}`}
-              type="button"
-              onClick={() => {
-                setDialogTaskColor(color);
-              }}
-              className={cn(
-                "w-8 h-8 rounded-lg transition-all hover:scale-110 relative group",
-                dialogTaskColor === color && "ring-2 ring-offset-1 ring-gray-400"
-              )}
-              style={{ backgroundColor: color }}
-            >
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeColorFromPalette(color);
-                }}
-                className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full shadow border border-gray-200 items-center justify-center text-gray-400 hover:text-red-500 hidden group-hover:flex"
-              >
-                <XIcon className="w-2.5 h-2.5" />
-              </button>
-            </button>
-          ))}
-          {/* Add color to palette button */}
-          <Popover open={isAddingToPalette} onOpenChange={setIsAddingToPalette}>
-            <PopoverTrigger asChild>
-              <button
-                type="button"
-                className="w-8 h-8 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:border-gray-400 hover:text-gray-500 transition-all"
-              >
-                <Plus className="w-4 h-4" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-3 z-[300] bg-white shadow-lg border" align="start">
-              <div className="space-y-2">
-                <span className="text-xs font-medium text-gray-500">Add to my palette</span>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {Object.values(colorGroups).flat().map((color) => (
-                    <button
-                      key={`add-${color.name}`}
-                      type="button"
-                      onClick={() => addColorToPalette(color.hex)}
-                      disabled={userPalette.includes(color.hex)}
-                      className={cn(
-                        "w-6 h-6 rounded-md transition-all hover:scale-110",
-                        userPalette.includes(color.hex) && "opacity-30 cursor-not-allowed"
-                      )}
-                      style={{ backgroundColor: color.hex }}
-                    />
-                  ))}
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
-      </div>
+          {/* Time inputs */}
+          <div className="flex items-center gap-3">
+            <Clock className="w-5 h-5 text-gray-400" />
+            <Input
+              ref={startTimeInputRef}
+              type="text"
+              value={dialogStartTime}
+              onChange={handleStartTimeChange}
+              onFocus={handleStartTimeFocus}
+              onBlur={handleStartTimeBlur}
+              onKeyDown={handleStartTimeKeyDown}
+              placeholder="Start time"
+              className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+              maxLength={8}
+            />
+            <span className="text-gray-400">—</span>
+            <Input
+              ref={endTimeInputRef}
+              type="text"
+              value={dialogEndTime}
+              onChange={handleEndTimeChange}
+              onFocus={handleEndTimeFocus}
+              onBlur={handleEndTimeBlur}
+              onKeyDown={handleEndTimeKeyDown}
+              placeholder="End time"
+              className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+              maxLength={8}
+            />
+          </div>
 
-      {/* Color Picker */}
-      <div className="flex items-center gap-3">
-        <Popover open={isColorPickerOpen} onOpenChange={setIsColorPickerOpen}>
-          <PopoverTrigger asChild>
-            <button
-              type="button"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all"
-            >
-              {dialogTaskColor ? (
-                <div
-                  className="w-5 h-5 rounded-full border border-gray-200"
-                  style={{ backgroundColor: dialogTaskColor }}
-                />
-              ) : (
-                <div className="w-5 h-5 rounded-full overflow-hidden border border-gray-200" style={{
-                  background: 'conic-gradient(from 0deg, #f9a8d4, #d8b4fe, #93c5fd, #86efac, #fde047, #d4a574, #f9a8d4)'
-                }} />
-              )}
-              <span className="text-sm text-gray-600">
-                {dialogTaskColor ? 'Change color' : 'More colors'}
-              </span>
-            </button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 z-[300] bg-white shadow-lg border" align="start">
-            <div className="flex">
-              {/* Left side - Color grid */}
-              <div className="p-3 space-y-3 border-r border-gray-100">
-                {/* No color option */}
+          {/* Description */}
+          <div className="flex items-start gap-3">
+            <FileText className="w-5 h-5 text-gray-400 mt-2" />
+            <textarea
+              ref={descriptionInputRef}
+              placeholder="Add description"
+              value={dialogTaskDescription}
+              onChange={(e) => setDialogTaskDescription(e.target.value)}
+              rows={3}
+              className="flex-1 px-3 py-2 border border-input rounded-md text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
+            />
+          </div>
+
+          {/* User's Custom Palette - Always Visible */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">My Palette</span>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              {userPalette.map((color, idx) => (
                 <button
+                  key={`palette-${idx}`}
                   type="button"
                   onClick={() => {
-                    setDialogTaskColor('');
-                    setIsColorPickerOpen(false);
+                    setDialogTaskColor(color);
                   }}
                   className={cn(
-                    "flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-sm text-gray-600 hover:bg-gray-100 transition-colors",
-                    !dialogTaskColor && "bg-gray-100"
+                    "w-8 h-8 rounded-lg transition-all hover:scale-110 relative group",
+                    dialogTaskColor === color && "ring-2 ring-offset-1 ring-gray-400"
                   )}
+                  style={{ backgroundColor: color }}
                 >
-                  <div className="w-5 h-5 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center">
-                    <XIcon className="w-3 h-3 text-gray-400" />
-                  </div>
-                  No color
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeColorFromPalette(color);
+                    }}
+                    className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full shadow border border-gray-200 items-center justify-center text-gray-400 hover:text-red-500 hidden group-hover:flex"
+                  >
+                    <XIcon className="w-2.5 h-2.5" />
+                  </button>
                 </button>
+              ))}
+              {/* Add color to palette button */}
+              <Popover open={isAddingToPalette} onOpenChange={setIsAddingToPalette}>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="w-8 h-8 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:border-gray-400 hover:text-gray-500 transition-all"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-3 z-[300] bg-white shadow-lg border" align="start">
+                  <div className="space-y-2">
+                    <span className="text-xs font-medium text-gray-500">Add to my palette</span>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {Object.values(colorGroups).flat().map((color) => (
+                        <button
+                          key={`add-${color.name}`}
+                          type="button"
+                          onClick={() => addColorToPalette(color.hex)}
+                          disabled={userPalette.includes(color.hex)}
+                          className={cn(
+                            "w-6 h-6 rounded-md transition-all hover:scale-110",
+                            userPalette.includes(color.hex) && "opacity-30 cursor-not-allowed"
+                          )}
+                          style={{ backgroundColor: color.hex }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
 
-                {/* Color grid */}
-                <div className="grid grid-cols-4 gap-1.5">
-                  {Object.values(colorGroups).flat().map((color) => (
+          {/* Color Picker */}
+          <div className="flex items-center gap-3">
+            <Popover open={isColorPickerOpen} onOpenChange={setIsColorPickerOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="flex items-center gap-1.5 px-2 py-1 rounded-md border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all"
+                >
+                  {dialogTaskColor ? (
+                    <div
+                      className="w-4 h-4 rounded-full border border-gray-200"
+                      style={{ backgroundColor: dialogTaskColor }}
+                    />
+                  ) : (
+                    <div className="w-4 h-4 rounded-full overflow-hidden border border-gray-200" style={{
+                      background: 'conic-gradient(from 0deg, #f9a8d4, #d8b4fe, #93c5fd, #86efac, #fde047, #d4a574, #f9a8d4)'
+                    }} />
+                  )}
+                  <span className="text-xs text-gray-600">
+                    {dialogTaskColor ? 'Change color' : 'More colors'}
+                  </span>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 z-[300] bg-white shadow-lg border" align="start">
+                <div className="flex">
+                  {/* Left side - Color grid */}
+                  <div className="p-3 space-y-3 border-r border-gray-100">
+                    {/* No color option */}
                     <button
-                      key={color.name}
                       type="button"
                       onClick={() => {
-                        if (selectedInspiration) {
-                          // In edit mode, toggle color in editing palette
-                          if (editingInspiration.includes(color.hex)) {
-                            removeColorFromEditingPalette(color.hex);
-                          } else {
-                            addColorToEditingPalette(color.hex);
-                          }
-                        } else {
-                          // Normal mode, select color for task
-                          setDialogTaskColor(color.hex);
-                          setIsColorPickerOpen(false);
-                        }
+                        setDialogTaskColor('');
+                        setIsColorPickerOpen(false);
                       }}
                       className={cn(
-                        "w-7 h-7 rounded-md transition-all hover:scale-110",
-                        selectedInspiration
-                          ? editingInspiration.includes(color.hex) && "ring-2 ring-offset-1 ring-gray-400"
-                          : dialogTaskColor === color.hex && "ring-2 ring-offset-1 ring-gray-400"
+                        "flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-sm text-gray-600 hover:bg-gray-100 transition-colors",
+                        !dialogTaskColor && "bg-gray-100"
                       )}
-                      style={{ backgroundColor: color.hex }}
-                    />
-                  ))}
-                </div>
-                {selectedInspiration && (
-                  <p className="text-[10px] text-gray-400 mt-2">Click to select/deselect colors</p>
-                )}
-              </div>
-
-              {/* Right side - Inspiration palettes or Edit panel */}
-              <div className="p-3 w-48">
-                {selectedInspiration ? (
-                  // Edit palette panel
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={backToInspirations}
-                        className="text-gray-400 hover:text-gray-600 transition-colors"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
-                      </button>
-                      <span className="text-xs font-medium text-gray-600">{selectedInspiration.name}</span>
-                    </div>
-
-                    {/* Current palette being edited */}
-                    <div className="space-y-2">
-                      <span className="text-[10px] text-gray-500 uppercase tracking-wide">Your selection</span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {editingInspiration.map((color, idx) => (
-                          <div
-                            key={idx}
-                            className="w-7 h-7 rounded-md relative group cursor-pointer"
-                            style={{ backgroundColor: color }}
-                          >
-                            <button
-                              type="button"
-                              onClick={() => removeColorFromEditingPalette(color)}
-                              className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full shadow border border-gray-200 items-center justify-center text-gray-400 hover:text-red-500 hidden group-hover:flex"
-                            >
-                              <XIcon className="w-2.5 h-2.5" />
-                            </button>
-                          </div>
-                        ))}
-                        {/* Add hint */}
-                        <div className="w-7 h-7 rounded-md border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400">
-                          <Plus className="w-4 h-4" />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Apply button */}
-                    <button
-                      type="button"
-                      onClick={applyEditedPalette}
-                      className="w-full py-2 px-3 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors"
                     >
-                      Apply to My Palette
+                      <div className="w-5 h-5 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center">
+                        <XIcon className="w-3 h-3 text-gray-400" />
+                      </div>
+                      No color
                     </button>
-                  </div>
-                ) : (
-                  // Inspiration list
-                  <>
-                    <div className="flex items-center gap-2 px-2 py-1.5 mb-2">
-                      <Palette className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-600">Palettes</span>
-                    </div>
-                    <div className="space-y-2.5">
-                      {inspirationPalettes.map((palette, idx) => (
+
+                    {/* Color grid */}
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {Object.values(colorGroups).flat().map((color) => (
                         <button
-                          key={idx}
+                          key={color.name}
                           type="button"
-                          onClick={() => selectInspirationPalette(palette)}
-                          className="w-full group"
-                        >
-                          <span className="text-[10px] text-gray-500 group-hover:text-gray-700 block mb-1">{palette.name}</span>
-                          <div className="flex gap-1">
-                            {palette.colors.map((color, cIdx) => (
-                              <div
-                                key={cIdx}
-                                className="flex-1 h-5 first:rounded-l-md last:rounded-r-md transition-all group-hover:scale-y-110"
-                                style={{ backgroundColor: color }}
-                              />
-                            ))}
-                          </div>
-                        </button>
+                          onClick={() => {
+                            if (selectedInspiration) {
+                              // In edit mode, toggle color in editing palette
+                              if (editingInspiration.includes(color.hex)) {
+                                removeColorFromEditingPalette(color.hex);
+                              } else {
+                                addColorToEditingPalette(color.hex);
+                              }
+                            } else {
+                              // Normal mode, select color for task
+                              setDialogTaskColor(color.hex);
+                              setIsColorPickerOpen(false);
+                            }
+                          }}
+                          className={cn(
+                            "w-7 h-7 rounded-md transition-all hover:scale-110",
+                            selectedInspiration
+                              ? editingInspiration.includes(color.hex) && "ring-2 ring-offset-1 ring-gray-400"
+                              : dialogTaskColor === color.hex && "ring-2 ring-offset-1 ring-gray-400"
+                          )}
+                          style={{ backgroundColor: color.hex }}
+                        />
                       ))}
-
-                      {/* Create your own */}
-                      <button
-                        type="button"
-                        onClick={() => selectInspirationPalette({ name: 'Create your own', colors: [] })}
-                        className="w-full group pt-2 border-t border-gray-100"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="w-5 h-5 rounded-md border-2 border-dashed border-gray-300 flex items-center justify-center group-hover:border-gray-400">
-                            <Plus className="w-3 h-3 text-gray-400 group-hover:text-gray-500" />
-                          </div>
-                          <span className="text-[11px] text-gray-500 group-hover:text-gray-700">Create your own</span>
-                        </div>
-                      </button>
                     </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </PopoverContent>
-        </Popover>
-      </div>
+                    {selectedInspiration && (
+                      <p className="text-[10px] text-gray-400 mt-2">Click to select/deselect colors</p>
+                    )}
+                  </div>
 
-      {/* Completed Checkbox */}
-      <div className="flex items-center gap-3 pt-2">
-        <Checkbox
-          id="add-to-content-calendar"
-          checked={dialogAddToContentCalendar}
-          onCheckedChange={(checked) => setDialogAddToContentCalendar(checked as boolean)}
-          className="h-5 w-5"
-        />
-        <label
-          htmlFor="add-to-content-calendar"
-          className="text-sm text-gray-700 cursor-pointer"
-        >
-          Include in content calendar
-        </label>
+                  {/* Right side - Inspiration palettes or Edit panel */}
+                  <div className="p-3 w-48">
+                    {selectedInspiration ? (
+                      // Edit palette panel
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={backToInspirations}
+                            className="text-gray-400 hover:text-gray-600 transition-colors"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                          </button>
+                          <span className="text-xs font-medium text-gray-600">{selectedInspiration.name}</span>
+                        </div>
+
+                        {/* Current palette being edited */}
+                        <div className="space-y-2">
+                          <span className="text-[10px] text-gray-500 uppercase tracking-wide">Your selection</span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {editingInspiration.map((color, idx) => (
+                              <div
+                                key={idx}
+                                className="w-7 h-7 rounded-md relative group cursor-pointer"
+                                style={{ backgroundColor: color }}
+                              >
+                                <button
+                                  type="button"
+                                  onClick={() => removeColorFromEditingPalette(color)}
+                                  className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full shadow border border-gray-200 items-center justify-center text-gray-400 hover:text-red-500 hidden group-hover:flex"
+                                >
+                                  <XIcon className="w-2.5 h-2.5" />
+                                </button>
+                              </div>
+                            ))}
+                            {/* Add hint */}
+                            <div className="w-7 h-7 rounded-md border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400">
+                              <Plus className="w-4 h-4" />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Apply button */}
+                        <button
+                          type="button"
+                          onClick={applyEditedPalette}
+                          className="w-full py-2 px-3 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors"
+                        >
+                          Apply to My Palette
+                        </button>
+                      </div>
+                    ) : (
+                      // Inspiration list
+                      <>
+                        <div className="flex items-center gap-2 px-2 py-1.5 mb-2">
+                          <Palette className="w-4 h-4 text-gray-400" />
+                          <span className="text-sm text-gray-600">Palettes</span>
+                        </div>
+                        <div className="space-y-2.5">
+                          {inspirationPalettes.map((palette, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => selectInspirationPalette(palette)}
+                              className="w-full group"
+                            >
+                              <span className="text-[10px] text-gray-500 group-hover:text-gray-700 block mb-1">{palette.name}</span>
+                              <div className="flex gap-1">
+                                {palette.colors.map((color, cIdx) => (
+                                  <div
+                                    key={cIdx}
+                                    className="flex-1 h-5 first:rounded-l-md last:rounded-r-md transition-all group-hover:scale-y-110"
+                                    style={{ backgroundColor: color }}
+                                  />
+                                ))}
+                              </div>
+                            </button>
+                          ))}
+
+                          {/* Create your own */}
+                          <button
+                            type="button"
+                            onClick={() => selectInspirationPalette({ name: 'Create your own', colors: [] })}
+                            className="w-full group pt-2 border-t border-gray-100"
+                          >
+                            <div className="flex items-center gap-2">
+                              <div className="w-5 h-5 rounded-md border-2 border-dashed border-gray-300 flex items-center justify-center group-hover:border-gray-400">
+                                <Plus className="w-3 h-3 text-gray-400 group-hover:text-gray-500" />
+                              </div>
+                              <span className="text-[11px] text-gray-500 group-hover:text-gray-700">Create your own</span>
+                            </div>
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              onClick={handleCancelTaskDialog}
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSaveTaskDialog}
+              className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              {editingTask?.id ? 'Save' : 'Create'}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
-
-    <DialogFooter className="px-6 py-4 bg-gray-50 flex-row justify-end gap-2 sm:space-x-0">
-      <Button variant="ghost" onClick={handleCancelTaskDialog} className="px-4">
-        Cancel
-      </Button>
-      <Button onClick={handleSaveTaskDialog} className="px-6 bg-blue-600 hover:bg-blue-700">
-        {editingTask ? 'Save' : 'Create'}
-      </Button>
-    </DialogFooter>
-  </DialogContent>
-</Dialog>
   );
 };
