@@ -869,8 +869,11 @@ export const usePlannerActions = ({
     const startTime24 = dialogStartTime ? convert12To24Hour(dialogStartTime) : undefined;
     const endTime24 = dialogEndTime ? convert12To24Hour(dialogEndTime) : undefined;
 
-    if (editingTask && editingTask.id) {
-      // Editing existing task
+    // Check if this is a task being added from AllTasks sidebar
+    const isFromAllTasks = pendingTaskFromAllTasks !== null;
+
+    if (editingTask && editingTask.id && !isFromAllTasks) {
+      // Editing existing task (only when NOT from AllTasks)
       handleEditItem(
         editingTask.id,
         dialogTaskTitle,
@@ -883,9 +886,9 @@ export const usePlannerActions = ({
         dialogAddToContentCalendar
       );
     } else {
-      // Adding new task
+      // Adding new task (or adding task from AllTasks)
       const newItem: PlannerItem = {
-        id: Date.now().toString(),
+        id: isFromAllTasks ? editingTask?.id || Date.now().toString() : Date.now().toString(),
         text: dialogTaskTitle,
         section: "morning",
         isCompleted: false,
@@ -917,6 +920,11 @@ export const usePlannerActions = ({
         }];
         setPlannerData(updatedPlannerData);
         savePlannerData(updatedPlannerData);
+      }
+
+      // Clear the pending task from AllTasks since it's now added
+      if (isFromAllTasks) {
+        setPendingTaskFromAllTasks(null);
       }
     }
 

@@ -294,6 +294,8 @@ export const DailyPlanner = () => {
               handleTimezoneChange={handleTimezoneChange}
               selectedTimezone={selectedTimezone}
               timezones={TIMEZONES}
+              contentDisplayMode={contentDisplayMode}
+              setContentDisplayMode={setContentDisplayMode}
             />
           }
         />
@@ -318,11 +320,6 @@ export const DailyPlanner = () => {
             handleReorderAllTasks={handleReorderAllTasks}
             handleDropTaskFromWeeklyToAllTasks={handleDropTaskFromWeeklyToAllTasks}
             handleDropTaskFromCalendarToAllTasks={handleDropTaskFromCalendarToAllTasks}
-            contentDisplayMode={contentDisplayMode}
-            setContentDisplayMode={setContentDisplayMode}
-            selectedDate={selectedDate}
-            productionContent={productionContent}
-            loadProductionContent={loadProductionContent}
           />
         )}
 
@@ -344,6 +341,8 @@ export const DailyPlanner = () => {
               handleTimezoneChange={handleTimezoneChange}
               selectedTimezone={selectedTimezone}
               timezones={TIMEZONES}
+              contentDisplayMode={contentDisplayMode}
+              setContentDisplayMode={setContentDisplayMode}
             />
 
         {currentView === 'today' && (

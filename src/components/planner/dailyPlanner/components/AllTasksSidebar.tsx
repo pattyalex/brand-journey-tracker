@@ -1,9 +1,7 @@
 import { PlannerItem } from "@/types/planner";
 import { PlannerSection } from "@/components/planner/PlannerSection";
-import { ChevronLeft, ListTodo, Video } from "lucide-react";
+import { ChevronLeft, ListTodo } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ProductionCard } from "@/pages/production/types";
-import { ContentDisplayMode } from "../hooks/usePlannerState";
 
 interface AllTasksSidebarProps {
   isAllTasksCollapsed: boolean;
@@ -24,14 +22,6 @@ interface AllTasksSidebarProps {
   handleReorderAllTasks: (reorderedTasks: PlannerItem[]) => void;
   handleDropTaskFromWeeklyToAllTasks: (draggedTaskId: string, targetTaskId: string, fromDate: string) => void;
   handleDropTaskFromCalendarToAllTasks: (taskId: string, fromDate: string, targetIndex: number) => void;
-  contentDisplayMode: ContentDisplayMode;
-  setContentDisplayMode: (mode: ContentDisplayMode) => void;
-  selectedDate: Date;
-  productionContent: {
-    scheduled: ProductionCard[];
-    planned: ProductionCard[];
-  };
-  loadProductionContent?: () => void;
 }
 
 export const AllTasksSidebar = ({
@@ -46,16 +36,7 @@ export const AllTasksSidebar = ({
   handleReorderAllTasks,
   handleDropTaskFromWeeklyToAllTasks,
   handleDropTaskFromCalendarToAllTasks,
-  contentDisplayMode,
-  setContentDisplayMode,
-  selectedDate,
-  productionContent,
-  loadProductionContent,
 }: AllTasksSidebarProps) => {
-  // Derived values
-  const showTasks = contentDisplayMode === 'tasks' || contentDisplayMode === 'both';
-  const showContent = contentDisplayMode === 'content' || contentDisplayMode === 'both';
-
   return (
     <div
       className={cn(
@@ -94,70 +75,31 @@ export const AllTasksSidebar = ({
         "h-full flex flex-col transition-all duration-300",
         isAllTasksCollapsed ? "px-2 py-4 opacity-0 overflow-hidden" : "px-4 py-4 opacity-100"
       )}>
-        {/* Display Mode Toggle */}
-        <div className="mb-4">
-          <p className="text-[11px] uppercase tracking-wider text-gray-400 font-medium text-center mb-2">
-            Show on calendar
-          </p>
-          <div className="flex items-center justify-center gap-1">
-            <button
-              onClick={() => setContentDisplayMode('tasks')}
-              className={cn(
-                "flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all",
-                contentDisplayMode === 'tasks'
-                  ? "bg-white text-purple-700 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              )}
-            >
-              <ListTodo className="w-4 h-4" />
-              Tasks
-            </button>
-            <button
-              onClick={() => setContentDisplayMode('content')}
-              className={cn(
-                "flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all",
-                contentDisplayMode === 'content'
-                  ? "bg-white text-indigo-700 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              )}
-            >
-              <Video className="w-4 h-4" />
-              Content
-            </button>
-            <button
-              onClick={() => setContentDisplayMode('both')}
-              className={cn(
-                "flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all",
-                contentDisplayMode === 'both'
-                  ? "bg-white text-violet-700 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              )}
-            >
-              Both
-            </button>
-          </div>
+        {/* Header */}
+        <div className="flex items-center gap-2 mb-4">
+          <ListTodo className="w-5 h-5 text-purple-600" />
+          <h2 className="text-lg font-semibold text-gray-800">My Tasks</h2>
         </div>
 
-        {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-y-auto space-y-4">
-          {/* Tasks Section */}
-          {showTasks && (
-            <div>
-              <PlannerSection
-                title=""
-                items={allTasks}
-                section="morning"
-                onToggleItem={handleToggleAllTask}
-                onDeleteItem={handleDeleteAllTask}
-                onEditItem={handleEditAllTask}
-                onAddItem={handleAddAllTask}
-                onReorderItems={handleReorderAllTasks}
-                isAllTasksSection={true}
-                onDropTaskFromWeekly={handleDropTaskFromWeeklyToAllTasks}
-                onDropTaskFromCalendar={handleDropTaskFromCalendarToAllTasks}
-              />
-            </div>
-          )}
+        <p className="text-xs text-gray-500 mb-4">
+          Add tasks and drag them to your calendar to schedule.
+        </p>
+
+        {/* Tasks List */}
+        <div className="flex-1 overflow-y-auto">
+          <PlannerSection
+            title=""
+            items={allTasks}
+            section="morning"
+            onToggleItem={handleToggleAllTask}
+            onDeleteItem={handleDeleteAllTask}
+            onEditItem={handleEditAllTask}
+            onAddItem={handleAddAllTask}
+            onReorderItems={handleReorderAllTasks}
+            isAllTasksSection={true}
+            onDropTaskFromWeekly={handleDropTaskFromWeeklyToAllTasks}
+            onDropTaskFromCalendar={handleDropTaskFromCalendarToAllTasks}
+          />
         </div>
       </div>
     </div>

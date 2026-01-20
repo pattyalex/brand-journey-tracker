@@ -1,10 +1,12 @@
 import { addMonths, addWeeks, endOfWeek, format, startOfWeek, subWeeks } from "date-fns";
-import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarIcon, ChevronLeft, ChevronRight, ListTodo, Video, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { PlannerView } from "../types";
 import { TimezoneOption } from "../utils/plannerUtils";
+import { cn } from "@/lib/utils";
+import { ContentDisplayMode } from "../hooks/usePlannerState";
 
 interface PlannerHeaderProps {
   currentView: PlannerView;
@@ -22,6 +24,9 @@ interface PlannerHeaderProps {
   handleTimezoneChange?: (timezone: string) => void;
   selectedTimezone?: string;
   timezones?: TimezoneOption[];
+  // Content display mode
+  contentDisplayMode: ContentDisplayMode;
+  setContentDisplayMode: (mode: ContentDisplayMode) => void;
 }
 
 export const PlannerHeader = ({
@@ -39,44 +44,90 @@ export const PlannerHeader = ({
   handleTimezoneChange,
   selectedTimezone,
   timezones,
+  contentDisplayMode,
+  setContentDisplayMode,
 }: PlannerHeaderProps) => {
   return (
-    <div className="mb-3 pt-[15px]">
+    <div className="pt-4 pb-2">
+      {/* Top Row: Focus Mode Selector */}
+      <div className="flex items-center justify-center mb-4">
+        <div className="inline-flex items-center gap-1 p-1 bg-gray-100/80 rounded-full">
+          <button
+            onClick={() => setContentDisplayMode('tasks')}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
+              contentDisplayMode === 'tasks'
+                ? "bg-white text-purple-700 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+            )}
+          >
+            <ListTodo className="w-4 h-4" />
+            Tasks Calendar
+          </button>
+          <button
+            onClick={() => setContentDisplayMode('content')}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
+              contentDisplayMode === 'content'
+                ? "bg-white text-indigo-700 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+            )}
+          >
+            <Video className="w-4 h-4" />
+            Content Calendar
+          </button>
+          <button
+            onClick={() => setContentDisplayMode('both')}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
+              contentDisplayMode === 'both'
+                ? "bg-white text-violet-700 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+            )}
+          >
+            <LayoutGrid className="w-4 h-4" />
+            Both
+          </button>
+        </div>
+      </div>
+
+      {/* Bottom Row: View Tabs + Date Navigation */}
       <div className="flex items-center justify-between">
         {/* Left: View Tabs */}
-        <div className="flex items-center gap-3">
-          <div className="inline-flex items-center gap-0 bg-white rounded-lg shadow-sm border border-gray-200 p-1">
-            <button
-              onClick={() => setCurrentView('today')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                currentView === 'today'
-                  ? 'bg-blue-500 text-white shadow-sm'
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              Today
-            </button>
-            <button
-              onClick={() => setCurrentView('week')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                currentView === 'week'
-                  ? 'bg-purple-500 text-white shadow-sm'
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              Weekly
-            </button>
-            <button
-              onClick={() => setCurrentView('calendar')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                currentView === 'calendar'
-                  ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm'
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              Monthly
-            </button>
-          </div>
+        <div className="inline-flex items-center gap-0 bg-white rounded-xl shadow-sm border border-gray-200 p-1">
+          <button
+            onClick={() => setCurrentView('today')}
+            className={cn(
+              "px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+              currentView === 'today'
+                ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-sm"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+            )}
+          >
+            Today
+          </button>
+          <button
+            onClick={() => setCurrentView('week')}
+            className={cn(
+              "px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+              currentView === 'week'
+                ? "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-sm"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+            )}
+          >
+            Weekly
+          </button>
+          <button
+            onClick={() => setCurrentView('calendar')}
+            className={cn(
+              "px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+              currentView === 'calendar'
+                ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+            )}
+          >
+            Monthly
+          </button>
         </div>
 
         {/* Right: Date Navigation */}

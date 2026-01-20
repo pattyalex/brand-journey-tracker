@@ -416,6 +416,62 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
     </div>
   )}
 
+  {/* Untimed Tasks Section - tasks without start/end times */}
+  {showTasks && (() => {
+    const untimedTasks = currentDay.items.filter(item => !item.startTime || !item.endTime);
+    if (untimedTasks.length === 0) return null;
+
+    return (
+      <div className="flex-shrink-0 px-4 py-3 bg-gradient-to-r from-purple-50/50 to-pink-50/50 border-b border-purple-100">
+        <div className="flex items-center gap-2 mb-2">
+          <ListTodo className="w-4 h-4 text-purple-500" />
+          <span className="text-sm font-semibold text-gray-800">All Day</span>
+          <span className="text-xs text-gray-400">({untimedTasks.length})</span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {untimedTasks.map((task) => (
+            <div
+              key={task.id}
+              draggable
+              onDragStart={(e) => {
+                e.dataTransfer.setData('taskId', task.id);
+                e.dataTransfer.setData('fromDate', task.date || dateString);
+                e.dataTransfer.setData('fromAllTasks', 'false');
+                e.dataTransfer.effectAllowed = 'move';
+                e.currentTarget.style.opacity = '0.5';
+              }}
+              onDragEnd={(e) => {
+                e.currentTarget.style.opacity = '1';
+              }}
+              onClick={() => handleOpenTaskDialog(9, task)}
+              className="group flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer hover:shadow-sm transition-all"
+              style={{ backgroundColor: task.color || '#f3f4f6' }}
+            >
+              <Checkbox
+                checked={task.isCompleted}
+                onCheckedChange={() => handleToggleItem(task.id)}
+                onClick={(e) => e.stopPropagation()}
+                className="h-3.5 w-3.5"
+              />
+              <span className={`text-xs font-medium ${task.isCompleted ? 'line-through text-gray-400' : 'text-gray-700'}`}>
+                {task.text}
+              </span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteItem(task.id);
+                }}
+                className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  })()}
+
   <div ref={todayScrollRef} className="flex-1 flex flex-col min-h-0">
     <div className="flex flex-col flex-1 overflow-hidden bg-white">
       {/* Fixed header row */}
