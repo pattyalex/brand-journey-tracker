@@ -14,6 +14,8 @@ import { WeekView } from "./dailyPlanner/components/WeekView";
 import { CalendarView } from "./dailyPlanner/components/CalendarView";
 import ExpandedScheduleView from "@/pages/production/components/ExpandedScheduleView";
 import { TaskDialog } from "./dailyPlanner/components/TaskDialog";
+import { ContentDialog } from "./dailyPlanner/components/ContentDialog";
+import { ProductionCard } from "@/pages/production/types";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -58,6 +60,18 @@ export const DailyPlanner = () => {
     startTime: string;
     endTime: string;
   }>({ open: false, startTime: '', endTime: '' });
+
+  // State for content dialog (view/edit content)
+  const [contentDialogState, setContentDialogState] = useState<{
+    open: boolean;
+    content: ProductionCard | null;
+    type: 'scheduled' | 'planned';
+  }>({ open: false, content: null, type: 'planned' });
+
+  // Handler to open content dialog
+  const handleOpenContentDialog = useCallback((content: ProductionCard, type: 'scheduled' | 'planned') => {
+    setContentDialogState({ open: true, content, type });
+  }, []);
 
   // Callback for when drag-to-create completes in 'both' or 'content' mode
   const handleWeeklyAddDialogOpen = useCallback((dayString: string, startTime: string, endTime: string) => {
@@ -237,7 +251,7 @@ export const DailyPlanner = () => {
 
   const { daysWithItems, getTimezoneDisplay } = derived;
 
-  const { convert24To12Hour } = helpers;
+  const { convert24To12Hour, loadProductionContent } = helpers;
 
   const {
     handleToggleWeeklyTask,
@@ -308,6 +322,7 @@ export const DailyPlanner = () => {
             setContentDisplayMode={setContentDisplayMode}
             selectedDate={selectedDate}
             productionContent={productionContent}
+            loadProductionContent={loadProductionContent}
           />
         )}
 
@@ -342,6 +357,7 @@ export const DailyPlanner = () => {
               actions={actions}
               todayAddDialogState={todayAddDialogState}
               setTodayAddDialogState={setTodayAddDialogState}
+              onOpenContentDialog={handleOpenContentDialog}
             />
           </div>
         )}
@@ -388,6 +404,8 @@ export const DailyPlanner = () => {
               productionContent={productionContent}
               weeklyAddDialogState={weeklyAddDialogState}
               setWeeklyAddDialogState={setWeeklyAddDialogState}
+              loadProductionContent={loadProductionContent}
+              onOpenContentDialog={handleOpenContentDialog}
             />
           </div>
         )}
@@ -419,6 +437,9 @@ export const DailyPlanner = () => {
               showContent={showContent}
               contentDisplayMode={contentDisplayMode}
               productionContent={productionContent}
+              loadProductionContent={loadProductionContent}
+              onOpenContentDialog={handleOpenContentDialog}
+              savePlannerData={persistence.savePlannerData}
             />
           </div>
         )}
@@ -664,6 +685,15 @@ export const DailyPlanner = () => {
         refs={refs}
         setters={setters}
         actions={actions}
+      />
+
+      {/* Content Dialog */}
+      <ContentDialog
+        open={contentDialogState.open}
+        onOpenChange={(open) => setContentDialogState(prev => ({ ...prev, open }))}
+        content={contentDialogState.content}
+        type={contentDialogState.type}
+        onSave={() => helpers.loadProductionContent()}
       />
 
       {/* Floating Action Button */}

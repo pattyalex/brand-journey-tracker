@@ -9,7 +9,7 @@ import { RiTwitterXLine, RiThreadsLine, RiPushpinFill } from "react-icons/ri";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { StorageKeys, getString, setString } from "@/lib/storage";
+import { StorageKeys, getString, setString, remove } from "@/lib/storage";
 import { EVENTS, emit } from "@/lib/events";
 import {
   DropdownMenu,
@@ -175,6 +175,9 @@ const Production = () => {
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
   const [brainDumpSuggestion, setBrainDumpSuggestion] = useState<string>("");
 
+  // Highlighted unscheduled card state
+  const [highlightedUnscheduledCardId, setHighlightedUnscheduledCardId] = useState<string | null>(null);
+
   // Planned to scheduled conversion dialog state
   const [showPlannedToScheduledDialog, setShowPlannedToScheduledDialog] = useState(false);
   const [pendingScheduleMove, setPendingScheduleMove] = useState<{
@@ -306,6 +309,21 @@ const Production = () => {
     setDraggedCard(null);
     setDropPosition(null);
     setDraggedOverColumn(null);
+  }, []);
+
+  // Check for highlighted unscheduled card and show it
+  useEffect(() => {
+    const highlightedCardId = getString(StorageKeys.highlightedUnscheduledCard);
+    if (highlightedCardId) {
+      setHighlightedUnscheduledCardId(highlightedCardId);
+      // Clear from storage immediately
+      remove(StorageKeys.highlightedUnscheduledCard);
+      // Remove highlight after 4 seconds
+      const timer = setTimeout(() => {
+        setHighlightedUnscheduledCardId(null);
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   // Handle scrolling to specific column from URL parameter
@@ -1566,8 +1584,8 @@ const Production = () => {
 
   return (
     <Layout>
-      <div className="w-full h-[calc(100vh-5rem)] pl-0 pr-3 pt-0 pb-0 overflow-hidden bg-gray-50">
-        <div className="flex gap-4 h-full overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+      <div className="w-full h-[calc(100vh-2rem)] pl-4 pr-3 pt-2 pb-0 overflow-hidden bg-gray-50">
+        <div className="flex gap-4 h-full overflow-x-auto pb-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
           {columns.map((column, index) => {
             const colors = columnColors[column.id];
             return (
@@ -1576,7 +1594,7 @@ const Production = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="flex-shrink-0 w-[340px]"
+                className="flex-shrink-0 w-[340px] h-full"
                 onDragOver={(e) => handleDragOver(e, column.id)}
                 onDragLeave={handleDragLeave}
                 onDrop={(e) => handleDrop(e, column.id)}
@@ -1680,7 +1698,15 @@ const Production = () => {
                           </div>
                         )}
                         <AnimatePresence>
-                          {column.cards.filter(card => card.title && card.title.trim() && !card.title.toLowerCase().includes('add quick idea')).sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0)).map((card, cardIndex) => {
+                          {column.cards.filter(card => {
+                            // Basic filter: has title, not empty, not add quick idea
+                            const basicFilter = card.title && card.title.trim() && !card.title.toLowerCase().includes('add quick idea');
+                            // For to-schedule column: hide cards that already have a scheduledDate
+                            if (column.id === 'to-schedule' && card.scheduledDate) {
+                              return false;
+                            }
+                            return basicFilter;
+                          }).sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0)).map((card, cardIndex) => {
                             const isEditing = editingCardId === card.id;
 
                             // Find dragged card's current index in this column
@@ -1774,6 +1800,7 @@ const Production = () => {
                                 !isDragging && "transition-all duration-200",
                                 isThisCardDragged ? "opacity-40 scale-[0.98]" : "",
                                 card.isCompleted && "opacity-60",
+                                highlightedUnscheduledCardId === card.id ? "ring-2 ring-indigo-500 ring-offset-2 bg-indigo-50" :
                                 card.isNew ? "border-2 border-purple-600 bg-purple-100" : `${cardColors[column.id]?.bg || "bg-white/90"} border ${cardColors[column.id]?.border || "border-gray-100"}`
                               )}
                               style={{
@@ -1785,6 +1812,11 @@ const Production = () => {
                             {card.isNew && (
                               <div className="absolute -top-1 -right-1 bg-purple-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
                                 JUST ADDED
+                              </div>
+                            )}
+                            {highlightedUnscheduledCardId === card.id && (
+                              <div className="absolute -top-1 -right-1 bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
+                                UNSCHEDULED
                               </div>
                             )}
                             {/* Calendar origin indicator */}

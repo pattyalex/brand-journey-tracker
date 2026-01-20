@@ -63,8 +63,11 @@ export const TaskDialog = ({ state, derived, refs, setters, actions }: TaskDialo
     style={{ backgroundColor: '#ffffff' }}
     onOpenAutoFocus={(e) => e.preventDefault()}
   >
-    <DialogHeader className="px-6 pt-6 pb-4">
-      <DialogTitle className="text-xl font-semibold">{editingTask ? 'Edit Task' : 'New Task'}</DialogTitle>
+    <DialogHeader className="px-6 pt-6 pb-2">
+      <DialogTitle className="flex items-center gap-3">
+        <Edit className="w-5 h-5 text-gray-500" />
+        <span className="text-base font-medium text-gray-700">{editingTask?.id ? 'Edit Task' : 'Add Task'}</span>
+      </DialogTitle>
     </DialogHeader>
 
     <div className="px-6 pb-6 space-y-5">
@@ -78,7 +81,7 @@ export const TaskDialog = ({ state, derived, refs, setters, actions }: TaskDialo
           onFocus={handleTitleFocus}
           onKeyDown={handleTitleKeyDown}
           autoFocus={false}
-          className="text-base border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-gray-400"
+          className="text-lg border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-gray-400 placeholder:text-gray-400"
         />
       </div>
 

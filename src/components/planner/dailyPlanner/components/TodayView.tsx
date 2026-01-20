@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-import { Trash2, Video, Lightbulb, X, Clock, FileText, Palette, ArrowRight, Check, ListTodo } from "lucide-react";
+import { Trash2, Video, Lightbulb, X, Clock, FileText, Palette, ArrowRight, Check, ListTodo, CalendarCheck } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { PlannerItem } from "@/types/planner";
 import { CardContent } from "@/components/ui/card";
@@ -46,9 +47,10 @@ interface TodayViewProps {
     startTime: string;
     endTime: string;
   }>>;
+  onOpenContentDialog?: (content: ProductionCard, type: 'scheduled' | 'planned') => void;
 }
 
-export const TodayView = ({ state, derived, refs, helpers, setters, actions, todayAddDialogState, setTodayAddDialogState }: TodayViewProps) => {
+export const TodayView = ({ state, derived, refs, helpers, setters, actions, todayAddDialogState, setTodayAddDialogState, onOpenContentDialog }: TodayViewProps) => {
   const navigate = useNavigate();
 
   const {
@@ -125,13 +127,22 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
     }
   };
 
-  // Sync times when dialog opens
+  // Sync state when dialog opens
   useEffect(() => {
-    if (addDialogOpen && addDialogStartTime) {
-      setTaskStartTime(addDialogStartTime);
-      setTaskEndTime(addDialogEndTime);
+    if (addDialogOpen) {
+      // Set times
+      if (addDialogStartTime) {
+        setTaskStartTime(addDialogStartTime);
+        setTaskEndTime(addDialogEndTime);
+      }
+      // Set correct tab based on mode
+      if (contentDisplayMode === 'content') {
+        setAddDialogTab('content');
+      } else {
+        setAddDialogTab('task');
+      }
     }
-  }, [addDialogOpen, addDialogStartTime, addDialogEndTime]);
+  }, [addDialogOpen, addDialogStartTime, addDialogEndTime, contentDisplayMode]);
 
   // Handle creating a task from the dialog
   const handleCreateTaskFromDialog = () => {
@@ -221,6 +232,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
           setString(StorageKeys.productionKanban, JSON.stringify(columns));
           emit(window, EVENTS.productionKanbanUpdated);
           emit(window, EVENTS.scheduledContentUpdated);
+          loadProductionContent(); // Refresh content immediately
           toast.success('Content idea added for ' + format(selectedDate, 'MMM d'));
         }
       } catch (err) {
@@ -230,6 +242,60 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
 
     closeAddDialog();
     resetFormState();
+  };
+
+  // Handle deleting content from calendar
+  const handleDeleteContent = (contentId: string, type: 'scheduled' | 'planned') => {
+    const savedData = getString(StorageKeys.productionKanban);
+    if (savedData) {
+      try {
+        const columns: KanbanColumn[] = JSON.parse(savedData);
+
+        if (type === 'scheduled') {
+          const toScheduleColumn = columns.find(c => c.id === 'to-schedule');
+          if (toScheduleColumn) {
+            const card = toScheduleColumn.cards.find(c => c.id === contentId);
+            if (card) {
+              card.scheduledDate = undefined;
+              card.schedulingStatus = undefined;
+            }
+          }
+        } else {
+          const ideateColumn = columns.find(c => c.id === 'ideate');
+          if (ideateColumn) {
+            const card = ideateColumn.cards.find(c => c.id === contentId);
+            if (card) {
+              card.plannedDate = undefined;
+            }
+          }
+        }
+
+        setString(StorageKeys.productionKanban, JSON.stringify(columns));
+        emit(window, EVENTS.productionKanbanUpdated);
+        emit(window, EVENTS.scheduledContentUpdated);
+        loadProductionContent();
+        if (type === 'scheduled') {
+          toast.success(
+            <span>
+              Content unscheduled — still in{' '}
+              <button
+                onClick={() => {
+                  setString(StorageKeys.highlightedUnscheduledCard, contentId);
+                  navigate('/production?scrollTo=to-schedule');
+                }}
+                className="underline font-medium text-indigo-600 hover:text-indigo-800"
+              >
+                Content Hub
+              </button>
+            </span>
+          );
+        } else {
+          toast.success('Idea removed from calendar');
+        }
+      } catch (err) {
+        console.error('Error removing content:', err);
+      }
+    }
   };
 
   // Get today's content
@@ -244,7 +310,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
 
   const { dateString, currentDay, colors, getTimezoneDisplay } = derived;
   const { todayScrollRef, isResizingRef } = refs;
-  const { convert24To12Hour } = helpers;
+  const { convert24To12Hour, loadProductionContent } = helpers;
   const {
     handleOpenTaskDialog,
     handleTimezoneChange,
@@ -279,21 +345,71 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
           return (
             <div
               key={content.id}
-              className="text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5"
+              onClick={() => onOpenContentDialog?.(content, 'scheduled')}
+              className="group text-xs rounded-lg cursor-pointer hover:brightness-95 flex flex-col overflow-hidden"
               style={{ backgroundColor: colors.bg, color: colors.text }}
             >
-              <Video className="w-3 h-3" />
-              <span className="truncate max-w-[200px]">{content.hook || content.title}</span>
+              <div className="flex items-center gap-1.5 px-3 py-1.5">
+                <CalendarCheck className="w-3 h-3" />
+                <span className="truncate max-w-[200px]">{content.hook || content.title}</span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteContent(content.id, 'scheduled');
+                  }}
+                  className="opacity-0 group-hover:opacity-100 ml-1 text-gray-400 hover:text-amber-600 transition-all"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              {/* Progress indicator - 5 steps, step 5 is active */}
+              <div className="flex gap-0.5 px-2 pb-1.5">
+                {[1, 2, 3, 4, 5].map((step) => (
+                  <div
+                    key={step}
+                    className={`h-[2px] flex-1 rounded-full ${
+                      step === 5
+                        ? 'bg-current opacity-80'
+                        : 'bg-current opacity-25'
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
           );
         })}
         {plannedContent.map((content) => (
           <div
             key={content.id}
-            className="text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 bg-violet-50 border border-dashed border-violet-300 text-violet-700"
+            onClick={() => onOpenContentDialog?.(content, 'planned')}
+            className="group text-xs rounded-lg bg-violet-50 border border-dashed border-violet-300 text-violet-700 cursor-pointer hover:bg-violet-100 flex flex-col overflow-hidden"
           >
-            <Lightbulb className="w-3 h-3" />
-            <span className="truncate max-w-[200px]">{content.hook || content.title}</span>
+            <div className="flex items-center gap-1.5 px-3 py-1.5">
+              <Lightbulb className="w-3 h-3" />
+              <span className="truncate max-w-[200px]">{content.hook || content.title}</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteContent(content.id, 'planned');
+                }}
+                className="opacity-0 group-hover:opacity-100 ml-1 text-gray-400 hover:text-red-500 transition-all"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            {/* Progress indicator - 5 steps, step 1 is active for planned */}
+            <div className="flex gap-0.5 px-2 pb-1.5">
+              {[1, 2, 3, 4, 5].map((step) => (
+                <div
+                  key={step}
+                  className={`h-[2px] flex-1 rounded-full ${
+                    step === 1
+                      ? 'bg-violet-500 opacity-80'
+                      : 'bg-violet-300 opacity-40'
+                  }`}
+                />
+              ))}
+            </div>
           </div>
         ))}
       </div>
@@ -305,41 +421,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
       {/* Fixed header row */}
       <div className="flex border-b border-gray-200">
         {/* Time column header */}
-        <div className="flex-shrink-0 border-r border-gray-200 h-[60px] flex items-center justify-center" style={{ width: '60px' }}>
-          <Popover>
-            <PopoverTrigger asChild>
-              <button className="text-[11px] text-gray-400 font-medium hover:text-gray-600 hover:bg-gray-50 px-2 py-1 rounded transition-colors cursor-pointer" style={{ marginTop: '4px' }}>
-                {getTimezoneDisplay()}
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-56 p-2 bg-white" align="start">
-              <div className="space-y-1">
-                <div className="px-2 py-1.5 text-xs font-semibold text-gray-700">Select Timezone</div>
-                <button
-                  onClick={() => handleTimezoneChange('auto')}
-                  className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-gray-100 transition-colors ${selectedTimezone === 'auto' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'}`}
-                >
-                  Auto (detect)
-                </button>
-                <div className="h-px bg-gray-200 my-1"></div>
-                {TIMEZONES.map((tz) => (
-                  <button
-                    key={tz.value}
-                    onClick={() => handleTimezoneChange(tz.value)}
-                    className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-gray-100 transition-colors ${selectedTimezone === tz.value ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'}`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-col">
-                        <span>{tz.label}</span>
-                        <span className="text-[10px] text-gray-400">{tz.name}</span>
-                      </div>
-                      <span className="text-xs text-gray-400">{tz.offset}</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
+        <div className="flex-shrink-0 border-r border-gray-200 h-[60px]" style={{ width: '60px' }}>
         </div>
         {/* Date header */}
         <div className="flex-1 h-[60px] flex items-center justify-between px-4">
@@ -562,7 +644,8 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
 
         {/* Time labels are handled by hour labels only */}
 
-        {/* Render all tasks with absolute positioning */}
+        {/* Render all tasks with absolute positioning - only when showTasks is true */}
+        {showTasks && (
         <div className="absolute top-0 left-2 right-2">
           {(() => {
             const tasksWithTimes = currentDay.items.filter(item => item.startTime && item.endTime);
@@ -923,6 +1006,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
             );
           })()}
         </div>
+        )}
             </div>
           </div>
         </div>
@@ -996,6 +1080,13 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
             {/* Task Form */}
             {addDialogTab === 'task' && (
               <div className="px-6 pb-6 space-y-4 relative">
+                {/* Header - only show when not in "both" mode */}
+                {contentDisplayMode === 'tasks' && (
+                  <div className="flex items-center gap-3 mb-2">
+                    <ListTodo className="w-5 h-5 text-gray-500" />
+                    <span className="text-base font-medium text-gray-700">Add Task</span>
+                  </div>
+                )}
                 {/* Title */}
                 <div>
                   <input
@@ -1095,6 +1186,13 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
             {/* Content Form */}
             {addDialogTab === 'content' && (
               <div className="px-6 pb-6 space-y-4 relative">
+                {/* Header - only show when not in "both" mode */}
+                {contentDisplayMode === 'content' && (
+                  <div className="flex items-center gap-3 mb-2">
+                    <Lightbulb className="w-5 h-5 text-gray-500" />
+                    <span className="text-base font-medium text-gray-700">Add Content</span>
+                  </div>
+                )}
                 {/* Hook/Title */}
                 <div>
                   <input
@@ -1155,6 +1253,35 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                 {/* Content Hub CTA */}
                 <button
                   onClick={() => {
+                    // Create the content in Script Ideas column first
+                    if (contentHook.trim()) {
+                      const savedData = getString(StorageKeys.productionKanban);
+                      if (savedData) {
+                        try {
+                          const columns: KanbanColumn[] = JSON.parse(savedData);
+                          const ideateColumn = columns.find(c => c.id === 'ideate');
+                          if (ideateColumn) {
+                            const newCard: ProductionCard = {
+                              id: `card-${Date.now()}`,
+                              title: contentHook.trim(),
+                              hook: contentHook.trim(),
+                              description: contentNotes || undefined,
+                              columnId: 'ideate',
+                              plannedDate: dateString,
+                              plannedColor: contentColor as any,
+                              isNew: true,
+                            };
+                            ideateColumn.cards.push(newCard);
+                            setString(StorageKeys.productionKanban, JSON.stringify(columns));
+                            emit(window, EVENTS.productionKanbanUpdated);
+                            emit(window, EVENTS.scheduledContentUpdated);
+                            loadProductionContent(); // Refresh content immediately
+                          }
+                        } catch (err) {
+                          console.error('Error adding content:', err);
+                        }
+                      }
+                    }
                     closeAddDialog();
                     resetFormState();
                     navigate('/production');
@@ -1166,8 +1293,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                       <Video className="w-4 h-4 text-violet-600" />
                     </div>
                     <div className="text-left">
-                      <div className="text-sm font-medium text-gray-800">Need more details?</div>
-                      <div className="text-xs text-gray-500">Go to Content Hub for full editing</div>
+                      <div className="text-sm font-medium text-gray-700">Go to Content Hub to develop your idea further</div>
                     </div>
                   </div>
                   <ArrowRight className="w-4 h-4 text-violet-500 group-hover:translate-x-1 transition-transform" />

@@ -663,6 +663,7 @@ export const usePlannerActions = ({
       items: updatedPlannerData[dayIndex].items.filter(item => item.id !== taskId)
     };
     setPlannerData(updatedPlannerData);
+    savePlannerData(updatedPlannerData);
   };
 
   const handleSaveWeeklyTaskDetails = (taskId: string, dayString: string) => {
@@ -680,6 +681,7 @@ export const usePlannerActions = ({
         description: weeklyEditDescription
       };
       setPlannerData(updatedPlannerData);
+      savePlannerData(updatedPlannerData);
     }
 
     setWeeklyEditDialogOpen(null);

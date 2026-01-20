@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Sparkles, ArrowRight, Plus, Trash2, ChevronLeft } from "lucide-react";
+import { ArrowRight, Plus, Trash2, ChevronLeft } from "lucide-react";
 import { StorageKeys, getString, setString } from "@/lib/storage";
 
 interface TitleHookSuggestionsProps {
@@ -465,16 +465,6 @@ const TitleHookSuggestions = ({
 
   return (
     <>
-      <Button 
-        variant="ghost" 
-        size="xs"
-        className="absolute right-[23px] hover:bg-transparent active:scale-95 transition-all duration-150 p-1.5 h-auto"
-        onClick={() => setDialogOpen(true)}
-        aria-label="Show title hook suggestions"
-      >
-        <Sparkles className="h-5 w-5 text-primary" />
-      </Button>
-
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] border border-gray-200 flex flex-col overflow-hidden">
           <DialogHeader className="border-b border-gray-100 pb-4 flex-shrink-0">

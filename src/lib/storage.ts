@@ -42,7 +42,8 @@ export const StorageKeys = {
   contentValues: "contentValues",
   missionStatement: "missionStatement",
   pinnedContentIdeas: "pinnedContentIdeas",
-  contentIdeas: "contentIdeas"
+  contentIdeas: "contentIdeas",
+  highlightedUnscheduledCard: "highlightedUnscheduledCard"
 } as const;
 
 export const contentFormatsByPillar = (pillarId: string) => `content-formats-${pillarId}`;

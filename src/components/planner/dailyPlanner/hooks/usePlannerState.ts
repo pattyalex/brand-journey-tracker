@@ -155,38 +155,39 @@ export const usePlannerState = ({
     }
   }, [searchParams]);
 
-  // Load production content (scheduled and planned items from Content Hub)
+  // Load production content function (moved outside useEffect for reuse)
+  const loadProductionContent = useCallback(() => {
+    const savedData = getString(StorageKeys.productionKanban);
+    if (!savedData) {
+      setProductionContent({ scheduled: [], planned: [] });
+      return;
+    }
+
+    try {
+      const columns: KanbanColumn[] = JSON.parse(savedData);
+
+      // Get scheduled content from to-schedule column
+      const toScheduleColumn = columns.find(col => col.id === 'to-schedule');
+      const scheduledCards = toScheduleColumn?.cards.filter(
+        c => c.schedulingStatus === 'scheduled' && c.scheduledDate
+      ) || [];
+
+      // Get planned content from ideate column
+      const ideateColumn = columns.find(col => col.id === 'ideate');
+      const plannedCards = ideateColumn?.cards.filter(c => c.plannedDate) || [];
+
+      setProductionContent({
+        scheduled: scheduledCards,
+        planned: plannedCards
+      });
+    } catch (e) {
+      console.error("Error loading production content:", e);
+      setProductionContent({ scheduled: [], planned: [] });
+    }
+  }, []);
+
+  // Load production content on mount and listen for updates
   useEffect(() => {
-    const loadProductionContent = () => {
-      const savedData = getString(StorageKeys.productionKanban);
-      if (!savedData) {
-        setProductionContent({ scheduled: [], planned: [] });
-        return;
-      }
-
-      try {
-        const columns: KanbanColumn[] = JSON.parse(savedData);
-
-        // Get scheduled content from to-schedule column
-        const toScheduleColumn = columns.find(col => col.id === 'to-schedule');
-        const scheduledCards = toScheduleColumn?.cards.filter(
-          c => c.schedulingStatus === 'scheduled' && c.scheduledDate
-        ) || [];
-
-        // Get planned content from ideate column
-        const ideateColumn = columns.find(col => col.id === 'ideate');
-        const plannedCards = ideateColumn?.cards.filter(c => c.plannedDate) || [];
-
-        setProductionContent({
-          scheduled: scheduledCards,
-          planned: plannedCards
-        });
-      } catch (e) {
-        console.error("Error loading production content:", e);
-        setProductionContent({ scheduled: [], planned: [] });
-      }
-    };
-
     loadProductionContent();
 
     // Listen for content calendar updates
@@ -196,7 +197,7 @@ export const usePlannerState = ({
       unsubscribe();
       unsubscribe2();
     };
-  }, []);
+  }, [loadProductionContent]);
 
   const [isDraggingOverAllTasks, setIsDraggingOverAllTasks] = useState(false);
   const [draggingTaskText, setDraggingTaskText] = useState<string>("");
@@ -462,6 +463,7 @@ export const usePlannerState = ({
     helpers: {
       convert24To12Hour,
       convert12To24Hour,
+      loadProductionContent,
     },
   };
 };

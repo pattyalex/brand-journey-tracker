@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { eachDayOfInterval, endOfWeek, format, isSameDay, startOfWeek } from "date-fns";
-import { Trash2, Video, Lightbulb, X, Clock, FileText, Palette, ArrowRight, Check, ListTodo } from "lucide-react";
+import { Trash2, Video, Lightbulb, X, Clock, FileText, Palette, ArrowRight, Check, ListTodo, CalendarCheck } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -92,6 +93,8 @@ interface WeekViewProps {
     startTime: string;
     endTime: string;
   }>>;
+  loadProductionContent?: () => void;
+  onOpenContentDialog?: (content: ProductionCard, type: 'scheduled' | 'planned') => void;
 }
 
 export const WeekView = ({
@@ -134,6 +137,8 @@ export const WeekView = ({
   productionContent = { scheduled: [], planned: [] },
   weeklyAddDialogState,
   setWeeklyAddDialogState,
+  loadProductionContent,
+  onOpenContentDialog,
 }: WeekViewProps) => {
   const navigate = useNavigate();
 
@@ -193,13 +198,22 @@ export const WeekView = ({
     setContentColor("violet");
   };
 
-  // Sync task times with dialog state when it opens
+  // Sync state when dialog opens
   useEffect(() => {
-    if (addDialogOpen && addDialogStartTime) {
-      setTaskStartTime(addDialogStartTime);
-      setTaskEndTime(addDialogEndTime);
+    if (addDialogOpen) {
+      // Set times
+      if (addDialogStartTime) {
+        setTaskStartTime(addDialogStartTime);
+        setTaskEndTime(addDialogEndTime);
+      }
+      // Set correct tab based on mode
+      if (contentDisplayMode === 'content') {
+        setAddDialogTab('content');
+      } else {
+        setAddDialogTab('task');
+      }
     }
-  }, [addDialogOpen, addDialogStartTime, addDialogEndTime]);
+  }, [addDialogOpen, addDialogStartTime, addDialogEndTime, contentDisplayMode]);
 
   // Handle creating a task from the dialog
   const handleCreateTaskFromDialog = () => {
@@ -275,6 +289,7 @@ export const WeekView = ({
           setString(StorageKeys.productionKanban, JSON.stringify(columns));
           emit(window, EVENTS.productionKanbanUpdated);
           emit(window, EVENTS.scheduledContentUpdated);
+          loadProductionContent?.(); // Refresh content immediately
           toast.success('Content idea added for ' + format(new Date(addDialogDate), 'MMM d'));
         }
       } catch (err) {
@@ -286,6 +301,60 @@ export const WeekView = ({
     resetFormState();
   };
 
+  // Handle deleting content from calendar
+  const handleDeleteContent = (contentId: string, type: 'scheduled' | 'planned') => {
+    const savedData = getString(StorageKeys.productionKanban);
+    if (savedData) {
+      try {
+        const columns: KanbanColumn[] = JSON.parse(savedData);
+
+        if (type === 'scheduled') {
+          const toScheduleColumn = columns.find(c => c.id === 'to-schedule');
+          if (toScheduleColumn) {
+            const card = toScheduleColumn.cards.find(c => c.id === contentId);
+            if (card) {
+              card.scheduledDate = undefined;
+              card.schedulingStatus = undefined;
+            }
+          }
+        } else {
+          const ideateColumn = columns.find(c => c.id === 'ideate');
+          if (ideateColumn) {
+            const card = ideateColumn.cards.find(c => c.id === contentId);
+            if (card) {
+              card.plannedDate = undefined;
+            }
+          }
+        }
+
+        setString(StorageKeys.productionKanban, JSON.stringify(columns));
+        emit(window, EVENTS.productionKanbanUpdated);
+        emit(window, EVENTS.scheduledContentUpdated);
+        loadProductionContent?.();
+        if (type === 'scheduled') {
+          toast.success(
+            <span>
+              Content unscheduled — still in{' '}
+              <button
+                onClick={() => {
+                  setString(StorageKeys.highlightedUnscheduledCard, contentId);
+                  navigate('/production?scrollTo=to-schedule');
+                }}
+                className="underline font-medium text-indigo-600 hover:text-indigo-800"
+              >
+                Content Hub
+              </button>
+            </span>
+          );
+        } else {
+          toast.success('Idea removed from calendar');
+        }
+      } catch (err) {
+        console.error('Error removing content:', err);
+      }
+    }
+  };
+
   return (
     <>
       <CardContent className="px-0 h-full flex flex-col">
@@ -293,41 +362,7 @@ export const WeekView = ({
           {/* Fixed header row */}
           <div className="flex border-b border-gray-200">
             {/* Time column header */}
-            <div className="flex-shrink-0 bg-white border-r border-gray-200 h-[60px] flex items-center justify-center" style={{ width: '40px' }}>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button className="text-[9px] text-gray-400 font-medium hover:text-gray-600 hover:bg-gray-50 px-1 py-0.5 rounded transition-colors cursor-pointer">
-                    {getTimezoneDisplay()}
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent className="w-56 p-2 bg-white" align="start">
-                  <div className="space-y-1">
-                    <div className="px-2 py-1.5 text-xs font-semibold text-gray-700">Select Timezone</div>
-                    <button
-                      onClick={() => handleTimezoneChange('auto')}
-                      className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-gray-100 transition-colors ${selectedTimezone === 'auto' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'}`}
-                    >
-                      Auto (detect)
-                    </button>
-                    <div className="h-px bg-gray-200 my-1"></div>
-                    {timezones.map((tz) => (
-                      <button
-                        key={tz.value}
-                        onClick={() => handleTimezoneChange(tz.value)}
-                        className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-gray-100 transition-colors ${selectedTimezone === tz.value ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'}`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex flex-col">
-                            <span>{tz.label}</span>
-                            <span className="text-[10px] text-gray-400">{tz.name}</span>
-                          </div>
-                          <span className="text-xs text-gray-400">{tz.offset}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover>
+            <div className="flex-shrink-0 bg-white border-r border-gray-200 h-[60px]" style={{ width: '40px' }}>
             </div>
             {/* Day headers */}
             <div className="flex-1 grid grid-cols-7 gap-0">
@@ -357,6 +392,118 @@ export const WeekView = ({
               })}
             </div>
           </div>
+
+          {/* Fixed Content Row - below headers, above time slots */}
+          {(contentDisplayMode === 'content' || contentDisplayMode === 'both') && (
+            <div className="flex border-b border-gray-200 bg-gradient-to-r from-indigo-50/50 to-violet-50/50">
+              {/* Empty cell for time column */}
+              <div className="flex-shrink-0 bg-transparent border-r border-gray-200" style={{ width: '40px' }} />
+              {/* Content columns */}
+              <div className="flex-1 grid grid-cols-7 gap-0">
+                {eachDayOfInterval({
+                  start: startOfWeek(selectedDate, { weekStartsOn: 1 }),
+                  end: endOfWeek(selectedDate, { weekStartsOn: 1 })
+                }).map((day, index) => {
+                  const dayString = getDateString(day);
+                  const isPast = day < new Date() && !isSameDay(day, new Date());
+
+                  // Get content for this specific day
+                  const dayScheduledContent = productionContent.scheduled.filter(c =>
+                    c.scheduledDate?.split('T')[0] === dayString
+                  );
+                  const dayPlannedContent = productionContent.planned.filter(c =>
+                    c.plannedDate?.split('T')[0] === dayString
+                  );
+                  const hasContent = dayScheduledContent.length > 0 || dayPlannedContent.length > 0;
+
+                  return (
+                    <div
+                      key={`content-${dayString}`}
+                      className="min-h-[40px] p-1 flex flex-col gap-1"
+                      style={{
+                        borderRight: index < 6 ? '1px solid #e5e7eb' : 'none',
+                        opacity: isPast ? 0.5 : 1
+                      }}
+                    >
+                      {dayScheduledContent.map((content) => {
+                        const colorKey = content.scheduledColor || 'indigo';
+                        const colors = scheduleColors[colorKey] || scheduleColors.indigo;
+                        return (
+                          <div
+                            key={content.id}
+                            onClick={() => onOpenContentDialog?.(content, 'scheduled')}
+                            className="group text-[10px] rounded cursor-pointer hover:brightness-95 flex flex-col overflow-hidden"
+                            style={{ backgroundColor: colors.bg, color: colors.text }}
+                          >
+                            <div className="flex items-center gap-1 px-1.5 py-1">
+                              <CalendarCheck className="w-2.5 h-2.5 flex-shrink-0" />
+                              <span className="flex-1 truncate">{content.hook || content.title}</span>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteContent(content.id, 'scheduled');
+                                }}
+                                className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-amber-600 transition-all"
+                              >
+                                <X className="w-2.5 h-2.5" />
+                              </button>
+                            </div>
+                            {/* Progress indicator - 5 steps, step 5 is active */}
+                            <div className="flex gap-0.5 px-1 pb-1">
+                              {[1, 2, 3, 4, 5].map((step) => (
+                                <div
+                                  key={step}
+                                  className={`h-[2px] flex-1 rounded-full ${
+                                    step === 5
+                                      ? 'bg-current opacity-80'
+                                      : 'bg-current opacity-25'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {dayPlannedContent.map((content) => (
+                        <div
+                          key={content.id}
+                          onClick={() => onOpenContentDialog?.(content, 'planned')}
+                          className="group text-[10px] rounded border border-dashed border-violet-300 bg-violet-50 text-violet-700 cursor-pointer hover:bg-violet-100 flex flex-col overflow-hidden"
+                        >
+                          <div className="flex items-center gap-1 px-1.5 py-1">
+                            <Lightbulb className="w-2.5 h-2.5 flex-shrink-0" />
+                            <span className="flex-1 truncate">{content.hook || content.title}</span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteContent(content.id, 'planned');
+                              }}
+                              className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all"
+                            >
+                              <X className="w-2.5 h-2.5" />
+                            </button>
+                          </div>
+                          {/* Progress indicator - 5 steps, step 1 is active for planned */}
+                          <div className="flex gap-0.5 px-1 pb-1">
+                            {[1, 2, 3, 4, 5].map((step) => (
+                              <div
+                                key={step}
+                                className={`h-[2px] flex-1 rounded-full ${
+                                  step === 1
+                                    ? 'bg-violet-500 opacity-80'
+                                    : 'bg-violet-300 opacity-40'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Scrollable timeline area */}
           <div ref={weeklyScrollRef} className="flex-1 min-h-0 overflow-auto">
@@ -463,8 +610,51 @@ export const WeekView = ({
                                   e.currentTarget.classList.remove('bg-blue-100');
 
                                   const taskId = e.dataTransfer.getData('taskId');
+                                  const contentId = e.dataTransfer.getData('contentId');
+                                  const contentType = e.dataTransfer.getData('contentType');
                                   const fromDate = e.dataTransfer.getData('fromDate');
                                   const fromAllTasks = e.dataTransfer.getData('fromAllTasks');
+
+                                  // Handle content drops (move between days)
+                                  if (contentId && contentType) {
+                                    const savedData = getString(StorageKeys.productionKanban);
+                                    if (savedData) {
+                                      try {
+                                        const columns: KanbanColumn[] = JSON.parse(savedData);
+
+                                        if (contentType === 'scheduled') {
+                                          const toScheduleColumn = columns.find(c => c.id === 'to-schedule');
+                                          if (toScheduleColumn) {
+                                            const card = toScheduleColumn.cards.find(c => c.id === contentId);
+                                            if (card) {
+                                              card.scheduledDate = dayString;
+                                              setString(StorageKeys.productionKanban, JSON.stringify(columns));
+                                              emit(window, EVENTS.productionKanbanUpdated);
+                                              emit(window, EVENTS.scheduledContentUpdated);
+                                              loadProductionContent?.();
+                                              toast.success('Content moved to ' + format(new Date(dayString), 'MMM d'));
+                                            }
+                                          }
+                                        } else if (contentType === 'planned') {
+                                          const ideateColumn = columns.find(c => c.id === 'ideate');
+                                          if (ideateColumn) {
+                                            const card = ideateColumn.cards.find(c => c.id === contentId);
+                                            if (card) {
+                                              card.plannedDate = dayString;
+                                              setString(StorageKeys.productionKanban, JSON.stringify(columns));
+                                              emit(window, EVENTS.productionKanbanUpdated);
+                                              emit(window, EVENTS.scheduledContentUpdated);
+                                              loadProductionContent?.();
+                                              toast.success('Content idea moved to ' + format(new Date(dayString), 'MMM d'));
+                                            }
+                                          }
+                                        }
+                                      } catch (err) {
+                                        console.error('Error moving content:', err);
+                                      }
+                                    }
+                                    return;
+                                  }
 
                                   if (!taskId) return;
 
@@ -926,45 +1116,66 @@ export const WeekView = ({
                           })()}
 
                           {/* Content items and Tasks without time in list format */}
-                          <div className="absolute top-0 left-0 right-0 px-1 py-2 space-y-1">
-                            {/* Scheduled content */}
-                            {showContent && (() => {
-                              const scheduledContent = productionContent.scheduled.filter(c =>
-                                c.scheduledDate?.split('T')[0] === dayString
-                              );
-                              return scheduledContent.map((content) => {
-                                const colorKey = content.scheduledColor || 'indigo';
-                                const colors = scheduleColors[colorKey] || scheduleColors.indigo;
-                                return (
-                                  <div
-                                    key={content.id}
-                                    className="text-[11px] px-2 py-1.5 rounded-md flex items-center gap-1"
-                                    style={{ backgroundColor: colors.bg, color: colors.text, opacity: isPast ? 0.5 : 1 }}
-                                  >
-                                    <Video className="w-3 h-3 flex-shrink-0" />
-                                    <span className="flex-1 truncate leading-tight">{content.hook || content.title}</span>
-                                  </div>
-                                );
-                              });
-                            })()}
+                          <div
+                            className="absolute top-0 left-0 right-0 px-1 py-2 space-y-1 cursor-default z-[101] pointer-events-auto"
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              e.currentTarget.classList.add('bg-violet-50/50');
+                            }}
+                            onDragLeave={(e) => {
+                              e.currentTarget.classList.remove('bg-violet-50/50');
+                            }}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              e.currentTarget.classList.remove('bg-violet-50/50');
 
-                            {/* Planned content */}
-                            {showContent && (() => {
-                              const plannedContent = productionContent.planned.filter(c =>
-                                c.plannedDate?.split('T')[0] === dayString
-                              );
-                              return plannedContent.map((content) => (
-                                <div
-                                  key={content.id}
-                                  className="text-[11px] px-2 py-1.5 rounded-md border border-dashed border-violet-300 bg-violet-50 text-violet-700 flex items-center gap-1"
-                                  style={{ opacity: isPast ? 0.5 : 1 }}
-                                >
-                                  <Lightbulb className="w-3 h-3 flex-shrink-0" />
-                                  <span className="flex-1 truncate leading-tight">{content.hook || content.title}</span>
-                                </div>
-                              ));
-                            })()}
+                              const contentId = e.dataTransfer.getData('contentId');
+                              const contentType = e.dataTransfer.getData('contentType');
+                              const fromDate = e.dataTransfer.getData('fromDate');
 
+                              // Handle content drops (move between days)
+                              if (contentId && contentType && fromDate !== dayString) {
+                                const savedData = getString(StorageKeys.productionKanban);
+                                if (savedData) {
+                                  try {
+                                    const columns: KanbanColumn[] = JSON.parse(savedData);
+
+                                    if (contentType === 'scheduled') {
+                                      const toScheduleColumn = columns.find(c => c.id === 'to-schedule');
+                                      if (toScheduleColumn) {
+                                        const card = toScheduleColumn.cards.find(c => c.id === contentId);
+                                        if (card) {
+                                          card.scheduledDate = dayString;
+                                          setString(StorageKeys.productionKanban, JSON.stringify(columns));
+                                          emit(window, EVENTS.productionKanbanUpdated);
+                                          emit(window, EVENTS.scheduledContentUpdated);
+                                          loadProductionContent?.();
+                                          toast.success('Content moved to ' + format(new Date(dayString), 'MMM d'));
+                                        }
+                                      }
+                                    } else if (contentType === 'planned') {
+                                      const ideateColumn = columns.find(c => c.id === 'ideate');
+                                      if (ideateColumn) {
+                                        const card = ideateColumn.cards.find(c => c.id === contentId);
+                                        if (card) {
+                                          card.plannedDate = dayString;
+                                          setString(StorageKeys.productionKanban, JSON.stringify(columns));
+                                          emit(window, EVENTS.productionKanbanUpdated);
+                                          emit(window, EVENTS.scheduledContentUpdated);
+                                          loadProductionContent?.();
+                                          toast.success('Content idea moved to ' + format(new Date(dayString), 'MMM d'));
+                                        }
+                                      }
+                                    }
+                                  } catch (err) {
+                                    console.error('Error moving content:', err);
+                                  }
+                                }
+                              }
+                            }}
+                          >
                             {/* Tasks without time */}
                             {showTasks && (() => {
                               const tasksWithoutTimes = (dayData?.items || []).filter(item => !item.startTime || !item.endTime);
@@ -1067,7 +1278,7 @@ export const WeekView = ({
 
       {/* Add Task/Content Dialog */}
       {addDialogOpen && (
-        <div className="fixed inset-0 z-[100]">
+        <div className="fixed inset-0 z-[200]">
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/30"
@@ -1130,6 +1341,13 @@ export const WeekView = ({
             {/* Task Form */}
             {addDialogTab === 'task' && (
               <div className="px-6 pb-6 space-y-4 relative">
+                {/* Header - only show when not in "both" mode */}
+                {contentDisplayMode === 'tasks' && (
+                  <div className="flex items-center gap-3 mb-2">
+                    <ListTodo className="w-5 h-5 text-gray-500" />
+                    <span className="text-base font-medium text-gray-700">Add Task</span>
+                  </div>
+                )}
                 {/* Title */}
                 <div>
                   <input
@@ -1229,6 +1447,13 @@ export const WeekView = ({
             {/* Content Form */}
             {addDialogTab === 'content' && (
               <div className="px-6 pb-6 space-y-4 relative">
+                {/* Header - only show when not in "both" mode */}
+                {contentDisplayMode === 'content' && (
+                  <div className="flex items-center gap-3 mb-2">
+                    <Lightbulb className="w-5 h-5 text-gray-500" />
+                    <span className="text-base font-medium text-gray-700">Add Content</span>
+                  </div>
+                )}
                 {/* Hook/Title */}
                 <div>
                   <input
@@ -1289,6 +1514,35 @@ export const WeekView = ({
                 {/* Content Hub CTA */}
                 <button
                   onClick={() => {
+                    // Create the content in Script Ideas column first
+                    if (contentHook.trim()) {
+                      const savedData = getString(StorageKeys.productionKanban);
+                      if (savedData) {
+                        try {
+                          const columns: KanbanColumn[] = JSON.parse(savedData);
+                          const ideateColumn = columns.find(c => c.id === 'ideate');
+                          if (ideateColumn) {
+                            const newCard: ProductionCard = {
+                              id: `card-${Date.now()}`,
+                              title: contentHook.trim(),
+                              hook: contentHook.trim(),
+                              description: contentNotes || undefined,
+                              columnId: 'ideate',
+                              plannedDate: addDialogDate,
+                              plannedColor: contentColor as any,
+                              isNew: true,
+                            };
+                            ideateColumn.cards.push(newCard);
+                            setString(StorageKeys.productionKanban, JSON.stringify(columns));
+                            emit(window, EVENTS.productionKanbanUpdated);
+                            emit(window, EVENTS.scheduledContentUpdated);
+                            loadProductionContent?.(); // Refresh content immediately
+                          }
+                        } catch (err) {
+                          console.error('Error adding content:', err);
+                        }
+                      }
+                    }
                     closeAddDialog();
                     resetFormState();
                     navigate('/production');
@@ -1300,8 +1554,7 @@ export const WeekView = ({
                       <Video className="w-4 h-4 text-violet-600" />
                     </div>
                     <div className="text-left">
-                      <div className="text-sm font-medium text-gray-800">Need more details?</div>
-                      <div className="text-xs text-gray-500">Go to Content Hub for full editing</div>
+                      <div className="text-sm font-medium text-gray-700">Go to Content Hub to develop your idea further</div>
                     </div>
                   </div>
                   <ArrowRight className="w-4 h-4 text-violet-500 group-hover:translate-x-1 transition-transform" />

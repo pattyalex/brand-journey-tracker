@@ -7,7 +7,8 @@ import { PlannerDay, PlannerItem } from "@/types/planner";
 import { PlannerView, TimezoneOption } from "../types";
 import { getDateString } from "../utils/plannerUtils";
 import { ProductionCard, KanbanColumn } from "@/pages/production/types";
-import { Video, Lightbulb, ListTodo, X, Clock, FileText, Palette, ArrowRight, Check } from "lucide-react";
+import { Video, Lightbulb, ListTodo, X, Clock, FileText, Palette, ArrowRight, Check, Trash2, CalendarCheck } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { StorageKeys, getString, setString } from "@/lib/storage";
 import { EVENTS, emit } from "@/lib/events";
 import { ContentDisplayMode } from "../hooks/usePlannerState";
@@ -42,6 +43,9 @@ interface CalendarViewProps {
     scheduled: ProductionCard[];
     planned: ProductionCard[];
   };
+  loadProductionContent?: () => void;
+  onOpenContentDialog?: (content: ProductionCard, type: 'scheduled' | 'planned') => void;
+  savePlannerData?: (data: PlannerDay[]) => void;
 }
 
 // Color mappings for content items
@@ -82,6 +86,9 @@ export const CalendarView = ({
   showContent = false,
   contentDisplayMode = 'tasks',
   productionContent = { scheduled: [], planned: [] },
+  loadProductionContent,
+  onOpenContentDialog,
+  savePlannerData,
 }: CalendarViewProps) => {
   const navigate = useNavigate();
 
@@ -229,6 +236,7 @@ export const CalendarView = ({
           setString(StorageKeys.productionKanban, JSON.stringify(columns));
           emit(window, EVENTS.productionKanbanUpdated);
           emit(window, EVENTS.scheduledContentUpdated);
+          loadProductionContent?.(); // Refresh content immediately
           toast.success('Content idea added for ' + format(new Date(addDialogDate), 'MMM d'));
         }
       } catch (err) {
@@ -238,6 +246,77 @@ export const CalendarView = ({
 
     setAddDialogOpen(false);
     resetFormState();
+  };
+
+  // Handle deleting a task
+  const handleDeleteTask = (taskId: string, dayString: string) => {
+    const dayIndex = plannerData.findIndex(d => d.date === dayString);
+    if (dayIndex >= 0) {
+      const updatedData = [...plannerData];
+      updatedData[dayIndex] = {
+        ...updatedData[dayIndex],
+        items: updatedData[dayIndex].items.filter(item => item.id !== taskId)
+      };
+      setPlannerData(updatedData);
+      savePlannerData?.(updatedData);
+      toast.success('Task deleted');
+    }
+  };
+
+  // Handle deleting content from calendar
+  const handleDeleteContent = (contentId: string, type: 'scheduled' | 'planned') => {
+    const savedData = getString(StorageKeys.productionKanban);
+    if (savedData) {
+      try {
+        const columns: KanbanColumn[] = JSON.parse(savedData);
+
+        if (type === 'scheduled') {
+          // Remove scheduled date from to-schedule column
+          const toScheduleColumn = columns.find(c => c.id === 'to-schedule');
+          if (toScheduleColumn) {
+            const card = toScheduleColumn.cards.find(c => c.id === contentId);
+            if (card) {
+              card.scheduledDate = undefined;
+              card.schedulingStatus = undefined;
+            }
+          }
+        } else {
+          // Remove planned date from ideate column
+          const ideateColumn = columns.find(c => c.id === 'ideate');
+          if (ideateColumn) {
+            const card = ideateColumn.cards.find(c => c.id === contentId);
+            if (card) {
+              card.plannedDate = undefined;
+            }
+          }
+        }
+
+        setString(StorageKeys.productionKanban, JSON.stringify(columns));
+        emit(window, EVENTS.productionKanbanUpdated);
+        emit(window, EVENTS.scheduledContentUpdated);
+        loadProductionContent?.();
+        if (type === 'scheduled') {
+          toast.success(
+            <span>
+              Content unscheduled — still in{' '}
+              <button
+                onClick={() => {
+                  setString(StorageKeys.highlightedUnscheduledCard, contentId);
+                  navigate('/production?scrollTo=to-schedule');
+                }}
+                className="underline font-medium text-indigo-600 hover:text-indigo-800"
+              >
+                Content Hub
+              </button>
+            </span>
+          );
+        } else {
+          toast.success('Idea removed from calendar');
+        }
+      } catch (err) {
+        console.error('Error removing content:', err);
+      }
+    }
   };
 
   // Handle drop for both tasks and content
@@ -389,7 +468,7 @@ export const CalendarView = ({
                 <div
                   key={dayString}
                   data-day={dayString}
-                  className={`min-h-[120px] rounded-lg border p-1.5 transition-all cursor-pointer relative ${
+                  className={`h-[140px] rounded-lg border p-1.5 transition-all cursor-pointer flex flex-col ${
                     isCurrentMonth
                       ? 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50'
                       : 'bg-gray-50 border-gray-100 text-gray-400'
@@ -406,7 +485,7 @@ export const CalendarView = ({
                   }}
                   onDrop={(e) => handleDrop(e, dayString, e.currentTarget)}
                 >
-                  <span className={`absolute top-1.5 left-2 text-sm font-medium ${
+                  <span className={`text-sm font-medium flex-shrink-0 ${
                     isToday ? 'text-indigo-600 font-bold' : ''
                   }`}>
                     {format(day, 'd')}
@@ -414,7 +493,7 @@ export const CalendarView = ({
 
                   {/* Task and Content indicators */}
                   <div
-                    className="absolute top-7 left-1 right-1 bottom-1 flex flex-col gap-1 overflow-y-auto"
+                    className="flex-1 min-h-0 flex flex-col gap-1 overflow-y-auto mt-1"
                     onDragOver={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -442,7 +521,7 @@ export const CalendarView = ({
                     }}
                   >
                     {/* Tasks */}
-                    {tasksToShow.slice(0, showContent ? 2 : 3).map((task) => (
+                    {tasksToShow.map((task) => (
                       <div
                         key={task.id}
                         draggable={true}
@@ -464,17 +543,26 @@ export const CalendarView = ({
                         onDragEnd={(e) => {
                           e.currentTarget.style.opacity = '1';
                         }}
-                        className="text-[11px] px-2 py-1.5 rounded-md cursor-grab active:cursor-grabbing transition-colors hover:shadow-sm"
+                        className="group text-[11px] px-2 py-1.5 rounded-md cursor-grab active:cursor-grabbing transition-colors hover:shadow-sm flex-shrink-0"
                         style={{ backgroundColor: task.color || '#e0e7ff' }}
                       >
                         <div className="flex items-center gap-1">
                           <div className="flex-1 truncate leading-tight">{task.text}</div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteTask(task.id, dayString);
+                            }}
+                            className="opacity-0 group-hover:opacity-100 flex-shrink-0 text-gray-500 hover:text-red-500 transition-all"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
                         </div>
                       </div>
                     ))}
 
                     {/* Scheduled Content */}
-                    {showContent && scheduledContent.slice(0, showTasks ? 1 : 2).map((content) => {
+                    {showContent && scheduledContent.map((content) => {
                       const colorKey = content.scheduledColor || 'indigo';
                       const colors = scheduleColors[colorKey] || scheduleColors.indigo;
                       return (
@@ -483,7 +571,7 @@ export const CalendarView = ({
                           draggable={true}
                           onClick={(e) => {
                             e.stopPropagation();
-                            setViewContentDialog(content);
+                            onOpenContentDialog?.(content, 'scheduled');
                           }}
                           onMouseDown={(e) => e.stopPropagation()}
                           onDragStart={(e) => {
@@ -502,23 +590,47 @@ export const CalendarView = ({
                           onDragEnd={(e) => {
                             e.currentTarget.style.opacity = '1';
                           }}
-                          className="text-[11px] px-2 py-1.5 rounded-md transition-colors hover:shadow-md flex items-center gap-1 cursor-pointer"
+                          className="group text-[11px] rounded-md transition-colors hover:shadow-md cursor-pointer flex flex-col overflow-hidden flex-shrink-0"
                           style={{ backgroundColor: colors.bg, color: colors.text }}
                         >
-                          <Video className="w-3 h-3 flex-shrink-0" />
-                          <span className="flex-1 truncate leading-tight">{content.hook || content.title}</span>
+                          <div className="flex items-center gap-1 px-2 py-1.5">
+                            <CalendarCheck className="w-3 h-3 flex-shrink-0" />
+                            <span className="flex-1 truncate leading-tight">{content.hook || content.title}</span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteContent(content.id, 'scheduled');
+                              }}
+                              className="opacity-0 group-hover:opacity-100 ml-auto flex-shrink-0 text-gray-400 hover:text-amber-600 transition-all"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                          {/* Progress indicator - 5 steps, step 5 is active */}
+                          <div className="flex gap-0.5 px-1.5 pb-1">
+                            {[1, 2, 3, 4, 5].map((step) => (
+                              <div
+                                key={step}
+                                className={`h-[2px] flex-1 rounded-full ${
+                                  step === 5
+                                    ? 'bg-current opacity-80'
+                                    : 'bg-current opacity-25'
+                                }`}
+                              />
+                            ))}
+                          </div>
                         </div>
                       );
                     })}
 
                     {/* Planned Content */}
-                    {showContent && plannedContent.slice(0, showTasks ? 1 : 2).map((content) => (
+                    {showContent && plannedContent.map((content) => (
                       <div
                         key={content.id}
                         draggable={true}
                         onClick={(e) => {
                           e.stopPropagation();
-                          setViewContentDialog(content);
+                          onOpenContentDialog?.(content, 'planned');
                         }}
                         onMouseDown={(e) => e.stopPropagation()}
                         onDragStart={(e) => {
@@ -537,18 +649,37 @@ export const CalendarView = ({
                         onDragEnd={(e) => {
                           e.currentTarget.style.opacity = '1';
                         }}
-                        className="text-[11px] px-2 py-1.5 rounded-md border border-dashed border-violet-300 bg-violet-50 text-violet-700 flex items-center gap-1 cursor-pointer hover:shadow-md"
+                        className="group text-[11px] rounded-md border border-dashed border-violet-300 bg-violet-50 text-violet-700 cursor-pointer hover:shadow-md flex flex-col overflow-hidden flex-shrink-0"
                       >
-                        <Lightbulb className="w-3 h-3 flex-shrink-0" />
-                        <span className="flex-1 truncate leading-tight">{content.hook || content.title}</span>
+                        <div className="flex items-center gap-1 px-2 py-1.5">
+                          <Lightbulb className="w-3 h-3 flex-shrink-0" />
+                          <span className="flex-1 truncate leading-tight">{content.hook || content.title}</span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteContent(content.id, 'planned');
+                            }}
+                            className="opacity-0 group-hover:opacity-100 ml-auto flex-shrink-0 text-gray-400 hover:text-red-500 transition-all"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                        {/* Progress indicator - 5 steps, step 1 is active for planned */}
+                        <div className="flex gap-0.5 px-1.5 pb-1">
+                          {[1, 2, 3, 4, 5].map((step) => (
+                            <div
+                              key={step}
+                              className={`h-[2px] flex-1 rounded-full ${
+                                step === 1
+                                  ? 'bg-violet-500 opacity-80'
+                                  : 'bg-violet-300 opacity-40'
+                              }`}
+                            />
+                          ))}
+                        </div>
                       </div>
                     ))}
 
-                    {totalItems > 3 && (
-                      <div className="text-[10px] text-gray-500 px-2">
-                        +{totalItems - 3} more
-                      </div>
-                    )}
                   </div>
                 </div>
               );
@@ -617,6 +748,13 @@ export const CalendarView = ({
             {/* Task Form */}
             {addDialogTab === 'task' && (
               <div className="px-6 pb-6 space-y-4">
+                {/* Header - only show when not in "both" mode */}
+                {contentDisplayMode === 'tasks' && (
+                  <div className="flex items-center gap-3 mb-2">
+                    <ListTodo className="w-5 h-5 text-gray-500" />
+                    <span className="text-base font-medium text-gray-700">Add Task</span>
+                  </div>
+                )}
                 {/* Title */}
                 <div>
                   <input
@@ -717,6 +855,13 @@ export const CalendarView = ({
             {/* Content Form */}
             {addDialogTab === 'content' && (
               <div className="px-6 pb-6 space-y-4">
+                {/* Header - only show when not in "both" mode */}
+                {contentDisplayMode === 'content' && (
+                  <div className="flex items-center gap-3 mb-2">
+                    <Lightbulb className="w-5 h-5 text-gray-500" />
+                    <span className="text-base font-medium text-gray-700">Add Content</span>
+                  </div>
+                )}
                 {/* Hook/Title */}
                 <div>
                   <input
@@ -778,6 +923,35 @@ export const CalendarView = ({
                 {/* Content Hub CTA */}
                 <button
                   onClick={() => {
+                    // Create the content in Script Ideas column first
+                    if (contentHook.trim()) {
+                      const savedData = getString(StorageKeys.productionKanban);
+                      if (savedData) {
+                        try {
+                          const columns: KanbanColumn[] = JSON.parse(savedData);
+                          const ideateColumn = columns.find(c => c.id === 'ideate');
+                          if (ideateColumn) {
+                            const newCard: ProductionCard = {
+                              id: `card-${Date.now()}`,
+                              title: contentHook.trim(),
+                              hook: contentHook.trim(),
+                              description: contentNotes || undefined,
+                              columnId: 'ideate',
+                              plannedDate: addDialogDate,
+                              plannedColor: contentColor as any,
+                              isNew: true,
+                            };
+                            ideateColumn.cards.push(newCard);
+                            setString(StorageKeys.productionKanban, JSON.stringify(columns));
+                            emit(window, EVENTS.productionKanbanUpdated);
+                            emit(window, EVENTS.scheduledContentUpdated);
+                            loadProductionContent?.(); // Refresh content immediately
+                          }
+                        } catch (err) {
+                          console.error('Error adding content:', err);
+                        }
+                      }
+                    }
                     setAddDialogOpen(false);
                     resetFormState();
                     navigate('/production');
@@ -789,8 +963,7 @@ export const CalendarView = ({
                       <Video className="w-4 h-4 text-violet-600" />
                     </div>
                     <div className="text-left">
-                      <div className="text-sm font-medium text-gray-800">Need more details?</div>
-                      <div className="text-xs text-gray-500">Go to Content Hub for full editing</div>
+                      <div className="text-sm font-medium text-gray-700">Go to Content Hub to develop your idea further</div>
                     </div>
                   </div>
                   <ArrowRight className="w-4 h-4 text-violet-500 group-hover:translate-x-1 transition-transform" />
