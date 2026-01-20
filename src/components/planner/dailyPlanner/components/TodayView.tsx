@@ -71,20 +71,68 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
     productionContent,
   } = state;
 
-  // Color palette options
-  const colorOptions = [
-    { name: 'gray', bg: '#f3f4f6', hex: '#f3f4f6' },
-    { name: 'rose', bg: '#fecdd3', hex: '#fecdd3' },
-    { name: 'pink', bg: '#fbcfe8', hex: '#fbcfe8' },
-    { name: 'purple', bg: '#e9d5ff', hex: '#e9d5ff' },
-    { name: 'indigo', bg: '#c7d2fe', hex: '#c7d2fe' },
-    { name: 'sky', bg: '#bae6fd', hex: '#bae6fd' },
-    { name: 'teal', bg: '#99f6e4', hex: '#99f6e4' },
-    { name: 'green', bg: '#bbf7d0', hex: '#bbf7d0' },
-    { name: 'lime', bg: '#d9f99d', hex: '#d9f99d' },
-    { name: 'yellow', bg: '#fef08a', hex: '#fef08a' },
-    { name: 'orange', bg: '#fed7aa', hex: '#fed7aa' },
-  ];
+  // Color palette options - organized by color groups (5 shades each, light to dark)
+  const colorGroups = {
+    pink: [
+      { name: 'pink-1', hex: '#fdf2f8' },
+      { name: 'pink-2', hex: '#fce7f3' },
+      { name: 'pink-3', hex: '#fbcfe8' },
+      { name: 'pink-4', hex: '#f9a8d4' },
+      { name: 'pink-5', hex: '#f472b6' },
+    ],
+    purple: [
+      { name: 'purple-1', hex: '#faf5ff' },
+      { name: 'purple-2', hex: '#f3e8ff' },
+      { name: 'purple-3', hex: '#e9d5ff' },
+      { name: 'purple-4', hex: '#d8b4fe' },
+      { name: 'purple-5', hex: '#c084fc' },
+    ],
+    blue: [
+      { name: 'blue-1', hex: '#eff6ff' },
+      { name: 'blue-2', hex: '#dbeafe' },
+      { name: 'blue-3', hex: '#bfdbfe' },
+      { name: 'blue-4', hex: '#93c5fd' },
+      { name: 'blue-5', hex: '#60a5fa' },
+    ],
+    green: [
+      { name: 'green-1', hex: '#f0fdf4' },
+      { name: 'green-2', hex: '#dcfce7' },
+      { name: 'green-3', hex: '#bbf7d0' },
+      { name: 'green-4', hex: '#86efac' },
+      { name: 'green-5', hex: '#4ade80' },
+    ],
+    sage: [
+      { name: 'sage-1', hex: '#f6f7f4' },
+      { name: 'sage-2', hex: '#e8ebe4' },
+      { name: 'sage-3', hex: '#d4dbc9' },
+      { name: 'sage-4', hex: '#b7c4a1' },
+      { name: 'sage-5', hex: '#9aab7f' },
+    ],
+    brown: [
+      { name: 'brown-1', hex: '#faf7f5' },
+      { name: 'brown-2', hex: '#f5ebe0' },
+      { name: 'brown-3', hex: '#e6d5c3' },
+      { name: 'brown-4', hex: '#d4a574' },
+      { name: 'brown-5', hex: '#b8956c' },
+    ],
+    yellow: [
+      { name: 'yellow-1', hex: '#fefce8' },
+      { name: 'yellow-2', hex: '#fef9c3' },
+      { name: 'yellow-3', hex: '#fef08a' },
+      { name: 'yellow-4', hex: '#fde047' },
+      { name: 'yellow-5', hex: '#facc15' },
+    ],
+    rosewood: [
+      { name: 'rosewood-1', hex: '#f5eaea' },
+      { name: 'rosewood-2', hex: '#e5d4d4' },
+      { name: 'rosewood-3', hex: '#c9aaaa' },
+      { name: 'rosewood-4', hex: '#ad8a8a' },
+      { name: 'rosewood-5', hex: '#927071' },
+    ],
+  };
+
+  // State for color picker popover
+  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
 
   // Dialog state from external prop or local
   const addDialogOpen = todayAddDialogState?.open ?? false;
@@ -472,10 +520,10 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
     );
   })()}
 
-  <div ref={todayScrollRef} className="flex-1 flex flex-col min-h-0">
-    <div className="flex flex-col flex-1 overflow-hidden bg-white">
+  <div ref={todayScrollRef} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+    <div className="flex flex-col flex-1 min-h-0 bg-white">
       {/* Fixed header row */}
-      <div className="flex border-b border-gray-200">
+      <div className="flex border-b border-gray-200 flex-shrink-0">
         {/* Time column header */}
         <div className="flex-shrink-0 border-r border-gray-200 h-[60px]" style={{ width: '60px' }}>
         </div>
@@ -496,7 +544,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
       </div>
 
       {/* Scrollable content area */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 min-h-0">
         <div className="flex">
           {/* Time column */}
           <div className="flex-shrink-0 bg-white border-r border-gray-200" style={{ width: '60px' }}>
@@ -530,9 +578,9 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                 >
                   {/* Hour row container */}
                   <div className="flex h-full border-t border-gray-200 bg-white">
-                    {/* 20-minute slots (3 slots per hour) */}
+                    {/* 10-minute slots (6 slots per hour) */}
                     <div className="flex-1 flex flex-col">
-                  {[0, 20, 40].map((minute, idx) => {
+                  {[0, 10, 20, 30, 40, 50].map((minute, idx) => {
                     return (
                       <div
                         key={`${hour}-${minute}`}
@@ -884,11 +932,16 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
 
                       const handleMouseMove = (moveEvent: MouseEvent) => {
                         const deltaY = moveEvent.clientY - startY;
-                        const deltaMinutes = Math.round(deltaY / (1.5 * todayZoomLevel)); // 1.5px per minute * zoom
+                        const rawDeltaMinutes = deltaY / (1.5 * todayZoomLevel); // 1.5px per minute * zoom
+                        // Snap to 10-minute increments
+                        const deltaMinutes = Math.round(rawDeltaMinutes / 10) * 10;
                         let newStartMinutes = originalStartMinutes + deltaMinutes;
 
-                        // Cap at 0-1439 (00:00 - 23:59)
-                        newStartMinutes = Math.max(0, Math.min(1439, newStartMinutes));
+                        // Snap to 10-minute intervals
+                        newStartMinutes = Math.round(newStartMinutes / 10) * 10;
+
+                        // Cap at 0-1430 (00:00 - 23:50)
+                        newStartMinutes = Math.max(0, Math.min(1430, newStartMinutes));
 
                         // Ensure start time is before end time (at least 15 min duration)
                         if (newStartMinutes < endMinutes - 15) {
@@ -927,11 +980,16 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
 
                       const handleMouseMove = (moveEvent: MouseEvent) => {
                         const deltaY = moveEvent.clientY - startY;
-                        const deltaMinutes = Math.round(deltaY / (1.5 * todayZoomLevel)); // 1.5px per minute * zoom
+                        const rawDeltaMinutes = deltaY / (1.5 * todayZoomLevel); // 1.5px per minute * zoom
+                        // Snap to 10-minute increments
+                        const deltaMinutes = Math.round(rawDeltaMinutes / 10) * 10;
                         let newEndMinutes = originalEndMinutes + deltaMinutes;
 
-                        // Cap at 0-1439 (00:00 - 23:59)
-                        newEndMinutes = Math.max(0, Math.min(1439, newEndMinutes));
+                        // Snap to 10-minute intervals
+                        newEndMinutes = Math.round(newEndMinutes / 10) * 10;
+
+                        // Cap at 10-1440 (00:10 - 24:00)
+                        newEndMinutes = Math.max(10, Math.min(1440, newEndMinutes));
 
                         // Ensure end time is after start time (at least 15 min duration)
                         if (newEndMinutes > startMinutes + 15) {
@@ -1016,7 +1074,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
             const endMinutes = dragCreateEnd.hour * 60 + dragCreateEnd.minute;
 
             const actualStart = Math.min(startMinutes, endMinutes);
-            const actualEnd = Math.max(startMinutes, endMinutes + 20);
+            const actualEnd = Math.max(startMinutes, endMinutes + 10);
 
             const top = (actualStart / 60) * 90 * todayZoomLevel; // 90px per hour * zoom
             const height = Math.max(30, ((actualEnd - actualStart) / 60) * 90 * todayZoomLevel);
@@ -1186,26 +1244,70 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                   />
                 </div>
 
-                {/* Color Palette */}
+                {/* Color Picker */}
                 <div className="flex items-center gap-3">
-                  <Palette className="w-5 h-5 text-gray-400" />
-                  <div className="flex flex-wrap gap-2">
-                    {colorOptions.map((color) => (
+                  <Popover open={isColorPickerOpen} onOpenChange={setIsColorPickerOpen}>
+                    <PopoverTrigger asChild>
                       <button
-                        key={color.name}
-                        onClick={() => setTaskColor(taskColor === color.hex ? '' : color.hex)}
-                        className={cn(
-                          "w-8 h-8 rounded-full transition-all",
-                          taskColor === color.hex ? "ring-2 ring-offset-2 ring-gray-400" : "hover:scale-110"
-                        )}
-                        style={{ backgroundColor: color.bg }}
+                        type="button"
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all"
                       >
-                        {taskColor === color.hex && (
-                          <X className="w-4 h-4 mx-auto text-gray-500" />
+                        {taskColor ? (
+                          <div
+                            className="w-5 h-5 rounded-full border border-gray-200"
+                            style={{ backgroundColor: taskColor }}
+                          />
+                        ) : (
+                          <div className="w-5 h-5 rounded-full overflow-hidden border border-gray-200" style={{
+                            background: 'conic-gradient(from 0deg, #f9a8d4, #d8b4fe, #93c5fd, #86efac, #fde047, #d4a574, #f9a8d4)'
+                          }} />
                         )}
+                        <span className="text-sm text-gray-600">
+                          {taskColor ? 'Change color' : 'Add color'}
+                        </span>
                       </button>
-                    ))}
-                  </div>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-3 z-[300] bg-white shadow-lg border" align="start">
+                      <div className="space-y-3">
+                        {/* No color option */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setTaskColor('');
+                            setIsColorPickerOpen(false);
+                          }}
+                          className={cn(
+                            "flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-sm text-gray-600 hover:bg-gray-100 transition-colors",
+                            !taskColor && "bg-gray-100"
+                          )}
+                        >
+                          <div className="w-5 h-5 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center">
+                            <X className="w-3 h-3 text-gray-400" />
+                          </div>
+                          No color
+                        </button>
+
+                        {/* Color grid */}
+                        <div className="grid grid-cols-5 gap-1.5">
+                          {Object.values(colorGroups).flat().map((color) => (
+                            <button
+                              key={color.name}
+                              type="button"
+                              onClick={() => {
+                                setTaskColor(color.hex);
+                                setIsColorPickerOpen(false);
+                              }}
+                              className={cn(
+                                "w-7 h-7 rounded-md transition-all hover:scale-110",
+                                taskColor === color.hex && "ring-2 ring-offset-1 ring-gray-400"
+                              )}
+                              style={{ backgroundColor: color.hex }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 {/* Include in content calendar */}

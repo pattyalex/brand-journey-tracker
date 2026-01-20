@@ -421,9 +421,9 @@ export const CalendarView = ({
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col overflow-hidden">
       {/* Month Calendar Grid */}
-      <CardContent className="pl-0 pr-4 flex-1 flex flex-col">
+      <CardContent className="pl-0 pr-4 flex-1 flex flex-col min-h-0 overflow-hidden">
         {/* Day Headers */}
         <div className="grid grid-cols-7 mb-2 flex-shrink-0">
           {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
@@ -433,8 +433,9 @@ export const CalendarView = ({
           ))}
         </div>
 
-        {/* Calendar Days */}
-        <div className="grid grid-cols-7 gap-1.5 flex-1" style={{ gridAutoRows: '1fr' }}>
+        {/* Calendar Days - Scrollable */}
+        <div className="flex-1 overflow-y-auto min-h-0">
+          <div className="grid grid-cols-7 gap-1.5" style={{ gridAutoRows: '120px' }}>
           {(() => {
             const monthStart = startOfMonth(selectedDate);
             const monthEnd = endOfMonth(selectedDate);
@@ -468,7 +469,7 @@ export const CalendarView = ({
                 <div
                   key={dayString}
                   data-day={dayString}
-                  className={`h-[140px] rounded-lg border p-1.5 transition-all cursor-pointer flex flex-col ${
+                  className={`h-[120px] rounded-lg border p-1.5 transition-all cursor-pointer flex flex-col overflow-hidden ${
                     isCurrentMonth
                       ? 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50'
                       : 'bg-gray-50 border-gray-100 text-gray-400'
@@ -491,9 +492,9 @@ export const CalendarView = ({
                     {format(day, 'd')}
                   </span>
 
-                  {/* Task and Content indicators */}
+                  {/* Task and Content indicators - scrollable */}
                   <div
-                    className="flex-1 min-h-0 flex flex-col gap-1 overflow-y-auto mt-1"
+                    className="flex-1 min-h-0 flex flex-col gap-0.5 overflow-y-auto mt-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent"
                     onDragOver={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -543,7 +544,7 @@ export const CalendarView = ({
                         onDragEnd={(e) => {
                           e.currentTarget.style.opacity = '1';
                         }}
-                        className="group text-[11px] px-2 py-1.5 rounded-md cursor-grab active:cursor-grabbing transition-colors hover:shadow-sm flex-shrink-0"
+                        className="group text-[11px] px-2 py-1 rounded-md cursor-grab active:cursor-grabbing transition-colors hover:shadow-sm flex-shrink-0"
                         style={{ backgroundColor: task.color || '#e0e7ff' }}
                       >
                         <div className="flex items-center gap-1">
@@ -685,6 +686,7 @@ export const CalendarView = ({
               );
             });
           })()}
+          </div>
         </div>
       </CardContent>
 

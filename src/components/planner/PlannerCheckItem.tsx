@@ -230,6 +230,30 @@ export const PlannerCheckItem = ({
           ref={scrollableRef}
           className="group flex items-center w-full py-2.5 px-3 border border-gray-200 rounded-lg relative overflow-visible hover:border-gray-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
           style={{ backgroundColor: item.color || 'white' }}
+          onClick={(e) => {
+            // Don't trigger edit if clicking on checkbox or delete button
+            if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('[role="checkbox"]')) {
+              return;
+            }
+            if (!isEditing && !isSimpleEdit && !isTimeEdit) {
+              // Try to get cursor position from click
+              const range = document.caretRangeFromPoint(e.clientX, e.clientY);
+              let cursorPosition = item.text.length; // Default to end
+
+              if (range && textSpanRef.current?.contains(range.startContainer)) {
+                cursorPosition = range.startOffset;
+              }
+
+              setIsSimpleEdit(true);
+              setEditText(item.text);
+              setTimeout(() => {
+                if (editInputRef.current) {
+                  editInputRef.current.focus();
+                  editInputRef.current.setSelectionRange(cursorPosition, cursorPosition);
+                }
+              }, 0);
+            }
+          }}
           draggable={true}
           onDragStart={(e) => {
             console.log('🚀 DRAG START:', { id: item.id, date: item.date, text: item.text });

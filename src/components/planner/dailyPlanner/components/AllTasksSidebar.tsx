@@ -78,12 +78,8 @@ export const AllTasksSidebar = ({
         {/* Header */}
         <div className="flex items-center gap-2 mb-4">
           <ListTodo className="w-5 h-5 text-purple-600" />
-          <h2 className="text-lg font-semibold text-gray-800">My Tasks</h2>
+          <h2 className="text-lg font-semibold text-gray-800">All Tasks</h2>
         </div>
-
-        <p className="text-xs text-gray-500 mb-4">
-          Add tasks and drag them to your calendar to schedule.
-        </p>
 
         {/* Tasks List */}
         <div className="flex-1 overflow-y-auto">
