@@ -7,9 +7,11 @@ import { PlannerDay, PlannerItem } from "@/types/planner";
 import { PlannerView, TimezoneOption } from "../types";
 import { getDateString } from "../utils/plannerUtils";
 import { parseTimeTo24 } from "../utils/timeUtils";
-import { scheduleColors, contentColorGroups, defaultContentPalette, predefinedPalettes } from "../utils/colorConstants";
+import { scheduleColors, contentColorGroups } from "../utils/colorConstants";
+import { useColorPalette } from "../hooks/useColorPalette";
+import { ContentColorPicker } from "./ContentColorPicker";
 import { ProductionCard, KanbanColumn } from "@/pages/production/types";
-import { Video, Lightbulb, ListTodo, X, Clock, FileText, ArrowRight, Trash2, CalendarCheck, Plus, X as XIcon, Sparkles, ChevronLeft } from "lucide-react";
+import { Video, Lightbulb, ListTodo, X, Clock, FileText, ArrowRight, Trash2, CalendarCheck, Plus, X as XIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -116,35 +118,13 @@ export const CalendarView = ({
   // Content form state
   const [contentHook, setContentHook] = useState("");
   const [contentNotes, setContentNotes] = useState("");
-  const [contentColor, setContentColor] = useState("");
   const [contentStartTime, setContentStartTime] = useState("");
   const [contentEndTime, setContentEndTime] = useState("");
-  const [contentUserPalette, setContentUserPalette] = useState<string[]>(() => {
-    const saved = localStorage.getItem('plannerContentColorPalette');
-    return saved ? JSON.parse(saved) : defaultContentPalette;
-  });
-  const [isContentColorPickerOpen, setIsContentColorPickerOpen] = useState(false);
-  const [isAddingToContentPalette, setIsAddingToContentPalette] = useState(false);
-  const [isCreatingOwnPalette, setIsCreatingOwnPalette] = useState(false);
-  const [selectedColorsForPalette, setSelectedColorsForPalette] = useState<string[]>([]);
-  const [selectedPredefinedPalette, setSelectedPredefinedPalette] = useState<{ name: string; colors: string[] } | null>(null);
 
-  // Save content palette to localStorage
-  useEffect(() => {
-    localStorage.setItem('plannerContentColorPalette', JSON.stringify(contentUserPalette));
-  }, [contentUserPalette]);
-
-  // Content palette helpers
-  const addColorToContentPalette = (color: string) => {
-    if (!contentUserPalette.includes(color)) {
-      setContentUserPalette([...contentUserPalette, color]);
-    }
-    setIsAddingToContentPalette(false);
-  };
-
-  const removeColorFromContentPalette = (color: string) => {
-    setContentUserPalette(contentUserPalette.filter(c => c !== color));
-  };
+  // Color palette management (shared hook)
+  const contentColorPalette = useColorPalette();
+  const contentColor = contentColorPalette.selectedColor;
+  const setContentColor = contentColorPalette.setSelectedColor;
 
   // View content dialog state
   const [viewContentDialog, setViewContentDialog] = useState<ProductionCard | null>(null);
@@ -162,12 +142,8 @@ export const CalendarView = ({
     setContentColor("");
     setContentStartTime("");
     setContentEndTime("");
-    // Reset popover states
-    setIsContentColorPickerOpen(false);
-    setIsAddingToContentPalette(false);
-    setIsCreatingOwnPalette(false);
-    setSelectedPredefinedPalette(null);
-    setSelectedColorsForPalette([]);
+    // Reset color picker popover states
+    contentColorPalette.resetPickerState();
   };
 
   // Handle day click based on display mode
@@ -796,324 +772,8 @@ export const CalendarView = ({
                   />
                 </div>
 
-                {/* User's Custom Palette */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">My Palette</span>
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {contentUserPalette.map((color, idx) => (
-                      <button
-                        key={`palette-${idx}`}
-                        type="button"
-                        onClick={() => setContentColor(color)}
-                        className={cn(
-                          "w-8 h-8 rounded-lg transition-all hover:scale-110 relative group",
-                          contentColor === color && "ring-2 ring-offset-1 ring-gray-400"
-                        )}
-                        style={{ backgroundColor: color }}
-                      >
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeColorFromContentPalette(color);
-                          }}
-                          className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full shadow border border-gray-200 items-center justify-center text-gray-400 hover:text-red-500 hidden group-hover:flex"
-                        >
-                          <XIcon className="w-2.5 h-2.5" />
-                        </button>
-                      </button>
-                    ))}
-                    {/* Add color to palette button */}
-                    <Popover modal={false} open={isAddingToContentPalette} onOpenChange={setIsAddingToContentPalette}>
-                      <PopoverTrigger asChild>
-                        <button
-                          type="button"
-                          className="w-8 h-8 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:border-gray-400 hover:text-gray-500 transition-all"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-3 z-[300] bg-white shadow-lg border" align="start">
-                        <div className="space-y-2">
-                          <span className="text-xs font-medium text-gray-500">Add to my palette</span>
-                          <div className="grid grid-cols-4 gap-1.5">
-                            {Object.values(contentColorGroups).flat().map((colorItem) => (
-                              <button
-                                key={`add-${colorItem.name}`}
-                                type="button"
-                                onClick={() => addColorToContentPalette(colorItem.hex)}
-                                disabled={contentUserPalette.includes(colorItem.hex)}
-                                className={cn(
-                                  "w-6 h-6 rounded-md transition-all hover:scale-110",
-                                  contentUserPalette.includes(colorItem.hex) && "opacity-30 cursor-not-allowed"
-                                )}
-                                style={{ backgroundColor: colorItem.hex }}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </div>
-
-                {/* More Colors */}
-                <div className="flex items-center gap-3">
-                  <Popover
-                    modal={false}
-                    open={isContentColorPickerOpen}
-                    onOpenChange={(open) => {
-                      setIsContentColorPickerOpen(open);
-                      if (!open) {
-                        setIsCreatingOwnPalette(false);
-                        setSelectedColorsForPalette([]);
-                        setSelectedPredefinedPalette(null);
-                      }
-                    }}
-                  >
-                    <PopoverTrigger asChild>
-                      <button
-                        type="button"
-                        className="flex items-center gap-1.5 px-2 py-1 rounded-md border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all"
-                      >
-                        {contentColor ? (
-                          <div
-                            className="w-4 h-4 rounded-full border border-gray-200"
-                            style={{ backgroundColor: contentColor }}
-                          />
-                        ) : (
-                          <div className="w-4 h-4 rounded-full overflow-hidden border border-gray-200" style={{
-                            background: 'conic-gradient(from 0deg, #f9a8d4, #d8b4fe, #93c5fd, #86efac, #fde047, #d4a574, #f9a8d4)'
-                          }} />
-                        )}
-                        <span className="text-xs text-gray-600">More colors</span>
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 z-[300] bg-white shadow-lg border" align="start">
-                      <div className="flex">
-                        {/* Left column: No color + Color grid */}
-                        <div className="p-3 space-y-3 border-r border-gray-100">
-                          {/* No color option */}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (!isCreatingOwnPalette) {
-                                setContentColor('');
-                                setIsContentColorPickerOpen(false);
-                              }
-                            }}
-                            className={cn(
-                              "flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-sm text-gray-600 hover:bg-gray-100 transition-colors",
-                              !contentColor && !isCreatingOwnPalette && "bg-gray-100"
-                            )}
-                          >
-                            <div className="w-5 h-5 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center">
-                              <XIcon className="w-3 h-3 text-gray-400" />
-                            </div>
-                            No color
-                          </button>
-
-                          {/* Color grid */}
-                          <div className="grid grid-cols-4 gap-1.5">
-                            {Object.values(contentColorGroups).flat().map((colorItem) => (
-                              <button
-                                key={colorItem.name}
-                                type="button"
-                                onClick={() => {
-                                  if (isCreatingOwnPalette || selectedPredefinedPalette) {
-                                    // Toggle color selection for palette creation/editing
-                                    if (selectedColorsForPalette.includes(colorItem.hex)) {
-                                      setSelectedColorsForPalette(selectedColorsForPalette.filter(c => c !== colorItem.hex));
-                                    } else {
-                                      setSelectedColorsForPalette([...selectedColorsForPalette, colorItem.hex]);
-                                    }
-                                  } else {
-                                    setContentColor(colorItem.hex);
-                                    setIsContentColorPickerOpen(false);
-                                  }
-                                }}
-                                className={cn(
-                                  "w-7 h-7 rounded-md transition-all hover:scale-110",
-                                  (isCreatingOwnPalette || selectedPredefinedPalette)
-                                    ? selectedColorsForPalette.includes(colorItem.hex) && "ring-2 ring-offset-1 ring-gray-400"
-                                    : contentColor === colorItem.hex && "ring-2 ring-offset-1 ring-gray-400"
-                                )}
-                                style={{ backgroundColor: colorItem.hex }}
-                              />
-                            ))}
-                          </div>
-
-                          {/* Help text for palette editing mode */}
-                          {(isCreatingOwnPalette || selectedPredefinedPalette) && (
-                            <p className="text-[10px] text-gray-400">Click to select/deselect colors</p>
-                          )}
-                        </div>
-
-                        {/* Right column: Palettes, Selected Palette, or Create Your Own */}
-                        <div className="p-3 w-48">
-                          {isCreatingOwnPalette ? (
-                            <div className="space-y-3">
-                              {/* Create your own header with back button */}
-                              <div className="flex items-center gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setIsCreatingOwnPalette(false);
-                                    setSelectedColorsForPalette([]);
-                                  }}
-                                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                                >
-                                  <ChevronLeft className="w-4 h-4" />
-                                </button>
-                                <span className="text-xs font-medium text-gray-600">Create your own</span>
-                              </div>
-
-                              {/* Your selection */}
-                              <div className="space-y-2">
-                                <span className="text-[10px] text-gray-500 uppercase tracking-wide">Your selection</span>
-                                <div className="flex flex-wrap gap-1.5">
-                                  {selectedColorsForPalette.map((color, idx) => (
-                                    <div
-                                      key={idx}
-                                      className="w-7 h-7 rounded-md"
-                                      style={{ backgroundColor: color }}
-                                    />
-                                  ))}
-                                  <div className="w-7 h-7 rounded-md border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400">
-                                    <Plus className="w-4 h-4" />
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Apply button */}
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (selectedColorsForPalette.length > 0) {
-                                    setContentUserPalette([...new Set([...contentUserPalette, ...selectedColorsForPalette])]);
-                                  }
-                                  setIsCreatingOwnPalette(false);
-                                  setSelectedColorsForPalette([]);
-                                  setIsContentColorPickerOpen(false);
-                                }}
-                                className="w-full py-2 px-3 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors"
-                              >
-                                Apply to My Palette
-                              </button>
-                            </div>
-                          ) : selectedPredefinedPalette ? (
-                            <div className="space-y-3">
-                              {/* Selected palette header with back button */}
-                              <div className="flex items-center gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => setSelectedPredefinedPalette(null)}
-                                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                                >
-                                  <ChevronLeft className="w-4 h-4" />
-                                </button>
-                                <span className="text-xs font-medium text-gray-600">{selectedPredefinedPalette.name}</span>
-                              </div>
-
-                              {/* Your selection - shows the palette colors */}
-                              <div className="space-y-2">
-                                <span className="text-[10px] text-gray-500 uppercase tracking-wide">Your selection</span>
-                                <div className="flex flex-wrap gap-1.5">
-                                  {selectedColorsForPalette.map((color, idx) => (
-                                    <div
-                                      key={idx}
-                                      className="w-7 h-7 rounded-md relative group cursor-pointer"
-                                      style={{ backgroundColor: color }}
-                                    >
-                                      <button
-                                        type="button"
-                                        onClick={() => setSelectedColorsForPalette(selectedColorsForPalette.filter(c => c !== color))}
-                                        className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full shadow border border-gray-200 items-center justify-center text-gray-400 hover:text-red-500 hidden group-hover:flex"
-                                      >
-                                        <XIcon className="w-2.5 h-2.5" />
-                                      </button>
-                                    </div>
-                                  ))}
-                                  <div className="w-7 h-7 rounded-md border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400">
-                                    <Plus className="w-4 h-4" />
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Apply button */}
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (selectedColorsForPalette.length > 0) {
-                                    setContentUserPalette([...new Set([...contentUserPalette, ...selectedColorsForPalette])]);
-                                  }
-                                  setSelectedPredefinedPalette(null);
-                                  setSelectedColorsForPalette([]);
-                                  setIsContentColorPickerOpen(false);
-                                }}
-                                className="w-full py-2 px-3 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors"
-                              >
-                                Apply to My Palette
-                              </button>
-                            </div>
-                          ) : (
-                            <>
-                              {/* Palettes header */}
-                              <div className="flex items-center gap-2 px-2 py-1.5 mb-2">
-                                <Sparkles className="w-4 h-4 text-gray-400" />
-                                <span className="text-sm text-gray-600">Palettes</span>
-                              </div>
-
-                              <div className="space-y-2.5">
-                                {predefinedPalettes.map((palette) => (
-                                  <button
-                                    key={palette.name}
-                                    type="button"
-                                    onClick={() => {
-                                      setSelectedPredefinedPalette(palette);
-                                      setSelectedColorsForPalette([...palette.colors]);
-                                    }}
-                                    className="w-full group"
-                                  >
-                                    <span className="text-[10px] text-gray-500 group-hover:text-gray-700 block mb-1">{palette.name}</span>
-                                    <div className="flex gap-0">
-                                      {palette.colors.map((color, idx) => (
-                                        <div
-                                          key={`${palette.name}-${idx}`}
-                                          className="flex-1 h-5 first:rounded-l-md last:rounded-r-md transition-all group-hover:scale-y-110"
-                                          style={{ backgroundColor: color }}
-                                        />
-                                      ))}
-                                    </div>
-                                  </button>
-                                ))}
-
-                                {/* Create your own */}
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setIsCreatingOwnPalette(true);
-                                    setSelectedColorsForPalette([]);
-                                  }}
-                                  className="w-full group pt-2 border-t border-gray-100"
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-5 h-5 rounded-md border-2 border-dashed border-gray-300 flex items-center justify-center group-hover:border-gray-400">
-                                      <Plus className="w-3 h-3 text-gray-400 group-hover:text-gray-500" />
-                                    </div>
-                                    <span className="text-[11px] text-gray-500 group-hover:text-gray-700">Create your own</span>
-                                  </div>
-                                </button>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
+                {/* Content Color Picker */}
+                <ContentColorPicker palette={contentColorPalette} />
 
                 {/* Content Hub CTA */}
                 <button

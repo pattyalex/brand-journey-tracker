@@ -3,6 +3,8 @@ import { addDays, format, subDays } from "date-fns";
 import { EVENTS, emit } from "@/lib/events";
 import { PlannerDay, PlannerItem } from "@/types/planner";
 import { updateItemOrders } from "../utils/plannerUtils";
+import { useTaskDialogInputs } from "./useTaskDialogInputs";
+import { useCopyDialogActions } from "./useCopyDialogActions";
 
 interface UsePlannerActionsArgs {
   selectedDate: Date;
@@ -207,6 +209,24 @@ export const usePlannerActions = ({
   onWeeklyAddDialogOpen,
   onTodayAddDialogOpen,
 }: UsePlannerActionsArgs) => {
+  // Use composed hooks for smaller, focused functionality
+  const taskDialogInputs = useTaskDialogInputs({
+    dialogStartTime,
+    dialogEndTime,
+    setDialogTaskColor,
+    setDialogStartTime,
+    setDialogEndTime,
+    startTimeInputRef,
+    endTimeInputRef,
+    descriptionInputRef,
+  });
+
+  const copyDialogActions = useCopyDialogActions({
+    setIsCopyDialogOpen,
+    setCopyToDate,
+    setDeleteAfterCopy,
+  });
+
   const handleOpenTaskDialog = (hour: number, itemToEdit?: PlannerItem, startTime?: string, endTime?: string) => {
     if (itemToEdit) {
       setEditingTask(itemToEdit);
@@ -1450,25 +1470,6 @@ export const usePlannerActions = ({
     handleCalendarTaskDropToDay(taskId, fromDate, targetDate);
   };
 
-  const handleCopyDialogOpen = () => {
-    setIsCopyDialogOpen(true);
-  };
-
-  const handleCopyDialogClose = () => {
-    setIsCopyDialogOpen(false);
-    setCopyToDate(undefined);
-    setDeleteAfterCopy(false);
-  };
-
-  const handleCopyToDateChange = (date: Date | undefined) => {
-    if (!date) return;
-    setCopyToDate(date);
-  };
-
-  const handleDeleteAfterCopyChange = (checked: boolean) => {
-    setDeleteAfterCopy(checked);
-  };
-
   const handleTodayScrollToCurrentTime = () => {
     const now = new Date();
     const currentHour = now.getHours();
@@ -1597,111 +1598,6 @@ export const usePlannerActions = ({
     setDraggingTaskText("");
   };
 
-  const handleDialogTaskColorSelect = (color: string) => {
-    setDialogTaskColor(color);
-  };
-
-  const handleDialogTaskClearColor = () => {
-    setDialogTaskColor('');
-  };
-
-  const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-
-    // If user clears the field, set empty
-    if (value === '') {
-      setDialogStartTime('');
-      return;
-    }
-
-    const formatted = formatTimeInput(value);
-    setDialogStartTime(formatted);
-  };
-
-  const handleEndTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-
-    // If user clears the field, set empty
-    if (value === '') {
-      setDialogEndTime('');
-      return;
-    }
-
-    const formatted = formatTimeInput(value);
-    setDialogEndTime(formatted);
-  };
-
-  const handleStartTimeFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    if (!dialogStartTime) {
-      e.target.placeholder = '__:__ am/pm';
-    }
-  };
-
-  const handleEndTimeFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    if (!dialogEndTime) {
-      e.target.placeholder = '__:__ am/pm';
-    }
-  };
-
-  const handleStartTimeBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.target.placeholder = '9:00 am';
-
-    // Auto-add AM/PM if user didn't specify
-    if (dialogStartTime && !dialogStartTime.includes('am') && !dialogStartTime.includes('pm')) {
-      const match = dialogStartTime.match(/(\d{1,2}):(\d{2})/);
-      if (match) {
-        const hour = parseInt(match[1], 10);
-        // Default to PM if hour is 1-11, AM if 12
-        const period = hour === 12 ? 'pm' : hour >= 1 && hour <= 11 ? 'pm' : 'am';
-        setDialogStartTime(dialogStartTime + ' ' + period);
-      }
-    }
-  };
-
-  const handleEndTimeBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.target.placeholder = '10:00 pm';
-
-    // Auto-add AM/PM if user didn't specify
-    if (dialogEndTime && !dialogEndTime.includes('am') && !dialogEndTime.includes('pm')) {
-      const match = dialogEndTime.match(/(\d{1,2}):(\d{2})/);
-      if (match) {
-        const hour = parseInt(match[1], 10);
-        // Default to PM if hour is 1-11, AM if 12
-        const period = hour === 12 ? 'pm' : hour >= 1 && hour <= 11 ? 'pm' : 'am';
-        setDialogEndTime(dialogEndTime + ' ' + period);
-      }
-    }
-  };
-
-  const handleTitleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    // Prevent text selection on focus - move cursor to end
-    setTimeout(() => {
-      const length = e.target.value.length;
-      e.target.setSelectionRange(length, length);
-    }, 0);
-  };
-
-  const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      startTimeInputRef.current?.focus();
-    }
-  };
-
-  const handleStartTimeKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      endTimeInputRef.current?.focus();
-    }
-  };
-
-  const handleEndTimeKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      descriptionInputRef.current?.focus();
-    }
-  };
-
   const handleWeeklyEditTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -1802,12 +1698,6 @@ export const usePlannerActions = ({
       setPlannerData(updatedPlannerData);
       savePlannerData(updatedPlannerData);
     }
-  };
-
-  const handleCloseCopyDialog = () => {
-    setIsCopyDialogOpen(false);
-    setCopyToDate(undefined);
-    setDeleteAfterCopy(false);
   };
 
   const handleAllTasksDragOverContentCalendar = (e: React.DragEvent) => {
@@ -1967,57 +1857,6 @@ export const usePlannerActions = ({
     if (!open) {
       handleCancelTaskDialog();
     }
-  };
-
-  const formatTimeInput = (value: string) => {
-    // Normalize the input: lowercase and trim
-    const input = value.toLowerCase().trim();
-
-    // Extract AM/PM if present
-    let period = '';
-    let timePartOnly = input;
-
-    // Check for am/pm at the end (with or without space)
-    const ampmMatch = input.match(/\s*(am|pm|a|p)\s*$/i);
-    if (ampmMatch) {
-      period = ampmMatch[1] === 'a' ? 'am' : ampmMatch[1] === 'p' ? 'pm' : ampmMatch[1];
-      timePartOnly = input.slice(0, ampmMatch.index).trim();
-    }
-
-    // Extract just the digits from the time part
-    const digits = timePartOnly.replace(/\D/g, '');
-
-    // If no digits, return what user typed (allows typing am/pm first)
-    if (digits.length === 0) {
-      return period ? period : value;
-    }
-
-    // Format the time portion
-    let formattedTime = '';
-
-    // If user only entered 1 or 2 digits, assume it's hours
-    if (digits.length <= 2) {
-      formattedTime = digits;
-    }
-    // If user entered 3 or 4 digits, format as H:MM or HH:MM
-    else if (digits.length <= 4) {
-      const hours = digits.slice(0, digits.length - 2);
-      const minutes = digits.slice(-2);
-      formattedTime = `${hours}:${minutes}`;
-    }
-    // If user entered more digits, ignore extra
-    else {
-      const hours = digits.slice(0, 2);
-      const minutes = digits.slice(2, 4);
-      formattedTime = `${hours}:${minutes}`;
-    }
-
-    // Append period if present
-    if (period) {
-      return `${formattedTime} ${period}`;
-    }
-
-    return formattedTime;
   };
 
   const handleTaskSectionDrop = (taskId: string, targetSection: PlannerItem["section"], fromDate?: string) => {
@@ -2297,10 +2136,8 @@ export const usePlannerActions = ({
     handleCalendarTaskDropToDay,
     handleAllTasksDropOnDay,
     handleTodayCalendarDrop,
-    handleCopyDialogOpen,
-    handleCopyDialogClose,
-    handleCopyToDateChange,
-    handleDeleteAfterCopyChange,
+    // Copy dialog handlers (from useCopyDialogActions hook)
+    ...copyDialogActions,
     handleTodayScrollToCurrentTime,
     handleWeeklyScrollToCurrentTime,
     handleMoveToToday,
@@ -2312,18 +2149,8 @@ export const usePlannerActions = ({
     handleTaskDropToToday,
     handleAllTasksDragStart,
     handleAllTasksDragEnd,
-    handleDialogTaskColorSelect,
-    handleDialogTaskClearColor,
-    handleStartTimeChange,
-    handleEndTimeChange,
-    handleStartTimeFocus,
-    handleEndTimeFocus,
-    handleStartTimeBlur,
-    handleEndTimeBlur,
-    handleTitleFocus,
-    handleTitleKeyDown,
-    handleStartTimeKeyDown,
-    handleEndTimeKeyDown,
+    // Task dialog input handlers (from useTaskDialogInputs hook)
+    ...taskDialogInputs,
     handleWeeklyEditTitleKeyDown,
     handleInputKeyDown,
     handleSectionChange,
@@ -2333,7 +2160,6 @@ export const usePlannerActions = ({
     handleRemoveContentCalendarItem,
     handleMoveContentCalendarItem,
     handleContentCalendarDrop,
-    handleCloseCopyDialog,
     handleAllTasksDragOverContentCalendar,
     handleAllTasksDropContentCalendar,
     handleAllTasksDropCalendar,

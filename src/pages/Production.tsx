@@ -419,17 +419,17 @@ const Production = () => {
     emit(window, EVENTS.productionKanbanUpdated, columns);
   }, [columns]);
 
-  // Clean up any cards with empty titles
+  // Clean up any cards with empty titles or missing IDs
   useEffect(() => {
-    const hasEmptyCards = columns.some(col =>
-      col.cards.some(card => !card.title || !card.title.trim())
+    const hasInvalidCards = columns.some(col =>
+      col.cards.some(card => !card.id || !card.title || !card.title.trim())
     );
 
-    if (hasEmptyCards) {
+    if (hasInvalidCards) {
       setColumns(prev =>
         prev.map(col => ({
           ...col,
-          cards: col.cards.filter(card => card.title && card.title.trim()),
+          cards: col.cards.filter(card => card.id && card.title && card.title.trim()),
         }))
       );
     }
@@ -563,7 +563,8 @@ const Production = () => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (!draggedCard) return;
+    // Check ref first (synchronous) to prevent late events after drop
+    if (!isDraggingRef.current || !draggedCard) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
     const midpoint = rect.top + rect.height / 2;
@@ -580,7 +581,8 @@ const Production = () => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
 
-    if (!draggedCard) return;
+    // Check ref first (synchronous) to prevent late events after drop
+    if (!isDraggingRef.current || !draggedCard) return;
 
     setDraggedOverColumn(columnId);
 
@@ -599,6 +601,9 @@ const Production = () => {
 
   const handleDrop = (e: React.DragEvent, targetColumnId: string) => {
     e.preventDefault();
+
+    // Immediately mark drag as ended (synchronous)
+    isDraggingRef.current = false;
 
     // Always clear drop indicators immediately
     setDropPosition(null);
@@ -1702,10 +1707,22 @@ const Production = () => {
                       {/* Column header - same as other columns */}
                       <div className="p-4 pb-4">
                         <div className="flex items-center gap-2">
-                          <div className={cn("w-1 h-6 rounded-full", colors.badge)}></div>
                           <h2 className={cn("font-bold text-lg", colors.text)}>
                             {column.title}
                           </h2>
+                          <PartyPopper className="w-4 h-4 text-emerald-500" />
+                        </div>
+                        {/* Progress indicator - 6 horizontal lines */}
+                        <div className="flex gap-1.5 mt-2">
+                          {[1, 2, 3, 4, 5, 6].map((step) => (
+                            <div
+                              key={step}
+                              className={cn(
+                                "h-1 flex-1 rounded-full transition-colors",
+                                step <= 6 ? colors.badge : "bg-gray-200"
+                              )}
+                            />
+                          ))}
                         </div>
                       </div>
 
@@ -1779,14 +1796,34 @@ const Production = () => {
                   ) : (
                     <>
                       <div className="p-4 pb-6">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <div className={cn("w-1 h-6 rounded-full", colors.badge)}></div>
-                            <h2 className={cn("font-bold text-lg", colors.text)}>
-                              {column.title}
-                            </h2>
-                          </div>
-                        </div>
+                        <h2 className={cn("font-bold text-lg", colors.text)}>
+                          {column.title}
+                        </h2>
+                        {/* Progress indicator - 6 horizontal lines */}
+                        {(() => {
+                          const stepMap: Record<string, number> = {
+                            'ideate': 1,
+                            'shape-ideas': 2,
+                            'to-film': 3,
+                            'to-edit': 4,
+                            'to-schedule': 5,
+                            'posted': 6,
+                          };
+                          const stepNumber = stepMap[column.id] || 1;
+                          return (
+                            <div className="flex gap-1.5 mt-2">
+                              {[1, 2, 3, 4, 5, 6].map((step) => (
+                                <div
+                                  key={step}
+                                  className={cn(
+                                    "h-1 flex-1 rounded-full transition-colors",
+                                    step <= stepNumber ? colors.badge : "bg-gray-200"
+                                  )}
+                                />
+                              ))}
+                            </div>
+                          );
+                        })()}
                       </div>
 
                       <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-1.5 scrollbar-none hover:scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent relative">
@@ -1803,8 +1840,8 @@ const Production = () => {
                         )}
                         <AnimatePresence>
                           {column.cards.filter(card => {
-                            // Basic filter: has title, not empty, not add quick idea
-                            const basicFilter = card.title && card.title.trim() && !card.title.toLowerCase().includes('add quick idea');
+                            // Basic filter: has id, has title, not empty, not add quick idea
+                            const basicFilter = card.id && card.title && card.title.trim() && !card.title.toLowerCase().includes('add quick idea');
                             // For to-schedule column: hide cards that already have a scheduledDate
                             if (column.id === 'to-schedule' && card.scheduledDate) {
                               return false;
@@ -1831,9 +1868,9 @@ const Production = () => {
                             const isThisCardDragged = draggedCard?.id === card.id;
 
                             return (
-                              <React.Fragment key={card.id}>
-                            {/* Drop indicator - only render during active drag, skip to-schedule */}
-                            {showDropIndicatorBefore && draggedCard && isDraggingRef.current && column.id !== "to-schedule" && (
+                              <React.Fragment key={card.id || `fallback-${cardIndex}`}>
+                            {/* Drop indicator - only render during active drag (not for to-schedule column) */}
+                            {column.id !== 'to-schedule' && showDropIndicatorBefore && draggedCard && (
                               <div className="relative h-0">
                                 <div
                                   className="absolute inset-x-0 -top-1 h-0.5 bg-purple-500 rounded-full"
@@ -2281,8 +2318,8 @@ const Production = () => {
                         );
                       })}
 
-                      {/* Drop indicator at the end of the column - only show during active drag, skip to-schedule */}
-                      {column.id !== "ideate" && column.id !== "to-schedule" && draggedCard && isDraggingRef.current && (() => {
+                      {/* Drop indicator at the end of the column - only show during active drag (not for to-schedule column) */}
+                      {column.id !== "ideate" && column.id !== "to-schedule" && draggedCard && (() => {
                         const filteredCards = column.cards.filter(card => card.title && card.title.trim() && !card.title.toLowerCase().includes('add quick idea'));
                         const draggedCardIndex = filteredCards.findIndex(c => c.id === draggedCard.id);
                         const isLastCard = draggedCardIndex !== -1 && draggedCardIndex === filteredCards.length - 1;

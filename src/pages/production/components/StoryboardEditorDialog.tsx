@@ -708,7 +708,9 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[1100px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-gradient-to-br from-amber-50 via-white to-orange-50">
         {/* Step Progress Indicator */}
-        <ContentFlowProgress currentStep={3} className="border-b border-amber-100 flex-shrink-0 pt-4 bg-white/50" />
+        <div className="flex justify-end pr-12 pt-4 pb-1 bg-white/50">
+          <ContentFlowProgress currentStep={3} className="w-[500px]" />
+        </div>
 
         {/* Main content - side by side layout */}
         <div
@@ -716,7 +718,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
           className="flex-1 overflow-y-auto"
         >
           {/* Header - scrolls with content */}
-          <DialogHeader className="px-6 pt-6 pb-4 border-b border-amber-100/80">
+          <DialogHeader className="px-6 pt-1 pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-200/50">

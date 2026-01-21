@@ -26,12 +26,12 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
   setNotes,
 }) => (
   <Dialog open={isOpen} onOpenChange={onOpenChange}>
-    <DialogContent className="max-w-4xl h-[90vh] max-h-[90vh] p-0 overflow-hidden flex flex-col">
+    <DialogContent className="max-w-4xl h-[90vh] max-h-[90vh] p-0 overflow-hidden flex flex-col bg-gradient-to-b from-purple-50/80 via-white to-white">
       {/* Step Progress Indicator - Fixed at top */}
-      <ContentFlowProgress currentStep={1} className="border-b border-gray-100 flex-shrink-0 pt-4" />
+      <ContentFlowProgress currentStep={1} className="flex-shrink-0 pt-5 pb-2" />
 
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 min-h-0">
+      <div className="flex-1 overflow-y-auto px-6 pt-0 pb-4 min-h-0">
         {/* Title Input */}
         <div className="space-y-4">
           <input
