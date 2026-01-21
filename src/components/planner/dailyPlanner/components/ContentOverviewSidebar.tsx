@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, CalendarCheck, ChevronLeft, ChevronRight, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StorageKeys, getString } from "@/lib/storage";
 import { format, parseISO, isAfter, startOfDay, isEqual } from "date-fns";
@@ -107,29 +107,22 @@ export const ContentOverviewSidebar = ({
             <h2 className="text-base font-semibold text-gray-900">Content Overview</h2>
           </div>
 
-          {/* Legend */}
-          <div className="space-y-4 p-3 bg-white/50 rounded-xl">
-            <div className="flex items-start gap-3">
-              <div className="flex gap-1 flex-shrink-0 pt-1">
-                <div className="w-5 h-1 rounded-full bg-indigo-200" />
-                <div className="w-5 h-1 rounded-full bg-indigo-200" />
-                <div className="w-5 h-1 rounded-full bg-indigo-200" />
-                <div className="w-5 h-1 rounded-full bg-indigo-200" />
-                <div className="w-5 h-1 rounded-full bg-indigo-500" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs font-medium text-gray-700">Scheduled</p>
-                <p className="text-[11px] text-gray-400">Ready to publish</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div className="flex gap-1 flex-shrink-0 pt-1">
-                <div className="w-5 h-1 rounded-full bg-amber-500" />
-                <div className="w-5 h-1 rounded-full bg-amber-200" />
-                <div className="w-5 h-1 rounded-full bg-amber-200" />
-                <div className="w-5 h-1 rounded-full bg-amber-200" />
-                <div className="w-5 h-1 rounded-full bg-amber-200" />
+          {/* Legend with sample cards */}
+          <div className="space-y-4">
+            {/* Planned sample card */}
+            <div className="flex items-center gap-3">
+              <div className="w-1/2 bg-purple-100 border border-dashed border-purple-300 rounded-lg p-2.5">
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="w-3.5 h-3.5 text-purple-600" />
+                  <span className="text-xs font-medium text-purple-700">Sample content</span>
+                </div>
+                <div className="flex justify-center gap-1 mt-2">
+                  <div className="w-4 h-1 rounded-full bg-purple-500" />
+                  <div className="w-4 h-1 rounded-full bg-purple-300" />
+                  <div className="w-4 h-1 rounded-full bg-purple-300" />
+                  <div className="w-4 h-1 rounded-full bg-purple-300" />
+                  <div className="w-4 h-1 rounded-full bg-purple-300" />
+                </div>
               </div>
               <div className="flex-1">
                 <p className="text-xs font-medium text-gray-700">Planned</p>
@@ -137,6 +130,26 @@ export const ContentOverviewSidebar = ({
               </div>
             </div>
 
+            {/* Scheduled sample card */}
+            <div className="flex items-center gap-3">
+              <div className="w-1/2 bg-violet-100 rounded-lg p-2.5">
+                <div className="flex items-center gap-2">
+                  <CalendarCheck className="w-3.5 h-3.5 text-violet-600" />
+                  <span className="text-xs font-medium text-violet-700">Sample content</span>
+                </div>
+                <div className="flex justify-center gap-1 mt-2">
+                  <div className="w-4 h-1 rounded-full bg-violet-300" />
+                  <div className="w-4 h-1 rounded-full bg-violet-300" />
+                  <div className="w-4 h-1 rounded-full bg-violet-300" />
+                  <div className="w-4 h-1 rounded-full bg-violet-300" />
+                  <div className="w-4 h-1 rounded-full bg-violet-500" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-medium text-gray-700">Scheduled</p>
+                <p className="text-[11px] text-gray-400">Ready to publish</p>
+              </div>
+            </div>
           </div>
 
           {/* Content Hub guidance */}
