@@ -53,6 +53,7 @@ import { suggestShotsForScene, ShotSuggestion } from "../utils/shotSuggestionSer
 import { generateStoryboardFromScript, convertToStoryboardScenes } from "../utils/storyboardGenerationService";
 import { toast } from "sonner";
 import ShotLibraryDialog from "./ShotLibraryDialog";
+import ContentFlowProgress from "./ContentFlowProgress";
 
 // Shot illustrations
 import wideShotIllustration from "@/assets/shot-illustrations/wide-shot.png";
@@ -706,27 +707,29 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
     <>
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[1100px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-gradient-to-br from-amber-50 via-white to-orange-50">
-        {/* Header */}
-        <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4 border-b border-amber-100/80">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-200/50">
-                <Clapperboard className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-                  Storyboard Editor
-                </DialogTitle>
-              </div>
-            </div>
-          </div>
-        </DialogHeader>
+        {/* Step Progress Indicator */}
+        <ContentFlowProgress currentStep={3} className="border-b border-amber-100 flex-shrink-0 pt-4 bg-white/50" />
 
         {/* Main content - side by side layout */}
         <div
           ref={leftPanelRef}
           className="flex-1 overflow-y-auto"
         >
+          {/* Header - scrolls with content */}
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-amber-100/80">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-200/50">
+                  <Clapperboard className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                    Storyboard Editor
+                  </DialogTitle>
+                </div>
+              </div>
+            </div>
+          </DialogHeader>
           {/* Headers row - both headers scroll together */}
           <div className="flex border-b border-amber-100/80">
             {/* Script Header */}

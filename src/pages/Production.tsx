@@ -176,8 +176,12 @@ const Production = () => {
   const [lastArchivedCard, setLastArchivedCard] = useState<{ card: ProductionCard; sourceColumnId: string } | null>(null);
   const [brainDumpSuggestion, setBrainDumpSuggestion] = useState<string>("");
 
+
   // Highlighted unscheduled card state
   const [highlightedUnscheduledCardId, setHighlightedUnscheduledCardId] = useState<string | null>(null);
+
+  // Recently repurposed card highlight
+  const [recentlyRepurposedCardId, setRecentlyRepurposedCardId] = useState<string | null>(null);
 
   // Planned to scheduled conversion dialog state
   const [showPlannedToScheduledDialog, setShowPlannedToScheduledDialog] = useState(false);
@@ -326,6 +330,16 @@ const Production = () => {
       return () => clearTimeout(timer);
     }
   }, []);
+
+  // Auto-hide undo archive button after 8 seconds
+  useEffect(() => {
+    if (lastArchivedCard) {
+      const timer = setTimeout(() => {
+        setLastArchivedCard(null);
+      }, 8000);
+      return () => clearTimeout(timer);
+    }
+  }, [lastArchivedCard]);
 
   // Handle scrolling to specific column from URL parameter
   useEffect(() => {
@@ -1189,8 +1203,9 @@ const Production = () => {
 
   // Repurpose archived content - creates a copy in Script Ideas
   const handleRepurposeContent = (card: ProductionCard) => {
+    const newCardId = `card-${Date.now()}`;
     const repurposedCard: ProductionCard = {
-      id: `card-${Date.now()}`,
+      id: newCardId,
       title: card.title,
       hook: card.hook,
       script: card.script,
@@ -1211,8 +1226,65 @@ const Production = () => {
       )
     );
 
+    // Highlight the newly repurposed card
+    setRecentlyRepurposedCardId(newCardId);
+    setTimeout(() => {
+      setRecentlyRepurposedCardId(null);
+    }, 5000); // Clear highlight after 5 seconds
+
     toast.success("Content repurposed! 🔄", {
       description: "A copy has been added to Script Ideas"
+    });
+  };
+
+  const handleRestoreContent = (card: ProductionCard) => {
+    // Remove from archived cards
+    setArchivedCards((prev) => prev.filter((c) => c.id !== card.id));
+
+    // Create restored card for to-schedule column
+    const restoredCard: ProductionCard = {
+      ...card,
+      columnId: 'to-schedule',
+      archivedAt: undefined,
+    };
+
+    // Add to to-schedule column
+    setColumns((prev) =>
+      prev.map((col) =>
+        col.id === 'to-schedule'
+          ? { ...col, cards: [restoredCard, ...col.cards] }
+          : col
+      )
+    );
+
+    // Clear the last archived card state if it matches
+    if (lastArchivedCard?.card.id === card.id) {
+      setLastArchivedCard(null);
+    }
+
+    toast.success("Content restored!", {
+      description: "Moved back to To Schedule"
+    });
+  };
+
+  // Delete archived content (confirmation handled in ArchiveDialog)
+  const handleDeleteArchivedContent = (card: ProductionCard) => {
+    const deletedCard = card;
+
+    // Remove from archived cards
+    setArchivedCards((prev) => prev.filter((c) => c.id !== deletedCard.id));
+
+    // Show toast with undo option
+    toast.success("Content deleted", {
+      description: "This content idea has been removed",
+      action: {
+        label: "Undo",
+        onClick: () => {
+          setArchivedCards((prev) => [deletedCard, ...prev]);
+          toast.success("Content restored!");
+        }
+      },
+      duration: 5000
     });
   };
 
@@ -1658,6 +1730,18 @@ const Production = () => {
                               : "Drop published content here to archive"
                             }
                           </p>
+
+                          {/* Open archive button */}
+                          <button
+                            onClick={() => setIsArchiveDialogOpen(true)}
+                            className="mt-4 flex items-center gap-2 text-sm text-white hover:text-white font-medium bg-emerald-500 hover:bg-emerald-600 px-4 py-2 rounded-xl transition-colors shadow-sm"
+                          >
+                            <Archive className="w-4 h-4" />
+                            {archivedCards.length > 0
+                              ? `View archive (${archivedCards.length})`
+                              : "Open archive"
+                            }
+                          </button>
                         </motion.div>
 
                         {/* Undo button - positioned in center area */}
@@ -1666,34 +1750,21 @@ const Production = () => {
                             onClick={() => {
                               // Remove from archive
                               setArchivedCards((prev) => prev.filter((c) => c.id !== lastArchivedCard.card.id));
-                              // Add back to source column
+                              // Add to To Schedule column
                               setColumns((prev) =>
                                 prev.map((col) =>
-                                  col.id === lastArchivedCard.sourceColumnId
-                                    ? { ...col, cards: [lastArchivedCard.card, ...col.cards] }
+                                  col.id === 'to-schedule'
+                                    ? { ...col, cards: [{ ...lastArchivedCard.card, columnId: 'to-schedule' }, ...col.cards] }
                                     : col
                                 )
                               );
-                              const columnName = columns.find(c => c.id === lastArchivedCard.sourceColumnId)?.title || "column";
                               setLastArchivedCard(null);
-                              toast.success(`Restored to ${columnName}`);
+                              toast.success("Restored to To Schedule");
                             }}
                             className="mt-6 flex items-center gap-1.5 text-sm text-amber-600 hover:text-amber-700 font-medium bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-full transition-colors"
                           >
                             <RefreshCw className="w-3.5 h-3.5" />
                             Undo archive
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Bottom section - archive link */}
-                      <div className="px-4 pb-4 flex flex-col items-center">
-                        {archivedCards.length > 0 && (
-                          <button
-                            onClick={() => setIsArchiveDialogOpen(true)}
-                            className="text-sm text-emerald-600 hover:text-emerald-700 font-medium hover:underline transition-colors"
-                          >
-                            View archive ({archivedCards.length})
                           </button>
                         )}
                       </div>
@@ -1754,9 +1825,9 @@ const Production = () => {
 
                             return (
                               <React.Fragment key={card.id}>
-                            {/* Drop indicator - fixed height to prevent layout shift */}
-                            <div className="relative h-0">
-                              {showDropIndicatorBefore && draggedCard && (
+                            {/* Drop indicator - only render during active drag */}
+                            {showDropIndicatorBefore && draggedCard && (
+                              <div className="relative h-0">
                                 <div
                                   className="absolute inset-x-0 -top-1 h-0.5 bg-purple-500 rounded-full"
                                   style={{
@@ -1764,8 +1835,8 @@ const Production = () => {
                                     transition: 'opacity 0.1s ease-out'
                                   }}
                                 />
-                              )}
-                            </div>
+                              </div>
+                            )}
 
                             <motion.div
                               layout={false}
@@ -1826,6 +1897,7 @@ const Production = () => {
                                 !isDragging && "transition-all duration-200",
                                 isThisCardDragged ? "opacity-40 scale-[0.98]" : "",
                                 card.isCompleted && "opacity-60",
+                                recentlyRepurposedCardId === card.id ? "ring-2 ring-emerald-500 ring-offset-2 bg-emerald-50" :
                                 highlightedUnscheduledCardId === card.id ? "ring-2 ring-indigo-500 ring-offset-2 bg-indigo-50" :
                                 card.isNew ? "border-2 border-purple-600 bg-purple-100" : `${cardColors[column.id]?.bg || "bg-white/90"} border ${cardColors[column.id]?.border || "border-gray-100"}`
                               )}
@@ -1843,6 +1915,11 @@ const Production = () => {
                             {highlightedUnscheduledCardId === card.id && (
                               <div className="absolute -top-1 -right-1 bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
                                 UNSCHEDULED
+                              </div>
+                            )}
+                            {recentlyRepurposedCardId === card.id && (
+                              <div className="absolute -top-1 -right-1 bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
+                                REPURPOSED
                               </div>
                             )}
                             {/* Calendar origin indicator */}
@@ -2201,26 +2278,26 @@ const Production = () => {
                         );
                       })}
 
-                      {/* Drop indicator at the end of the column - fixed height to prevent layout shift */}
-                      {column.id !== "ideate" && (() => {
+                      {/* Drop indicator at the end of the column - only show during active drag */}
+                      {column.id !== "ideate" && draggedCard && (() => {
                         const filteredCards = column.cards.filter(card => card.title && card.title.trim() && !card.title.toLowerCase().includes('add quick idea'));
-                        const draggedCardIndex = draggedCard ? filteredCards.findIndex(c => c.id === draggedCard.id) : -1;
+                        const draggedCardIndex = filteredCards.findIndex(c => c.id === draggedCard.id);
                         const isLastCard = draggedCardIndex !== -1 && draggedCardIndex === filteredCards.length - 1;
                         const shouldShow = dropPosition?.columnId === column.id &&
                                          dropPosition?.index === filteredCards.length &&
                                          !isLastCard;
 
+                        if (!shouldShow) return null;
+
                         return (
                           <div className="relative h-0">
-                            {shouldShow && draggedCard && (
-                              <div
-                                className="absolute inset-x-0 top-0 h-0.5 bg-purple-500 rounded-full"
-                                style={{
-                                  opacity: 1,
-                                  transition: 'opacity 0.1s ease-out'
-                                }}
-                              />
-                            )}
+                            <div
+                              className="absolute inset-x-0 top-0 h-0.5 bg-purple-500 rounded-full"
+                              style={{
+                                opacity: 1,
+                                transition: 'opacity 0.1s ease-out'
+                              }}
+                            />
                           </div>
                         );
                       })()}
@@ -4367,6 +4444,8 @@ Make each idea unique, creative, and directly tied to both the original content 
           onOpenChange={setIsArchiveDialogOpen}
           archivedCards={archivedCards}
           onRepurpose={handleRepurposeContent}
+          onRestore={handleRestoreContent}
+          onDelete={handleDeleteArchivedContent}
         />
 
         {/* Planned to Scheduled Conversion Dialog */}

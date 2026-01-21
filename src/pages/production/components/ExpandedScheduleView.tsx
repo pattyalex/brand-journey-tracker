@@ -12,6 +12,7 @@ import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
 import { CardContent } from "@/components/ui/card";
 import { ProductionCard, KanbanColumn } from "../types";
+import ContentFlowProgress from "./ContentFlowProgress";
 import { StorageKeys, getString, setString } from "@/lib/storage";
 import { EVENTS, emit, on } from "@/lib/events";
 
@@ -831,12 +832,38 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
 
   // Content component - shared between modal and embedded modes
   const content = (
-    <>
-      {/* Main content - split panels */}
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Main content - split panels with step progress integrated */}
       <div className={cn(
-        "flex-1 overflow-hidden grid transition-all duration-300 min-h-0",
+        "flex-1 overflow-y-auto grid transition-all duration-300 min-h-0",
         isLeftPanelCollapsed ? "grid-cols-[48px_1fr]" : "grid-cols-[320px_1fr]"
       )} style={{ gridTemplateRows: '1fr' }}>
+        {/* Step Progress Indicator - spans full width, positioned above the grid */}
+        {!embedded && !planningMode && (
+          <div className="col-span-2 flex-shrink-0">
+            <div className={cn(
+              "grid transition-all duration-300",
+              isLeftPanelCollapsed ? "grid-cols-[48px_1fr]" : "grid-cols-[320px_1fr]"
+            )}>
+              {/* Left side - Content to Schedule header */}
+              <div className={cn(
+                "bg-indigo-100/60 border-r border-indigo-100 flex items-center gap-3 px-6 transition-all duration-300",
+                isLeftPanelCollapsed && "px-2 justify-center"
+              )}>
+                <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                  <CalendarDays className="w-4 h-4 text-indigo-500" />
+                </div>
+                {!isLeftPanelCollapsed && (
+                  <h2 className="text-lg font-bold text-gray-900">Content to Schedule</h2>
+                )}
+              </div>
+              {/* Step progress on right side */}
+              <div className="pt-4 pb-3 border-b border-gray-100 bg-gradient-to-br from-indigo-50/80 via-white to-purple-50/50">
+                <ContentFlowProgress currentStep={5} />
+              </div>
+            </div>
+          </div>
+        )}
         {/* Left Panel - Content to Schedule / Your Week */}
         <div
           className={cn(
@@ -870,33 +897,26 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
             )} />
           </button>
 
-          {/* Header */}
-          <div className={cn(
-            "flex items-center gap-3 px-6 py-4 border-b flex-shrink-0 transition-all duration-300",
-            embedded ? "border-violet-100" : "border-indigo-100",
-            isLeftPanelCollapsed && "px-2 justify-center"
-          )}>
+          {/* Header - only show in embedded mode since modal mode has it in the step progress row */}
+          {embedded && (
             <div className={cn(
-              "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
-              embedded ? "bg-violet-100" : "bg-indigo-100"
+              "flex items-center gap-3 px-6 py-4 border-b flex-shrink-0 transition-all duration-300",
+              "border-violet-100",
+              isLeftPanelCollapsed && "px-2 justify-center"
             )}>
-              {embedded ? (
+              <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center flex-shrink-0">
                 <Sparkles className="w-4 h-4 text-violet-500" />
-              ) : (
-                <CalendarDays className="w-4 h-4 text-indigo-500" />
+              </div>
+              {!isLeftPanelCollapsed && (
+                <h2 className="text-lg font-bold text-gray-900">Your Week</h2>
               )}
             </div>
-            {!isLeftPanelCollapsed && (
-              <h2 className="text-lg font-bold text-gray-900">
-                {embedded ? "Your Week" : "Content to Schedule"}
-              </h2>
-            )}
-          </div>
+          )}
 
           {/* Body - scrollable */}
           <div className={cn(
             "flex-1 min-h-0 overflow-y-auto transition-all duration-300",
-            isLeftPanelCollapsed ? "p-0 opacity-0 overflow-hidden" : "p-4 opacity-100"
+            isLeftPanelCollapsed ? "p-0 opacity-0 overflow-hidden" : "px-4 -mt-2 pb-4 opacity-100"
           )}>
             {/* Embedded mode: Show hybrid panel with stats and upcoming */}
             {embedded ? (
@@ -1193,10 +1213,10 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
         </div>
 
         {/* Right Panel - Calendar */}
-        <div className="flex flex-col h-full overflow-hidden bg-gray-50/50">
+        <div className="flex flex-col h-full overflow-y-auto bg-gray-50/50">
           {/* Calendar Header - only show in modal mode */}
           {!embedded && (
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <CalendarDays className="w-5 h-5 text-indigo-500" />
@@ -1239,9 +1259,9 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
           )}
 
           {/* Calendar Grid */}
-          <CardContent className="pl-6 pr-4 flex-1 flex flex-col min-h-0 overflow-hidden">
+          <CardContent className="pl-6 pr-4 flex flex-col">
             {/* Day headers */}
-            <div className="grid grid-cols-7 mb-2 flex-shrink-0">
+            <div className="grid grid-cols-7 mb-2">
               {daysOfWeek.map((day) => (
                 <div
                   key={day}
@@ -1252,9 +1272,9 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
               ))}
             </div>
 
-            {/* Calendar days grid - scrollable */}
-            <div className="flex-1 min-h-0 overflow-y-auto">
-              <div className="grid grid-cols-7 gap-1.5 h-full" style={{ gridAutoRows: 'minmax(120px, 1fr)' }}>
+            {/* Calendar days grid */}
+            <div className="pb-4">
+              <div className="grid grid-cols-7 gap-1.5" style={{ gridAutoRows: 'minmax(120px, 1fr)' }}>
               {calendarDays.map((day, idx) => {
                 const dateStr = day.date.toISOString().split('T')[0];
                 const isDragOver = dragOverDate === dateStr;
@@ -1739,7 +1759,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
           </CardContent>
         </div>
       </div>
-    </>
+    </div>
   );
 
   // Planning mode content - compact calendar view for planning an idea

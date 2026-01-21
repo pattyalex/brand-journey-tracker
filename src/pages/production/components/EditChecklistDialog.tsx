@@ -4,6 +4,7 @@ import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
+import ContentFlowProgress from "./ContentFlowProgress";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -194,6 +195,9 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col">
+        {/* Step Progress Indicator */}
+        <ContentFlowProgress currentStep={4} className="border-b border-gray-100 flex-shrink-0 bg-white" />
+
         <div className="bg-gradient-to-br from-rose-50/30 via-white to-gray-50 h-full overflow-y-auto">
           {/* Header */}
           <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm px-6 py-4">

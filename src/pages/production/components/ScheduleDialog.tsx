@@ -3,6 +3,7 @@ import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
+import ContentFlowProgress from "./ContentFlowProgress";
 import {
   Popover,
   PopoverContent,
@@ -280,6 +281,9 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[1100px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-white">
+        {/* Step Progress Indicator */}
+        <ContentFlowProgress currentStep={5} className="border-b border-gray-100 flex-shrink-0 pt-4" />
+
         {/* Main content - split panels */}
         <div className={cn(
           "flex-1 overflow-hidden grid transition-all duration-300",

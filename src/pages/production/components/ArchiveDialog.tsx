@@ -3,7 +3,18 @@ import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
-import { Archive, RefreshCw, Search, X, Video, Camera, Calendar, PartyPopper, Undo2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Archive, RefreshCw, Search, Video, Camera, Calendar, PartyPopper, Undo2, Trash2 } from "lucide-react";
+import ContentFlowProgress from "./ContentFlowProgress";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
@@ -47,6 +58,8 @@ interface ArchiveDialogProps {
   onOpenChange: (open: boolean) => void;
   archivedCards: ProductionCard[];
   onRepurpose: (card: ProductionCard) => void;
+  onRestore: (card: ProductionCard) => void;
+  onDelete: (card: ProductionCard) => void;
 }
 
 const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
@@ -54,9 +67,26 @@ const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
   onOpenChange,
   archivedCards,
   onRepurpose,
+  onRestore,
+  onDelete,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCard, setSelectedCard] = useState<ProductionCard | null>(null);
+  const [cardToDelete, setCardToDelete] = useState<ProductionCard | null>(null);
+
+  const handleDeleteClick = (card: ProductionCard) => {
+    setCardToDelete(card);
+  };
+
+  const confirmDelete = () => {
+    if (cardToDelete) {
+      if (selectedCard?.id === cardToDelete.id) {
+        setSelectedCard(null);
+      }
+      onDelete(cardToDelete);
+      setCardToDelete(null);
+    }
+  };
 
   // Filter cards based on search
   const filteredCards = archivedCards.filter(card => {
@@ -77,40 +107,51 @@ const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="h-[calc(100vh-4rem)] max-h-[700px] sm:max-w-[900px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-gradient-to-br from-emerald-50 via-white to-green-50">
-        {/* Header */}
-        <div className="flex-shrink-0 px-6 pt-6 pb-4 border-b border-emerald-100 bg-white/80 backdrop-blur-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg">
-                <Archive className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">Content Archive</h2>
-                <p className="text-sm text-emerald-600">
-                  {archivedCards.length} {archivedCards.length === 1 ? 'post' : 'posts'} archived
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search archived content..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-white border border-emerald-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-            />
+        {/* Step Progress Indicator - Fixed */}
+        <div className="border-b border-emerald-100 flex-shrink-0 pt-4 pb-2 bg-gradient-to-br from-emerald-50/80 via-white to-green-50/50">
+          <div className="flex items-center justify-center gap-3 max-w-xl mx-auto px-4 pr-12">
+            <ContentFlowProgress currentStep={6} allCompleted className="flex-1" />
+            {/* Celebratory icon */}
+            <PartyPopper className="w-5 h-5 text-emerald-500 flex-shrink-0" />
           </div>
         </div>
 
-        {/* Content */}
+        {/* Content - Scrollable */}
         <div className="flex-1 overflow-hidden flex">
-          {/* Cards list */}
-          <div className="w-1/2 border-r border-emerald-100 overflow-y-auto p-4">
-            {filteredCards.length === 0 ? (
+          {/* Left side - Header + Cards list */}
+          <div className="w-1/2 border-r border-emerald-100 overflow-y-auto flex flex-col">
+            {/* Header - Scrolls with content */}
+            <div className="px-6 pt-4 pb-4 border-b border-emerald-100 bg-white/80">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg">
+                    <Archive className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Published Content</h2>
+                    <p className="text-sm text-emerald-600">
+                      {archivedCards.length} {archivedCards.length === 1 ? 'post' : 'posts'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search in the archive..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-emerald-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            {/* Cards list */}
+            <div className="flex-1 p-4">
+              {filteredCards.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center py-12">
                 <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mb-4">
                   <Archive className="w-8 h-8 text-emerald-400" />
@@ -140,16 +181,70 @@ const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
                         transition={{ delay: index * 0.05 }}
                         onClick={() => setSelectedCard(card)}
                         className={cn(
-                          "p-3 rounded-xl border-2 cursor-pointer transition-all",
+                          "p-3 rounded-xl border-2 cursor-pointer transition-all group",
                           selectedCard?.id === card.id
                             ? "border-emerald-500 bg-emerald-50 shadow-md"
                             : "border-gray-100 bg-white hover:border-emerald-200 hover:shadow-sm"
                         )}
                       >
-                        {/* Title */}
-                        <h4 className="font-semibold text-gray-800 text-sm mb-2 line-clamp-2">
-                          {card.hook || card.title || "Untitled"}
-                        </h4>
+                        {/* Title row with action buttons */}
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <h4 className="font-semibold text-gray-800 text-sm line-clamp-2 flex-1">
+                            {card.hook || card.title || "Untitled"}
+                          </h4>
+
+                          {/* Action icons */}
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            {/* Restore button */}
+                            <div className="relative group/restore">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onRestore(card);
+                                }}
+                                className="p-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-600 hover:text-amber-700 transition-colors"
+                              >
+                                <Undo2 className="w-3.5 h-3.5" />
+                              </button>
+                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 bg-gray-900 text-white text-[10px] rounded-md opacity-0 group-hover/restore:opacity-100 transition-opacity duration-150 whitespace-nowrap pointer-events-none z-10">
+                                Reschedule
+                              </div>
+                            </div>
+
+                            {/* Repurpose button */}
+                            <div className="relative group/repurpose">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onRepurpose(card);
+                                  onOpenChange(false);
+                                }}
+                                className="p-1.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-600 hover:text-emerald-700 transition-colors"
+                              >
+                                <RefreshCw className="w-3.5 h-3.5" />
+                              </button>
+                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 bg-gray-900 text-white text-[10px] rounded-md opacity-0 group-hover/repurpose:opacity-100 transition-opacity duration-150 whitespace-nowrap pointer-events-none z-10">
+                                Repurpose
+                              </div>
+                            </div>
+
+                            {/* Delete button */}
+                            <div className="relative group/delete">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteClick(card);
+                                }}
+                                className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 transition-colors"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 bg-gray-900 text-white text-[10px] rounded-md opacity-0 group-hover/delete:opacity-100 transition-opacity duration-150 whitespace-nowrap pointer-events-none z-10">
+                                Delete
+                              </div>
+                            </div>
+                          </div>
+                        </div>
 
                         {/* Meta row */}
                         <div className="flex items-center justify-between gap-2">
@@ -189,6 +284,7 @@ const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
                 </AnimatePresence>
               </div>
             )}
+            </div>
           </div>
 
           {/* Detail panel */}
@@ -208,59 +304,83 @@ const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
                       </p>
                     )}
                   </div>
-                  <div className="relative group">
-                    <button
-                      onClick={() => {
-                        onRepurpose(selectedCard);
-                        onOpenChange(false);
-                      }}
-                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white rounded-xl font-medium text-sm transition-all hover:shadow-lg hover:scale-105 active:scale-95"
-                    >
-                      <RefreshCw className="w-4 h-4" />
-                      Repurpose
-                    </button>
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap pointer-events-none">
-                      Send a copy to Script Ideas
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-gray-900"></div>
+                  <div className="flex items-center gap-2">
+                    <div className="relative group">
+                      <button
+                        onClick={() => {
+                          onRestore(selectedCard);
+                          setSelectedCard(null);
+                          onOpenChange(false);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl font-medium text-sm transition-all hover:shadow-lg hover:scale-105 active:scale-95"
+                      >
+                        <Undo2 className="w-4 h-4" />
+                        Restore
+                      </button>
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap pointer-events-none">
+                        Send back to To Schedule
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-gray-900"></div>
+                      </div>
+                    </div>
+                    <div className="relative group">
+                      <button
+                        onClick={() => {
+                          onRepurpose(selectedCard);
+                          onOpenChange(false);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white rounded-xl font-medium text-sm transition-all hover:shadow-lg hover:scale-105 active:scale-95"
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                        Repurpose
+                      </button>
+                      <div className="absolute top-full right-0 mt-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none w-56 text-center leading-relaxed">
+                        <span className="block font-semibold mb-1">Want to reuse this idea?</span>
+                        Send a copy to Script Ideas and refine it for a new post
+                        <div className="absolute bottom-full right-6 border-4 border-transparent border-b-gray-900"></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Script */}
-                {selectedCard.script && (
-                  <div>
-                    <h4 className="text-[11px] font-semibold text-emerald-500 uppercase tracking-wider mb-2">
-                      Script
-                    </h4>
+                <div>
+                  <h4 className="text-[11px] font-semibold text-emerald-500 uppercase tracking-wider mb-2">
+                    Script
+                  </h4>
+                  {selectedCard.script ? (
                     <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed bg-white rounded-lg p-3 border border-gray-100">
                       {selectedCard.script}
                     </p>
-                  </div>
-                )}
+                  ) : (
+                    <p className="text-sm text-gray-400 italic">No script added</p>
+                  )}
+                </div>
 
-                {/* Formats */}
-                {selectedCard.formats && selectedCard.formats.length > 0 && (
-                  <div>
-                    <h4 className="text-[11px] font-semibold text-emerald-500 uppercase tracking-wider mb-2">
-                      Format
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
+                {/* How it's shot (Formats) */}
+                <div>
+                  <h4 className="text-[11px] font-semibold text-emerald-500 uppercase tracking-wider mb-2">
+                    How it's shot
+                  </h4>
+                  {selectedCard.formats && selectedCard.formats.length > 0 ? (
+                    <div className="flex flex-wrap gap-x-4 gap-y-1">
                       {selectedCard.formats.map((format, idx) => (
-                        <span key={idx} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-medium">
-                          {isStaticFormat(format) ? <Camera className="w-3 h-3" /> : <Video className="w-3 h-3" />}
+                        <span key={idx} className="inline-flex items-center gap-1.5 text-sm text-gray-700">
+                          {isStaticFormat(format) ? <Camera className="w-4 h-4 text-gray-400" /> : <Video className="w-4 h-4 text-gray-400" />}
                           {format}
                         </span>
                       ))}
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <p className="text-sm text-gray-400 italic">No format specified</p>
+                  )}
+                </div>
 
                 {/* Platforms */}
-                {selectedCard.platforms && selectedCard.platforms.length > 0 && (
-                  <div>
-                    <h4 className="text-[11px] font-semibold text-emerald-500 uppercase tracking-wider mb-2">
-                      Platforms
-                    </h4>
+                <div>
+                  <h4 className="text-[11px] font-semibold text-emerald-500 uppercase tracking-wider mb-2">
+                    Platforms
+                  </h4>
+                  {selectedCard.platforms && selectedCard.platforms.length > 0 ? (
                     <div className="flex gap-3">
                       {selectedCard.platforms.map((platform, idx) => (
                         <span key={idx} className="text-gray-600" title={platform}>
@@ -268,16 +388,18 @@ const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
                         </span>
                       ))}
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <p className="text-sm text-gray-400 italic">No platforms specified</p>
+                  )}
+                </div>
 
                 {/* Filming Plan */}
-                {(selectedCard.locationText || selectedCard.outfitText || selectedCard.propsText || selectedCard.filmingNotes) && (
-                  <div>
-                    <h4 className="text-[11px] font-semibold text-emerald-500 uppercase tracking-wider mb-2">
-                      Filming Plan
-                    </h4>
-                    <div className="space-y-2 text-sm text-gray-600">
+                <div>
+                  <h4 className="text-[11px] font-semibold text-emerald-500 uppercase tracking-wider mb-2">
+                    Filming Plan
+                  </h4>
+                  {(selectedCard.locationText || selectedCard.outfitText || selectedCard.propsText || selectedCard.filmingNotes) ? (
+                    <div className="space-y-2 text-sm text-gray-600 bg-white rounded-lg p-3 border border-gray-100">
                       {selectedCard.locationText && (
                         <p><span className="font-medium text-gray-700">Location:</span> {selectedCard.locationText}</p>
                       )}
@@ -291,6 +413,20 @@ const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
                         <p><span className="font-medium text-gray-700">Notes:</span> {selectedCard.filmingNotes}</p>
                       )}
                     </div>
+                  ) : (
+                    <p className="text-sm text-gray-400 italic">No filming plan added</p>
+                  )}
+                </div>
+
+                {/* Notes / Brain Dump */}
+                {selectedCard.notes && (
+                  <div>
+                    <h4 className="text-[11px] font-semibold text-emerald-500 uppercase tracking-wider mb-2">
+                      Notes
+                    </h4>
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed bg-white rounded-lg p-3 border border-gray-100">
+                      {selectedCard.notes}
+                    </p>
                   </div>
                 )}
               </div>
@@ -308,6 +444,27 @@ const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
           </div>
         </div>
       </DialogContent>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!cardToDelete} onOpenChange={(open) => !open && setCardToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Once deleted you will lose access to this information and this content idea.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 };
