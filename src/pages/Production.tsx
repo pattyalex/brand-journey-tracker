@@ -140,6 +140,7 @@ const Production = () => {
   const [highlightedColumn, setHighlightedColumn] = useState<string | null>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isDraggingRef = useRef<boolean>(false);
   const textRefs = useRef<Map<string, HTMLElement>>(new Map());
   const [isIdeateDialogOpen, setIsIdeateDialogOpen] = useState(false);
   const [isIdeateCardEditorOpen, setIsIdeateCardEditorOpen] = useState(false);
@@ -341,6 +342,14 @@ const Production = () => {
     }
   }, [lastArchivedCard]);
 
+  // Clear drop indicators when drag ends
+  useEffect(() => {
+    if (!draggedCard) {
+      setDropPosition(null);
+      setDraggedOverColumn(null);
+    }
+  }, [draggedCard]);
+
   // Handle scrolling to specific column from URL parameter
   useEffect(() => {
     const scrollToColumn = searchParams.get('scrollTo');
@@ -537,11 +546,13 @@ const Production = () => {
   };
 
   const handleDragStart = (e: React.DragEvent, card: ProductionCard) => {
+    isDraggingRef.current = true;
     setDraggedCard(card);
     e.dataTransfer.effectAllowed = "move";
   };
 
   const handleDragEnd = () => {
+    isDraggingRef.current = false;
     setDraggedCard(null);
     setDraggedOverColumn(null);
     setDropPosition(null);
@@ -588,27 +599,36 @@ const Production = () => {
 
   const handleDrop = (e: React.DragEvent, targetColumnId: string) => {
     e.preventDefault();
-    if (!draggedCard || !dropPosition) return;
+
+    // Always clear drop indicators immediately
+    setDropPosition(null);
+    setDraggedOverColumn(null);
+
+    if (!draggedCard || !dropPosition) {
+      setDraggedCard(null);
+      return;
+    }
 
     // Save the drop position before clearing state
     const savedDropPosition = { ...dropPosition };
     const actualTargetColumnId = savedDropPosition.columnId;
 
-    // Clear drop indicators immediately
-    setDropPosition(null);
-    setDraggedOverColumn(null);
     const sourceColumn = columns.find((col) =>
       col.cards.some((card) => card.id === draggedCard.id)
     );
     const sourceColumnId = sourceColumn?.id;
 
-    if (!sourceColumn) return;
+    if (!sourceColumn) {
+      setDraggedCard(null);
+      return;
+    }
 
     // Prevent moving cards back to Ideate from other columns
     if (actualTargetColumnId === "ideate" && sourceColumnId !== "ideate") {
       toast.error("Content cannot be moved back to Ideation", {
         description: "Once content moves forward in your workflow, it stays on that path. Start fresh with a new idea instead.",
       });
+      setDraggedCard(null);
       return;
     }
 
@@ -1267,25 +1287,12 @@ const Production = () => {
     });
   };
 
-  // Delete archived content (confirmation handled in ArchiveDialog)
+  // Delete archived content
   const handleDeleteArchivedContent = (card: ProductionCard) => {
-    const deletedCard = card;
-
     // Remove from archived cards
-    setArchivedCards((prev) => prev.filter((c) => c.id !== deletedCard.id));
+    setArchivedCards((prev) => prev.filter((c) => c.id !== card.id));
 
-    // Show toast with undo option
-    toast.success("Content deleted", {
-      description: "This content idea has been removed",
-      action: {
-        label: "Undo",
-        onClick: () => {
-          setArchivedCards((prev) => [deletedCard, ...prev]);
-          toast.success("Content restored!");
-        }
-      },
-      duration: 5000
-    });
+    toast.success("Content deleted");
   };
 
   const handleScriptEditorOpenChange = (open: boolean) => {
@@ -1703,27 +1710,27 @@ const Production = () => {
                       </div>
 
                       {/* Minimal archive drop zone */}
-                      <div className="flex-1 flex flex-col items-center justify-center px-4">
+                      <div className="flex-1 flex flex-col items-center justify-start pt-44 px-4">
                         <motion.div
                           className={cn(
                             "flex flex-col items-center transition-all duration-200",
                             draggedOverColumn === "posted" && draggedCard
-                              ? "opacity-100 scale-100"
-                              : "opacity-60"
+                              ? "scale-105"
+                              : ""
                           )}
                         >
                           <Archive className={cn(
                             "w-8 h-8 mb-3 transition-colors",
                             draggedOverColumn === "posted" && draggedCard
-                              ? "text-emerald-500"
-                              : "text-emerald-300"
+                              ? "text-emerald-600"
+                              : "text-emerald-500"
                           )} />
 
                           <p className={cn(
-                            "text-sm text-center transition-colors max-w-[180px]",
+                            "text-sm text-center transition-colors max-w-[180px] font-medium",
                             draggedOverColumn === "posted" && draggedCard
-                              ? "text-emerald-600 font-medium"
-                              : "text-emerald-400"
+                              ? "text-emerald-700"
+                              : "text-emerald-600"
                           )}>
                             {draggedOverColumn === "posted" && draggedCard
                               ? "Release to archive"
@@ -1825,15 +1832,11 @@ const Production = () => {
 
                             return (
                               <React.Fragment key={card.id}>
-                            {/* Drop indicator - only render during active drag */}
-                            {showDropIndicatorBefore && draggedCard && (
+                            {/* Drop indicator - only render during active drag, skip to-schedule */}
+                            {showDropIndicatorBefore && draggedCard && isDraggingRef.current && column.id !== "to-schedule" && (
                               <div className="relative h-0">
                                 <div
                                   className="absolute inset-x-0 -top-1 h-0.5 bg-purple-500 rounded-full"
-                                  style={{
-                                    opacity: 1,
-                                    transition: 'opacity 0.1s ease-out'
-                                  }}
                                 />
                               </div>
                             )}
@@ -2278,8 +2281,8 @@ const Production = () => {
                         );
                       })}
 
-                      {/* Drop indicator at the end of the column - only show during active drag */}
-                      {column.id !== "ideate" && draggedCard && (() => {
+                      {/* Drop indicator at the end of the column - only show during active drag, skip to-schedule */}
+                      {column.id !== "ideate" && column.id !== "to-schedule" && draggedCard && isDraggingRef.current && (() => {
                         const filteredCards = column.cards.filter(card => card.title && card.title.trim() && !card.title.toLowerCase().includes('add quick idea'));
                         const draggedCardIndex = filteredCards.findIndex(c => c.id === draggedCard.id);
                         const isLastCard = draggedCardIndex !== -1 && draggedCardIndex === filteredCards.length - 1;
@@ -2293,10 +2296,6 @@ const Production = () => {
                           <div className="relative h-0">
                             <div
                               className="absolute inset-x-0 top-0 h-0.5 bg-purple-500 rounded-full"
-                              style={{
-                                opacity: 1,
-                                transition: 'opacity 0.1s ease-out'
-                              }}
                             />
                           </div>
                         );

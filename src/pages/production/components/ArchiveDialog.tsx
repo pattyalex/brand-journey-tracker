@@ -3,17 +3,7 @@ import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Archive, RefreshCw, Search, Video, Camera, Calendar, PartyPopper, Undo2, Trash2 } from "lucide-react";
+import { Archive, RefreshCw, Search, Video, Camera, Calendar, PartyPopper, Undo2, Trash2, AlertTriangle } from "lucide-react";
 import ContentFlowProgress from "./ContentFlowProgress";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
@@ -74,11 +64,7 @@ const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
   const [selectedCard, setSelectedCard] = useState<ProductionCard | null>(null);
   const [cardToDelete, setCardToDelete] = useState<ProductionCard | null>(null);
 
-  const handleDeleteClick = (card: ProductionCard) => {
-    setCardToDelete(card);
-  };
-
-  const confirmDelete = () => {
+  const handleConfirmDelete = () => {
     if (cardToDelete) {
       if (selectedCard?.id === cardToDelete.id) {
         setSelectedCard(null);
@@ -233,7 +219,7 @@ const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleDeleteClick(card);
+                                  setCardToDelete(card);
                                 }}
                                 className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 transition-colors"
                               >
@@ -443,28 +429,39 @@ const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
             )}
           </div>
         </div>
+
+        {/* Delete Confirmation Overlay */}
+        {cardToDelete && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 rounded-2xl">
+            <div className="bg-white rounded-xl shadow-2xl p-6 max-w-sm mx-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900">Confirm Deletion</h3>
+              </div>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to delete this content? This action cannot be undone.
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setCardToDelete(null)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                >
+                  No
+                </button>
+                <button
+                  onClick={handleConfirmDelete}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+                >
+                  Yes, proceed
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </DialogContent>
 
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!cardToDelete} onOpenChange={(open) => !open && setCardToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Once deleted you will lose access to this information and this content idea.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDelete}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </Dialog>
   );
 };
