@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { addDays, addMonths, endOfMonth, endOfWeek, format, startOfMonth, startOfWeek, subDays, subMonths, eachDayOfInterval, isSameDay } from "date-fns";
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Clock, FileText, Palette, Lightbulb, ListTodo, ArrowRight, Check, X } from 'lucide-react';
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { PlannerItem } from "@/types/planner";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { TIMEZONES, getDateString } from "./dailyPlanner/utils/plannerUtils";
 import { AllTasksSidebar } from "./dailyPlanner/components/AllTasksSidebar";
+import { ContentOverviewSidebar } from "./dailyPlanner/components/ContentOverviewSidebar";
 import { PlannerHeader } from "./dailyPlanner/components/PlannerHeader";
 import { TodayView } from "./dailyPlanner/components/TodayView";
 import { WeekView } from "./dailyPlanner/components/WeekView";
@@ -67,6 +69,93 @@ export const DailyPlanner = () => {
     content: ProductionCard | null;
     type: 'scheduled' | 'planned';
   }>({ open: false, content: null, type: 'planned' });
+
+  // State for monthly add dialog
+  const [monthlyAddDialogState, setMonthlyAddDialogState] = useState<{
+    open: boolean;
+    dayString: string;
+  }>({ open: false, dayString: '' });
+
+  // Monthly dialog form state
+  const [monthlyTaskTitle, setMonthlyTaskTitle] = useState("");
+  const [monthlyTaskStartTime, setMonthlyTaskStartTime] = useState("");
+  const [monthlyTaskEndTime, setMonthlyTaskEndTime] = useState("");
+  const [monthlyTaskDescription, setMonthlyTaskDescription] = useState("");
+  const [monthlyTaskColor, setMonthlyTaskColor] = useState("");
+
+  // Color palette options for monthly dialog
+  const colorOptions = [
+    { name: 'gray', bg: '#f3f4f6', hex: '#f3f4f6' },
+    { name: 'rose', bg: '#fecdd3', hex: '#fecdd3' },
+    { name: 'pink', bg: '#fbcfe8', hex: '#fbcfe8' },
+    { name: 'purple', bg: '#e9d5ff', hex: '#e9d5ff' },
+    { name: 'indigo', bg: '#c7d2fe', hex: '#c7d2fe' },
+    { name: 'sky', bg: '#bae6fd', hex: '#bae6fd' },
+    { name: 'teal', bg: '#99f6e4', hex: '#99f6e4' },
+    { name: 'green', bg: '#bbf7d0', hex: '#bbf7d0' },
+    { name: 'lime', bg: '#d9f99d', hex: '#d9f99d' },
+    { name: 'yellow', bg: '#fef08a', hex: '#fef08a' },
+    { name: 'orange', bg: '#fed7aa', hex: '#fed7aa' },
+  ];
+
+  // Reset monthly form state
+  const resetMonthlyFormState = () => {
+    setMonthlyTaskTitle("");
+    setMonthlyTaskStartTime("");
+    setMonthlyTaskEndTime("");
+    setMonthlyTaskDescription("");
+    setMonthlyTaskColor("");
+  };
+
+  // Close monthly dialog
+  const closeMonthlyDialog = () => {
+    setMonthlyAddDialogState({ open: false, dayString: '' });
+    resetMonthlyFormState();
+  };
+
+  // Handle creating a task from monthly dialog
+  const handleCreateMonthlyTask = () => {
+    if (!monthlyTaskTitle.trim()) {
+      toast.error('Please enter a task title');
+      return;
+    }
+
+    const newTask: PlannerItem = {
+      id: `task-${Date.now()}`,
+      text: monthlyTaskTitle.trim(),
+      completed: false,
+      section: 'morning',
+      date: monthlyAddDialogState.dayString,
+      startTime: monthlyTaskStartTime || undefined,
+      endTime: monthlyTaskEndTime || undefined,
+      description: monthlyTaskDescription || undefined,
+      color: monthlyTaskColor || undefined,
+    };
+
+    // Add to planner data
+    const dayIndex = state.plannerData.findIndex(d => d.date === monthlyAddDialogState.dayString);
+    const updatedPlannerData = [...state.plannerData];
+
+    if (dayIndex >= 0) {
+      updatedPlannerData[dayIndex] = {
+        ...updatedPlannerData[dayIndex],
+        items: [...updatedPlannerData[dayIndex].items, newTask]
+      };
+    } else {
+      updatedPlannerData.push({
+        date: monthlyAddDialogState.dayString,
+        items: [newTask],
+        tasks: "",
+        greatDay: "",
+        grateful: ""
+      });
+    }
+
+    setters.setPlannerData(updatedPlannerData);
+    persistence.savePlannerData(updatedPlannerData);
+    toast.success('Task created for ' + format(new Date(monthlyAddDialogState.dayString), 'MMM d'));
+    closeMonthlyDialog();
+  };
 
   // Handler to open content dialog
   const handleOpenContentDialog = useCallback((content: ProductionCard, type: 'scheduled' | 'planned') => {
@@ -133,6 +222,7 @@ export const DailyPlanner = () => {
     deleteAfterCopy: state.deleteAfterCopy,
     pendingTaskFromAllTasks: state.pendingTaskFromAllTasks,
     isTaskDialogOpen: state.isTaskDialogOpen,
+    taskDialogPosition: state.taskDialogPosition,
     todayScrollRef: refs.todayScrollRef,
     weeklyScrollRef: refs.weeklyScrollRef,
     titleInputRef: refs.titleInputRef,
@@ -162,6 +252,7 @@ export const DailyPlanner = () => {
     setAllTasks: setters.setAllTasks,
     setContentCalendarData: setters.setContentCalendarData,
     setIsTaskDialogOpen: setters.setIsTaskDialogOpen,
+    setTaskDialogPosition: setters.setTaskDialogPosition,
     setEditingTask: setters.setEditingTask,
     setDialogTaskTitle: setters.setDialogTaskTitle,
     setDialogTaskDescription: setters.setDialogTaskDescription,
@@ -232,6 +323,7 @@ export const DailyPlanner = () => {
     setDialogTaskColor,
     setDialogAddToContentCalendar,
     setIsTaskDialogOpen,
+    setTaskDialogPosition,
     setEditingTask,
     setIsAllTasksCollapsed,
     setIsDraggingOverAllTasks,
@@ -308,19 +400,26 @@ export const DailyPlanner = () => {
       <div className="flex h-full">
         {/* Sidebar - Left Side - Visible in Today, This Week, and Calendar views */}
         {(currentView === 'today' || currentView === 'week' || currentView === 'calendar') && (
-          <AllTasksSidebar
-            isAllTasksCollapsed={isAllTasksCollapsed}
-            setIsAllTasksCollapsed={setIsAllTasksCollapsed}
-            setIsDraggingOverAllTasks={setIsDraggingOverAllTasks}
-            allTasks={allTasks}
-            handleToggleAllTask={handleToggleAllTask}
-            handleDeleteAllTask={handleDeleteAllTask}
-            handleEditAllTask={handleEditAllTask}
-            handleAddAllTask={handleAddAllTask}
-            handleReorderAllTasks={handleReorderAllTasks}
-            handleDropTaskFromWeeklyToAllTasks={handleDropTaskFromWeeklyToAllTasks}
-            handleDropTaskFromCalendarToAllTasks={handleDropTaskFromCalendarToAllTasks}
-          />
+          contentDisplayMode === 'content' ? (
+            <ContentOverviewSidebar
+              isCollapsed={isAllTasksCollapsed}
+              setIsCollapsed={setIsAllTasksCollapsed}
+            />
+          ) : (
+            <AllTasksSidebar
+              isAllTasksCollapsed={isAllTasksCollapsed}
+              setIsAllTasksCollapsed={setIsAllTasksCollapsed}
+              setIsDraggingOverAllTasks={setIsDraggingOverAllTasks}
+              allTasks={allTasks}
+              handleToggleAllTask={handleToggleAllTask}
+              handleDeleteAllTask={handleDeleteAllTask}
+              handleEditAllTask={handleEditAllTask}
+              handleAddAllTask={handleAddAllTask}
+              handleReorderAllTasks={handleReorderAllTasks}
+              handleDropTaskFromWeeklyToAllTasks={handleDropTaskFromWeeklyToAllTasks}
+              handleDropTaskFromCalendarToAllTasks={handleDropTaskFromCalendarToAllTasks}
+            />
+          )
         )}
 
         {/* Main Planner - Right Side */}
@@ -393,6 +492,7 @@ export const DailyPlanner = () => {
               setDialogTaskColor={setDialogTaskColor}
               setDialogAddToContentCalendar={setDialogAddToContentCalendar}
               setIsTaskDialogOpen={setIsTaskDialogOpen}
+              setTaskDialogPosition={setTaskDialogPosition}
               handleEditItem={handleEditItem}
               handleToggleWeeklyTask={handleToggleWeeklyTask}
               handleDeleteWeeklyTask={handleDeleteWeeklyTask}
@@ -432,6 +532,7 @@ export const DailyPlanner = () => {
               setDialogTaskColor={setDialogTaskColor}
               setDialogAddToContentCalendar={setDialogAddToContentCalendar}
               setIsTaskDialogOpen={setIsTaskDialogOpen}
+              setTaskDialogPosition={setTaskDialogPosition}
               showTasks={showTasks}
               showContent={showContent}
               contentDisplayMode={contentDisplayMode}
@@ -514,9 +615,13 @@ export const DailyPlanner = () => {
                     return (
                       <div
                         key={dayString}
-                        className={`min-h-[120px] p-2 border-r border-b border-gray-200 ${
+                        className={`min-h-[120px] p-2 border-r border-b border-gray-200 cursor-pointer ${
                           index % 7 === 6 ? 'border-r-0' : ''
                         } ${!isCurrentMonth ? 'bg-gray-50' : 'bg-white'} hover:bg-gray-50 transition-colors`}
+                        onClick={() => {
+                          // Open monthly add dialog
+                          setMonthlyAddDialogState({ open: true, dayString });
+                        }}
                         onDragOver={(e) => {
                           e.preventDefault();
                           e.currentTarget.classList.add('bg-blue-50');
@@ -540,21 +645,37 @@ export const DailyPlanner = () => {
                             const taskToMove = allTasks.find(t => t.id === itemId);
                             if (!taskToMove) return;
 
-                            // Store the original task in case user cancels
-                            setPendingTaskFromAllTasks(taskToMove);
-
-                            // Remove from All Tasks
+                            // Remove from All Tasks and add directly to day
                             setAllTasks(allTasks.filter(t => t.id !== itemId));
 
-                            // Open dialog to edit task details before adding to day
-                            setEditingTask({ ...taskToMove, date: toDate } as PlannerItem);
-                            setDialogTaskTitle(taskToMove.text);
-                            setDialogTaskDescription(taskToMove.description || "");
-                            setDialogStartTime(taskToMove.startTime || "");
-                            setDialogEndTime(taskToMove.endTime || "");
-                            setDialogTaskColor(taskToMove.color || "");
-                            setDialogAddToContentCalendar(taskToMove.isContentCalendar || false);
-                            setIsTaskDialogOpen(true);
+                            // Add task to the day
+                            const newTask: PlannerItem = {
+                              ...taskToMove,
+                              id: `task-${Date.now()}`,
+                              date: toDate,
+                            };
+
+                            setPlannerData((prev) => {
+                              const dayIndex = prev.findIndex(d => d.date === toDate);
+                              if (dayIndex >= 0) {
+                                const updated = [...prev];
+                                updated[dayIndex] = {
+                                  ...updated[dayIndex],
+                                  items: [...updated[dayIndex].items, newTask]
+                                };
+                                return updated;
+                              } else {
+                                return [...prev, {
+                                  date: toDate,
+                                  items: [newTask],
+                                  tasks: '',
+                                  greatDay: '',
+                                  grateful: ''
+                                }];
+                              }
+                            });
+
+                            toast.success('Task added to day');
                           } else if (itemId && fromDate && fromDate !== toDate) {
                             if (isContentItem) {
                               // Handle content calendar item move
@@ -676,6 +797,104 @@ export const DailyPlanner = () => {
         )}
         </div>
       </div>
+
+      {/* Monthly Add Task Dialog */}
+      {monthlyAddDialogState.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/15"
+            onClick={closeMonthlyDialog}
+          />
+
+          {/* Dialog */}
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden pt-8">
+            <div className="px-6 pb-6 space-y-4 relative">
+              {/* Title */}
+              <div>
+                <input
+                  type="text"
+                  placeholder="Add task"
+                  value={monthlyTaskTitle}
+                  onChange={(e) => setMonthlyTaskTitle(e.target.value)}
+                  autoFocus
+                  className="w-full text-lg border-b border-gray-200 pb-2 focus:outline-none placeholder:text-gray-400"
+                />
+              </div>
+
+              {/* Time */}
+              <div className="flex items-center gap-3">
+                <Clock className="w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Start time"
+                  value={monthlyTaskStartTime}
+                  onChange={(e) => setMonthlyTaskStartTime(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+                />
+                <span className="text-gray-400">—</span>
+                <input
+                  type="text"
+                  placeholder="End time"
+                  value={monthlyTaskEndTime}
+                  onChange={(e) => setMonthlyTaskEndTime(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+                />
+              </div>
+
+              {/* Description */}
+              <div className="flex items-start gap-3">
+                <FileText className="w-5 h-5 text-gray-400 mt-2" />
+                <textarea
+                  placeholder="Add description"
+                  value={monthlyTaskDescription}
+                  onChange={(e) => setMonthlyTaskDescription(e.target.value)}
+                  rows={2}
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 resize-none"
+                />
+              </div>
+
+              {/* Color Palette */}
+              <div className="flex items-center gap-3">
+                <Palette className="w-5 h-5 text-gray-400" />
+                <div className="flex flex-wrap gap-2">
+                  {colorOptions.map((color) => (
+                    <button
+                      key={color.name}
+                      onClick={() => setMonthlyTaskColor(monthlyTaskColor === color.hex ? '' : color.hex)}
+                      className={cn(
+                        "w-8 h-8 rounded-full transition-all",
+                        monthlyTaskColor === color.hex ? "ring-2 ring-offset-2 ring-gray-400" : "hover:scale-110"
+                      )}
+                      style={{ backgroundColor: color.bg }}
+                    >
+                      {monthlyTaskColor === color.hex && (
+                        <X className="w-4 h-4 mx-auto text-gray-500" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  onClick={closeMonthlyDialog}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCreateMonthlyTask}
+                  className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+                >
+                  Create
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Task Dialog */}
       <TaskDialog

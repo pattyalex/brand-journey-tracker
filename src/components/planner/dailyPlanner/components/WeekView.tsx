@@ -60,6 +60,7 @@ interface WeekViewProps {
   setDialogTaskColor: React.Dispatch<React.SetStateAction<string>>;
   setDialogAddToContentCalendar: React.Dispatch<React.SetStateAction<boolean>>;
   setIsTaskDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setTaskDialogPosition: React.Dispatch<React.SetStateAction<{ x: number; y: number } | null>>;
   handleEditItem: (
     id: string,
     text: string,
@@ -127,6 +128,7 @@ export const WeekView = ({
   setDialogTaskColor,
   setDialogAddToContentCalendar,
   setIsTaskDialogOpen,
+  setTaskDialogPosition,
   handleEditItem,
   handleToggleWeeklyTask,
   handleDeleteWeeklyTask,
@@ -969,7 +971,7 @@ export const WeekView = ({
                                       e.currentTarget.style.opacity = isPast ? '0.5' : '1';
                                       setDraggedWeeklyTaskId(null);
                                     }}
-                                    onClick={() => {
+                                    onClick={(e) => {
                                       if (isResizingRef.current) {
                                         return;
                                       }
@@ -980,6 +982,7 @@ export const WeekView = ({
                                       setDialogEndTime(item.endTime ? convert24To12Hour(item.endTime) : "");
                                       setDialogTaskColor(item.color || "");
                                       setDialogAddToContentCalendar(item.isContentCalendar || false);
+                                      setTaskDialogPosition({ x: e.clientX, y: e.clientY });
                                       setIsTaskDialogOpen(true);
                                     }}
                                     className="h-full relative rounded cursor-pointer hover:brightness-95 transition-all"
@@ -1195,7 +1198,7 @@ export const WeekView = ({
                                   onDragEnd={(e) => {
                                     e.currentTarget.style.opacity = isPast ? '0.5' : '1';
                                   }}
-                                  onClick={() => {
+                                  onClick={(e) => {
                                     setEditingTask(item);
                                     setDialogTaskTitle(item.text);
                                     setDialogTaskDescription(item.description || "");
@@ -1203,6 +1206,7 @@ export const WeekView = ({
                                     setDialogEndTime(item.endTime ? convert24To12Hour(item.endTime) : "");
                                     setDialogTaskColor(item.color || "");
                                     setDialogAddToContentCalendar(item.isContentCalendar || false);
+                                    setTaskDialogPosition({ x: e.clientX, y: e.clientY });
                                     setIsTaskDialogOpen(true);
                                   }}
                                   className="group text-xs px-2 py-1.5 rounded-md hover:shadow-sm transition-all cursor-pointer border-l-2 relative"
@@ -1289,20 +1293,7 @@ export const WeekView = ({
           />
 
           {/* Dialog */}
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
-            {/* Close button */}
-            <div className="flex justify-end px-6 pt-4">
-              <button
-                onClick={() => {
-                  closeAddDialog();
-                  resetFormState();
-                }}
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <X className="w-5 h-5 text-gray-500" />
-              </button>
-            </div>
-
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden pt-8">
             {/* Tabs - only show in "both" mode */}
             {contentDisplayMode === 'both' && (
               <div className="flex px-6 gap-1 mb-4">
@@ -1403,16 +1394,6 @@ export const WeekView = ({
                     ))}
                   </div>
                 </div>
-
-                {/* Include in content calendar */}
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <Checkbox
-                    checked={taskIncludeInContentCalendar}
-                    onCheckedChange={(checked) => setTaskIncludeInContentCalendar(checked === true)}
-                    className="h-5 w-5"
-                  />
-                  <span className="text-sm text-gray-700">Include in content calendar</span>
-                </label>
 
                 {/* Actions */}
                 <div className="flex justify-end gap-3 pt-4">

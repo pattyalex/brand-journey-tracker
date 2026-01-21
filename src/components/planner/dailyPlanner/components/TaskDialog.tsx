@@ -118,6 +118,7 @@ export const TaskDialog = ({ state, derived, refs, setters, actions }: TaskDialo
 
   const {
     isTaskDialogOpen,
+    taskDialogPosition,
     editingTask,
     dialogTaskTitle,
     dialogTaskDescription,
@@ -189,28 +190,79 @@ export const TaskDialog = ({ state, derived, refs, setters, actions }: TaskDialo
 
   if (!isTaskDialogOpen) return null;
 
+  // Calculate popover position based on click coordinates (Google Calendar style)
+  const getPopoverStyle = (): React.CSSProperties => {
+    if (!taskDialogPosition) {
+      // Fallback to center if no position
+      return {
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+      };
+    }
+
+    const popoverWidth = 400;
+    const popoverHeight = 480; // Approximate height
+    const gap = 12; // Gap between click point and popover
+    const padding = 16;
+    const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
+    const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
+
+    const clickX = taskDialogPosition.x;
+    const clickY = taskDialogPosition.y;
+
+    let x: number;
+    let y: number;
+
+    // Horizontal positioning: appear to the right or left of click
+    const spaceOnRight = viewportWidth - clickX;
+    const spaceOnLeft = clickX;
+
+    if (spaceOnRight >= popoverWidth + gap + padding) {
+      // Position to the right of click
+      x = clickX + gap;
+    } else if (spaceOnLeft >= popoverWidth + gap + padding) {
+      // Position to the left of click
+      x = clickX - popoverWidth - gap;
+    } else {
+      // Not enough space on either side, center horizontally
+      x = Math.max(padding, (viewportWidth - popoverWidth) / 2);
+    }
+
+    // Vertical positioning: try to align top with click, but adjust if needed
+    y = clickY - 60; // Offset slightly above the click point
+
+    // Adjust Y to keep popover on screen
+    if (y + popoverHeight + padding > viewportHeight) {
+      y = viewportHeight - popoverHeight - padding;
+    }
+    if (y < padding) {
+      y = padding;
+    }
+
+    return {
+      top: y,
+      left: x,
+      transform: 'none',
+    };
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
+    <div className="fixed inset-0 z-[200]">
+      {/* Semi-transparent backdrop for click outside to close */}
       <div
-        className="absolute inset-0 bg-black/15"
+        className="absolute inset-0 bg-black/[0.07]"
         onClick={handleCancelTaskDialog}
       />
 
-      {/* Dialog */}
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
-        {/* Close button */}
-        <div className="flex justify-end px-6 pt-4">
-          <button
-            onClick={handleCancelTaskDialog}
-            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <XIcon className="w-5 h-5 text-gray-500" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="px-6 pb-6 space-y-4">
+      {/* Popover-style container */}
+      <div
+        className="absolute w-full max-w-md px-4"
+        style={getPopoverStyle()}
+      >
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden pt-6 animate-in fade-in-0 zoom-in-95 duration-200">
+          {/* Content */}
+          <div className="px-5 pb-5 space-y-4">
           {/* Task Title */}
           <div>
             <input
@@ -532,6 +584,7 @@ export const TaskDialog = ({ state, derived, refs, setters, actions }: TaskDialo
               {editingTask?.id ? 'Save' : 'Create'}
             </button>
           </div>
+        </div>
         </div>
       </div>
     </div>

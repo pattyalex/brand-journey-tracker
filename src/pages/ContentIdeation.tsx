@@ -353,7 +353,7 @@ const ContentIdeation = () => {
                           }
                         }
                         // Center in the column
-                        leftPosition += column.id === "hook" || column.id === "script" || col.id === "caption" ? 100 : 60;
+                        leftPosition += column.id === "hook" || column.id === "script" || column.id === "caption" ? 100 : 60;
 
                         return (
                           <div

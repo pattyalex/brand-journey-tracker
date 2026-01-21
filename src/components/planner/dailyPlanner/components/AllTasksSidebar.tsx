@@ -40,7 +40,7 @@ export const AllTasksSidebar = ({
   return (
     <div
       className={cn(
-        "h-full flex-shrink-0 bg-gradient-to-br from-purple-50/50 to-pink-50/50 border-r border-gray-200 transition-all duration-300 relative",
+        "h-full flex-shrink-0 bg-gradient-to-br from-purple-50/50 to-pink-50/50 transition-all duration-300 relative",
         isAllTasksCollapsed ? 'w-12' : 'w-[320px] min-w-[300px]'
       )}
       onDragEnter={(e) => {

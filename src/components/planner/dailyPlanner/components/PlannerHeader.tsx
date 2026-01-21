@@ -1,5 +1,5 @@
 import { addMonths, addWeeks, endOfWeek, format, startOfWeek, subWeeks } from "date-fns";
-import { CalendarIcon, ChevronLeft, ChevronRight, ListTodo, Video, LayoutGrid } from "lucide-react";
+import { CalendarIcon, ChevronLeft, ChevronRight, ListTodo, Calendar as CalendarLucide, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -55,9 +55,9 @@ export const PlannerHeader = ({
           <button
             onClick={() => setContentDisplayMode('tasks')}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
+              "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200",
               contentDisplayMode === 'tasks'
-                ? "bg-white text-purple-700 shadow-sm"
+                ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm"
                 : "text-gray-500 hover:text-gray-700"
             )}
           >
@@ -67,21 +67,21 @@ export const PlannerHeader = ({
           <button
             onClick={() => setContentDisplayMode('content')}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
+              "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200",
               contentDisplayMode === 'content'
-                ? "bg-white text-indigo-700 shadow-sm"
+                ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-sm"
                 : "text-gray-500 hover:text-gray-700"
             )}
           >
-            <Video className="w-4 h-4" />
+            <CalendarLucide className="w-4 h-4" />
             Content Calendar
           </button>
           <button
             onClick={() => setContentDisplayMode('both')}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
+              "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200",
               contentDisplayMode === 'both'
-                ? "bg-white text-violet-700 shadow-sm"
+                ? "bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-600 text-white shadow-sm"
                 : "text-gray-500 hover:text-gray-700"
             )}
           >
@@ -94,13 +94,17 @@ export const PlannerHeader = ({
       {/* Bottom Row: View Tabs + Date Navigation */}
       <div className="flex items-center justify-between">
         {/* Left: View Tabs */}
-        <div className="inline-flex items-center gap-0 bg-white rounded-xl shadow-sm border border-gray-200 p-1">
+        <div className="inline-flex items-center gap-0 bg-white rounded-lg shadow-sm border border-gray-200 p-0.5">
           <button
             onClick={() => setCurrentView('today')}
             className={cn(
-              "px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+              "px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200",
               currentView === 'today'
-                ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-sm"
+                ? contentDisplayMode === 'content'
+                  ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-sm"
+                  : contentDisplayMode === 'both'
+                    ? "bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-600 text-white shadow-sm"
+                    : "bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm"
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
             )}
           >
@@ -109,9 +113,13 @@ export const PlannerHeader = ({
           <button
             onClick={() => setCurrentView('week')}
             className={cn(
-              "px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+              "px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200",
               currentView === 'week'
-                ? "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-sm"
+                ? contentDisplayMode === 'content'
+                  ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-sm"
+                  : contentDisplayMode === 'both'
+                    ? "bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-600 text-white shadow-sm"
+                    : "bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm"
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
             )}
           >
@@ -120,9 +128,13 @@ export const PlannerHeader = ({
           <button
             onClick={() => setCurrentView('calendar')}
             className={cn(
-              "px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+              "px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200",
               currentView === 'calendar'
-                ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm"
+                ? contentDisplayMode === 'content'
+                  ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-sm"
+                  : contentDisplayMode === 'both'
+                    ? "bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-600 text-white shadow-sm"
+                    : "bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm"
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
             )}
           >

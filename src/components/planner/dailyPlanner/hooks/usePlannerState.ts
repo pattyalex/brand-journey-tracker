@@ -118,6 +118,7 @@ export const usePlannerState = ({
   const [showContentCalendar, setShowContentCalendar] = useState(false);
   const [contentCalendarData, setContentCalendarData] = useState<any[]>([]);
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
+  const [taskDialogPosition, setTaskDialogPosition] = useState<{ x: number; y: number } | null>(null);
   const [editingTask, setEditingTask] = useState<PlannerItem | null>(null);
   const [dialogTaskTitle, setDialogTaskTitle] = useState("");
   const [dialogTaskDescription, setDialogTaskDescription] = useState("");
@@ -358,6 +359,7 @@ export const usePlannerState = ({
       showContentCalendar,
       contentCalendarData,
       isTaskDialogOpen,
+      taskDialogPosition,
       editingTask,
       dialogTaskTitle,
       dialogTaskDescription,
@@ -414,6 +416,7 @@ export const usePlannerState = ({
       setShowContentCalendar,
       setContentCalendarData,
       setIsTaskDialogOpen,
+      setTaskDialogPosition,
       setEditingTask,
       setDialogTaskTitle,
       setDialogTaskDescription,

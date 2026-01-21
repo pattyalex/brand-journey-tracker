@@ -69,6 +69,7 @@ interface UsePlannerActionsArgs {
   setAllTasks: React.Dispatch<React.SetStateAction<PlannerItem[]>>;
   setContentCalendarData: React.Dispatch<React.SetStateAction<any[]>>;
   setIsTaskDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setTaskDialogPosition: React.Dispatch<React.SetStateAction<{ x: number; y: number } | null>>;
   setEditingTask: React.Dispatch<React.SetStateAction<PlannerItem | null>>;
   setDialogTaskTitle: React.Dispatch<React.SetStateAction<string>>;
   setDialogTaskDescription: React.Dispatch<React.SetStateAction<string>>;
@@ -169,6 +170,7 @@ export const usePlannerActions = ({
   setAllTasks,
   setContentCalendarData,
   setIsTaskDialogOpen,
+  setTaskDialogPosition,
   setEditingTask,
   setDialogTaskTitle,
   setDialogTaskDescription,
@@ -267,7 +269,7 @@ export const usePlannerActions = ({
       }
     };
 
-    const handleGlobalMouseUp = () => {
+    const handleGlobalMouseUp = (e: MouseEvent) => {
       if (isDraggingCreate) {
         // User released mouse - finalize the drag or cancel
         if (dragCreateStart && dragCreateEnd) {
@@ -299,6 +301,8 @@ export const usePlannerActions = ({
           if ((contentDisplayMode === 'both' || contentDisplayMode === 'content') && onTodayAddDialogOpen) {
             onTodayAddDialogOpen(startTime12, endTime12);
           } else {
+            // Set popover position based on mouse coordinates
+            setTaskDialogPosition({ x: e.clientX, y: e.clientY });
             // Open task dialog (default 'tasks' mode)
             handleOpenTaskDialog(startHour, undefined, startTimeStr, endTimeStr);
           }
@@ -360,7 +364,7 @@ export const usePlannerActions = ({
       }
     };
 
-    const handleGlobalMouseUp = () => {
+    const handleGlobalMouseUp = (e: MouseEvent) => {
       // Check if any day is being dragged
       Object.keys(weeklyDraggingCreate).forEach(dayString => {
         if (weeklyDraggingCreate[dayString]) {
@@ -422,6 +426,8 @@ export const usePlannerActions = ({
               setDialogEndTime(endTime12);
               setDialogTaskColor('');
               setDialogAddToContentCalendar(false);
+              // Set popover position based on mouse coordinates
+              setTaskDialogPosition({ x: e.clientX, y: e.clientY });
               setIsTaskDialogOpen(true);
             }
           } else {

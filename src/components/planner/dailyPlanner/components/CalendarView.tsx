@@ -36,6 +36,7 @@ interface CalendarViewProps {
   setDialogTaskColor: React.Dispatch<React.SetStateAction<string>>;
   setDialogAddToContentCalendar: React.Dispatch<React.SetStateAction<boolean>>;
   setIsTaskDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setTaskDialogPosition: React.Dispatch<React.SetStateAction<{ x: number; y: number } | null>>;
   showTasks?: boolean;
   showContent?: boolean;
   contentDisplayMode?: ContentDisplayMode;
@@ -82,6 +83,7 @@ export const CalendarView = ({
   setDialogTaskColor,
   setDialogAddToContentCalendar,
   setIsTaskDialogOpen,
+  setTaskDialogPosition,
   showTasks = true,
   showContent = false,
   contentDisplayMode = 'tasks',
@@ -144,11 +146,16 @@ export const CalendarView = ({
   // Handle day click based on display mode
   const handleDayClick = (day: Date, dayString: string, e: React.MouseEvent) => {
     if (contentDisplayMode === 'tasks') {
-      // Tasks mode: open dialog with task tab
-      setAddDialogDate(dayString);
-      setAddDialogTab('task');
-      resetFormState();
-      setAddDialogOpen(true);
+      // Tasks mode: open TaskDialog
+      setEditingTask({ id: '', text: '', date: dayString } as PlannerItem);
+      setDialogTaskTitle('');
+      setDialogTaskDescription('');
+      setDialogStartTime('');
+      setDialogEndTime('');
+      setDialogTaskColor('');
+      setDialogAddToContentCalendar(false);
+      setTaskDialogPosition({ x: e.clientX, y: e.clientY });
+      setIsTaskDialogOpen(true);
     } else if (contentDisplayMode === 'content') {
       // Content mode: open dialog with content tab
       setAddDialogDate(dayString);
@@ -156,11 +163,16 @@ export const CalendarView = ({
       resetFormState();
       setAddDialogOpen(true);
     } else if (contentDisplayMode === 'both') {
-      // Both mode: open dialog with task tab (user can switch)
-      setAddDialogDate(dayString);
-      setAddDialogTab('task');
-      resetFormState();
-      setAddDialogOpen(true);
+      // Both mode: open TaskDialog (for tasks)
+      setEditingTask({ id: '', text: '', date: dayString } as PlannerItem);
+      setDialogTaskTitle('');
+      setDialogTaskDescription('');
+      setDialogStartTime('');
+      setDialogEndTime('');
+      setDialogTaskColor('');
+      setDialogAddToContentCalendar(false);
+      setTaskDialogPosition({ x: e.clientX, y: e.clientY });
+      setIsTaskDialogOpen(true);
     }
   };
 
@@ -693,7 +705,7 @@ export const CalendarView = ({
         </div>
       </CardContent>
 
-      {/* Add Task/Content Dialog */}
+      {/* Add Content Dialog - only for content mode */}
       {addDialogOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           {/* Backdrop */}
@@ -706,167 +718,9 @@ export const CalendarView = ({
           />
 
           {/* Dialog */}
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
-            {/* Close button */}
-            <div className="flex justify-end px-6 pt-4">
-              <button
-                onClick={() => {
-                  setAddDialogOpen(false);
-                  resetFormState();
-                }}
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <X className="w-5 h-5 text-gray-500" />
-              </button>
-            </div>
-
-            {/* Tabs - only show in "both" mode */}
-            {contentDisplayMode === 'both' && (
-              <div className="flex px-6 gap-1 mb-4">
-                <button
-                  onClick={() => setAddDialogTab('task')}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-                    addDialogTab === 'task'
-                      ? "bg-purple-100 text-purple-700"
-                      : "text-gray-600 hover:bg-gray-100"
-                  )}
-                >
-                  <ListTodo className="w-4 h-4" />
-                  Add Task
-                </button>
-                <button
-                  onClick={() => setAddDialogTab('content')}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-                    addDialogTab === 'content'
-                      ? "bg-violet-100 text-violet-700"
-                      : "text-gray-600 hover:bg-gray-100"
-                  )}
-                >
-                  <Lightbulb className="w-4 h-4" />
-                  Add Content
-                </button>
-              </div>
-            )}
-
-            {/* Task Form */}
-            {addDialogTab === 'task' && (
-              <div className="px-6 pb-6 space-y-4">
-                {/* Header - only show when not in "both" mode */}
-                {contentDisplayMode === 'tasks' && (
-                  <div className="flex items-center gap-3 mb-2">
-                    <ListTodo className="w-5 h-5 text-gray-500" />
-                    <span className="text-base font-medium text-gray-700">Add Task</span>
-                  </div>
-                )}
-                {/* Title */}
-                <div>
-                  <input
-                    type="text"
-                    placeholder="Add title"
-                    value={taskTitle}
-                    onChange={(e) => setTaskTitle(e.target.value)}
-                    className="w-full text-lg border-b border-gray-200 pb-2 focus:outline-none focus:border-indigo-500 placeholder:text-gray-400"
-                    autoFocus
-                  />
-                </div>
-
-                {/* Time */}
-                <div className="flex items-center gap-3">
-                  <Clock className="w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Start time"
-                    value={taskStartTime}
-                    onChange={(e) => setTaskStartTime(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                  <span className="text-gray-400">—</span>
-                  <input
-                    type="text"
-                    placeholder="End time"
-                    value={taskEndTime}
-                    onChange={(e) => setTaskEndTime(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
-
-                {/* Description */}
-                <div className="flex items-start gap-3">
-                  <FileText className="w-5 h-5 text-gray-400 mt-2" />
-                  <textarea
-                    placeholder="Add description"
-                    value={taskDescription}
-                    onChange={(e) => setTaskDescription(e.target.value)}
-                    rows={2}
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-                  />
-                </div>
-
-                {/* Color Palette */}
-                <div className="flex items-center gap-3">
-                  <Palette className="w-5 h-5 text-gray-400" />
-                  <div className="flex flex-wrap gap-2">
-                    {colorOptions.map((color) => (
-                      <button
-                        key={color.name}
-                        onClick={() => setTaskColor(taskColor === color.hex ? '' : color.hex)}
-                        className={cn(
-                          "w-8 h-8 rounded-full transition-all",
-                          taskColor === color.hex ? "ring-2 ring-offset-2 ring-gray-400" : "hover:scale-110"
-                        )}
-                        style={{ backgroundColor: color.bg }}
-                      >
-                        {taskColor === color.hex && (
-                          <X className="w-4 h-4 mx-auto text-gray-500" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Include in content calendar */}
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <Checkbox
-                    checked={taskIncludeInContentCalendar}
-                    onCheckedChange={(checked) => setTaskIncludeInContentCalendar(checked === true)}
-                    className="h-5 w-5"
-                  />
-                  <span className="text-sm text-gray-700">Include in content calendar</span>
-                </label>
-
-                {/* Actions */}
-                <div className="flex justify-end gap-3 pt-4">
-                  <button
-                    onClick={() => {
-                      setAddDialogOpen(false);
-                      resetFormState();
-                    }}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleCreateTask}
-                    className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
-                  >
-                    Create
-                  </button>
-                </div>
-              </div>
-            )}
-
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden pt-8">
             {/* Content Form */}
-            {addDialogTab === 'content' && (
-              <div className="px-6 pb-6 space-y-4">
-                {/* Header - only show when not in "both" mode */}
-                {contentDisplayMode === 'content' && (
-                  <div className="flex items-center gap-3 mb-2">
-                    <Lightbulb className="w-5 h-5 text-gray-500" />
-                    <span className="text-base font-medium text-gray-700">Add Content</span>
-                  </div>
-                )}
+            <div className="px-6 pb-6 space-y-4">
                 {/* Hook/Title */}
                 <div>
                   <input
@@ -992,8 +846,7 @@ export const CalendarView = ({
                     Save
                   </button>
                 </div>
-              </div>
-            )}
+            </div>
           </div>
         </div>
       )}
