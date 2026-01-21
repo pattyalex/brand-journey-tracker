@@ -173,6 +173,7 @@ const Production = () => {
   // Archive state
   const [archivedCards, setArchivedCards] = useState<ProductionCard[]>([]);
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
+  const [lastArchivedCard, setLastArchivedCard] = useState<{ card: ProductionCard; sourceColumnId: string } | null>(null);
   const [brainDumpSuggestion, setBrainDumpSuggestion] = useState<string>("");
 
   // Highlighted unscheduled card state
@@ -619,6 +620,10 @@ const Production = () => {
         archivedAt: new Date().toISOString()
       };
 
+      // Store for undo
+      const undoInfo = { card: draggedCard, sourceColumnId: sourceColumnId };
+      setLastArchivedCard(undoInfo);
+
       // Remove from source column
       setColumns((prev) =>
         prev.map((col) => ({
@@ -630,10 +635,6 @@ const Production = () => {
       // Add to archived cards
       setArchivedCards((prev) => [cardToArchive, ...prev]);
       setDraggedCard(null);
-
-      toast.success("Content archived! 🎉", {
-        description: "You can view it anytime in your archive"
-      });
       return;
     }
 
@@ -1658,6 +1659,31 @@ const Production = () => {
                             }
                           </p>
                         </motion.div>
+
+                        {/* Undo button - positioned in center area */}
+                        {lastArchivedCard && (
+                          <button
+                            onClick={() => {
+                              // Remove from archive
+                              setArchivedCards((prev) => prev.filter((c) => c.id !== lastArchivedCard.card.id));
+                              // Add back to source column
+                              setColumns((prev) =>
+                                prev.map((col) =>
+                                  col.id === lastArchivedCard.sourceColumnId
+                                    ? { ...col, cards: [lastArchivedCard.card, ...col.cards] }
+                                    : col
+                                )
+                              );
+                              const columnName = columns.find(c => c.id === lastArchivedCard.sourceColumnId)?.title || "column";
+                              setLastArchivedCard(null);
+                              toast.success(`Restored to ${columnName}`);
+                            }}
+                            className="mt-6 flex items-center gap-1.5 text-sm text-amber-600 hover:text-amber-700 font-medium bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-full transition-colors"
+                          >
+                            <RefreshCw className="w-3.5 h-3.5" />
+                            Undo archive
+                          </button>
+                        )}
                       </div>
 
                       {/* Bottom section - archive link */}

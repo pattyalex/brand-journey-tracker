@@ -62,6 +62,8 @@ export interface ProductionCard {
   fromCalendar?: boolean; // True if this idea originated from the Content Calendar
   plannedDate?: string; // The date this idea is tentatively planned for (used in Ideate column)
   plannedColor?: 'indigo' | 'rose' | 'amber' | 'emerald' | 'sky' | 'violet' | 'orange' | 'cyan' | 'sage'; // Color for planned items on calendar
+  plannedStartTime?: string; // Start time for planned content (e.g., "9:00 am")
+  plannedEndTime?: string; // End time for planned content (e.g., "10:00 am")
 }
 
 export interface KanbanColumn {
