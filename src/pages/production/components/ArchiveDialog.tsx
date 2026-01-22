@@ -50,6 +50,7 @@ interface ArchiveDialogProps {
   onRepurpose: (card: ProductionCard) => void;
   onRestore: (card: ProductionCard) => void;
   onDelete: (card: ProductionCard) => void;
+  onNavigateToStep?: (step: number) => void;
 }
 
 const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
@@ -59,6 +60,7 @@ const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
   onRepurpose,
   onRestore,
   onDelete,
+  onNavigateToStep,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCard, setSelectedCard] = useState<ProductionCard | null>(null);
@@ -96,7 +98,7 @@ const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
         {/* Step Progress Indicator - Fixed */}
         <div className="border-b border-emerald-100 flex-shrink-0 pt-4 pb-2 bg-gradient-to-br from-emerald-50/80 via-white to-green-50/50">
           <div className="flex items-center justify-center gap-3 max-w-xl mx-auto px-4 pr-12">
-            <ContentFlowProgress currentStep={6} allCompleted className="flex-1" />
+            <ContentFlowProgress currentStep={6} allCompleted className="flex-1" onStepClick={onNavigateToStep} />
             {/* Celebratory icon */}
             <PartyPopper className="w-5 h-5 text-emerald-500 flex-shrink-0" />
           </div>

@@ -99,6 +99,7 @@ interface ScriptEditorDialogProps {
   setFilmingNotes: (value: string) => void;
   cardStatus: CardStatus;
   setCardStatus: (value: Exclude<CardStatus, null>) => void;
+  onNavigateToStep?: (step: number) => void;
 }
 
 const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
@@ -146,6 +147,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   setFilmingNotes,
   cardStatus,
   setCardStatus,
+  onNavigateToStep,
 }) => {
   const [addingFormatType, setAddingFormatType] = React.useState<'video' | 'photo' | null>(null);
 
@@ -188,7 +190,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   <Dialog open={isOpen} onOpenChange={onOpenChange}>
     <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] overflow-hidden border-0 shadow-2xl flex flex-col bg-gradient-to-br from-gray-50 to-white">
       {/* Step Progress Indicator */}
-      <ContentFlowProgress currentStep={2} className="border-b border-gray-100 flex-shrink-0" />
+      <ContentFlowProgress currentStep={2} className="border-b border-gray-100 flex-shrink-0" onStepClick={onNavigateToStep} />
 
       <div className="flex-1 overflow-y-auto px-6 pt-6 pb-6 space-y-6">
         {/* Title Section */}

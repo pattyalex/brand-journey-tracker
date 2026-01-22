@@ -54,6 +54,7 @@ interface ScheduleDialogProps {
   allCards?: ProductionCard[]; // All cards from to-schedule column
   onSchedule?: (cardId: string, date: Date) => void;
   onUnschedule?: (cardId: string) => void;
+  onNavigateToStep?: (step: number) => void;
 }
 
 const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
@@ -63,6 +64,7 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
   allCards = [],
   onSchedule,
   onUnschedule,
+  onNavigateToStep,
 }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
@@ -282,7 +284,7 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[1100px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-white">
         {/* Step Progress Indicator */}
-        <ContentFlowProgress currentStep={5} className="border-b border-gray-100 flex-shrink-0 pt-4" />
+        <ContentFlowProgress currentStep={5} className="border-b border-gray-100 flex-shrink-0 pt-4" onStepClick={onNavigateToStep} />
 
         {/* Main content - split panels */}
         <div className={cn(

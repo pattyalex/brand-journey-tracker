@@ -347,8 +347,31 @@ const Production = () => {
     if (!draggedCard) {
       setDropPosition(null);
       setDraggedOverColumn(null);
+      isDraggingRef.current = false;
     }
   }, [draggedCard]);
+
+  // Global dragend and mouseup listeners as safety net
+  useEffect(() => {
+    const clearDragState = () => {
+      if (isDraggingRef.current) {
+        isDraggingRef.current = false;
+        setDraggedCard(null);
+        setDropPosition(null);
+        setDraggedOverColumn(null);
+      }
+    };
+
+    document.addEventListener('dragend', clearDragState);
+    document.addEventListener('mouseup', clearDragState);
+    document.addEventListener('drop', clearDragState);
+
+    return () => {
+      document.removeEventListener('dragend', clearDragState);
+      document.removeEventListener('mouseup', clearDragState);
+      document.removeEventListener('drop', clearDragState);
+    };
+  }, []);
 
   // Handle scrolling to specific column from URL parameter
   useEffect(() => {
@@ -1357,6 +1380,103 @@ const Production = () => {
       return;
     }
     setIsIdeateCardEditorOpen(true);
+  };
+
+  // Map column ID to workflow step number
+  const columnToStep: Record<string, number> = {
+    'ideate': 1,
+    'shape-ideas': 2,
+    'to-film': 3,
+    'to-edit': 4,
+    'to-schedule': 5,
+    'posted': 6,
+  };
+
+  // Navigation handler for step progress clicks
+  const handleNavigateToStep = (step: number) => {
+    // Get the current card from whichever dialog is open
+    const currentCard = editingIdeateCard || editingScriptCard || editingStoryboardCard || editingEditCard;
+    if (!currentCard) return;
+
+    // Find the latest version of the card and its column
+    let latestCard: ProductionCard | undefined;
+    let cardColumnId: string | undefined;
+    for (const col of columns) {
+      const found = col.cards.find(c => c.id === currentCard.id);
+      if (found) {
+        latestCard = found;
+        cardColumnId = col.id;
+        break;
+      }
+    }
+    if (!latestCard) return;
+
+    const stepLabels: Record<number, string> = {
+      1: 'Ideate',
+      2: 'Script',
+      3: 'Film',
+      4: 'Edit',
+      5: 'Schedule',
+      6: 'Posted',
+    };
+
+    const currentWorkflowStep = cardColumnId ? columnToStep[cardColumnId] || 1 : 1;
+
+    // Function to actually perform the navigation
+    const performNavigation = () => {
+      // Close all dialogs
+      setIsIdeateCardEditorOpen(false);
+      setIsScriptEditorOpen(false);
+      setIsStoryboardDialogOpen(false);
+      setIsEditChecklistDialogOpen(false);
+      setIsScheduleColumnExpanded(false);
+      setIsArchiveDialogOpen(false);
+
+      // Reset all editing states
+      setEditingIdeateCard(null);
+      setEditingScriptCard(null);
+      setEditingStoryboardCard(null);
+      setEditingEditCard(null);
+
+      // Small delay to allow dialogs to close before opening new one
+      setTimeout(() => {
+        switch (step) {
+          case 1: // Ideate
+            handleOpenIdeateCardEditor(latestCard!);
+            break;
+          case 2: // Script
+            handleOpenScriptEditor(latestCard!);
+            break;
+          case 3: // Film
+            handleOpenStoryboard(latestCard!);
+            break;
+          case 4: // Edit
+            handleOpenEditChecklist(latestCard!);
+            break;
+          case 5: // Schedule
+            setIsScheduleColumnExpanded(true);
+            break;
+          case 6: // Post/Archive
+            setIsArchiveDialogOpen(true);
+            break;
+        }
+      }, 50);
+    };
+
+    // Check if navigating to a future step
+    if (step > currentWorkflowStep) {
+      toast(`This content hasn't reached the ${stepLabels[step]} step yet`, {
+        description: `It's currently in ${stepLabels[currentWorkflowStep]}`,
+        action: {
+          label: 'Continue anyway',
+          onClick: performNavigation,
+        },
+        duration: 5000,
+      });
+    } else {
+      // Navigating to current or previous step - proceed directly
+      performNavigation();
+    }
   };
 
   const handleAddPlatformTag = () => {
@@ -4450,6 +4570,7 @@ Make each idea unique, creative, and directly tied to both the original content 
           setCustomVideoFormats={setCustomVideoFormats}
           customPhotoFormats={customPhotoFormats}
           setCustomPhotoFormats={setCustomPhotoFormats}
+          onNavigateToStep={handleNavigateToStep}
         />
 
         <BrainDumpGuidanceDialog
@@ -4461,6 +4582,7 @@ Make each idea unique, creative, and directly tied to both the original content 
           setTitle={setIdeateCardTitle}
           notes={ideateCardNotes}
           setNotes={setIdeateCardNotes}
+          onNavigateToStep={handleNavigateToStep}
         />
 
         <StoryboardEditorDialog
@@ -4468,6 +4590,7 @@ Make each idea unique, creative, and directly tied to both the original content 
           onOpenChange={setIsStoryboardDialogOpen}
           card={editingStoryboardCard}
           onSave={handleSaveStoryboard}
+          onNavigateToStep={handleNavigateToStep}
         />
 
         <EditChecklistDialog
@@ -4475,6 +4598,7 @@ Make each idea unique, creative, and directly tied to both the original content 
           onOpenChange={setIsEditChecklistDialogOpen}
           card={editingEditCard}
           onSave={handleSaveEditChecklist}
+          onNavigateToStep={handleNavigateToStep}
         />
 
         {/* Expanded Schedule Column View */}
@@ -4496,6 +4620,7 @@ Make each idea unique, creative, and directly tied to both the original content 
           onRepurpose={handleRepurposeContent}
           onRestore={handleRestoreContent}
           onDelete={handleDeleteArchivedContent}
+          onNavigateToStep={handleNavigateToStep}
         />
 
         {/* Planned to Scheduled Conversion Dialog */}

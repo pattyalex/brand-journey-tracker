@@ -13,6 +13,7 @@ interface BrainDumpGuidanceDialogProps {
   setTitle: (value: string) => void;
   notes: string;
   setNotes: (value: string) => void;
+  onNavigateToStep?: (step: number) => void;
 }
 
 const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
@@ -24,11 +25,12 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
   setTitle,
   notes,
   setNotes,
+  onNavigateToStep,
 }) => (
   <Dialog open={isOpen} onOpenChange={onOpenChange}>
     <DialogContent className="max-w-4xl h-[90vh] max-h-[90vh] p-0 overflow-hidden flex flex-col bg-gradient-to-b from-purple-50/80 via-white to-white">
       {/* Step Progress Indicator - Fixed at top */}
-      <ContentFlowProgress currentStep={1} className="flex-shrink-0 pt-5 pb-2" />
+      <ContentFlowProgress currentStep={1} className="flex-shrink-0 pt-5 pb-2" onStepClick={onNavigateToStep} />
 
       {/* Scrollable Content Area */}
       <div className="flex-1 overflow-y-auto px-6 pt-0 pb-4 min-h-0">

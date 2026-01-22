@@ -20,12 +20,14 @@ interface ContentFlowProgressProps {
   currentStep: 1 | 2 | 3 | 4 | 5 | 6;
   allCompleted?: boolean;
   className?: string;
+  onStepClick?: (step: number) => void;
 }
 
 const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
   currentStep,
   allCompleted = false,
   className,
+  onStepClick,
 }) => {
   return (
     <div className={cn("w-full px-4 py-2", className)}>
@@ -50,16 +52,27 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
           const isCompleted = allCompleted || stepNumber < currentStep;
           const isCurrent = !allCompleted && stepNumber === currentStep;
           const isPending = !allCompleted && stepNumber > currentStep;
+          const isClickable = onStepClick && stepNumber !== currentStep;
 
           return (
-            <div key={step.label} className="flex flex-col items-center relative z-10 flex-1">
+            <button
+              key={step.label}
+              onClick={() => isClickable && onStepClick(stepNumber)}
+              disabled={!isClickable}
+              className={cn(
+                "flex flex-col items-center relative z-10 flex-1 transition-transform",
+                isClickable && "cursor-pointer hover:scale-110",
+                !isClickable && "cursor-default"
+              )}
+            >
               {/* Circle indicator */}
               <div
                 className={cn(
                   "rounded-full flex items-center justify-center font-semibold transition-all duration-300 border-[1.5px]",
                   isCompleted && "w-6 h-6 text-xs bg-emerald-500 border-emerald-500 text-white",
                   isCurrent && "w-9 h-9 text-sm bg-white border-gray-800 text-gray-800 border-2 shadow-md",
-                  isPending && "w-6 h-6 text-xs bg-gray-100 border-gray-300 text-gray-400"
+                  isPending && "w-6 h-6 text-xs bg-gray-100 border-gray-300 text-gray-400",
+                  isClickable && "hover:ring-2 hover:ring-offset-2 hover:ring-emerald-300"
                 )}
               >
                 {isCompleted ? (
@@ -78,7 +91,7 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
               )}>
                 {step.shortLabel}
               </p>
-            </div>
+            </button>
           );
         })}
       </div>
