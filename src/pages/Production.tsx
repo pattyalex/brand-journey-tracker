@@ -1797,8 +1797,8 @@ const Production = () => {
 
   return (
     <Layout>
-      <div className="w-full h-[calc(100vh-2rem)] pl-4 pr-3 pt-2 pb-0 overflow-hidden bg-gray-50">
-        <div className="flex gap-4 h-full overflow-x-auto pb-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+      <div className="w-full min-h-screen pl-5 pr-3 pt-4 pb-4 bg-[#F9F7FA]">
+        <div className="flex gap-5 h-full overflow-x-auto overflow-y-visible pb-8 ml-[-34px] pl-[34px] mt-[-16px] pt-[16px] hide-scrollbar">
           {columns.map((column, index) => {
             const colors = columnColors[column.id];
             return (
@@ -1807,7 +1807,7 @@ const Production = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="flex-shrink-0 w-[340px] h-full"
+                className="flex-shrink-0 w-[340px] h-[calc(100%-2rem)]"
                 onDragOver={(e) => handleDragOver(e, column.id)}
                 onDragLeave={handleDragLeave}
                 onDrop={(e) => handleDrop(e, column.id)}
@@ -1817,40 +1817,51 @@ const Production = () => {
                     if (el) columnRefs.current.set(column.id, el);
                   }}
                   className={cn(
-                    "h-full flex flex-col rounded-2xl transition-all duration-300",
-                    draggedOverColumn === column.id && draggedCard
+                    "h-full flex flex-col rounded-2xl transition-all duration-300 overflow-hidden",
+                    "shadow-[0_-8px_20px_rgba(139,120,150,0.15),0_2px_8px_rgba(139,120,150,0.12),0_8px_24px_rgba(139,120,150,0.15),0_16px_32px_rgba(139,120,150,0.08)]",
+                                        draggedOverColumn === column.id && draggedCard
                       ? column.id === "ideate" && columns.find(col => col.cards.some(c => c.id === draggedCard.id))?.id !== "ideate"
                         ? "ring-2 ring-offset-2 ring-red-400 opacity-60"
-                        : "ring-2 ring-offset-2 ring-indigo-400 scale-105"
+                        : "ring-2 ring-offset-2 ring-[#B8A0C4] scale-[1.02]"
                       : "",
-                    highlightedColumn === column.id ? "ring-4 ring-purple-500 ring-offset-4 shadow-2xl scale-105" : "",
-                    colors.bg,
-                    "border-2",
-                    colors.border
+                    highlightedColumn === column.id ? "ring-4 ring-[#B8A0C4] ring-offset-4 shadow-2xl scale-105" : "",
+                    colors.bg
                   )}
                 >
+                  {/* Progress indicator - 6 horizontal bars at top */}
+                  {(() => {
+                    const stepMap: Record<string, number> = {
+                      'ideate': 1,
+                      'shape-ideas': 2,
+                      'to-film': 3,
+                      'to-edit': 4,
+                      'to-schedule': 5,
+                      'posted': 6,
+                    };
+                    const stepNumber = stepMap[column.id] || 1;
+                    return (
+                      <div className="flex gap-1 px-1 pt-1">
+                        {[1, 2, 3, 4, 5, 6].map((step) => (
+                          <div
+                            key={step}
+                            className={cn(
+                              "h-1 flex-1 rounded-full transition-colors",
+                              step <= stepNumber ? colors.topBorder : "bg-gray-200"
+                            )}
+                          />
+                        ))}
+                      </div>
+                    );
+                  })()}
                   {/* Special Archive UI for Posted column */}
                   {column.id === "posted" ? (
                     <>
-                      {/* Column header - same as other columns */}
-                      <div className="p-4 pb-4">
+                      <div className="px-5 pt-5 pb-4">
                         <div className="flex items-center gap-2">
-                          <h2 className={cn("font-bold text-lg", colors.text)}>
+                          <h2 className={cn("font-semibold text-[15px] tracking-wide uppercase", colors.text)}>
                             {column.title}
                           </h2>
-                          <PartyPopper className="w-4 h-4 text-emerald-500" />
-                        </div>
-                        {/* Progress indicator - 6 horizontal lines */}
-                        <div className="flex gap-1.5 mt-2">
-                          {[1, 2, 3, 4, 5, 6].map((step) => (
-                            <div
-                              key={step}
-                              className={cn(
-                                "h-1 flex-1 rounded-full transition-colors",
-                                step <= 6 ? colors.badge : "bg-gray-200"
-                              )}
-                            />
-                          ))}
+                          <PartyPopper className={cn("w-4 h-4", colors.text)} />
                         </div>
                       </div>
 
@@ -1867,15 +1878,15 @@ const Production = () => {
                           <Archive className={cn(
                             "w-8 h-8 mb-3 transition-colors",
                             draggedOverColumn === "posted" && draggedCard
-                              ? "text-emerald-600"
-                              : "text-emerald-500"
+                              ? "text-[#685078]"
+                              : "text-[#887098]"
                           )} />
 
                           <p className={cn(
                             "text-sm text-center transition-colors max-w-[180px] font-medium",
                             draggedOverColumn === "posted" && draggedCard
-                              ? "text-emerald-700"
-                              : "text-emerald-600"
+                              ? "text-[#5C466C]"
+                              : "text-[#675275]"
                           )}>
                             {draggedOverColumn === "posted" && draggedCard
                               ? "Release to archive"
@@ -1886,7 +1897,7 @@ const Production = () => {
                           {/* Open archive button */}
                           <button
                             onClick={() => setIsArchiveDialogOpen(true)}
-                            className="mt-4 flex items-center gap-2 text-sm text-white hover:text-white font-medium bg-emerald-500 hover:bg-emerald-600 px-4 py-2 rounded-xl transition-colors shadow-sm"
+                            className="mt-4 flex items-center gap-2 text-sm text-white hover:text-white font-medium bg-[#887098] hover:bg-[#786088] px-4 py-2.5 rounded-lg transition-colors shadow-sm"
                           >
                             <Archive className="w-4 h-4" />
                             {archivedCards.length > 0
@@ -1913,7 +1924,7 @@ const Production = () => {
                               setLastArchivedCard(null);
                               toast.success("Restored to To Schedule");
                             }}
-                            className="mt-6 flex items-center gap-1.5 text-sm text-amber-600 hover:text-amber-700 font-medium bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-full transition-colors"
+                            className="mt-6 flex items-center gap-1.5 text-sm text-[#7D6B87] hover:text-[#5C466C] font-medium bg-[#F5F0F7] hover:bg-[#E8DFED] px-3 py-1.5 rounded-lg transition-colors"
                           >
                             <RefreshCw className="w-3.5 h-3.5" />
                             Undo archive
@@ -1923,38 +1934,13 @@ const Production = () => {
                     </>
                   ) : (
                     <>
-                      <div className="p-4 pb-6">
-                        <h2 className={cn("font-bold text-lg", colors.text)}>
+                      <div className="px-5 pt-5 pb-4">
+                        <h2 className={cn("font-semibold text-[15px] tracking-wide uppercase", colors.text)}>
                           {column.title}
                         </h2>
-                        {/* Progress indicator - 6 horizontal lines */}
-                        {(() => {
-                          const stepMap: Record<string, number> = {
-                            'ideate': 1,
-                            'shape-ideas': 2,
-                            'to-film': 3,
-                            'to-edit': 4,
-                            'to-schedule': 5,
-                            'posted': 6,
-                          };
-                          const stepNumber = stepMap[column.id] || 1;
-                          return (
-                            <div className="flex gap-1.5 mt-2">
-                              {[1, 2, 3, 4, 5, 6].map((step) => (
-                                <div
-                                  key={step}
-                                  className={cn(
-                                    "h-1 flex-1 rounded-full transition-colors",
-                                    step <= stepNumber ? colors.badge : "bg-gray-200"
-                                  )}
-                                />
-                              ))}
-                            </div>
-                          );
-                        })()}
                       </div>
 
-                      <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-1.5 scrollbar-none hover:scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent relative">
+                      <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-3 hide-scrollbar hover:hide-scrollbar relative">
                         {/* Not Allowed Overlay for Ideate Column */}
                         {column.id === "ideate" && draggedCard && draggedOverColumn === column.id &&
                          columns.find(col => col.cards.some(c => c.id === draggedCard.id))?.id !== "ideate" && (
@@ -2001,10 +1987,7 @@ const Production = () => {
                             {showDropIndicatorBefore && draggedCard && isDraggingRef.current && (
                               <div className="relative h-0">
                                 <div
-                                  className={cn(
-                                    "absolute inset-x-0 -top-1 h-0.5 rounded-full",
-                                    column.id === 'to-schedule' ? "bg-indigo-500" : "bg-purple-500"
-                                  )}
+                                  className="absolute inset-x-0 -top-1 h-0.5 rounded-full bg-[#A890B8]"
                                 />
                               </div>
                             )}
@@ -2049,33 +2032,33 @@ const Production = () => {
                               }}
                               onMouseEnter={(e) => {
                                 if (!isDragging && !isEditing) {
-                                  e.currentTarget.style.transform = 'rotate(0deg) translateY(-3px)';
-                                  e.currentTarget.style.zIndex = '10';
+                                  e.currentTarget.style.transform = 'translateY(-2px)';
+                                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04)';
                                 }
                               }}
                               onMouseLeave={(e) => {
                                 if (!isDragging && !isEditing) {
-                                  const rotations = [-0.4, 0.3, -0.2, 0.4, -0.25, 0.2, -0.3, 0.25, -0.15, 0.35];
-                                  const rotation = rotations[cardIndex % rotations.length];
-                                  e.currentTarget.style.transform = `rotate(${rotation}deg)`;
-                                  e.currentTarget.style.zIndex = '';
+                                  e.currentTarget.style.transform = 'translateY(0)';
+                                  e.currentTarget.style.boxShadow = '';
                                 }
                               }}
                               className={cn(
-                                "group rounded-xl relative shadow-[2px_3px_0px_rgba(0,0,0,0.06)]",
-                                column.id === "ideate" ? "py-4 px-2" : "p-2",
+                                "group rounded-lg relative",
+                                "shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.06)]",
+                                "border-l-[3px]",
+                                cardColors[column.id]?.accent || "border-l-[#D8C8E0]",
+                                column.id === "ideate" ? "py-4 px-3" : "p-3",
                                 (column.id === "shape-ideas" || column.id === "ideate" || column.id === "to-film" || column.id === "to-edit" || column.id === "to-schedule") && !isEditing ? "cursor-pointer" : (!isEditing && "cursor-grab active:cursor-grabbing"),
                                 !isDragging && "transition-all duration-200",
                                 isThisCardDragged ? "opacity-40 scale-[0.98]" : "",
                                 card.isCompleted && "opacity-60",
                                 recentlyRepurposedCardId === card.id ? "ring-2 ring-emerald-500 ring-offset-2 bg-emerald-50" :
                                 highlightedUnscheduledCardId === card.id ? "ring-2 ring-indigo-500 ring-offset-2 bg-indigo-50" :
-                                card.isNew ? "border-2 border-purple-600 bg-purple-100" : `${cardColors[column.id]?.bg || "bg-white/90"} border ${cardColors[column.id]?.border || "border-gray-100"}`
+                                card.isNew ? "border-l-[3px] border-l-purple-500 bg-purple-50" : `${cardColors[column.id]?.bg || "bg-white"} border border-l-[3px] ${cardColors[column.id]?.border || "border-[#F0EBF2]"}`
                               )}
                               style={{
                                 willChange: isDragging ? 'transform' : 'auto',
-                                transform: `rotate(${[-0.4, 0.3, -0.2, 0.4, -0.25, 0.2, -0.3, 0.25, -0.15, 0.35][cardIndex % 10]}deg)`,
-                                transition: 'transform 0.2s ease'
+                                transition: 'transform 0.2s ease, box-shadow 0.2s ease'
                               }}
                             >
                             {card.isNew && (
@@ -2462,12 +2445,7 @@ const Production = () => {
 
                         return (
                           <div className="relative h-0">
-                            <div
-                              className={cn(
-                                "absolute inset-x-0 top-0 h-0.5 rounded-full",
-                                column.id === 'to-schedule' ? "bg-indigo-500" : "bg-purple-500"
-                              )}
-                            />
+                            <div className="absolute inset-x-0 top-0 h-0.5 rounded-full bg-[#A890B8]" />
                           </div>
                         );
                       })()}
@@ -2484,12 +2462,13 @@ const Production = () => {
                           key={`add-button-${column.id}`}
                           className={cn(
                             "group/btn px-4 py-2 rounded-full border border-dashed hover:border-solid transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95",
-                            // Subtle button backgrounds
-                            column.id === "ideate" ? "bg-purple-50 hover:bg-purple-100 border-purple-300" :
-                            column.id === "shape-ideas" ? "bg-blue-50 hover:bg-blue-100 border-blue-300" :
-                            column.id === "to-film" ? "bg-amber-50 hover:bg-amber-100 border-amber-300" :
-                            column.id === "to-edit" ? "bg-rose-50 hover:bg-rose-100 border-rose-300" :
-                            "bg-emerald-50 hover:bg-emerald-100 border-emerald-300",
+                            // Plum-themed button backgrounds
+                            column.id === "ideate" ? "bg-[#F4EDF6] hover:bg-[#EDE5F0] border-[#C9B3CC]" :
+                            column.id === "shape-ideas" ? "bg-[#EDE5F0] hover:bg-[#E6DAEC] border-[#BDA3C2]" :
+                            column.id === "to-film" ? "bg-[#E6DAEC] hover:bg-[#DFCFE6] border-[#B193B8]" :
+                            column.id === "to-edit" ? "bg-[#DFCFE6] hover:bg-[#D7C3E0] border-[#A583AE]" :
+                            column.id === "to-schedule" ? "bg-[#D7C3E0] hover:bg-[#CEB6D8] border-[#9973A4]" :
+                            "bg-[#CEB6D8] hover:bg-[#C5A8D0] border-[#8D639A]",
                             colors.buttonText
                           )}
                           onClick={() => {
@@ -2552,10 +2531,10 @@ const Production = () => {
                       {/* See Content Calendar button - only for to-schedule column */}
                       {column.id === 'to-schedule' && (
                         <div
-                          className="group/btn px-4 py-2 rounded-full border border-dashed hover:border-solid transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95 bg-indigo-100 hover:bg-indigo-200 border-indigo-300"
+                          className="group/btn px-4 py-2 rounded-full border border-dashed hover:border-solid transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95 bg-[#D7C3E0] hover:bg-[#CEB6D8] border-[#9973A4]"
                           onClick={() => setIsScheduleColumnExpanded(true)}
                         >
-                          <div className="flex items-center gap-2 text-indigo-600">
+                          <div className="flex items-center gap-2 text-[#5D2F62]">
                             <CalendarDays className="h-4 w-4" />
                             <span className="text-sm font-semibold">Schedule in Content Calendar</span>
                           </div>
@@ -2564,13 +2543,13 @@ const Production = () => {
 
                       {/* Help me generate ideas button - only for ideate column */}
                       {column.id === 'ideate' && (
-                        <div className="group/btn px-4 py-2 rounded-full border border-dashed hover:border-solid transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95 bg-purple-200/80 hover:bg-purple-300 border-purple-400"
+                        <div className="group/btn px-4 py-2 rounded-full border border-dashed hover:border-solid transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95 bg-[#EDE5F0] hover:bg-[#E6DAEC] border-[#B193B8]"
                           onClick={() => {
                             setSelectedIdeateCard(null);
                             setIsIdeateDialogOpen(true);
                           }}
                         >
-                          <div className="flex items-center gap-2 text-purple-700">
+                          <div className="flex items-center gap-2 text-[#6B4A6E]">
                             <Lightbulb className="h-4 w-4 group-hover/btn:animate-pulse" />
                             <span className="text-sm font-semibold">Help me generate ideas</span>
                           </div>

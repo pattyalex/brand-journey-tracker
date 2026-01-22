@@ -49,14 +49,14 @@ const Layout = ({ children, hideSidebar = false }: LayoutProps) => {
 
   return (
     <SidebarProvider key={sidebarKey}>
-      <div className="h-screen flex w-full bg-background overflow-hidden">
+      <div className="h-screen flex w-full bg-white overflow-hidden">
         {/* Main content area */}
         {shouldShowSidebar && (
           <div className="flex-shrink-0 h-full">
             <Sidebar />
           </div>
         )}
-        <main className={`flex-1 overflow-auto relative h-full bg-gray-50 ${!shouldShowSidebar ? 'w-full' : ''}`}>
+        <main className={`flex-1 overflow-x-clip overflow-y-auto relative h-full bg-white ${!shouldShowSidebar ? 'w-full' : ''}`}>
           {shouldShowSidebar && <ToggleSidebarButton />}
           {children}
           <Toaster/>

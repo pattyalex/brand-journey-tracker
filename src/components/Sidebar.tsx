@@ -50,7 +50,7 @@ const Sidebar = () => {
 
   return (
     <SidebarContainer>
-      <SidebarHeader className="px-4 pt-2 pb-1 border-b">
+      <SidebarHeader className="px-4 pt-2 pb-1">
         <h1 className="text-base font-bold text-primary">Hey Megan</h1>
       </SidebarHeader>
       <SidebarContent className="pt-2">

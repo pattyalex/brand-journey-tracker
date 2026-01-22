@@ -1,22 +1,23 @@
 import { KanbanColumn } from "../types";
 
-export const columnColors: Record<string, { bg: string; border: string; badge: string; text: string; buttonBg: string; buttonText: string }> = {
-  ideate: { bg: "bg-purple-100/60", border: "border-transparent", badge: "bg-purple-500", text: "text-purple-700", buttonBg: "bg-purple-100", buttonText: "text-purple-800" },
-  "shape-ideas": { bg: "bg-blue-100/60", border: "border-transparent", badge: "bg-blue-500", text: "text-blue-700", buttonBg: "bg-blue-100", buttonText: "text-blue-800" },
-  "to-film": { bg: "bg-amber-100/60", border: "border-transparent", badge: "bg-amber-500", text: "text-amber-700", buttonBg: "bg-amber-100", buttonText: "text-amber-800" },
-  "to-edit": { bg: "bg-rose-100/60", border: "border-transparent", badge: "bg-rose-500", text: "text-rose-700", buttonBg: "bg-rose-100", buttonText: "text-rose-800" },
-  "to-schedule": { bg: "bg-indigo-100/60", border: "border-transparent", badge: "bg-indigo-500", text: "text-indigo-700", buttonBg: "bg-indigo-100", buttonText: "text-indigo-800" },
-  posted: { bg: "bg-emerald-100/60", border: "border-transparent", badge: "bg-emerald-500", text: "text-emerald-700", buttonBg: "bg-emerald-100", buttonText: "text-emerald-800" },
+// Premium light theme - white columns with mauve accents
+export const columnColors: Record<string, { bg: string; border: string; badge: string; text: string; buttonBg: string; buttonText: string; topBorder: string; cardAccent: string }> = {
+  ideate: { bg: "bg-white", border: "border-transparent", badge: "bg-[#B8A0C4]", text: "text-[#5C5058]", buttonBg: "bg-[#F5F0F7]", buttonText: "text-[#7D6B87]", topBorder: "bg-[#D8C8E0]", cardAccent: "border-l-[#D8C8E0]" },
+  "shape-ideas": { bg: "bg-white", border: "border-transparent", badge: "bg-[#A890B8]", text: "text-[#5C5058]", buttonBg: "bg-[#F2EBF5]", buttonText: "text-[#725E7E]", topBorder: "bg-[#CCBAD8]", cardAccent: "border-l-[#CCBAD8]" },
+  "to-film": { bg: "bg-white", border: "border-transparent", badge: "bg-[#9880A8]", text: "text-[#5C5058]", buttonBg: "bg-[#EDE5F2]", buttonText: "text-[#675275]", topBorder: "bg-[#C0ABCF]", cardAccent: "border-l-[#C0ABCF]" },
+  "to-edit": { bg: "bg-white", border: "border-transparent", badge: "bg-[#887098]", text: "text-[#5C5058]", buttonBg: "bg-[#E8DFED]", buttonText: "text-[#5C466C]", topBorder: "bg-[#B49CC6]", cardAccent: "border-l-[#B49CC6]" },
+  "to-schedule": { bg: "bg-white", border: "border-transparent", badge: "bg-[#786088]", text: "text-[#5C5058]", buttonBg: "bg-[#E2D8E8]", buttonText: "text-[#513A62]", topBorder: "bg-[#A88DBD]", cardAccent: "border-l-[#A88DBD]" },
+  posted: { bg: "bg-white", border: "border-transparent", badge: "bg-[#685078]", text: "text-[#5C5058]", buttonBg: "bg-[#DCD0E3]", buttonText: "text-[#462E58]", topBorder: "bg-[#9C7EB4]", cardAccent: "border-l-[#9C7EB4]" },
 };
 
-// Card background colors (very light gray, almost white)
-export const cardColors: Record<string, { bg: string; border: string }> = {
-  ideate: { bg: "bg-white/90", border: "border-gray-200" },
-  "shape-ideas": { bg: "bg-white/90", border: "border-gray-200" },
-  "to-film": { bg: "bg-white/90", border: "border-gray-200" },
-  "to-edit": { bg: "bg-white/90", border: "border-gray-200" },
-  "to-schedule": { bg: "bg-white/90", border: "border-gray-200" },
-  posted: { bg: "bg-white/90", border: "border-gray-200" },
+// Card styling - premium white cards with mauve accent
+export const cardColors: Record<string, { bg: string; border: string; accent: string }> = {
+  ideate: { bg: "bg-white", border: "border-[#F0EBF2]", accent: "border-l-[#D8C8E0]" },
+  "shape-ideas": { bg: "bg-white", border: "border-[#F0EBF2]", accent: "border-l-[#CCBAD8]" },
+  "to-film": { bg: "bg-white", border: "border-[#F0EBF2]", accent: "border-l-[#C0ABCF]" },
+  "to-edit": { bg: "bg-white", border: "border-[#F0EBF2]", accent: "border-l-[#B49CC6]" },
+  "to-schedule": { bg: "bg-white", border: "border-[#F0EBF2]", accent: "border-l-[#A88DBD]" },
+  posted: { bg: "bg-white", border: "border-[#F0EBF2]", accent: "border-l-[#9C7EB4]" },
 };
 
 export const defaultColumns: KanbanColumn[] = [
