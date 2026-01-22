@@ -435,6 +435,14 @@ const Production = () => {
     }
   }, []);
 
+  // Clear drop position when drag ends (safety net)
+  useEffect(() => {
+    if (!draggedCard && dropPosition) {
+      setDropPosition(null);
+      setDraggedOverColumn(null);
+    }
+  }, [draggedCard, dropPosition]);
+
   // Remove isNew flag after closing content ideation dialogs and viewing cards
   useEffect(() => {
     // Trigger when closing either the Pillars dialog or the Content Ideation dialog (Bank of Ideas)
@@ -1869,11 +1877,14 @@ const Production = () => {
 
                             return (
                               <React.Fragment key={card.id || `fallback-${cardIndex}`}>
-                            {/* Drop indicator - only render during active drag (not for to-schedule column) */}
-                            {column.id !== 'to-schedule' && showDropIndicatorBefore && draggedCard && (
+                            {/* Drop indicator - only render during active drag */}
+                            {showDropIndicatorBefore && draggedCard && isDraggingRef.current && (
                               <div className="relative h-0">
                                 <div
-                                  className="absolute inset-x-0 -top-1 h-0.5 bg-purple-500 rounded-full"
+                                  className={cn(
+                                    "absolute inset-x-0 -top-1 h-0.5 rounded-full",
+                                    column.id === 'to-schedule' ? "bg-indigo-500" : "bg-purple-500"
+                                  )}
                                 />
                               </div>
                             )}
@@ -2318,8 +2329,8 @@ const Production = () => {
                         );
                       })}
 
-                      {/* Drop indicator at the end of the column - only show during active drag (not for to-schedule column) */}
-                      {column.id !== "ideate" && column.id !== "to-schedule" && draggedCard && (() => {
+                      {/* Drop indicator at the end of the column - only show during active drag */}
+                      {column.id !== "ideate" && draggedCard && isDraggingRef.current && (() => {
                         const filteredCards = column.cards.filter(card => card.title && card.title.trim() && !card.title.toLowerCase().includes('add quick idea'));
                         const draggedCardIndex = filteredCards.findIndex(c => c.id === draggedCard.id);
                         const isLastCard = draggedCardIndex !== -1 && draggedCardIndex === filteredCards.length - 1;
@@ -2332,7 +2343,10 @@ const Production = () => {
                         return (
                           <div className="relative h-0">
                             <div
-                              className="absolute inset-x-0 top-0 h-0.5 bg-purple-500 rounded-full"
+                              className={cn(
+                                "absolute inset-x-0 top-0 h-0.5 rounded-full",
+                                column.id === 'to-schedule' ? "bg-indigo-500" : "bg-purple-500"
+                              )}
                             />
                           </div>
                         );

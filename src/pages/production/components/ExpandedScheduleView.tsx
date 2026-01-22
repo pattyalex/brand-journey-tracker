@@ -1404,21 +1404,29 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                     isPublished ? (
                                       <PartyPopper className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-gray-600" />
                                     ) : (
-                                      <Check className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                                      <CalendarDays className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
                                     )
                                   )}
-                                  <span className="leading-tight">{scheduledCard.hook || scheduledCard.title || "Scheduled"}</span>
+                                  <span className="leading-tight truncate">{scheduledCard.hook || scheduledCard.title || "Scheduled"}</span>
                                 </div>
-                                {/* Platforms - bottom right */}
-                                {scheduledCard.platforms && scheduledCard.platforms.length > 0 && (
-                                  <div className="flex gap-1.5 items-center justify-end mt-0.5">
-                                    {scheduledCard.platforms.map((platform, idx) => (
-                                      <span key={idx} title={platform}>
-                                        {getPlatformIcon(platform, "w-3.5 h-3.5")}
-                                      </span>
-                                    ))}
-                                  </div>
-                                )}
+                                {/* Progress indicator - 6 lines, first 5 colored for scheduled */}
+                                <div className="flex gap-0.5 mt-1.5">
+                                  {[1, 2, 3, 4, 5, 6].map((step) => {
+                                    const colorKey = scheduledCard.scheduledColor || 'indigo';
+                                    const colorConfig = scheduleColors[colorKey as ScheduleColorKey];
+                                    return (
+                                      <div
+                                        key={step}
+                                        className="h-1 flex-1 rounded-full"
+                                        style={{
+                                          backgroundColor: step <= 5
+                                            ? (colorConfig?.text || '#4338ca')
+                                            : '#e5e7eb'
+                                        }}
+                                      />
+                                    );
+                                  })}
+                                </div>
                               </div>
                             </PopoverTrigger>
                             <PopoverContent
@@ -1629,7 +1637,19 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                             {/* Title row */}
                             <div className="flex items-start gap-1.5">
                               <Lightbulb className="w-3 h-3 flex-shrink-0 mt-0.5 text-violet-400" />
-                              <span className="leading-tight opacity-80">{plannedCard.hook || plannedCard.title || "Planned idea"}</span>
+                              <span className="leading-tight opacity-80 truncate">{plannedCard.hook || plannedCard.title || "Planned idea"}</span>
+                            </div>
+                            {/* Progress indicator - 6 lines, first 1 colored for planned */}
+                            <div className="flex gap-0.5 mt-1.5">
+                              {[1, 2, 3, 4, 5, 6].map((step) => (
+                                <div
+                                  key={step}
+                                  className={cn(
+                                    "h-1 flex-1 rounded-full",
+                                    step <= 1 ? "bg-violet-500" : "bg-violet-200"
+                                  )}
+                                />
+                              ))}
                             </div>
                           </div>
                         ))}

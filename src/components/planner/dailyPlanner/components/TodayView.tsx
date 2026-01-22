@@ -375,13 +375,13 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                   <X className="w-3.5 h-3.5" />
                 </button>
               </div>
-              {/* Progress indicator - 5 steps, step 5 is active */}
+              {/* Progress indicator - 6 steps, first 5 colored for scheduled */}
               <div className="flex gap-0.5 px-2 pb-1.5">
-                {[1, 2, 3, 4, 5].map((step) => (
+                {[1, 2, 3, 4, 5, 6].map((step) => (
                   <div
                     key={step}
                     className={`h-[2px] flex-1 rounded-full ${
-                      step === 5
+                      step <= 5
                         ? 'bg-current opacity-80'
                         : 'bg-current opacity-25'
                     }`}
@@ -410,13 +410,13 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
-            {/* Progress indicator - 5 steps, step 1 is active for planned */}
+            {/* Progress indicator - 6 steps, first 1 colored for planned */}
             <div className="flex gap-0.5 px-2 pb-1.5">
-              {[1, 2, 3, 4, 5].map((step) => (
+              {[1, 2, 3, 4, 5, 6].map((step) => (
                 <div
                   key={step}
                   className={`h-[2px] flex-1 rounded-full ${
-                    step === 1
+                    step <= 1
                       ? 'bg-violet-500 opacity-80'
                       : 'bg-violet-300 opacity-40'
                   }`}

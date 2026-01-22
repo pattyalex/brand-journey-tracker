@@ -707,9 +707,21 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
     <>
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[1100px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-gradient-to-br from-amber-50 via-white to-orange-50">
-        {/* Step Progress Indicator */}
-        <div className="flex justify-end pr-12 pt-4 pb-1 bg-white/50">
-          <ContentFlowProgress currentStep={3} className="w-[500px]" />
+        {/* Step Progress Row - Centered over Storyboard section only */}
+        <div className="flex pt-3 pb-1 bg-white/50">
+          {/* Left spacer matching Script column width */}
+          <div className="w-[320px] flex-shrink-0 flex items-center gap-2 px-4">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-md">
+              <Clapperboard className="w-4 h-4 text-white" />
+            </div>
+            <DialogTitle className="text-xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+              Storyboard Editor
+            </DialogTitle>
+          </div>
+          {/* Step progress centered in Storyboard area */}
+          <div className="flex-1 flex justify-center">
+            <ContentFlowProgress currentStep={3} className="w-[450px]" />
+          </div>
         </div>
 
         {/* Main content - side by side layout */}
@@ -717,21 +729,6 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
           ref={leftPanelRef}
           className="flex-1 overflow-y-auto"
         >
-          {/* Header - scrolls with content */}
-          <DialogHeader className="px-6 pt-1 pb-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-200/50">
-                  <Clapperboard className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-                    Storyboard Editor
-                  </DialogTitle>
-                </div>
-              </div>
-            </div>
-          </DialogHeader>
           {/* Headers row - both headers scroll together */}
           <div className="flex border-b border-amber-100/80">
             {/* Script Header */}

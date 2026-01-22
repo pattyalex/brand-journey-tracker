@@ -122,6 +122,7 @@ export const ContentOverviewSidebar = ({
                   <div className="w-4 h-1 rounded-full bg-purple-300" />
                   <div className="w-4 h-1 rounded-full bg-purple-300" />
                   <div className="w-4 h-1 rounded-full bg-purple-300" />
+                  <div className="w-4 h-1 rounded-full bg-purple-300" />
                 </div>
               </div>
               <div className="flex-1">
@@ -138,11 +139,12 @@ export const ContentOverviewSidebar = ({
                   <span className="text-xs font-medium text-violet-700">Sample content</span>
                 </div>
                 <div className="flex justify-center gap-1 mt-2">
-                  <div className="w-4 h-1 rounded-full bg-violet-300" />
-                  <div className="w-4 h-1 rounded-full bg-violet-300" />
-                  <div className="w-4 h-1 rounded-full bg-violet-300" />
-                  <div className="w-4 h-1 rounded-full bg-violet-300" />
                   <div className="w-4 h-1 rounded-full bg-violet-500" />
+                  <div className="w-4 h-1 rounded-full bg-violet-500" />
+                  <div className="w-4 h-1 rounded-full bg-violet-500" />
+                  <div className="w-4 h-1 rounded-full bg-violet-500" />
+                  <div className="w-4 h-1 rounded-full bg-violet-500" />
+                  <div className="w-4 h-1 rounded-full bg-violet-300" />
                 </div>
               </div>
               <div className="flex-1">

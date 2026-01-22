@@ -183,13 +183,13 @@ export const ContentDialog = ({
                       <p className="text-sm text-gray-500">
                         {format(new Date(content.scheduledDate + 'T12:00:00'), 'EEEE, MMMM d, yyyy')}
                       </p>
-                      {/* Progress lines - 5th highlighted for scheduled content */}
+                      {/* Progress lines - first 5 colored for scheduled content */}
                       <div className="flex gap-1 mt-2">
-                        {[1, 2, 3, 4, 5].map((step) => (
+                        {[1, 2, 3, 4, 5, 6].map((step) => (
                           <div
                             key={step}
                             className={`h-1 w-6 rounded-full ${
-                              step === 5 ? 'bg-indigo-500' : 'bg-indigo-200'
+                              step <= 5 ? 'bg-indigo-500' : 'bg-indigo-200'
                             }`}
                           />
                         ))}
