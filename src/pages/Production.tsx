@@ -142,6 +142,8 @@ const Production = () => {
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isDraggingRef = useRef<boolean>(false);
   const textRefs = useRef<Map<string, HTMLElement>>(new Map());
+  const horizontalScrollRef = useRef<HTMLDivElement>(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const [isIdeateDialogOpen, setIsIdeateDialogOpen] = useState(false);
   const [isIdeateCardEditorOpen, setIsIdeateCardEditorOpen] = useState(false);
   const [editingIdeateCard, setEditingIdeateCard] = useState<ProductionCard | null>(null);
@@ -1797,8 +1799,16 @@ const Production = () => {
 
   return (
     <Layout>
-      <div className="w-full min-h-screen pl-5 pr-3 pt-4 pb-4 bg-[#F9F7FA]">
-        <div className="flex gap-5 h-full overflow-x-auto overflow-y-visible pb-8 ml-[-34px] pl-[34px] mt-[-16px] pt-[16px] hide-scrollbar">
+      <div className="w-full h-screen flex flex-col pl-5 pr-3 pt-4 bg-[#F9F7FA]">
+        <div
+          ref={horizontalScrollRef}
+          className="flex gap-5 flex-1 overflow-x-auto overflow-y-visible ml-[-34px] pl-[34px] mt-[-16px] pt-[16px] hide-scrollbar"
+          onScroll={(e) => {
+            const target = e.currentTarget;
+            const maxScroll = target.scrollWidth - target.clientWidth;
+            setScrollProgress(maxScroll > 0 ? target.scrollLeft / maxScroll : 0);
+          }}
+        >
           {columns.map((column, index) => {
             const colors = columnColors[column.id];
             return (
@@ -1807,7 +1817,7 @@ const Production = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="flex-shrink-0 w-[340px] h-[calc(100%-2rem)]"
+                className="flex-shrink-0 w-[340px]"
                 onDragOver={(e) => handleDragOver(e, column.id)}
                 onDragLeave={handleDragLeave}
                 onDrop={(e) => handleDrop(e, column.id)}
@@ -1817,8 +1827,8 @@ const Production = () => {
                     if (el) columnRefs.current.set(column.id, el);
                   }}
                   className={cn(
-                    "h-full flex flex-col rounded-2xl transition-all duration-300 overflow-hidden",
-                    "shadow-[0_-8px_20px_rgba(139,120,150,0.15),0_2px_8px_rgba(139,120,150,0.12),0_8px_24px_rgba(139,120,150,0.15),0_16px_32px_rgba(139,120,150,0.08)]",
+                    "flex flex-col rounded-2xl transition-all duration-300 overflow-hidden",
+                    "shadow-[0_1px_2px_rgba(0,0,0,0.04),0_2px_4px_rgba(0,0,0,0.03),0_4px_8px_rgba(0,0,0,0.03),0_8px_16px_rgba(0,0,0,0.02)]",
                                         draggedOverColumn === column.id && draggedCard
                       ? column.id === "ideate" && columns.find(col => col.cards.some(c => c.id === draggedCard.id))?.id !== "ideate"
                         ? "ring-2 ring-offset-2 ring-red-400 opacity-60"
@@ -1858,7 +1868,7 @@ const Production = () => {
                     <>
                       <div className="px-5 pt-5 pb-4">
                         <div className="flex items-center gap-2">
-                          <h2 className={cn("font-semibold text-[15px] tracking-wide uppercase", colors.text)}>
+                          <h2 className={cn("font-medium text-[13px] tracking-[0.04em] uppercase", colors.text)}>
                             {column.title}
                           </h2>
                           <PartyPopper className={cn("w-4 h-4", colors.text)} />
@@ -1935,12 +1945,12 @@ const Production = () => {
                   ) : (
                     <>
                       <div className="px-5 pt-5 pb-4">
-                        <h2 className={cn("font-semibold text-[15px] tracking-wide uppercase", colors.text)}>
+                        <h2 className={cn("font-medium text-[13px] tracking-[0.04em] uppercase", colors.text)}>
                           {column.title}
                         </h2>
                       </div>
 
-                      <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-3 hide-scrollbar hover:hide-scrollbar relative">
+                      <div className="flex-1 overflow-y-auto px-4 pt-1 pb-4 space-y-3 hide-scrollbar hover:hide-scrollbar relative">
                         {/* Not Allowed Overlay for Ideate Column */}
                         {column.id === "ideate" && draggedCard && draggedOverColumn === column.id &&
                          columns.find(col => col.cards.some(c => c.id === draggedCard.id))?.id !== "ideate" && (
@@ -2030,36 +2040,21 @@ const Production = () => {
                                   }, 250);
                                 }
                               }}
-                              onMouseEnter={(e) => {
-                                if (!isDragging && !isEditing) {
-                                  e.currentTarget.style.transform = 'translateY(-2px)';
-                                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04)';
-                                }
-                              }}
-                              onMouseLeave={(e) => {
-                                if (!isDragging && !isEditing) {
-                                  e.currentTarget.style.transform = 'translateY(0)';
-                                  e.currentTarget.style.boxShadow = '';
-                                }
-                              }}
                               className={cn(
-                                "group rounded-lg relative",
-                                "shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.06)]",
-                                "border-l-[3px]",
-                                cardColors[column.id]?.accent || "border-l-[#D8C8E0]",
+                                "group relative bg-white",
+                                "rounded-xl border border-stone-200",
+                                "shadow-[0_0_0_1px_rgba(0,0,0,0.02),0_2px_4px_rgba(0,0,0,0.04),0_8px_20px_rgba(0,0,0,0.06)]",
+                                "hover:shadow-[0_0_0_1px_rgba(0,0,0,0.02),0_4px_8px_rgba(0,0,0,0.05),0_12px_28px_rgba(0,0,0,0.08)]",
+                                "hover:-translate-y-[3px]",
+                                "transition-all duration-200",
                                 column.id === "ideate" ? "py-4 px-3" : "p-3",
                                 (column.id === "shape-ideas" || column.id === "ideate" || column.id === "to-film" || column.id === "to-edit" || column.id === "to-schedule") && !isEditing ? "cursor-pointer" : (!isEditing && "cursor-grab active:cursor-grabbing"),
-                                !isDragging && "transition-all duration-200",
                                 isThisCardDragged ? "opacity-40 scale-[0.98]" : "",
                                 card.isCompleted && "opacity-60",
-                                recentlyRepurposedCardId === card.id ? "ring-2 ring-emerald-500 ring-offset-2 bg-emerald-50" :
-                                highlightedUnscheduledCardId === card.id ? "ring-2 ring-indigo-500 ring-offset-2 bg-indigo-50" :
-                                card.isNew ? "border-l-[3px] border-l-purple-500 bg-purple-50" : `${cardColors[column.id]?.bg || "bg-white"} border border-l-[3px] ${cardColors[column.id]?.border || "border-[#F0EBF2]"}`
+                                recentlyRepurposedCardId === card.id && "ring-2 ring-emerald-500 ring-offset-2",
+                                highlightedUnscheduledCardId === card.id && "ring-2 ring-indigo-500 ring-offset-2",
+                                card.isNew && "ring-2 ring-purple-500 ring-offset-2"
                               )}
-                              style={{
-                                willChange: isDragging ? 'transform' : 'auto',
-                                transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-                              }}
                             >
                             {card.isNew && (
                               <div className="absolute -top-1 -right-1 bg-purple-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
@@ -2081,7 +2076,7 @@ const Production = () => {
                               <div className="flex items-center gap-1 mb-1.5">
                                 <div className="flex items-center gap-1 px-1.5 py-0.5 bg-indigo-50 rounded-md border border-indigo-100">
                                   <CalendarDays className="w-3 h-3 text-indigo-500" />
-                                  <span className="text-[9px] font-medium text-indigo-600">
+                                  <span className="text-[11px] font-normal text-indigo-600/90">
                                     {card.plannedDate ? `Planned for ${new Date(card.plannedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : 'From Calendar'}
                                   </span>
                                 </div>
@@ -2108,7 +2103,7 @@ const Production = () => {
                                       className="flex items-center gap-1 px-1.5 py-0.5 bg-violet-50 rounded-md border border-violet-200 hover:bg-violet-100 hover:border-violet-300 transition-colors cursor-pointer"
                                     >
                                       <CalendarDays className="w-3 h-3 text-violet-500" />
-                                      <span className="text-[9px] font-medium text-violet-600">
+                                      <span className="text-[11px] font-normal text-violet-600/90">
                                         Planned: {new Date(card.plannedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                       </span>
                                     </button>
@@ -2166,7 +2161,7 @@ const Production = () => {
                                     ref={(el) => {
                                       if (el) textRefs.current.set(card.id, el);
                                     }}
-                                    className="font-semibold text-sm text-gray-800 break-words leading-tight flex-1 cursor-pointer"
+                                    className="font-medium text-[15px] text-gray-800 break-words leading-[1.4] tracking-[-0.01em] flex-1 cursor-pointer"
                                     onDoubleClick={(e) => {
                                       e.stopPropagation();
                                       // Clear the single-click timeout to prevent modal from opening
@@ -2351,8 +2346,8 @@ const Production = () => {
                                     if (isLastRow && hasPlatforms) {
                                       return (
                                         <div key={`format-${idx}`} className="flex items-center justify-between">
-                                          <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full text-gray-500 font-medium">
-                                            {isStatic ? <Camera className="w-2.5 h-2.5" /> : <Video className="w-2.5 h-2.5" />}
+                                          <span className="inline-flex items-center gap-1 text-[12px] px-2 py-0.5 rounded-full text-gray-500/80 font-normal">
+                                            {isStatic ? <Camera className="w-3 h-3" /> : <Video className="w-3 h-3" />}
                                             {format}
                                           </span>
                                           {renderPlatformIcons()}
@@ -2361,8 +2356,8 @@ const Production = () => {
                                     }
 
                                     return (
-                                      <span key={`format-${idx}`} className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full text-gray-500 font-medium">
-                                        {isStatic ? <Camera className="w-2.5 h-2.5" /> : <Video className="w-2.5 h-2.5" />}
+                                      <span key={`format-${idx}`} className="inline-flex items-center gap-1 text-[12px] px-2 py-0.5 rounded-full text-gray-500/80 font-normal">
+                                        {isStatic ? <Camera className="w-3 h-3" /> : <Video className="w-3 h-3" />}
                                         {format}
                                       </span>
                                     );
@@ -2370,7 +2365,7 @@ const Production = () => {
                                   {/* Status tag - last row */}
                                   {hasStatus && (
                                     <div className={hasPlatforms ? "flex items-center justify-between" : ""}>
-                                      <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full text-gray-500 font-medium">
+                                      <span className="inline-flex items-center gap-1 text-[12px] px-2 py-0.5 rounded-full text-gray-500/80 font-normal">
                                         {/* Show editing status for To Edit column, otherwise show filming status */}
                                         {column.id === 'to-edit' ? (
                                           <>
@@ -2565,6 +2560,17 @@ const Production = () => {
           })}
         </div>
 
+        {/* Invisible scroll area at bottom - enables horizontal scroll when cursor is here */}
+        <div
+          className="h-8 flex-shrink-0 cursor-ew-resize"
+          onWheel={(e) => {
+            if (horizontalScrollRef.current) {
+              e.preventDefault();
+              horizontalScrollRef.current.scrollLeft += e.deltaX || e.deltaY;
+            }
+          }}
+        />
+
         {/* Add/Edit Card Dialog */}
         <Dialog open={isAddCardDialogOpen} onOpenChange={closeDialog}>
           <DialogContent className="sm:max-w-[500px] border-0 shadow-2xl">
@@ -2701,7 +2707,7 @@ const Production = () => {
                     {/* 1. Start With Your Pillars - Emerald/Green - Spans 3 cols */}
                     <button
                       onClick={() => setIsPillarsDialogOpen(true)}
-                      className="col-span-3 group relative overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 border-2 border-emerald-200 hover:border-emerald-400 rounded-xl p-6 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                      className="col-span-3 group relative overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 border-2 border-emerald-200 hover:border-emerald-400 rounded-xl p-6 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_2px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.04),0_8px_16px_rgba(0,0,0,0.04),0_16px_24px_rgba(0,0,0,0.02)]"
                     >
                       <div className="flex flex-col items-center text-center space-y-3">
                         <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white text-xl shadow-md">
@@ -2715,7 +2721,7 @@ const Production = () => {
                     {/* 2. Trending Hooks - Rose/Pink - Spans 3 cols */}
                     <button
                       onClick={() => setShowHooksDialog(true)}
-                      className="col-span-3 group relative overflow-hidden bg-gradient-to-br from-rose-50 to-pink-50 hover:from-rose-100 hover:to-pink-100 border-2 border-rose-200 hover:border-rose-400 rounded-xl p-6 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                      className="col-span-3 group relative overflow-hidden bg-gradient-to-br from-rose-50 to-pink-50 hover:from-rose-100 hover:to-pink-100 border-2 border-rose-200 hover:border-rose-400 rounded-xl p-6 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_2px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.04),0_8px_16px_rgba(0,0,0,0.04),0_16px_24px_rgba(0,0,0,0.02)]"
                     >
                       <div className="flex flex-col items-center text-center space-y-3">
                         <div className="w-12 h-12 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white text-xl shadow-md">
@@ -2729,7 +2735,7 @@ const Production = () => {
                     {/* 3. What Worked, What's Next - Sky/Cyan Blue - Spans 2 cols */}
                     <button
                       onClick={() => setIsWhatWorkedDialogOpen(true)}
-                      className="col-span-2 group relative overflow-hidden bg-gradient-to-br from-sky-50 to-cyan-50 hover:from-sky-100 hover:to-cyan-100 border-2 border-sky-200 hover:border-sky-400 rounded-xl p-6 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                      className="col-span-2 group relative overflow-hidden bg-gradient-to-br from-sky-50 to-cyan-50 hover:from-sky-100 hover:to-cyan-100 border-2 border-sky-200 hover:border-sky-400 rounded-xl p-6 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_2px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.04),0_8px_16px_rgba(0,0,0,0.04),0_16px_24px_rgba(0,0,0,0.02)]"
                     >
                       <div className="flex flex-col items-center text-center space-y-3">
                         <div className="w-12 h-12 bg-gradient-to-br from-sky-500 to-cyan-600 rounded-full flex items-center justify-center text-white text-xl shadow-md">
@@ -2747,7 +2753,7 @@ const Production = () => {
                     {/* 4. Idea Expander - Orange - Spans 2 cols */}
                     <button
                       onClick={() => setIsIdeaExpanderOpen(true)}
-                      className="col-span-2 group relative overflow-hidden bg-gradient-to-br from-orange-50 to-red-50 hover:from-orange-100 hover:to-red-100 border-2 border-orange-200 hover:border-orange-400 rounded-xl p-6 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                      className="col-span-2 group relative overflow-hidden bg-gradient-to-br from-orange-50 to-red-50 hover:from-orange-100 hover:to-red-100 border-2 border-orange-200 hover:border-orange-400 rounded-xl p-6 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_2px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.04),0_8px_16px_rgba(0,0,0,0.04),0_16px_24px_rgba(0,0,0,0.02)]"
                     >
                       <div className="flex flex-col items-center text-center space-y-3">
                         <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center text-white text-xl shadow-md">
@@ -2761,7 +2767,7 @@ const Production = () => {
                     {/* 5. Bank of Ideas - Yellow/Amber - Spans 2 cols */}
                     <button
                       onClick={() => setIdeateMode('bankofideas')}
-                      className="col-span-2 group relative overflow-hidden bg-gradient-to-br from-yellow-50 to-amber-50 hover:from-yellow-100 hover:to-amber-100 border-2 border-yellow-200 hover:border-yellow-400 rounded-xl p-6 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                      className="col-span-2 group relative overflow-hidden bg-gradient-to-br from-yellow-50 to-amber-50 hover:from-yellow-100 hover:to-amber-100 border-2 border-yellow-200 hover:border-yellow-400 rounded-xl p-6 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_2px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.04),0_8px_16px_rgba(0,0,0,0.04),0_16px_24px_rgba(0,0,0,0.02)]"
                     >
                       <div className="flex flex-col items-center text-center space-y-3">
                         <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full flex items-center justify-center text-white text-xl shadow-md">
@@ -2939,7 +2945,7 @@ const Production = () => {
                           setSelectedNarrative(narrative.title);
                           setShowAIGenerator(true);
                         }}
-                        className="group relative bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 hover:border-emerald-400 rounded-xl p-5 text-left transition-all duration-200 hover:shadow-xl"
+                        className="group relative bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 hover:border-emerald-400 rounded-xl p-5 text-left transition-all duration-200 hover:-translate-y-1 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_2px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.04),0_8px_16px_rgba(0,0,0,0.04),0_16px_24px_rgba(0,0,0,0.02)]"
                       >
                         <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-emerald-100 group-hover:bg-emerald-500 flex items-center justify-center transition-colors">
                           <span className="text-xs font-bold text-emerald-600 group-hover:text-white">{index + 1}</span>
@@ -4441,7 +4447,7 @@ Make each idea unique, creative, and directly tied to both the original content 
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.1 }}
-                        className="group relative overflow-hidden bg-gradient-to-br from-purple-50 to-indigo-50 hover:from-purple-100 hover:to-indigo-100 border-2 border-purple-200 hover:border-purple-400 rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
+                        className="group relative overflow-hidden bg-gradient-to-br from-purple-50 to-indigo-50 hover:from-purple-100 hover:to-indigo-100 border-2 border-purple-200 hover:border-purple-400 rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_2px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.04),0_8px_16px_rgba(0,0,0,0.04),0_16px_24px_rgba(0,0,0,0.02)]"
                       >
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex-1">
