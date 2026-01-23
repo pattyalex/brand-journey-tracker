@@ -353,6 +353,17 @@ const Production = () => {
     return cleanup;
   }, []);
 
+  // Listen for contentArchived event from calendar views
+  useEffect(() => {
+    const cleanup = on(window, EVENTS.contentArchived, (event) => {
+      const { card } = event.detail || {};
+      if (card) {
+        setArchivedCards((prev) => [card, ...prev]);
+      }
+    });
+    return cleanup;
+  }, []);
+
   // Clear drop indicators when drag ends
   useEffect(() => {
     if (!draggedCard) {

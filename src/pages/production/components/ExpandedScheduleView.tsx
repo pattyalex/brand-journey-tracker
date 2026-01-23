@@ -431,18 +431,9 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
       archivedAt: new Date().toISOString(),
     } as ProductionCard & { archivedAt: string };
 
-    // Only add to archive, keep original in calendar
-    const newColumns = columns.map(col => {
-      if (col.id === 'posted') {
-        return {
-          ...col,
-          cards: [archivedCopy, ...col.cards],
-        };
-      }
-      return col;
-    });
+    // Emit event to add to archive in Production.tsx
+    emit(window, EVENTS.contentArchived, { card: archivedCopy });
 
-    saveColumns(newColumns);
     // Emit events for sync with content calendar
     emit(window, EVENTS.productionKanbanUpdated);
     emit(window, EVENTS.scheduledContentUpdated);
@@ -517,7 +508,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
       archivedAt: new Date().toISOString(),
     } as ProductionCard & { archivedAt: string };
 
-    // Add to archive AND remove from calendar
+    // Remove from calendar
     const newColumns = columns.map(col => {
       if (col.id === 'to-schedule') {
         return {
@@ -525,16 +516,13 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
           cards: col.cards.filter(c => c.id !== deleteConfirmCard.id),
         };
       }
-      if (col.id === 'posted') {
-        return {
-          ...col,
-          cards: [archivedCopy, ...col.cards],
-        };
-      }
       return col;
     });
 
     saveColumns(newColumns);
+
+    // Emit event to add to archive in Production.tsx
+    emit(window, EVENTS.contentArchived, { card: archivedCopy });
     emit(window, EVENTS.productionKanbanUpdated);
     emit(window, EVENTS.scheduledContentUpdated);
 
