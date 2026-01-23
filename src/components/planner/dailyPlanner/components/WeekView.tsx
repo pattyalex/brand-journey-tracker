@@ -766,7 +766,7 @@ export const WeekView = ({
 
                               const isPlanned = !content.scheduledDate;
                               const colors = isPlanned
-                                ? { bg: '#F9F4EC', text: '#8B7082' }
+                                ? { bg: '#F5F2F4', text: '#8B7082' }
                                 : defaultScheduledColor;
 
                               return (
@@ -790,7 +790,7 @@ export const WeekView = ({
                                     top: `${topPos}px`,
                                     height: `${height}px`,
                                     backgroundColor: colors.bg,
-                                    border: isPlanned ? '1px dashed #8B7082' : 'none',
+                                    border: isPlanned ? '1px dashed #D4C9CF' : 'none',
                                     zIndex: 104,
                                   }}
                                 >
@@ -1206,7 +1206,7 @@ export const WeekView = ({
                               return untimedContent.map((content) => {
                                 const isPlanned = !content.scheduledDate;
                                 const colors = isPlanned
-                                  ? { bg: '#F9F4EC', text: '#8B7082' }
+                                  ? { bg: '#F5F2F4', text: '#8B7082' }
                                   : defaultScheduledColor;
 
                                 return (
@@ -1228,7 +1228,7 @@ export const WeekView = ({
                                     className="group text-xs px-2 py-1.5 rounded-md hover:shadow-sm transition-all cursor-pointer relative"
                                     style={{
                                       backgroundColor: colors.bg,
-                                      border: isPlanned ? '1px dashed #8B7082' : 'none',
+                                      border: isPlanned ? '1px dashed #D4C9CF' : 'none',
                                       opacity: isPast ? 0.5 : 1
                                     }}
                                   >

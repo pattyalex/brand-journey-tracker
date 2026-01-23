@@ -147,12 +147,19 @@ export const usePlannerState = ({
   const [weeklyEditTitle, setWeeklyEditTitle] = useState<string>("");
   const [weeklyEditingTitle, setWeeklyEditingTitle] = useState<boolean>(false);
 
-  // Update view when URL parameter changes
+  // Update view and content mode when URL parameters change
   useEffect(() => {
     const viewParam = searchParams.get('view');
+    const modeParam = searchParams.get('mode');
+
     const validViews: PlannerView[] = ['today', 'day', 'week', 'calendar', 'month'];
     if (viewParam && validViews.includes(viewParam as PlannerView)) {
       setCurrentView(viewParam as PlannerView);
+    }
+
+    // Set content display mode from URL param
+    if (modeParam === 'content' || modeParam === 'tasks' || modeParam === 'both') {
+      setContentDisplayMode(modeParam as ContentDisplayMode);
     }
   }, [searchParams]);
 

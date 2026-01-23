@@ -647,7 +647,7 @@ export const CalendarView = ({
                         onDragEnd={(e) => {
                           e.currentTarget.style.opacity = '1';
                         }}
-                        className="group text-[11px] rounded-lg border border-dashed border-[#8B7082] bg-[#F9F4EC] text-[#8B7082] cursor-pointer hover:brightness-95 flex flex-col overflow-hidden flex-shrink-0"
+                        className="group text-[11px] rounded-lg border border-dashed border-[#D4C9CF] bg-[#F5F2F4] text-[#8B7082] cursor-pointer hover:brightness-95 flex flex-col overflow-hidden flex-shrink-0"
                       >
                         <div className="flex items-center gap-1 px-2 py-1.5">
                           <Lightbulb className="w-3 h-3 flex-shrink-0" />

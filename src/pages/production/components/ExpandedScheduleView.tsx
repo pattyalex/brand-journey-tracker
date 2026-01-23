@@ -6,7 +6,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarDays, ChevronLeft, ChevronRight, Video, Camera, Check, X, Pin, PartyPopper, Lightbulb, Send, Plus, ArrowRight, TrendingUp, Clock, Sparkles } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { CalendarDays, ChevronLeft, ChevronRight, Video, Camera, Check, X, Pin, PartyPopper, Lightbulb, Send, Plus, ArrowRight, TrendingUp, Clock, Sparkles, Archive } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
@@ -15,6 +21,7 @@ import { ProductionCard, KanbanColumn } from "../types";
 import ContentFlowProgress from "./ContentFlowProgress";
 import { StorageKeys, getString, setString } from "@/lib/storage";
 import { EVENTS, emit, on } from "@/lib/events";
+import { toast } from "sonner";
 
 // Helper to get platform icon
 const getPlatformIcon = (platform: string, size: string = "w-5 h-5"): React.ReactNode => {
@@ -326,6 +333,127 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
       return col;
     });
     saveColumns(newColumns);
+    // Emit events for sync with content calendar
+    emit(window, EVENTS.productionKanbanUpdated);
+    emit(window, EVENTS.scheduledContentUpdated);
+  };
+
+  // Handler for removing planned content from calendar (clears plannedDate)
+  const handleRemovePlannedContent = (cardId: string) => {
+    const newColumns = columns.map(col => {
+      if (col.id === 'ideate') {
+        return {
+          ...col,
+          cards: col.cards.map(card => {
+            if (card.id === cardId) {
+              return {
+                ...card,
+                plannedDate: undefined,
+                plannedStartTime: undefined,
+                plannedEndTime: undefined,
+                plannedColor: undefined,
+              };
+            }
+            return card;
+          }),
+        };
+      }
+      return col;
+    });
+    saveColumns(newColumns);
+    // Emit events for sync with content calendar
+    emit(window, EVENTS.productionKanbanUpdated);
+    emit(window, EVENTS.scheduledContentUpdated);
+  };
+
+  // Handler for marking content as posted and archiving it
+  const handleMarkAsPosted = (cardId: string, e: React.MouseEvent) => {
+    // Find the card in to-schedule column
+    const toScheduleCol = columns.find(col => col.id === 'to-schedule');
+    const card = toScheduleCol?.cards.find(c => c.id === cardId);
+
+    if (!card) return;
+
+    // Get the card element for ghost animation
+    const button = e.currentTarget as HTMLElement;
+    const cardElement = button.closest('[data-card-id]') as HTMLElement;
+
+    if (cardElement) {
+      // Create ghost element
+      const rect = cardElement.getBoundingClientRect();
+      const ghost = cardElement.cloneNode(true) as HTMLElement;
+
+      // Style the ghost
+      ghost.style.position = 'fixed';
+      ghost.style.left = `${rect.left}px`;
+      ghost.style.top = `${rect.top}px`;
+      ghost.style.width = `${rect.width}px`;
+      ghost.style.height = `${rect.height}px`;
+      ghost.style.pointerEvents = 'none';
+      ghost.style.zIndex = '9999';
+      ghost.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+      ghost.style.opacity = '0.8';
+
+      document.body.appendChild(ghost);
+
+      // Trigger animation after a frame
+      requestAnimationFrame(() => {
+        ghost.style.transform = 'translateY(-100px) scale(0.5)';
+        ghost.style.opacity = '0';
+      });
+
+      // Remove ghost after animation
+      setTimeout(() => {
+        ghost.remove();
+      }, 500);
+    }
+
+    // Create a copy for the archive with archivedAt timestamp
+    const archivedCopy: ProductionCard = {
+      ...card,
+      id: `archived-${card.id}-${Date.now()}`, // New unique ID for the copy
+      columnId: 'posted',
+      schedulingStatus: undefined,
+      archivedAt: new Date().toISOString(),
+    } as ProductionCard & { archivedAt: string };
+
+    // Update columns: unschedule original and add copy to posted column
+    const newColumns = columns.map(col => {
+      if (col.id === 'to-schedule') {
+        return {
+          ...col,
+          cards: col.cards.map(c => {
+            if (c.id === cardId) {
+              return {
+                ...c,
+                schedulingStatus: 'to-schedule' as const,
+                scheduledDate: undefined,
+                scheduledStartTime: undefined,
+                scheduledEndTime: undefined,
+              };
+            }
+            return c;
+          }),
+        };
+      }
+      if (col.id === 'posted') {
+        return {
+          ...col,
+          cards: [archivedCopy, ...col.cards],
+        };
+      }
+      return col;
+    });
+
+    saveColumns(newColumns);
+    // Emit events for sync with content calendar
+    emit(window, EVENTS.productionKanbanUpdated);
+    emit(window, EVENTS.scheduledContentUpdated);
+
+    // Show toast notification
+    toast.success("A copy has been archived", {
+      description: "The content has been moved to your archive"
+    });
   };
 
   const handleUpdateColorInternal = (cardId: string, color: ScheduleColorKey) => {
@@ -1014,6 +1142,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                     <div className="space-y-2">
                       {upcomingContent.map(({ date, scheduled, planned }) => {
                         const isToday = date.toDateString() === today.toDateString();
+                        const isPastDate = date < today;
                         const dayLabel = isToday ? 'Today' : date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 
                         return (
@@ -1021,7 +1150,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                             <div className="flex items-center justify-between mb-2">
                               <span className={cn(
                                 "text-xs font-medium",
-                                isToday ? "text-violet-600" : "text-gray-600"
+                                isToday ? "text-violet-600" : isPastDate ? "text-gray-400" : "text-gray-600"
                               )}>
                                 {dayLabel}
                               </span>
@@ -1033,26 +1162,87 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                               {scheduled.map(card => (
                                 <div
                                   key={card.id}
-                                  className="text-xs px-2 py-1.5 rounded-md truncate"
+                                  data-card-id={card.id}
+                                  className={cn(
+                                    "text-xs px-2 py-1.5 rounded-md truncate group/sidecard",
+                                    isPastDate && "opacity-70"
+                                  )}
                                   style={{
-                                    backgroundColor: defaultScheduledColor.bg,
-                                    color: defaultScheduledColor.text
+                                    backgroundColor: isPastDate ? '#e5e7eb' : defaultScheduledColor.bg,
+                                    color: isPastDate ? '#6b7280' : defaultScheduledColor.text
                                   }}
                                 >
                                   <div className="flex items-center gap-1.5">
-                                    <Check className="w-3 h-3 flex-shrink-0" />
-                                    <span className="truncate">{card.hook || card.title}</span>
+                                    {isPastDate ? (
+                                      <PartyPopper className="w-3 h-3 flex-shrink-0" />
+                                    ) : (
+                                      <Check className="w-3 h-3 flex-shrink-0" />
+                                    )}
+                                    <span className="truncate flex-1">{card.hook || card.title}</span>
+                                    {/* Posted button - only for past dates */}
+                                    {isPastDate && (
+                                      <TooltipProvider>
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <button
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleMarkAsPosted(card.id, e);
+                                              }}
+                                              className="opacity-0 group-hover/sidecard:opacity-100 hover:bg-gray-300/50 rounded p-0.5 transition-opacity flex-shrink-0"
+                                            >
+                                              <Archive className="w-3 h-3" />
+                                            </button>
+                                          </TooltipTrigger>
+                                          <TooltipContent side="top">Mark as posted & archive</TooltipContent>
+                                        </Tooltip>
+                                      </TooltipProvider>
+                                    )}
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              if (onUnschedule) {
+                                                onUnschedule(card.id);
+                                              }
+                                            }}
+                                            className="opacity-0 group-hover/sidecard:opacity-100 hover:bg-white/20 rounded p-0.5 transition-opacity flex-shrink-0"
+                                          >
+                                            <X className="w-3 h-3" />
+                                          </button>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top">Unschedule content</TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
                                   </div>
                                 </div>
                               ))}
                               {planned.map(card => (
                                 <div
                                   key={card.id}
-                                  className="text-xs px-2 py-1.5 rounded-md truncate bg-violet-50/70 border border-dashed border-violet-300 text-violet-700"
+                                  className="text-xs px-2 py-1.5 rounded-md truncate bg-[#F5F2F4] border border-dashed border-[#D4C9CF] text-[#8B7082] group/sideplan"
                                 >
                                   <div className="flex items-center gap-1.5">
-                                    <Lightbulb className="w-3 h-3 flex-shrink-0 text-violet-400" />
-                                    <span className="truncate">{card.hook || card.title}</span>
+                                    <Lightbulb className="w-3 h-3 flex-shrink-0 text-[#8B7082]" />
+                                    <span className="truncate flex-1">{card.hook || card.title}</span>
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleRemovePlannedContent(card.id);
+                                            }}
+                                            className="opacity-0 group-hover/sideplan:opacity-100 hover:bg-[#8B7082]/10 rounded p-0.5 transition-opacity flex-shrink-0"
+                                          >
+                                            <X className="w-3 h-3" />
+                                          </button>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top">Remove from calendar</TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
                                   </div>
                                 </div>
                               ))}
@@ -1412,6 +1602,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                           >
                             <PopoverTrigger asChild>
                               <div
+                                data-card-id={scheduledCard.id}
                                 draggable
                                 onDragStart={(e) => {
                                   e.stopPropagation();
@@ -1429,7 +1620,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                   setPopoverCardId(popoverCardId === scheduledCard.id ? null : scheduledCard.id);
                                 }}
                                 className={cn(
-                                  "text-[11px] px-2 py-1.5 rounded-md cursor-grab active:cursor-grabbing transition-colors",
+                                  "text-[11px] px-2 py-1.5 rounded-md cursor-grab active:cursor-grabbing transition-colors group/schedcard",
                                   isPublished && "bg-gray-100 text-gray-500",
                                   draggedCardId === scheduledCard.id && "opacity-50"
                                 )}
@@ -1448,7 +1639,44 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                       <CalendarDays className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
                                     )
                                   )}
-                                  <span className="leading-tight truncate">{scheduledCard.hook || scheduledCard.title || "Scheduled"}</span>
+                                  <span className="leading-tight truncate flex-1">{scheduledCard.hook || scheduledCard.title || "Scheduled"}</span>
+                                  {/* Posted button - only for past dates */}
+                                  {isPublished && (
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleMarkAsPosted(scheduledCard.id, e);
+                                            }}
+                                            className="opacity-0 group-hover/schedcard:opacity-100 hover:bg-white/30 rounded p-0.5 transition-opacity flex-shrink-0"
+                                          >
+                                            <Archive className="w-3 h-3" />
+                                          </button>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top">Mark as posted & archive</TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                  )}
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (onUnschedule) {
+                                              onUnschedule(scheduledCard.id);
+                                            }
+                                          }}
+                                          className="opacity-0 group-hover/schedcard:opacity-100 hover:bg-white/20 rounded p-0.5 transition-opacity flex-shrink-0"
+                                        >
+                                          <X className="w-3 h-3" />
+                                        </button>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="top">Unschedule content</TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
                                 </div>
                                 {/* Progress indicator - 6 lines, first 5 colored for scheduled */}
                                 <div className="flex gap-0.5 mt-1.5">
@@ -1665,16 +1893,32 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                               setDragOverDate(null);
                             }}
                             className={cn(
-                              "text-[11px] px-2 py-1.5 rounded-md transition-colors cursor-grab active:cursor-grabbing",
-                              "bg-violet-50/70 border border-dashed border-violet-300 text-violet-700",
+                              "text-[11px] px-2 py-1.5 rounded-md transition-colors cursor-grab active:cursor-grabbing group/plancard",
+                              "bg-[#F5F2F4] border border-dashed border-[#D4C9CF] text-[#8B7082]",
                               draggedPlannedCardId === plannedCard.id && "opacity-50"
                             )}
                             title={`Planned: ${plannedCard.title}`}
                           >
                             {/* Title row */}
                             <div className="flex items-start gap-1.5">
-                              <Lightbulb className="w-3 h-3 flex-shrink-0 mt-0.5 text-violet-400" />
-                              <span className="leading-tight opacity-80 truncate">{plannedCard.hook || plannedCard.title || "Planned idea"}</span>
+                              <Lightbulb className="w-3 h-3 flex-shrink-0 mt-0.5 text-[#8B7082]" />
+                              <span className="leading-tight opacity-80 truncate flex-1">{plannedCard.hook || plannedCard.title || "Planned idea"}</span>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleRemovePlannedContent(plannedCard.id);
+                                      }}
+                                      className="opacity-0 group-hover/plancard:opacity-100 hover:bg-[#8B7082]/10 rounded p-0.5 transition-opacity flex-shrink-0"
+                                    >
+                                      <X className="w-3 h-3" />
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top">Remove from calendar</TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                             </div>
                             {/* Progress indicator - 6 lines, first 1 colored for planned */}
                             <div className="flex gap-0.5 mt-1.5">
@@ -1683,7 +1927,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                   key={step}
                                   className={cn(
                                     "h-1 flex-1 rounded-full",
-                                    step <= 1 ? "bg-violet-500" : "bg-violet-200"
+                                    step <= 1 ? "bg-[#8B7082]" : "bg-[#D4C9CF]"
                                   )}
                                 />
                               ))}
@@ -1965,7 +2209,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                     {plannedForDay.filter(c => c.id !== planningCard?.id).slice(0, isPendingDate ? 1 : 2).map((card) => (
                       <div
                         key={card.id}
-                        className="text-[9px] px-1 py-0.5 rounded border border-dashed border-violet-300 bg-violet-50 text-violet-600 truncate"
+                        className="text-[9px] px-1 py-0.5 rounded border border-dashed border-[#D4C9CF] bg-[#F5F2F4] text-[#8B7082] truncate"
                       >
                         {card.hook || card.title}
                       </div>

@@ -9,11 +9,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarDays, ChevronLeft, ChevronRight, Video, Camera, Check, X, Pin, Clock } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { CalendarDays, ChevronLeft, ChevronRight, Video, Camera, Check, X, Pin, Clock, Lightbulb } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
 import { ProductionCard } from "../types";
+import { emit, EVENTS } from "@/lib/events";
 
 // Helper to get platform icon
 const getPlatformIcon = (platform: string, size: string = "w-5 h-5"): React.ReactNode => {
@@ -52,8 +59,10 @@ interface ScheduleDialogProps {
   onOpenChange: (open: boolean) => void;
   card: ProductionCard | null;
   allCards?: ProductionCard[]; // All cards from to-schedule column
+  plannedCards?: ProductionCard[]; // Planned cards from Ideate column
   onSchedule?: (cardId: string, date: Date) => void;
   onUnschedule?: (cardId: string) => void;
+  onRemovePlannedContent?: (cardId: string) => void;
   onNavigateToStep?: (step: number) => void;
 }
 
@@ -62,8 +71,10 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
   onOpenChange,
   card,
   allCards = [],
+  plannedCards = [],
   onSchedule,
   onUnschedule,
+  onRemovePlannedContent,
   onNavigateToStep,
 }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -102,6 +113,21 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
     });
     return map;
   }, [allCards]);
+
+  // Create a map of planned cards by date
+  const plannedCardsByDate = useMemo(() => {
+    const map: Record<string, ProductionCard[]> = {};
+    plannedCards.forEach(c => {
+      if (c.plannedDate) {
+        const dateKey = c.plannedDate.split('T')[0];
+        if (!map[dateKey]) {
+          map[dateKey] = [];
+        }
+        map[dateKey].push(c);
+      }
+    });
+    return map;
+  }, [plannedCards]);
 
   // Determine if we're in "list mode" (showing all cards) or "detail mode" (showing single card)
   const isListMode = !card;
@@ -562,6 +588,8 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
                   const dateStr = day.date.toISOString().split('T')[0];
                   const isDragOver = dragOverDate === dateStr;
                   const scheduledForDay = scheduledCardsByDate[dateStr] || [];
+                  const plannedForDay = plannedCardsByDate[dateStr] || [];
+                  const isPastDate = day.date < today;
 
                   return (
                     <div
@@ -586,9 +614,10 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
                         {day.date.getDate()}
                       </span>
 
-                      {/* Scheduled content indicators - positioned at top below day number */}
-                      {scheduledForDay.length > 0 && (
+                      {/* Content indicators - positioned at top below day number */}
+                      {(scheduledForDay.length > 0 || plannedForDay.length > 0) && (
                         <div className="absolute top-6 left-1 right-1 flex flex-col gap-0.5">
+                          {/* Scheduled content */}
                           {scheduledForDay.slice(0, 2).map((scheduledCard) => (
                             <Popover
                               key={scheduledCard.id}
@@ -614,7 +643,7 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
                                     setPopoverCardId(popoverCardId === scheduledCard.id ? null : scheduledCard.id);
                                   }}
                                   className={cn(
-                                    "text-[9px] px-1 py-0.5 rounded truncate flex items-center gap-1 cursor-grab active:cursor-grabbing hover:brightness-110 transition-colors",
+                                    "text-[9px] px-1 py-0.5 rounded truncate flex items-center gap-1 cursor-grab active:cursor-grabbing hover:brightness-110 transition-colors group/card",
                                     draggedCardId === scheduledCard.id && "opacity-50"
                                   )}
                                   style={{
@@ -624,7 +653,28 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
                                   title={scheduledCard.hook || scheduledCard.title}
                                 >
                                   <Check className="w-2.5 h-2.5 flex-shrink-0" />
-                                  <span className="truncate">{scheduledCard.hook || scheduledCard.title || "Scheduled"}</span>
+                                  <span className="truncate flex-1">{scheduledCard.hook || scheduledCard.title || "Scheduled"}</span>
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (onUnschedule) {
+                                              onUnschedule(scheduledCard.id);
+                                              // Emit events to sync with content calendar
+                                              emit(window, EVENTS.productionKanbanUpdated);
+                                              emit(window, EVENTS.scheduledContentUpdated);
+                                            }
+                                          }}
+                                          className="opacity-0 group-hover/card:opacity-100 hover:bg-white/20 rounded p-0.5 transition-opacity"
+                                        >
+                                          <X className="w-2.5 h-2.5" />
+                                        </button>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="top">Unschedule content</TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
                                 </div>
                               </PopoverTrigger>
                               <PopoverContent
@@ -660,9 +710,105 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
                               </PopoverContent>
                             </Popover>
                           ))}
-                          {scheduledForDay.length > 2 && (
+
+                          {/* Planned content */}
+                          {plannedForDay.slice(0, scheduledForDay.length >= 2 ? 0 : 2 - scheduledForDay.length).map((plannedCard) => (
+                            <Popover
+                              key={plannedCard.id}
+                              open={popoverCardId === plannedCard.id}
+                              onOpenChange={(open) => setPopoverCardId(open ? plannedCard.id : null)}
+                            >
+                              <PopoverTrigger asChild>
+                                <div
+                                  draggable
+                                  onDragStart={(e) => {
+                                    e.stopPropagation();
+                                    setDraggedCardId(plannedCard.id);
+                                    setPopoverCardId(null);
+                                    e.dataTransfer.effectAllowed = 'move';
+                                  }}
+                                  onDragEnd={() => {
+                                    setDraggedCardId(null);
+                                    setDragOverDate(null);
+                                    setDragOverUnschedule(false);
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setPopoverCardId(popoverCardId === plannedCard.id ? null : plannedCard.id);
+                                  }}
+                                  className={cn(
+                                    "text-[9px] px-1 py-0.5 rounded truncate flex items-center gap-1 cursor-grab active:cursor-grabbing hover:brightness-95 transition-colors group/card border border-dashed",
+                                    draggedCardId === plannedCard.id && "opacity-50"
+                                  )}
+                                  style={{
+                                    backgroundColor: '#F5F2F4',
+                                    borderColor: '#D4C9CF',
+                                    color: '#8B7082'
+                                  }}
+                                  title={plannedCard.hook || plannedCard.title}
+                                >
+                                  <Lightbulb className="w-2.5 h-2.5 flex-shrink-0" />
+                                  <span className="truncate flex-1">{plannedCard.hook || plannedCard.title || "Planned"}</span>
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (onRemovePlannedContent) {
+                                              onRemovePlannedContent(plannedCard.id);
+                                              // Emit events to sync with content calendar
+                                              emit(window, EVENTS.productionKanbanUpdated);
+                                              emit(window, EVENTS.scheduledContentUpdated);
+                                            }
+                                          }}
+                                          className="opacity-0 group-hover/card:opacity-100 hover:bg-[#8B7082]/10 rounded p-0.5 transition-opacity"
+                                        >
+                                          <X className="w-2.5 h-2.5" />
+                                        </button>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="top">Remove from calendar</TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                </div>
+                              </PopoverTrigger>
+                              <PopoverContent
+                                className="w-80 p-0 shadow-xl border-0"
+                                side="right"
+                                align="start"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <div className="bg-white rounded-lg">
+                                  {/* Popover Header */}
+                                  <div className="flex items-center justify-between px-4 py-3 bg-[#F5F2F4] border-b border-[#D4C9CF]">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-6 h-6 rounded-md bg-[#EDE8F2] flex items-center justify-center">
+                                        <Lightbulb className="w-3.5 h-3.5 text-[#8B7082]" />
+                                      </div>
+                                      <span className="text-sm font-semibold text-[#8B7082]">Planned Content</span>
+                                    </div>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setPopoverCardId(null);
+                                      }}
+                                      className="p-1 hover:bg-[#EDE8F2] rounded transition-colors"
+                                    >
+                                      <X className="w-4 h-4 text-[#8B7082]" />
+                                    </button>
+                                  </div>
+                                  {/* Popover Body */}
+                                  <div className="p-4">
+                                    {renderContentDetails(plannedCard)}
+                                  </div>
+                                </div>
+                              </PopoverContent>
+                            </Popover>
+                          ))}
+
+                          {(scheduledForDay.length + plannedForDay.length) > 2 && (
                             <div className="text-[9px] text-purple-500 px-1">
-                              +{scheduledForDay.length - 2} more
+                              +{scheduledForDay.length + plannedForDay.length - 2} more
                             </div>
                           )}
                         </div>

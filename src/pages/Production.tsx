@@ -45,6 +45,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "framer-motion";
 import TitleHookSuggestions from "@/components/content/TitleHookSuggestions";
 import ScriptEditorDialog from "./production/components/ScriptEditorDialog";
+import ContentFlowProgress from "./production/components/ContentFlowProgress";
 import BrainDumpGuidanceDialog from "./production/components/BrainDumpGuidanceDialog";
 import { KanbanColumn, ProductionCard, StoryboardScene, EditingChecklist, SchedulingStatus } from "./production/types";
 import StoryboardEditorDialog from "./production/components/StoryboardEditorDialog";
@@ -150,7 +151,7 @@ const Production = () => {
   const [ideateCardTitle, setIdeateCardTitle] = useState("");
   const [ideateCardNotes, setIdeateCardNotes] = useState("");
   const [selectedIdeateCard, setSelectedIdeateCard] = useState<ProductionCard | null>(null);
-  const [ideateMode, setIdeateMode] = useState<'brainstorm' | 'guidance' | 'bankofideas' | 'pillarsformats' | null>(null);
+  const [ideateMode, setIdeateMode] = useState<'brainstorm' | 'guidance' | 'pillarsformats' | null>(null);
   const [brainstormText, setBrainstormText] = useState("");
   const [showHooksDialog, setShowHooksDialog] = useState(false);
   const [isIdeaExpanderOpen, setIsIdeaExpanderOpen] = useState(false);
@@ -1246,7 +1247,11 @@ const Production = () => {
     );
 
     toast.success(`Scheduled for ${formattedDate} at ${formattedTime}`, {
-      description: "Content has been added to your calendar"
+      description: "Content has been added to your calendar",
+      action: {
+        label: "View in Calendar",
+        onClick: () => navigate("/planner?view=calendar&mode=content")
+      }
     });
   };
 
@@ -2637,8 +2642,7 @@ const Production = () => {
         }}>
           <DialogContent className={cn(
             "h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden border-0 shadow-2xl flex flex-col",
-            ideateMode === 'pillarsformats' ? "sm:max-w-[1400px]" : "sm:max-w-[900px]",
-            ideateMode === 'bankofideas' && "bg-gradient-to-br from-yellow-50 via-white to-amber-50"
+            ideateMode === 'pillarsformats' ? "sm:max-w-[1400px]" : "sm:max-w-[900px]"
           )}>
             <DialogHeader className="flex-shrink-0 pt-6">
               {!ideateMode && (
@@ -2647,29 +2651,6 @@ const Production = () => {
                 </DialogTitle>
               )}
 
-              {/* Breadcrumbs for Bank of Ideas */}
-              {ideateMode === 'bankofideas' && (
-                <div className="flex items-center gap-3 text-base mb-2 px-2">
-                  <button
-                    onClick={() => {
-                      setIsIdeateDialogOpen(false);
-                      setIdeateMode(null);
-                    }}
-                    className="text-gray-500 hover:text-amber-600 transition-colors font-medium"
-                  >
-                    Production
-                  </button>
-                  <span className="text-gray-400">/</span>
-                  <button
-                    onClick={() => setIdeateMode(null)}
-                    className="text-gray-500 hover:text-amber-600 transition-colors font-medium"
-                  >
-                    Content Ideation
-                  </button>
-                  <span className="text-gray-400">/</span>
-                  <span className="text-gray-900 font-semibold">Bank of Ideas</span>
-                </div>
-              )}
 
               {/* Breadcrumbs for Brainstorm */}
               {ideateMode === 'brainstorm' && (
@@ -2696,6 +2677,13 @@ const Production = () => {
               )}
             </DialogHeader>
 
+            {/* Progress Indicator */}
+            {!ideateMode && (
+              <div className="flex-shrink-0 bg-gray-50/50 border-b border-gray-100">
+                <ContentFlowProgress currentStep={1} />
+              </div>
+            )}
+
             <div className="overflow-y-auto flex-1 pr-2 py-4">
               {/* Method Selection - Always show unless in a specific mode */}
               {!ideateMode && (
@@ -2707,11 +2695,11 @@ const Production = () => {
 
                   <p className="text-sm text-gray-600">Select a method to guide your content ideation process.</p>
 
-                  <div className="grid grid-cols-6 gap-4 mt-6">
-                    {/* 1. Start With Your Pillars - Emerald/Green - Spans 3 cols */}
+                  <div className="grid grid-cols-2 gap-4 mt-6">
+                    {/* 1. Start With Your Pillars - Emerald/Green */}
                     <button
                       onClick={() => setIsPillarsDialogOpen(true)}
-                      className="col-span-3 group relative overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 border-2 border-emerald-200 hover:border-emerald-400 rounded-xl p-6 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_2px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.04),0_8px_16px_rgba(0,0,0,0.04),0_16px_24px_rgba(0,0,0,0.02)]"
+                      className="group relative overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 border-2 border-emerald-200 hover:border-emerald-400 rounded-xl p-6 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_2px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.04),0_8px_16px_rgba(0,0,0,0.04),0_16px_24px_rgba(0,0,0,0.02)]"
                     >
                       <div className="flex flex-col items-center text-center space-y-3">
                         <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white text-xl shadow-md">
@@ -2722,10 +2710,10 @@ const Production = () => {
                       </div>
                     </button>
 
-                    {/* 2. Trending Hooks - Rose/Pink - Spans 3 cols */}
+                    {/* 2. Trending Hooks - Rose/Pink */}
                     <button
                       onClick={() => setShowHooksDialog(true)}
-                      className="col-span-3 group relative overflow-hidden bg-gradient-to-br from-rose-50 to-pink-50 hover:from-rose-100 hover:to-pink-100 border-2 border-rose-200 hover:border-rose-400 rounded-xl p-6 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_2px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.04),0_8px_16px_rgba(0,0,0,0.04),0_16px_24px_rgba(0,0,0,0.02)]"
+                      className="group relative overflow-hidden bg-gradient-to-br from-rose-50 to-pink-50 hover:from-rose-100 hover:to-pink-100 border-2 border-rose-200 hover:border-rose-400 rounded-xl p-6 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_2px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.04),0_8px_16px_rgba(0,0,0,0.04),0_16px_24px_rgba(0,0,0,0.02)]"
                     >
                       <div className="flex flex-col items-center text-center space-y-3">
                         <div className="w-12 h-12 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white text-xl shadow-md">
@@ -2736,28 +2724,24 @@ const Production = () => {
                       </div>
                     </button>
 
-                    {/* 3. What Worked, What's Next - Sky/Cyan Blue - Spans 2 cols */}
+                    {/* 3. What Worked, What's Next - Sky/Cyan Blue */}
                     <button
                       onClick={() => setIsWhatWorkedDialogOpen(true)}
-                      className="col-span-2 group relative overflow-hidden bg-gradient-to-br from-sky-50 to-cyan-50 hover:from-sky-100 hover:to-cyan-100 border-2 border-sky-200 hover:border-sky-400 rounded-xl p-6 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_2px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.04),0_8px_16px_rgba(0,0,0,0.04),0_16px_24px_rgba(0,0,0,0.02)]"
+                      className="group relative overflow-hidden bg-gradient-to-br from-sky-50 to-cyan-50 hover:from-sky-100 hover:to-cyan-100 border-2 border-sky-200 hover:border-sky-400 rounded-xl p-6 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_2px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.04),0_8px_16px_rgba(0,0,0,0.04),0_16px_24px_rgba(0,0,0,0.02)]"
                     >
                       <div className="flex flex-col items-center text-center space-y-3">
                         <div className="w-12 h-12 bg-gradient-to-br from-sky-500 to-cyan-600 rounded-full flex items-center justify-center text-white text-xl shadow-md">
                           ⭐
                         </div>
-                        <h4 className="text-base font-bold text-gray-800">
-                          What Worked,
-                          <br />
-                          What's Next
-                        </h4>
+                        <h4 className="text-base font-bold text-gray-800">What Worked, What's Next</h4>
                         <p className="text-xs text-gray-600">Build on your past successes or competitor insights</p>
                       </div>
                     </button>
 
-                    {/* 4. Idea Expander - Orange - Spans 2 cols */}
+                    {/* 4. Idea Expander - Orange */}
                     <button
                       onClick={() => setIsIdeaExpanderOpen(true)}
-                      className="col-span-2 group relative overflow-hidden bg-gradient-to-br from-orange-50 to-red-50 hover:from-orange-100 hover:to-red-100 border-2 border-orange-200 hover:border-orange-400 rounded-xl p-6 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_2px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.04),0_8px_16px_rgba(0,0,0,0.04),0_16px_24px_rgba(0,0,0,0.02)]"
+                      className="group relative overflow-hidden bg-gradient-to-br from-orange-50 to-red-50 hover:from-orange-100 hover:to-red-100 border-2 border-orange-200 hover:border-orange-400 rounded-xl p-6 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_2px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.04),0_8px_16px_rgba(0,0,0,0.04),0_16px_24px_rgba(0,0,0,0.02)]"
                     >
                       <div className="flex flex-col items-center text-center space-y-3">
                         <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center text-white text-xl shadow-md">
@@ -2765,20 +2749,6 @@ const Production = () => {
                         </div>
                         <h4 className="text-base font-bold text-gray-800">Idea Expander</h4>
                         <p className="text-xs text-gray-600">Take one idea and explore multiple angles</p>
-                      </div>
-                    </button>
-
-                    {/* 5. Bank of Ideas - Yellow/Amber - Spans 2 cols */}
-                    <button
-                      onClick={() => setIdeateMode('bankofideas')}
-                      className="col-span-2 group relative overflow-hidden bg-gradient-to-br from-yellow-50 to-amber-50 hover:from-yellow-100 hover:to-amber-100 border-2 border-yellow-200 hover:border-yellow-400 rounded-xl p-6 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_2px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.04),0_8px_16px_rgba(0,0,0,0.04),0_16px_24px_rgba(0,0,0,0.02)]"
-                    >
-                      <div className="flex flex-col items-center text-center space-y-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full flex items-center justify-center text-white text-xl shadow-md">
-                          🏦
-                        </div>
-                        <h4 className="text-base font-bold text-gray-800">Bank of Ideas</h4>
-                        <p className="text-xs text-gray-600">Store ideas as they come, pick them later</p>
                       </div>
                     </button>
                   </div>
@@ -2802,111 +2772,6 @@ const Production = () => {
                 </div>
               )}
 
-              {/* Bank of Ideas Mode */}
-              {ideateMode === 'bankofideas' && (
-                <div className="h-full flex flex-col px-2">
-                  <div className="mb-8">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Bank of Ideas</h3>
-                    <p className="text-sm text-gray-600">Store ideas as they come, pick them later</p>
-                  </div>
-
-                  {/* Add New Idea Form */}
-                  <form onSubmit={handleAddBankIdea} className="flex-shrink-0 mb-4">
-                    <div className="flex gap-2">
-                      <Input
-                        type="text"
-                        value={newBankIdeaText}
-                        onChange={(e) => setNewBankIdeaText(e.target.value)}
-                        placeholder="Add a new idea..."
-                        className="flex-1 h-9 text-sm border-2 focus:ring-2 focus:ring-yellow-500 rounded-lg px-3"
-                      />
-                      <Button
-                        type="submit"
-                        disabled={!newBankIdeaText.trim()}
-                        className="h-9 px-4 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-white text-sm rounded-lg"
-                      >
-                        Add
-                      </Button>
-                    </div>
-                  </form>
-
-                  {/* Ideas List */}
-                  <div className="flex-1 overflow-y-auto space-y-1.5 mt-8 mb-4">
-                    <AnimatePresence initial={false}>
-                      {bankIdeas.length === 0 ? (
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="text-center py-12 text-gray-400"
-                        >
-                          <p className="text-sm">No ideas yet</p>
-                        </motion.div>
-                      ) : (
-                        bankIdeas.map((idea) => (
-                          <motion.div
-                            key={idea.id}
-                            layout
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{
-                              opacity: 1,
-                              y: 0,
-                              scale: addedBankIdeaId === idea.id ? 1.02 : 1
-                            }}
-                            exit={{
-                              opacity: 0,
-                              x: 400,
-                              scale: 0.8,
-                              rotate: 5,
-                              transition: { duration: 0.6, ease: "easeOut" }
-                            }}
-                            transition={{
-                              duration: 0.3,
-                              layout: { duration: 0.4, ease: "easeInOut" }
-                            }}
-                            className={cn(
-                              "group px-3 py-2.5 rounded-lg border",
-                              addedBankIdeaId === idea.id
-                                ? "bg-yellow-100 border-yellow-500 shadow-lg"
-                                : idea.isPlaceholder
-                                  ? "bg-gray-50/50 border-gray-100 italic"
-                                  : "bg-white border-gray-200 hover:border-yellow-300 hover:shadow-sm"
-                            )}
-                          >
-                            <div className="flex items-center gap-2.5">
-                              <p className={cn(
-                                "flex-1 text-sm leading-snug",
-                                idea.isPlaceholder ? "text-gray-400" : "text-gray-700"
-                              )}>
-                                {idea.text}
-                              </p>
-                              {!idea.isPlaceholder && (
-                                <>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleMoveBankIdeaToProduction(idea.id, idea.text)}
-                                    className="opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-white text-xs px-3 py-1 h-auto"
-                                  >
-                                    Add to content cards
-                                  </Button>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDeleteBankIdea(idea.id);
-                                    }}
-                                    className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 p-1 hover:bg-gray-100 rounded"
-                                  >
-                                    <Trash2 className="h-3.5 w-3.5 text-gray-400 hover:text-gray-600" />
-                                  </button>
-                                </>
-                              )}
-                            </div>
-                          </motion.div>
-                        ))
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </div>
-              )}
 
             </div>
           </DialogContent>
