@@ -1,22 +1,20 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-import { Trash2, Video, Lightbulb, X, Clock, FileText, ArrowRight, ListTodo, CalendarCheck, Plus, X as XIcon } from "lucide-react";
+import { Trash2, Video, Lightbulb, X, Clock, FileText, ArrowRight, ListTodo, CalendarCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { PlannerItem } from "@/types/planner";
 import { CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { TIMEZONES, getDateString } from "../utils/plannerUtils";
+import { getDateString } from "../utils/plannerUtils";
 import { parseTimeTo24 } from "../utils/timeUtils";
-import { scheduleColors, contentColorGroups } from "../utils/colorConstants";
+import { scheduleColors, defaultScheduledColor, getTaskColorByHex, defaultTaskColor } from "../utils/colorConstants";
+import { TaskColorPicker } from "./TaskColorPicker";
 import { PlannerDerived, PlannerHelpers, PlannerRefs, PlannerSetters, PlannerState } from "../hooks/usePlannerState";
 import { usePlannerActions } from "../hooks/usePlannerActions";
 import { useColorPalette } from "../hooks/useColorPalette";
-import { ContentColorPicker } from "./ContentColorPicker";
 import { ProductionCard, KanbanColumn } from "@/pages/production/types";
 import { StorageKeys, getString, setString } from "@/lib/storage";
 import { EVENTS, emit } from "@/lib/events";
@@ -63,9 +61,6 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
     productionContent,
   } = state;
 
-  // State for color picker popover (task color)
-  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
-
   // Dialog state from external prop or local
   const addDialogOpen = todayAddDialogState?.open ?? false;
   const addDialogStartTime = todayAddDialogState?.startTime ?? "";
@@ -80,6 +75,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
   const [taskEndTime, setTaskEndTime] = useState(addDialogEndTime);
   const [taskDescription, setTaskDescription] = useState("");
   const [taskColor, setTaskColor] = useState("");
+  const [taskIncludeInContentCalendar, setTaskIncludeInContentCalendar] = useState(false);
 
   // Content form state
   const [contentHook, setContentHook] = useState("");
@@ -117,6 +113,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
     setTaskEndTime("");
     setTaskDescription("");
     setTaskColor("");
+    setTaskIncludeInContentCalendar(false);
     setContentHook("");
     setContentNotes("");
     setContentColor("");
@@ -235,6 +232,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
             plannedStartTime: parseTimeTo24(contentStartTime) || undefined,
             plannedEndTime: parseTimeTo24(contentEndTime) || undefined,
             isNew: true,
+            addedFrom: 'calendar',
           };
           ideateColumn.cards.push(newCard);
           setString(StorageKeys.productionKanban, JSON.stringify(columns));
@@ -353,13 +351,13 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
       </div>
       <div className="flex flex-wrap gap-2">
         {untimedScheduled.map((content) => {
-          const colorKey = content.scheduledColor || 'indigo';
-          const colors = scheduleColors[colorKey] || scheduleColors.indigo;
+          // Use default mauve color for all scheduled content
+          const colors = defaultScheduledColor;
           return (
             <div
               key={content.id}
               onClick={() => onOpenContentDialog?.(content, 'scheduled')}
-              className="group text-xs rounded-lg cursor-pointer hover:brightness-95 flex flex-col overflow-hidden"
+              className="group text-xs rounded-lg cursor-pointer hover:brightness-95 flex flex-col overflow-hidden border-0"
               style={{ backgroundColor: colors.bg, color: colors.text }}
             >
               <div className="flex items-center gap-1.5 px-3 py-1.5">
@@ -375,19 +373,6 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                   <X className="w-3.5 h-3.5" />
                 </button>
               </div>
-              {/* Progress indicator - 6 steps, first 5 colored for scheduled */}
-              <div className="flex gap-0.5 px-2 pb-1.5">
-                {[1, 2, 3, 4, 5, 6].map((step) => (
-                  <div
-                    key={step}
-                    className={`h-[2px] flex-1 rounded-full ${
-                      step <= 5
-                        ? 'bg-current opacity-80'
-                        : 'bg-current opacity-25'
-                    }`}
-                  />
-                ))}
-              </div>
             </div>
           );
         })}
@@ -395,7 +380,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
           <div
             key={content.id}
             onClick={() => onOpenContentDialog?.(content, 'planned')}
-            className="group text-xs rounded-lg bg-violet-50 border border-dashed border-violet-300 text-violet-700 cursor-pointer hover:bg-violet-100 flex flex-col overflow-hidden"
+            className="group text-xs rounded-lg bg-[#F5F2F4] border border-dashed border-[#D4C9CF] text-[#8B7082] cursor-pointer hover:brightness-95 flex flex-col overflow-hidden"
           >
             <div className="flex items-center gap-1.5 px-3 py-1.5">
               <Lightbulb className="w-3 h-3" />
@@ -409,19 +394,6 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
               >
                 <X className="w-3.5 h-3.5" />
               </button>
-            </div>
-            {/* Progress indicator - 6 steps, first 1 colored for planned */}
-            <div className="flex gap-0.5 px-2 pb-1.5">
-              {[1, 2, 3, 4, 5, 6].map((step) => (
-                <div
-                  key={step}
-                  className={`h-[2px] flex-1 rounded-full ${
-                    step <= 1
-                      ? 'bg-violet-500 opacity-80'
-                      : 'bg-violet-300 opacity-40'
-                  }`}
-                />
-              ))}
             </div>
           </div>
         ))}
@@ -443,44 +415,56 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
           <span className="text-xs text-gray-400">({untimedTasks.length})</span>
         </div>
         <div className="flex flex-wrap gap-2">
-          {untimedTasks.map((task) => (
-            <div
-              key={task.id}
-              draggable
-              onDragStart={(e) => {
-                e.dataTransfer.setData('taskId', task.id);
-                e.dataTransfer.setData('fromDate', task.date || dateString);
-                e.dataTransfer.setData('fromAllTasks', 'false');
-                e.dataTransfer.effectAllowed = 'move';
-                e.currentTarget.style.opacity = '0.5';
-              }}
-              onDragEnd={(e) => {
-                e.currentTarget.style.opacity = '1';
-              }}
-              onClick={() => handleOpenTaskDialog(9, task)}
-              className="group flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer hover:shadow-sm transition-all"
-              style={{ backgroundColor: task.color || '#f3f4f6' }}
-            >
-              <Checkbox
-                checked={task.isCompleted}
-                onCheckedChange={() => handleToggleItem(task.id)}
-                onClick={(e) => e.stopPropagation()}
-                className="h-3.5 w-3.5"
-              />
-              <span className={`text-xs font-medium ${task.isCompleted ? 'line-through text-gray-400' : 'text-gray-700'}`}>
-                {task.text}
-              </span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteItem(task.id);
+          {untimedTasks.map((task) => {
+            // Use preview color if this task is being edited
+            const isBeingEdited = state.editingTask?.id === task.id;
+            const colorToUse = isBeingEdited && state.dialogTaskColor ? state.dialogTaskColor : task.color;
+            const taskColorInfo = getTaskColorByHex(colorToUse);
+            return (
+              <div
+                key={task.id}
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('taskId', task.id);
+                  e.dataTransfer.setData('fromDate', task.date || dateString);
+                  e.dataTransfer.setData('fromAllTasks', 'false');
+                  e.dataTransfer.effectAllowed = 'move';
+                  e.currentTarget.style.opacity = '0.5';
                 }}
-                className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity"
+                onDragEnd={(e) => {
+                  e.currentTarget.style.opacity = '1';
+                }}
+                onClick={() => handleOpenTaskDialog(9, task)}
+                className="group flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer hover:shadow-sm transition-all border-l-4"
+                style={{
+                  backgroundColor: taskColorInfo.fill,
+                  borderLeftColor: taskColorInfo.border,
+                }}
               >
-                <Trash2 className="w-3 h-3" />
-              </button>
-            </div>
-          ))}
+                <Checkbox
+                  checked={task.isCompleted}
+                  onCheckedChange={() => handleToggleItem(task.id)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="h-3.5 w-3.5"
+                />
+                <span
+                  className={`text-xs font-medium ${task.isCompleted ? 'line-through opacity-50' : ''}`}
+                  style={{ color: task.isCompleted ? undefined : taskColorInfo.text }}
+                >
+                  {task.text}
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteItem(task.id);
+                  }}
+                  className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </div>
+            );
+          })}
         </div>
       </div>
     );
@@ -828,6 +812,11 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
               const height = Math.max(durationMinutes * 1.5 * todayZoomLevel, 28) - 1;
               const [startHour, startMinute] = task.startTime!.split(':').map(Number);
 
+              // Get task color info - use preview color if this task is being edited
+              const isBeingEdited = state.editingTask?.id === task.id;
+              const colorToUse = isBeingEdited && state.dialogTaskColor ? state.dialogTaskColor : task.color;
+              const taskColorInfo = getTaskColorByHex(colorToUse);
+
               // Calculate width and position for overlapping tasks
               let widthPercent, leftPercent, zIndex;
 
@@ -882,8 +871,8 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                     height: `${height}px`,
                     left: `${leftPercent}%`,
                     width: `calc(${widthPercent}% - 4px)`,
-                    backgroundColor: task.color || '#f9fafb',
-                    borderLeftColor: task.color || '#d1d5db',
+                    backgroundColor: taskColorInfo.fill,
+                    borderLeftColor: taskColorInfo.border,
                     zIndex: zIndex,
                   }}
                 >
@@ -996,11 +985,14 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                       {height >= 45 ? (
                         // Show time below title when there's enough space
                         <>
-                          <div className={`text-xs font-medium truncate ${task.isCompleted ? 'line-through text-gray-400' : 'text-gray-700'}`}>
+                          <div
+                            className={`text-xs font-medium truncate ${task.isCompleted ? 'line-through opacity-50' : ''}`}
+                            style={{ color: task.isCompleted ? undefined : taskColorInfo.text }}
+                          >
                             {task.text}
                           </div>
                           {(task.startTime || task.endTime) && (
-                            <div className="text-[10px] text-gray-500 mt-0.5">
+                            <div className="text-[10px] mt-0.5 opacity-70" style={{ color: taskColorInfo.text }}>
                               {task.startTime && convert24To12Hour(task.startTime)}
                               {task.startTime && task.endTime && ' - '}
                               {task.endTime && convert24To12Hour(task.endTime)}
@@ -1009,10 +1001,13 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                         </>
                       ) : (
                         // Show time inline with title when space is limited
-                        <div className={`text-xs font-medium truncate ${task.isCompleted ? 'line-through text-gray-400' : 'text-gray-700'}`}>
+                        <div
+                          className={`text-xs font-medium truncate ${task.isCompleted ? 'line-through opacity-50' : ''}`}
+                          style={{ color: task.isCompleted ? undefined : taskColorInfo.text }}
+                        >
                           {task.text}
                           {(task.startTime || task.endTime) && (
-                            <span className="text-[10px] text-gray-500 ml-1.5 font-normal">
+                            <span className="text-[10px] ml-1.5 font-normal opacity-70" style={{ color: taskColorInfo.text }}>
                               {task.startTime && convert24To12Hour(task.startTime)}
                               {task.startTime && task.endTime && ' - '}
                               {task.endTime && convert24To12Hour(task.endTime)}
@@ -1052,8 +1047,10 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
               const height = Math.max(durationMinutes * 1.5 * todayZoomLevel, 28) - 1;
 
               const isPlanned = !content.scheduledDate;
-              const colorKey = isPlanned ? (content.plannedColor || 'violet') : (content.scheduledColor || 'indigo');
-              const colors = scheduleColors[colorKey] || scheduleColors.violet;
+              // Use default mauve color for scheduled content, violet for planned
+              const colors = isPlanned
+                ? (scheduleColors[content.plannedColor || 'violet'] || scheduleColors.violet)
+                : defaultScheduledColor;
 
               return (
                 <div
@@ -1063,23 +1060,23 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                   style={{
                     top: `${top}px`,
                     height: `${height}px`,
-                    backgroundColor: isPlanned ? '#ede9fe' : colors.bg,
-                    borderLeft: isPlanned ? '3px dashed #8b5cf6' : `3px solid ${colors.text}`,
+                    backgroundColor: isPlanned ? '#F5F2F4' : colors.bg,
+                    border: isPlanned ? '1px dashed #D4C9CF' : 'none',
                     zIndex: 5,
                   }}
                 >
                   <div className="p-2 h-full flex flex-col">
                     <div className="flex items-start gap-1.5">
                       {isPlanned ? (
-                        <Lightbulb className="w-3.5 h-3.5 text-violet-600 flex-shrink-0 mt-0.5" />
+                        <Lightbulb className="w-3.5 h-3.5 text-[#8B7082] flex-shrink-0 mt-0.5" />
                       ) : (
                         <CalendarCheck className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: colors.text }} />
                       )}
                       <div className="flex-1 min-w-0">
-                        <div className="text-xs font-medium truncate" style={{ color: isPlanned ? '#6d28d9' : colors.text }}>
+                        <div className="text-xs font-medium truncate" style={{ color: isPlanned ? '#8B7082' : colors.text }}>
                           {content.hook || content.title}
                         </div>
-                        <div className="text-[10px] opacity-70" style={{ color: isPlanned ? '#6d28d9' : colors.text }}>
+                        <div className="text-[10px] opacity-70" style={{ color: isPlanned ? '#8B7082' : colors.text }}>
                           {convert24To12Hour(content.plannedStartTime!)} - {convert24To12Hour(content.plannedEndTime!)}
                         </div>
                       </div>
@@ -1255,70 +1252,10 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                 </div>
 
                 {/* Color Picker */}
-                <div className="flex items-center gap-3">
-                  <Popover open={isColorPickerOpen} onOpenChange={setIsColorPickerOpen}>
-                    <PopoverTrigger asChild>
-                      <button
-                        type="button"
-                        className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all"
-                      >
-                        {taskColor ? (
-                          <div
-                            className="w-5 h-5 rounded-full border border-gray-200"
-                            style={{ backgroundColor: taskColor }}
-                          />
-                        ) : (
-                          <div className="w-5 h-5 rounded-full overflow-hidden border border-gray-200" style={{
-                            background: 'conic-gradient(from 0deg, #f9a8d4, #d8b4fe, #93c5fd, #86efac, #fde047, #d4a574, #f9a8d4)'
-                          }} />
-                        )}
-                        <span className="text-sm text-gray-600">
-                          {taskColor ? 'Change color' : 'Add color'}
-                        </span>
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-3 z-[300] bg-white shadow-lg border" align="start">
-                      <div className="space-y-3">
-                        {/* No color option */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setTaskColor('');
-                            setIsColorPickerOpen(false);
-                          }}
-                          className={cn(
-                            "flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-sm text-gray-600 hover:bg-gray-100 transition-colors",
-                            !taskColor && "bg-gray-100"
-                          )}
-                        >
-                          <div className="w-5 h-5 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center">
-                            <X className="w-3 h-3 text-gray-400" />
-                          </div>
-                          No color
-                        </button>
-
-                        {/* Color grid */}
-                        <div className="grid grid-cols-4 gap-1.5">
-                          {Object.values(contentColorGroups).flat().map((color) => (
-                            <button
-                              key={color.name}
-                              type="button"
-                              onClick={() => {
-                                setTaskColor(color.hex);
-                                setIsColorPickerOpen(false);
-                              }}
-                              className={cn(
-                                "w-7 h-7 rounded-md transition-all hover:scale-110",
-                                taskColor === color.hex && "ring-2 ring-offset-1 ring-gray-400"
-                              )}
-                              style={{ backgroundColor: color.hex }}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
+                <TaskColorPicker
+                  selectedColor={taskColor}
+                  onColorSelect={setTaskColor}
+                />
 
                 {/* Actions */}
                 <div className="flex justify-end gap-3 pt-4">
@@ -1389,8 +1326,6 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                   />
                 </div>
 
-                {/* Content Color Picker */}
-                <ContentColorPicker palette={contentColorPalette} />
 
                 {/* Content Hub CTA */}
                 <button

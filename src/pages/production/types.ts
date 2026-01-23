@@ -32,6 +32,8 @@ export interface EditingChecklist {
   status: EditingStatus | null;
 }
 
+export type CardAddedFrom = 'calendar' | 'quick-idea' | 'ai-generated' | 'bank-of-ideas' | 'repurposed' | 'idea-expander';
+
 export interface ProductionCard {
   id: string;
   title: string;
@@ -39,6 +41,7 @@ export interface ProductionCard {
   columnId: string;
   isCompleted?: boolean;
   isNew?: boolean;
+  addedFrom?: CardAddedFrom;
   platforms?: string[];
   formats?: string[];
   script?: string;

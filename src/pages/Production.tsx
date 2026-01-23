@@ -477,15 +477,15 @@ const Production = () => {
       );
 
       if (hasNewCards) {
-        // Wait 3 seconds after closing dialog to let user observe the new cards
+        // Wait 5 seconds after closing dialog to let user observe the new cards
         const timer = setTimeout(() => {
           setColumns(prev =>
             prev.map(col => ({
               ...col,
-              cards: col.cards.map(card => ({ ...card, isNew: false })),
+              cards: col.cards.map(card => ({ ...card, isNew: false, addedFrom: undefined })),
             }))
           );
-        }, 3000);
+        }, 5000);
 
         return () => clearTimeout(timer);
       }
@@ -1608,6 +1608,7 @@ const Production = () => {
       columnId: 'ideate',
       isCompleted: false,
       isNew: true,
+      addedFrom: 'bank-of-ideas',
     };
 
     setColumns((prev) =>
@@ -1630,6 +1631,7 @@ const Production = () => {
       columnId: 'ideate',
       isCompleted: false,
       isNew: true,
+      addedFrom: 'bank-of-ideas',
     };
 
     setColumns((prev) =>
@@ -1697,6 +1699,7 @@ const Production = () => {
       columnId: 'ideate',
       isCompleted: false,
       isNew: true,
+      addedFrom: 'idea-expander',
     };
 
     setColumns((prev) =>
@@ -1777,6 +1780,7 @@ const Production = () => {
       columnId: 'ideate',
       isCompleted: false,
       isNew: true,
+      addedFrom: 'bank-of-ideas',
     };
 
     setColumns((prev) =>
@@ -2028,14 +2032,9 @@ const Production = () => {
                                 card.isCompleted && "opacity-60",
                                 recentlyRepurposedCardId === card.id && "ring-2 ring-emerald-500 ring-offset-2",
                                 highlightedUnscheduledCardId === card.id && "ring-2 ring-indigo-500 ring-offset-2",
-                                card.isNew && "ring-2 ring-purple-500 ring-offset-2"
+                                card.isNew && "ring-1 ring-[#8B7082]"
                               )}
                             >
-                            {card.isNew && (
-                              <div className="absolute -top-1 -right-1 bg-purple-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
-                                JUST ADDED
-                              </div>
-                            )}
                             {highlightedUnscheduledCardId === card.id && (
                               <div className="absolute -top-1 -right-1 bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
                                 UNSCHEDULED
@@ -2397,6 +2396,19 @@ const Production = () => {
                                 </div>
                               );
                             })()}
+                            {/* Just added message at bottom */}
+                            {card.isNew && (
+                              <div className="flex items-center gap-1 mt-2 pt-2 border-t border-[#E8E2E5]">
+                                <span className="text-[11px] text-[#8B7082] font-medium">
+                                  ✦ Just added{card.addedFrom === 'calendar' ? ' from Content Calendar' :
+                                    card.addedFrom === 'quick-idea' ? ' via quick idea' :
+                                    card.addedFrom === 'ai-generated' ? ' via AI' :
+                                    card.addedFrom === 'bank-of-ideas' ? ' from Bank of Ideas' :
+                                    card.addedFrom === 'idea-expander' ? ' via Idea Expander' :
+                                    card.addedFrom === 'repurposed' ? ' (repurposed)' : ''}
+                                </span>
+                              </div>
+                            )}
                           </motion.div>
                           </React.Fragment>
                         );
@@ -3100,6 +3112,7 @@ const Production = () => {
                                   columnId: 'ideate',
                                   isCompleted: false,
                                   isNew: true,
+                                  addedFrom: 'ai-generated',
                                 };
                                 setColumns((prev) =>
                                   prev.map((col) =>
@@ -3677,6 +3690,7 @@ const Production = () => {
                                   columnId: 'ideate',
                                   isCompleted: false,
                                   isNew: true,
+                                  addedFrom: 'ai-generated',
                                 };
                                 setColumns((prev) =>
                                   prev.map((col) =>

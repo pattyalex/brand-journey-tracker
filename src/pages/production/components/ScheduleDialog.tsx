@@ -575,9 +575,13 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
                                     setPopoverCardId(popoverCardId === scheduledCard.id ? null : scheduledCard.id);
                                   }}
                                   className={cn(
-                                    "bg-purple-100 text-purple-700 text-[9px] px-1 py-0.5 rounded truncate flex items-center gap-1 cursor-grab active:cursor-grabbing hover:bg-purple-200 transition-colors",
+                                    "text-[9px] px-1 py-0.5 rounded truncate flex items-center gap-1 cursor-grab active:cursor-grabbing hover:brightness-110 transition-colors",
                                     draggedCardId === scheduledCard.id && "opacity-50"
                                   )}
+                                  style={{
+                                    backgroundColor: '#8B7082',
+                                    color: '#ffffff'
+                                  }}
                                   title={scheduledCard.hook || scheduledCard.title}
                                 >
                                   <Check className="w-2.5 h-2.5 flex-shrink-0" />

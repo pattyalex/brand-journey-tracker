@@ -3,6 +3,94 @@
  */
 
 /**
+ * Task Color Palette - 7 categories with 3 shades each (21 colors total)
+ * Each color has: fill (background), border (left accent), text color
+ */
+export const taskColorCategories = {
+  stone: {
+    name: 'Stone',
+    colors: [
+      { id: 'stone-light', name: 'Stone Light', fill: '#F0EDEA', border: '#A8A098', text: '#686058' },
+      { id: 'stone-medium', name: 'Stone Medium', fill: '#E5E0DA', border: '#908880', text: '#585048' },
+      { id: 'stone-deep', name: 'Stone Deep', fill: '#D8D2CA', border: '#787068', text: '#484038' },
+    ],
+  },
+  blue: {
+    name: 'Blue',
+    colors: [
+      { id: 'link-water', name: 'Link Water', fill: '#E8ECF2', border: '#8898B0', text: '#485870' },
+      { id: 'echo-blue', name: 'Echo Blue', fill: '#D8E0ED', border: '#7088A8', text: '#384868' },
+      { id: 'wedgewood', name: 'Wedgewood', fill: '#C8D4E5', border: '#5878A0', text: '#283858' },
+    ],
+  },
+  lilac: {
+    name: 'Lilac',
+    colors: [
+      { id: 'soft-lilac', name: 'Soft Lilac', fill: '#EDE8F2', border: '#A090B8', text: '#605078' },
+      { id: 'wisteria', name: 'Wisteria', fill: '#E0D8EB', border: '#8878A8', text: '#504068' },
+      { id: 'violet-haze', name: 'Violet Haze', fill: '#D2C8E0', border: '#706898', text: '#403058' },
+    ],
+  },
+  mauve: {
+    name: 'Mauve',
+    colors: [
+      { id: 'blush-mauve', name: 'Blush Mauve', fill: '#F2E8ED', border: '#B898A8', text: '#785868' },
+      { id: 'dusty-rose', name: 'Dusty Rose', fill: '#EADCE5', border: '#A88098', text: '#684058' },
+      { id: 'berry-cream', name: 'Berry Cream', fill: '#E0D0D8', border: '#987088', text: '#583048' },
+    ],
+  },
+  sand: {
+    name: 'Sand',
+    colors: [
+      { id: 'oyster', name: 'Oyster', fill: '#F2EDE5', border: '#B8A890', text: '#786850' },
+      { id: 'warm-sand', name: 'Warm Sand', fill: '#EAE2D5', border: '#A89878', text: '#685840' },
+      { id: 'sandstone', name: 'Sandstone', fill: '#E0D5C5', border: '#988860', text: '#584830' },
+    ],
+  },
+  mint: {
+    name: 'Mint',
+    colors: [
+      { id: 'pistachio', name: 'Pistachio', fill: '#EAF0E8', border: '#90A888', text: '#506848' },
+      { id: 'sage-mint', name: 'Sage Mint', fill: '#DCE8D8', border: '#789878', text: '#405838' },
+      { id: 'eucalyptus', name: 'Eucalyptus', fill: '#CEDECA', border: '#608868', text: '#304828' },
+    ],
+  },
+  turquoise: {
+    name: 'Turquoise',
+    colors: [
+      { id: 'seafoam', name: 'Seafoam', fill: '#E5F0EE', border: '#80A8A0', text: '#406860' },
+      { id: 'aqua-mist', name: 'Aqua Mist', fill: '#D5E8E5', border: '#689890', text: '#305850' },
+      { id: 'teal-light', name: 'Teal Light', fill: '#C5DED8', border: '#508880', text: '#204840' },
+    ],
+  },
+};
+
+// Flat array of all task colors for easy lookup
+export const allTaskColors = Object.values(taskColorCategories).flatMap(cat => cat.colors);
+
+// Task color options array for simple color picker (first color from each category)
+export const taskColorOptions = Object.values(taskColorCategories).map(cat => ({
+  name: cat.colors[0].name,
+  hex: cat.colors[0].fill,
+  border: cat.colors[0].border,
+  text: cat.colors[0].text,
+}));
+
+// Default task color (Blush Mauve - brand aligned)
+export const defaultTaskColor = taskColorCategories.mauve.colors[0];
+
+// Helper to get task color by fill hex value
+export const getTaskColorByHex = (hex: string | undefined) => {
+  if (!hex) return defaultTaskColor;
+  const found = allTaskColors.find(c => c.fill === hex);
+  if (found) {
+    return { fill: found.fill, border: found.border, text: found.text, name: found.name };
+  }
+  // Fallback for legacy colors - return default
+  return defaultTaskColor;
+};
+
+/**
  * Color mappings for scheduled/planned content items
  */
 export const scheduleColors: Record<string, { bg: string; text: string }> = {
@@ -16,6 +104,9 @@ export const scheduleColors: Record<string, { bg: string; text: string }> = {
   cyan: { bg: '#cffafe', text: '#0e7490' },
   sage: { bg: '#DCE5D4', text: '#5F6B52' },
 };
+
+// Default color for all scheduled content cards
+export const defaultScheduledColor = { bg: '#8B7082', text: '#ffffff' };
 
 /**
  * Color palette groups for content color picker

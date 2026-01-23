@@ -61,6 +61,9 @@ const scheduleColors = {
   sage: { bg: '#DCE5D4', text: '#5F6B52', dot: 'bg-[#A8B89E]' },
 };
 
+// Default color for all scheduled content cards
+const defaultScheduledColor = { bg: '#8B7082', text: '#ffffff', dot: 'bg-[#8B7082]' };
+
 type ScheduleColorKey = keyof typeof scheduleColors;
 
 interface ExpandedScheduleViewProps {
@@ -983,8 +986,8 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                   key={card.id}
                                   className="text-xs px-2 py-1.5 rounded-md truncate"
                                   style={{
-                                    backgroundColor: scheduleColors[(card.scheduledColor || 'indigo') as ScheduleColorKey].bg,
-                                    color: scheduleColors[(card.scheduledColor || 'indigo') as ScheduleColorKey].text
+                                    backgroundColor: defaultScheduledColor.bg,
+                                    color: defaultScheduledColor.text
                                   }}
                                 >
                                   <div className="flex items-center gap-1.5">
@@ -1388,14 +1391,10 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                   isPublished && "bg-gray-100 text-gray-500",
                                   draggedCardId === scheduledCard.id && "opacity-50"
                                 )}
-                                style={!isPublished ? (() => {
-                                  const colorKey = scheduledCard.scheduledColor || 'indigo';
-                                  const colorConfig = scheduleColors[colorKey as ScheduleColorKey];
-                                  return {
-                                    backgroundColor: colorConfig?.bg || '#e0e7ff',
-                                    color: colorConfig?.text || '#4338ca'
-                                  };
-                                })() : undefined}
+                                style={!isPublished ? {
+                                  backgroundColor: defaultScheduledColor.bg,
+                                  color: defaultScheduledColor.text
+                                } : undefined}
                                 title={scheduledCard.hook || scheduledCard.title}
                               >
                                 {/* Title row */}
@@ -1411,21 +1410,17 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                 </div>
                                 {/* Progress indicator - 6 lines, first 5 colored for scheduled */}
                                 <div className="flex gap-0.5 mt-1.5">
-                                  {[1, 2, 3, 4, 5, 6].map((step) => {
-                                    const colorKey = scheduledCard.scheduledColor || 'indigo';
-                                    const colorConfig = scheduleColors[colorKey as ScheduleColorKey];
-                                    return (
-                                      <div
-                                        key={step}
-                                        className="h-1 flex-1 rounded-full"
-                                        style={{
-                                          backgroundColor: step <= 5
-                                            ? (colorConfig?.text || '#4338ca')
-                                            : '#e5e7eb'
-                                        }}
-                                      />
-                                    );
-                                  })}
+                                  {[1, 2, 3, 4, 5, 6].map((step) => (
+                                    <div
+                                      key={step}
+                                      className="h-1 flex-1 rounded-full"
+                                      style={{
+                                        backgroundColor: step <= 5
+                                          ? defaultScheduledColor.text
+                                          : '#e5e7eb'
+                                      }}
+                                    />
+                                  ))}
                                 </div>
                               </div>
                             </PopoverTrigger>

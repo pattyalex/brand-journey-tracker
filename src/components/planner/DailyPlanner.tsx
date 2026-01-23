@@ -309,6 +309,8 @@ export const DailyPlanner = () => {
     showContent,
     contentDisplayMode,
     productionContent,
+    editingTask,
+    dialogTaskColor,
   } = state;
 
   const {
@@ -484,6 +486,8 @@ export const DailyPlanner = () => {
               setWeeklyDragCreateEnd={setWeeklyDragCreateEnd}
               setDraggedWeeklyTaskId={setDraggedWeeklyTaskId}
               isResizingRef={isResizingRef}
+              editingTask={editingTask}
+              dialogTaskColor={dialogTaskColor}
               setEditingTask={setEditingTask}
               setDialogTaskTitle={setDialogTaskTitle}
               setDialogTaskDescription={setDialogTaskDescription}
@@ -524,6 +528,8 @@ export const DailyPlanner = () => {
               setAllTasks={setAllTasks}
               setPlannerData={setPlannerData}
               setPendingTaskFromAllTasks={setPendingTaskFromAllTasks}
+              editingTask={editingTask}
+              dialogTaskColor={dialogTaskColor}
               setEditingTask={setEditingTask}
               setDialogTaskTitle={setDialogTaskTitle}
               setDialogTaskDescription={setDialogTaskDescription}

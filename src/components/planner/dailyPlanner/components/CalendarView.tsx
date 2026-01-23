@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { eachDayOfInterval, endOfMonth, endOfWeek, format, isSameDay, startOfMonth, startOfWeek } from "date-fns";
 import { CardContent } from "@/components/ui/card";
@@ -7,19 +7,15 @@ import { PlannerDay, PlannerItem } from "@/types/planner";
 import { PlannerView, TimezoneOption } from "../types";
 import { getDateString } from "../utils/plannerUtils";
 import { parseTimeTo24 } from "../utils/timeUtils";
-import { scheduleColors, contentColorGroups } from "../utils/colorConstants";
+import { defaultScheduledColor, getTaskColorByHex } from "../utils/colorConstants";
 import { useColorPalette } from "../hooks/useColorPalette";
-import { ContentColorPicker } from "./ContentColorPicker";
 import { ProductionCard, KanbanColumn } from "@/pages/production/types";
-import { Video, Lightbulb, ListTodo, X, Clock, FileText, ArrowRight, Trash2, CalendarCheck, Plus, X as XIcon } from "lucide-react";
+import { Video, Lightbulb, X, Clock, FileText, ArrowRight, Trash2, CalendarCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { StorageKeys, getString, setString } from "@/lib/storage";
 import { EVENTS, emit } from "@/lib/events";
 import { ContentDisplayMode } from "../hooks/usePlannerState";
 import { cn } from "@/lib/utils";
-import { Checkbox } from "@/components/ui/checkbox";
 
 interface CalendarViewProps {
   getTimezoneDisplay: () => string;
@@ -34,6 +30,8 @@ interface CalendarViewProps {
   setAllTasks: React.Dispatch<React.SetStateAction<PlannerItem[]>>;
   setPlannerData: React.Dispatch<React.SetStateAction<PlannerDay[]>>;
   setPendingTaskFromAllTasks: React.Dispatch<React.SetStateAction<PlannerItem | null>>;
+  editingTask: PlannerItem | null;
+  dialogTaskColor: string;
   setEditingTask: React.Dispatch<React.SetStateAction<PlannerItem | null>>;
   setDialogTaskTitle: React.Dispatch<React.SetStateAction<string>>;
   setDialogTaskDescription: React.Dispatch<React.SetStateAction<string>>;
@@ -68,6 +66,8 @@ export const CalendarView = ({
   setAllTasks,
   setPlannerData,
   setPendingTaskFromAllTasks,
+  editingTask,
+  dialogTaskColor,
   setEditingTask,
   setDialogTaskTitle,
   setDialogTaskDescription,
@@ -87,20 +87,6 @@ export const CalendarView = ({
 }: CalendarViewProps) => {
   const navigate = useNavigate();
 
-  // Color palette options
-  const colorOptions = [
-    { name: 'gray', bg: '#f3f4f6', hex: '#f3f4f6' },
-    { name: 'rose', bg: '#fecdd3', hex: '#fecdd3' },
-    { name: 'pink', bg: '#fbcfe8', hex: '#fbcfe8' },
-    { name: 'purple', bg: '#e9d5ff', hex: '#e9d5ff' },
-    { name: 'indigo', bg: '#c7d2fe', hex: '#c7d2fe' },
-    { name: 'sky', bg: '#bae6fd', hex: '#bae6fd' },
-    { name: 'teal', bg: '#99f6e4', hex: '#99f6e4' },
-    { name: 'green', bg: '#bbf7d0', hex: '#bbf7d0' },
-    { name: 'lime', bg: '#d9f99d', hex: '#d9f99d' },
-    { name: 'yellow', bg: '#fef08a', hex: '#fef08a' },
-    { name: 'orange', bg: '#fed7aa', hex: '#fed7aa' },
-  ];
 
   // State for add dialog
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -218,7 +204,7 @@ export const CalendarView = ({
       }]);
     }
 
-    toast.success('Task created for ' + format(new Date(addDialogDate), 'MMM d'));
+    toast.success('Task created for ' + format(new Date(addDialogDate + 'T12:00:00'), 'MMM d'));
     setAddDialogOpen(false);
     resetFormState();
   };
@@ -248,13 +234,14 @@ export const CalendarView = ({
             plannedStartTime: parseTimeTo24(contentStartTime) || undefined,
             plannedEndTime: parseTimeTo24(contentEndTime) || undefined,
             isNew: true,
+            addedFrom: 'calendar',
           };
           ideateColumn.cards.push(newCard);
           setString(StorageKeys.productionKanban, JSON.stringify(columns));
           emit(window, EVENTS.productionKanbanUpdated);
           emit(window, EVENTS.scheduledContentUpdated);
           loadProductionContent?.(); // Refresh content immediately
-          toast.success('Content idea added for ' + format(new Date(addDialogDate), 'MMM d'));
+          toast.success('Content idea added for ' + format(new Date(addDialogDate + 'T12:00:00'), 'MMM d'));
         }
       } catch (err) {
         console.error('Error adding planned content:', err);
@@ -374,7 +361,7 @@ export const CalendarView = ({
             setString(StorageKeys.productionKanban, JSON.stringify(columns));
             emit(window, EVENTS.productionKanbanUpdated);
             emit(window, EVENTS.scheduledContentUpdated);
-            toast.success('Content moved to ' + format(new Date(toDate), 'MMM d'));
+            toast.success('Content moved to ' + format(new Date(toDate + 'T12:00:00'), 'MMM d'));
           }
         } catch (err) {
           console.error('Error updating content date:', err);
@@ -511,7 +498,7 @@ export const CalendarView = ({
 
                   {/* Task and Content indicators - scrollable */}
                   <div
-                    className="flex-1 min-h-0 flex flex-col gap-0 overflow-y-auto mt-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent"
+                    className="flex-1 min-h-0 flex flex-col gap-px overflow-y-auto mt-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent"
                     onDragOver={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -539,53 +526,64 @@ export const CalendarView = ({
                     }}
                   >
                     {/* Tasks */}
-                    {tasksToShow.map((task) => (
-                      <div
-                        key={task.id}
-                        draggable={true}
-                        onClick={(e) => e.stopPropagation()}
-                        onMouseDown={(e) => e.stopPropagation()}
-                        onDragStart={(e) => {
-                          console.log('🚀 DRAG START - Calendar Task:', task.id, task.text, 'from:', dayString);
-                          e.stopPropagation();
-                          e.dataTransfer.setData('text/plain', task.id);
-                          e.dataTransfer.setData('taskId', task.id);
-                          e.dataTransfer.setData('fromDate', dayString);
-                          e.dataTransfer.setData('fromAllTasks', 'false');
-                          e.dataTransfer.effectAllowed = 'move';
-                          const target = e.currentTarget;
-                          setTimeout(() => {
-                            if (target) target.style.opacity = '0.5';
-                          }, 0);
-                        }}
-                        onDragEnd={(e) => {
-                          e.currentTarget.style.opacity = '1';
-                        }}
-                        className="group text-[11px] px-2 py-1 rounded-md cursor-grab active:cursor-grabbing transition-colors hover:shadow-sm flex-shrink-0"
-                        style={{
-                          backgroundColor: task.color || '#e0e7ff',
-                          boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.8)'
-                        }}
-                      >
-                        <div className="flex items-center gap-1">
-                          <div className="flex-1 truncate leading-tight">{task.text}</div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteTask(task.id, dayString);
-                            }}
-                            className="opacity-0 group-hover:opacity-100 flex-shrink-0 text-gray-500 hover:text-red-500 transition-all"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
+                    {tasksToShow.map((task) => {
+                      // Use preview color if this task is being edited
+                      const isBeingEdited = editingTask?.id === task.id;
+                      const colorToUse = isBeingEdited && dialogTaskColor ? dialogTaskColor : task.color;
+                      const taskColorInfo = getTaskColorByHex(colorToUse);
+                      return (
+                        <div
+                          key={task.id}
+                          draggable={true}
+                          onClick={(e) => e.stopPropagation()}
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onDragStart={(e) => {
+                            console.log('🚀 DRAG START - Calendar Task:', task.id, task.text, 'from:', dayString);
+                            e.stopPropagation();
+                            e.dataTransfer.setData('text/plain', task.id);
+                            e.dataTransfer.setData('taskId', task.id);
+                            e.dataTransfer.setData('fromDate', dayString);
+                            e.dataTransfer.setData('fromAllTasks', 'false');
+                            e.dataTransfer.effectAllowed = 'move';
+                            const target = e.currentTarget;
+                            setTimeout(() => {
+                              if (target) target.style.opacity = '0.5';
+                            }, 0);
+                          }}
+                          onDragEnd={(e) => {
+                            e.currentTarget.style.opacity = '1';
+                          }}
+                          className="group text-[11px] px-2 py-1 rounded-md cursor-grab active:cursor-grabbing transition-colors hover:shadow-sm flex-shrink-0 border-l-4"
+                          style={{
+                            backgroundColor: taskColorInfo.fill,
+                            borderLeftColor: taskColorInfo.border,
+                          }}
+                        >
+                          <div className="flex items-center gap-1">
+                            <div
+                              className="flex-1 truncate leading-tight"
+                              style={{ color: taskColorInfo.text }}
+                            >
+                              {task.text}
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteTask(task.id, dayString);
+                              }}
+                              className="opacity-0 group-hover:opacity-100 flex-shrink-0 text-gray-500 hover:text-red-500 transition-all"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
 
                     {/* Scheduled Content */}
                     {showContent && scheduledContent.map((content) => {
-                      const colorKey = content.scheduledColor || 'indigo';
-                      const colors = scheduleColors[colorKey] || scheduleColors.indigo;
+                      // Use default mauve color for all scheduled content
+                      const colors = defaultScheduledColor;
                       return (
                         <div
                           key={content.id}
@@ -611,7 +609,7 @@ export const CalendarView = ({
                           onDragEnd={(e) => {
                             e.currentTarget.style.opacity = '1';
                           }}
-                          className="group text-[11px] rounded-md transition-colors hover:shadow-md cursor-pointer flex flex-col overflow-hidden flex-shrink-0"
+                          className="group text-[11px] rounded-lg transition-colors hover:brightness-95 cursor-pointer flex flex-col overflow-hidden flex-shrink-0 border-0"
                           style={{ backgroundColor: colors.bg, color: colors.text }}
                         >
                           <div className="flex items-center gap-1 px-2 py-1.5">
@@ -626,19 +624,6 @@ export const CalendarView = ({
                             >
                               <X className="w-3 h-3" />
                             </button>
-                          </div>
-                          {/* Progress indicator - 6 steps, first 5 colored for scheduled */}
-                          <div className="flex gap-0.5 px-1.5 pb-1">
-                            {[1, 2, 3, 4, 5, 6].map((step) => (
-                              <div
-                                key={step}
-                                className={`h-[2px] flex-1 rounded-full ${
-                                  step <= 5
-                                    ? 'bg-current opacity-80'
-                                    : 'bg-current opacity-25'
-                                }`}
-                              />
-                            ))}
                           </div>
                         </div>
                       );
@@ -670,7 +655,7 @@ export const CalendarView = ({
                         onDragEnd={(e) => {
                           e.currentTarget.style.opacity = '1';
                         }}
-                        className="group text-[11px] rounded-md border border-dashed border-violet-300 bg-violet-50 text-violet-700 cursor-pointer hover:shadow-md flex flex-col overflow-hidden flex-shrink-0"
+                        className="group text-[11px] rounded-lg border border-dashed border-[#D4C9CF] bg-[#F5F2F4] text-[#8B7082] cursor-pointer hover:brightness-95 flex flex-col overflow-hidden flex-shrink-0"
                       >
                         <div className="flex items-center gap-1 px-2 py-1.5">
                           <Lightbulb className="w-3 h-3 flex-shrink-0" />
@@ -684,19 +669,6 @@ export const CalendarView = ({
                           >
                             <X className="w-3 h-3" />
                           </button>
-                        </div>
-                        {/* Progress indicator - 6 steps, first 1 colored for planned */}
-                        <div className="flex gap-0.5 px-1.5 pb-1">
-                          {[1, 2, 3, 4, 5, 6].map((step) => (
-                            <div
-                              key={step}
-                              className={`h-[2px] flex-1 rounded-full ${
-                                step <= 1
-                                  ? 'bg-violet-500 opacity-80'
-                                  : 'bg-violet-300 opacity-40'
-                              }`}
-                            />
-                          ))}
                         </div>
                       </div>
                     ))}
@@ -772,8 +744,6 @@ export const CalendarView = ({
                   />
                 </div>
 
-                {/* Content Color Picker */}
-                <ContentColorPicker palette={contentColorPalette} />
 
                 {/* Content Hub CTA */}
                 <button

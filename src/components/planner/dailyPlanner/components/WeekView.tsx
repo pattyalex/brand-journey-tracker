@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { eachDayOfInterval, endOfWeek, format, isSameDay, startOfWeek } from "date-fns";
-import { Trash2, Video, Lightbulb, X, Clock, FileText, Palette, ArrowRight, Check, ListTodo, CalendarCheck, Plus, X as XIcon } from "lucide-react";
+import { Trash2, Video, Lightbulb, X, Clock, FileText, ArrowRight, ListTodo, CalendarCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CardContent } from "@/components/ui/card";
@@ -13,9 +13,9 @@ import { PlannerDay, PlannerItem } from "@/types/planner";
 import { TimezoneOption } from "../types";
 import { getDateString } from "../utils/plannerUtils";
 import { parseTimeTo24 } from "../utils/timeUtils";
-import { scheduleColors, contentColorGroups } from "../utils/colorConstants";
+import { scheduleColors, defaultScheduledColor, getTaskColorByHex } from "../utils/colorConstants";
+import { TaskColorPicker } from "./TaskColorPicker";
 import { useColorPalette } from "../hooks/useColorPalette";
-import { ContentColorPicker } from "./ContentColorPicker";
 import { ProductionCard, KanbanColumn } from "@/pages/production/types";
 import { ContentDisplayMode } from "../hooks/usePlannerState";
 import { StorageKeys, getString, setString } from "@/lib/storage";
@@ -44,6 +44,8 @@ interface WeekViewProps {
   setWeeklyDragCreateEnd: React.Dispatch<React.SetStateAction<Record<string, { hour: number; minute: number }>>>;
   setDraggedWeeklyTaskId: React.Dispatch<React.SetStateAction<string | null>>;
   isResizingRef: React.MutableRefObject<boolean>;
+  editingTask: PlannerItem | null;
+  dialogTaskColor: string;
   setEditingTask: React.Dispatch<React.SetStateAction<PlannerItem | null>>;
   setDialogTaskTitle: React.Dispatch<React.SetStateAction<string>>;
   setDialogTaskDescription: React.Dispatch<React.SetStateAction<string>>;
@@ -112,6 +114,8 @@ export const WeekView = ({
   setWeeklyDragCreateEnd,
   setDraggedWeeklyTaskId,
   isResizingRef,
+  editingTask,
+  dialogTaskColor,
   setEditingTask,
   setDialogTaskTitle,
   setDialogTaskDescription,
@@ -136,20 +140,6 @@ export const WeekView = ({
 }: WeekViewProps) => {
   const navigate = useNavigate();
 
-  // Color palette options
-  const colorOptions = [
-    { name: 'gray', bg: '#f3f4f6', hex: '#f3f4f6' },
-    { name: 'rose', bg: '#fecdd3', hex: '#fecdd3' },
-    { name: 'pink', bg: '#fbcfe8', hex: '#fbcfe8' },
-    { name: 'purple', bg: '#e9d5ff', hex: '#e9d5ff' },
-    { name: 'indigo', bg: '#c7d2fe', hex: '#c7d2fe' },
-    { name: 'sky', bg: '#bae6fd', hex: '#bae6fd' },
-    { name: 'teal', bg: '#99f6e4', hex: '#99f6e4' },
-    { name: 'green', bg: '#bbf7d0', hex: '#bbf7d0' },
-    { name: 'lime', bg: '#d9f99d', hex: '#d9f99d' },
-    { name: 'yellow', bg: '#fef08a', hex: '#fef08a' },
-    { name: 'orange', bg: '#fed7aa', hex: '#fed7aa' },
-  ];
 
   // State for add dialog - sync with external state if provided
   const [addDialogTab, setAddDialogTab] = useState<'task' | 'content'>('task');
@@ -260,7 +250,7 @@ export const WeekView = ({
 
     setPlannerData(updatedPlannerData);
     savePlannerData(updatedPlannerData);
-    toast.success('Task created for ' + format(new Date(addDialogDate), 'MMM d'));
+    toast.success('Task created for ' + format(new Date(addDialogDate + 'T12:00:00'), 'MMM d'));
     closeAddDialog();
     resetFormState();
   };
@@ -290,13 +280,14 @@ export const WeekView = ({
             plannedStartTime: parseTimeTo24(contentStartTime) || undefined,
             plannedEndTime: parseTimeTo24(contentEndTime) || undefined,
             isNew: true,
+            addedFrom: 'calendar',
           };
           ideateColumn.cards.push(newCard);
           setString(StorageKeys.productionKanban, JSON.stringify(columns));
           emit(window, EVENTS.productionKanbanUpdated);
           emit(window, EVENTS.scheduledContentUpdated);
           loadProductionContent?.(); // Refresh content immediately
-          toast.success('Content idea added for ' + format(new Date(addDialogDate), 'MMM d'));
+          toast.success('Content idea added for ' + format(new Date(addDialogDate + 'T12:00:00'), 'MMM d'));
         }
       } catch (err) {
         console.error('Error adding planned content:', err);
@@ -432,13 +423,13 @@ export const WeekView = ({
                       }}
                     >
                       {dayScheduledContent.map((content) => {
-                        const colorKey = content.scheduledColor || 'indigo';
-                        const colors = scheduleColors[colorKey] || scheduleColors.indigo;
+                        // Use default mauve color for all scheduled content
+                        const colors = defaultScheduledColor;
                         return (
                           <div
                             key={content.id}
                             onClick={() => onOpenContentDialog?.(content, 'scheduled')}
-                            className="group text-[10px] rounded cursor-pointer hover:brightness-95 flex flex-col overflow-hidden"
+                            className="group text-[10px] rounded-lg cursor-pointer hover:brightness-95 flex flex-col overflow-hidden border-0"
                             style={{ backgroundColor: colors.bg, color: colors.text }}
                           >
                             <div className="flex items-center gap-1 px-1.5 py-1">
@@ -454,19 +445,6 @@ export const WeekView = ({
                                 <X className="w-2.5 h-2.5" />
                               </button>
                             </div>
-                            {/* Progress indicator - 6 steps, first 5 colored for scheduled */}
-                            <div className="flex gap-0.5 px-1 pb-1">
-                              {[1, 2, 3, 4, 5, 6].map((step) => (
-                                <div
-                                  key={step}
-                                  className={`h-[2px] flex-1 rounded-full ${
-                                    step <= 5
-                                      ? 'bg-current opacity-80'
-                                      : 'bg-current opacity-25'
-                                  }`}
-                                />
-                              ))}
-                            </div>
                           </div>
                         );
                       })}
@@ -474,7 +452,7 @@ export const WeekView = ({
                         <div
                           key={content.id}
                           onClick={() => onOpenContentDialog?.(content, 'planned')}
-                          className="group text-[10px] rounded border border-dashed border-violet-300 bg-violet-50 text-violet-700 cursor-pointer hover:bg-violet-100 flex flex-col overflow-hidden"
+                          className="group text-[10px] rounded-lg border border-dashed border-[#D4C9CF] bg-[#F5F2F4] text-[#8B7082] cursor-pointer hover:brightness-95 flex flex-col overflow-hidden"
                         >
                           <div className="flex items-center gap-1 px-1.5 py-1">
                             <Lightbulb className="w-2.5 h-2.5 flex-shrink-0" />
@@ -488,19 +466,6 @@ export const WeekView = ({
                             >
                               <X className="w-2.5 h-2.5" />
                             </button>
-                          </div>
-                          {/* Progress indicator - 6 steps, first 1 colored for planned */}
-                          <div className="flex gap-0.5 px-1 pb-1">
-                            {[1, 2, 3, 4, 5, 6].map((step) => (
-                              <div
-                                key={step}
-                                className={`h-[2px] flex-1 rounded-full ${
-                                  step <= 1
-                                    ? 'bg-violet-500 opacity-80'
-                                    : 'bg-violet-300 opacity-40'
-                                }`}
-                              />
-                            ))}
                           </div>
                         </div>
                       ))}
@@ -638,7 +603,7 @@ export const WeekView = ({
                                               emit(window, EVENTS.productionKanbanUpdated);
                                               emit(window, EVENTS.scheduledContentUpdated);
                                               loadProductionContent?.();
-                                              toast.success('Content moved to ' + format(new Date(dayString), 'MMM d'));
+                                              toast.success('Content moved to ' + format(new Date(dayString + 'T12:00:00'), 'MMM d'));
                                             }
                                           }
                                         } else if (contentType === 'planned') {
@@ -651,7 +616,7 @@ export const WeekView = ({
                                               emit(window, EVENTS.productionKanbanUpdated);
                                               emit(window, EVENTS.scheduledContentUpdated);
                                               loadProductionContent?.();
-                                              toast.success('Content idea moved to ' + format(new Date(dayString), 'MMM d'));
+                                              toast.success('Content idea moved to ' + format(new Date(dayString + 'T12:00:00'), 'MMM d'));
                                             }
                                           }
                                         }
@@ -916,7 +881,12 @@ export const WeekView = ({
                             return tasksWithLayout.map(({ task: item, startMinutes, endMinutes, column, totalColumns, isBackground, inOverlapGroup }) => {
                               const durationMinutes = endMinutes - startMinutes;
                               const topPos = startMinutes * 0.8;
-                              const height = Math.max(durationMinutes * 0.8, 24);
+                              const height = Math.max(durationMinutes * 0.8 - 1, 24);
+
+                              // Get task color info - use preview color if this task is being edited
+                              const isBeingEdited = editingTask?.id === item.id;
+                              const colorToUse = isBeingEdited && dialogTaskColor ? dialogTaskColor : item.color;
+                              const taskColorInfo = getTaskColorByHex(colorToUse);
 
                               // Calculate width and position for overlapping tasks
                               let widthPercent, leftPercent, zIndex;
@@ -989,12 +959,12 @@ export const WeekView = ({
                                       setTaskDialogPosition({ x: e.clientX, y: e.clientY });
                                       setIsTaskDialogOpen(true);
                                     }}
-                                    className="h-full relative rounded cursor-pointer hover:brightness-95 transition-all"
+                                    className="h-full relative rounded cursor-pointer hover:brightness-95 transition-all border-l-4"
                                     style={{
-                                      backgroundColor: item.color || '#e5e7eb',
+                                      backgroundColor: taskColorInfo.fill,
+                                      borderLeftColor: taskColorInfo.border,
                                       opacity: isPast ? 0.6 : 0.9,
                                       padding: '4px 4px',
-                                      border: 'none'
                                     }}
                                   >
                                     {/* Resize handles */}
@@ -1095,11 +1065,14 @@ export const WeekView = ({
                                         className="mt-0.5 h-2.5 w-2.5 flex-shrink-0"
                                       />
                                       <div className="flex-1 min-w-0 flex flex-col">
-                                        <div className={`text-[11px] font-medium leading-tight ${item.isCompleted ? 'line-through opacity-70' : ''} text-gray-900 truncate`}>
+                                        <div
+                                          className={`text-[11px] font-medium leading-tight ${item.isCompleted ? 'line-through opacity-50' : ''} truncate`}
+                                          style={{ color: item.isCompleted ? undefined : taskColorInfo.text }}
+                                        >
                                           {item.text}
                                         </div>
                                         {(item.startTime || item.endTime) && (
-                                          <div className="text-[9px] text-gray-700 mt-1 whitespace-nowrap">
+                                          <div className="text-[9px] mt-1 whitespace-nowrap opacity-70" style={{ color: taskColorInfo.text }}>
                                             {item.startTime && convert24To12Hour(item.startTime)}
                                             {item.startTime && item.endTime && ' - '}
                                             {item.endTime && convert24To12Hour(item.endTime)}
@@ -1124,7 +1097,7 @@ export const WeekView = ({
 
                           {/* Content items and Tasks without time in list format */}
                           <div
-                            className="absolute top-0 left-0 right-0 px-1 py-2 space-y-1 cursor-default z-[101] pointer-events-auto"
+                            className="absolute top-0 left-0 right-0 px-1 py-2 flex flex-col gap-px cursor-default z-[101] pointer-events-auto"
                             onDragOver={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
@@ -1159,7 +1132,7 @@ export const WeekView = ({
                                           emit(window, EVENTS.productionKanbanUpdated);
                                           emit(window, EVENTS.scheduledContentUpdated);
                                           loadProductionContent?.();
-                                          toast.success('Content moved to ' + format(new Date(dayString), 'MMM d'));
+                                          toast.success('Content moved to ' + format(new Date(dayString + 'T12:00:00'), 'MMM d'));
                                         }
                                       }
                                     } else if (contentType === 'planned') {
@@ -1172,7 +1145,7 @@ export const WeekView = ({
                                           emit(window, EVENTS.productionKanbanUpdated);
                                           emit(window, EVENTS.scheduledContentUpdated);
                                           loadProductionContent?.();
-                                          toast.success('Content idea moved to ' + format(new Date(dayString), 'MMM d'));
+                                          toast.success('Content idea moved to ' + format(new Date(dayString + 'T12:00:00'), 'MMM d'));
                                         }
                                       }
                                     }
@@ -1186,62 +1159,71 @@ export const WeekView = ({
                             {/* Tasks without time */}
                             {showTasks && (() => {
                               const tasksWithoutTimes = (dayData?.items || []).filter(item => !item.startTime || !item.endTime);
-                              return tasksWithoutTimes.map((item) => (
-                                <div
-                                  key={item.id}
-                                  draggable={true}
-                                  onDragStart={(e) => {
-                                    console.log('🚀 DRAG START - Weekly Task:', item.id, item.text, 'from:', dayString);
-                                    e.dataTransfer.setData('text/plain', item.id);
-                                    e.dataTransfer.setData('taskId', item.id);
-                                    e.dataTransfer.setData('fromDate', dayString);
-                                    e.dataTransfer.setData('fromAllTasks', 'false');
-                                    e.dataTransfer.effectAllowed = 'move';
-                                    e.currentTarget.style.opacity = '0.5';
-                                  }}
-                                  onDragEnd={(e) => {
-                                    e.currentTarget.style.opacity = isPast ? '0.5' : '1';
-                                  }}
-                                  onClick={(e) => {
-                                    setEditingTask(item);
-                                    setDialogTaskTitle(item.text);
-                                    setDialogTaskDescription(item.description || "");
-                                    setDialogStartTime(item.startTime ? convert24To12Hour(item.startTime) : "");
-                                    setDialogEndTime(item.endTime ? convert24To12Hour(item.endTime) : "");
-                                    setDialogTaskColor(item.color || "");
-                                    setDialogAddToContentCalendar(item.isContentCalendar || false);
-                                    setTaskDialogPosition({ x: e.clientX, y: e.clientY });
-                                    setIsTaskDialogOpen(true);
-                                  }}
-                                  className="group text-xs px-2 py-1.5 rounded-md hover:shadow-sm transition-all cursor-pointer border-l-2 relative"
-                                  style={{
-                                    backgroundColor: item.color ? `${item.color}10` : '#f5f5f5',
-                                    borderLeftColor: item.color || '#9e9e9e',
-                                    opacity: isPast ? 0.5 : 1
-                                  }}
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <Checkbox
-                                      checked={item.isCompleted}
-                                      onCheckedChange={() => handleToggleWeeklyTask(item.id, dayString)}
-                                      className="h-3 w-3 flex-shrink-0 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
-                                      onClick={(e) => e.stopPropagation()}
-                                    />
-                                    <span className={`${item.isCompleted ? 'line-through text-gray-500' : 'text-gray-800'} break-words flex-1 text-[11px]`}>
-                                      {item.text}
-                                    </span>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDeleteWeeklyTask(item.id, dayString);
-                                      }}
-                                      className="p-1 rounded text-gray-400 hover:text-red-600 hover:bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    >
-                                      <Trash2 size={10} />
-                                    </button>
+                              return tasksWithoutTimes.map((item) => {
+                                // Use preview color if this task is being edited
+                                const isBeingEdited = editingTask?.id === item.id;
+                                const colorToUse = isBeingEdited && dialogTaskColor ? dialogTaskColor : item.color;
+                                const taskColorInfo = getTaskColorByHex(colorToUse);
+                                return (
+                                  <div
+                                    key={item.id}
+                                    draggable={true}
+                                    onDragStart={(e) => {
+                                      console.log('🚀 DRAG START - Weekly Task:', item.id, item.text, 'from:', dayString);
+                                      e.dataTransfer.setData('text/plain', item.id);
+                                      e.dataTransfer.setData('taskId', item.id);
+                                      e.dataTransfer.setData('fromDate', dayString);
+                                      e.dataTransfer.setData('fromAllTasks', 'false');
+                                      e.dataTransfer.effectAllowed = 'move';
+                                      e.currentTarget.style.opacity = '0.5';
+                                    }}
+                                    onDragEnd={(e) => {
+                                      e.currentTarget.style.opacity = isPast ? '0.5' : '1';
+                                    }}
+                                    onClick={(e) => {
+                                      setEditingTask(item);
+                                      setDialogTaskTitle(item.text);
+                                      setDialogTaskDescription(item.description || "");
+                                      setDialogStartTime(item.startTime ? convert24To12Hour(item.startTime) : "");
+                                      setDialogEndTime(item.endTime ? convert24To12Hour(item.endTime) : "");
+                                      setDialogTaskColor(item.color || "");
+                                      setDialogAddToContentCalendar(item.isContentCalendar || false);
+                                      setTaskDialogPosition({ x: e.clientX, y: e.clientY });
+                                      setIsTaskDialogOpen(true);
+                                    }}
+                                    className="group text-xs px-2 py-1.5 rounded-md hover:shadow-sm transition-all cursor-pointer border-l-4 relative"
+                                    style={{
+                                      backgroundColor: taskColorInfo.fill,
+                                      borderLeftColor: taskColorInfo.border,
+                                      opacity: isPast ? 0.5 : 1
+                                    }}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <Checkbox
+                                        checked={item.isCompleted}
+                                        onCheckedChange={() => handleToggleWeeklyTask(item.id, dayString)}
+                                        className="h-3 w-3 flex-shrink-0 data-[state=checked]:bg-purple-500 data-[state=checked]:text-white border-gray-400 rounded-sm"
+                                        onClick={(e) => e.stopPropagation()}
+                                      />
+                                      <span
+                                        className={`${item.isCompleted ? 'line-through opacity-50' : ''} break-words flex-1 text-[11px]`}
+                                        style={{ color: item.isCompleted ? undefined : taskColorInfo.text }}
+                                      >
+                                        {item.text}
+                                      </span>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDeleteWeeklyTask(item.id, dayString);
+                                        }}
+                                        className="p-1 rounded text-gray-400 hover:text-red-600 hover:bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity"
+                                      >
+                                        <Trash2 size={10} />
+                                      </button>
+                                    </div>
                                   </div>
-                                </div>
-                              ));
+                                );
+                              });
                             })()}
                           </div>
 
@@ -1377,27 +1359,11 @@ export const WeekView = ({
                   />
                 </div>
 
-                {/* Color Palette */}
-                <div className="flex items-center gap-3">
-                  <Palette className="w-5 h-5 text-gray-400" />
-                  <div className="flex flex-wrap gap-2">
-                    {colorOptions.map((color) => (
-                      <button
-                        key={color.name}
-                        onClick={() => setTaskColor(taskColor === color.hex ? '' : color.hex)}
-                        className={cn(
-                          "w-8 h-8 rounded-full transition-all",
-                          taskColor === color.hex ? "ring-2 ring-offset-2 ring-gray-400" : "hover:scale-110"
-                        )}
-                        style={{ backgroundColor: color.bg }}
-                      >
-                        {taskColor === color.hex && (
-                          <X className="w-4 h-4 mx-auto text-gray-500" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                {/* Color Picker */}
+                <TaskColorPicker
+                  selectedColor={taskColor}
+                  onColorSelect={setTaskColor}
+                />
 
                 {/* Actions */}
                 <div className="flex justify-end gap-3 pt-4">
@@ -1468,8 +1434,6 @@ export const WeekView = ({
                   />
                 </div>
 
-                {/* Content Color Picker */}
-                <ContentColorPicker palette={contentColorPalette} />
 
                 {/* Content Hub CTA */}
                 <button
