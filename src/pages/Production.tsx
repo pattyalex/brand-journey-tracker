@@ -2721,7 +2721,7 @@ const Production = () => {
 
             <DialogHeader className="flex-shrink-0">
               {!ideateMode && (
-                <DialogTitle className="text-2xl font-semibold text-[#5C4E54] px-4 mb-2 tracking-tight">
+                <DialogTitle className="text-2xl font-semibold text-black px-4 mb-2 tracking-tight">
                   Content Ideation
                 </DialogTitle>
               )}
@@ -2757,8 +2757,8 @@ const Production = () => {
               {!ideateMode && (
                 <div className="space-y-8 px-6">
                   <div className="text-center">
-                    <h3 className="text-xl font-semibold text-[#5C4E54] tracking-tight">Choose Your Starting Point</h3>
-                    <p className="text-sm text-[#8B7082] mt-2">Select a method to guide your content ideation process</p>
+                    <h3 className="text-xl font-semibold text-black tracking-tight">Choose Your Starting Point</h3>
+                    <p className="text-sm text-gray-700 mt-2">Select a method to guide your content ideation process</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-5">
@@ -2773,8 +2773,8 @@ const Production = () => {
                           <Compass className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                          <h4 className="text-sm font-semibold text-[#8B7082]">Start With Your Pillars</h4>
-                          <p className="text-xs text-[#8B7082]/70 mt-1.5 leading-relaxed">Create content using a structured framework</p>
+                          <h4 className="text-sm font-semibold text-black">Start With Your Pillars</h4>
+                          <p className="text-xs text-gray-700 mt-1.5 leading-relaxed">Create content using a structured framework</p>
                         </div>
                       </div>
                     </button>
@@ -2790,8 +2790,8 @@ const Production = () => {
                           <TrendingUp className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                          <h4 className="text-sm font-semibold text-[#8B7082]">Trending Hooks</h4>
-                          <p className="text-xs text-[#8B7082]/70 mt-1.5 leading-relaxed">Start with hooks that are working now</p>
+                          <h4 className="text-sm font-semibold text-black">Trending Hooks</h4>
+                          <p className="text-xs text-gray-700 mt-1.5 leading-relaxed">Start with hooks that are working now</p>
                         </div>
                       </div>
                     </button>
@@ -2807,8 +2807,8 @@ const Production = () => {
                           <BarChart3 className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                          <h4 className="text-sm font-semibold text-[#8B7082]">What Worked, What's Next</h4>
-                          <p className="text-xs text-[#8B7082]/70 mt-1.5 leading-relaxed">Build on your past successes or competitor insights</p>
+                          <h4 className="text-sm font-semibold text-black">What Worked, What's Next</h4>
+                          <p className="text-xs text-gray-700 mt-1.5 leading-relaxed">Build on your past successes or competitor insights</p>
                         </div>
                       </div>
                     </button>
@@ -2824,8 +2824,8 @@ const Production = () => {
                           <Sparkles className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                          <h4 className="text-sm font-semibold text-[#8B7082]">Idea Expander</h4>
-                          <p className="text-xs text-[#8B7082]/70 mt-1.5 leading-relaxed">Take one idea and explore multiple angles</p>
+                          <h4 className="text-sm font-semibold text-black">Idea Expander</h4>
+                          <p className="text-xs text-gray-700 mt-1.5 leading-relaxed">Take one idea and explore multiple angles</p>
                         </div>
                       </div>
                     </button>
@@ -3928,7 +3928,7 @@ const Production = () => {
                   <div className="bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50 rounded-lg p-5">
                     <div className="flex items-center gap-1.5 mb-4">
                       <div className="w-0.5 h-3.5 bg-sky-500 rounded-full"></div>
-                      <h3 className="text-sm font-semibold text-gray-900">
+                      <h3 className="text-sm font-semibold text-black">
                         Content Reference
                       </h3>
                     </div>
@@ -4198,7 +4198,7 @@ const Production = () => {
                               <div className="p-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg border border-indigo-200">
                                 <div className="flex items-center gap-1.5 mb-3">
                                   <div className="w-0.5 h-4 bg-indigo-500 rounded-full"></div>
-                                  <h4 className="text-sm font-semibold text-gray-900">
+                                  <h4 className="text-sm font-semibold text-black">
                                     AI Analysis
                                   </h4>
                                 </div>
@@ -4240,7 +4240,7 @@ const Production = () => {
                             <div className="bg-white rounded-lg p-4">
                             <div className="flex items-center gap-1.5 mb-3">
                               <div className="w-0.5 h-4 bg-purple-500 rounded-full"></div>
-                              <h4 className="text-sm font-semibold text-gray-900">
+                              <h4 className="text-sm font-semibold text-black">
                                 Give it a twist
                               </h4>
                             </div>
