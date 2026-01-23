@@ -464,6 +464,31 @@ const Production = () => {
     emit(window, EVENTS.productionKanbanUpdated, columns);
   }, [columns]);
 
+  // Listen for column updates from other components (like ExpandedScheduleView calendar)
+  useEffect(() => {
+    const cleanup = on(window, EVENTS.productionKanbanUpdated, (event) => {
+      // Only reload if the event came from a different source (like calendar)
+      if (event.detail?.source === 'calendar') {
+        const savedData = getString(StorageKeys.productionKanban);
+        if (savedData) {
+          try {
+            const savedColumns = JSON.parse(savedData);
+            setColumns(defaultColumns.map(defaultCol => {
+              const savedCol = savedColumns.find((sc: KanbanColumn) => sc.id === defaultCol.id);
+              return {
+                ...defaultCol,
+                cards: savedCol?.cards || [],
+              };
+            }));
+          } catch (error) {
+            console.error("Failed to reload production data:", error);
+          }
+        }
+      }
+    });
+    return cleanup;
+  }, []);
+
   // Clean up any cards with empty titles or missing IDs
   useEffect(() => {
     const hasInvalidCards = columns.some(col =>
@@ -2490,10 +2515,10 @@ const Production = () => {
                         <div
                           key={`add-button-${column.id}`}
                           className={cn(
-                            "group/btn px-4 py-2.5 border transition-all duration-200 cursor-pointer w-fit active:scale-95",
+                            "group/btn px-4 py-2.5 border transition-all duration-200 cursor-pointer active:scale-[0.98]",
                             column.id === 'ideate'
-                              ? "rounded-xl bg-white/80 hover:bg-white border-[#C9BFC6] hover:-translate-y-0.5"
-                              : "rounded-full bg-[#F5F2F4] hover:bg-[#EBE7E9] border-dashed hover:border-solid border-[#DDD6DA] hover:scale-105",
+                              ? "w-full rounded-xl bg-white/80 hover:bg-white border-[#C9BFC6] hover:-translate-y-0.5"
+                              : "w-fit rounded-full bg-[#F5F2F4] hover:bg-[#EBE7E9] border-dashed hover:border-solid border-[#DDD6DA] hover:scale-105",
                             colors.buttonText
                           )}
                           onClick={() => {
@@ -2572,17 +2597,17 @@ const Production = () => {
 
                       {/* Help me generate ideas button - only for ideate column */}
                       {column.id === 'ideate' && (
-                        <div className="group/btn px-4 py-3 rounded-xl transition-all duration-200 cursor-pointer w-fit hover:-translate-y-0.5 active:scale-95 bg-[#8B7082] hover:bg-[#7A6272] shadow-md hover:shadow-lg"
+                        <div className="group/btn px-4 py-2.5 rounded-xl transition-all duration-200 cursor-pointer w-full hover:-translate-y-0.5 active:scale-[0.98] bg-[#8B7082] hover:bg-[#7A6272] shadow-sm hover:shadow-md"
                           onClick={() => {
                             setSelectedIdeateCard(null);
                             setIsIdeateDialogOpen(true);
                           }}
                         >
-                          <div className="flex items-center gap-3 text-white">
-                            <Zap className="h-5 w-5 group-hover/btn:animate-pulse" />
+                          <div className="flex items-center justify-center gap-2 text-white">
+                            <Zap className="h-4 w-4 group-hover/btn:animate-pulse" />
                             <div className="flex flex-col">
-                              <span className="text-sm font-semibold leading-tight">Generate ideas</span>
-                              <span className="text-xs opacity-80 leading-tight">AI-powered suggestions</span>
+                              <span className="text-xs font-semibold leading-tight">Generate ideas</span>
+                              <span className="text-[10px] opacity-80 leading-tight">AI-powered suggestions</span>
                             </div>
                           </div>
                         </div>
