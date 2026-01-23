@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { StorageKeys, getString, setString, remove } from "@/lib/storage";
-import { EVENTS, emit } from "@/lib/events";
+import { EVENTS, emit, on } from "@/lib/events";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -344,6 +344,14 @@ const Production = () => {
       return () => clearTimeout(timer);
     }
   }, [lastArchivedCard]);
+
+  // Listen for openArchiveDialog event from toast notifications
+  useEffect(() => {
+    const cleanup = on(window, EVENTS.openArchiveDialog, () => {
+      setIsArchiveDialogOpen(true);
+    });
+    return cleanup;
+  }, []);
 
   // Clear drop indicators when drag ends
   useEffect(() => {

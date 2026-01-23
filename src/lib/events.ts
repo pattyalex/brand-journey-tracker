@@ -4,6 +4,7 @@ export const EVENTS = {
   scheduledContentUpdated: 'scheduledContentUpdated',
   plannerDataUpdated: 'plannerDataUpdated',
   productionKanbanUpdated: 'productionKanbanUpdated',
+  openArchiveDialog: 'openArchiveDialog',
 } as const;
 
 type EventName = (typeof EVENTS)[keyof typeof EVENTS];

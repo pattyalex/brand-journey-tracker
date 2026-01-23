@@ -449,7 +449,11 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
 
     // Show toast notification
     toast.success("Archived!", {
-      description: "A copy has been saved to your archive"
+      description: "A copy has been saved to your archive",
+      action: {
+        label: "View Archive",
+        onClick: () => emit(window, EVENTS.openArchiveDialog)
+      }
     });
   };
 
@@ -535,7 +539,11 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
     emit(window, EVENTS.scheduledContentUpdated);
 
     toast.success("Archived & Removed", {
-      description: "Content saved to archive and removed from calendar"
+      description: "Content saved to archive and removed from calendar",
+      action: {
+        label: "View Archive",
+        onClick: () => emit(window, EVENTS.openArchiveDialog)
+      }
     });
 
     setDeleteConfirmCard(null);
