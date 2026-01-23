@@ -64,6 +64,80 @@ export const formatTimeDisplay = (time: string): string => {
 };
 
 /**
+ * Auto-format time on Enter/blur - converts "900" to "9:00", "130" to "1:30", etc.
+ * Returns { time: string, period: 'am' | 'pm' | '' }
+ */
+export const autoFormatTime = (value: string): { time: string; period: 'am' | 'pm' | '' } => {
+  if (!value) return { time: '', period: '' };
+
+  const input = value.toLowerCase().trim();
+
+  // Extract AM/PM if present
+  let period: 'am' | 'pm' | '' = '';
+  let timePartOnly = input;
+
+  const ampmMatch = input.match(/\s*(am|pm|a|p)\s*$/i);
+  if (ampmMatch) {
+    period = (ampmMatch[1] === 'a' || ampmMatch[1] === 'am') ? 'am' : 'pm';
+    timePartOnly = input.slice(0, ampmMatch.index).trim();
+  }
+
+  // Extract just the digits
+  const digits = timePartOnly.replace(/\D/g, '');
+
+  if (digits.length === 0) {
+    return { time: '', period };
+  }
+
+  let hours = 0;
+  let minutes = 0;
+
+  if (digits.length === 1) {
+    // "9" -> 9:00
+    hours = parseInt(digits, 10);
+    minutes = 0;
+  } else if (digits.length === 2) {
+    // "12" -> 12:00, "09" -> 9:00
+    hours = parseInt(digits, 10);
+    if (hours > 12) {
+      // "45" -> 4:50? No, treat as 4:05 or invalid. Let's treat "13" as 1:30
+      // Actually, let's be smarter: if > 23, it's invalid
+      // If 13-23, treat as 24h time
+      // If 1-12, treat as hours
+      if (hours <= 23) {
+        // Could be 24h format, but for simplicity let's treat 2-digit as hours
+        minutes = 0;
+      }
+    } else {
+      minutes = 0;
+    }
+  } else if (digits.length === 3) {
+    // "900" -> 9:00, "130" -> 1:30, "115" -> 1:15
+    hours = parseInt(digits[0], 10);
+    minutes = parseInt(digits.slice(1), 10);
+  } else if (digits.length >= 4) {
+    // "0900" -> 9:00, "1130" -> 11:30
+    hours = parseInt(digits.slice(0, 2), 10);
+    minutes = parseInt(digits.slice(2, 4), 10);
+  }
+
+  // Validate
+  if (hours > 23) hours = 12;
+  if (hours > 12 && !period) {
+    // Convert 24h to 12h
+    period = hours >= 12 ? 'pm' : 'am';
+    if (hours > 12) hours -= 12;
+    if (hours === 0) hours = 12;
+  }
+  if (hours === 0) hours = 12;
+  if (minutes > 59) minutes = 0;
+
+  const formattedTime = `${hours}:${minutes.toString().padStart(2, '0')}`;
+
+  return { time: formattedTime, period };
+};
+
+/**
  * Format time input as user types
  * Handles progressive formatting: "9" -> "9", "930" -> "9:30", "930p" -> "9:30 pm"
  */

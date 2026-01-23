@@ -1,16 +1,17 @@
 import { useState, useEffect } from "react";
-import { Calendar, CalendarCheck, ChevronLeft, ChevronRight, Lightbulb } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Lightbulb, Clapperboard, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StorageKeys, getString } from "@/lib/storage";
-import { format, parseISO, isAfter, startOfDay, isEqual } from "date-fns";
+import { startOfMonth, endOfMonth, parseISO, isWithinInterval } from "date-fns";
 import { EVENTS, on } from "@/lib/events";
-import { ProductionCard, KanbanColumn } from "@/pages/production/types";
+import { KanbanColumn } from "@/pages/production/types";
 import { useNavigate } from "react-router-dom";
 
-interface UpcomingItem {
-  card: ProductionCard;
-  date: string;
-  type: 'scheduled' | 'planned';
+interface ContentCounts {
+  inIdeation: number;
+  inProduction: number;
+  scheduledToPublish: number;
+  publishedThisMonth: number;
 }
 
 interface ContentOverviewSidebarProps {
@@ -23,60 +24,89 @@ export const ContentOverviewSidebar = ({
   setIsCollapsed,
 }: ContentOverviewSidebarProps) => {
   const navigate = useNavigate();
-  const [upcomingContent, setUpcomingContent] = useState<UpcomingItem[]>([]);
+  const [counts, setCounts] = useState<ContentCounts>({
+    inIdeation: 0,
+    inProduction: 0,
+    scheduledToPublish: 0,
+    publishedThisMonth: 0,
+  });
 
-  const loadUpcomingContent = () => {
+  const loadContentCounts = () => {
     const savedData = getString(StorageKeys.productionKanban);
     if (!savedData) {
-      setUpcomingContent([]);
+      setCounts({ inIdeation: 0, inProduction: 0, scheduledToPublish: 0, publishedThisMonth: 0 });
       return;
     }
 
     try {
       const columns: KanbanColumn[] = JSON.parse(savedData);
-      const today = startOfDay(new Date());
+      const now = new Date();
+      const monthStart = startOfMonth(now);
+      const monthEnd = endOfMonth(now);
 
-      // Get all cards with a scheduled or planned date
-      const allItems: UpcomingItem[] = [];
+      let inIdeation = 0;
+      let inProduction = 0;
+      let scheduledToPublish = 0;
+      let publishedThisMonth = 0;
+
       columns.forEach(column => {
         column.cards.forEach(card => {
-          if (card.scheduledDate) {
-            allItems.push({ card, date: card.scheduledDate, type: 'scheduled' });
-          } else if (card.plannedDate) {
-            allItems.push({ card, date: card.plannedDate, type: 'planned' });
+          // In Ideation: cards in 'ideate' column OR cards with plannedDate (from content calendar)
+          if (column.id === 'ideate') {
+            inIdeation++;
+          } else if (card.plannedDate && column.id !== 'ideate') {
+            // Cards with planned date that are not in ideate column are still counted as ideation
+            // Actually, let's count planned content separately
+          }
+
+          // In Production: cards in 'script-ideas', 'to-film', 'to-edit', or unscheduled cards in 'to-schedule'
+          if (column.id === 'script-ideas' || column.id === 'to-film' || column.id === 'to-edit') {
+            inProduction++;
+          } else if (column.id === 'to-schedule' && !card.scheduledDate) {
+            inProduction++;
+          }
+
+          // Scheduled to Publish: cards in 'to-schedule' that HAVE been scheduled (have scheduledDate)
+          if (column.id === 'to-schedule' && card.scheduledDate) {
+            scheduledToPublish++;
+          }
+
+          // Published this month: cards in 'published' column with publishedDate in current month
+          if (column.id === 'published' && card.publishedDate) {
+            const pubDate = parseISO(card.publishedDate);
+            if (isWithinInterval(pubDate, { start: monthStart, end: monthEnd })) {
+              publishedThisMonth++;
+            }
           }
         });
       });
 
-      // Filter for upcoming content (today or later) and sort by date
-      const upcoming = allItems
-        .filter(item => {
-          const itemDate = startOfDay(parseISO(item.date));
-          return isAfter(itemDate, today) || isEqual(itemDate, today);
-        })
-        .sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime())
-        .slice(0, 6);
+      // Also count cards with plannedDate as ideation (from content calendar)
+      columns.forEach(column => {
+        column.cards.forEach(card => {
+          if (card.plannedDate && column.id === 'ideate') {
+            // Already counted above, don't double count
+          }
+        });
+      });
 
-      setUpcomingContent(upcoming);
+      setCounts({ inIdeation, inProduction, scheduledToPublish, publishedThisMonth });
     } catch (err) {
-      console.error('Error loading production content:', err);
+      console.error('Error loading content counts:', err);
     }
   };
 
   useEffect(() => {
-    loadUpcomingContent();
+    loadContentCounts();
 
     // Listen for updates
-    const cleanup1 = on(window, EVENTS.scheduledContentUpdated, loadUpcomingContent);
-    const cleanup2 = on(window, EVENTS.productionKanbanUpdated, loadUpcomingContent);
+    const cleanup1 = on(window, EVENTS.scheduledContentUpdated, loadContentCounts);
+    const cleanup2 = on(window, EVENTS.productionKanbanUpdated, loadContentCounts);
     return () => {
       cleanup1();
       cleanup2();
     };
   }, []);
-
-  const scheduledCount = upcomingContent.filter(i => i.type === 'scheduled').length;
-  const plannedCount = upcomingContent.filter(i => i.type === 'planned').length;
 
   return (
     <div
@@ -107,50 +137,45 @@ export const ContentOverviewSidebar = ({
             <h2 className="text-base font-semibold text-gray-900">Content Overview</h2>
           </div>
 
-          {/* Legend with sample cards */}
+          {/* Content Overview Stats */}
           <div className="space-y-4">
-            {/* Planned sample card */}
-            <div className="flex items-center gap-3">
-              <div className="w-1/2 bg-purple-100 border border-dashed border-purple-300 rounded-lg p-2.5">
-                <div className="flex items-center gap-2">
-                  <Lightbulb className="w-3.5 h-3.5 text-purple-600" />
-                  <span className="text-xs font-medium text-purple-700">Sample content</span>
-                </div>
-                <div className="flex justify-center gap-1 mt-2">
-                  <div className="w-4 h-1 rounded-full bg-purple-500" />
-                  <div className="w-4 h-1 rounded-full bg-purple-300" />
-                  <div className="w-4 h-1 rounded-full bg-purple-300" />
-                  <div className="w-4 h-1 rounded-full bg-purple-300" />
-                  <div className="w-4 h-1 rounded-full bg-purple-300" />
-                  <div className="w-4 h-1 rounded-full bg-purple-300" />
-                </div>
+            {/* In Ideation */}
+            <div className="flex items-center justify-between py-2">
+              <div className="flex items-center gap-2.5">
+                <Lightbulb className="w-4 h-4 text-gray-400" />
+                <span className="text-sm text-gray-700">In Ideation</span>
               </div>
-              <div className="flex-1">
-                <p className="text-xs font-medium text-gray-700">Planned</p>
-                <p className="text-[11px] text-gray-400">Still developing</p>
-              </div>
+              <span className="text-sm font-semibold text-gray-900">{counts.inIdeation}</span>
             </div>
 
-            {/* Scheduled sample card */}
-            <div className="flex items-center gap-3">
-              <div className="w-1/2 bg-violet-100 rounded-lg p-2.5">
-                <div className="flex items-center gap-2">
-                  <CalendarCheck className="w-3.5 h-3.5 text-violet-600" />
-                  <span className="text-xs font-medium text-violet-700">Sample content</span>
-                </div>
-                <div className="flex justify-center gap-1 mt-2">
-                  <div className="w-4 h-1 rounded-full bg-violet-500" />
-                  <div className="w-4 h-1 rounded-full bg-violet-500" />
-                  <div className="w-4 h-1 rounded-full bg-violet-500" />
-                  <div className="w-4 h-1 rounded-full bg-violet-500" />
-                  <div className="w-4 h-1 rounded-full bg-violet-500" />
-                  <div className="w-4 h-1 rounded-full bg-violet-300" />
-                </div>
+            {/* In Production */}
+            <div className="flex items-center justify-between py-2">
+              <div className="flex items-center gap-2.5">
+                <Clapperboard className="w-4 h-4 text-gray-400" />
+                <span className="text-sm text-gray-700">In Production</span>
               </div>
-              <div className="flex-1">
-                <p className="text-xs font-medium text-gray-700">Scheduled</p>
-                <p className="text-[11px] text-gray-400">Ready to publish</p>
+              <span className="text-sm font-semibold text-gray-900">{counts.inProduction}</span>
+            </div>
+
+            {/* Scheduled to Publish */}
+            <div className="flex items-center justify-between py-2">
+              <div className="flex items-center gap-2.5">
+                <Calendar className="w-4 h-4 text-gray-400" />
+                <span className="text-sm text-gray-700">Scheduled to Publish</span>
               </div>
+              <span className="text-sm font-semibold text-gray-900">{counts.scheduledToPublish}</span>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-gray-200 my-2" />
+
+            {/* Published this month */}
+            <div className="flex items-center justify-between py-2">
+              <div className="flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-gray-400" />
+                <span className="text-sm text-gray-500">Published this month</span>
+              </div>
+              <span className="text-sm font-semibold text-green-600">{counts.publishedThisMonth}</span>
             </div>
           </div>
 

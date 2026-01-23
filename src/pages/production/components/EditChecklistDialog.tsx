@@ -170,25 +170,10 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
     onOpenChange(false);
   };
 
-  const statusOptions: { value: EditingStatus; label: string; icon: React.ReactNode; description: string }[] = [
-    {
-      value: "to-start-editing",
-      label: "To Start Editing",
-      icon: <Scissors className="w-4 h-4" />,
-      description: "Haven't started yet"
-    },
-    {
-      value: "needs-more-editing",
-      label: "Needs More Work",
-      icon: <Wrench className="w-4 h-4" />,
-      description: "In progress, needs refinement"
-    },
-    {
-      value: "ready-to-schedule",
-      label: "Edited",
-      icon: <Check className="w-4 h-4" />,
-      description: "Ready to move to scheduling"
-    },
+  const statusOptions: { value: EditingStatus; label: string; icon: React.ReactNode }[] = [
+    { value: "to-start-editing", label: "To Start", icon: <Scissors className="w-3.5 h-3.5" /> },
+    { value: "needs-more-editing", label: "In Progress", icon: <Wrench className="w-3.5 h-3.5" /> },
+    { value: "ready-to-schedule", label: "Edited", icon: <Check className="w-3.5 h-3.5" /> },
   ];
 
   const completedItems = globalItems.filter(item => item.checked).length;
@@ -196,7 +181,10 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[950px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-gradient-to-b from-pink-50/50 via-white to-white">
+      <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[950px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-white">
+        {/* Stage indicator bar */}
+        <div className="h-1 w-full bg-[#A88090] flex-shrink-0" />
+
         {/* Step Progress Indicator */}
         <ContentFlowProgress
           currentStep={4}
@@ -207,22 +195,25 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
         {/* Header */}
         <div className="px-6 pb-3">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center shadow-md">
-              <Scissors className="w-4 h-4 text-white" />
+            <div className="w-10 h-10 rounded-xl bg-[#8B7082] flex items-center justify-center shadow-md">
+              <Scissors className="w-5 h-5 text-white" />
             </div>
-            <h2 className="text-xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">Edit Checklist</h2>
+            <h2 className="text-2xl font-bold text-[#8B7082]">Edit Checklist</h2>
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 pb-4">
           {/* Two Column Layout */}
           <div className="flex gap-6 h-full">
-            {/* Left Column - Content Overview */}
-            <div className="w-[340px] flex-shrink-0 bg-gradient-to-b from-pink-50/80 to-pink-50/30 rounded-2xl p-5">
+            {/* Left Column - Content Overview (Document style) */}
+            <div
+              className="w-[340px] flex-shrink-0 bg-white rounded-xl p-5 border-l-[3px] border-[#A88090]"
+              style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}
+            >
               <div className="space-y-5">
                 {/* Hook */}
                 <div>
-                  <p className="text-[11px] font-semibold text-pink-400 uppercase tracking-wider mb-1">Hook</p>
+                  <p className="text-[11px] font-semibold text-[#A88090] uppercase tracking-wider mb-1">Hook</p>
                   <textarea
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
@@ -234,7 +225,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
 
                 {/* Script */}
                 <div>
-                  <p className="text-[11px] font-semibold text-pink-400 uppercase tracking-wider mb-2">Script</p>
+                  <p className="text-[11px] font-semibold text-[#A88090] uppercase tracking-wider mb-2">Script</p>
                   <Textarea
                     ref={scriptTextareaRef}
                     value={script}
@@ -253,7 +244,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
                 {/* How It's Shot */}
                 {card?.formats && card.formats.length > 0 && (
                   <div>
-                    <p className="text-[11px] font-semibold text-pink-400 uppercase tracking-wider mb-2">How It's Shot</p>
+                    <p className="text-[11px] font-semibold text-[#6B6B6B] uppercase tracking-wider mb-2">How It's Shot</p>
                     <div className="space-y-1.5">
                       {card.formats.map((format, idx) => {
                         const isPhoto = ['photo post', 'carousel', 'text post', 'photo', 'static'].some(
@@ -262,9 +253,9 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
                         return (
                           <div key={idx} className="flex items-center gap-2 text-sm text-gray-600">
                             {isPhoto ? (
-                              <Camera className="w-4 h-4 text-pink-300" />
+                              <Camera className="w-4 h-4 text-gray-400" />
                             ) : (
-                              <Video className="w-4 h-4 text-pink-300" />
+                              <Video className="w-4 h-4 text-gray-400" />
                             )}
                             <span>{format}</span>
                           </div>
@@ -277,7 +268,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
                 {/* Platforms */}
                 {card?.platforms && card.platforms.length > 0 && (
                   <div>
-                    <p className="text-[11px] font-semibold text-pink-400 uppercase tracking-wider mb-2">Platforms</p>
+                    <p className="text-[11px] font-semibold text-[#6B6B6B] uppercase tracking-wider mb-2">Platforms</p>
                     <div className="flex items-center gap-3">
                       {card.platforms.map((platform, idx) => {
                         const icon = getPlatformIcon(platform);
@@ -296,29 +287,29 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
                 {/* Filming Plan */}
                 {(card?.locationText || card?.outfitText || card?.propsText || card?.filmingNotes) && (
                   <div>
-                    <p className="text-[11px] font-semibold text-pink-400 uppercase tracking-wider mb-2">Filming Plan</p>
+                    <p className="text-[11px] font-semibold text-[#6B6B6B] uppercase tracking-wider mb-2">Filming Plan</p>
                     <div className="space-y-1.5 text-sm text-gray-600">
                       {card?.locationText && (
                         <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-pink-300 flex-shrink-0" />
+                          <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
                           <span>{card.locationText}</span>
                         </div>
                       )}
                       {card?.outfitText && (
                         <div className="flex items-center gap-2">
-                          <Shirt className="w-4 h-4 text-pink-300 flex-shrink-0" />
+                          <Shirt className="w-4 h-4 text-gray-400 flex-shrink-0" />
                           <span>{card.outfitText}</span>
                         </div>
                       )}
                       {card?.propsText && (
                         <div className="flex items-center gap-2">
-                          <Boxes className="w-4 h-4 text-pink-300 flex-shrink-0" />
+                          <Boxes className="w-4 h-4 text-gray-400 flex-shrink-0" />
                           <span>{card.propsText}</span>
                         </div>
                       )}
                       {card?.filmingNotes && (
                         <div className="flex items-center gap-2">
-                          <NotebookPen className="w-4 h-4 text-pink-300 flex-shrink-0" />
+                          <NotebookPen className="w-4 h-4 text-gray-400 flex-shrink-0" />
                           <span>{card.filmingNotes}</span>
                         </div>
                       )}
@@ -328,11 +319,33 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
               </div>
             </div>
 
-            {/* Right Column - Checklist & Notes */}
+            {/* Right Column - Status, Checklist & Notes */}
             <div className="flex-1 space-y-5">
+              {/* Editing Status - Small pills at top */}
+              <div>
+                <h4 className="text-[11px] font-semibold text-[#A88090] uppercase tracking-wider mb-2">Editing Status</h4>
+                <div className="flex gap-2">
+                  {statusOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => setStatus(option.value)}
+                      className={cn(
+                        "px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5",
+                        status === option.value
+                          ? "bg-[#8B7082] text-white"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      )}
+                    >
+                      {option.icon}
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Editor's Checklist Section */}
               <div>
-                <h3 className="text-[11px] font-semibold text-pink-400 uppercase tracking-wider mb-3">Editor's Checklist</h3>
+                <h3 className="text-[11px] font-semibold text-[#A88090] uppercase tracking-wider mb-3">Checklist</h3>
                 <div className="space-y-2">
                   <AnimatePresence mode="popLayout">
                     {globalItems.map((item) => (
@@ -346,7 +359,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
                         <Checkbox
                           checked={item.checked}
                           onCheckedChange={() => handleToggleItem(item.id)}
-                          className="data-[state=checked]:bg-pink-400 data-[state=checked]:border-pink-400 border-gray-300"
+                          className="data-[state=checked]:bg-[#8B7082] data-[state=checked]:border-[#8B7082] border-gray-300"
                         />
                         <input
                           type="text"
@@ -429,7 +442,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
                         lastInput?.focus();
                       }, 50);
                     }}
-                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-pink-500 transition-colors px-3 py-2"
+                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-[#8B7082] transition-colors px-3 py-2"
                   >
                     <Plus className="h-4 w-4" />
                     <span>Add item</span>
@@ -439,49 +452,13 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
 
               {/* Notes Section */}
               <div>
-                <h3 className="text-[11px] font-semibold text-pink-400 uppercase tracking-wider mb-3">Notes & Instructions</h3>
+                <h3 className="text-[11px] font-semibold text-[#6B6B6B] uppercase tracking-wider mb-2">Notes (optional)</h3>
                 <Textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Add notes about pacing, music choices, transitions, text overlays..."
-                  className="min-h-[120px] border-0 bg-gray-50/80 rounded-2xl focus:ring-1 focus:ring-pink-300 resize-none placeholder:text-gray-400 text-sm"
+                  className="min-h-[80px] border-0 bg-gray-50/80 rounded-xl focus:ring-1 focus:ring-[#8B7082]/30 resize-none placeholder:text-gray-400 text-sm"
                 />
-              </div>
-
-              {/* Editing Status */}
-              <div>
-                <h4 className="text-[11px] font-semibold text-pink-400 uppercase tracking-wider mb-3">Editing Status</h4>
-                <div className="flex gap-2">
-                  {statusOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => setStatus(option.value)}
-                      className={cn(
-                        "px-3 py-2 rounded-xl transition-all text-left flex items-center gap-2",
-                        status === option.value
-                          ? "bg-pink-50"
-                          : "bg-gray-100 hover:bg-gray-150"
-                      )}
-                    >
-                      {React.cloneElement(option.icon as React.ReactElement, {
-                        className: cn(
-                          "w-4 h-4 flex-shrink-0",
-                          status === option.value ? "text-pink-500" : "text-gray-400"
-                        )
-                      })}
-                      <div>
-                        <span className={cn(
-                          "font-semibold text-xs block whitespace-nowrap",
-                          status === option.value ? "text-pink-700" : "text-gray-700"
-                        )}>{option.label}</span>
-                        <span className={cn(
-                          "text-[10px] whitespace-nowrap",
-                          status === option.value ? "text-pink-500" : "text-gray-400"
-                        )}>{option.description}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
               </div>
             </div>
           </div>
@@ -498,7 +475,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
           </Button>
           <Button
             onClick={handleSave}
-            className="bg-pink-500 hover:bg-pink-600 text-white"
+            className="bg-[#8B7082] hover:bg-[#7A6073] text-white"
           >
             Save Changes
           </Button>

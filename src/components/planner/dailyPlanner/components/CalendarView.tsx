@@ -10,8 +10,11 @@ import { parseTimeTo24 } from "../utils/timeUtils";
 import { defaultScheduledColor, getTaskColorByHex } from "../utils/colorConstants";
 import { useColorPalette } from "../hooks/useColorPalette";
 import { ProductionCard, KanbanColumn } from "@/pages/production/types";
+import { defaultColumns } from "@/pages/production/utils/productionConstants";
 import { Video, Lightbulb, X, Clock, FileText, ArrowRight, Trash2, CalendarCheck } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { autoFormatTime } from "../utils/timeUtils";
 import { StorageKeys, getString, setString } from "@/lib/storage";
 import { EVENTS, emit } from "@/lib/events";
 import { ContentDisplayMode } from "../hooks/usePlannerState";
@@ -216,36 +219,43 @@ export const CalendarView = ({
       return;
     }
 
-    const savedData = getString(StorageKeys.productionKanban);
-    if (savedData) {
-      try {
-        const columns: KanbanColumn[] = JSON.parse(savedData);
-        const ideateColumn = columns.find(c => c.id === 'ideate');
+    if (!contentStartTime.trim() || !contentEndTime.trim()) {
+      toast.error('Please select a time slot for your content');
+      return;
+    }
 
-        if (ideateColumn) {
-          const newCard: ProductionCard = {
-            id: `card-${Date.now()}`,
-            title: contentHook.trim(),
-            hook: contentHook.trim(),
-            description: contentNotes || undefined,
-            columnId: 'ideate',
-            plannedDate: addDialogDate,
-            plannedColor: contentColor as any,
-            plannedStartTime: parseTimeTo24(contentStartTime) || undefined,
-            plannedEndTime: parseTimeTo24(contentEndTime) || undefined,
-            isNew: true,
-            addedFrom: 'calendar',
-          };
-          ideateColumn.cards.push(newCard);
-          setString(StorageKeys.productionKanban, JSON.stringify(columns));
-          emit(window, EVENTS.productionKanbanUpdated);
-          emit(window, EVENTS.scheduledContentUpdated);
-          loadProductionContent?.(); // Refresh content immediately
-          toast.success('Content idea added for ' + format(new Date(addDialogDate + 'T12:00:00'), 'MMM d'));
-        }
-      } catch (err) {
-        console.error('Error adding planned content:', err);
+    try {
+      const savedData = getString(StorageKeys.productionKanban);
+      const columns: KanbanColumn[] = savedData ? JSON.parse(savedData) : JSON.parse(JSON.stringify(defaultColumns));
+      let ideateColumn = columns.find(c => c.id === 'ideate');
+
+      // Create ideate column if it doesn't exist
+      if (!ideateColumn) {
+        ideateColumn = { id: 'ideate', title: 'Ideate', cards: [] };
+        columns.unshift(ideateColumn);
       }
+
+      const newCard: ProductionCard = {
+        id: `card-${Date.now()}`,
+        title: contentHook.trim(),
+        hook: contentHook.trim(),
+        description: contentNotes || undefined,
+        columnId: 'ideate',
+        plannedDate: addDialogDate,
+        plannedColor: contentColor as any,
+        plannedStartTime: parseTimeTo24(contentStartTime) || undefined,
+        plannedEndTime: parseTimeTo24(contentEndTime) || undefined,
+        isNew: true,
+        addedFrom: 'calendar',
+      };
+      ideateColumn.cards.push(newCard);
+      setString(StorageKeys.productionKanban, JSON.stringify(columns));
+      emit(window, EVENTS.productionKanbanUpdated);
+      emit(window, EVENTS.scheduledContentUpdated);
+      loadProductionContent?.(); // Refresh content immediately
+      toast.success('Content idea added for ' + format(new Date(addDialogDate + 'T12:00:00'), 'MMM d'));
+    } catch (err) {
+      console.error('Error adding planned content:', err);
     }
 
     setAddDialogOpen(false);
@@ -264,6 +274,22 @@ export const CalendarView = ({
       setPlannerData(updatedData);
       savePlannerData?.(updatedData);
       toast.success('Task deleted');
+    }
+  };
+
+  // Handle toggling task completion
+  const handleToggleTask = (taskId: string, dayString: string) => {
+    const dayIndex = plannerData.findIndex(d => d.date === dayString);
+    if (dayIndex >= 0) {
+      const updatedData = [...plannerData];
+      updatedData[dayIndex] = {
+        ...updatedData[dayIndex],
+        items: updatedData[dayIndex].items.map(item =>
+          item.id === taskId ? { ...item, isCompleted: !item.isCompleted } : item
+        )
+      };
+      setPlannerData(updatedData);
+      savePlannerData?.(updatedData);
     }
   };
 
@@ -350,6 +376,7 @@ export const CalendarView = ({
             if (card) {
               if (contentType === 'scheduled') {
                 card.scheduledDate = toDate;
+                card.schedulingStatus = 'scheduled';
               } else if (contentType === 'planned') {
                 card.plannedDate = toDate;
               }
@@ -525,61 +552,6 @@ export const CalendarView = ({
                       }
                     }}
                   >
-                    {/* Tasks */}
-                    {tasksToShow.map((task) => {
-                      // Use preview color if this task is being edited
-                      const isBeingEdited = editingTask?.id === task.id;
-                      const colorToUse = isBeingEdited && dialogTaskColor ? dialogTaskColor : task.color;
-                      const taskColorInfo = getTaskColorByHex(colorToUse);
-                      return (
-                        <div
-                          key={task.id}
-                          draggable={true}
-                          onClick={(e) => e.stopPropagation()}
-                          onMouseDown={(e) => e.stopPropagation()}
-                          onDragStart={(e) => {
-                            console.log('🚀 DRAG START - Calendar Task:', task.id, task.text, 'from:', dayString);
-                            e.stopPropagation();
-                            e.dataTransfer.setData('text/plain', task.id);
-                            e.dataTransfer.setData('taskId', task.id);
-                            e.dataTransfer.setData('fromDate', dayString);
-                            e.dataTransfer.setData('fromAllTasks', 'false');
-                            e.dataTransfer.effectAllowed = 'move';
-                            const target = e.currentTarget;
-                            setTimeout(() => {
-                              if (target) target.style.opacity = '0.5';
-                            }, 0);
-                          }}
-                          onDragEnd={(e) => {
-                            e.currentTarget.style.opacity = '1';
-                          }}
-                          className="group text-[11px] px-2 py-1 rounded-md cursor-grab active:cursor-grabbing transition-colors hover:shadow-sm flex-shrink-0 border-l-4"
-                          style={{
-                            backgroundColor: taskColorInfo.fill,
-                            borderLeftColor: taskColorInfo.border,
-                          }}
-                        >
-                          <div className="flex items-center gap-1">
-                            <div
-                              className="flex-1 truncate leading-tight"
-                              style={{ color: taskColorInfo.text }}
-                            >
-                              {task.text}
-                            </div>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteTask(task.id, dayString);
-                              }}
-                              className="opacity-0 group-hover:opacity-100 flex-shrink-0 text-gray-500 hover:text-red-500 transition-all"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-
                     {/* Scheduled Content */}
                     {showContent && scheduledContent.map((content) => {
                       // Use default mauve color for all scheduled content
@@ -655,7 +627,7 @@ export const CalendarView = ({
                         onDragEnd={(e) => {
                           e.currentTarget.style.opacity = '1';
                         }}
-                        className="group text-[11px] rounded-lg border border-dashed border-[#D4C9CF] bg-[#F5F2F4] text-[#8B7082] cursor-pointer hover:brightness-95 flex flex-col overflow-hidden flex-shrink-0"
+                        className="group text-[11px] rounded-lg border border-dashed border-[#8B7082] bg-[#F9F4EC] text-[#8B7082] cursor-pointer hover:brightness-95 flex flex-col overflow-hidden flex-shrink-0"
                       >
                         <div className="flex items-center gap-1 px-2 py-1.5">
                           <Lightbulb className="w-3 h-3 flex-shrink-0" />
@@ -672,6 +644,67 @@ export const CalendarView = ({
                         </div>
                       </div>
                     ))}
+
+                    {/* Tasks */}
+                    {tasksToShow.map((task) => {
+                      // Use preview color if this task is being edited
+                      const isBeingEdited = editingTask?.id === task.id;
+                      const colorToUse = isBeingEdited && dialogTaskColor ? dialogTaskColor : task.color;
+                      const taskColorInfo = getTaskColorByHex(colorToUse);
+                      return (
+                        <div
+                          key={task.id}
+                          draggable={true}
+                          onClick={(e) => e.stopPropagation()}
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onDragStart={(e) => {
+                            console.log('🚀 DRAG START - Calendar Task:', task.id, task.text, 'from:', dayString);
+                            e.stopPropagation();
+                            e.dataTransfer.setData('text/plain', task.id);
+                            e.dataTransfer.setData('taskId', task.id);
+                            e.dataTransfer.setData('fromDate', dayString);
+                            e.dataTransfer.setData('fromAllTasks', 'false');
+                            e.dataTransfer.effectAllowed = 'move';
+                            const target = e.currentTarget;
+                            setTimeout(() => {
+                              if (target) target.style.opacity = '0.5';
+                            }, 0);
+                          }}
+                          onDragEnd={(e) => {
+                            e.currentTarget.style.opacity = '1';
+                          }}
+                          className="group text-[11px] px-2 py-1 rounded-md cursor-grab active:cursor-grabbing transition-colors hover:shadow-sm flex-shrink-0 border-l-4"
+                          style={{
+                            backgroundColor: taskColorInfo.fill,
+                            borderLeftColor: taskColorInfo.border,
+                          }}
+                        >
+                          <div className="flex items-center gap-1">
+                            <Checkbox
+                              checked={task.isCompleted}
+                              onCheckedChange={() => handleToggleTask(task.id, dayString)}
+                              onClick={(e) => e.stopPropagation()}
+                              className="h-3 w-3 flex-shrink-0"
+                            />
+                            <div
+                              className={`flex-1 truncate leading-tight ${task.isCompleted ? 'line-through opacity-50' : ''}`}
+                              style={{ color: task.isCompleted ? undefined : taskColorInfo.text }}
+                            >
+                              {task.text}
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteTask(task.id, dayString);
+                              }}
+                              className="opacity-0 group-hover:opacity-100 flex-shrink-0 text-gray-500 hover:text-red-500 transition-all"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
 
                   </div>
                 </div>
@@ -717,18 +750,37 @@ export const CalendarView = ({
                     type="text"
                     value={contentStartTime}
                     onChange={(e) => setContentStartTime(e.target.value)}
-                    placeholder="Start time"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const formatted = autoFormatTime(contentStartTime);
+                        if (formatted.time) {
+                          setContentStartTime(`${formatted.time} ${formatted.period || 'am'}`);
+                        }
+                        const endInput = document.getElementById('content-end-time') as HTMLInputElement;
+                        endInput?.focus();
+                      }
+                    }}
+                    placeholder="9:00 am"
                     className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-                    maxLength={8}
                   />
                   <span className="text-gray-400">—</span>
                   <Input
+                    id="content-end-time"
                     type="text"
                     value={contentEndTime}
                     onChange={(e) => setContentEndTime(e.target.value)}
-                    placeholder="End time"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const formatted = autoFormatTime(contentEndTime);
+                        if (formatted.time) {
+                          setContentEndTime(`${formatted.time} ${formatted.period || 'am'}`);
+                        }
+                      }
+                    }}
+                    placeholder="10:00 am"
                     className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-                    maxLength={8}
                   />
                 </div>
 
@@ -748,35 +800,40 @@ export const CalendarView = ({
                 {/* Content Hub CTA */}
                 <button
                   onClick={() => {
-                    if (contentHook.trim()) {
-                      const savedData = getString(StorageKeys.productionKanban);
-                      if (savedData) {
-                        try {
-                          const columns: KanbanColumn[] = JSON.parse(savedData);
-                          const ideateColumn = columns.find(c => c.id === 'ideate');
-                          if (ideateColumn) {
-                            const newCard: ProductionCard = {
-                              id: `card-${Date.now()}`,
-                              title: contentHook.trim(),
-                              hook: contentHook.trim(),
-                              description: contentNotes || undefined,
-                              columnId: 'ideate',
-                              plannedDate: addDialogDate,
-                              plannedColor: contentColor as any,
-                              plannedStartTime: parseTimeTo24(contentStartTime) || undefined,
-                              plannedEndTime: parseTimeTo24(contentEndTime) || undefined,
-                              isNew: true,
-                            };
-                            ideateColumn.cards.push(newCard);
-                            setString(StorageKeys.productionKanban, JSON.stringify(columns));
-                            emit(window, EVENTS.productionKanbanUpdated);
-                            emit(window, EVENTS.scheduledContentUpdated);
-                            loadProductionContent?.();
-                          }
-                        } catch (err) {
-                          console.error('Error adding content:', err);
+                    if (contentHook.trim() && contentStartTime.trim() && contentEndTime.trim()) {
+                      try {
+                        const savedData = getString(StorageKeys.productionKanban);
+                        const columns: KanbanColumn[] = savedData ? JSON.parse(savedData) : JSON.parse(JSON.stringify(defaultColumns));
+                        let ideateColumn = columns.find(c => c.id === 'ideate');
+
+                        if (!ideateColumn) {
+                          ideateColumn = { id: 'ideate', title: 'Ideate', cards: [] };
+                          columns.unshift(ideateColumn);
                         }
+
+                        const newCard: ProductionCard = {
+                          id: `card-${Date.now()}`,
+                          title: contentHook.trim(),
+                          hook: contentHook.trim(),
+                          description: contentNotes || undefined,
+                          columnId: 'ideate',
+                          plannedDate: addDialogDate,
+                          plannedColor: contentColor as any,
+                          plannedStartTime: parseTimeTo24(contentStartTime) || undefined,
+                          plannedEndTime: parseTimeTo24(contentEndTime) || undefined,
+                          isNew: true,
+                        };
+                        ideateColumn.cards.push(newCard);
+                        setString(StorageKeys.productionKanban, JSON.stringify(columns));
+                        emit(window, EVENTS.productionKanbanUpdated);
+                        emit(window, EVENTS.scheduledContentUpdated);
+                        loadProductionContent?.();
+                      } catch (err) {
+                        console.error('Error adding content:', err);
                       }
+                    } else if (contentHook.trim() && (!contentStartTime.trim() || !contentEndTime.trim())) {
+                      toast.error('Please select a time slot for your content');
+                      return;
                     }
                     setAddDialogOpen(false);
                     resetFormState();

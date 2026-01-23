@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { eachDayOfInterval, endOfWeek, format, isSameDay, startOfWeek } from "date-fns";
 import { Trash2, Video, Lightbulb, X, Clock, FileText, ArrowRight, ListTodo, CalendarCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { autoFormatTime } from "../utils/timeUtils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,6 +18,7 @@ import { scheduleColors, defaultScheduledColor, getTaskColorByHex } from "../uti
 import { TaskColorPicker } from "./TaskColorPicker";
 import { useColorPalette } from "../hooks/useColorPalette";
 import { ProductionCard, KanbanColumn } from "@/pages/production/types";
+import { defaultColumns } from "@/pages/production/utils/productionConstants";
 import { ContentDisplayMode } from "../hooks/usePlannerState";
 import { StorageKeys, getString, setString } from "@/lib/storage";
 import { EVENTS, emit } from "@/lib/events";
@@ -262,36 +264,43 @@ export const WeekView = ({
       return;
     }
 
-    const savedData = getString(StorageKeys.productionKanban);
-    if (savedData) {
-      try {
-        const columns: KanbanColumn[] = JSON.parse(savedData);
-        const ideateColumn = columns.find(c => c.id === 'ideate');
+    if (!contentStartTime.trim() || !contentEndTime.trim()) {
+      toast.error('Please select a time slot for your content');
+      return;
+    }
 
-        if (ideateColumn) {
-          const newCard: ProductionCard = {
-            id: `card-${Date.now()}`,
-            title: contentHook.trim(),
-            hook: contentHook.trim(),
-            description: contentNotes || undefined,
-            columnId: 'ideate',
-            plannedDate: addDialogDate,
-            plannedColor: contentColor as any,
-            plannedStartTime: parseTimeTo24(contentStartTime) || undefined,
-            plannedEndTime: parseTimeTo24(contentEndTime) || undefined,
-            isNew: true,
-            addedFrom: 'calendar',
-          };
-          ideateColumn.cards.push(newCard);
-          setString(StorageKeys.productionKanban, JSON.stringify(columns));
-          emit(window, EVENTS.productionKanbanUpdated);
-          emit(window, EVENTS.scheduledContentUpdated);
-          loadProductionContent?.(); // Refresh content immediately
-          toast.success('Content idea added for ' + format(new Date(addDialogDate + 'T12:00:00'), 'MMM d'));
-        }
-      } catch (err) {
-        console.error('Error adding planned content:', err);
+    try {
+      const savedData = getString(StorageKeys.productionKanban);
+      const columns: KanbanColumn[] = savedData ? JSON.parse(savedData) : JSON.parse(JSON.stringify(defaultColumns));
+      let ideateColumn = columns.find(c => c.id === 'ideate');
+
+      // Create ideate column if it doesn't exist
+      if (!ideateColumn) {
+        ideateColumn = { id: 'ideate', title: 'Ideate', cards: [] };
+        columns.unshift(ideateColumn);
       }
+
+      const newCard: ProductionCard = {
+        id: `card-${Date.now()}`,
+        title: contentHook.trim(),
+        hook: contentHook.trim(),
+        description: contentNotes || undefined,
+        columnId: 'ideate',
+        plannedDate: addDialogDate,
+        plannedColor: contentColor as any,
+        plannedStartTime: parseTimeTo24(contentStartTime) || undefined,
+        plannedEndTime: parseTimeTo24(contentEndTime) || undefined,
+        isNew: true,
+        addedFrom: 'calendar',
+      };
+      ideateColumn.cards.push(newCard);
+      setString(StorageKeys.productionKanban, JSON.stringify(columns));
+      emit(window, EVENTS.productionKanbanUpdated);
+      emit(window, EVENTS.scheduledContentUpdated);
+      loadProductionContent?.(); // Refresh content immediately
+      toast.success('Content idea added for ' + format(new Date(addDialogDate + 'T12:00:00'), 'MMM d'));
+    } catch (err) {
+      console.error('Error adding planned content:', err);
     }
 
     closeAddDialog();
@@ -389,92 +398,6 @@ export const WeekView = ({
               })}
             </div>
           </div>
-
-          {/* Fixed Content Row - below headers, above time slots */}
-          {(contentDisplayMode === 'content' || contentDisplayMode === 'both') && (
-            <div className="flex border-b border-gray-200 bg-gradient-to-r from-indigo-50/50 to-violet-50/50">
-              {/* Empty cell for time column */}
-              <div className="flex-shrink-0 bg-transparent border-r border-gray-200" style={{ width: '40px' }} />
-              {/* Content columns */}
-              <div className="flex-1 grid grid-cols-7 gap-0">
-                {eachDayOfInterval({
-                  start: startOfWeek(selectedDate, { weekStartsOn: 1 }),
-                  end: endOfWeek(selectedDate, { weekStartsOn: 1 })
-                }).map((day, index) => {
-                  const dayString = getDateString(day);
-                  const isPast = day < new Date() && !isSameDay(day, new Date());
-
-                  // Get content for this specific day
-                  const dayScheduledContent = productionContent.scheduled.filter(c =>
-                    c.scheduledDate?.split('T')[0] === dayString
-                  );
-                  const dayPlannedContent = productionContent.planned.filter(c =>
-                    c.plannedDate?.split('T')[0] === dayString
-                  );
-                  const hasContent = dayScheduledContent.length > 0 || dayPlannedContent.length > 0;
-
-                  return (
-                    <div
-                      key={`content-${dayString}`}
-                      className="min-h-[40px] p-1 flex flex-col gap-1"
-                      style={{
-                        borderRight: index < 6 ? '1px solid #e5e7eb' : 'none',
-                        opacity: isPast ? 0.5 : 1
-                      }}
-                    >
-                      {dayScheduledContent.map((content) => {
-                        // Use default mauve color for all scheduled content
-                        const colors = defaultScheduledColor;
-                        return (
-                          <div
-                            key={content.id}
-                            onClick={() => onOpenContentDialog?.(content, 'scheduled')}
-                            className="group text-[10px] rounded-lg cursor-pointer hover:brightness-95 flex flex-col overflow-hidden border-0"
-                            style={{ backgroundColor: colors.bg, color: colors.text }}
-                          >
-                            <div className="flex items-center gap-1 px-1.5 py-1">
-                              <CalendarCheck className="w-2.5 h-2.5 flex-shrink-0" />
-                              <span className="flex-1 truncate">{content.hook || content.title}</span>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteContent(content.id, 'scheduled');
-                                }}
-                                className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-amber-600 transition-all"
-                              >
-                                <X className="w-2.5 h-2.5" />
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                      {dayPlannedContent.map((content) => (
-                        <div
-                          key={content.id}
-                          onClick={() => onOpenContentDialog?.(content, 'planned')}
-                          className="group text-[10px] rounded-lg border border-dashed border-[#D4C9CF] bg-[#F5F2F4] text-[#8B7082] cursor-pointer hover:brightness-95 flex flex-col overflow-hidden"
-                        >
-                          <div className="flex items-center gap-1 px-1.5 py-1">
-                            <Lightbulb className="w-2.5 h-2.5 flex-shrink-0" />
-                            <span className="flex-1 truncate">{content.hook || content.title}</span>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteContent(content.id, 'planned');
-                              }}
-                              className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all"
-                            >
-                              <X className="w-2.5 h-2.5" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
 
           {/* Scrollable timeline area */}
           <div ref={weeklyScrollRef} className="flex-1 min-h-0 overflow-auto">
@@ -599,6 +522,7 @@ export const WeekView = ({
                                             const card = toScheduleColumn.cards.find(c => c.id === contentId);
                                             if (card) {
                                               card.scheduledDate = dayString;
+                                              card.schedulingStatus = 'scheduled';
                                               setString(StorageKeys.productionKanban, JSON.stringify(columns));
                                               emit(window, EVENTS.productionKanbanUpdated);
                                               emit(window, EVENTS.scheduledContentUpdated);
@@ -792,6 +716,89 @@ export const WeekView = ({
                               />
                             </div>
                           ))}
+
+                          {/* Content positioned absolutely by time */}
+                          {showContent && (() => {
+                            // Get content for this day
+                            const scheduledContent = productionContent.scheduled.filter(c =>
+                              c.scheduledDate?.split('T')[0] === dayString
+                            );
+                            const plannedContent = productionContent.planned.filter(c =>
+                              c.plannedDate?.split('T')[0] === dayString
+                            );
+                            const allContent = [...scheduledContent, ...plannedContent];
+                            const timedContent = allContent.filter(c => c.plannedStartTime && c.plannedEndTime);
+
+                            return timedContent.map((content) => {
+                              const [startHour, startMinute] = content.plannedStartTime!.split(':').map(Number);
+                              const [endHour, endMinute] = content.plannedEndTime!.split(':').map(Number);
+                              const startTotalMinutes = startHour * 60 + startMinute;
+                              const endTotalMinutes = endHour * 60 + endMinute;
+                              const durationMinutes = Math.max(endTotalMinutes - startTotalMinutes, 30);
+
+                              const topPos = startTotalMinutes * 0.8;
+                              const height = Math.max(durationMinutes * 0.8 - 1, 24);
+
+                              const isPlanned = !content.scheduledDate;
+                              const colors = isPlanned
+                                ? { bg: '#F9F4EC', text: '#8B7082' }
+                                : defaultScheduledColor;
+
+                              return (
+                                <div
+                                  key={content.id}
+                                  draggable={true}
+                                  onDragStart={(e) => {
+                                    e.stopPropagation();
+                                    e.dataTransfer.setData('contentId', content.id);
+                                    e.dataTransfer.setData('contentType', isPlanned ? 'planned' : 'scheduled');
+                                    e.dataTransfer.setData('fromDate', dayString);
+                                    e.dataTransfer.effectAllowed = 'move';
+                                    e.currentTarget.style.opacity = '0.5';
+                                  }}
+                                  onDragEnd={(e) => {
+                                    e.currentTarget.style.opacity = '1';
+                                  }}
+                                  onClick={() => onOpenContentDialog?.(content, isPlanned ? 'planned' : 'scheduled')}
+                                  className="absolute left-1 right-1 rounded-lg cursor-pointer transition-all hover:brightness-95 hover:shadow-md overflow-hidden group"
+                                  style={{
+                                    top: `${topPos}px`,
+                                    height: `${height}px`,
+                                    backgroundColor: colors.bg,
+                                    border: isPlanned ? '1px dashed #8B7082' : 'none',
+                                    zIndex: 104,
+                                  }}
+                                >
+                                  <div className="p-1 h-full flex flex-col">
+                                    <div className="flex items-start gap-1">
+                                      {isPlanned ? (
+                                        <Lightbulb className="w-3 h-3 flex-shrink-0 mt-0.5" style={{ color: colors.text }} />
+                                      ) : (
+                                        <CalendarCheck className="w-3 h-3 flex-shrink-0 mt-0.5" style={{ color: colors.text }} />
+                                      )}
+                                      <div className="flex-1 min-w-0">
+                                        <div className="text-[10px] font-medium truncate" style={{ color: colors.text }}>
+                                          {content.hook || content.title}
+                                        </div>
+                                        <div className="text-[9px] opacity-70" style={{ color: colors.text }}>
+                                          {convert24To12Hour(content.plannedStartTime!)} - {convert24To12Hour(content.plannedEndTime!)}
+                                        </div>
+                                      </div>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDeleteContent(content.id, isPlanned ? 'planned' : 'scheduled');
+                                        }}
+                                        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity flex-shrink-0"
+                                      >
+                                        <X className="w-3 h-3" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            });
+                          })()}
 
                           {/* Tasks positioned absolutely by time */}
                           {showTasks && (() => {
@@ -1128,6 +1135,7 @@ export const WeekView = ({
                                         const card = toScheduleColumn.cards.find(c => c.id === contentId);
                                         if (card) {
                                           card.scheduledDate = dayString;
+                                          card.schedulingStatus = 'scheduled';
                                           setString(StorageKeys.productionKanban, JSON.stringify(columns));
                                           emit(window, EVENTS.productionKanbanUpdated);
                                           emit(window, EVENTS.scheduledContentUpdated);
@@ -1156,6 +1164,70 @@ export const WeekView = ({
                               }
                             }}
                           >
+                            {/* Untimed content (scheduled and planned) */}
+                            {showContent && (() => {
+                              const scheduledContent = productionContent.scheduled.filter(c =>
+                                c.scheduledDate?.split('T')[0] === dayString
+                              );
+                              const plannedContent = productionContent.planned.filter(c =>
+                                c.plannedDate?.split('T')[0] === dayString
+                              );
+                              const allContent = [...scheduledContent, ...plannedContent];
+                              const untimedContent = allContent.filter(c => !c.plannedStartTime || !c.plannedEndTime);
+
+                              return untimedContent.map((content) => {
+                                const isPlanned = !content.scheduledDate;
+                                const colors = isPlanned
+                                  ? { bg: '#F9F4EC', text: '#8B7082' }
+                                  : defaultScheduledColor;
+
+                                return (
+                                  <div
+                                    key={content.id}
+                                    draggable={true}
+                                    onClick={() => onOpenContentDialog?.(content, isPlanned ? 'planned' : 'scheduled')}
+                                    onDragStart={(e) => {
+                                      e.stopPropagation();
+                                      e.dataTransfer.setData('contentId', content.id);
+                                      e.dataTransfer.setData('contentType', isPlanned ? 'planned' : 'scheduled');
+                                      e.dataTransfer.setData('fromDate', dayString);
+                                      e.dataTransfer.effectAllowed = 'move';
+                                      e.currentTarget.style.opacity = '0.5';
+                                    }}
+                                    onDragEnd={(e) => {
+                                      e.currentTarget.style.opacity = '1';
+                                    }}
+                                    className="group text-xs px-2 py-1.5 rounded-md hover:shadow-sm transition-all cursor-pointer relative"
+                                    style={{
+                                      backgroundColor: colors.bg,
+                                      border: isPlanned ? '1px dashed #8B7082' : 'none',
+                                      opacity: isPast ? 0.5 : 1
+                                    }}
+                                  >
+                                    <div className="flex items-center gap-1.5">
+                                      {isPlanned ? (
+                                        <Lightbulb className="w-3 h-3 flex-shrink-0" style={{ color: colors.text }} />
+                                      ) : (
+                                        <CalendarCheck className="w-3 h-3 flex-shrink-0" style={{ color: colors.text }} />
+                                      )}
+                                      <span className="break-words flex-1 text-[11px]" style={{ color: colors.text }}>
+                                        {content.hook || content.title}
+                                      </span>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDeleteContent(content.id, isPlanned ? 'planned' : 'scheduled');
+                                        }}
+                                        className="p-1 rounded text-gray-400 hover:text-red-600 hover:bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity"
+                                      >
+                                        <X size={10} />
+                                      </button>
+                                    </div>
+                                  </div>
+                                );
+                              });
+                            })()}
+
                             {/* Tasks without time */}
                             {showTasks && (() => {
                               const tasksWithoutTimes = (dayData?.items || []).filter(item => !item.startTime || !item.endTime);
@@ -1332,17 +1404,38 @@ export const WeekView = ({
                   <Clock className="w-5 h-5 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Start time"
+                    placeholder="9:00 am"
                     value={taskStartTime}
                     onChange={(e) => setTaskStartTime(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const formatted = autoFormatTime(taskStartTime);
+                        if (formatted.time) {
+                          setTaskStartTime(`${formatted.time} ${formatted.period || 'am'}`);
+                        }
+                        const endInput = document.getElementById('week-task-end-time') as HTMLInputElement;
+                        endInput?.focus();
+                      }
+                    }}
                     className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                   <span className="text-gray-400">—</span>
                   <input
+                    id="week-task-end-time"
                     type="text"
-                    placeholder="End time"
+                    placeholder="10:00 am"
                     value={taskEndTime}
                     onChange={(e) => setTaskEndTime(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const formatted = autoFormatTime(taskEndTime);
+                        if (formatted.time) {
+                          setTaskEndTime(`${formatted.time} ${formatted.period || 'am'}`);
+                        }
+                      }
+                    }}
                     className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
@@ -1407,18 +1500,37 @@ export const WeekView = ({
                     type="text"
                     value={contentStartTime}
                     onChange={(e) => setContentStartTime(e.target.value)}
-                    placeholder="Start time"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const formatted = autoFormatTime(contentStartTime);
+                        if (formatted.time) {
+                          setContentStartTime(`${formatted.time} ${formatted.period || 'am'}`);
+                        }
+                        const endInput = document.getElementById('week-content-end-time') as HTMLInputElement;
+                        endInput?.focus();
+                      }
+                    }}
+                    placeholder="9:00 am"
                     className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-                    maxLength={8}
                   />
                   <span className="text-gray-400">—</span>
                   <Input
+                    id="week-content-end-time"
                     type="text"
                     value={contentEndTime}
                     onChange={(e) => setContentEndTime(e.target.value)}
-                    placeholder="End time"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const formatted = autoFormatTime(contentEndTime);
+                        if (formatted.time) {
+                          setContentEndTime(`${formatted.time} ${formatted.period || 'am'}`);
+                        }
+                      }
+                    }}
+                    placeholder="10:00 am"
                     className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-                    maxLength={8}
                   />
                 </div>
 
@@ -1438,35 +1550,40 @@ export const WeekView = ({
                 {/* Content Hub CTA */}
                 <button
                   onClick={() => {
-                    if (contentHook.trim()) {
-                      const savedData = getString(StorageKeys.productionKanban);
-                      if (savedData) {
-                        try {
-                          const columns: KanbanColumn[] = JSON.parse(savedData);
-                          const ideateColumn = columns.find(c => c.id === 'ideate');
-                          if (ideateColumn) {
-                            const newCard: ProductionCard = {
-                              id: `card-${Date.now()}`,
-                              title: contentHook.trim(),
-                              hook: contentHook.trim(),
-                              description: contentNotes || undefined,
-                              columnId: 'ideate',
-                              plannedDate: addDialogDate,
-                              plannedColor: contentColor as any,
-                              plannedStartTime: parseTimeTo24(contentStartTime) || undefined,
-                              plannedEndTime: parseTimeTo24(contentEndTime) || undefined,
-                              isNew: true,
-                            };
-                            ideateColumn.cards.push(newCard);
-                            setString(StorageKeys.productionKanban, JSON.stringify(columns));
-                            emit(window, EVENTS.productionKanbanUpdated);
-                            emit(window, EVENTS.scheduledContentUpdated);
-                            loadProductionContent?.();
-                          }
-                        } catch (err) {
-                          console.error('Error adding content:', err);
+                    if (contentHook.trim() && contentStartTime.trim() && contentEndTime.trim()) {
+                      try {
+                        const savedData = getString(StorageKeys.productionKanban);
+                        const columns: KanbanColumn[] = savedData ? JSON.parse(savedData) : JSON.parse(JSON.stringify(defaultColumns));
+                        let ideateColumn = columns.find(c => c.id === 'ideate');
+
+                        if (!ideateColumn) {
+                          ideateColumn = { id: 'ideate', title: 'Ideate', cards: [] };
+                          columns.unshift(ideateColumn);
                         }
+
+                        const newCard: ProductionCard = {
+                          id: `card-${Date.now()}`,
+                          title: contentHook.trim(),
+                          hook: contentHook.trim(),
+                          description: contentNotes || undefined,
+                          columnId: 'ideate',
+                          plannedDate: addDialogDate,
+                          plannedColor: contentColor as any,
+                          plannedStartTime: parseTimeTo24(contentStartTime) || undefined,
+                          plannedEndTime: parseTimeTo24(contentEndTime) || undefined,
+                          isNew: true,
+                        };
+                        ideateColumn.cards.push(newCard);
+                        setString(StorageKeys.productionKanban, JSON.stringify(columns));
+                        emit(window, EVENTS.productionKanbanUpdated);
+                        emit(window, EVENTS.scheduledContentUpdated);
+                        loadProductionContent?.();
+                      } catch (err) {
+                        console.error('Error adding content:', err);
                       }
+                    } else if (contentHook.trim() && (!contentStartTime.trim() || !contentEndTime.trim())) {
+                      toast.error('Please select a time slot for your content');
+                      return;
                     }
                     closeAddDialog();
                     resetFormState();

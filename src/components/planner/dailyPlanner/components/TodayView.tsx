@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { Trash2, Video, Lightbulb, X, Clock, FileText, ArrowRight, ListTodo, CalendarCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { autoFormatTime } from "../utils/timeUtils";
 import { toast } from "sonner";
 import { PlannerItem } from "@/types/planner";
 import { CardContent } from "@/components/ui/card";
@@ -16,6 +17,7 @@ import { PlannerDerived, PlannerHelpers, PlannerRefs, PlannerSetters, PlannerSta
 import { usePlannerActions } from "../hooks/usePlannerActions";
 import { useColorPalette } from "../hooks/useColorPalette";
 import { ProductionCard, KanbanColumn } from "@/pages/production/types";
+import { defaultColumns } from "@/pages/production/utils/productionConstants";
 import { StorageKeys, getString, setString } from "@/lib/storage";
 import { EVENTS, emit } from "@/lib/events";
 import { cn } from "@/lib/utils";
@@ -214,36 +216,43 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
       return;
     }
 
-    const savedData = getString(StorageKeys.productionKanban);
-    if (savedData) {
-      try {
-        const columns: KanbanColumn[] = JSON.parse(savedData);
-        const ideateColumn = columns.find(c => c.id === 'ideate');
+    if (!contentStartTime.trim() || !contentEndTime.trim()) {
+      toast.error('Please select a time slot for your content');
+      return;
+    }
 
-        if (ideateColumn) {
-          const newCard: ProductionCard = {
-            id: `card-${Date.now()}`,
-            title: contentHook.trim(),
-            hook: contentHook.trim(),
-            description: contentNotes || undefined,
-            columnId: 'ideate',
-            plannedDate: dateString,
-            plannedColor: contentColor as any,
-            plannedStartTime: parseTimeTo24(contentStartTime) || undefined,
-            plannedEndTime: parseTimeTo24(contentEndTime) || undefined,
-            isNew: true,
-            addedFrom: 'calendar',
-          };
-          ideateColumn.cards.push(newCard);
-          setString(StorageKeys.productionKanban, JSON.stringify(columns));
-          emit(window, EVENTS.productionKanbanUpdated);
-          emit(window, EVENTS.scheduledContentUpdated);
-          loadProductionContent(); // Refresh content immediately
-          toast.success('Content idea added for ' + format(selectedDate, 'MMM d'));
-        }
-      } catch (err) {
-        console.error('Error adding planned content:', err);
+    try {
+      const savedData = getString(StorageKeys.productionKanban);
+      const columns: KanbanColumn[] = savedData ? JSON.parse(savedData) : JSON.parse(JSON.stringify(defaultColumns));
+      let ideateColumn = columns.find(c => c.id === 'ideate');
+
+      // Create ideate column if it doesn't exist
+      if (!ideateColumn) {
+        ideateColumn = { id: 'ideate', title: 'Ideate', cards: [] };
+        columns.unshift(ideateColumn);
       }
+
+      const newCard: ProductionCard = {
+        id: `card-${Date.now()}`,
+        title: contentHook.trim(),
+        hook: contentHook.trim(),
+        description: contentNotes || undefined,
+        columnId: 'ideate',
+        plannedDate: dateString,
+        plannedColor: contentColor as any,
+        plannedStartTime: parseTimeTo24(contentStartTime) || undefined,
+        plannedEndTime: parseTimeTo24(contentEndTime) || undefined,
+        isNew: true,
+        addedFrom: 'calendar',
+      };
+      ideateColumn.cards.push(newCard);
+      setString(StorageKeys.productionKanban, JSON.stringify(columns));
+      emit(window, EVENTS.productionKanbanUpdated);
+      emit(window, EVENTS.scheduledContentUpdated);
+      loadProductionContent(); // Refresh content immediately
+      toast.success('Content idea added for ' + format(selectedDate, 'MMM d'));
+    } catch (err) {
+      console.error('Error adding planned content:', err);
     }
 
     closeAddDialog();
@@ -337,71 +346,6 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
   return (
     <>
 <CardContent className="px-0 h-full flex flex-col">
-  {/* Content Banner for Today - only shows untimed content */}
-  {(() => {
-    const untimedScheduled = scheduledContent.filter(c => !c.plannedStartTime || !c.plannedEndTime);
-    const untimedPlanned = plannedContent.filter(c => !c.plannedStartTime || !c.plannedEndTime);
-    const hasUntimedContent = (untimedScheduled.length > 0 || untimedPlanned.length > 0) && showContent;
-
-    return hasUntimedContent && (
-    <div className="flex-shrink-0 px-4 py-3 bg-gradient-to-r from-indigo-50 to-violet-50 border-b border-indigo-100">
-      <div className="flex items-center gap-2 mb-2">
-        <Video className="w-4 h-4 text-indigo-500" />
-        <span className="text-sm font-semibold text-gray-800">Today's Content</span>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {untimedScheduled.map((content) => {
-          // Use default mauve color for all scheduled content
-          const colors = defaultScheduledColor;
-          return (
-            <div
-              key={content.id}
-              onClick={() => onOpenContentDialog?.(content, 'scheduled')}
-              className="group text-xs rounded-lg cursor-pointer hover:brightness-95 flex flex-col overflow-hidden border-0"
-              style={{ backgroundColor: colors.bg, color: colors.text }}
-            >
-              <div className="flex items-center gap-1.5 px-3 py-1.5">
-                <CalendarCheck className="w-3 h-3" />
-                <span className="truncate max-w-[200px]">{content.hook || content.title}</span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteContent(content.id, 'scheduled');
-                  }}
-                  className="opacity-0 group-hover:opacity-100 ml-1 text-gray-400 hover:text-amber-600 transition-all"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          );
-        })}
-        {untimedPlanned.map((content) => (
-          <div
-            key={content.id}
-            onClick={() => onOpenContentDialog?.(content, 'planned')}
-            className="group text-xs rounded-lg bg-[#F5F2F4] border border-dashed border-[#D4C9CF] text-[#8B7082] cursor-pointer hover:brightness-95 flex flex-col overflow-hidden"
-          >
-            <div className="flex items-center gap-1.5 px-3 py-1.5">
-              <Lightbulb className="w-3 h-3" />
-              <span className="truncate max-w-[200px]">{content.hook || content.title}</span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteContent(content.id, 'planned');
-                }}
-                className="opacity-0 group-hover:opacity-100 ml-1 text-gray-400 hover:text-red-500 transition-all"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-  })()}
-
   {/* Untimed Tasks Section - tasks without start/end times */}
   {showTasks && (() => {
     const untimedTasks = currentDay.items.filter(item => !item.startTime || !item.endTime);
@@ -1224,17 +1168,38 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                   <Clock className="w-5 h-5 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Start time"
+                    placeholder="9:00 am"
                     value={taskStartTime}
                     onChange={(e) => setTaskStartTime(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const formatted = autoFormatTime(taskStartTime);
+                        if (formatted.time) {
+                          setTaskStartTime(`${formatted.time} ${formatted.period || 'am'}`);
+                        }
+                        const endInput = document.getElementById('today-task-end-time') as HTMLInputElement;
+                        endInput?.focus();
+                      }
+                    }}
                     className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                   <span className="text-gray-400">—</span>
                   <input
+                    id="today-task-end-time"
                     type="text"
-                    placeholder="End time"
+                    placeholder="10:00 am"
                     value={taskEndTime}
                     onChange={(e) => setTaskEndTime(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const formatted = autoFormatTime(taskEndTime);
+                        if (formatted.time) {
+                          setTaskEndTime(`${formatted.time} ${formatted.period || 'am'}`);
+                        }
+                      }
+                    }}
                     className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
@@ -1299,18 +1264,37 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                     type="text"
                     value={contentStartTime}
                     onChange={(e) => setContentStartTime(e.target.value)}
-                    placeholder="Start time"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const formatted = autoFormatTime(contentStartTime);
+                        if (formatted.time) {
+                          setContentStartTime(`${formatted.time} ${formatted.period || 'am'}`);
+                        }
+                        const endInput = document.getElementById('today-content-end-time') as HTMLInputElement;
+                        endInput?.focus();
+                      }
+                    }}
+                    placeholder="9:00 am"
                     className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-                    maxLength={8}
                   />
                   <span className="text-gray-400">—</span>
                   <Input
+                    id="today-content-end-time"
                     type="text"
                     value={contentEndTime}
                     onChange={(e) => setContentEndTime(e.target.value)}
-                    placeholder="End time"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const formatted = autoFormatTime(contentEndTime);
+                        if (formatted.time) {
+                          setContentEndTime(`${formatted.time} ${formatted.period || 'am'}`);
+                        }
+                      }
+                    }}
+                    placeholder="10:00 am"
                     className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-                    maxLength={8}
                   />
                 </div>
 
@@ -1330,7 +1314,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                 {/* Content Hub CTA */}
                 <button
                   onClick={() => {
-                    if (contentHook.trim()) {
+                    if (contentHook.trim() && contentStartTime.trim() && contentEndTime.trim()) {
                       const savedData = getString(StorageKeys.productionKanban);
                       if (savedData) {
                         try {
@@ -1359,6 +1343,9 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                           console.error('Error adding content:', err);
                         }
                       }
+                    } else if (contentHook.trim() && (!contentStartTime.trim() || !contentEndTime.trim())) {
+                      toast.error('Please select a time slot for your content');
+                      return;
                     }
                     closeAddDialog();
                     resetFormState();

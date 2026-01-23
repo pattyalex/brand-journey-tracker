@@ -37,8 +37,9 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
 
         {/* Progress line */}
         <div
-          className="absolute top-[18px] left-6 h-[2px] bg-gradient-to-r from-emerald-400 to-emerald-500 transition-all duration-500"
+          className="absolute top-[18px] left-6 h-[2px] transition-all duration-500"
           style={{
+            backgroundColor: '#8B7082',
             width: allCompleted
               ? 'calc(100% - 3rem)'
               : currentStep === 1
@@ -69,10 +70,10 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
               <div
                 className={cn(
                   "rounded-full flex items-center justify-center font-semibold transition-all duration-300 border-[1.5px]",
-                  isCompleted && "w-6 h-6 text-xs bg-emerald-500 border-emerald-500 text-white",
-                  isCurrent && "w-9 h-9 text-sm bg-white border-gray-800 text-gray-800 border-2 shadow-md",
+                  isCompleted && "w-6 h-6 text-xs bg-[#8B7082] border-[#8B7082] text-white",
+                  isCurrent && "w-9 h-9 text-sm bg-white border-[#8B7082] text-[#8B7082] border-2 shadow-md",
                   isPending && "w-6 h-6 text-xs bg-gray-100 border-gray-300 text-gray-400",
-                  isClickable && "hover:ring-2 hover:ring-offset-2 hover:ring-emerald-300"
+                  isClickable && "hover:ring-2 hover:ring-offset-2 hover:ring-[#8B7082]/30"
                 )}
               >
                 {isCompleted ? (
@@ -85,8 +86,8 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
               {/* Step label - compact */}
               <p className={cn(
                 "text-[10px] font-medium mt-1 text-center leading-tight",
-                isCompleted && "text-emerald-600",
-                isCurrent && "text-gray-800",
+                isCompleted && "text-[#8B7082]",
+                isCurrent && "text-[#8B7082]",
                 isPending && "text-gray-400"
               )}>
                 {step.shortLabel}

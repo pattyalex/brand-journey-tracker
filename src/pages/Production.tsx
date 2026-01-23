@@ -2346,8 +2346,8 @@ const Production = () => {
                                             {editingStatus === 'to-start-editing' && <Scissors className="w-2.5 h-2.5" />}
                                             {editingStatus === 'needs-more-editing' && <Wrench className="w-2.5 h-2.5" />}
                                             {editingStatus === 'ready-to-schedule' && <Check className="w-2.5 h-2.5" />}
-                                            {editingStatus === 'to-start-editing' ? 'To start editing' :
-                                             editingStatus === 'needs-more-editing' ? 'Needs more work' :
+                                            {editingStatus === 'to-start-editing' ? 'To Start' :
+                                             editingStatus === 'needs-more-editing' ? 'In Progress' :
                                              editingStatus === 'ready-to-schedule' ? 'Edited' : ''}
                                           </>
                                         ) : column.id === 'to-film' ? (
