@@ -237,20 +237,17 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   }, []);
 
   useEffect(() => {
-    if (embedded || planningMode) {
-      loadColumnsFromStorage();
-    }
-  }, [embedded, planningMode, loadColumnsFromStorage]);
+    // Always load columns from storage for archive functionality to work
+    loadColumnsFromStorage();
+  }, [loadColumnsFromStorage]);
 
   // Listen for updates from other calendar instances for real-time sync
   useEffect(() => {
-    if (embedded || planningMode) {
-      const cleanup = on(window, EVENTS.productionKanbanUpdated, () => {
-        loadColumnsFromStorage();
-      });
-      return cleanup;
-    }
-  }, [embedded, planningMode, loadColumnsFromStorage]);
+    const cleanup = on(window, EVENTS.productionKanbanUpdated, () => {
+      loadColumnsFromStorage();
+    });
+    return cleanup;
+  }, [loadColumnsFromStorage]);
 
   // Save columns to localStorage and emit event for real-time sync
   const saveColumns = (newColumns: KanbanColumn[]) => {

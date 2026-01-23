@@ -2644,7 +2644,14 @@ const Production = () => {
             "h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden border-0 shadow-2xl flex flex-col",
             ideateMode === 'pillarsformats' ? "sm:max-w-[1400px]" : "sm:max-w-[900px]"
           )}>
-            <DialogHeader className="flex-shrink-0 pt-6">
+            {/* Progress Indicator - at the very top */}
+            {!ideateMode && (
+              <div className="flex-shrink-0 pb-2">
+                <ContentFlowProgress currentStep={1} />
+              </div>
+            )}
+
+            <DialogHeader className="flex-shrink-0">
               {!ideateMode && (
                 <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent px-4 mb-2">
                   Content Ideation
@@ -2654,7 +2661,7 @@ const Production = () => {
 
               {/* Breadcrumbs for Brainstorm */}
               {ideateMode === 'brainstorm' && (
-                <div className="flex items-center gap-3 text-base mb-6 px-2">
+                <div className="flex items-center gap-3 text-base mb-6 px-2 pt-6">
                   <button
                     onClick={() => {
                       setIsIdeateDialogOpen(false);
@@ -2676,13 +2683,6 @@ const Production = () => {
                 </div>
               )}
             </DialogHeader>
-
-            {/* Progress Indicator */}
-            {!ideateMode && (
-              <div className="flex-shrink-0 bg-gray-50/50 border-b border-gray-100">
-                <ContentFlowProgress currentStep={1} />
-              </div>
-            )}
 
             <div className="overflow-y-auto flex-1 pr-2 py-4">
               {/* Method Selection - Always show unless in a specific mode */}
