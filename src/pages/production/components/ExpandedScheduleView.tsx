@@ -380,7 +380,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
       const rect = cardElement.getBoundingClientRect();
       const ghost = cardElement.cloneNode(true) as HTMLElement;
 
-      // Style the ghost
+      // Style the ghost with ethereal appearance
       ghost.style.position = 'fixed';
       ghost.style.left = `${rect.left}px`;
       ghost.style.top = `${rect.top}px`;
@@ -388,21 +388,28 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
       ghost.style.height = `${rect.height}px`;
       ghost.style.pointerEvents = 'none';
       ghost.style.zIndex = '9999';
-      ghost.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
-      ghost.style.opacity = '0.8';
+      ghost.style.opacity = '1';
+      ghost.style.filter = 'brightness(1.2)';
+      ghost.style.boxShadow = '0 0 20px rgba(139, 112, 130, 0.5), 0 0 40px rgba(139, 112, 130, 0.3)';
+      ghost.style.borderRadius = '8px';
+      ghost.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
 
       document.body.appendChild(ghost);
 
-      // Trigger animation after a frame
+      // Trigger ghost floating away animation after a frame
       requestAnimationFrame(() => {
-        ghost.style.transform = 'translateY(-100px) scale(0.5)';
-        ghost.style.opacity = '0';
+        requestAnimationFrame(() => {
+          ghost.style.transform = 'translateY(-200px) translateX(50px) rotate(8deg) scale(0.3)';
+          ghost.style.opacity = '0';
+          ghost.style.filter = 'brightness(1.5) blur(8px)';
+          ghost.style.boxShadow = '0 0 60px rgba(139, 112, 130, 0.8), 0 0 100px rgba(139, 112, 130, 0.4)';
+        });
       });
 
       // Remove ghost after animation
       setTimeout(() => {
         ghost.remove();
-      }, 500);
+      }, 850);
     }
 
     // Create a copy for the archive with archivedAt timestamp
