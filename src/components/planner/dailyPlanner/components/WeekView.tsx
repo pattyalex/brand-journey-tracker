@@ -78,6 +78,10 @@ interface WeekViewProps {
     scheduled: ProductionCard[];
     planned: ProductionCard[];
   };
+  setProductionContent?: React.Dispatch<React.SetStateAction<{
+    scheduled: ProductionCard[];
+    planned: ProductionCard[];
+  }>>;
   weeklyAddDialogState?: {
     open: boolean;
     dayString: string;
@@ -135,6 +139,7 @@ export const WeekView = ({
   showContent = false,
   contentDisplayMode = 'tasks',
   productionContent = { scheduled: [], planned: [] },
+  setProductionContent,
   weeklyAddDialogState,
   setWeeklyAddDialogState,
   loadProductionContent,
@@ -295,9 +300,21 @@ export const WeekView = ({
       };
       ideateColumn.cards.push(newCard);
       setString(StorageKeys.productionKanban, JSON.stringify(columns));
+
+      // DIRECTLY update productionContent state for immediate UI feedback
+      setProductionContent?.(prev => {
+        const updated = {
+          ...prev,
+          planned: [...prev.planned, newCard]
+        };
+        console.log('WeekView: Updated productionContent.planned:', updated.planned.length, 'items');
+        return updated;
+      });
+
+      // Emit events for cross-component sync
       emit(window, EVENTS.productionKanbanUpdated);
       emit(window, EVENTS.scheduledContentUpdated);
-      loadProductionContent?.(); // Refresh content immediately
+
       toast.success('Content idea added for ' + format(new Date(addDialogDate + 'T12:00:00'), 'MMM d'));
     } catch (err) {
       console.error('Error adding planned content:', err);
@@ -727,11 +744,19 @@ export const WeekView = ({
                               c.plannedDate?.split('T')[0] === dayString
                             );
                             const allContent = [...scheduledContent, ...plannedContent];
-                            const timedContent = allContent.filter(c => c.plannedStartTime && c.plannedEndTime);
+                            // Include content with either planned or scheduled time fields
+                            const timedContent = allContent.filter(c =>
+                              (c.plannedStartTime && c.plannedEndTime) ||
+                              (c.scheduledStartTime && c.scheduledEndTime)
+                            );
 
                             return timedContent.map((content) => {
-                              const [startHour, startMinute] = content.plannedStartTime!.split(':').map(Number);
-                              const [endHour, endMinute] = content.plannedEndTime!.split(':').map(Number);
+                              // Use scheduled times if available, otherwise use planned times
+                              const startTimeStr = content.scheduledStartTime || content.plannedStartTime!;
+                              const endTimeStr = content.scheduledEndTime || content.plannedEndTime!;
+
+                              const [startHour, startMinute] = startTimeStr.split(':').map(Number);
+                              const [endHour, endMinute] = endTimeStr.split(':').map(Number);
                               const startTotalMinutes = startHour * 60 + startMinute;
                               const endTotalMinutes = endHour * 60 + endMinute;
                               const durationMinutes = Math.max(endTotalMinutes - startTotalMinutes, 30);
@@ -781,7 +806,7 @@ export const WeekView = ({
                                           {content.hook || content.title}
                                         </div>
                                         <div className="text-[9px] opacity-70" style={{ color: colors.text }}>
-                                          {convert24To12Hour(content.plannedStartTime!)} - {convert24To12Hour(content.plannedEndTime!)}
+                                          {convert24To12Hour(startTimeStr)} - {convert24To12Hour(endTimeStr)}
                                         </div>
                                       </div>
                                       <button
@@ -1173,7 +1198,10 @@ export const WeekView = ({
                                 c.plannedDate?.split('T')[0] === dayString
                               );
                               const allContent = [...scheduledContent, ...plannedContent];
-                              const untimedContent = allContent.filter(c => !c.plannedStartTime || !c.plannedEndTime);
+                              const untimedContent = allContent.filter(c =>
+                                (!c.plannedStartTime || !c.plannedEndTime) &&
+                                (!c.scheduledStartTime || !c.scheduledEndTime)
+                              );
 
                               return untimedContent.map((content) => {
                                 const isPlanned = !content.scheduledDate;

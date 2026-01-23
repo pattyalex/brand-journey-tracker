@@ -465,7 +465,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-100 px-6 py-4 flex justify-end gap-3 bg-white">
+        <div className="px-6 py-4 flex justify-end gap-3 bg-white">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}

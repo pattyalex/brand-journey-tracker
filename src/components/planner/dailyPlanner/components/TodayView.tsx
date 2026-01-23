@@ -247,9 +247,22 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
       };
       ideateColumn.cards.push(newCard);
       setString(StorageKeys.productionKanban, JSON.stringify(columns));
+
+      // DIRECTLY update productionContent state for immediate UI feedback
+      setProductionContent(prev => {
+        const updated = {
+          ...prev,
+          planned: [...prev.planned, newCard]
+        };
+        console.log('TodayView: Updated productionContent.planned:', updated.planned.length, 'items');
+        console.log('TodayView: New card:', newCard);
+        return updated;
+      });
+
+      // Emit events for cross-component sync (other views like CalendarView, WeekView)
       emit(window, EVENTS.productionKanbanUpdated);
       emit(window, EVENTS.scheduledContentUpdated);
-      loadProductionContent(); // Refresh content immediately
+
       toast.success('Content idea added for ' + format(selectedDate, 'MMM d'));
     } catch (err) {
       console.error('Error adding planned content:', err);
@@ -323,6 +336,11 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
   ) || [];
   const hasContent = (scheduledContent.length > 0 || plannedContent.length > 0) && showContent;
 
+  // Debug logging for content rendering
+  console.log('TodayView render - todayString:', todayString, 'showContent:', showContent);
+  console.log('TodayView render - productionContent.planned:', productionContent?.planned?.length || 0);
+  console.log('TodayView render - plannedContent (filtered):', plannedContent.length);
+
   const { dateString, currentDay, colors, getTimezoneDisplay } = derived;
   const { todayScrollRef, isResizingRef } = refs;
   const { convert24To12Hour, loadProductionContent } = helpers;
@@ -341,6 +359,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
     setIsDraggingCreate,
     setDragCreateStart,
     setDragCreateEnd,
+    setProductionContent,
   } = setters;
 
   return (
@@ -646,7 +665,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
 
         {/* Render all tasks with absolute positioning - only when showTasks is true */}
         {showTasks && (
-        <div className="absolute top-0 left-2 right-2">
+        <div className="absolute top-0 left-2 right-2" style={{ zIndex: 10 }}>
           {(() => {
             const tasksWithTimes = currentDay.items.filter(item => item.startTime && item.endTime);
 
@@ -974,15 +993,30 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
               );
             });
           })()}
+        </div>
+        )}
 
-          {/* Render timed content on calendar grid */}
-          {showContent && (() => {
+        {/* Render timed content on calendar grid - independent of showTasks */}
+        {showContent && (
+        <div className="absolute top-0 left-2 right-2" style={{ zIndex: 5 }}>
+          {(() => {
             const allContent = [...scheduledContent, ...plannedContent];
-            const timedContent = allContent.filter(c => c.plannedStartTime && c.plannedEndTime);
+            // Include content with either planned or scheduled time fields
+            const timedContent = allContent.filter(c =>
+              (c.plannedStartTime && c.plannedEndTime) ||
+              (c.scheduledStartTime && c.scheduledEndTime)
+            );
+
+            console.log('TodayView content render - allContent:', allContent.length, 'timedContent:', timedContent.length);
+            allContent.forEach((c, i) => console.log(`  Content ${i}:`, c.id, c.plannedStartTime, c.plannedEndTime));
 
             return timedContent.map((content) => {
-              const [startHour, startMinute] = content.plannedStartTime!.split(':').map(Number);
-              const [endHour, endMinute] = content.plannedEndTime!.split(':').map(Number);
+              // Use scheduled times if available, otherwise use planned times
+              const startTimeStr = content.scheduledStartTime || content.plannedStartTime!;
+              const endTimeStr = content.scheduledEndTime || content.plannedEndTime!;
+
+              const [startHour, startMinute] = startTimeStr.split(':').map(Number);
+              const [endHour, endMinute] = endTimeStr.split(':').map(Number);
               const startTotalMinutes = startHour * 60 + startMinute;
               const endTotalMinutes = endHour * 60 + endMinute;
               const durationMinutes = Math.max(endTotalMinutes - startTotalMinutes, 30);
@@ -1000,7 +1034,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                 <div
                   key={content.id}
                   onClick={() => onOpenContentDialog?.(content, isPlanned ? 'planned' : 'scheduled')}
-                  className="absolute left-2 right-2 rounded-lg cursor-pointer transition-all hover:brightness-95 hover:shadow-md overflow-hidden group"
+                  className="absolute left-0 right-0 rounded-lg cursor-pointer transition-all hover:brightness-95 hover:shadow-md overflow-hidden group"
                   style={{
                     top: `${top}px`,
                     height: `${height}px`,
@@ -1021,7 +1055,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                           {content.hook || content.title}
                         </div>
                         <div className="text-[10px] opacity-70" style={{ color: isPlanned ? '#8B7082' : colors.text }}>
-                          {convert24To12Hour(content.plannedStartTime!)} - {convert24To12Hour(content.plannedEndTime!)}
+                          {convert24To12Hour(startTimeStr)} - {convert24To12Hour(endTimeStr)}
                         </div>
                       </div>
                       <button
@@ -1039,9 +1073,13 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
               );
             });
           })()}
+        </div>
+        )}
 
-          {/* Drag-to-create preview */}
-          {isDraggingCreate && dragCreateStart && dragCreateEnd && (() => {
+        {/* Drag-to-create preview - always visible when dragging */}
+        {isDraggingCreate && dragCreateStart && dragCreateEnd && (
+        <div className="absolute top-0 left-2 right-2" style={{ zIndex: 100 }}>
+          {(() => {
             const startMinutes = dragCreateStart.hour * 60 + dragCreateStart.minute;
             const endMinutes = dragCreateEnd.hour * 60 + dragCreateEnd.minute;
 
@@ -1076,7 +1114,6 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                   left: '0',
                   right: '0',
                   backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                  zIndex: 100,
                   pointerEvents: 'none'
                 }}
               >

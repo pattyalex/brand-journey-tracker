@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { addDays, addMonths, endOfMonth, endOfWeek, format, startOfMonth, startOfWeek, subDays, subMonths, eachDayOfInterval, isSameDay } from "date-fns";
 import { ChevronLeft, ChevronRight, Plus, Clock, FileText, Palette, Lightbulb, ListTodo, ArrowRight, Check, X } from 'lucide-react';
 import { cn } from "@/lib/utils";
@@ -187,6 +187,11 @@ export const DailyPlanner = () => {
     setWeeklyScrollPosition: setters.setWeeklyScrollPosition,
   });
 
+  // Refresh plannerData when view or date changes to ensure sync across views
+  useEffect(() => {
+    persistence.refreshPlannerData();
+  }, [state.currentView, state.selectedDate]);
+
   const actions = usePlannerActions({
     selectedDate: state.selectedDate,
     plannerData: state.plannerData,
@@ -318,6 +323,7 @@ export const DailyPlanner = () => {
     setCurrentView,
     setCalendarFilterMode,
     setContentDisplayMode,
+    setProductionContent,
     setDialogTaskTitle,
     setDialogTaskDescription,
     setDialogStartTime,
@@ -505,6 +511,7 @@ export const DailyPlanner = () => {
               showContent={showContent}
               contentDisplayMode={contentDisplayMode}
               productionContent={productionContent}
+              setProductionContent={setProductionContent}
               weeklyAddDialogState={weeklyAddDialogState}
               setWeeklyAddDialogState={setWeeklyAddDialogState}
               loadProductionContent={loadProductionContent}
@@ -543,6 +550,7 @@ export const DailyPlanner = () => {
               showContent={showContent}
               contentDisplayMode={contentDisplayMode}
               productionContent={productionContent}
+              setProductionContent={setProductionContent}
               loadProductionContent={loadProductionContent}
               onOpenContentDialog={handleOpenContentDialog}
               savePlannerData={persistence.savePlannerData}

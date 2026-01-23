@@ -1209,6 +1209,25 @@ const Production = () => {
       year: 'numeric'
     });
 
+    // Extract time from the date object
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const startTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+
+    // Calculate end time (1 hour later)
+    const endDate = new Date(date);
+    endDate.setHours(endDate.getHours() + 1);
+    const endHours = endDate.getHours();
+    const endMinutes = endDate.getMinutes();
+    const endTime = `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
+
+    // Format time for toast message
+    const formattedTime = date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+
     setColumns((prev) =>
       prev.map((col) => ({
         ...col,
@@ -1218,13 +1237,15 @@ const Production = () => {
                 ...card,
                 schedulingStatus: 'scheduled' as const,
                 scheduledDate: dateString,
+                scheduledStartTime: startTime,
+                scheduledEndTime: endTime,
               }
             : card
         ),
       }))
     );
 
-    toast.success(`Scheduled for ${formattedDate}`, {
+    toast.success(`Scheduled for ${formattedDate} at ${formattedTime}`, {
       description: "Content has been added to your calendar"
     });
   };
@@ -1239,6 +1260,8 @@ const Production = () => {
                 ...card,
                 schedulingStatus: 'to-schedule' as const,
                 scheduledDate: undefined,
+                scheduledStartTime: undefined,
+                scheduledEndTime: undefined,
               }
             : card
         ),

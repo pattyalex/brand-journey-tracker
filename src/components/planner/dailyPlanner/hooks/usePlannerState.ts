@@ -159,6 +159,7 @@ export const usePlannerState = ({
   // Load production content function (moved outside useEffect for reuse)
   const loadProductionContent = useCallback(() => {
     const savedData = getString(StorageKeys.productionKanban);
+    console.log('usePlannerState: loadProductionContent called, savedData exists:', !!savedData);
     if (!savedData) {
       setProductionContent({ scheduled: [], planned: [] });
       return;
@@ -176,6 +177,9 @@ export const usePlannerState = ({
       // Get planned content from ideate column
       const ideateColumn = columns.find(col => col.id === 'ideate');
       const plannedCards = ideateColumn?.cards.filter(c => c.plannedDate) || [];
+
+      console.log('usePlannerState: loadProductionContent found', plannedCards.length, 'planned cards');
+      plannedCards.forEach((c, i) => console.log(`  Card ${i}:`, c.id, c.plannedDate, c.plannedStartTime, c.plannedEndTime));
 
       setProductionContent({
         scheduled: scheduledCards,
@@ -199,6 +203,11 @@ export const usePlannerState = ({
       unsubscribe2();
     };
   }, [loadProductionContent]);
+
+  // Refresh production content when view or date changes to ensure sync across views
+  useEffect(() => {
+    loadProductionContent();
+  }, [currentView, selectedDate, loadProductionContent]);
 
   const [isDraggingOverAllTasks, setIsDraggingOverAllTasks] = useState(false);
   const [draggingTaskText, setDraggingTaskText] = useState<string>("");
@@ -401,6 +410,7 @@ export const usePlannerState = ({
       setSelectedTimezone,
       setCalendarFilterMode,
       setContentDisplayMode,
+      setProductionContent,
       setTodayZoomLevel,
       setTodayScrollPosition,
       setWeeklyScrollPosition,

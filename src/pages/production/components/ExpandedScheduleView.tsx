@@ -129,6 +129,14 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   const [isDraggingPlanCard, setIsDraggingPlanCard] = useState(false);
   const [planDragOverDate, setPlanDragOverDate] = useState<string | null>(null);
 
+  // Time picker state for scheduling
+  const [timePickerOpen, setTimePickerOpen] = useState(false);
+  const [pendingScheduleDate, setPendingScheduleDate] = useState<Date | null>(null);
+  const [pendingScheduleCardId, setPendingScheduleCardId] = useState<string | null>(null);
+  const [startTime, setStartTime] = useState("9:00");
+  const [endTime, setEndTime] = useState("10:00");
+  const [timePeriod, setTimePeriod] = useState<"AM" | "PM">("AM");
+
   // Initialize pending date with card's existing planned date when planning card changes
   useEffect(() => {
     if (planningCard?.plannedDate) {
@@ -720,9 +728,14 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
 
   const handleDrop = (e: React.DragEvent, date: Date) => {
     e.preventDefault();
-    // Handle dropping a scheduled card
+    // Handle dropping a scheduled card - show time picker
     if (draggedCardId && onSchedule) {
-      onSchedule(draggedCardId, date);
+      setPendingScheduleDate(date);
+      setPendingScheduleCardId(draggedCardId);
+      setStartTime("9:00");
+      setEndTime("10:00");
+      setTimePeriod("AM");
+      setTimePickerOpen(true);
     }
     // Handle dropping a planned card (update its planned date)
     if (draggedPlannedCardId) {
@@ -731,6 +744,42 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
     setDraggedCardId(null);
     setDraggedPlannedCardId(null);
     setDragOverDate(null);
+  };
+
+  // Handle confirming the schedule with time
+  const handleConfirmSchedule = () => {
+    if (pendingScheduleCardId && pendingScheduleDate && onSchedule) {
+      const dateWithTime = new Date(pendingScheduleDate);
+      const timeParts = startTime.match(/(\d{1,2}):(\d{2})/);
+      if (timeParts) {
+        let hours = parseInt(timeParts[1], 10);
+        const minutes = parseInt(timeParts[2], 10);
+
+        if (timePeriod === 'PM' && hours !== 12) hours += 12;
+        if (timePeriod === 'AM' && hours === 12) hours = 0;
+
+        dateWithTime.setHours(hours, minutes, 0, 0);
+      }
+      onSchedule(pendingScheduleCardId, dateWithTime);
+    }
+    setTimePickerOpen(false);
+    setPendingScheduleDate(null);
+    setPendingScheduleCardId(null);
+  };
+
+  // Update end time when start time changes (keep 1 hour duration)
+  const handleStartTimeChange = (value: string) => {
+    setStartTime(value);
+    // Auto-update end time to be 1 hour later
+    const match = value.match(/(\d{1,2}):(\d{2})/);
+    if (match) {
+      let hours = parseInt(match[1], 10);
+      const minutes = match[2];
+      hours = hours + 1;
+      if (hours > 12) hours = hours - 12;
+      if (hours === 0) hours = 12;
+      setEndTime(`${hours}:${minutes}`);
+    }
   };
 
   // Handler for updating a planned card's date via drag and drop
@@ -850,11 +899,11 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
             )}>
               {/* Left side - Content to Schedule header */}
               <div className={cn(
-                "bg-indigo-100/60 border-r border-indigo-100 flex items-center gap-3 px-6 transition-all duration-300",
+                "bg-[#EDE8F2] flex items-center gap-3 px-6 transition-all duration-300",
                 isLeftPanelCollapsed && "px-2 justify-center"
               )}>
-                <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                  <CalendarDays className="w-4 h-4 text-indigo-500" />
+                <div className="w-8 h-8 rounded-lg bg-[#E5DEF0] flex items-center justify-center flex-shrink-0">
+                  <CalendarDays className="w-4 h-4 text-[#8B7082]" />
                 </div>
                 {!isLeftPanelCollapsed && (
                   <h2 className="text-lg font-bold text-gray-900">Content to Schedule</h2>
@@ -871,7 +920,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
         <div
           className={cn(
             "border-r flex flex-col min-h-0 transition-all duration-300 relative",
-            embedded ? "border-violet-100 bg-violet-50/40" : "border-indigo-100 bg-indigo-100/60",
+            embedded ? "border-violet-100 bg-violet-50/40" : "border-transparent bg-[#EDE8F2]",
             !embedded && dragOverUnschedule && "bg-indigo-200 ring-2 ring-inset ring-indigo-400"
           )}
           onDragOver={(e) => {
@@ -1052,8 +1101,6 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
               ) : (
                 unscheduledCards.map((c) => {
                   const formats = c.formats || [];
-                  const hasStatus = !!c.schedulingStatus;
-                  const schedulingStatus = c.schedulingStatus;
                   const platforms = c.platforms || [];
                   const hasPlatforms = platforms.length > 0;
 
@@ -1096,12 +1143,12 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                         )}
                       </div>
 
-                      {/* Format and Status Tags */}
-                      {(formats.length > 0 || hasStatus || hasPlatforms) && (
+                      {/* Format Tags */}
+                      {(formats.length > 0 || hasPlatforms) && (
                         <div className="flex flex-col gap-1 mt-2">
                           {formats.map((format, idx) => {
                             const isStatic = isStaticFormat(format);
-                            const isLastRow = !hasStatus && idx === formats.length - 1;
+                            const isLastRow = idx === formats.length - 1;
 
                             if (isLastRow && hasPlatforms) {
                               return (
@@ -1123,19 +1170,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                             );
                           })}
 
-                          {hasStatus && (
-                            <div className={hasPlatforms ? "flex items-center justify-between" : ""}>
-                              <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full text-gray-500 font-medium">
-                                {schedulingStatus === 'to-schedule' && <CalendarDays className="w-2.5 h-2.5" />}
-                                {schedulingStatus === 'scheduled' && <Check className="w-2.5 h-2.5" />}
-                                {schedulingStatus === 'to-schedule' ? 'To schedule' :
-                                 schedulingStatus === 'scheduled' ? 'Scheduled' : ''}
-                              </span>
-                              {hasPlatforms && renderPlatformIcons()}
-                            </div>
-                          )}
-
-                          {!hasStatus && formats.length === 0 && hasPlatforms && (
+                          {formats.length === 0 && hasPlatforms && (
                             <div className="flex items-center justify-end">
                               {renderPlatformIcons()}
                             </div>
@@ -1145,6 +1180,13 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                     </div>
                   );
                 })
+              )}
+
+              {/* Drag hint */}
+              {unscheduledCards.length > 0 && !selectedCard && (
+                <p className="text-center text-xs text-gray-400 mt-4 italic">
+                  Drag to calendar to schedule
+                </p>
               )}
 
               {/* Selected Card Details */}
@@ -1222,7 +1264,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <CalendarDays className="w-5 h-5 text-indigo-500" />
+                  <CalendarDays className="w-5 h-5 text-[#8B7082]" />
                   <span className="text-lg font-bold text-gray-900">Content Calendar</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -2019,39 +2061,243 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
 
   if (embedded) {
     return (
-      <div
-        className="bg-white flex flex-col h-full flex-1 overflow-hidden"
-        onClick={() => {
-          // Close any open popover when clicking on the content area
-          if (popoverCardId) {
-            setPopoverCardId(null);
-          }
-        }}
-      >
-        {content}
-      </div>
+      <>
+        <div
+          className="bg-white flex flex-col h-full flex-1 overflow-hidden"
+          onClick={() => {
+            // Close any open popover when clicking on the content area
+            if (popoverCardId) {
+              setPopoverCardId(null);
+            }
+          }}
+        >
+          {content}
+        </div>
+
+        {/* Time Picker Modal */}
+        {timePickerOpen && (
+          <div
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30"
+            onClick={() => {
+              setTimePickerOpen(false);
+              setPendingScheduleDate(null);
+              setPendingScheduleCardId(null);
+            }}
+          >
+            <div
+              className="bg-white rounded-2xl shadow-[0_20px_70px_-15px_rgba(139,112,130,0.3)] p-5 w-[320px]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="text-center mb-5">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#EDE8F2] to-[#E0D6E6] flex items-center justify-center mx-auto mb-3">
+                  <Clock className="w-5 h-5 text-[#8B7082]" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900">Schedule Content</h3>
+                <p className="text-sm text-[#8B7082] font-medium mt-0.5">
+                  {pendingScheduleDate?.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                </p>
+              </div>
+
+              {/* Time Selection */}
+              <div className="bg-[#F9F7FA] rounded-xl p-4 mb-4">
+                <div className="flex items-center justify-center gap-3">
+                  <div className="text-center">
+                    <input
+                      type="text"
+                      value={startTime}
+                      onChange={(e) => handleStartTimeChange(e.target.value)}
+                      placeholder="9:00"
+                      className="w-[72px] h-11 bg-white border-0 rounded-xl shadow-sm text-center text-base font-medium text-gray-800 focus:ring-2 focus:ring-[#8B7082]/30 outline-none"
+                      autoFocus
+                    />
+                    <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wide">Start</p>
+                  </div>
+                  <div className="w-4 h-[2px] bg-[#D4CCD2] rounded-full mt-[-16px]" />
+                  <div className="text-center">
+                    <input
+                      type="text"
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      placeholder="10:00"
+                      className="w-[72px] h-11 bg-white border-0 rounded-xl shadow-sm text-center text-base font-medium text-gray-800 focus:ring-2 focus:ring-[#8B7082]/30 outline-none"
+                    />
+                    <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wide">End</p>
+                  </div>
+                  <div className="flex flex-col gap-1 ml-1">
+                    <button
+                      onClick={() => setTimePeriod("AM")}
+                      className={cn(
+                        "w-11 h-5 rounded-md text-[10px] font-semibold transition-all",
+                        timePeriod === "AM"
+                          ? "bg-[#8B7082] text-white shadow-sm"
+                          : "bg-white text-gray-400 hover:text-gray-600 shadow-sm"
+                      )}
+                    >
+                      AM
+                    </button>
+                    <button
+                      onClick={() => setTimePeriod("PM")}
+                      className={cn(
+                        "w-11 h-5 rounded-md text-[10px] font-semibold transition-all",
+                        timePeriod === "PM"
+                          ? "bg-[#8B7082] text-white shadow-sm"
+                          : "bg-white text-gray-400 hover:text-gray-600 shadow-sm"
+                      )}
+                    >
+                      PM
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setTimePickerOpen(false);
+                    setPendingScheduleDate(null);
+                    setPendingScheduleCardId(null);
+                  }}
+                  className="flex-1 h-10 text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmSchedule}
+                  className="flex-1 h-10 text-sm font-medium text-white bg-[#8B7082] hover:bg-[#7A6272] rounded-xl transition-all shadow-md hover:shadow-lg"
+                >
+                  Schedule
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
     );
   }
 
   // Modal mode
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-      onClick={onClose}
-    >
+    <>
       <div
-        className="bg-white rounded-2xl shadow-2xl flex flex-col w-[1200px] max-w-[95vw] h-[calc(100vh-6rem)] max-h-[800px] overflow-hidden"
-        onClick={(e) => {
-          e.stopPropagation();
-          // Close any open popover when clicking on the modal content area
-          if (popoverCardId) {
-            setPopoverCardId(null);
-          }
-        }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+        onClick={onClose}
       >
-        {content}
+        <div
+          className="bg-white rounded-2xl shadow-2xl flex flex-col w-[1200px] max-w-[95vw] h-[calc(100vh-6rem)] max-h-[800px] overflow-hidden"
+          onClick={(e) => {
+            e.stopPropagation();
+            // Close any open popover when clicking on the modal content area
+            if (popoverCardId) {
+              setPopoverCardId(null);
+            }
+          }}
+        >
+          {content}
+        </div>
       </div>
-    </div>
+
+      {/* Time Picker Modal */}
+      {timePickerOpen && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30"
+          onClick={() => {
+            setTimePickerOpen(false);
+            setPendingScheduleDate(null);
+            setPendingScheduleCardId(null);
+          }}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-[0_20px_70px_-15px_rgba(139,112,130,0.3)] p-5 w-[320px]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="text-center mb-5">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#EDE8F2] to-[#E0D6E6] flex items-center justify-center mx-auto mb-3">
+                <Clock className="w-5 h-5 text-[#8B7082]" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Schedule Content</h3>
+              <p className="text-sm text-[#8B7082] font-medium mt-0.5">
+                {pendingScheduleDate?.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+              </p>
+            </div>
+
+            {/* Time Selection */}
+            <div className="bg-[#F9F7FA] rounded-xl p-4 mb-4">
+              <div className="flex items-center justify-center gap-3">
+                <div className="text-center">
+                  <input
+                    type="text"
+                    value={startTime}
+                    onChange={(e) => handleStartTimeChange(e.target.value)}
+                    placeholder="9:00"
+                    className="w-[72px] h-11 bg-white border-0 rounded-xl shadow-sm text-center text-base font-medium text-gray-800 focus:ring-2 focus:ring-[#8B7082]/30 outline-none"
+                    autoFocus
+                  />
+                  <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wide">Start</p>
+                </div>
+                <div className="w-4 h-[2px] bg-[#D4CCD2] rounded-full mt-[-16px]" />
+                <div className="text-center">
+                  <input
+                    type="text"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    placeholder="10:00"
+                    className="w-[72px] h-11 bg-white border-0 rounded-xl shadow-sm text-center text-base font-medium text-gray-800 focus:ring-2 focus:ring-[#8B7082]/30 outline-none"
+                  />
+                  <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wide">End</p>
+                </div>
+                <div className="flex flex-col gap-1 ml-1">
+                  <button
+                    onClick={() => setTimePeriod("AM")}
+                    className={cn(
+                      "w-11 h-5 rounded-md text-[10px] font-semibold transition-all",
+                      timePeriod === "AM"
+                        ? "bg-[#8B7082] text-white shadow-sm"
+                        : "bg-white text-gray-400 hover:text-gray-600 shadow-sm"
+                    )}
+                  >
+                    AM
+                  </button>
+                  <button
+                    onClick={() => setTimePeriod("PM")}
+                    className={cn(
+                      "w-11 h-5 rounded-md text-[10px] font-semibold transition-all",
+                      timePeriod === "PM"
+                        ? "bg-[#8B7082] text-white shadow-sm"
+                        : "bg-white text-gray-400 hover:text-gray-600 shadow-sm"
+                    )}
+                  >
+                    PM
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setTimePickerOpen(false);
+                  setPendingScheduleDate(null);
+                  setPendingScheduleCardId(null);
+                }}
+                className="flex-1 h-10 text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmSchedule}
+                className="flex-1 h-10 text-sm font-medium text-white bg-[#8B7082] hover:bg-[#7A6272] rounded-xl transition-all shadow-md hover:shadow-lg"
+              >
+                Schedule
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

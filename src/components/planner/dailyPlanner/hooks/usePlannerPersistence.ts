@@ -276,6 +276,19 @@ export const usePlannerPersistence = ({
     setString(StorageKeys.todayZoomLevel, zoomLevel.toString());
   };
 
+  // Force refresh plannerData from localStorage
+  const refreshPlannerData = () => {
+    const savedData = getString(StorageKeys.plannerData);
+    if (savedData) {
+      try {
+        const data: PlannerDay[] = JSON.parse(savedData);
+        setPlannerData(data);
+      } catch (error) {
+        console.error('Failed to parse plannerData:', error);
+      }
+    }
+  };
+
   return {
     savePlannerData,
     saveAllTasks,
@@ -284,5 +297,6 @@ export const usePlannerPersistence = ({
     saveWeeklyScrollPosition,
     saveSelectedTimezone,
     saveTodayZoomLevel,
+    refreshPlannerData,
   };
 };

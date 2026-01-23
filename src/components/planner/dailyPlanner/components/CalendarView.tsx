@@ -51,6 +51,10 @@ interface CalendarViewProps {
     scheduled: ProductionCard[];
     planned: ProductionCard[];
   };
+  setProductionContent?: React.Dispatch<React.SetStateAction<{
+    scheduled: ProductionCard[];
+    planned: ProductionCard[];
+  }>>;
   loadProductionContent?: () => void;
   onOpenContentDialog?: (content: ProductionCard, type: 'scheduled' | 'planned') => void;
   savePlannerData?: (data: PlannerDay[]) => void;
@@ -84,6 +88,7 @@ export const CalendarView = ({
   showContent = false,
   contentDisplayMode = 'tasks',
   productionContent = { scheduled: [], planned: [] },
+  setProductionContent,
   loadProductionContent,
   onOpenContentDialog,
   savePlannerData,
@@ -137,6 +142,9 @@ export const CalendarView = ({
 
   // Handle day click based on display mode
   const handleDayClick = (day: Date, dayString: string, e: React.MouseEvent) => {
+    // Update selected date so other views show the same date
+    setSelectedDate(day);
+
     if (contentDisplayMode === 'tasks') {
       // Tasks mode: open TaskDialog
       setEditingTask({ id: '', text: '', date: dayString } as PlannerItem);
@@ -250,9 +258,21 @@ export const CalendarView = ({
       };
       ideateColumn.cards.push(newCard);
       setString(StorageKeys.productionKanban, JSON.stringify(columns));
+
+      // DIRECTLY update productionContent state for immediate UI feedback
+      setProductionContent?.(prev => {
+        const updated = {
+          ...prev,
+          planned: [...prev.planned, newCard]
+        };
+        console.log('CalendarView: Updated productionContent.planned:', updated.planned.length, 'items');
+        return updated;
+      });
+
+      // Emit events for cross-component sync
       emit(window, EVENTS.productionKanbanUpdated);
       emit(window, EVENTS.scheduledContentUpdated);
-      loadProductionContent?.(); // Refresh content immediately
+
       toast.success('Content idea added for ' + format(new Date(addDialogDate + 'T12:00:00'), 'MMM d'));
     } catch (err) {
       console.error('Error adding planned content:', err);
