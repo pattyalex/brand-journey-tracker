@@ -1769,7 +1769,6 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                   backgroundColor: defaultScheduledColor.bg,
                                   color: defaultScheduledColor.text
                                 } : undefined}
-                                title={scheduledCard.hook || scheduledCard.title}
                               >
                                 {/* Title row */}
                                 <div className="flex items-start gap-1.5">

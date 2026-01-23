@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, MoreVertical, Trash2, Pencil, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard, Video, Circle, Wrench, CheckCircle2, Camera, CheckSquare, Scissors, PlayCircle, PenLine, CalendarDays, X, Maximize2, PartyPopper, Archive, FolderOpen, ChevronRight, RefreshCw, Compass, TrendingUp, BarChart3 } from "lucide-react";
+import { PlusCircle, MoreVertical, Trash2, Pencil, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard, Video, Circle, Wrench, CheckCircle2, Camera, CheckSquare, Scissors, PlayCircle, PenLine, CalendarDays, X, Maximize2, PartyPopper, Archive, FolderOpen, ChevronRight, RefreshCw, Compass, TrendingUp, BarChart3, Zap } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine, RiPushpinFill } from "react-icons/ri";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -2471,8 +2471,10 @@ const Production = () => {
                         <div
                           key={`add-button-${column.id}`}
                           className={cn(
-                            "group/btn px-4 py-2 rounded-full border border-dashed hover:border-solid transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95",
-                            "bg-[#F5F2F4] hover:bg-[#EBE7E9] border-[#DDD6DA]",
+                            "group/btn px-4 py-2.5 rounded-full border transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95",
+                            column.id === 'ideate'
+                              ? "bg-transparent hover:bg-[#F5F2F4] border-[#C9BFC6]"
+                              : "bg-[#F5F2F4] hover:bg-[#EBE7E9] border-dashed hover:border-solid border-[#DDD6DA]",
                             colors.buttonText
                           )}
                           onClick={() => {
@@ -2523,8 +2525,12 @@ const Production = () => {
                             }
                           }}
                         >
-                          <div className={cn("flex items-center gap-2", colors.buttonText)}>
-                            <PlusCircle className="h-4 w-4 group-hover/btn:rotate-90 transition-transform duration-200" />
+                          <div className={cn("flex items-center justify-center gap-2", colors.buttonText)}>
+                            {column.id === 'ideate' ? (
+                              <Plus className="h-4 w-4 group-hover/btn:rotate-90 transition-transform duration-200" />
+                            ) : (
+                              <PlusCircle className="h-4 w-4 group-hover/btn:rotate-90 transition-transform duration-200" />
+                            )}
                             <span className="text-sm font-semibold">
                               {column.id === 'ideate' ? 'Add quick idea' : 'Add new'}
                             </span>
@@ -2547,15 +2553,18 @@ const Production = () => {
 
                       {/* Help me generate ideas button - only for ideate column */}
                       {column.id === 'ideate' && (
-                        <div className="group/btn px-4 py-2 rounded-full transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95 bg-[#8B7082] hover:bg-[#7A6272]"
+                        <div className="group/btn px-4 py-3 rounded-2xl transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95 bg-[#8B7082] hover:bg-[#7A6272]"
                           onClick={() => {
                             setSelectedIdeateCard(null);
                             setIsIdeateDialogOpen(true);
                           }}
                         >
-                          <div className="flex items-center gap-2 text-white">
-                            <Lightbulb className="h-4 w-4 group-hover/btn:animate-pulse" />
-                            <span className="text-sm font-semibold">Help me generate ideas</span>
+                          <div className="flex items-center gap-3 text-white">
+                            <Zap className="h-5 w-5 group-hover/btn:animate-pulse" />
+                            <div className="flex flex-col">
+                              <span className="text-sm font-semibold leading-tight">Generate ideas</span>
+                              <span className="text-xs opacity-80 leading-tight">AI-powered suggestions</span>
+                            </div>
                           </div>
                         </div>
                       )}
@@ -2705,8 +2714,8 @@ const Production = () => {
                           <Compass className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                          <h4 className="text-sm font-semibold text-[#1A5C54] group-hover:text-[#2A9D8F] transition-colors">Start With Your Pillars</h4>
-                          <p className="text-xs text-[#5C8A84] mt-1.5 leading-relaxed">Create content using a structured framework</p>
+                          <h4 className="text-sm font-semibold text-[#8B7082]">Start With Your Pillars</h4>
+                          <p className="text-xs text-[#8B7082]/70 mt-1.5 leading-relaxed">Create content using a structured framework</p>
                         </div>
                       </div>
                     </button>
@@ -2722,8 +2731,8 @@ const Production = () => {
                           <TrendingUp className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                          <h4 className="text-sm font-semibold text-[#8B3D2F] group-hover:text-[#E07A5F] transition-colors">Trending Hooks</h4>
-                          <p className="text-xs text-[#A67567] mt-1.5 leading-relaxed">Start with hooks that are working now</p>
+                          <h4 className="text-sm font-semibold text-[#8B7082]">Trending Hooks</h4>
+                          <p className="text-xs text-[#8B7082]/70 mt-1.5 leading-relaxed">Start with hooks that are working now</p>
                         </div>
                       </div>
                     </button>
@@ -2739,8 +2748,8 @@ const Production = () => {
                           <BarChart3 className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                          <h4 className="text-sm font-semibold text-[#8B6914] group-hover:text-[#D19A2A] transition-colors">What Worked, What's Next</h4>
-                          <p className="text-xs text-[#A68F4C] mt-1.5 leading-relaxed">Build on your past successes or competitor insights</p>
+                          <h4 className="text-sm font-semibold text-[#8B7082]">What Worked, What's Next</h4>
+                          <p className="text-xs text-[#8B7082]/70 mt-1.5 leading-relaxed">Build on your past successes or competitor insights</p>
                         </div>
                       </div>
                     </button>
@@ -2756,8 +2765,8 @@ const Production = () => {
                           <Sparkles className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                          <h4 className="text-sm font-semibold text-[#4C3399] group-hover:text-[#8B5CF6] transition-colors">Idea Expander</h4>
-                          <p className="text-xs text-[#7A68A6] mt-1.5 leading-relaxed">Take one idea and explore multiple angles</p>
+                          <h4 className="text-sm font-semibold text-[#8B7082]">Idea Expander</h4>
+                          <p className="text-xs text-[#8B7082]/70 mt-1.5 leading-relaxed">Take one idea and explore multiple angles</p>
                         </div>
                       </div>
                     </button>
