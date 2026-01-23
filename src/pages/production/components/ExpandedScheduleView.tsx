@@ -389,27 +389,27 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
       ghost.style.pointerEvents = 'none';
       ghost.style.zIndex = '9999';
       ghost.style.opacity = '1';
-      ghost.style.filter = 'brightness(1.2)';
-      ghost.style.boxShadow = '0 0 20px rgba(139, 112, 130, 0.5), 0 0 40px rgba(139, 112, 130, 0.3)';
+      ghost.style.filter = 'brightness(1.1)';
+      ghost.style.boxShadow = '0 0 15px rgba(139, 112, 130, 0.6)';
       ghost.style.borderRadius = '8px';
-      ghost.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+      ghost.style.transition = 'transform 0.5s cubic-bezier(0.55, 0.055, 0.675, 0.19), opacity 0.5s ease-out, filter 0.5s ease-out';
 
       document.body.appendChild(ghost);
 
-      // Trigger ghost floating away animation after a frame
+      // Trigger whoop to the right animation
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          ghost.style.transform = 'translateY(-200px) translateX(50px) rotate(8deg) scale(0.3)';
+          // Whoosh to the right off screen
+          ghost.style.transform = 'translateX(calc(100vw - ' + rect.left + 'px + 100px)) translateY(-30px) rotate(15deg) scale(0.7)';
           ghost.style.opacity = '0';
-          ghost.style.filter = 'brightness(1.5) blur(8px)';
-          ghost.style.boxShadow = '0 0 60px rgba(139, 112, 130, 0.8), 0 0 100px rgba(139, 112, 130, 0.4)';
+          ghost.style.filter = 'brightness(1.3) blur(4px)';
         });
       });
 
       // Remove ghost after animation
       setTimeout(() => {
         ghost.remove();
-      }, 850);
+      }, 550);
     }
 
     // Create a copy for the archive with archivedAt timestamp
