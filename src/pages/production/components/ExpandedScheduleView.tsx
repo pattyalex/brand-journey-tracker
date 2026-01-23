@@ -12,7 +12,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { CalendarDays, ChevronLeft, ChevronRight, Video, Camera, Check, X, Pin, PartyPopper, Lightbulb, Send, Plus, ArrowRight, TrendingUp, Clock, Sparkles, Archive } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { CalendarDays, ChevronLeft, ChevronRight, Video, Camera, Check, X, Pin, PartyPopper, Lightbulb, Send, Plus, ArrowRight, TrendingUp, Clock, Sparkles, Archive, Trash2 } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
@@ -364,7 +371,11 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   };
 
   // Handler for marking content as posted and archiving it
-  const handleMarkAsPosted = (cardId: string, e: React.MouseEvent) => {
+  // State for delete confirmation dialog
+  const [deleteConfirmCard, setDeleteConfirmCard] = useState<{ id: string; element: HTMLElement | null } | null>(null);
+
+  // Archive button handler - creates a copy in archive but KEEPS original in calendar
+  const handleArchiveContent = (cardId: string, e: React.MouseEvent) => {
     // Find the card in to-schedule column
     const toScheduleCol = columns.find(col => col.id === 'to-schedule');
     const card = toScheduleCol?.cards.find(c => c.id === cardId);
@@ -399,7 +410,6 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
       // Trigger whoop to the right animation
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          // Whoosh to the right off screen
           ghost.style.transform = 'translateX(calc(100vw - ' + rect.left + 'px + 100px)) translateY(-30px) rotate(15deg) scale(0.7)';
           ghost.style.opacity = '0';
           ghost.style.filter = 'brightness(1.3) blur(4px)';
@@ -415,31 +425,14 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
     // Create a copy for the archive with archivedAt timestamp
     const archivedCopy: ProductionCard = {
       ...card,
-      id: `archived-${card.id}-${Date.now()}`, // New unique ID for the copy
+      id: `archived-${card.id}-${Date.now()}`,
       columnId: 'posted',
       schedulingStatus: undefined,
       archivedAt: new Date().toISOString(),
     } as ProductionCard & { archivedAt: string };
 
-    // Update columns: unschedule original and add copy to posted column
+    // Only add to archive, keep original in calendar
     const newColumns = columns.map(col => {
-      if (col.id === 'to-schedule') {
-        return {
-          ...col,
-          cards: col.cards.map(c => {
-            if (c.id === cardId) {
-              return {
-                ...c,
-                schedulingStatus: 'to-schedule' as const,
-                scheduledDate: undefined,
-                scheduledStartTime: undefined,
-                scheduledEndTime: undefined,
-              };
-            }
-            return c;
-          }),
-        };
-      }
       if (col.id === 'posted') {
         return {
           ...col,
@@ -455,9 +448,153 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
     emit(window, EVENTS.scheduledContentUpdated);
 
     // Show toast notification
-    toast.success("A copy has been archived", {
-      description: "The content has been moved to your archive"
+    toast.success("Archived!", {
+      description: "A copy has been saved to your archive"
     });
+  };
+
+  // Show delete confirmation dialog for past date cards
+  const handleDeleteClick = (cardId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const button = e.currentTarget as HTMLElement;
+    const cardElement = button.closest('[data-card-id]') as HTMLElement;
+    setDeleteConfirmCard({ id: cardId, element: cardElement });
+  };
+
+  // Archive & Remove - creates archive copy then removes from calendar
+  const handleArchiveAndRemove = () => {
+    if (!deleteConfirmCard) return;
+
+    const toScheduleCol = columns.find(col => col.id === 'to-schedule');
+    const card = toScheduleCol?.cards.find(c => c.id === deleteConfirmCard.id);
+
+    if (!card) {
+      setDeleteConfirmCard(null);
+      return;
+    }
+
+    // Animate the card whooshing away
+    if (deleteConfirmCard.element) {
+      const rect = deleteConfirmCard.element.getBoundingClientRect();
+      const ghost = deleteConfirmCard.element.cloneNode(true) as HTMLElement;
+
+      ghost.style.position = 'fixed';
+      ghost.style.left = `${rect.left}px`;
+      ghost.style.top = `${rect.top}px`;
+      ghost.style.width = `${rect.width}px`;
+      ghost.style.height = `${rect.height}px`;
+      ghost.style.pointerEvents = 'none';
+      ghost.style.zIndex = '9999';
+      ghost.style.opacity = '1';
+      ghost.style.filter = 'brightness(1.1)';
+      ghost.style.boxShadow = '0 0 15px rgba(139, 112, 130, 0.6)';
+      ghost.style.borderRadius = '8px';
+      ghost.style.transition = 'transform 0.5s cubic-bezier(0.55, 0.055, 0.675, 0.19), opacity 0.5s ease-out, filter 0.5s ease-out';
+
+      document.body.appendChild(ghost);
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          ghost.style.transform = 'translateX(calc(100vw - ' + rect.left + 'px + 100px)) translateY(-30px) rotate(15deg) scale(0.7)';
+          ghost.style.opacity = '0';
+          ghost.style.filter = 'brightness(1.3) blur(4px)';
+        });
+      });
+
+      setTimeout(() => ghost.remove(), 550);
+    }
+
+    // Create archive copy
+    const archivedCopy: ProductionCard = {
+      ...card,
+      id: `archived-${card.id}-${Date.now()}`,
+      columnId: 'posted',
+      schedulingStatus: undefined,
+      archivedAt: new Date().toISOString(),
+    } as ProductionCard & { archivedAt: string };
+
+    // Add to archive AND remove from calendar
+    const newColumns = columns.map(col => {
+      if (col.id === 'to-schedule') {
+        return {
+          ...col,
+          cards: col.cards.filter(c => c.id !== deleteConfirmCard.id),
+        };
+      }
+      if (col.id === 'posted') {
+        return {
+          ...col,
+          cards: [archivedCopy, ...col.cards],
+        };
+      }
+      return col;
+    });
+
+    saveColumns(newColumns);
+    emit(window, EVENTS.productionKanbanUpdated);
+    emit(window, EVENTS.scheduledContentUpdated);
+
+    toast.success("Archived & Removed", {
+      description: "Content saved to archive and removed from calendar"
+    });
+
+    setDeleteConfirmCard(null);
+  };
+
+  // Delete Permanently - removes without archiving
+  const handleDeletePermanently = () => {
+    if (!deleteConfirmCard) return;
+
+    // Animate with a red/destructive feel - shrink and fade
+    if (deleteConfirmCard.element) {
+      const rect = deleteConfirmCard.element.getBoundingClientRect();
+      const ghost = deleteConfirmCard.element.cloneNode(true) as HTMLElement;
+
+      ghost.style.position = 'fixed';
+      ghost.style.left = `${rect.left}px`;
+      ghost.style.top = `${rect.top}px`;
+      ghost.style.width = `${rect.width}px`;
+      ghost.style.height = `${rect.height}px`;
+      ghost.style.pointerEvents = 'none';
+      ghost.style.zIndex = '9999';
+      ghost.style.opacity = '1';
+      ghost.style.boxShadow = '0 0 15px rgba(239, 68, 68, 0.6)';
+      ghost.style.borderRadius = '8px';
+      ghost.style.transition = 'transform 0.4s ease-in, opacity 0.4s ease-in, filter 0.4s ease-in';
+
+      document.body.appendChild(ghost);
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          ghost.style.transform = 'scale(0) rotate(10deg)';
+          ghost.style.opacity = '0';
+          ghost.style.filter = 'grayscale(1) blur(4px)';
+        });
+      });
+
+      setTimeout(() => ghost.remove(), 450);
+    }
+
+    // Remove from calendar without archiving
+    const newColumns = columns.map(col => {
+      if (col.id === 'to-schedule') {
+        return {
+          ...col,
+          cards: col.cards.filter(c => c.id !== deleteConfirmCard.id),
+        };
+      }
+      return col;
+    });
+
+    saveColumns(newColumns);
+    emit(window, EVENTS.productionKanbanUpdated);
+    emit(window, EVENTS.scheduledContentUpdated);
+
+    toast.success("Deleted", {
+      description: "Content has been permanently removed"
+    });
+
+    setDeleteConfirmCard(null);
   };
 
   const handleUpdateColorInternal = (cardId: string, color: ScheduleColorKey) => {
@@ -1189,14 +1326,14 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                             <button
                                               onClick={(e) => {
                                                 e.stopPropagation();
-                                                handleMarkAsPosted(card.id, e);
+                                                handleArchiveContent(card.id, e);
                                               }}
                                               className="opacity-0 group-hover/sidecard:opacity-100 hover:bg-gray-300/50 rounded p-0.5 transition-opacity flex-shrink-0"
                                             >
                                               <Archive className="w-3 h-3" />
                                             </button>
                                           </TooltipTrigger>
-                                          <TooltipContent side="top">Mark as posted & archive</TooltipContent>
+                                          <TooltipContent side="top">Save a copy to archive</TooltipContent>
                                         </Tooltip>
                                       </TooltipProvider>
                                     )}
@@ -1206,7 +1343,9 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                           <button
                                             onClick={(e) => {
                                               e.stopPropagation();
-                                              if (onUnschedule) {
+                                              if (isPastDate) {
+                                                handleDeleteClick(card.id, e);
+                                              } else if (onUnschedule) {
                                                 onUnschedule(card.id);
                                               }
                                             }}
@@ -1215,7 +1354,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                             <X className="w-3 h-3" />
                                           </button>
                                         </TooltipTrigger>
-                                        <TooltipContent side="top">Unschedule content</TooltipContent>
+                                        <TooltipContent side="top">{isPastDate ? "Remove from calendar" : "Unschedule content"}</TooltipContent>
                                       </Tooltip>
                                     </TooltipProvider>
                                   </div>
@@ -1646,14 +1785,14 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                           <button
                                             onClick={(e) => {
                                               e.stopPropagation();
-                                              handleMarkAsPosted(scheduledCard.id, e);
+                                              handleArchiveContent(scheduledCard.id, e);
                                             }}
                                             className="opacity-0 group-hover/schedcard:opacity-100 hover:bg-white/30 rounded p-0.5 transition-opacity flex-shrink-0"
                                           >
                                             <Archive className="w-3 h-3" />
                                           </button>
                                         </TooltipTrigger>
-                                        <TooltipContent side="top">Mark as posted & archive</TooltipContent>
+                                        <TooltipContent side="top">Save a copy to archive</TooltipContent>
                                       </Tooltip>
                                     </TooltipProvider>
                                   )}
@@ -1663,7 +1802,9 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                         <button
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            if (onUnschedule) {
+                                            if (isPublished) {
+                                              handleDeleteClick(scheduledCard.id, e);
+                                            } else if (onUnschedule) {
                                               onUnschedule(scheduledCard.id);
                                             }
                                           }}
@@ -1672,7 +1813,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                           <X className="w-3 h-3" />
                                         </button>
                                       </TooltipTrigger>
-                                      <TooltipContent side="top">Unschedule content</TooltipContent>
+                                      <TooltipContent side="top">{isPublished ? "Remove from calendar" : "Unschedule content"}</TooltipContent>
                                     </Tooltip>
                                   </TooltipProvider>
                                 </div>
@@ -2541,6 +2682,51 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deleteConfirmCard} onOpenChange={(open) => !open && setDeleteConfirmCard(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-gray-900">Remove from Calendar</DialogTitle>
+            <DialogDescription className="text-sm text-gray-500 mt-1">
+              What would you like to do with this content?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 mt-4">
+            <button
+              onClick={handleArchiveAndRemove}
+              className="flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-[#F5F2F4] hover:bg-[#EBE6E9] border border-[#D4C9CF] transition-all text-left group"
+            >
+              <div className="w-10 h-10 rounded-lg bg-[#8B7082] flex items-center justify-center flex-shrink-0">
+                <Archive className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-gray-900">Archive & Remove</p>
+                <p className="text-xs text-gray-500">Save a copy to archive, then remove from calendar</p>
+              </div>
+              <span className="text-[10px] font-medium text-[#8B7082] bg-[#8B7082]/10 px-2 py-0.5 rounded-full">Recommended</span>
+            </button>
+            <button
+              onClick={handleDeletePermanently}
+              className="flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 transition-all text-left group"
+            >
+              <div className="w-10 h-10 rounded-lg bg-red-500 flex items-center justify-center flex-shrink-0">
+                <Trash2 className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-red-700">Delete Permanently</p>
+                <p className="text-xs text-red-500">Remove without saving - cannot be undone</p>
+              </div>
+            </button>
+            <button
+              onClick={() => setDeleteConfirmCard(null)}
+              className="w-full px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all mt-1"
+            >
+              Cancel
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

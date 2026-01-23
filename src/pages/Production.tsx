@@ -2694,66 +2694,70 @@ const Production = () => {
                   </div>
 
                   <div className="grid grid-cols-2 gap-5">
-                    {/* 1. Start With Your Pillars */}
+                    {/* 1. Start With Your Pillars - Teal */}
                     <button
                       onClick={() => setIsPillarsDialogOpen(true)}
-                      className="group relative bg-[#FAF8F9] hover:bg-[#F5F2F4] border border-[#E8E2E5] hover:border-[#8B7082] rounded-2xl p-6 transition-all duration-300 hover:-translate-y-0.5 shadow-sm hover:shadow-md"
+                      className="group relative overflow-hidden bg-gradient-to-br from-[#F0FDFB] to-[#E6FAF7] border-l-4 border-l-[#2A9D8F] border-y border-r border-[#D1EDE9] hover:border-[#2A9D8F] rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-4px_rgba(42,157,143,0.3)]"
                     >
-                      <div className="flex flex-col items-center text-center space-y-4">
-                        <div className="w-14 h-14 bg-white border border-[#DDD6DA] rounded-2xl flex items-center justify-center group-hover:border-[#8B7082] group-hover:bg-[#8B7082] transition-all duration-300">
-                          <Compass className="w-6 h-6 text-[#8B7082] group-hover:text-white transition-colors" />
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#2A9D8F]/10 to-transparent rounded-bl-full" />
+                      <div className="relative flex flex-col items-center text-center space-y-4">
+                        <div className="w-14 h-14 bg-gradient-to-br from-[#2A9D8F] to-[#1A7A6F] rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                          <Compass className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                          <h4 className="text-sm font-semibold text-[#5C4E54] group-hover:text-[#8B7082] transition-colors">Start With Your Pillars</h4>
-                          <p className="text-xs text-[#A89BA0] mt-1.5 leading-relaxed">Create content using a structured framework</p>
+                          <h4 className="text-sm font-semibold text-[#1A5C54] group-hover:text-[#2A9D8F] transition-colors">Start With Your Pillars</h4>
+                          <p className="text-xs text-[#5C8A84] mt-1.5 leading-relaxed">Create content using a structured framework</p>
                         </div>
                       </div>
                     </button>
 
-                    {/* 2. Trending Hooks */}
+                    {/* 2. Trending Hooks - Coral */}
                     <button
                       onClick={() => setShowHooksDialog(true)}
-                      className="group relative bg-[#FAF8F9] hover:bg-[#F5F2F4] border border-[#E8E2E5] hover:border-[#8B7082] rounded-2xl p-6 transition-all duration-300 hover:-translate-y-0.5 shadow-sm hover:shadow-md"
+                      className="group relative overflow-hidden bg-gradient-to-br from-[#FEF6F4] to-[#FDEEEA] border-l-4 border-l-[#E07A5F] border-y border-r border-[#F5D5CD] hover:border-[#E07A5F] rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-4px_rgba(224,122,95,0.3)]"
                     >
-                      <div className="flex flex-col items-center text-center space-y-4">
-                        <div className="w-14 h-14 bg-white border border-[#DDD6DA] rounded-2xl flex items-center justify-center group-hover:border-[#8B7082] group-hover:bg-[#8B7082] transition-all duration-300">
-                          <TrendingUp className="w-6 h-6 text-[#8B7082] group-hover:text-white transition-colors" />
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#E07A5F]/10 to-transparent rounded-bl-full" />
+                      <div className="relative flex flex-col items-center text-center space-y-4">
+                        <div className="w-14 h-14 bg-gradient-to-br from-[#E07A5F] to-[#C75D43] rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                          <TrendingUp className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                          <h4 className="text-sm font-semibold text-[#5C4E54] group-hover:text-[#8B7082] transition-colors">Trending Hooks</h4>
-                          <p className="text-xs text-[#A89BA0] mt-1.5 leading-relaxed">Start with hooks that are working now</p>
+                          <h4 className="text-sm font-semibold text-[#8B3D2F] group-hover:text-[#E07A5F] transition-colors">Trending Hooks</h4>
+                          <p className="text-xs text-[#A67567] mt-1.5 leading-relaxed">Start with hooks that are working now</p>
                         </div>
                       </div>
                     </button>
 
-                    {/* 3. What Worked, What's Next */}
+                    {/* 3. What Worked, What's Next - Amber/Gold */}
                     <button
                       onClick={() => setIsWhatWorkedDialogOpen(true)}
-                      className="group relative bg-[#FAF8F9] hover:bg-[#F5F2F4] border border-[#E8E2E5] hover:border-[#8B7082] rounded-2xl p-6 transition-all duration-300 hover:-translate-y-0.5 shadow-sm hover:shadow-md"
+                      className="group relative overflow-hidden bg-gradient-to-br from-[#FFFCF5] to-[#FEF7E8] border-l-4 border-l-[#E9B44C] border-y border-r border-[#F5E6C4] hover:border-[#E9B44C] rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-4px_rgba(233,180,76,0.3)]"
                     >
-                      <div className="flex flex-col items-center text-center space-y-4">
-                        <div className="w-14 h-14 bg-white border border-[#DDD6DA] rounded-2xl flex items-center justify-center group-hover:border-[#8B7082] group-hover:bg-[#8B7082] transition-all duration-300">
-                          <BarChart3 className="w-6 h-6 text-[#8B7082] group-hover:text-white transition-colors" />
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#E9B44C]/10 to-transparent rounded-bl-full" />
+                      <div className="relative flex flex-col items-center text-center space-y-4">
+                        <div className="w-14 h-14 bg-gradient-to-br from-[#E9B44C] to-[#D19A2A] rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                          <BarChart3 className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                          <h4 className="text-sm font-semibold text-[#5C4E54] group-hover:text-[#8B7082] transition-colors">What Worked, What's Next</h4>
-                          <p className="text-xs text-[#A89BA0] mt-1.5 leading-relaxed">Build on your past successes or competitor insights</p>
+                          <h4 className="text-sm font-semibold text-[#8B6914] group-hover:text-[#D19A2A] transition-colors">What Worked, What's Next</h4>
+                          <p className="text-xs text-[#A68F4C] mt-1.5 leading-relaxed">Build on your past successes or competitor insights</p>
                         </div>
                       </div>
                     </button>
 
-                    {/* 4. Idea Expander */}
+                    {/* 4. Idea Expander - Purple */}
                     <button
                       onClick={() => setIsIdeaExpanderOpen(true)}
-                      className="group relative bg-[#FAF8F9] hover:bg-[#F5F2F4] border border-[#E8E2E5] hover:border-[#8B7082] rounded-2xl p-6 transition-all duration-300 hover:-translate-y-0.5 shadow-sm hover:shadow-md"
+                      className="group relative overflow-hidden bg-gradient-to-br from-[#FAF8FF] to-[#F3EFFE] border-l-4 border-l-[#8B5CF6] border-y border-r border-[#E0D4F7] hover:border-[#8B5CF6] rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-4px_rgba(139,92,246,0.3)]"
                     >
-                      <div className="flex flex-col items-center text-center space-y-4">
-                        <div className="w-14 h-14 bg-white border border-[#DDD6DA] rounded-2xl flex items-center justify-center group-hover:border-[#8B7082] group-hover:bg-[#8B7082] transition-all duration-300">
-                          <Sparkles className="w-6 h-6 text-[#8B7082] group-hover:text-white transition-colors" />
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#8B5CF6]/10 to-transparent rounded-bl-full" />
+                      <div className="relative flex flex-col items-center text-center space-y-4">
+                        <div className="w-14 h-14 bg-gradient-to-br from-[#8B5CF6] to-[#6D3FD6] rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                          <Sparkles className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                          <h4 className="text-sm font-semibold text-[#5C4E54] group-hover:text-[#8B7082] transition-colors">Idea Expander</h4>
-                          <p className="text-xs text-[#A89BA0] mt-1.5 leading-relaxed">Take one idea and explore multiple angles</p>
+                          <h4 className="text-sm font-semibold text-[#4C3399] group-hover:text-[#8B5CF6] transition-colors">Idea Expander</h4>
+                          <p className="text-xs text-[#7A68A6] mt-1.5 leading-relaxed">Take one idea and explore multiple angles</p>
                         </div>
                       </div>
                     </button>
