@@ -1325,7 +1325,14 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                     {!isPastDate && (
                                       <Check className="w-3 h-3 flex-shrink-0" />
                                     )}
-                                    <span className="truncate flex-1">{card.hook || card.title}</span>
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <span className="truncate flex-1 cursor-default">{card.hook || card.title}</span>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="bottom" variant="light">{card.hook || card.title}</TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
                                     {/* Posted button - only for past dates */}
                                     {isPastDate && (
                                       <TooltipProvider>
@@ -1783,7 +1790,14 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                   {!scheduledCard.fromCalendar && !isPublished && (
                                     <CalendarDays className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
                                   )}
-                                  <span className="leading-tight truncate flex-1">{scheduledCard.hook || scheduledCard.title || "Scheduled"}</span>
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span className="leading-tight truncate flex-1 cursor-default">{scheduledCard.hook || scheduledCard.title || "Scheduled"}</span>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="bottom" variant="light">{scheduledCard.hook || scheduledCard.title || "Scheduled"}</TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
                                   {/* Posted button - only for past dates */}
                                   {isPublished && (
                                     <TooltipProvider>
@@ -2050,7 +2064,14 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                             {/* Title row */}
                             <div className="flex items-start gap-1.5">
                               <Lightbulb className="w-3 h-3 flex-shrink-0 mt-0.5 text-[#8B7082]" />
-                              <span className="leading-tight opacity-80 truncate flex-1">{plannedCard.hook || plannedCard.title || "Planned idea"}</span>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className="leading-tight opacity-80 truncate flex-1 cursor-default">{plannedCard.hook || plannedCard.title || "Planned idea"}</span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="bottom" variant="light">{plannedCard.hook || plannedCard.title || "Planned idea"}</TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>

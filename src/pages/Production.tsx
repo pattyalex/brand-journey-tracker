@@ -2479,10 +2479,10 @@ const Production = () => {
                         <div
                           key={`add-button-${column.id}`}
                           className={cn(
-                            "group/btn px-4 py-2.5 rounded-full border transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95",
+                            "group/btn px-4 py-2.5 border transition-all duration-200 cursor-pointer w-fit active:scale-95",
                             column.id === 'ideate'
-                              ? "bg-transparent hover:bg-[#F5F2F4] border-[#C9BFC6]"
-                              : "bg-[#F5F2F4] hover:bg-[#EBE7E9] border-dashed hover:border-solid border-[#DDD6DA]",
+                              ? "rounded-xl bg-white/80 hover:bg-white border-[#C9BFC6] hover:-translate-y-0.5"
+                              : "rounded-full bg-[#F5F2F4] hover:bg-[#EBE7E9] border-dashed hover:border-solid border-[#DDD6DA] hover:scale-105",
                             colors.buttonText
                           )}
                           onClick={() => {
@@ -2561,7 +2561,7 @@ const Production = () => {
 
                       {/* Help me generate ideas button - only for ideate column */}
                       {column.id === 'ideate' && (
-                        <div className="group/btn px-4 py-3 rounded-2xl transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95 bg-[#8B7082] hover:bg-[#7A6272]"
+                        <div className="group/btn px-4 py-3 rounded-xl transition-all duration-200 cursor-pointer w-fit hover:-translate-y-0.5 active:scale-95 bg-[#8B7082] hover:bg-[#7A6272] shadow-md hover:shadow-lg"
                           onClick={() => {
                             setSelectedIdeateCard(null);
                             setIsIdeateDialogOpen(true);
