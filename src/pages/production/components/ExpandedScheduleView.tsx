@@ -1177,9 +1177,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                   }}
                                 >
                                   <div className="flex items-center gap-1.5">
-                                    {isPastDate ? (
-                                      <PartyPopper className="w-3 h-3 flex-shrink-0" />
-                                    ) : (
+                                    {!isPastDate && (
                                       <Check className="w-3 h-3 flex-shrink-0" />
                                     )}
                                     <span className="truncate flex-1">{card.hook || card.title}</span>
@@ -1636,12 +1634,8 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                               >
                                 {/* Title row */}
                                 <div className="flex items-start gap-1.5">
-                                  {!scheduledCard.fromCalendar && (
-                                    isPublished ? (
-                                      <PartyPopper className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-gray-600" />
-                                    ) : (
-                                      <CalendarDays className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                                    )
+                                  {!scheduledCard.fromCalendar && !isPublished && (
+                                    <CalendarDays className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
                                   )}
                                   <span className="leading-tight truncate flex-1">{scheduledCard.hook || scheduledCard.title || "Scheduled"}</span>
                                   {/* Posted button - only for past dates */}
@@ -1682,20 +1676,22 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                     </Tooltip>
                                   </TooltipProvider>
                                 </div>
-                                {/* Progress indicator - 6 lines, first 5 colored for scheduled */}
-                                <div className="flex gap-0.5 mt-1.5">
-                                  {[1, 2, 3, 4, 5, 6].map((step) => (
-                                    <div
-                                      key={step}
-                                      className="h-1 flex-1 rounded-full"
-                                      style={{
-                                        backgroundColor: step <= 5
-                                          ? defaultScheduledColor.text
-                                          : '#e5e7eb'
-                                      }}
-                                    />
-                                  ))}
-                                </div>
+                                {/* Progress indicator - 6 lines, first 5 colored for scheduled (hidden for past dates) */}
+                                {!isPublished && (
+                                  <div className="flex gap-0.5 mt-1.5">
+                                    {[1, 2, 3, 4, 5, 6].map((step) => (
+                                      <div
+                                        key={step}
+                                        className="h-1 flex-1 rounded-full"
+                                        style={{
+                                          backgroundColor: step <= 5
+                                            ? defaultScheduledColor.text
+                                            : '#e5e7eb'
+                                        }}
+                                      />
+                                    ))}
+                                  </div>
+                                )}
                               </div>
                             </PopoverTrigger>
                             <PopoverContent
