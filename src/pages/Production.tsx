@@ -1799,7 +1799,7 @@ const Production = () => {
 
   return (
     <Layout>
-      <div className="w-full h-screen flex flex-col pl-5 pr-3 pt-4 bg-[#F9F7FA]">
+      <div className="w-full h-screen flex flex-col pl-5 pr-3 pt-4 bg-[#F5F3F4]">
         <div
           ref={horizontalScrollRef}
           className="flex gap-5 flex-1 overflow-x-auto overflow-y-visible ml-[-34px] pl-[34px] mt-[-16px] pt-[16px] hide-scrollbar"
@@ -1838,31 +1838,6 @@ const Production = () => {
                     colors.bg
                   )}
                 >
-                  {/* Progress indicator - 6 horizontal bars at top */}
-                  {(() => {
-                    const stepMap: Record<string, number> = {
-                      'ideate': 1,
-                      'shape-ideas': 2,
-                      'to-film': 3,
-                      'to-edit': 4,
-                      'to-schedule': 5,
-                      'posted': 6,
-                    };
-                    const stepNumber = stepMap[column.id] || 1;
-                    return (
-                      <div className="flex gap-1 px-1 pt-1">
-                        {[1, 2, 3, 4, 5, 6].map((step) => (
-                          <div
-                            key={step}
-                            className={cn(
-                              "h-1 flex-1 rounded-full transition-colors",
-                              step <= stepNumber ? colors.topBorder : "bg-gray-200"
-                            )}
-                          />
-                        ))}
-                      </div>
-                    );
-                  })()}
                   {/* Special Archive UI for Posted column */}
                   {column.id === "posted" ? (
                     <>
@@ -2074,9 +2049,9 @@ const Production = () => {
                             {/* Calendar origin indicator */}
                             {card.fromCalendar && (
                               <div className="flex items-center gap-1 mb-1.5">
-                                <div className="flex items-center gap-1 px-1.5 py-0.5 bg-indigo-50 rounded-md border border-indigo-100">
-                                  <CalendarDays className="w-3 h-3 text-indigo-500" />
-                                  <span className="text-[11px] font-normal text-indigo-600/90">
+                                <div className="flex items-center gap-1 px-1.5 py-0.5 bg-[#F5F2F4] rounded-md border border-[#DDD6DA]">
+                                  <CalendarDays className="w-3 h-3 text-[#8B7082]" />
+                                  <span className="text-[11px] font-normal text-[#8B7082]">
                                     {card.plannedDate ? `Planned for ${new Date(card.plannedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : 'From Calendar'}
                                   </span>
                                 </div>
@@ -2100,10 +2075,10 @@ const Production = () => {
                                       onClick={(e) => {
                                         e.stopPropagation();
                                       }}
-                                      className="flex items-center gap-1 px-1.5 py-0.5 bg-violet-50 rounded-md border border-violet-200 hover:bg-violet-100 hover:border-violet-300 transition-colors cursor-pointer"
+                                      className="flex items-center gap-1 px-1.5 py-0.5 bg-[#F5F2F4] rounded-md border border-[#DDD6DA] hover:bg-[#EBE7E9] hover:border-[#CCC5C9] transition-colors cursor-pointer"
                                     >
-                                      <CalendarDays className="w-3 h-3 text-violet-500" />
-                                      <span className="text-[11px] font-normal text-violet-600/90">
+                                      <CalendarDays className="w-3 h-3 text-[#8B7082]" />
+                                      <span className="text-[11px] font-normal text-[#8B7082]">
                                         Planned: {new Date(card.plannedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                       </span>
                                     </button>
@@ -2134,7 +2109,7 @@ const Production = () => {
                                   className="hover:bg-violet-100 rounded p-0.5"
                                   title="Remove from calendar"
                                 >
-                                  <X className="w-2.5 h-2.5 text-violet-400 hover:text-violet-600" />
+                                  <X className="w-2.5 h-2.5 text-[#A99BA3] hover:text-[#8B7082]" />
                                 </button>
                               </div>
                             )}
@@ -2457,13 +2432,7 @@ const Production = () => {
                           key={`add-button-${column.id}`}
                           className={cn(
                             "group/btn px-4 py-2 rounded-full border border-dashed hover:border-solid transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95",
-                            // Plum-themed button backgrounds
-                            column.id === "ideate" ? "bg-[#F4EDF6] hover:bg-[#EDE5F0] border-[#C9B3CC]" :
-                            column.id === "shape-ideas" ? "bg-[#EDE5F0] hover:bg-[#E6DAEC] border-[#BDA3C2]" :
-                            column.id === "to-film" ? "bg-[#E6DAEC] hover:bg-[#DFCFE6] border-[#B193B8]" :
-                            column.id === "to-edit" ? "bg-[#DFCFE6] hover:bg-[#D7C3E0] border-[#A583AE]" :
-                            column.id === "to-schedule" ? "bg-[#D7C3E0] hover:bg-[#CEB6D8] border-[#9973A4]" :
-                            "bg-[#CEB6D8] hover:bg-[#C5A8D0] border-[#8D639A]",
+                            "bg-[#F5F2F4] hover:bg-[#EBE7E9] border-[#DDD6DA]",
                             colors.buttonText
                           )}
                           onClick={() => {
@@ -2526,10 +2495,10 @@ const Production = () => {
                       {/* See Content Calendar button - only for to-schedule column */}
                       {column.id === 'to-schedule' && (
                         <div
-                          className="group/btn px-4 py-2 rounded-full border border-dashed hover:border-solid transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95 bg-[#D7C3E0] hover:bg-[#CEB6D8] border-[#9973A4]"
+                          className="group/btn px-4 py-2 rounded-full border border-dashed hover:border-solid transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95 bg-[#F5F2F4] hover:bg-[#EBE7E9] border-[#DDD6DA]"
                           onClick={() => setIsScheduleColumnExpanded(true)}
                         >
-                          <div className="flex items-center gap-2 text-[#5D2F62]">
+                          <div className="flex items-center gap-2 text-[#8B7082]">
                             <CalendarDays className="h-4 w-4" />
                             <span className="text-sm font-semibold">Schedule in Content Calendar</span>
                           </div>
@@ -2538,13 +2507,13 @@ const Production = () => {
 
                       {/* Help me generate ideas button - only for ideate column */}
                       {column.id === 'ideate' && (
-                        <div className="group/btn px-4 py-2 rounded-full border border-dashed hover:border-solid transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95 bg-[#EDE5F0] hover:bg-[#E6DAEC] border-[#B193B8]"
+                        <div className="group/btn px-4 py-2 rounded-full transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95 bg-[#8B7082] hover:bg-[#7A6272]"
                           onClick={() => {
                             setSelectedIdeateCard(null);
                             setIsIdeateDialogOpen(true);
                           }}
                         >
-                          <div className="flex items-center gap-2 text-[#6B4A6E]">
+                          <div className="flex items-center gap-2 text-white">
                             <Lightbulb className="h-4 w-4 group-hover/btn:animate-pulse" />
                             <span className="text-sm font-semibold">Help me generate ideas</span>
                           </div>

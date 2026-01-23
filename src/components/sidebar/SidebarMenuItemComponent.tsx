@@ -64,7 +64,7 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
           href={item.url}
           className={cn(
             "flex items-center gap-2",
-            (isActive || isSubItemActive) && "bg-gray-100 font-medium"
+            (isActive || isSubItemActive) && "bg-[#F5F2F4] text-[#8B7082] font-medium"
           )}
           onClick={handleMenuItemClick}
         >
@@ -111,7 +111,7 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
                     href={subItem.url}
                     className={cn(
                       "flex items-center gap-2",
-                      isSubActive && "bg-gray-100 font-medium"
+                      isSubActive && "bg-[#F5F2F4] text-[#8B7082] font-medium"
                     )}
                   >
                     <subItem.icon size={16} />
