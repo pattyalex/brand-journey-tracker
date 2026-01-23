@@ -43,7 +43,8 @@ export const StorageKeys = {
   missionStatement: "missionStatement",
   pinnedContentIdeas: "pinnedContentIdeas",
   contentIdeas: "contentIdeas",
-  highlightedUnscheduledCard: "highlightedUnscheduledCard"
+  highlightedUnscheduledCard: "highlightedUnscheduledCard",
+  archivedContent: "archivedContent"
 } as const;
 
 export const contentFormatsByPillar = (pillarId: string) => `content-formats-${pillarId}`;

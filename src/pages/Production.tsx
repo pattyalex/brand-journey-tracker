@@ -174,8 +174,18 @@ const Production = () => {
   // Schedule expanded view state
   const [isScheduleColumnExpanded, setIsScheduleColumnExpanded] = useState(false);
 
-  // Archive state
-  const [archivedCards, setArchivedCards] = useState<ProductionCard[]>([]);
+  // Archive state - load from localStorage
+  const [archivedCards, setArchivedCards] = useState<ProductionCard[]>(() => {
+    const saved = getString(StorageKeys.archivedContent);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
   const [lastArchivedCard, setLastArchivedCard] = useState<{ card: ProductionCard; sourceColumnId: string } | null>(null);
   const [brainDumpSuggestion, setBrainDumpSuggestion] = useState<string>("");
@@ -363,6 +373,11 @@ const Production = () => {
     });
     return cleanup;
   }, []);
+
+  // Save archived cards to localStorage when they change
+  useEffect(() => {
+    setString(StorageKeys.archivedContent, JSON.stringify(archivedCards));
+  }, [archivedCards]);
 
   // Clear drop indicators when drag ends
   useEffect(() => {
