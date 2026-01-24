@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
+import { motion, AnimatePresence } from "framer-motion";
 import ContentFlowProgress from "./ContentFlowProgress";
 import {
   Select,
@@ -19,8 +20,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { getFormatColors, getPlatformColors } from "../utils/productionHelpers";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
-import { MoreHorizontal, Video, Camera, ChevronDown, X, Circle, Wrench, CheckCircle2, MapPin, Shirt, Boxes, NotebookPen, PenLine, Check, Plus } from "lucide-react";
+import { MoreHorizontal, Video, Camera, ChevronDown, X, Circle, Wrench, CheckCircle2, MapPin, Shirt, Boxes, NotebookPen, PenLine, Check, Plus, ArrowRight, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // Helper to get platform icon
 const getPlatformIcon = (platform: string): React.ReactNode => {
@@ -100,6 +102,7 @@ interface ScriptEditorDialogProps {
   cardStatus: CardStatus;
   setCardStatus: (value: CardStatus) => void;
   onNavigateToStep?: (step: number) => void;
+  slideDirection?: 'left' | 'right';
 }
 
 const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
@@ -148,7 +151,31 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   cardStatus,
   setCardStatus,
   onNavigateToStep,
+  slideDirection = 'right',
 }) => {
+  const [shakeButton, setShakeButton] = useState(false);
+
+  const handleInteractOutside = (e: Event) => {
+    e.preventDefault();
+    setShakeButton(true);
+    setTimeout(() => setShakeButton(false), 600);
+  };
+
+  const slideVariants = {
+    enter: (direction: 'left' | 'right') => ({
+      x: direction === 'left' ? 300 : -300,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: 'left' | 'right') => ({
+      x: direction === 'left' ? -300 : 300,
+      opacity: 0,
+    }),
+  };
+
   const [addingFormatType, setAddingFormatType] = React.useState<'video' | 'photo' | null>(null);
 
   const handleAddCustomFormat = (format: string) => {
@@ -188,12 +215,23 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
 
   return (
   <Dialog open={isOpen} onOpenChange={onOpenChange}>
-    <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] overflow-hidden border-0 shadow-2xl flex flex-col bg-gradient-to-br from-[#f0f7fa] via-white to-[#f0f7fa]/30">
+    <DialogContent hideCloseButton onInteractOutside={handleInteractOutside} onEscapeKeyDown={handleInteractOutside} className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] overflow-hidden border-0 shadow-2xl flex flex-col bg-gradient-to-br from-[#f0f7fa] via-white to-[#f0f7fa]/30">
       {/* Step Progress Indicator - Centered */}
       <div className="flex justify-center pt-2 pb-0 flex-shrink-0">
         <ContentFlowProgress currentStep={2} className="w-[550px]" onStepClick={onNavigateToStep} />
       </div>
 
+      <AnimatePresence mode="wait" custom={slideDirection}>
+        <motion.div
+          key="script-content"
+          custom={slideDirection}
+          variants={slideVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          className="flex-1 flex flex-col overflow-hidden"
+        >
       <div className="flex-1 overflow-y-auto px-6 -mt-1 pb-1 space-y-2">
         {/* Title Section */}
         <div className="border-b border-gray-200 pb-1 mb-3">
@@ -238,16 +276,25 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                     </svg>
                   </button>
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setScriptContent(scriptContent + (scriptContent ? "\n\n" : "") + brainDumpSuggestion);
-                      setShowBrainDumpSuggestion(false);
-                    }}
-                    className="text-xs px-3 py-1.5 bg-white text-[#9E7089] border border-[#C4A4B5] rounded-md hover:bg-[#C4A4B5]/15 transition-colors"
-                  >
-                    Append to script
-                  </button>
+                <div className="flex justify-center mt-2">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => {
+                            setScriptContent(scriptContent + (scriptContent ? "\n\n" : "") + brainDumpSuggestion);
+                            setShowBrainDumpSuggestion(false);
+                          }}
+                          className="w-8 h-8 rounded-full bg-[#9E7089] text-white flex items-center justify-center hover:bg-[#8B7082] transition-colors shadow-sm hover:shadow-md"
+                        >
+                          <ArrowDown className="w-4 h-4" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p>Append to Script</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </div>
             )}
@@ -261,9 +308,9 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
           </div>
 
           {/* Right Column - Settings */}
-          <div className="space-y-6">
+          <div className="space-y-10 pt-8">
             {/* How It's Shot */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               <h4 className="text-[12px] font-medium text-[#612A4F] uppercase tracking-wider">
                 How It's Shot
               </h4>
@@ -424,13 +471,13 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                 {formatTags.map((tag, idx) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center gap-1 px-2 py-1 bg-[#F2EDE8] rounded-full text-xs text-[#612A4F]"
+                    className="inline-flex items-center gap-1 px-2 py-1 bg-[#8B7082] rounded-full text-xs text-white"
                   >
-                    {isStaticFormat(tag) ? <Camera className="w-3 h-3 text-[#612A4F]" /> : <Video className="w-3 h-3 text-[#612A4F]" />}
+                    {isStaticFormat(tag) ? <Camera className="w-3 h-3 text-white" /> : <Video className="w-3 h-3 text-white" />}
                     {tag}
                     <button
                       onClick={() => onRemoveFormatTag(tag)}
-                      className="text-[#612A4F]/70 hover:text-[#612A4F] transition-colors"
+                      className="text-white/70 hover:text-white transition-colors"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -440,7 +487,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
             </div>
 
             {/* Platforms */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               <h4 className="text-[12px] font-medium text-[#612A4F] uppercase tracking-wider">
                 Platforms
               </h4>
@@ -470,7 +517,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                       className={cn(
                         "p-1.5 rounded-lg transition-all",
                         isSelected
-                          ? "bg-[#8B7082]/10 text-[#8B7082]"
+                          ? "bg-[#8B7082]/25 text-[#612A4F]"
                           : "text-gray-400 hover:bg-gray-100 hover:text-gray-600"
                       )}
                       title={platform.name}
@@ -555,7 +602,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
             </div>
 
             {/* Shooting Plan */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               <h4 className="text-[12px] font-medium text-[#612A4F] uppercase tracking-wider">
                 Shooting Plan
               </h4>
@@ -645,76 +692,33 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
               </div>
             </div>
 
-            {/* Status */}
-            <div className="space-y-2">
-              <h4 className="text-[12px] font-medium text-[#612A4F] uppercase tracking-wider">
-                Status
-              </h4>
-
-              <div className="flex gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => setCardStatus('to-start')}
-                  className={cn(
-                    "px-2.5 py-1 rounded-full text-[11px] font-medium transition-all flex items-center gap-1",
-                    cardStatus === 'to-start'
-                      ? "bg-[#8B7082] text-white"
-                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                  )}
-                >
-                  <PenLine className="w-3 h-3" />
-                  To Start
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setCardStatus('needs-work')}
-                  className={cn(
-                    "px-2.5 py-1 rounded-full text-[11px] font-medium transition-all flex items-center gap-1",
-                    cardStatus === 'needs-work'
-                      ? "bg-[#8B7082] text-white"
-                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                  )}
-                >
-                  <Wrench className="w-3 h-3" />
-                  In Progress
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setCardStatus('ready')}
-                  className={cn(
-                    "px-2.5 py-1 rounded-full text-[11px] font-medium transition-all flex items-center gap-1",
-                    cardStatus === 'ready'
-                      ? "bg-[#8B7082] text-white"
-                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                  )}
-                >
-                  <Check className="w-3 h-3" />
-                  Scripted
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </div>
 
       {/* Fixed Footer with Action Buttons */}
-      <div className="flex-shrink-0 px-6 pt-3 pb-0 border-t border-gray-200 bg-white flex justify-end gap-3">
+      <div className="flex-shrink-0 px-6 pt-3 pb-0 border-t border-gray-200 bg-white flex justify-between">
         <Button
-          variant="outline"
-          onClick={onCancel}
-          className="px-6"
+          variant="ghost"
+          onClick={() => onNavigateToStep?.(3)}
+          className="text-[#612A4F] hover:text-[#4E2240] hover:bg-[#612A4F]/10"
         >
-          Cancel
+          Move to Film <ArrowRight className="w-4 h-4 ml-1" />
         </Button>
-        <Button
-          onClick={onSave}
-          className="px-6 bg-[#612A4F] hover:bg-[#4E2240] text-white shadow-[0_2px_8px_rgba(97,42,79,0.3)]"
+        <motion.div
+          animate={shakeButton ? { x: [0, -8, 8, -8, 8, 0], scale: [1, 1.02, 1.02, 1.02, 1.02, 1] } : {}}
+          transition={{ duration: 0.5 }}
         >
-          Save Changes
-        </Button>
+          <Button
+            onClick={onSave}
+            className="px-6 bg-[#612A4F] hover:bg-[#4E2240] text-white shadow-[0_2px_8px_rgba(97,42,79,0.3)]"
+          >
+            Stop Here, Finish Later
+          </Button>
+        </motion.div>
       </div>
+        </motion.div>
+      </AnimatePresence>
     </DialogContent>
   </Dialog>
   );

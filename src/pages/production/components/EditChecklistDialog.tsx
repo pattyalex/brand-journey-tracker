@@ -70,6 +70,7 @@ interface EditChecklistDialogProps {
   card: ProductionCard | null;
   onSave: (checklist: EditingChecklist, title?: string, script?: string) => void;
   onNavigateToStep?: (step: number) => void;
+  slideDirection?: 'left' | 'right';
 }
 
 // Default example items for the global checklist
@@ -109,7 +110,31 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
   card,
   onSave,
   onNavigateToStep,
+  slideDirection = 'right',
 }) => {
+  const [shakeButton, setShakeButton] = useState(false);
+
+  const handleInteractOutside = (e: Event) => {
+    e.preventDefault();
+    setShakeButton(true);
+    setTimeout(() => setShakeButton(false), 600);
+  };
+
+  const slideVariants = {
+    enter: (direction: 'left' | 'right') => ({
+      x: direction === 'left' ? 300 : -300,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: 'left' | 'right') => ({
+      x: direction === 'left' ? -300 : 300,
+      opacity: 0,
+    }),
+  };
+
   // Global checklist items (shared across all cards)
   const [globalItems, setGlobalItems] = useState<EditingChecklistItem[]>(loadGlobalChecklist);
   // Per-card notes and status
@@ -170,6 +195,18 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
     onOpenChange(false);
   };
 
+  // Auto-save and navigate to another step
+  const handleNavigateWithSave = (step: number) => {
+    const checklist: EditingChecklist = {
+      items: globalItems,
+      notes,
+      externalLinks: [],
+      status,
+    };
+    onSave(checklist, title, script);
+    onNavigateToStep?.(step);
+  };
+
   const statusOptions: { value: EditingStatus; label: string; icon: React.ReactNode }[] = [
     { value: "to-start-editing", label: "To Start", icon: <Scissors className="w-3.5 h-3.5" /> },
     { value: "needs-more-editing", label: "In Progress", icon: <Wrench className="w-3.5 h-3.5" /> },
@@ -181,7 +218,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[950px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-white">
+      <DialogContent hideCloseButton onInteractOutside={handleInteractOutside} onEscapeKeyDown={handleInteractOutside} className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[950px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-white">
         {/* Stage indicator bar */}
         <div className="h-1 w-full bg-[#A88090] flex-shrink-0" />
 
@@ -189,9 +226,20 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
         <ContentFlowProgress
           currentStep={4}
           className="flex-shrink-0 pt-4 pb-2"
-          onStepClick={onNavigateToStep}
+          onStepClick={handleNavigateWithSave}
         />
 
+        <AnimatePresence mode="wait" custom={slideDirection}>
+          <motion.div
+            key="edit-content"
+            custom={slideDirection}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="flex-1 flex flex-col overflow-hidden"
+          >
         {/* Header */}
         <div className="px-6 pb-3">
           <div className="flex items-center gap-3">
@@ -319,30 +367,8 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
               </div>
             </div>
 
-            {/* Right Column - Status, Checklist & Notes */}
+            {/* Right Column - Checklist & Notes */}
             <div className="flex-1 space-y-5">
-              {/* Editing Status - Small pills at top */}
-              <div>
-                <h4 className="text-[11px] font-semibold text-[#A88090] uppercase tracking-wider mb-2">Editing Status</h4>
-                <div className="flex gap-2">
-                  {statusOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => setStatus(option.value)}
-                      className={cn(
-                        "px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5",
-                        status === option.value
-                          ? "bg-[#8B7082] text-white"
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      )}
-                    >
-                      {option.icon}
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               {/* Editor's Checklist Section */}
               <div>
                 <h3 className="text-[11px] font-semibold text-[#A88090] uppercase tracking-wider mb-3">Checklist</h3>
@@ -473,13 +499,20 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
           >
             Cancel
           </Button>
-          <Button
-            onClick={handleSave}
-            className="bg-[#8B7082] hover:bg-[#7A6073] text-white"
+          <motion.div
+            animate={shakeButton ? { x: [0, -8, 8, -8, 8, 0], scale: [1, 1.02, 1.02, 1.02, 1.02, 1] } : {}}
+            transition={{ duration: 0.5 }}
           >
-            Save Changes
-          </Button>
+            <Button
+              onClick={handleSave}
+              className="bg-[#8B7082] hover:bg-[#7A6073] text-white"
+            >
+              Stop Here, Finish Later
+            </Button>
+          </motion.div>
         </div>
+          </motion.div>
+        </AnimatePresence>
       </DialogContent>
     </Dialog>
   );

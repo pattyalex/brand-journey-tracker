@@ -57,16 +57,17 @@ import ShotLibraryDialog from "./ShotLibraryDialog";
 import ContentFlowProgress from "./ContentFlowProgress";
 
 // Shot illustrations
-import wideShotIllustration from "@/assets/shot-illustrations/wide-shot.png";
-import mediumShotIllustration from "@/assets/shot-illustrations/medium-shot.png";
-import closeUpShotIllustration from "@/assets/shot-illustrations/close-up-shot.png";
-import handsDoingIllustration from "@/assets/shot-illustrations/hands-doing.png";
 import closeDetailIllustration from "@/assets/shot-illustrations/close-detail.png";
-import atDeskIllustration from "@/assets/shot-illustrations/at-desk.png";
 import neutralVisualIllustration from "@/assets/shot-illustrations/neutral-visual.png";
 import movingThroughIllustration from "@/assets/shot-illustrations/moving-through.png";
-import quietCutawayIllustration from "@/assets/shot-illustrations/quiet-cutaway.png";
 import reactionMomentIllustration from "@/assets/shot-illustrations/reaction-moment.png";
+
+const wideShotIllustration = movingThroughIllustration;
+const mediumShotIllustration = neutralVisualIllustration;
+const closeUpShotIllustration = closeDetailIllustration;
+const handsDoingIllustration = closeDetailIllustration;
+const atDeskIllustration = neutralVisualIllustration;
+const quietCutawayIllustration = reactionMomentIllustration;
 
 // Map shot IDs to illustrations
 const shotIllustrations: Record<string, string> = {
@@ -109,6 +110,7 @@ interface StoryboardEditorDialogProps {
   card: ProductionCard | null;
   onSave: (storyboard: StoryboardScene[], title?: string, script?: string, hook?: string, status?: "to-start" | "needs-work" | "ready" | null) => void;
   onNavigateToStep?: (step: number) => void;
+  slideDirection?: 'left' | 'right';
 }
 
 // Sortable Scene Card Component
@@ -300,7 +302,31 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   card,
   onSave,
   onNavigateToStep,
+  slideDirection = 'right',
 }) => {
+  const [shakeButton, setShakeButton] = useState(false);
+
+  const handleInteractOutside = (e: Event) => {
+    e.preventDefault();
+    setShakeButton(true);
+    setTimeout(() => setShakeButton(false), 600);
+  };
+
+  const slideVariants = {
+    enter: (direction: 'left' | 'right') => ({
+      x: direction === 'left' ? 300 : -300,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: 'left' | 'right') => ({
+      x: direction === 'left' ? -300 : 300,
+      opacity: 0,
+    }),
+  };
+
   const [scenes, setScenes] = useState<StoryboardScene[]>([]);
   const [cardTitle, setCardTitle] = useState("");
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -353,6 +379,14 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
     }
     onOpenChange(open);
   }, [card, scenes, cardTitle, scriptContent, hookContent, filmingStatus, onSave, onOpenChange]);
+
+  // Auto-save and navigate to another step
+  const handleNavigateWithSave = useCallback((step: number) => {
+    if (card) {
+      onSave(scenes, cardTitle, scriptContent, hookContent, filmingStatus);
+    }
+    onNavigateToStep?.(step);
+  }, [card, scenes, cardTitle, scriptContent, hookContent, filmingStatus, onSave, onNavigateToStep]);
 
   // Focus title input when editing
   useEffect(() => {
@@ -716,13 +750,24 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   return (
     <>
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[1100px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-[radial-gradient(ellipse_at_top_left,_#FFF9EE_0%,_#FFFDF8_30%,_#FFFFFF_70%)]">
+      <DialogContent hideCloseButton onInteractOutside={handleInteractOutside} onEscapeKeyDown={handleInteractOutside} className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[1100px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-[radial-gradient(ellipse_at_top_left,_#FFF9EE_0%,_#FFFDF8_30%,_#FFFFFF_70%)]">
         {/* Step Progress Row - Centered */}
         <div className="flex justify-center pt-4 pb-2 bg-transparent">
           <DialogTitle className="sr-only">Storyboard Editor</DialogTitle>
-          <ContentFlowProgress currentStep={3} className="w-[550px]" onStepClick={onNavigateToStep} />
+          <ContentFlowProgress currentStep={3} className="w-[550px]" onStepClick={handleNavigateWithSave} />
         </div>
 
+        <AnimatePresence mode="wait" custom={slideDirection}>
+          <motion.div
+            key="storyboard-content"
+            custom={slideDirection}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="flex-1 flex flex-col overflow-hidden"
+          >
         {/* Main content - side by side layout */}
         <div
           ref={leftPanelRef}
@@ -763,13 +808,18 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                     Regenerate
                   </Button>
                 )}
-                <Button
-                  onClick={() => handleClose(false)}
-                  size="sm"
-                  className="bg-[#612A4F] hover:bg-[#4E2240] text-white rounded-lg text-xs shadow-sm"
+                <motion.div
+                  animate={shakeButton ? { x: [0, -8, 8, -8, 8, 0], scale: [1, 1.02, 1.02, 1.02, 1.02, 1] } : {}}
+                  transition={{ duration: 0.5 }}
                 >
-                  Save
-                </Button>
+                  <Button
+                    onClick={() => handleClose(false)}
+                    size="sm"
+                    className="bg-[#612A4F] hover:bg-[#4E2240] text-white rounded-lg text-xs shadow-sm"
+                  >
+                    Stop Here, Finish Later
+                  </Button>
+                </motion.div>
               </div>
             </div>
           </div>
@@ -937,48 +987,6 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                   </div>
                 )}
 
-                {/* Status */}
-                <div className="pt-4 mt-2 pb-6 border-t border-[#8B7082]/30">
-                  <h4 className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-2">Status</h4>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      onClick={() => setFilmingStatus("to-start")}
-                      className={cn(
-                        "px-3 py-1 rounded-full text-[11px] font-medium transition-all flex items-center gap-1",
-                        filmingStatus === "to-start"
-                          ? "bg-[#8B7082] text-white"
-                          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                      )}
-                    >
-                      <Clapperboard className="w-3 h-3" />
-                      To Start
-                    </button>
-                    <button
-                      onClick={() => setFilmingStatus("needs-work")}
-                      className={cn(
-                        "px-3 py-1 rounded-full text-[11px] font-medium transition-all flex items-center gap-1",
-                        filmingStatus === "needs-work"
-                          ? "bg-[#8B7082] text-white"
-                          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                      )}
-                    >
-                      <Wrench className="w-3 h-3" />
-                      In Progress
-                    </button>
-                    <button
-                      onClick={() => setFilmingStatus("ready")}
-                      className={cn(
-                        "px-3 py-1 rounded-full text-[11px] font-medium transition-all flex items-center gap-1",
-                        filmingStatus === "ready"
-                          ? "bg-[#8B7082] text-white"
-                          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                      )}
-                    >
-                      <Check className="w-3 h-3" />
-                      Filmed
-                    </button>
-                  </div>
-                </div>
               </div>
 
               </div>
@@ -1102,6 +1110,8 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
           </div>
 
         </div>
+          </motion.div>
+        </AnimatePresence>
       </DialogContent>
     </Dialog>
 

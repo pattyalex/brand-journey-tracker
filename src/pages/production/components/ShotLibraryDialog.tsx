@@ -21,16 +21,17 @@ import {
 import { shotTemplates, shotCategories, ShotTemplate } from "../utils/shotTemplates";
 
 // PNG illustrations
-import atDeskIllustration from "@/assets/shot-illustrations/at-desk.png";
+import closeDetailIllustration from "@/assets/shot-illustrations/close-detail.png";
 import neutralVisualIllustration from "@/assets/shot-illustrations/neutral-visual.png";
 import movingThroughIllustration from "@/assets/shot-illustrations/moving-through.png";
-import wideShotIllustration from "@/assets/shot-illustrations/wide-shot.png";
-import mediumShotIllustration from "@/assets/shot-illustrations/medium-shot.png";
-import closeUpShotIllustration from "@/assets/shot-illustrations/close-up-shot.png";
-import handsDoingIllustration from "@/assets/shot-illustrations/hands-doing.png";
-import closeDetailIllustration from "@/assets/shot-illustrations/close-detail.png";
-import quietCutawayIllustration from "@/assets/shot-illustrations/quiet-cutaway.png";
 import reactionMomentIllustration from "@/assets/shot-illustrations/reaction-moment.png";
+
+const atDeskIllustration = neutralVisualIllustration;
+const wideShotIllustration = movingThroughIllustration;
+const mediumShotIllustration = neutralVisualIllustration;
+const closeUpShotIllustration = closeDetailIllustration;
+const handsDoingIllustration = closeDetailIllustration;
+const quietCutawayIllustration = reactionMomentIllustration;
 
 interface ShotLibraryDialogProps {
   open: boolean;

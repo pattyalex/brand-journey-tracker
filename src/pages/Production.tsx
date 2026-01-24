@@ -147,6 +147,7 @@ const Production = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isIdeateDialogOpen, setIsIdeateDialogOpen] = useState(false);
   const [isIdeateCardEditorOpen, setIsIdeateCardEditorOpen] = useState(false);
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
   const [editingIdeateCard, setEditingIdeateCard] = useState<ProductionCard | null>(null);
   const [ideateCardTitle, setIdeateCardTitle] = useState("");
   const [ideateCardNotes, setIdeateCardNotes] = useState("");
@@ -1146,8 +1147,13 @@ const Production = () => {
     setCustomVideoFormats(card.customVideoFormats || []);
     setCustomPhotoFormats(card.customPhotoFormats || []);
     // Check if card has brain dump notes from Ideate column
-    if (card.description && card.description.trim()) {
-      setBrainDumpSuggestion(card.description);
+    // Only show if notes exist AND haven't already been appended to the script
+    const notesText = card.description?.trim() || "";
+    const scriptText = card.script?.trim() || "";
+    const notesAlreadyInScript = notesText && scriptText.includes(notesText);
+
+    if (notesText && !notesAlreadyInScript) {
+      setBrainDumpSuggestion(card.description!);
       setShowBrainDumpSuggestion(true);
     } else {
       setBrainDumpSuggestion("");
@@ -1159,33 +1165,24 @@ const Production = () => {
   const handleSaveScript = () => {
     if (!editingScriptCard) return;
 
-    setColumns((prev) =>
-      prev.map((col) => ({
-        ...col,
-        cards: col.cards.map((card) =>
-          card.id === editingScriptCard.id
-            ? {
-                ...card,
-                title: cardTitle,
-                hook: cardHook,
-                script: scriptContent,
-                platforms: platformTags,
-                formats: formatTags,
-                locationChecked,
-                locationText,
-                outfitChecked,
-                outfitText,
-                propsChecked,
-                propsText,
-                filmingNotes,
-                status: cardStatus,
-                customVideoFormats,
-                customPhotoFormats,
-              }
-            : card
-        ),
-      }))
-    );
+    // Move card to 'shape-ideas' column (Script step) and update data
+    moveCardToColumn(editingScriptCard.id, 'shape-ideas', {
+      title: cardTitle,
+      hook: cardHook,
+      script: scriptContent,
+      platforms: platformTags,
+      formats: formatTags,
+      locationChecked,
+      locationText,
+      outfitChecked,
+      outfitText,
+      propsChecked,
+      propsText,
+      filmingNotes,
+      status: cardStatus,
+      customVideoFormats,
+      customPhotoFormats,
+    });
 
     resetScriptEditorState();
   };
@@ -1219,16 +1216,14 @@ const Production = () => {
   const handleSaveStoryboard = (storyboard: StoryboardScene[], title?: string, script?: string, hook?: string, status?: "to-start" | "needs-work" | "ready" | null) => {
     if (!editingStoryboardCard) return;
 
-    setColumns((prev) =>
-      prev.map((col) => ({
-        ...col,
-        cards: col.cards.map((card) =>
-          card.id === editingStoryboardCard.id
-            ? { ...card, storyboard, ...(title !== undefined && { title }), ...(script !== undefined && { script }), ...(hook !== undefined && { hook }), ...(status !== undefined && { status }) }
-            : card
-        ),
-      }))
-    );
+    // Move card to 'to-film' column (Film step) and update data
+    moveCardToColumn(editingStoryboardCard.id, 'to-film', {
+      storyboard,
+      ...(title !== undefined && { title }),
+      ...(script !== undefined && { script }),
+      ...(hook !== undefined && { hook }),
+      ...(status !== undefined && { status }),
+    });
 
     setEditingStoryboardCard(null);
   };
@@ -1242,21 +1237,12 @@ const Production = () => {
   const handleSaveEditChecklist = (checklist: EditingChecklist, title?: string, script?: string) => {
     if (!editingEditCard) return;
 
-    setColumns((prev) =>
-      prev.map((col) => ({
-        ...col,
-        cards: col.cards.map((card) =>
-          card.id === editingEditCard.id
-            ? {
-                ...card,
-                editingChecklist: checklist,
-                ...(title !== undefined && { title }),
-                ...(script !== undefined && { script })
-              }
-            : card
-        ),
-      }))
-    );
+    // Move card to 'to-edit' column (Edit step) and update data
+    moveCardToColumn(editingEditCard.id, 'to-edit', {
+      editingChecklist: checklist,
+      ...(title !== undefined && { title }),
+      ...(script !== undefined && { script }),
+    });
 
     setEditingEditCard(null);
   };
@@ -1438,20 +1424,11 @@ const Production = () => {
   const handleSaveIdeateCard = () => {
     if (!editingIdeateCard) return;
 
-    setColumns((prev) =>
-      prev.map((col) => ({
-        ...col,
-        cards: col.cards.map((card) =>
-          card.id === editingIdeateCard.id
-            ? {
-                ...card,
-                title: ideateCardTitle,
-                description: ideateCardNotes,
-              }
-            : card
-        ),
-      }))
-    );
+    // Keep card in 'ideate' column (Ideate step) and update data
+    moveCardToColumn(editingIdeateCard.id, 'ideate', {
+      title: ideateCardTitle,
+      description: ideateCardNotes,
+    });
 
     resetIdeateCardEditorState();
   };
@@ -1518,24 +1495,174 @@ const Production = () => {
     'posted': 6,
   };
 
+  const stepToColumn: Record<number, string> = {
+    1: 'ideate',
+    2: 'shape-ideas',
+    3: 'to-film',
+    4: 'to-edit',
+    5: 'to-schedule',
+    6: 'posted',
+  };
+
+  // Helper to move a card to a specific column
+  const moveCardToColumn = (cardId: string, targetColumnId: string, updatedCardData: Partial<ProductionCard>) => {
+    setColumns((prev) => {
+      // Find the card and its current column
+      let cardToMove: ProductionCard | undefined;
+      let sourceColumnId: string | undefined;
+
+      for (const col of prev) {
+        const found = col.cards.find(c => c.id === cardId);
+        if (found) {
+          cardToMove = found;
+          sourceColumnId = col.id;
+          break;
+        }
+      }
+
+      if (!cardToMove) return prev;
+
+      // If already in target column, just update the card
+      if (sourceColumnId === targetColumnId) {
+        return prev.map((col) => ({
+          ...col,
+          cards: col.cards.map((card) =>
+            card.id === cardId ? { ...card, ...updatedCardData, columnId: targetColumnId } : card
+          ),
+        }));
+      }
+
+      // Move card to new column
+      const updatedCard = { ...cardToMove, ...updatedCardData, columnId: targetColumnId };
+
+      return prev.map((col) => {
+        if (col.id === sourceColumnId) {
+          // Remove from source
+          return { ...col, cards: col.cards.filter(c => c.id !== cardId) };
+        }
+        if (col.id === targetColumnId) {
+          // Add to target
+          return { ...col, cards: [...col.cards, updatedCard] };
+        }
+        return col;
+      });
+    });
+  };
+
+  // Auto-save helper for Ideate dialog (saves without closing/resetting)
+  const autoSaveIdeateCard = () => {
+    if (!editingIdeateCard) return;
+    setColumns((prev) =>
+      prev.map((col) => ({
+        ...col,
+        cards: col.cards.map((card) =>
+          card.id === editingIdeateCard.id
+            ? { ...card, title: ideateCardTitle, description: ideateCardNotes }
+            : card
+        ),
+      }))
+    );
+  };
+
+  // Auto-save helper for Script dialog (saves without closing/resetting)
+  const autoSaveScript = () => {
+    if (!editingScriptCard) return;
+    setColumns((prev) =>
+      prev.map((col) => ({
+        ...col,
+        cards: col.cards.map((card) =>
+          card.id === editingScriptCard.id
+            ? {
+                ...card,
+                title: cardTitle,
+                hook: cardHook,
+                script: scriptContent,
+                platforms: platformTags,
+                formats: formatTags,
+                locationChecked,
+                locationText,
+                outfitChecked,
+                outfitText,
+                propsChecked,
+                propsText,
+                filmingNotes,
+                status: cardStatus,
+                customVideoFormats,
+                customPhotoFormats,
+              }
+            : card
+        ),
+      }))
+    );
+  };
+
   // Navigation handler for step progress clicks
   const handleNavigateToStep = (step: number) => {
     // Get the current card from whichever dialog is open
     const currentCard = editingIdeateCard || editingScriptCard || editingStoryboardCard || editingEditCard;
     if (!currentCard) return;
 
-    // Find the latest version of the card and its column
+    // Find the current version of the card and its column
     let latestCard: ProductionCard | undefined;
     let cardColumnId: string | undefined;
     for (const col of columns) {
       const found = col.cards.find(c => c.id === currentCard.id);
       if (found) {
-        latestCard = found;
+        latestCard = { ...found };
         cardColumnId = col.id;
         break;
       }
     }
     if (!latestCard) return;
+
+    // Auto-save current dialog and update latestCard with current form values
+    if (isIdeateCardEditorOpen && editingIdeateCard) {
+      // Update latestCard with current form values
+      latestCard = {
+        ...latestCard,
+        title: ideateCardTitle,
+        description: ideateCardNotes,
+      };
+      // Save to state
+      setColumns((prev) =>
+        prev.map((col) => ({
+          ...col,
+          cards: col.cards.map((card) =>
+            card.id === editingIdeateCard.id ? latestCard! : card
+          ),
+        }))
+      );
+    } else if (isScriptEditorOpen && editingScriptCard) {
+      // Update latestCard with current form values
+      latestCard = {
+        ...latestCard,
+        title: cardTitle,
+        hook: cardHook,
+        script: scriptContent,
+        platforms: platformTags,
+        formats: formatTags,
+        locationChecked,
+        locationText,
+        outfitChecked,
+        outfitText,
+        propsChecked,
+        propsText,
+        filmingNotes,
+        status: cardStatus,
+        customVideoFormats,
+        customPhotoFormats,
+      };
+      // Save to state
+      setColumns((prev) =>
+        prev.map((col) => ({
+          ...col,
+          cards: col.cards.map((card) =>
+            card.id === editingScriptCard.id ? latestCard! : card
+          ),
+        }))
+      );
+    }
+    // Note: Storyboard and Edit dialogs handle their own save via handleNavigateWithSave
 
     const stepLabels: Record<number, string> = {
       1: 'Ideate',
@@ -1547,6 +1674,10 @@ const Production = () => {
     };
 
     const currentWorkflowStep = cardColumnId ? columnToStep[cardColumnId] || 1 : 1;
+
+    // Determine slide direction based on step comparison
+    const currentDialogStep = isIdeateCardEditorOpen ? 1 : isScriptEditorOpen ? 2 : isStoryboardDialogOpen ? 3 : isEditChecklistDialogOpen ? 4 : isScheduleColumnExpanded ? 5 : 6;
+    setSlideDirection(step > currentDialogStep ? 'left' : 'right');
 
     // Function to actually perform the navigation
     const performNavigation = () => {
@@ -2388,10 +2519,9 @@ const Production = () => {
                                 </div>
                             </div>
                             {/* Tags for cards with metadata */}
-                            {column.id !== "ideate" && ((card.formats && card.formats.length > 0) || card.status || card.editingChecklist?.status || card.schedulingStatus || (card.platforms && card.platforms.length > 0)) && (() => {
+                            {column.id !== "ideate" && ((card.formats && card.formats.length > 0) || card.schedulingStatus || (card.platforms && card.platforms.length > 0)) && (() => {
                               const formats = card.formats || [];
-                              const hasStatus = !!card.status || !!card.editingChecklist?.status || !!card.schedulingStatus;
-                              const editingStatus = card.editingChecklist?.status;
+                              const hasStatus = column.id === 'to-schedule' && !!card.schedulingStatus;
                               const schedulingStatus = card.schedulingStatus;
                               const platforms = card.platforms || [];
                               const hasPlatforms = platforms.length > 0;
@@ -2448,53 +2578,23 @@ const Production = () => {
                                       </span>
                                     );
                                   })}
-                                  {/* Status tag - last row */}
+                                  {/* Status tag - only for scheduling column */}
                                   {hasStatus && (
                                     <div className={hasPlatforms ? "flex items-center justify-between" : ""}>
                                       <span className="inline-flex items-center gap-1 text-[12px] px-2 py-0.5 rounded-full text-gray-500/80 font-normal">
-                                        {/* Show editing status for To Edit column, otherwise show filming status */}
-                                        {column.id === 'to-edit' ? (
-                                          <>
-                                            {editingStatus === 'to-start-editing' && <Scissors className="w-2.5 h-2.5" />}
-                                            {editingStatus === 'needs-more-editing' && <Wrench className="w-2.5 h-2.5" />}
-                                            {editingStatus === 'ready-to-schedule' && <Check className="w-2.5 h-2.5" />}
-                                            {editingStatus === 'to-start-editing' ? 'To Start' :
-                                             editingStatus === 'needs-more-editing' ? 'In Progress' :
-                                             editingStatus === 'ready-to-schedule' ? 'Edited' : ''}
-                                          </>
-                                        ) : column.id === 'to-film' ? (
-                                          <>
-                                            {card.status === 'to-start' && <Clapperboard className="w-2.5 h-2.5" />}
-                                            {card.status === 'needs-work' && <Wrench className="w-2.5 h-2.5" />}
-                                            {card.status === 'ready' && <Check className="w-2.5 h-2.5" />}
-                                            {card.status === 'to-start' ? 'To start filming' :
-                                             card.status === 'needs-work' ? 'Needs more work' :
-                                             card.status === 'ready' ? 'Filmed' : ''}
-                                          </>
-                                        ) : column.id === 'to-schedule' ? (
-                                          (() => {
-                                            const isPublished = schedulingStatus === 'scheduled' && card.scheduledDate && new Date(card.scheduledDate) < new Date(new Date().toDateString());
-                                            return (
-                                              <>
-                                                {schedulingStatus === 'to-schedule' && <CalendarDays className="w-2.5 h-2.5" />}
-                                                {schedulingStatus === 'scheduled' && !isPublished && <Check className="w-2.5 h-2.5" />}
-                                                {isPublished && <PartyPopper className="w-2.5 h-2.5" />}
-                                                {schedulingStatus === 'to-schedule' ? 'To schedule' :
-                                                 isPublished ? 'Published' :
-                                                 schedulingStatus === 'scheduled' ? 'Scheduled' : ''}
-                                              </>
-                                            );
-                                          })()
-                                        ) : (
-                                          <>
-                                            {card.status === 'to-start' && <PenLine className="w-2.5 h-2.5" />}
-                                            {card.status === 'needs-work' && <Wrench className="w-2.5 h-2.5" />}
-                                            {card.status === 'ready' && <Check className="w-2.5 h-2.5" />}
-                                            {card.status === 'to-start' ? 'To Start' :
-                                             card.status === 'needs-work' ? 'In Progress' :
-                                             card.status === 'ready' ? 'Scripted' : ''}
-                                          </>
-                                        )}
+                                        {(() => {
+                                          const isPublished = schedulingStatus === 'scheduled' && card.scheduledDate && new Date(card.scheduledDate) < new Date(new Date().toDateString());
+                                          return (
+                                            <>
+                                              {schedulingStatus === 'to-schedule' && <CalendarDays className="w-2.5 h-2.5" />}
+                                              {schedulingStatus === 'scheduled' && !isPublished && <Check className="w-2.5 h-2.5" />}
+                                              {isPublished && <PartyPopper className="w-2.5 h-2.5" />}
+                                              {schedulingStatus === 'to-schedule' ? 'To schedule' :
+                                               isPublished ? 'Published' :
+                                               schedulingStatus === 'scheduled' ? 'Scheduled' : ''}
+                                            </>
+                                          );
+                                        })()}
                                       </span>
                                       {hasPlatforms && renderPlatformIcons()}
                                     </div>
@@ -2556,8 +2656,7 @@ const Production = () => {
                           key={`add-button-${column.id}`}
                           className={cn(
                             "group/btn px-4 py-2.5 border transition-all duration-200 cursor-pointer active:scale-[0.98]",
-                            "w-full rounded-xl bg-white/80 hover:bg-white border-[#C9BFC6] hover:-translate-y-0.5",
-                            colors.buttonText
+                            "w-full rounded-xl bg-white/80 hover:bg-white border-[#C4A4B5] hover:-translate-y-0.5"
                           )}
                           onClick={() => {
                             if (column.id === 'shape-ideas') {
@@ -2607,7 +2706,7 @@ const Production = () => {
                             }
                           }}
                         >
-                          <div className={cn("flex items-center justify-center gap-2", colors.buttonText)}>
+                          <div className="flex items-center justify-center gap-2 text-[#8B7082]">
                             <Plus className="h-4 w-4 group-hover/btn:rotate-90 transition-transform duration-200" />
                             <span className="text-sm font-medium">
                               {column.id === 'ideate' ? 'Add quick idea' : 'Add new'}
@@ -2731,13 +2830,6 @@ const Production = () => {
             "h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden border-0 shadow-2xl flex flex-col",
             ideateMode === 'pillarsformats' ? "sm:max-w-[1400px]" : "sm:max-w-[900px]"
           )}>
-            {/* Progress Indicator - at the very top */}
-            {!ideateMode && (
-              <div className="flex-shrink-0 pb-2">
-                <ContentFlowProgress currentStep={1} />
-              </div>
-            )}
-
             <DialogHeader className="flex-shrink-0">
               {!ideateMode && (
                 <DialogTitle className="sr-only">Content Ideation</DialogTitle>
@@ -2772,9 +2864,9 @@ const Production = () => {
             <div className="overflow-y-auto flex-1 pr-2 pb-4">
               {/* Method Selection - Always show unless in a specific mode */}
               {!ideateMode && (
-                <div className="space-y-8 px-6">
-                  <div className="text-center pb-2">
-                    <h3 className="text-xl font-semibold text-[#612A4F] tracking-tight mb-2">Choose Your Starting Point</h3>
+                <div className="space-y-8 px-6 pt-8">
+                  <div className="text-center pb-4">
+                    <h3 className="text-2xl font-semibold text-[#612A4F] tracking-tight mb-3">Choose Your Starting Point</h3>
                     <p className="text-sm text-[#612A4F]/70">Select a method to guide your content ideation process</p>
                   </div>
 
@@ -4522,6 +4614,7 @@ Make each idea unique, creative, and directly tied to both the original content 
           customPhotoFormats={customPhotoFormats}
           setCustomPhotoFormats={setCustomPhotoFormats}
           onNavigateToStep={handleNavigateToStep}
+          slideDirection={slideDirection}
         />
 
         <BrainDumpGuidanceDialog
@@ -4534,6 +4627,8 @@ Make each idea unique, creative, and directly tied to both the original content 
           setTitle={setIdeateCardTitle}
           notes={ideateCardNotes}
           setNotes={setIdeateCardNotes}
+          onNavigateToStep={handleNavigateToStep}
+          slideDirection={slideDirection}
         />
 
         <StoryboardEditorDialog
@@ -4542,6 +4637,7 @@ Make each idea unique, creative, and directly tied to both the original content 
           card={editingStoryboardCard}
           onSave={handleSaveStoryboard}
           onNavigateToStep={handleNavigateToStep}
+          slideDirection={slideDirection}
         />
 
         <EditChecklistDialog
@@ -4550,6 +4646,7 @@ Make each idea unique, creative, and directly tied to both the original content 
           card={editingEditCard}
           onSave={handleSaveEditChecklist}
           onNavigateToStep={handleNavigateToStep}
+          slideDirection={slideDirection}
         />
 
         {/* Expanded Schedule Column View */}
