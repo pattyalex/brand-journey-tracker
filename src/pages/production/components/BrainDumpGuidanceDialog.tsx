@@ -60,7 +60,7 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent hideCloseButton onInteractOutside={handleInteractOutside} onEscapeKeyDown={handleInteractOutside} className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-gradient-to-b from-[#8B7082]/10 via-white to-white">
         {/* Stepper Progress */}
-        <div className="pt-6 pb-2 border-b border-gray-100">
+        <div className="pt-6 pb-2">
           <ContentFlowProgress currentStep={1} onStepClick={onNavigateToStep} />
         </div>
 
@@ -76,7 +76,7 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
             className="flex-1 flex flex-col overflow-hidden"
           >
             {/* Content Area */}
-            <div className="px-6 pt-6 pb-4 flex-1 overflow-y-auto">
+            <div className="px-6 pt-4 pb-4 flex-1 overflow-y-auto">
               {/* Title Input */}
               <div className="border-b border-gray-200 pb-2 mb-4">
                 <input
@@ -104,7 +104,7 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
               </div>
 
               {/* Move to Script Button */}
-              <div className="flex justify-center mt-6">
+              <div className="flex justify-center mt-12">
                 <Button
                   variant="ghost"
                   onClick={onMoveToScript}

@@ -750,7 +750,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   return (
     <>
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent hideCloseButton onInteractOutside={handleInteractOutside} onEscapeKeyDown={handleInteractOutside} className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[1100px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-[radial-gradient(ellipse_at_top_left,_#FFF9EE_0%,_#FFFDF8_30%,_#FFFFFF_70%)]">
+      <DialogContent hideCloseButton onInteractOutside={handleInteractOutside} onEscapeKeyDown={handleInteractOutside} className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[1100px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-gradient-to-br from-[#FFF9EE] via-white to-[#FFF9EE]/30">
         {/* Step Progress Row - Centered */}
         <div className="flex justify-center pt-4 pb-2 bg-transparent">
           <DialogTitle className="sr-only">Storyboard Editor</DialogTitle>
@@ -777,16 +777,16 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
           <div className="flex border-b border-[#8B7082]/30">
             {/* Script Header */}
             <div className="w-[320px] flex-shrink-0 px-4 py-3 bg-transparent flex items-center relative">
-              <div className="absolute right-0 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-[#8B7082]/30 to-[#8B7082]/30"></div>
-              <h3 className="font-semibold text-[#612A4F] flex items-center gap-2 text-sm">
-                <FileText className="w-4 h-4" />
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-6 bg-[#8B7082]/30"></div>
+              <h3 className="font-semibold text-[#612A4F] flex items-center gap-2 text-base">
+                <FileText className="w-5 h-5" />
                 Content Overview
               </h3>
             </div>
             {/* Storyboard Header */}
             <div className="flex-1 px-4 py-3 bg-transparent flex items-center justify-between">
-              <h3 className="font-semibold text-[#612A4F] flex items-center gap-2 text-sm">
-                <Clapperboard className="w-4 h-4" />
+              <h3 className="font-semibold text-[#612A4F] flex items-center gap-2 text-base">
+                <Clapperboard className="w-5 h-5" />
                 Create Your Storyboard
                 <span className="text-[10px] text-[#612A4F]/70 font-normal ml-1">
                   ({scenes.length} scene{scenes.length !== 1 ? 's' : ''})
@@ -814,8 +814,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                 >
                   <Button
                     onClick={() => handleClose(false)}
-                    size="sm"
-                    className="bg-[#612A4F] hover:bg-[#4E2240] text-white rounded-lg text-xs shadow-sm"
+                    className="bg-[#612A4F] hover:bg-[#4E2240] text-white rounded-lg shadow-sm h-9 px-4"
                   >
                     Stop Here, Finish Later
                   </Button>

@@ -29,6 +29,7 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
   className,
   onStepClick,
 }) => {
+
   return (
     <div className={cn("w-full px-4 py-2", className)}>
       <div className="flex items-center justify-between relative max-w-xl mx-auto">
@@ -56,43 +57,45 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
           const isClickable = onStepClick && stepNumber !== currentStep;
 
           return (
-            <button
-              key={step.label}
-              onClick={() => isClickable && onStepClick(stepNumber)}
-              disabled={!isClickable}
-              className={cn(
-                "flex flex-col items-center relative z-10 flex-1 transition-transform focus:outline-none",
-                isClickable && "cursor-pointer hover:scale-110",
-                !isClickable && "cursor-default"
-              )}
-            >
-              {/* Circle indicator */}
-              <div
+            <React.Fragment key={step.label}>
+              <button
+                onClick={() => isClickable && onStepClick(stepNumber)}
+                disabled={!isClickable}
                 className={cn(
-                  "rounded-full flex items-center justify-center font-semibold transition-all duration-300 border-[1.5px]",
-                  isCompleted && "w-6 h-6 text-xs bg-[#612A4F] border-[#612A4F] text-white",
-                  isCurrent && "w-12 h-12 text-lg bg-[#612A4F] border-[#612A4F] text-white border-2 shadow-md",
-                  isPending && "w-6 h-6 text-xs bg-gray-100 border-gray-300 text-gray-400",
-                  isClickable && "hover:ring-2 hover:ring-offset-2 hover:ring-[#612A4F]/30"
+                  "flex flex-col items-center relative z-10 flex-1 transition-transform focus:outline-none",
+                  isClickable && "cursor-pointer hover:scale-110",
+                  !isClickable && "cursor-default"
                 )}
               >
-                {isCompleted ? (
-                  <Check className="w-3 h-3" strokeWidth={3} />
-                ) : (
-                  <span>{stepNumber}</span>
-                )}
-              </div>
+                {/* Circle indicator */}
+                <div
+                  className={cn(
+                    "rounded-full flex items-center justify-center font-semibold transition-all duration-300 border-[1.5px]",
+                    isCompleted && "w-6 h-6 text-xs bg-[#612A4F] border-[#612A4F] text-white",
+                    isCurrent && "w-12 h-12 text-lg bg-[#612A4F] border-[#612A4F] text-white border-2 shadow-md",
+                    isPending && "w-6 h-6 text-xs bg-gray-100 border-gray-300 text-gray-400",
+                    isClickable && "hover:ring-2 hover:ring-offset-2 hover:ring-[#612A4F]/30"
+                  )}
+                >
+                  {isCompleted ? (
+                    <Check className="w-3 h-3" strokeWidth={3} />
+                  ) : (
+                    <span>{stepNumber}</span>
+                  )}
+                </div>
 
-              {/* Step label - compact */}
-              <p className={cn(
-                "font-medium mt-1.5 text-center leading-tight",
-                isCompleted && "text-[10px] text-[#612A4F]",
-                isCurrent && "text-xs text-[#612A4F]",
-                isPending && "text-[10px] text-gray-400"
-              )}>
-                {step.shortLabel}
-              </p>
-            </button>
+                {/* Step label - compact */}
+                <p className={cn(
+                  "font-medium mt-1.5 text-center leading-tight",
+                  isCompleted && "text-[10px] text-[#612A4F]",
+                  isCurrent && "text-xs text-[#612A4F]",
+                  isPending && "text-[10px] text-gray-400"
+                )}>
+                  {step.shortLabel}
+                </p>
+              </button>
+
+            </React.Fragment>
           );
         })}
       </div>

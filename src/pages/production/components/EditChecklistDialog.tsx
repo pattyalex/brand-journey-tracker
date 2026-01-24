@@ -1,32 +1,28 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
 import ContentFlowProgress from "./ContentFlowProgress";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import {
-  X,
   Plus,
   Trash2,
   CheckSquare,
   FileText,
-  Circle,
-  PlayCircle,
-  Wrench,
-  Check,
   Video,
   Camera,
-  Film,
-  Scissors,
   MapPin,
   Shirt,
   Boxes,
   NotebookPen,
+  SquarePen,
+  Check,
+  Sparkles,
+  MessageSquare,
 } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
@@ -142,7 +138,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
   const [status, setStatus] = useState<EditingStatus | null>(null);
   const [title, setTitle] = useState("");
   const [script, setScript] = useState("");
-  const scriptTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   // Initialize content from card data when dialog opens
   useEffect(() => {
@@ -159,14 +155,6 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
   useEffect(() => {
     saveGlobalChecklist(globalItems);
   }, [globalItems]);
-
-  // Auto-resize script textarea on initial load
-  useEffect(() => {
-    if (scriptTextareaRef.current && script) {
-      scriptTextareaRef.current.style.height = 'auto';
-      scriptTextareaRef.current.style.height = `${scriptTextareaRef.current.scrollHeight}px`;
-    }
-  }, [script, isOpen]);
 
   const handleToggleItem = (id: string) => {
     setGlobalItems(prev => prev.map(item =>
@@ -207,21 +195,20 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
     onNavigateToStep?.(step);
   };
 
-  const statusOptions: { value: EditingStatus; label: string; icon: React.ReactNode }[] = [
-    { value: "to-start-editing", label: "To Start", icon: <Scissors className="w-3.5 h-3.5" /> },
-    { value: "needs-more-editing", label: "In Progress", icon: <Wrench className="w-3.5 h-3.5" /> },
-    { value: "ready-to-schedule", label: "Edited", icon: <Check className="w-3.5 h-3.5" /> },
-  ];
+  // Progress calculation
+  const completedCount = globalItems.filter(item => item.checked).length;
+  const totalCount = globalItems.length;
+  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const isAllComplete = totalCount > 0 && completedCount === totalCount;
 
-  const completedItems = globalItems.filter(item => item.checked).length;
-  const totalItems = globalItems.length;
+  // SVG circle progress
+  const radius = 40;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (progressPercent / 100) * circumference;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent hideCloseButton onInteractOutside={handleInteractOutside} onEscapeKeyDown={handleInteractOutside} className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[950px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-white">
-        {/* Stage indicator bar */}
-        <div className="h-1 w-full bg-[#A88090] flex-shrink-0" />
-
+      <DialogContent hideCloseButton onInteractOutside={handleInteractOutside} onEscapeKeyDown={handleInteractOutside} className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[950px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-gradient-to-br from-[#F5EEF2] via-white to-[#F5EEF2]/30">
         {/* Step Progress Indicator */}
         <ContentFlowProgress
           currentStep={4}
@@ -240,70 +227,120 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             className="flex-1 flex flex-col overflow-hidden"
           >
-        {/* Header */}
-        <div className="px-6 pb-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#8B7082] flex items-center justify-center shadow-md">
-              <Scissors className="w-5 h-5 text-white" />
-            </div>
-            <h2 className="text-2xl font-bold text-[#8B7082]">Edit Checklist</h2>
+        {/* Headers row */}
+        <div className="flex border-b border-[#8B7082]/30">
+          {/* Content Overview Header */}
+          <div className="w-[320px] flex-shrink-0 px-4 py-3 bg-transparent flex items-center relative">
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-6 bg-[#8B7082]/30"></div>
+            <h3 className="font-semibold text-[#612A4F] flex items-center gap-2 text-base">
+              <FileText className="w-5 h-5" />
+              Content Overview
+            </h3>
+          </div>
+          {/* Checklist Header */}
+          <div className="flex-1 px-4 py-3 bg-transparent flex items-center">
+            <h3 className="font-semibold text-[#612A4F] flex items-center gap-2 text-base">
+              <CheckSquare className="w-5 h-5" />
+              Editing Checklist
+            </h3>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 pb-4">
-          {/* Two Column Layout */}
-          <div className="flex gap-6 h-full">
-            {/* Left Column - Content Overview (Document style) */}
-            <div
-              className="w-[340px] flex-shrink-0 bg-white rounded-xl p-5 border-l-[3px] border-[#A88090]"
-              style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}
-            >
-              <div className="space-y-5">
-                {/* Hook */}
-                <div>
-                  <p className="text-[11px] font-semibold text-[#A88090] uppercase tracking-wider mb-1">Hook</p>
-                  <textarea
+        {/* Content row */}
+        <div className="flex flex-1 overflow-hidden">
+          {/* Left Column - Content Overview */}
+          <div className="w-[320px] flex-shrink-0 bg-white/40 relative overflow-y-auto">
+            <div className="absolute right-0 top-0 bottom-0 w-px bg-[#8B7082]/30"></div>
+            <div className="h-full p-4">
+              {/* Hook section */}
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider">Hook</p>
+                  {!isEditing ? (
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="p-1 text-[#8B7082] hover:text-[#612A4F] transition-all duration-200 hover:scale-110 hover:-rotate-12"
+                    >
+                      <SquarePen className="w-4 h-4" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setIsEditing(false)}
+                      className="p-1.5 rounded-lg bg-[#A89098] hover:bg-[#8B7082] text-white transition-colors"
+                    >
+                      <Check className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+                {isEditing ? (
+                  <input
+                    type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
+                    className="w-full text-[13px] text-gray-700 leading-relaxed bg-transparent border-none p-0 focus:outline-none focus:ring-0"
                     placeholder="Enter your hook..."
-                    className="w-full text-sm text-gray-800 bg-transparent border-0 p-0 focus:outline-none focus:ring-0 resize-none placeholder:text-gray-400"
-                    rows={1}
                   />
-                </div>
+                ) : (
+                  <p className="text-[13px] leading-relaxed">
+                    {title ? (
+                      <span className="text-gray-700">{title}</span>
+                    ) : (
+                      <span className="text-gray-400 italic">No hook added</span>
+                    )}
+                  </p>
+                )}
+              </div>
 
-                {/* Script */}
-                <div>
-                  <p className="text-[11px] font-semibold text-[#A88090] uppercase tracking-wider mb-2">Script</p>
-                  <Textarea
-                    ref={scriptTextareaRef}
+              {/* Script section */}
+              <div className="mt-6">
+                <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-1">Script</p>
+                {isEditing ? (
+                  <textarea
+                    autoFocus
                     value={script}
                     onChange={(e) => setScript(e.target.value)}
-                    placeholder="Enter your script or talking points..."
-                    className="min-h-[100px] text-sm text-gray-700 leading-relaxed border-0 bg-white/60 rounded-lg px-3 py-2 focus:ring-1 focus:ring-pink-300 resize-none placeholder:text-gray-400"
-                    style={{ height: 'auto' }}
-                    onInput={(e) => {
-                      const target = e.target as HTMLTextAreaElement;
-                      target.style.height = 'auto';
-                      target.style.height = `${target.scrollHeight}px`;
-                    }}
+                    className="w-full h-full min-h-[200px] text-[13px] text-gray-700 leading-relaxed bg-transparent border-none p-0 resize-none focus:outline-none focus:ring-0"
+                    placeholder="Write your script here..."
                   />
-                </div>
+                ) : script ? (
+                  <div className="-mx-2 px-2">
+                    <span className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">{script}</span>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => setIsEditing(true)}
+                    className="flex items-center gap-4 py-4 text-center cursor-pointer hover:bg-pink-50/50 rounded-lg transition-colors"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center">
+                      <FileText className="w-6 h-6 text-pink-400" />
+                    </div>
+                    <div className="text-left">
+                      <h4 className="text-xs text-gray-600 font-medium">Click to add script</h4>
+                      <p className="text-xs text-gray-400">
+                        Add a script to review while editing
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
 
-                {/* How It's Shot */}
+              {/* Card details - Formats, Platform, Shooting Plan */}
+              <div className="mt-4 pt-2 space-y-6">
+                {/* Formats (How it's shot) */}
                 {card?.formats && card.formats.length > 0 && (
                   <div>
-                    <p className="text-[11px] font-semibold text-[#6B6B6B] uppercase tracking-wider mb-2">How It's Shot</p>
-                    <div className="space-y-1.5">
+                    <h4 className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-2">How it's shot</h4>
+                    <div className="space-y-1">
                       {card.formats.map((format, idx) => {
                         const isPhoto = ['photo post', 'carousel', 'text post', 'photo', 'static'].some(
                           p => format.toLowerCase().includes(p)
                         );
                         return (
-                          <div key={idx} className="flex items-center gap-2 text-sm text-gray-600">
+                          <div key={idx} className="flex items-center gap-2 text-[13px] text-gray-600">
                             {isPhoto ? (
-                              <Camera className="w-4 h-4 text-gray-400" />
+                              <Camera className="w-4 h-4 text-[#8B7082]" />
                             ) : (
-                              <Video className="w-4 h-4 text-gray-400" />
+                              <Video className="w-4 h-4 text-[#8B7082]" />
                             )}
                             <span>{format}</span>
                           </div>
@@ -315,49 +352,49 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
 
                 {/* Platforms */}
                 {card?.platforms && card.platforms.length > 0 && (
-                  <div>
-                    <p className="text-[11px] font-semibold text-[#6B6B6B] uppercase tracking-wider mb-2">Platforms</p>
+                  <div className="pt-2">
+                    <h4 className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-2">Platform</h4>
                     <div className="flex items-center gap-3">
                       {card.platforms.map((platform, idx) => {
                         const icon = getPlatformIcon(platform);
                         return icon ? (
-                          <span key={idx} className="text-gray-500" title={platform}>
+                          <span key={idx} className="text-[#8B7082]" title={platform}>
                             {icon}
                           </span>
                         ) : (
-                          <span key={idx} className="text-sm text-gray-500">{platform}</span>
+                          <span key={idx} className="text-[13px] text-[#8B7082]">{platform}</span>
                         );
                       })}
                     </div>
                   </div>
                 )}
 
-                {/* Filming Plan */}
+                {/* Shooting Plan */}
                 {(card?.locationText || card?.outfitText || card?.propsText || card?.filmingNotes) && (
-                  <div>
-                    <p className="text-[11px] font-semibold text-[#6B6B6B] uppercase tracking-wider mb-2">Filming Plan</p>
-                    <div className="space-y-1.5 text-sm text-gray-600">
+                  <div className="pt-2">
+                    <h4 className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-2">Shooting Plan</h4>
+                    <div className="space-y-1 text-[13px] text-gray-600">
                       {card?.locationText && (
                         <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          <MapPin className="w-4 h-4 text-[#8B7082] flex-shrink-0" />
                           <span>{card.locationText}</span>
                         </div>
                       )}
                       {card?.outfitText && (
                         <div className="flex items-center gap-2">
-                          <Shirt className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          <Shirt className="w-4 h-4 text-[#8B7082] flex-shrink-0" />
                           <span>{card.outfitText}</span>
                         </div>
                       )}
                       {card?.propsText && (
                         <div className="flex items-center gap-2">
-                          <Boxes className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          <Boxes className="w-4 h-4 text-[#8B7082] flex-shrink-0" />
                           <span>{card.propsText}</span>
                         </div>
                       )}
                       {card?.filmingNotes && (
                         <div className="flex items-center gap-2">
-                          <NotebookPen className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          <NotebookPen className="w-4 h-4 text-[#8B7082] flex-shrink-0" />
                           <span>{card.filmingNotes}</span>
                         </div>
                       )}
@@ -366,146 +403,222 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
                 )}
               </div>
             </div>
+          </div>
 
-            {/* Right Column - Checklist & Notes */}
-            <div className="flex-1 space-y-5">
-              {/* Editor's Checklist Section */}
-              <div>
-                <h3 className="text-[11px] font-semibold text-[#A88090] uppercase tracking-wider mb-3">Checklist</h3>
-                <div className="space-y-2">
-                  <AnimatePresence mode="popLayout">
-                    {globalItems.map((item) => (
-                      <motion.div
-                        key={item.id}
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        className="flex items-center gap-3 group bg-white rounded-xl px-3 py-2.5 shadow-sm"
-                      >
-                        <Checkbox
-                          checked={item.checked}
-                          onCheckedChange={() => handleToggleItem(item.id)}
-                          className="data-[state=checked]:bg-[#8B7082] data-[state=checked]:border-[#8B7082] border-gray-300"
-                        />
-                        <input
-                          type="text"
-                          data-checklist-item
-                          value={item.text}
-                          onChange={(e) => handleUpdateItemText(item.id, e.target.value)}
-                          onKeyDown={(e) => {
-                            const currentIndex = globalItems.findIndex(i => i.id === item.id);
-
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              const newItem: EditingChecklistItem = {
-                                id: `item-${Date.now()}`,
-                                text: "",
-                                checked: false,
-                                isExample: false,
-                              };
-                              setGlobalItems(prev => [
-                                ...prev.slice(0, currentIndex + 1),
-                                newItem,
-                                ...prev.slice(currentIndex + 1)
-                              ]);
-                              setTimeout(() => {
-                                const inputs = document.querySelectorAll<HTMLInputElement>('[data-checklist-item]');
-                                inputs[currentIndex + 1]?.focus();
-                              }, 50);
-                            }
-
-                            if (e.key === "Backspace" && !item.text && currentIndex > 0) {
-                              e.preventDefault();
-                              setGlobalItems(prev => prev.filter(i => i.id !== item.id));
-                              setTimeout(() => {
-                                const inputs = document.querySelectorAll<HTMLInputElement>('[data-checklist-item]');
-                                inputs[currentIndex - 1]?.focus();
-                              }, 50);
-                            }
-                          }}
-                          onBlur={(e) => {
-                            const relatedTarget = e.relatedTarget as HTMLElement;
-                            if (!item.text.trim() && !relatedTarget?.hasAttribute('data-checklist-item')) {
-                              setTimeout(() => {
-                                setGlobalItems(prev => prev.filter(i => i.id !== item.id));
-                              }, 100);
-                            }
-                          }}
-                          className={cn(
-                            "flex-1 text-sm transition-all bg-transparent border-none outline-none focus:ring-0 p-0",
-                            item.checked
-                              ? "text-gray-400 line-through"
-                              : item.isExample
-                                ? "text-gray-400 italic"
-                                : "text-gray-700"
-                          )}
-                        />
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-transparent text-gray-300 hover:text-red-500"
-                          onClick={() => handleDeleteItem(item.id)}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-
-                  {/* Add new item */}
-                  <button
-                    onClick={() => {
-                      const newItem: EditingChecklistItem = {
-                        id: `item-${Date.now()}`,
-                        text: "",
-                        checked: false,
-                        isExample: false,
-                      };
-                      setGlobalItems(prev => [...prev, newItem]);
-                      setTimeout(() => {
-                        const inputs = document.querySelectorAll<HTMLInputElement>('[data-checklist-item]');
-                        const lastInput = inputs[inputs.length - 1];
-                        lastInput?.focus();
-                      }, 50);
-                    }}
-                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-[#8B7082] transition-colors px-3 py-2"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span>Add item</span>
-                  </button>
+          {/* Right Column - Checklist & Notes */}
+          <div className="flex-1 bg-white/30 py-4 pl-8 pr-4">
+            {/* Progress Ring & Stats */}
+            <div className="flex items-center gap-4 mb-5">
+              {/* Circular Progress */}
+              <div className="relative flex-shrink-0">
+                <svg width="70" height="70" className="transform -rotate-90">
+                  {/* Background circle */}
+                  <circle
+                    cx="35"
+                    cy="35"
+                    r="28"
+                    fill="none"
+                    stroke="#E5E7EB"
+                    strokeWidth="6"
+                  />
+                  {/* Progress circle */}
+                  <motion.circle
+                    cx="35"
+                    cy="35"
+                    r="28"
+                    fill="none"
+                    stroke={isAllComplete ? "#4E9D5A" : "#8B7082"}
+                    strokeWidth="6"
+                    strokeLinecap="round"
+                    strokeDasharray={2 * Math.PI * 28}
+                    initial={{ strokeDashoffset: 2 * Math.PI * 28 }}
+                    animate={{ strokeDashoffset: 2 * Math.PI * 28 - (progressPercent / 100) * 2 * Math.PI * 28 }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                  />
+                </svg>
+                {/* Center content */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  {isAllComplete ? (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    >
+                      <Sparkles className="w-5 h-5 text-[#4E9D5A]" />
+                    </motion.div>
+                  ) : (
+                    <span className="text-lg font-bold text-[#612A4F]">{progressPercent}%</span>
+                  )}
                 </div>
               </div>
 
-              {/* Notes Section */}
-              <div>
-                <h3 className="text-[11px] font-semibold text-[#6B6B6B] uppercase tracking-wider mb-2">Notes (optional)</h3>
-                <Textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Add notes about pacing, music choices, transitions, text overlays..."
-                  className="min-h-[80px] border-0 bg-gray-50/80 rounded-xl focus:ring-1 focus:ring-[#8B7082]/30 resize-none placeholder:text-gray-400 text-sm"
-                />
+              {/* Stats */}
+              <div className="flex-1">
+                <motion.p
+                  className={cn(
+                    "text-base font-semibold",
+                    isAllComplete ? "text-[#3D8A48]" : "text-[#612A4F]"
+                  )}
+                  key={isAllComplete ? "complete" : "progress"}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  {isAllComplete ? "All done!" : `${completedCount} of ${totalCount} complete`}
+                </motion.p>
+                <p className="text-xs text-gray-500">
+                  {isAllComplete
+                    ? "Your edit is ready for scheduling"
+                    : "Check off items as you edit in your editing app of choice"}
+                </p>
               </div>
+            </div>
+
+            {/* Checklist Items */}
+            <div className="space-y-1.5 mb-5">
+              <AnimatePresence mode="popLayout">
+                {globalItems.map((item, index) => (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20, height: 0 }}
+                    transition={{ delay: index * 0.02 }}
+                    className={cn(
+                      "flex items-center gap-3 group rounded-lg px-3 py-2 transition-all duration-200",
+                      item.checked
+                        ? "bg-[#EFF5F0]/80 border border-[#A5D4AE]"
+                        : "bg-white border border-gray-100 hover:border-[#8B7082]/30 hover:shadow-sm"
+                    )}
+                  >
+                    <motion.div
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <Checkbox
+                        checked={item.checked}
+                        onCheckedChange={() => handleToggleItem(item.id)}
+                        className={cn(
+                          "h-4 w-4 rounded-full transition-colors",
+                          item.checked
+                            ? "data-[state=checked]:bg-[#4E9D5A] data-[state=checked]:border-[#4E9D5A]"
+                            : "data-[state=checked]:bg-[#8B7082] data-[state=checked]:border-[#8B7082] border-gray-300"
+                        )}
+                      />
+                    </motion.div>
+                    <input
+                      type="text"
+                      data-checklist-item
+                      value={item.text}
+                      onChange={(e) => handleUpdateItemText(item.id, e.target.value)}
+                      onKeyDown={(e) => {
+                        const currentIndex = globalItems.findIndex(i => i.id === item.id);
+
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const newItem: EditingChecklistItem = {
+                            id: `item-${Date.now()}`,
+                            text: "",
+                            checked: false,
+                            isExample: false,
+                          };
+                          setGlobalItems(prev => [
+                            ...prev.slice(0, currentIndex + 1),
+                            newItem,
+                            ...prev.slice(currentIndex + 1)
+                          ]);
+                          setTimeout(() => {
+                            const inputs = document.querySelectorAll<HTMLInputElement>('[data-checklist-item]');
+                            inputs[currentIndex + 1]?.focus();
+                          }, 50);
+                        }
+
+                        if (e.key === "Backspace" && !item.text && currentIndex > 0) {
+                          e.preventDefault();
+                          setGlobalItems(prev => prev.filter(i => i.id !== item.id));
+                          setTimeout(() => {
+                            const inputs = document.querySelectorAll<HTMLInputElement>('[data-checklist-item]');
+                            inputs[currentIndex - 1]?.focus();
+                          }, 50);
+                        }
+                      }}
+                      onBlur={(e) => {
+                        const relatedTarget = e.relatedTarget as HTMLElement;
+                        if (!item.text.trim() && !relatedTarget?.hasAttribute('data-checklist-item')) {
+                          setTimeout(() => {
+                            setGlobalItems(prev => prev.filter(i => i.id !== item.id));
+                          }, 100);
+                        }
+                      }}
+                      className={cn(
+                        "flex-1 text-sm transition-all bg-transparent border-none outline-none focus:ring-0 p-0",
+                        item.checked
+                          ? "text-[#3D8A48] line-through"
+                          : item.isExample
+                            ? "text-gray-400 italic"
+                            : "text-gray-700"
+                      )}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity rounded-full hover:bg-red-50 text-gray-300 hover:text-red-500"
+                      onClick={() => handleDeleteItem(item.id)}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+
+              {/* Add new item button */}
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                onClick={() => {
+                  const newItem: EditingChecklistItem = {
+                    id: `item-${Date.now()}`,
+                    text: "",
+                    checked: false,
+                    isExample: false,
+                  };
+                  setGlobalItems(prev => [...prev, newItem]);
+                  setTimeout(() => {
+                    const inputs = document.querySelectorAll<HTMLInputElement>('[data-checklist-item]');
+                    const lastInput = inputs[inputs.length - 1];
+                    lastInput?.focus();
+                  }, 50);
+                }}
+                className="flex items-center gap-2 w-full text-xs text-[#8B7082] hover:text-[#612A4F] transition-colors px-3 py-2 rounded-lg border border-dashed border-[#8B7082]/30 hover:border-[#8B7082]/50 hover:bg-white/50"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Add item</span>
+              </motion.button>
+            </div>
+
+            {/* Notes Section */}
+            <div className="bg-gradient-to-br from-white to-[#F5EEF2]/50 rounded-xl p-4 border border-[#8B7082]/10">
+              <div className="flex items-center gap-2 mb-2">
+                <MessageSquare className="w-3.5 h-3.5 text-[#8B7082]" />
+                <h3 className="text-xs font-medium text-[#612A4F]">Editor Notes</h3>
+              </div>
+              <Textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Pacing, music, transitions, text overlays..."
+                className="min-h-[120px] max-h-[200px] border-0 bg-transparent focus:ring-0 resize-none overflow-y-auto placeholder:text-gray-400 text-xs text-gray-700"
+              />
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 flex justify-end gap-3 bg-white">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="border-gray-300 text-gray-700 hover:bg-gray-50"
-          >
-            Cancel
-          </Button>
+        <div className="flex justify-end px-6 py-4 bg-white border-t border-gray-100">
           <motion.div
             animate={shakeButton ? { x: [0, -8, 8, -8, 8, 0], scale: [1, 1.02, 1.02, 1.02, 1.02, 1] } : {}}
             transition={{ duration: 0.5 }}
           >
             <Button
               onClick={handleSave}
-              className="bg-[#8B7082] hover:bg-[#7A6073] text-white"
+              className="bg-[#612A4F] hover:bg-[#4E2240] text-white rounded-lg shadow-sm h-9 px-4"
             >
               Stop Here, Finish Later
             </Button>

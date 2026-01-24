@@ -697,14 +697,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
       </div>
 
       {/* Fixed Footer with Action Buttons */}
-      <div className="flex-shrink-0 px-6 pt-3 pb-0 border-t border-gray-200 bg-white flex justify-between">
-        <Button
-          variant="ghost"
-          onClick={() => onNavigateToStep?.(3)}
-          className="text-[#612A4F] hover:text-[#4E2240] hover:bg-[#612A4F]/10"
-        >
-          Move to Film <ArrowRight className="w-4 h-4 ml-1" />
-        </Button>
+      <div className="flex-shrink-0 px-6 pt-3 pb-0 border-t border-gray-200 bg-white flex justify-end">
         <motion.div
           animate={shakeButton ? { x: [0, -8, 8, -8, 8, 0], scale: [1, 1.02, 1.02, 1.02, 1.02, 1] } : {}}
           transition={{ duration: 0.5 }}
