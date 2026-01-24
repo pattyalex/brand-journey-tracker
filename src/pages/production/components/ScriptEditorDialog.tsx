@@ -190,13 +190,13 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   <Dialog open={isOpen} onOpenChange={onOpenChange}>
     <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] overflow-hidden border-0 shadow-2xl flex flex-col bg-gradient-to-br from-[#f0f7fa] via-white to-[#f0f7fa]/30">
       {/* Step Progress Indicator - Centered */}
-      <div className="flex justify-center pt-4 pb-2 flex-shrink-0">
+      <div className="flex justify-center pt-2 pb-0 flex-shrink-0">
         <ContentFlowProgress currentStep={2} className="w-[550px]" onStepClick={onNavigateToStep} />
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 pt-0 pb-2 space-y-4">
+      <div className="flex-1 overflow-y-auto px-6 -mt-1 pb-1 space-y-2">
         {/* Title Section */}
-        <div className="border-b border-gray-200 pb-4">
+        <div className="border-b border-gray-200 pb-1 mb-3">
           <input
             ref={titleInputRef}
             type="text"
@@ -562,7 +562,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
 
               <div className="rounded-lg overflow-hidden">
                 {/* Location - lightest mauve */}
-                <div className="flex items-center gap-3 py-2.5 px-3 bg-[#8B7082]/[0.05] transition-transform duration-300 hover:animate-float cursor-text">
+                <div className="flex items-center gap-3 py-2.5 px-3 bg-[#8B7082]/[0.05] cursor-text">
                   <MapPin className="w-4 h-4 text-[#8B7082] flex-shrink-0" />
                   <textarea
                     ref={locationInputRef as React.RefObject<HTMLTextAreaElement>}
@@ -585,7 +585,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                 </div>
 
                 {/* Outfit - light-medium mauve */}
-                <div className="flex items-center gap-3 py-2.5 px-3 bg-[#8B7082]/[0.09] transition-transform duration-300 hover:animate-float cursor-text">
+                <div className="flex items-center gap-3 py-2.5 px-3 bg-[#8B7082]/[0.09] cursor-text">
                   <Shirt className="w-4 h-4 text-[#8B7082] flex-shrink-0" />
                   <textarea
                     ref={outfitInputRef as React.RefObject<HTMLTextAreaElement>}
@@ -608,7 +608,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                 </div>
 
                 {/* Props - medium-dark mauve */}
-                <div className="flex items-center gap-3 py-2.5 px-3 bg-[#8B7082]/[0.12] transition-transform duration-300 hover:animate-float cursor-text">
+                <div className="flex items-center gap-3 py-2.5 px-3 bg-[#8B7082]/[0.12] cursor-text">
                   <Boxes className="w-4 h-4 text-[#8B7082] flex-shrink-0" />
                   <textarea
                     ref={propsInputRef as React.RefObject<HTMLTextAreaElement>}
@@ -631,7 +631,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                 </div>
 
                 {/* Notes - darkest mauve */}
-                <div className="flex items-center gap-3 py-2.5 px-3 bg-[#8B7082]/[0.16] transition-transform duration-300 hover:animate-float cursor-text">
+                <div className="flex items-center gap-3 py-2.5 px-3 bg-[#8B7082]/[0.16] cursor-text">
                   <NotebookPen className="w-4 h-4 text-[#8B7082] flex-shrink-0" />
                   <textarea
                     ref={notesInputRef}
@@ -700,7 +700,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
       </div>
 
       {/* Fixed Footer with Action Buttons */}
-      <div className="flex-shrink-0 px-6 pt-2 pb-1 border-t border-gray-200 bg-white flex justify-end gap-3">
+      <div className="flex-shrink-0 px-6 pt-3 pb-0 border-t border-gray-200 bg-white flex justify-end gap-3">
         <Button
           variant="outline"
           onClick={onCancel}

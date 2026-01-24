@@ -1589,20 +1589,8 @@ const Production = () => {
       }, 50);
     };
 
-    // Check if navigating to a future step
-    if (step > currentWorkflowStep) {
-      toast(`This content hasn't reached the ${stepLabels[step]} step yet`, {
-        description: `It's currently in ${stepLabels[currentWorkflowStep]}`,
-        action: {
-          label: 'Continue anyway',
-          onClick: performNavigation,
-        },
-        duration: 5000,
-      });
-    } else {
-      // Navigating to current or previous step - proceed directly
-      performNavigation();
-    }
+    // Navigate directly to the step
+    performNavigation();
   };
 
   const handleAddPlatformTag = () => {
