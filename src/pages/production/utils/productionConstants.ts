@@ -2,12 +2,12 @@ import { KanbanColumn } from "../types";
 
 // Premium light theme - white columns with mauve accents
 export const columnColors: Record<string, { bg: string; border: string; badge: string; text: string; buttonBg: string; buttonText: string; topBorder: string; cardAccent: string }> = {
-  ideate: { bg: "bg-white", border: "border-transparent", badge: "bg-[#F5F2F4]", text: "text-[#8B7082]", buttonBg: "bg-[#F5F2F4]", buttonText: "text-[#8B7082]", topBorder: "bg-[#8B7082]", cardAccent: "border-l-[#DDD6DA]" },
-  "shape-ideas": { bg: "bg-white", border: "border-transparent", badge: "bg-[#F5F2F4]", text: "text-[#8B7082]", buttonBg: "bg-[#F5F2F4]", buttonText: "text-[#8B7082]", topBorder: "bg-[#8B7082]", cardAccent: "border-l-[#DDD6DA]" },
-  "to-film": { bg: "bg-white", border: "border-transparent", badge: "bg-[#F5F2F4]", text: "text-[#8B7082]", buttonBg: "bg-[#F5F2F4]", buttonText: "text-[#8B7082]", topBorder: "bg-[#8B7082]", cardAccent: "border-l-[#DDD6DA]" },
-  "to-edit": { bg: "bg-white", border: "border-transparent", badge: "bg-[#F5F2F4]", text: "text-[#8B7082]", buttonBg: "bg-[#F5F2F4]", buttonText: "text-[#8B7082]", topBorder: "bg-[#8B7082]", cardAccent: "border-l-[#DDD6DA]" },
-  "to-schedule": { bg: "bg-white", border: "border-transparent", badge: "bg-[#F5F2F4]", text: "text-[#8B7082]", buttonBg: "bg-[#F5F2F4]", buttonText: "text-[#8B7082]", topBorder: "bg-[#8B7082]", cardAccent: "border-l-[#DDD6DA]" },
-  posted: { bg: "bg-white", border: "border-transparent", badge: "bg-[#F5F2F4]", text: "text-[#8B7082]", buttonBg: "bg-[#F5F2F4]", buttonText: "text-[#8B7082]", topBorder: "bg-[#8B7082]", cardAccent: "border-l-[#DDD6DA]" },
+  ideate: { bg: "bg-white", border: "border-transparent", badge: "bg-[#F5F2F4]", text: "text-[#612A4F]", buttonBg: "bg-[#F5F2F4]", buttonText: "text-[#612A4F]", topBorder: "bg-[#8B7082]", cardAccent: "border-l-[#DDD6DA]" },
+  "shape-ideas": { bg: "bg-white", border: "border-transparent", badge: "bg-[#F5F2F4]", text: "text-[#612A4F]", buttonBg: "bg-[#F5F2F4]", buttonText: "text-[#612A4F]", topBorder: "bg-[#8B7082]", cardAccent: "border-l-[#DDD6DA]" },
+  "to-film": { bg: "bg-white", border: "border-transparent", badge: "bg-[#F5F2F4]", text: "text-[#612A4F]", buttonBg: "bg-[#F5F2F4]", buttonText: "text-[#612A4F]", topBorder: "bg-[#8B7082]", cardAccent: "border-l-[#DDD6DA]" },
+  "to-edit": { bg: "bg-white", border: "border-transparent", badge: "bg-[#F5F2F4]", text: "text-[#612A4F]", buttonBg: "bg-[#F5F2F4]", buttonText: "text-[#612A4F]", topBorder: "bg-[#8B7082]", cardAccent: "border-l-[#DDD6DA]" },
+  "to-schedule": { bg: "bg-white", border: "border-transparent", badge: "bg-[#F5F2F4]", text: "text-[#612A4F]", buttonBg: "bg-[#F5F2F4]", buttonText: "text-[#612A4F]", topBorder: "bg-[#8B7082]", cardAccent: "border-l-[#DDD6DA]" },
+  posted: { bg: "bg-white", border: "border-transparent", badge: "bg-[#F5F2F4]", text: "text-[#612A4F]", buttonBg: "bg-[#F5F2F4]", buttonText: "text-[#612A4F]", topBorder: "bg-[#8B7082]", cardAccent: "border-l-[#DDD6DA]" },
 };
 
 // Card styling - premium white cards with mauve accent

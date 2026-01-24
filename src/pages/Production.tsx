@@ -104,7 +104,7 @@ const InlineCardInput: React.FC<{
   };
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm p-2 rounded-lg border border-blue-400 shadow-md">
+    <div className="bg-white/80 backdrop-blur-sm p-2 rounded-lg border border-[#8B7082] shadow-md">
       <input
         ref={inputRef}
         type="text"
@@ -2786,8 +2786,8 @@ const Production = () => {
               {!ideateMode && (
                 <div className="space-y-8 px-6">
                   <div className="text-center pb-2">
-                    <h3 className="text-xl font-semibold text-black tracking-tight mb-2">Choose Your Starting Point</h3>
-                    <p className="text-sm text-gray-600">Select a method to guide your content ideation process</p>
+                    <h3 className="text-xl font-semibold text-[#612A4F] tracking-tight mb-2">Choose Your Starting Point</h3>
+                    <p className="text-sm text-[#612A4F]/70">Select a method to guide your content ideation process</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-5">
@@ -3180,7 +3180,7 @@ const Production = () => {
           }
         }}>
           <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col">
-            <div className="bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-8 h-full overflow-y-auto">
+            <div className="bg-gradient-to-br from-[#d3f3f5] via-white to-[#d3f3f5]/50 p-8 h-full overflow-y-auto">
               {/* Breadcrumbs */}
               <div className="flex items-center gap-3 text-base mb-4">
                 <button

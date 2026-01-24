@@ -188,7 +188,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
 
   return (
   <Dialog open={isOpen} onOpenChange={onOpenChange}>
-    <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] overflow-hidden border-0 shadow-2xl flex flex-col bg-gradient-to-br from-gray-50 to-white">
+    <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] overflow-hidden border-0 shadow-2xl flex flex-col bg-gradient-to-br from-[#f0f7fa] via-white to-[#f0f7fa]/30">
       {/* Step Progress Indicator */}
       <ContentFlowProgress currentStep={2} className="flex-shrink-0" onStepClick={onNavigateToStep} />
 
@@ -211,7 +211,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
         <div className="grid grid-cols-[1fr,280px] gap-6 items-start">
           {/* Left Column - Talking Points */}
           <div className="space-y-3">
-            <label className="text-[12px] font-medium text-[#8B7082] uppercase tracking-wider">
+            <label className="text-[12px] font-medium text-[#612A4F] uppercase tracking-wider">
               Talking Points
             </label>
 
@@ -254,7 +254,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
               value={scriptContent}
               onChange={(e) => setScriptContent(e.target.value)}
               placeholder="Write your script here..."
-              className="min-h-[400px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#8B7082] focus:border-[#8B7082] transition-all text-sm leading-relaxed bg-white placeholder:text-gray-400 shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+              className="min-h-[400px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#612A4F] focus:border-[#612A4F] transition-all text-sm leading-relaxed bg-white placeholder:text-gray-400 shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
             />
           </div>
 
@@ -262,7 +262,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
           <div className="space-y-6">
             {/* How It's Shot */}
             <div className="space-y-2">
-              <h4 className="text-[12px] font-medium text-[#8B7082] uppercase tracking-wider">
+              <h4 className="text-[12px] font-medium text-[#612A4F] uppercase tracking-wider">
                 How It's Shot
               </h4>
 
@@ -422,13 +422,13 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                 {formatTags.map((tag, idx) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-700"
+                    className="inline-flex items-center gap-1 px-2 py-1 bg-[#F2EDE8] rounded-full text-xs text-[#612A4F]"
                   >
-                    {isStaticFormat(tag) ? <Camera className="w-3 h-3 text-gray-400" /> : <Video className="w-3 h-3 text-gray-400" />}
+                    {isStaticFormat(tag) ? <Camera className="w-3 h-3 text-[#612A4F]" /> : <Video className="w-3 h-3 text-[#612A4F]" />}
                     {tag}
                     <button
                       onClick={() => onRemoveFormatTag(tag)}
-                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                      className="text-[#612A4F]/70 hover:text-[#612A4F] transition-colors"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -439,29 +439,21 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
 
             {/* Platforms */}
             <div className="space-y-2">
-              <h4 className="text-[12px] font-medium text-[#8B7082] uppercase tracking-wider">
+              <h4 className="text-[12px] font-medium text-[#612A4F] uppercase tracking-wider">
                 Platforms
               </h4>
               <div className="flex items-center gap-1 flex-wrap">
                 {[
-                  { name: "Instagram", color: "#E1306C", bgColor: "bg-[#E1306C]/10" },
-                  { name: "TikTok", color: "#000000", bgColor: "bg-black/10" },
-                  { name: "YouTube", color: "#FF0000", bgColor: "bg-[#FF0000]/10" },
-                  { name: "Facebook", color: "#1877F2", bgColor: "bg-[#1877F2]/10" },
-                  { name: "LinkedIn", color: "#0A66C2", bgColor: "bg-[#0A66C2]/10" },
-                  { name: "X", color: "#000000", bgColor: "bg-black/10" },
-                  { name: "Threads", color: "#000000", bgColor: "bg-black/10" },
+                  { name: "Instagram", icon: SiInstagram },
+                  { name: "TikTok", icon: SiTiktok },
+                  { name: "YouTube", icon: SiYoutube },
+                  { name: "Facebook", icon: SiFacebook },
+                  { name: "LinkedIn", icon: SiLinkedin },
+                  { name: "X", icon: RiTwitterXLine },
+                  { name: "Threads", icon: RiThreadsLine },
                 ].map((platform) => {
                   const isSelected = platformTags.includes(platform.name);
-                  const IconComponent = {
-                    Instagram: SiInstagram,
-                    TikTok: SiTiktok,
-                    YouTube: SiYoutube,
-                    Facebook: SiFacebook,
-                    LinkedIn: SiLinkedin,
-                    X: RiTwitterXLine,
-                    Threads: RiThreadsLine,
-                  }[platform.name];
+                  const IconComponent = platform.icon;
                   return (
                     <button
                       key={platform.name}
@@ -476,13 +468,12 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                       className={cn(
                         "p-1.5 rounded-lg transition-all",
                         isSelected
-                          ? platform.bgColor
+                          ? "bg-[#8B7082]/10 text-[#8B7082]"
                           : "text-gray-400 hover:bg-gray-100 hover:text-gray-600"
                       )}
-                      style={isSelected ? { color: platform.color } : undefined}
                       title={platform.name}
                     >
-                      {IconComponent && <IconComponent className="w-4 h-4" />}
+                      <IconComponent className="w-4 h-4" />
                     </button>
                   );
                 })}
@@ -492,7 +483,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                   className={cn(
                     "p-1.5 rounded-lg transition-all",
                     showCustomPlatformInput
-                      ? "bg-[#8B7082] text-white"
+                      ? "bg-[#612A4F] text-white"
                       : "text-gray-400 hover:bg-gray-100 hover:text-gray-600"
                   )}
                   title="Add other platform"
@@ -518,7 +509,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                       }
                     }}
                     placeholder="Platform name..."
-                    className="flex-1 px-2 py-1 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#8B7082] focus:border-transparent"
+                    className="flex-1 px-2 py-1 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#612A4F] focus:border-transparent"
                     autoFocus
                   />
                   <Button
@@ -531,7 +522,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                       }
                     }}
                     size="sm"
-                    className="h-auto py-1 bg-[#8B7082] hover:bg-[#7A6073]"
+                    className="h-auto py-1 bg-[#612A4F] hover:bg-[#4E2240]"
                   >
                     Add
                   </Button>
@@ -546,12 +537,12 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                     .map((platform) => (
                       <span
                         key={platform}
-                        className="inline-flex items-center gap-1 px-2 py-1 bg-[#8B7082]/10 text-[#8B7082] rounded-full text-xs"
+                        className="inline-flex items-center gap-1 px-2 py-1 bg-[#612A4F]/10 text-[#612A4F] rounded-full text-xs"
                       >
                         {platform}
                         <button
                           onClick={() => onRemovePlatformTag(platform)}
-                          className="text-[#8B7082]/60 hover:text-[#8B7082] transition-colors"
+                          className="text-[#612A4F]/60 hover:text-[#612A4F] transition-colors"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -563,14 +554,14 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
 
             {/* Shooting Plan */}
             <div className="space-y-2">
-              <h4 className="text-[12px] font-medium text-[#8B7082] uppercase tracking-wider">
+              <h4 className="text-[12px] font-medium text-[#612A4F] uppercase tracking-wider">
                 Shooting Plan
               </h4>
 
-              <div className="space-y-2.5 bg-gray-50 rounded-lg p-3">
-                {/* Location */}
-                <div className="flex items-start gap-2">
-                  <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
+              <div className="rounded-lg overflow-hidden">
+                {/* Location - lightest mauve */}
+                <div className="flex items-center gap-3 py-2.5 px-3 bg-[#8B7082]/[0.05] transition-transform duration-300 hover:animate-float cursor-text">
+                  <MapPin className="w-4 h-4 text-[#8B7082] flex-shrink-0" />
                   <textarea
                     ref={locationInputRef as React.RefObject<HTMLTextAreaElement>}
                     value={locationText}
@@ -586,14 +577,14 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                       }
                     }}
                     placeholder="Location..."
-                    className="flex-1 text-xs text-gray-700 bg-transparent border-none outline-none placeholder:text-gray-400 py-0.5 resize-none leading-relaxed"
+                    className="flex-1 text-sm text-gray-700 bg-transparent border-none outline-none placeholder:text-gray-400 py-0 resize-none leading-relaxed"
                     style={{ fieldSizing: 'content', minHeight: '1.25rem' } as React.CSSProperties}
                   />
                 </div>
 
-                {/* Outfit */}
-                <div className="flex items-start gap-2">
-                  <Shirt className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
+                {/* Outfit - light-medium mauve */}
+                <div className="flex items-center gap-3 py-2.5 px-3 bg-[#8B7082]/[0.09] transition-transform duration-300 hover:animate-float cursor-text">
+                  <Shirt className="w-4 h-4 text-[#8B7082] flex-shrink-0" />
                   <textarea
                     ref={outfitInputRef as React.RefObject<HTMLTextAreaElement>}
                     value={outfitText}
@@ -609,14 +600,14 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                       }
                     }}
                     placeholder="Outfit..."
-                    className="flex-1 text-xs text-gray-700 bg-transparent border-none outline-none placeholder:text-gray-400 py-0.5 resize-none leading-relaxed"
+                    className="flex-1 text-sm text-gray-700 bg-transparent border-none outline-none placeholder:text-gray-400 py-0 resize-none leading-relaxed"
                     style={{ fieldSizing: 'content', minHeight: '1.25rem' } as React.CSSProperties}
                   />
                 </div>
 
-                {/* Props */}
-                <div className="flex items-start gap-2">
-                  <Boxes className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
+                {/* Props - medium-dark mauve */}
+                <div className="flex items-center gap-3 py-2.5 px-3 bg-[#8B7082]/[0.12] transition-transform duration-300 hover:animate-float cursor-text">
+                  <Boxes className="w-4 h-4 text-[#8B7082] flex-shrink-0" />
                   <textarea
                     ref={propsInputRef as React.RefObject<HTMLTextAreaElement>}
                     value={propsText}
@@ -632,21 +623,21 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                       }
                     }}
                     placeholder="Props..."
-                    className="flex-1 text-xs text-gray-700 bg-transparent border-none outline-none placeholder:text-gray-400 py-0.5 resize-none leading-relaxed"
+                    className="flex-1 text-sm text-gray-700 bg-transparent border-none outline-none placeholder:text-gray-400 py-0 resize-none leading-relaxed"
                     style={{ fieldSizing: 'content', minHeight: '1.25rem' } as React.CSSProperties}
                   />
                 </div>
 
-                {/* Notes */}
-                <div className="flex items-start gap-2">
-                  <NotebookPen className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
+                {/* Notes - darkest mauve */}
+                <div className="flex items-center gap-3 py-2.5 px-3 bg-[#8B7082]/[0.16] transition-transform duration-300 hover:animate-float cursor-text">
+                  <NotebookPen className="w-4 h-4 text-[#8B7082] flex-shrink-0" />
                   <textarea
                     ref={notesInputRef}
                     value={filmingNotes}
                     onChange={(e) => setFilmingNotes(e.target.value)}
                     placeholder="Notes..."
-                    rows={2}
-                    className="flex-1 text-xs text-gray-700 bg-transparent border-none outline-none resize-none placeholder:text-gray-400 py-0.5"
+                    className="flex-1 text-sm text-gray-700 bg-transparent border-none outline-none resize-none placeholder:text-gray-400 py-0"
+                    style={{ fieldSizing: 'content', minHeight: '1.25rem' } as React.CSSProperties}
                   />
                 </div>
               </div>
@@ -654,7 +645,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
 
             {/* Status */}
             <div className="space-y-2">
-              <h4 className="text-[12px] font-medium text-[#8B7082] uppercase tracking-wider">
+              <h4 className="text-[12px] font-medium text-[#612A4F] uppercase tracking-wider">
                 Status
               </h4>
 
@@ -665,7 +656,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                   className={cn(
                     "px-2.5 py-1 rounded-full text-[11px] font-medium transition-all flex items-center gap-1",
                     cardStatus === 'to-start'
-                      ? "bg-[#8B7082]/15 text-[#8B7082]"
+                      ? "bg-[#8B7082] text-white"
                       : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                   )}
                 >
@@ -679,7 +670,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                   className={cn(
                     "px-2.5 py-1 rounded-full text-[11px] font-medium transition-all flex items-center gap-1",
                     cardStatus === 'needs-work'
-                      ? "bg-[#8B7082]/15 text-[#8B7082]"
+                      ? "bg-[#8B7082] text-white"
                       : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                   )}
                 >
@@ -693,7 +684,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                   className={cn(
                     "px-2.5 py-1 rounded-full text-[11px] font-medium transition-all flex items-center gap-1",
                     cardStatus === 'ready'
-                      ? "bg-[#8B7082]/15 text-[#8B7082]"
+                      ? "bg-[#8B7082] text-white"
                       : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                   )}
                 >
@@ -717,7 +708,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
         </Button>
         <Button
           onClick={onSave}
-          className="px-6 bg-[#8B7082] hover:bg-[#7A6073] text-white shadow-[0_2px_8px_rgba(139,112,130,0.25)]"
+          className="px-6 bg-[#612A4F] hover:bg-[#4E2240] text-white shadow-[0_2px_8px_rgba(97,42,79,0.3)]"
         >
           Save Changes
         </Button>

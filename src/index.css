@@ -439,6 +439,23 @@
   will-change: height, opacity, transform;
 }
 
+/* Float animation for input fields */
+@keyframes float {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.hover\:animate-float:hover {
+  animation: float 0.4s ease-in-out;
+}
+
 /* Sonner Toast - Container and Close Button Styling */
 section[data-sonner-toaster],
 [data-sonner-toaster] {

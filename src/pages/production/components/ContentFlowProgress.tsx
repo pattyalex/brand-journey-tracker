@@ -39,7 +39,7 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
         <div
           className="absolute top-[18px] left-6 h-[2px] transition-all duration-500"
           style={{
-            backgroundColor: '#8B7082',
+            backgroundColor: '#612A4F',
             width: allCompleted
               ? 'calc(100% - 3rem)'
               : currentStep === 1
@@ -70,10 +70,10 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
               <div
                 className={cn(
                   "rounded-full flex items-center justify-center font-semibold transition-all duration-300 border-[1.5px]",
-                  isCompleted && "w-6 h-6 text-xs bg-[#8B7082] border-[#8B7082] text-white",
-                  isCurrent && "w-12 h-12 text-lg bg-[#8B7082] border-[#8B7082] text-white border-2 shadow-md",
+                  isCompleted && "w-6 h-6 text-xs bg-[#612A4F] border-[#612A4F] text-white",
+                  isCurrent && "w-12 h-12 text-lg bg-[#612A4F] border-[#612A4F] text-white border-2 shadow-md",
                   isPending && "w-6 h-6 text-xs bg-gray-100 border-gray-300 text-gray-400",
-                  isClickable && "hover:ring-2 hover:ring-offset-2 hover:ring-[#8B7082]/30"
+                  isClickable && "hover:ring-2 hover:ring-offset-2 hover:ring-[#612A4F]/30"
                 )}
               >
                 {isCompleted ? (
@@ -86,8 +86,8 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
               {/* Step label - compact */}
               <p className={cn(
                 "font-medium mt-1.5 text-center leading-tight",
-                isCompleted && "text-[10px] text-[#8B7082]",
-                isCurrent && "text-xs text-[#8B7082]",
+                isCompleted && "text-[10px] text-[#612A4F]",
+                isCurrent && "text-xs text-[#612A4F]",
                 isPending && "text-[10px] text-gray-400"
               )}>
                 {step.shortLabel}
