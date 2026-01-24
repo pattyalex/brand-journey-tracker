@@ -2264,6 +2264,7 @@ const Production = () => {
                                     } else if (column.id === "to-edit") {
                                       handleOpenEditChecklist(card);
                                     } else if (column.id === "to-schedule") {
+                                      setSchedulingCard(card);
                                       setIsScheduleColumnExpanded(true);
                                     }
                                   }, 250);
