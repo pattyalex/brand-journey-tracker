@@ -1969,15 +1969,22 @@ const Production = () => {
     // Don't close dialog - user may want to add more angles
   };
 
-  const handleSaveCardEdit = (cardId: string, newTitle: string) => {
-    if (!newTitle.trim()) return;
+  const handleSaveCardEdit = (cardId: string, newValue: string) => {
+    if (!newValue.trim()) return;
 
     setColumns((prev) =>
       prev.map((col) => ({
         ...col,
-        cards: col.cards.map((card) =>
-          card.id === cardId ? { ...card, title: newTitle.trim() } : card
-        ),
+        cards: col.cards.map((card) => {
+          if (card.id === cardId) {
+            // Save to hook if it exists, otherwise save to title
+            if (card.hook) {
+              return { ...card, hook: newValue.trim() };
+            }
+            return { ...card, title: newValue.trim() };
+          }
+          return card;
+        }),
       }))
     );
 
@@ -2368,7 +2375,7 @@ const Production = () => {
                                   <input
                                     ref={editInputRef}
                                     type="text"
-                                    defaultValue={card.title}
+                                    defaultValue={card.hook || card.title}
                                     autoFocus
                                     onBlur={(e) => handleSaveCardEdit(card.id, e.target.value)}
                                     onKeyDown={(e) => {
@@ -2397,7 +2404,7 @@ const Production = () => {
                                       handleStartEditingCard(card.id, column.id, 'doubleclick');
                                     }}
                                   >
-                                    {card.title}
+                                    {card.hook || card.title}
                                   </h3>
                                 )}
                                 {/* Pin button - always visible when pinned */}
