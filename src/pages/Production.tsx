@@ -4658,8 +4658,55 @@ Make each idea unique, creative, and directly tied to both the original content 
             onNavigateToStep={handleNavigateToStep}
             onMoveToScheduleColumn={(card) => {
               // Move card to 'to-schedule' column
-              moveCardToColumn(card.id, 'to-schedule', {
-                schedulingStatus: 'to-schedule' as const,
+              setColumns((prev) => {
+                // Check if card exists in any column
+                let cardExists = false;
+                let sourceColumnId: string | undefined;
+
+                for (const col of prev) {
+                  if (col.cards.find(c => c.id === card.id)) {
+                    cardExists = true;
+                    sourceColumnId = col.id;
+                    break;
+                  }
+                }
+
+                const updatedCard: ProductionCard = {
+                  ...card,
+                  columnId: 'to-schedule',
+                  schedulingStatus: 'to-schedule' as const,
+                };
+
+                if (cardExists && sourceColumnId) {
+                  // Card exists - move it to to-schedule
+                  if (sourceColumnId === 'to-schedule') {
+                    // Already in to-schedule, just update
+                    return prev.map((col) => ({
+                      ...col,
+                      cards: col.cards.map((c) =>
+                        c.id === card.id ? updatedCard : c
+                      ),
+                    }));
+                  }
+                  // Move from source to to-schedule
+                  return prev.map((col) => {
+                    if (col.id === sourceColumnId) {
+                      return { ...col, cards: col.cards.filter(c => c.id !== card.id) };
+                    }
+                    if (col.id === 'to-schedule') {
+                      return { ...col, cards: [...col.cards, updatedCard] };
+                    }
+                    return col;
+                  });
+                } else {
+                  // Card doesn't exist in columns - add it to to-schedule
+                  return prev.map((col) => {
+                    if (col.id === 'to-schedule') {
+                      return { ...col, cards: [...col.cards, updatedCard] };
+                    }
+                    return col;
+                  });
+                }
               });
             }}
           />
