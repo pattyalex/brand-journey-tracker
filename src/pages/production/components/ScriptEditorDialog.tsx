@@ -189,8 +189,10 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   return (
   <Dialog open={isOpen} onOpenChange={onOpenChange}>
     <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] overflow-hidden border-0 shadow-2xl flex flex-col bg-gradient-to-br from-[#f0f7fa] via-white to-[#f0f7fa]/30">
-      {/* Step Progress Indicator */}
-      <ContentFlowProgress currentStep={2} className="flex-shrink-0" onStepClick={onNavigateToStep} />
+      {/* Step Progress Indicator - Centered */}
+      <div className="flex justify-center pt-4 pb-2 flex-shrink-0">
+        <ContentFlowProgress currentStep={2} className="w-[550px]" onStepClick={onNavigateToStep} />
+      </div>
 
       <div className="flex-1 overflow-y-auto px-6 pt-0 pb-2 space-y-4">
         {/* Title Section */}

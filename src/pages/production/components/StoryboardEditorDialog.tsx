@@ -44,6 +44,7 @@ import {
   PlayCircle,
   Wrench,
   CheckCircle2,
+  SquarePen,
 } from "lucide-react";
 import { ProductionCard, StoryboardScene } from "../types";
 import { shotTemplates, getShotTemplateById, ShotTemplate } from "../utils/shotTemplates";
@@ -81,19 +82,26 @@ const shotIllustrations: Record<string, string> = {
   'reaction-moment': reactionMomentIllustration,
 };
 
-// Color palette for scenes - softer, less intense
+// Color palette for scenes - alternating light and medium (warm brown/mauve) with max contrast
 const sceneColors = {
-  amber: { bg: 'bg-amber-50', border: 'border-amber-200', highlight: 'bg-amber-100/50', text: 'text-amber-600', dot: 'bg-gradient-to-br from-amber-300 to-amber-400' },
-  teal: { bg: 'bg-teal-50', border: 'border-teal-200', highlight: 'bg-teal-100/50', text: 'text-teal-600', dot: 'bg-gradient-to-br from-teal-300 to-teal-400' },
-  rose: { bg: 'bg-rose-50', border: 'border-rose-200', highlight: 'bg-rose-100/50', text: 'text-rose-600', dot: 'bg-gradient-to-br from-rose-300 to-rose-400' },
-  violet: { bg: 'bg-violet-50', border: 'border-violet-200', highlight: 'bg-violet-100/50', text: 'text-violet-600', dot: 'bg-gradient-to-br from-violet-300 to-violet-400' },
-  sky: { bg: 'bg-sky-50', border: 'border-sky-200', highlight: 'bg-sky-100/50', text: 'text-sky-600', dot: 'bg-gradient-to-br from-sky-300 to-sky-400' },
-  lime: { bg: 'bg-lime-50', border: 'border-lime-200', highlight: 'bg-lime-100/50', text: 'text-lime-600', dot: 'bg-gradient-to-br from-lime-300 to-lime-400' },
-  fuchsia: { bg: 'bg-fuchsia-50', border: 'border-fuchsia-200', highlight: 'bg-fuchsia-100/50', text: 'text-fuchsia-600', dot: 'bg-gradient-to-br from-fuchsia-300 to-fuchsia-400' },
-  cyan: { bg: 'bg-cyan-50', border: 'border-cyan-200', highlight: 'bg-cyan-100/50', text: 'text-cyan-600', dot: 'bg-gradient-to-br from-cyan-300 to-cyan-400' },
+  // LIGHT COLORS (black text)
+  amber: { bg: 'bg-[#F2F0F5]', border: 'border-[#D8D6DC]', highlight: 'bg-[#eae8ed]', text: 'text-gray-800', dot: 'bg-gradient-to-br from-[#DCDAE0] to-[#D0CED4]' },
+  rose: { bg: 'bg-[#F5EAF8]', border: 'border-[#DCD0E0]', highlight: 'bg-[#ede1f0]', text: 'text-gray-800', dot: 'bg-gradient-to-br from-[#E0D4E8] to-[#D4C8DC]' },
+  sky: { bg: 'bg-[#D0D9EB]', border: 'border-[#B0BCCC]', highlight: 'bg-[#c8d1e3]', text: 'text-gray-800', dot: 'bg-gradient-to-br from-[#BCC8D8] to-[#ACB8C8]' },
+  lime: { bg: 'bg-[#E2E5EB]', border: 'border-[#C0C4CC]', highlight: 'bg-[#dadde3]', text: 'text-gray-800', dot: 'bg-gradient-to-br from-[#CED2D8] to-[#C0C4CC]' },
+  fuchsia: { bg: 'bg-[#F2F0F5]', border: 'border-[#D8D6DC]', highlight: 'bg-[#eae8ed]', text: 'text-gray-800', dot: 'bg-gradient-to-br from-[#DCDAE0] to-[#D0CED4]' },
+  cyan: { bg: 'bg-[#F8F3F8]', border: 'border-[#E0D8E0]', highlight: 'bg-[#f0ebf0]', text: 'text-gray-800', dot: 'bg-gradient-to-br from-[#E4DCE4] to-[#D8D0D8]' },
+  // MEDIUM COLORS (white text) - warm brown/mauve tones, each distinct
+  teal: { bg: 'bg-[#B8A8A8]', border: 'border-[#988890]', highlight: 'bg-[#A89898]', text: 'text-white', dot: 'bg-gradient-to-br from-[#A09090] to-[#988888]' },
+  violet: { bg: 'bg-[#C0A8B0]', border: 'border-[#A08890]', highlight: 'bg-[#B098A4]', text: 'text-white', dot: 'bg-gradient-to-br from-[#A89098] to-[#988088]' },
+  silver: { bg: 'bg-[#A8A098]', border: 'border-[#888078]', highlight: 'bg-[#989088]', text: 'text-white', dot: 'bg-gradient-to-br from-[#908880] to-[#807870]' },
+  slate: { bg: 'bg-[#B0A0A8]', border: 'border-[#908088]', highlight: 'bg-[#A09098]', text: 'text-white', dot: 'bg-gradient-to-br from-[#988890] to-[#887880]' },
+  pearl: { bg: 'bg-[#A89890]', border: 'border-[#887870]', highlight: 'bg-[#988880]', text: 'text-white', dot: 'bg-gradient-to-br from-[#908078] to-[#807068]' },
+  plum: { bg: 'bg-[#B8A0A0]', border: 'border-[#988080]', highlight: 'bg-[#A89090]', text: 'text-white', dot: 'bg-gradient-to-br from-[#A08888] to-[#907878]' },
 };
 
-const colorOrder: (keyof typeof sceneColors)[] = ['amber', 'teal', 'rose', 'violet', 'sky', 'lime', 'fuchsia', 'cyan'];
+// Order: 7 colors that repeat - light/medium alternating
+const colorOrder: (keyof typeof sceneColors)[] = ['amber', 'teal', 'cyan', 'violet', 'sky', 'silver', 'fuchsia'];
 
 interface StoryboardEditorDialogProps {
   open: boolean;
@@ -155,7 +163,7 @@ const SortableSceneCard: React.FC<SortableSceneCardProps> = ({
       {...listeners}
       className={cn(
         "relative rounded-xl p-2 border-2 bg-white hover:shadow-md group flex flex-col overflow-hidden h-[258px] cursor-grab active:cursor-grabbing",
-        isDragging ? "shadow-2xl border-amber-400 ring-2 ring-amber-300 z-50" : "border-gray-200"
+        isDragging ? "shadow-2xl border-[#8B7082] ring-2 ring-[#8B7082] z-50" : "border-gray-200"
       )}
     >
       {/* Scene header */}
@@ -186,7 +194,7 @@ const SortableSceneCard: React.FC<SortableSceneCardProps> = ({
           <button
             onClick={(e) => { e.stopPropagation(); onOpenLibrary(scene.id); }}
             onMouseDown={(e) => e.stopPropagation()}
-            className="w-full h-full max-h-[90px] rounded-lg bg-white/80 border border-gray-200 overflow-hidden shadow-sm flex items-center justify-center hover:border-amber-400 transition-colors"
+            className="w-full h-full max-h-[90px] rounded-lg bg-white/80 border border-gray-200 overflow-hidden shadow-sm flex items-center justify-center hover:border-[#8B7082] transition-colors"
           >
             <img
               src={shotIllustrations[selectedTemplate.id]}
@@ -212,7 +220,7 @@ const SortableSceneCard: React.FC<SortableSceneCardProps> = ({
           onChange={(e) => onUpdate(scene.id, { visualNotes: e.target.value })}
           onClick={(e) => e.stopPropagation()}
           onMouseDown={(e) => e.stopPropagation()}
-          className="mt-1 text-xs bg-white/60 border border-gray-200 rounded-lg w-full resize-none focus:outline-none focus:ring-1 focus:ring-amber-300 text-gray-700 placeholder:text-gray-400 p-2 h-[55px]"
+          className="mt-1 text-xs bg-white/60 border border-gray-200 rounded-lg w-full resize-none focus:outline-none focus:ring-1 focus:ring-[#8B7082] text-gray-700 placeholder:text-gray-400 p-2 h-[55px]"
           placeholder="Describe your visual..."
         />
         <textarea
@@ -221,7 +229,7 @@ const SortableSceneCard: React.FC<SortableSceneCardProps> = ({
           onClick={(e) => e.stopPropagation()}
           onMouseDown={(e) => e.stopPropagation()}
           className={cn(
-            "text-xs px-2 py-1.5 rounded-lg border h-[50px] w-full resize-none italic focus:outline-none focus:ring-1 focus:ring-amber-300",
+            "text-xs px-2 py-1.5 rounded-lg border h-[50px] w-full resize-none italic focus:outline-none focus:ring-1 focus:ring-[#8B7082]",
             colors.bg,
             colors.border,
             colors.text
@@ -299,7 +307,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   const [hookContent, setHookContent] = useState("");
   const [scriptContent, setScriptContent] = useState("");
   const [isEditingScript, setIsEditingScript] = useState(false);
-  const [filmingStatus, setFilmingStatus] = useState<"to-start" | "needs-work" | "ready" | null>(null);
+  const [filmingStatus, setFilmingStatus] = useState<"to-start" | "needs-work" | "ready">("to-start");
 
   // Shot suggestion state
   const [suggestingSceneId, setSuggestingSceneId] = useState<string | null>(null);
@@ -331,7 +339,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
     }
     setHookContent(card?.hook || card?.title || "");
     setScriptContent(card?.script || "");
-    setFilmingStatus(card?.status || null);
+    setFilmingStatus(card?.status || "to-start");
     setIsEditingTitle(false);
     setIsEditingScript(false);
     setSuggestingSceneId(null);
@@ -708,22 +716,11 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   return (
     <>
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[1100px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-gradient-to-br from-amber-50 via-white to-orange-50">
-        {/* Step Progress Row - Centered over Storyboard section only */}
-        <div className="flex pt-3 pb-1 bg-white/50">
-          {/* Left spacer matching Script column width */}
-          <div className="w-[320px] flex-shrink-0 flex items-center gap-2 px-4">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-md">
-              <Clapperboard className="w-4 h-4 text-white" />
-            </div>
-            <DialogTitle className="text-xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-              Storyboard Editor
-            </DialogTitle>
-          </div>
-          {/* Step progress centered in Storyboard area */}
-          <div className="flex-1 flex justify-center">
-            <ContentFlowProgress currentStep={3} className="w-[450px]" onStepClick={onNavigateToStep} />
-          </div>
+      <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[1100px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-[radial-gradient(ellipse_at_top_left,_#FFF9EE_0%,_#FFFDF8_30%,_#FFFFFF_70%)]">
+        {/* Step Progress Row - Centered */}
+        <div className="flex justify-center pt-4 pb-2 bg-transparent">
+          <DialogTitle className="sr-only">Storyboard Editor</DialogTitle>
+          <ContentFlowProgress currentStep={3} className="w-[550px]" onStepClick={onNavigateToStep} />
         </div>
 
         {/* Main content - side by side layout */}
@@ -732,64 +729,56 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
           className="flex-1 overflow-y-auto"
         >
           {/* Headers row - both headers scroll together */}
-          <div className="flex border-b border-amber-100/80">
+          <div className="flex border-b border-[#8B7082]/30">
             {/* Script Header */}
-            <div className="w-[320px] flex-shrink-0 px-4 py-3 bg-gradient-to-r from-amber-50 to-orange-50 border-r border-amber-100 flex items-center justify-between">
-              <h3 className="font-semibold text-amber-800 flex items-center gap-2 text-sm">
+            <div className="w-[320px] flex-shrink-0 px-4 py-3 bg-transparent flex items-center relative">
+              <div className="absolute right-0 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-[#8B7082]/30 to-[#8B7082]/30"></div>
+              <h3 className="font-semibold text-[#612A4F] flex items-center gap-2 text-sm">
                 <FileText className="w-4 h-4" />
-                Script
+                Content Overview
               </h3>
-              {!isEditingScript ? (
-                <Button
-                  size="sm"
-                  onClick={() => setIsEditingScript(true)}
-                  className="h-7 px-3 text-xs font-medium bg-amber-500 hover:bg-amber-600 text-white rounded-lg shadow-sm"
-                >
-                  Edit
-                </Button>
-              ) : (
-                <Button
-                  size="sm"
-                  onClick={() => setIsEditingScript(false)}
-                  className="h-7 px-3 text-xs font-medium bg-green-500 hover:bg-green-600 text-white rounded-lg shadow-sm"
-                >
-                  Done
-                </Button>
-              )}
             </div>
             {/* Storyboard Header */}
-            <div className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-50 to-orange-50 flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold text-amber-800 flex items-center gap-2 text-sm">
-                  <Film className="w-4 h-4" />
-                  Storyboard
-                </h3>
-                <p className="text-[10px] text-amber-600/80 mt-0.5">
-                  {scenes.length} scene{scenes.length !== 1 ? 's' : ''}
-                </p>
-              </div>
-              {scenes.length > 0 && scriptContent && (
+            <div className="flex-1 px-4 py-3 bg-transparent flex items-center justify-between">
+              <h3 className="font-semibold text-[#612A4F] flex items-center gap-2 text-sm">
+                <Clapperboard className="w-4 h-4" />
+                Create Your Storyboard
+                <span className="text-[10px] text-[#612A4F]/70 font-normal ml-1">
+                  ({scenes.length} scene{scenes.length !== 1 ? 's' : ''})
+                </span>
+              </h3>
+              <div className="flex items-center gap-2">
+                {scenes.length > 0 && scriptContent && (
+                  <Button
+                    onClick={handleGenerateStoryboard}
+                    disabled={isGeneratingStoryboard}
+                    size="sm"
+                    className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-lg text-xs shadow-sm"
+                  >
+                    {isGeneratingStoryboard ? (
+                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-3 h-3 mr-1" />
+                    )}
+                    Regenerate
+                  </Button>
+                )}
                 <Button
-                  onClick={handleGenerateStoryboard}
-                  disabled={isGeneratingStoryboard}
+                  onClick={() => handleClose(false)}
                   size="sm"
-                  className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-lg text-xs shadow-sm"
+                  className="bg-[#612A4F] hover:bg-[#4E2240] text-white rounded-lg text-xs shadow-sm"
                 >
-                  {isGeneratingStoryboard ? (
-                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                  ) : (
-                    <Sparkles className="w-3 h-3 mr-1" />
-                  )}
-                  Regenerate
+                  Save
                 </Button>
-              )}
+              </div>
             </div>
           </div>
 
           {/* Content row */}
           <div className="flex" style={{ height: 'calc(100vh - 230px)' }}>
             {/* Script Section - Left side */}
-            <div className="w-[320px] flex-shrink-0 border-r border-amber-100 bg-white/40">
+            <div className="w-[320px] flex-shrink-0 bg-white/40 relative">
+              <div className="absolute right-0 top-0 bottom-0 w-px bg-[#8B7082]/30"></div>
               {/* Script Content */}
               <div
                 className="h-full overflow-y-auto p-4"
@@ -797,7 +786,24 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
               >
               {/* Hook section */}
               <div className="mb-4">
-                <p className="text-[11px] font-semibold text-amber-500 uppercase tracking-wider mb-1">Hook</p>
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider">Hook</p>
+                  {!isEditingScript ? (
+                    <button
+                      onClick={() => setIsEditingScript(true)}
+                      className="p-1 text-[#8B7082] hover:text-[#612A4F] transition-all duration-200 hover:scale-110 hover:-rotate-12"
+                    >
+                      <SquarePen className="w-4 h-4" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setIsEditingScript(false)}
+                      className="p-1.5 rounded-lg bg-[#A89098] hover:bg-[#8B7082] text-white transition-colors"
+                    >
+                      <Check className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
                 {isEditingScript ? (
                   <input
                     type="text"
@@ -814,8 +820,8 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
               </div>
 
               {/* Script section */}
-              <div>
-                <p className="text-[11px] font-semibold text-amber-500 uppercase tracking-wider mb-1">Script</p>
+              <div className="mt-6">
+                <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-1">Script</p>
                 {isEditingScript ? (
                   <textarea
                     autoFocus
@@ -846,12 +852,12 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                 )}
               </div>
 
-              {/* Card details - Formats, Platform, Filming Plan */}
-              <div className="mt-4 pt-4 border-t border-amber-100/60 space-y-3">
+              {/* Card details - Formats, Platform, Shooting Plan */}
+              <div className="mt-4 pt-2 space-y-6">
                 {/* Formats (How it's shot) */}
                 {card?.formats && card.formats.length > 0 && (
                   <div>
-                    <h4 className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">How it's shot</h4>
+                    <h4 className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-2">How it's shot</h4>
                     <div className="space-y-1">
                       {card.formats.map((format, idx) => {
                         const isPhoto = ['photo post', 'carousel', 'text post', 'photo', 'static'].some(
@@ -860,9 +866,9 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                         return (
                           <div key={idx} className="flex items-center gap-2 text-[13px] text-gray-600">
                             {isPhoto ? (
-                              <Camera className="w-4 h-4 text-gray-400" />
+                              <Camera className="w-4 h-4 text-[#8B7082]" />
                             ) : (
-                              <Video className="w-4 h-4 text-gray-400" />
+                              <Video className="w-4 h-4 text-[#8B7082]" />
                             )}
                             <span>{format}</span>
                           </div>
@@ -874,8 +880,8 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
 
                 {/* Platforms */}
                 {card?.platforms && card.platforms.length > 0 && (
-                  <div>
-                    <h4 className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Platform</h4>
+                  <div className="pt-2">
+                    <h4 className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-2">Platform</h4>
                     <div className="flex items-center gap-3">
                       {card.platforms.map((platform, idx) => {
                         const lowercased = platform.toLowerCase();
@@ -889,47 +895,90 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                         else if (lowercased.includes("threads")) Icon = RiThreadsLine;
 
                         return Icon ? (
-                          <Icon key={idx} className="w-4 h-4 text-gray-500" title={platform} />
+                          <Icon key={idx} className="w-4 h-4 text-[#8B7082]" title={platform} />
                         ) : (
-                          <span key={idx} className="text-[13px] text-gray-500">{platform}</span>
+                          <span key={idx} className="text-[13px] text-[#8B7082]">{platform}</span>
                         );
                       })}
                     </div>
                   </div>
                 )}
 
-                {/* Filming Plan */}
+                {/* Shooting Plan */}
                 {(card?.locationText || card?.outfitText || card?.propsText || card?.filmingNotes) && (
-                  <div>
-                    <h4 className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Filming Plan</h4>
+                  <div className="pt-2">
+                    <h4 className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-2">Shooting Plan</h4>
                     <div className="space-y-1 text-[13px] text-gray-600">
                       {card?.locationText && (
                         <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          <MapPin className="w-4 h-4 text-[#8B7082] flex-shrink-0" />
                           <span>{card.locationText}</span>
                         </div>
                       )}
                       {card?.outfitText && (
                         <div className="flex items-center gap-2">
-                          <Shirt className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          <Shirt className="w-4 h-4 text-[#8B7082] flex-shrink-0" />
                           <span>{card.outfitText}</span>
                         </div>
                       )}
                       {card?.propsText && (
                         <div className="flex items-center gap-2">
-                          <Boxes className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          <Boxes className="w-4 h-4 text-[#8B7082] flex-shrink-0" />
                           <span>{card.propsText}</span>
                         </div>
                       )}
                       {card?.filmingNotes && (
                         <div className="flex items-center gap-2">
-                          <NotebookPen className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          <NotebookPen className="w-4 h-4 text-[#8B7082] flex-shrink-0" />
                           <span>{card.filmingNotes}</span>
                         </div>
                       )}
                     </div>
                   </div>
                 )}
+
+                {/* Status */}
+                <div className="pt-4 mt-2 pb-6 border-t border-[#8B7082]/30">
+                  <h4 className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-2">Status</h4>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => setFilmingStatus("to-start")}
+                      className={cn(
+                        "px-3 py-1 rounded-full text-[11px] font-medium transition-all flex items-center gap-1",
+                        filmingStatus === "to-start"
+                          ? "bg-[#8B7082] text-white"
+                          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                      )}
+                    >
+                      <Clapperboard className="w-3 h-3" />
+                      To Start
+                    </button>
+                    <button
+                      onClick={() => setFilmingStatus("needs-work")}
+                      className={cn(
+                        "px-3 py-1 rounded-full text-[11px] font-medium transition-all flex items-center gap-1",
+                        filmingStatus === "needs-work"
+                          ? "bg-[#8B7082] text-white"
+                          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                      )}
+                    >
+                      <Wrench className="w-3 h-3" />
+                      In Progress
+                    </button>
+                    <button
+                      onClick={() => setFilmingStatus("ready")}
+                      className={cn(
+                        "px-3 py-1 rounded-full text-[11px] font-medium transition-all flex items-center gap-1",
+                        filmingStatus === "ready"
+                          ? "bg-[#8B7082] text-white"
+                          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                      )}
+                    >
+                      <Check className="w-3 h-3" />
+                      Filmed
+                    </button>
+                  </div>
+                </div>
               </div>
 
               </div>
@@ -960,8 +1009,8 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                       <Sparkles className="w-7 h-7 text-amber-500" />
                     )}
                   </button>
-                  <h4 className="text-gray-700 font-semibold text-sm mb-1">Start Your Storyboard</h4>
-                  <p className="text-xs text-gray-400 max-w-[220px] mb-4">
+                  <h4 className="text-[#612A4F] font-semibold text-sm mb-1">Start Your Storyboard</h4>
+                  <p className="text-xs text-[#8B7082] max-w-[220px] mb-4">
                     {scriptContent
                       ? "Auto-generate scenes from your script, or add them manually"
                       : "Add a script first to auto-generate, or create scenes manually"}
@@ -991,7 +1040,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                       onClick={handleAddScene}
                       variant="outline"
                       size="sm"
-                      className="border-2 border-dashed border-amber-300 text-amber-700 hover:bg-amber-50 hover:border-amber-400 rounded-lg text-xs"
+                      className="border-2 border-dashed border-amber-300 text-[#612A4F] hover:bg-amber-50 hover:border-amber-400 rounded-lg text-xs"
                     >
                       <Plus className="w-3 h-3 mr-1" />
                       Add Manually
@@ -1040,7 +1089,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         onClick={handleAddScene}
-                        className="h-[258px] border-2 border-dashed border-amber-300 rounded-xl text-amber-600 hover:border-amber-400 hover:bg-amber-50/50 transition-all flex flex-col items-center justify-center gap-1 group"
+                        className="h-[258px] border-2 border-dashed border-[#8B7082] rounded-xl text-[#8B7082] bg-[#FDFCFD] hover:border-[#7A6073] hover:bg-[#F8F5F7] transition-all flex flex-col items-center justify-center gap-1 group"
                       >
                         <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
                         <span className="font-medium text-[10px]">Add Scene</span>
@@ -1052,101 +1101,6 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
             </div>
           </div>
 
-          {/* Filming Status Section - Full Width at Bottom */}
-          <div className="px-6 py-3 bg-white border-t border-amber-100">
-            <h4 className="text-[11px] font-semibold text-amber-500 uppercase tracking-wider mb-2">Filming Status</h4>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setFilmingStatus("to-start")}
-                className={cn(
-                  "px-3 py-2 rounded-xl transition-all text-left flex items-center gap-2",
-                  filmingStatus === "to-start"
-                    ? "bg-amber-50"
-                    : "bg-gray-100 hover:bg-gray-150"
-                )}
-              >
-                <PlayCircle className={cn(
-                  "w-4 h-4",
-                  filmingStatus === "to-start" ? "text-amber-500" : "text-gray-400"
-                )} />
-                <div>
-                  <span className={cn(
-                    "font-semibold text-xs block",
-                    filmingStatus === "to-start" ? "text-amber-700" : "text-gray-700"
-                  )}>To Start Filming</span>
-                  <span className={cn(
-                    "text-[10px]",
-                    filmingStatus === "to-start" ? "text-amber-500" : "text-gray-400"
-                  )}>Haven't started yet</span>
-                </div>
-              </button>
-              <button
-                onClick={() => setFilmingStatus("needs-work")}
-                className={cn(
-                  "px-3 py-2 rounded-xl transition-all text-left flex items-center gap-2",
-                  filmingStatus === "needs-work"
-                    ? "bg-amber-50"
-                    : "bg-gray-100 hover:bg-gray-150"
-                )}
-              >
-                <Wrench className={cn(
-                  "w-4 h-4",
-                  filmingStatus === "needs-work" ? "text-amber-500" : "text-gray-400"
-                )} />
-                <div>
-                  <span className={cn(
-                    "font-semibold text-xs block",
-                    filmingStatus === "needs-work" ? "text-amber-700" : "text-gray-700"
-                  )}>Needs More Work</span>
-                  <span className={cn(
-                    "text-[10px]",
-                    filmingStatus === "needs-work" ? "text-amber-500" : "text-gray-400"
-                  )}>In progress</span>
-                </div>
-              </button>
-              <button
-                onClick={() => setFilmingStatus("ready")}
-                className={cn(
-                  "px-3 py-2 rounded-xl transition-all text-left flex items-center gap-2",
-                  filmingStatus === "ready"
-                    ? "bg-amber-50"
-                    : "bg-gray-100 hover:bg-gray-150"
-                )}
-              >
-                <Check className={cn(
-                  "w-4 h-4",
-                  filmingStatus === "ready" ? "text-amber-500" : "text-gray-400"
-                )} />
-                <div>
-                  <span className={cn(
-                    "font-semibold text-xs block",
-                    filmingStatus === "ready" ? "text-amber-700" : "text-gray-700"
-                  )}>Filmed</span>
-                  <span className={cn(
-                    "text-[10px]",
-                    filmingStatus === "ready" ? "text-amber-500" : "text-gray-400"
-                  )}>Ready to film</span>
-                </div>
-              </button>
-            </div>
-
-            {/* Footer Buttons */}
-            <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={() => handleClose(false)}
-                className="border-gray-300 text-gray-700 hover:bg-gray-50"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={() => handleClose(false)}
-                className="bg-amber-500 hover:bg-amber-600 text-white"
-              >
-                Save Changes
-              </Button>
-            </div>
-          </div>
         </div>
       </DialogContent>
     </Dialog>

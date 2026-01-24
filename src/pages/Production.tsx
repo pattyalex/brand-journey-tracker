@@ -2791,14 +2791,14 @@ const Production = () => {
                   </div>
 
                   <div className="grid grid-cols-2 gap-5">
-                    {/* 1. Start With Your Pillars - Teal */}
+                    {/* 1. Start With Your Pillars - Green */}
                     <button
                       onClick={() => setIsPillarsDialogOpen(true)}
-                      className="group relative overflow-hidden bg-gradient-to-br from-[#F0FDFB] to-[#E6FAF7] border-l-4 border-l-[#2A9D8F] border-y border-r border-[#D1EDE9] hover:border-[#2A9D8F] rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-4px_rgba(42,157,143,0.3)]"
+                      className="group relative overflow-hidden bg-gradient-to-br from-[#F0FDF6] to-[#E6FAF0] border-l-4 border-l-[#2D9D70] border-y border-r border-[#D1EDE0] hover:border-[#2D9D70] rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-4px_rgba(45,157,112,0.3)]"
                     >
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#2A9D8F]/10 to-transparent rounded-bl-full" />
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#2D9D70]/10 to-transparent rounded-bl-full" />
                       <div className="relative flex flex-col items-center text-center space-y-4">
-                        <div className="w-14 h-14 bg-gradient-to-br from-[#2A9D8F] to-[#1A7A6F] rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                        <div className="w-14 h-14 bg-gradient-to-br from-[#2D9D70] to-[#1F7A55] rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                           <Compass className="w-6 h-6 text-white" />
                         </div>
                         <div>
