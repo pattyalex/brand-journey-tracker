@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { flushSync } from "react-dom";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   Popover,
   PopoverContent,
@@ -85,6 +86,8 @@ interface ExpandedScheduleViewProps {
   embedded?: boolean;
   /** Cards to display - required when not embedded */
   cards?: ProductionCard[];
+  /** Single card to schedule (when navigating from stepper) */
+  singleCard?: ProductionCard | null;
   /** Close handler - required when not embedded */
   onClose?: () => void;
   onSchedule?: (cardId: string, date: Date) => void;
@@ -98,11 +101,14 @@ interface ExpandedScheduleViewProps {
   planningCard?: ProductionCard | null;
   /** Callback when a date is selected for planning */
   onPlanDate?: (cardId: string, date: Date) => void;
+  /** Callback to navigate to a different step in the stepper */
+  onNavigateToStep?: (step: number) => void;
 }
 
 const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   embedded = false,
   cards: propCards,
+  singleCard,
   onClose,
   onSchedule: propOnSchedule,
   onUnschedule: propOnUnschedule,
@@ -111,6 +117,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   planningMode = false,
   planningCard,
   onPlanDate,
+  onNavigateToStep,
 }) => {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -150,6 +157,10 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   const [startTime, setStartTime] = useState("9:00");
   const [endTime, setEndTime] = useState("10:00");
   const [timePeriod, setTimePeriod] = useState<"AM" | "PM">("AM");
+
+  // Track when single card has been scheduled (for congratulation state)
+  const [singleCardScheduled, setSingleCardScheduled] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState<Date | null>(null);
 
   // Initialize pending date with card's existing planned date when planning card changes
   useEffect(() => {
@@ -820,9 +831,24 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
         map[dateKey].push(c);
       }
     });
+    // Also include the singleCard if it was just scheduled (might not be in cards array)
+    if (singleCardScheduled && singleCard && scheduledDate) {
+      const dateKey = scheduledDate.toISOString().split('T')[0];
+      if (!map[dateKey]) {
+        map[dateKey] = [];
+      }
+      // Only add if not already in the map
+      if (!map[dateKey].find(c => c.id === singleCard.id)) {
+        map[dateKey].push({
+          ...singleCard,
+          schedulingStatus: 'scheduled',
+          scheduledDate: dateKey,
+        });
+      }
+    }
     return map;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cards, colorUpdateVersion]);
+  }, [cards, colorUpdateVersion, singleCardScheduled, singleCard, scheduledDate]);
 
   // Create a map of planned (tentative) cards from Ideate by date
   const plannedCardsByDate = useMemo(() => {
@@ -970,6 +996,36 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   const handleDragStart = (e: React.DragEvent, cardId: string) => {
     setDraggedCardId(cardId);
     e.dataTransfer.effectAllowed = 'move';
+
+    // Create a compact drag image for single card mode
+    if (singleCard && cardId === singleCard.id) {
+      const dragPreview = document.createElement('div');
+      dragPreview.style.cssText = `
+        position: absolute;
+        top: -1000px;
+        left: -1000px;
+        padding: 8px 12px;
+        background: white;
+        border: 2px solid #8B7082;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        font-size: 12px;
+        font-weight: 600;
+        color: #333;
+        max-width: 150px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      `;
+      dragPreview.textContent = singleCard.hook || singleCard.title || "Content";
+      document.body.appendChild(dragPreview);
+      e.dataTransfer.setDragImage(dragPreview, 75, 20);
+
+      // Clean up after drag starts
+      setTimeout(() => {
+        document.body.removeChild(dragPreview);
+      }, 0);
+    }
   };
 
   const handleDragEnd = () => {
@@ -1026,6 +1082,12 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
         dateWithTime.setHours(hours, minutes, 0, 0);
       }
       onSchedule(pendingScheduleCardId, dateWithTime);
+
+      // If this was the single card, show congratulation state
+      if (singleCard && pendingScheduleCardId === singleCard.id) {
+        setSingleCardScheduled(true);
+        setScheduledDate(dateWithTime);
+      }
     }
     setTimePickerOpen(false);
     setPendingScheduleDate(null);
@@ -1150,43 +1212,75 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   // Content component - shared between modal and embedded modes
   const content = (
     <div className="flex flex-col h-full overflow-hidden">
+      {/* Collapsed single card mode - card on left, stepper in middle, button on right */}
+      {!embedded && !planningMode && singleCard && isLeftPanelCollapsed && !singleCardScheduled && (
+        <div className="flex items-center gap-4 px-4 py-3 border-b border-gray-100 flex-shrink-0">
+          {/* Compact card preview */}
+          <div
+            draggable
+            onDragStart={(e) => handleDragStart(e, singleCard.id)}
+            onDragEnd={handleDragEnd}
+            className={cn(
+              "px-4 py-2 rounded-xl bg-white border border-[#8B7082]/20 shadow-sm cursor-grab active:cursor-grabbing transition-all hover:shadow-md flex items-center gap-3 flex-shrink-0",
+              draggedCardId === singleCard.id && "opacity-40"
+            )}
+          >
+            <CalendarDays className="w-5 h-5 text-[#8B7082] flex-shrink-0" />
+            <span className="text-sm font-medium text-gray-900 truncate">
+              {singleCard.hook || singleCard.title || "Untitled content"}
+            </span>
+            <span className="text-xs text-[#8B7082] flex-shrink-0">Drag to schedule →</span>
+          </div>
+          {/* Stepper in middle */}
+          <div className="flex-1 flex justify-center">
+            <ContentFlowProgress
+              currentStep={5}
+              onStepClick={onNavigateToStep ? (step) => {
+                if (step < 5) {
+                  onNavigateToStep(step);
+                }
+              } : undefined}
+              className="w-[400px]"
+            />
+          </div>
+          {/* Stop button on right */}
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium bg-[#612A4F] hover:bg-[#4E2240] text-white rounded-lg shadow-[0_2px_8px_rgba(97,42,79,0.3)] transition-colors flex-shrink-0"
+            >
+              Stop Here, Finish Later
+            </button>
+          )}
+        </div>
+      )}
       {/* Main content - split panels with step progress integrated */}
       <div className={cn(
         "flex-1 overflow-y-auto grid transition-all duration-300 min-h-0",
-        isLeftPanelCollapsed ? "grid-cols-[48px_1fr]" : "grid-cols-[320px_1fr]"
+        isLeftPanelCollapsed && singleCard && !singleCardScheduled ? "grid-cols-[1fr]" : isLeftPanelCollapsed ? "grid-cols-[48px_1fr]" : "grid-cols-[320px_1fr]"
       )} style={{ gridTemplateRows: '1fr' }}>
-        {/* Step Progress Indicator - spans full width, positioned above the grid */}
-        {!embedded && !planningMode && (
-          <div className="col-span-2 flex-shrink-0">
-            <div className={cn(
-              "grid transition-all duration-300",
-              isLeftPanelCollapsed ? "grid-cols-[48px_1fr]" : "grid-cols-[320px_1fr]"
-            )}>
-              {/* Left side - Content to Schedule header */}
-              <div className={cn(
-                "bg-[#EDE8F2] flex items-center gap-3 px-6 transition-all duration-300",
-                isLeftPanelCollapsed && "px-2 justify-center"
-              )}>
-                <div className="w-8 h-8 rounded-lg bg-[#E5DEF0] flex items-center justify-center flex-shrink-0">
-                  <CalendarDays className="w-4 h-4 text-[#8B7082]" />
-                </div>
-                {!isLeftPanelCollapsed && (
-                  <h2 className="text-lg font-bold text-gray-900">Content to Schedule</h2>
-                )}
-              </div>
-              {/* Step progress on right side */}
-              <div className="pt-4 pb-3 border-b border-gray-100 bg-gradient-to-br from-indigo-50/80 via-white to-purple-50/50">
-                <ContentFlowProgress currentStep={5} />
-              </div>
-            </div>
+        {/* Step Progress Indicator - centered across full width (hide when collapsed in single card mode) */}
+        {!embedded && !planningMode && !(singleCard && isLeftPanelCollapsed && !singleCardScheduled) && (
+          <div className="col-span-2 flex-shrink-0 pt-3 pb-2">
+            <ContentFlowProgress
+              currentStep={5}
+              onStepClick={onNavigateToStep ? (step) => {
+                // Only allow navigation to previous steps (before Schedule)
+                if (step < 5) {
+                  onNavigateToStep(step);
+                }
+              } : undefined}
+            />
           </div>
         )}
-        {/* Left Panel - Content to Schedule / Your Week */}
+        {/* Left Panel - Content to Schedule / Your Week (hidden when collapsed in single card unscheduled mode) */}
+        {!(singleCard && isLeftPanelCollapsed && !singleCardScheduled) && (
         <div
           className={cn(
             "border-r flex flex-col min-h-0 transition-all duration-300 relative",
-            embedded ? "border-violet-100 bg-violet-50/40" : "border-transparent bg-[#EDE8F2]",
-            !embedded && dragOverUnschedule && "bg-indigo-200 ring-2 ring-inset ring-indigo-400"
+            embedded ? "border-violet-100 bg-violet-50/40" : "border-transparent",
+            !embedded && dragOverUnschedule && singleCardScheduled && "bg-gradient-to-br from-amber-50 to-amber-100",
+            !embedded && dragOverUnschedule && !singleCardScheduled && "bg-indigo-200 ring-2 ring-inset ring-indigo-400"
           )}
           onDragOver={(e) => {
             e.preventDefault();
@@ -1198,6 +1292,11 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
             e.preventDefault();
             if (draggedCardId && onUnschedule) {
               onUnschedule(draggedCardId);
+              // If this was the single card, reset the scheduled state
+              if (singleCard && draggedCardId === singleCard.id) {
+                setSingleCardScheduled(false);
+                setScheduledDate(null);
+              }
             }
             setDraggedCardId(null);
             setDragOverUnschedule(false);
@@ -1206,12 +1305,12 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
           {/* Collapse/Expand Button */}
           <button
             onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 w-6 h-12 bg-white border border-gray-200 rounded-r-lg shadow-sm hover:bg-gray-50 flex items-center justify-center transition-colors"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 p-1 hover:bg-gray-100 rounded transition-colors"
           >
             <ChevronLeft className={cn(
-              "w-4 h-4 text-gray-600 transition-transform duration-300",
+              "w-6 h-6 text-gray-500 transition-transform duration-300",
               isLeftPanelCollapsed && "rotate-180"
-            )} />
+            )} strokeWidth={2.5} />
           </button>
 
           {/* Header - only show in embedded mode since modal mode has it in the step progress row */}
@@ -1417,6 +1516,132 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                   </button>
                 </div>
               </div>
+            ) : singleCard ? (
+              // Single card mode - show impressive single card view or congratulation
+              singleCardScheduled ? (
+                // Congratulation state after scheduling - parent handles drop zone
+                <div className="flex flex-col items-center justify-center h-full py-8 px-4">
+                  {dragOverUnschedule ? (
+                    // Show drop indicator when dragging over
+                    <div className="text-center">
+                      <motion.div
+                        initial={{ scale: 0.8 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                        className="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-200 to-amber-300 flex items-center justify-center mb-4 mx-auto shadow-lg border-2 border-dashed border-amber-400"
+                      >
+                        <CalendarDays className="w-10 h-10 text-amber-700" />
+                      </motion.div>
+                      <h3 className="text-lg font-bold text-amber-700">Drop to unschedule</h3>
+                    </div>
+                  ) : (
+                    <>
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                        className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center mb-4 shadow-lg"
+                      >
+                        <Check className="w-10 h-10 text-white" strokeWidth={3} />
+                      </motion.div>
+                      <motion.h3
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="text-xl font-bold text-gray-900 mb-2"
+                      >
+                        You're all set!
+                      </motion.h3>
+                      <motion.p
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="text-sm text-[#8B7082] text-center"
+                      >
+                        Scheduled for{" "}
+                        <span className="font-semibold">
+                          {scheduledDate?.toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </span>
+                      </motion.p>
+                      <motion.button
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.5 }}
+                        onClick={onClose}
+                        className="mt-6 px-6 py-2.5 bg-gradient-to-r from-[#612A4F] to-[#8B7082] text-white text-sm font-medium rounded-xl hover:shadow-lg transition-shadow"
+                      >
+                        Done
+                      </motion.button>
+                    </>
+                  )}
+                </div>
+              ) : (
+                // Card to schedule
+                <div className="space-y-4 pt-4">
+                  {/* Header question */}
+                  <div className="text-center px-2">
+                    <p className="text-sm text-[#8B7082] font-medium mb-1">Almost there!</p>
+                    <h3 className="text-lg font-bold text-gray-900">When do you want to post this?</h3>
+                  </div>
+
+                  {/* Single card preview */}
+                  <div
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, singleCard.id)}
+                    onDragEnd={handleDragEnd}
+                    className={cn(
+                      "p-5 rounded-2xl bg-white border-2 border-[#8B7082]/30 shadow-lg cursor-grab active:cursor-grabbing transition-all hover:shadow-xl hover:border-[#8B7082]/50",
+                      draggedCardId === singleCard.id && "opacity-40 scale-[0.98]"
+                    )}
+                  >
+                    {/* Hook/Title */}
+                    <h4 className="text-base font-bold text-gray-900 mb-3">
+                      {singleCard.hook || singleCard.title || "Untitled content"}
+                    </h4>
+
+                    {/* Script preview */}
+                    {singleCard.script && (
+                      <div className="mb-3">
+                        <p className="text-[11px] font-semibold text-[#8B7082] uppercase tracking-wider mb-1">Script</p>
+                        <p className="text-sm text-gray-600 line-clamp-3">{singleCard.script}</p>
+                      </div>
+                    )}
+
+                    {/* Formats & Platforms */}
+                    <div className="flex items-center justify-between">
+                      {singleCard.formats && singleCard.formats.length > 0 && (
+                        <div className="flex items-center gap-1.5">
+                          {isStaticFormat(singleCard.formats[0]) ? (
+                            <Camera className="w-4 h-4 text-[#8B7082]" />
+                          ) : (
+                            <Video className="w-4 h-4 text-[#8B7082]" />
+                          )}
+                          <span className="text-xs text-gray-600">{singleCard.formats[0]}</span>
+                        </div>
+                      )}
+                      {singleCard.platforms && singleCard.platforms.length > 0 && (
+                        <div className="flex items-center gap-2">
+                          {singleCard.platforms.map((platform, idx) => (
+                            <span key={idx} className="text-[#8B7082]">
+                              {getPlatformIcon(platform, "w-4 h-4")}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Drag hint */}
+                  <div className="flex items-center justify-center gap-2 text-sm text-[#8B7082]">
+                    <CalendarDays className="w-4 h-4" />
+                    <span className="italic">Drag to a date on the calendar</span>
+                  </div>
+                </div>
+              )
             ) : (
             <div className="space-y-2">
               {unscheduledCards.length === 0 && !dragOverUnschedule ? (
@@ -1590,41 +1815,54 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
             )}
           </div>
         </div>
+        )}
 
         {/* Right Panel - Calendar */}
-        <div className="flex flex-col h-full overflow-y-auto bg-gray-50/50">
+        <div className={cn(
+          "flex flex-col h-full overflow-y-auto relative",
+          singleCard && isLeftPanelCollapsed && !singleCardScheduled && "pl-9"
+        )}>
+          {/* Expand button - show on left edge when collapsed in single card mode */}
+          {singleCard && isLeftPanelCollapsed && !singleCardScheduled && (
+            <button
+              onClick={() => setIsLeftPanelCollapsed(false)}
+              className="absolute left-1 top-1/2 -translate-y-1/2 z-10 p-1 hover:bg-gray-100 rounded transition-colors"
+            >
+              <ChevronRight className="w-6 h-6 text-gray-500" strokeWidth={2.5} />
+            </button>
+          )}
           {/* Calendar Header - only show in modal mode */}
           {!embedded && (
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <div className="flex items-center justify-between px-6 py-2 border-b border-gray-100">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <CalendarDays className="w-5 h-5 text-[#8B7082]" />
-                  <span className="text-lg font-bold text-gray-900">Content Calendar</span>
+                  <CalendarDays className="w-4 h-4 text-[#8B7082]" />
+                  <span className="text-sm font-bold text-gray-900">Content Calendar</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={goToPreviousMonth}
                     className="p-1 hover:bg-gray-100 rounded transition-colors"
                   >
-                    <ChevronLeft className="w-5 h-5 text-gray-600" />
+                    <ChevronLeft className="w-4 h-4 text-gray-600" />
                   </button>
-                  <span className="text-base font-medium text-gray-700 min-w-[140px] text-center">
+                  <span className="text-sm font-medium text-gray-700 min-w-[120px] text-center">
                     {monthNames[currentMonth]} {currentYear}
                   </span>
                   <button
                     onClick={goToNextMonth}
                     className="p-1 hover:bg-gray-100 rounded transition-colors"
                   >
-                    <ChevronRight className="w-5 h-5 text-gray-600" />
+                    <ChevronRight className="w-4 h-4 text-gray-600" />
                   </button>
                 </div>
               </div>
-              {onClose && (
+              {onClose && !(singleCard && isLeftPanelCollapsed && !singleCardScheduled) && (
                 <button
                   onClick={onClose}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="px-4 py-2 text-sm font-medium bg-[#612A4F] hover:bg-[#4E2240] text-white rounded-lg shadow-[0_2px_8px_rgba(97,42,79,0.3)] transition-colors"
                 >
-                  <X className="w-5 h-5 text-gray-500" />
+                  Stop Here, Finish Later
                 </button>
               )}
             </div>
@@ -1696,9 +1934,11 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                         className={cn(
                           "group",
                           isLeftPanelCollapsed ? "rounded-lg border min-h-[120px] relative p-2" : "rounded-lg border min-h-[120px] relative p-1.5",
-                          day.isCurrentMonth
-                            ? "bg-white border-gray-200 text-gray-900 hover:bg-gray-50"
-                            : "bg-gray-50 border-gray-100 text-gray-400",
+                          day.isCurrentMonth && !day.isToday && day.date < today
+                            ? "bg-gray-50 border-gray-100 text-gray-400"
+                            : day.isCurrentMonth
+                              ? "bg-white border-gray-200 text-gray-900 hover:bg-gray-50"
+                              : "bg-gray-50 border-gray-100 text-gray-400",
                           isDragOver && "bg-indigo-100 border-indigo-400 border-2 scale-105",
                           (embedded || planningMode) && "cursor-pointer",
                           planningMode && day.isCurrentMonth && "hover:bg-violet-50 hover:border-violet-300"
@@ -1815,6 +2055,11 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                               handleDeleteClick(scheduledCard.id, e);
                                             } else if (onUnschedule) {
                                               onUnschedule(scheduledCard.id);
+                                              // If this was the single card, reset the scheduled state
+                                              if (singleCard && scheduledCard.id === singleCard.id) {
+                                                setSingleCardScheduled(false);
+                                                setScheduledDate(null);
+                                              }
                                             }
                                           }}
                                           className="opacity-0 group-hover/schedcard:opacity-100 hover:bg-white/20 rounded p-0.5 transition-opacity flex-shrink-0"
@@ -1826,22 +2071,6 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                     </Tooltip>
                                   </TooltipProvider>
                                 </div>
-                                {/* Progress indicator - 6 lines, first 5 colored for scheduled (hidden for past dates) */}
-                                {!isPublished && (
-                                  <div className="flex gap-0.5 mt-1.5">
-                                    {[1, 2, 3, 4, 5, 6].map((step) => (
-                                      <div
-                                        key={step}
-                                        className="h-1 flex-1 rounded-full"
-                                        style={{
-                                          backgroundColor: step <= 5
-                                            ? defaultScheduledColor.text
-                                            : '#e5e7eb'
-                                        }}
-                                      />
-                                    ))}
-                                  </div>
-                                )}
                               </div>
                             </PopoverTrigger>
                             <PopoverContent
@@ -2586,7 +2815,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
         onClick={onClose}
       >
         <div
-          className="bg-white rounded-2xl shadow-2xl flex flex-col w-[1200px] max-w-[95vw] h-[calc(100vh-6rem)] max-h-[800px] overflow-hidden"
+          className="bg-gradient-to-br from-[#E5E8F4] via-white to-[#E5E8F4] rounded-2xl shadow-2xl flex flex-col w-[1200px] max-w-[95vw] h-[calc(100vh-3rem)] max-h-[920px] overflow-hidden"
           onClick={(e) => {
             e.stopPropagation();
             // Close any open popover when clicking on the modal content area

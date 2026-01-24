@@ -174,6 +174,7 @@ const Production = () => {
 
   // Schedule expanded view state
   const [isScheduleColumnExpanded, setIsScheduleColumnExpanded] = useState(false);
+  const [schedulingCard, setSchedulingCard] = useState<ProductionCard | null>(null);
 
   // Archive state - load from localStorage
   const [archivedCards, setArchivedCards] = useState<ProductionCard[]>(() => {
@@ -1290,14 +1291,6 @@ const Production = () => {
         ),
       }))
     );
-
-    toast.success(`Scheduled for ${formattedDate} at ${formattedTime}`, {
-      description: "Content has been added to your calendar",
-      action: {
-        label: "View in Calendar",
-        onClick: () => navigate("/planner?view=calendar&mode=content")
-      }
-    });
   };
 
   const handleUnscheduleContent = (cardId: string) => {
@@ -1599,7 +1592,7 @@ const Production = () => {
   // Navigation handler for step progress clicks
   const handleNavigateToStep = (step: number) => {
     // Get the current card from whichever dialog is open
-    const currentCard = editingIdeateCard || editingScriptCard || editingStoryboardCard || editingEditCard;
+    const currentCard = editingIdeateCard || editingScriptCard || editingStoryboardCard || editingEditCard || schedulingCard;
     if (!currentCard) return;
 
     // Find the current version of the card and its column
@@ -1711,6 +1704,7 @@ const Production = () => {
             handleOpenEditChecklist(latestCard!);
             break;
           case 5: // Schedule
+            setSchedulingCard(latestCard!);
             setIsScheduleColumnExpanded(true);
             break;
           case 6: // Post/Archive
@@ -4653,10 +4647,15 @@ Make each idea unique, creative, and directly tied to both the original content 
         {isScheduleColumnExpanded && (
           <ExpandedScheduleView
             cards={columns.find(col => col.id === 'to-schedule')?.cards || []}
-            onClose={() => setIsScheduleColumnExpanded(false)}
+            singleCard={schedulingCard}
+            onClose={() => {
+              setIsScheduleColumnExpanded(false);
+              setSchedulingCard(null);
+            }}
             onSchedule={handleScheduleContent}
             onUnschedule={handleUnscheduleContent}
             onUpdateColor={handleUpdateScheduledColor}
+            onNavigateToStep={handleNavigateToStep}
           />
         )}
 

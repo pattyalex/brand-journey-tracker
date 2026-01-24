@@ -387,15 +387,31 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
             {/* Header */}
             <div className={cn(
               "flex items-center gap-3 px-6 py-4 border-b border-gray-100 flex-shrink-0 transition-all duration-300",
-              isLeftPanelCollapsed && "px-2 justify-center"
+              isLeftPanelCollapsed && "px-2 justify-center",
+              !isListMode && !isLeftPanelCollapsed && "flex-col items-start gap-1 pt-6 pb-5"
             )}>
-              <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-                <CalendarDays className="w-4 h-4 text-purple-500" />
-              </div>
-              {!isLeftPanelCollapsed && (
-                <h2 className="text-lg font-bold text-gray-900">
-                  {isListMode ? "Content to Schedule" : "Content Overview"}
-                </h2>
+              {isListMode ? (
+                <>
+                  <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                    <CalendarDays className="w-4 h-4 text-purple-500" />
+                  </div>
+                  {!isLeftPanelCollapsed && (
+                    <h2 className="text-base font-bold text-gray-900">
+                      Content Cards to Schedule
+                    </h2>
+                  )}
+                </>
+              ) : !isLeftPanelCollapsed ? (
+                <>
+                  <p className="text-sm text-purple-500 font-medium">Almost there!</p>
+                  <h2 className="text-xl font-bold text-gray-900">
+                    When do you want to post this?
+                  </h2>
+                </>
+              ) : (
+                <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                  <CalendarDays className="w-4 h-4 text-purple-500" />
+                </div>
               )}
             </div>
 
@@ -527,9 +543,29 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
                   )}
                 </div>
               ) : (
-                // Detail mode - show single card details
+                // Detail mode - show single card with impressive design
                 displayCard ? (
-                  renderContentDetails(displayCard)
+                  <div className="space-y-4">
+                    {/* Content Card Preview */}
+                    <div
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, displayCard.id)}
+                      onDragEnd={handleDragEnd}
+                      className={cn(
+                        "p-5 rounded-2xl bg-white border-2 border-purple-200 shadow-lg cursor-grab active:cursor-grabbing transition-all hover:shadow-xl hover:border-purple-300",
+                        draggedCardId === displayCard.id && "opacity-40 scale-[0.98]"
+                      )}
+                    >
+                      {/* Content Details */}
+                      {renderContentDetails(displayCard)}
+                    </div>
+
+                    {/* Drag hint */}
+                    <div className="flex items-center justify-center gap-2 text-sm text-purple-400">
+                      <CalendarDays className="w-4 h-4" />
+                      <span className="italic">Drag this card to a date on the calendar</span>
+                    </div>
+                  </div>
                 ) : (
                   <div className="text-center py-8 text-gray-400">
                     <p>Select a content card to view details</p>
