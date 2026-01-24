@@ -103,6 +103,8 @@ interface ExpandedScheduleViewProps {
   onPlanDate?: (cardId: string, date: Date) => void;
   /** Callback to navigate to a different step in the stepper */
   onNavigateToStep?: (step: number) => void;
+  /** Callback when "Stop Here, Finish Later" is clicked - moves card to schedule column */
+  onMoveToScheduleColumn?: (card: ProductionCard) => void;
 }
 
 const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
@@ -118,6 +120,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   planningCard,
   onPlanDate,
   onNavigateToStep,
+  onMoveToScheduleColumn,
 }) => {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -1246,7 +1249,13 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
           {/* Stop button on right */}
           {onClose && (
             <button
-              onClick={onClose}
+              onClick={() => {
+                // Move card to schedule column if not yet scheduled
+                if (singleCard && !singleCardScheduled && onMoveToScheduleColumn) {
+                  onMoveToScheduleColumn(singleCard);
+                }
+                onClose();
+              }}
               className="px-4 py-2 text-sm font-medium bg-[#612A4F] hover:bg-[#4E2240] text-white rounded-lg shadow-[0_2px_8px_rgba(97,42,79,0.3)] transition-colors flex-shrink-0"
             >
               Stop Here, Finish Later
@@ -1859,7 +1868,13 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
               </div>
               {onClose && !(singleCard && isLeftPanelCollapsed && !singleCardScheduled) && (
                 <button
-                  onClick={onClose}
+                  onClick={() => {
+                    // Move card to schedule column if not yet scheduled
+                    if (singleCard && !singleCardScheduled && onMoveToScheduleColumn) {
+                      onMoveToScheduleColumn(singleCard);
+                    }
+                    onClose();
+                  }}
                   className="px-4 py-2 text-sm font-medium bg-[#612A4F] hover:bg-[#4E2240] text-white rounded-lg shadow-[0_2px_8px_rgba(97,42,79,0.3)] transition-colors"
                 >
                   Stop Here, Finish Later

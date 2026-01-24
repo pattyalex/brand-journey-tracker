@@ -4656,6 +4656,12 @@ Make each idea unique, creative, and directly tied to both the original content 
             onUnschedule={handleUnscheduleContent}
             onUpdateColor={handleUpdateScheduledColor}
             onNavigateToStep={handleNavigateToStep}
+            onMoveToScheduleColumn={(card) => {
+              // Move card to 'to-schedule' column
+              moveCardToColumn(card.id, 'to-schedule', {
+                schedulingStatus: 'to-schedule' as const,
+              });
+            }}
           />
         )}
 
