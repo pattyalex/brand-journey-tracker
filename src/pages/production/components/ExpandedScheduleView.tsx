@@ -1571,7 +1571,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
               // Single card mode - show impressive single card view or congratulation
               singleCardScheduled ? (
                 // Congratulation state after scheduling - parent handles drop zone
-                <div className="flex flex-col items-center justify-center h-full pt-4 pb-8 px-4">
+                <div className="flex flex-col items-center justify-center h-full pb-8 px-4">
                   {dragOverUnschedule ? (
                     // Show drop indicator when dragging over
                     <div className="text-center">
