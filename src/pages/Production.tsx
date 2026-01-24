@@ -58,7 +58,7 @@ import { getAllAngleTemplates, getFormatColors, getPlatformColors } from "./prod
 // Platform icon helper - returns icon component for each platform
 const getPlatformIcon = (platform: string): React.ReactNode => {
   const lowercased = platform.toLowerCase();
-  const iconClass = "w-3.5 h-3.5 text-gray-500";
+  const iconClass = "w-3.5 h-3.5 text-[#8B7082]";
 
   if (lowercased.includes("youtube")) {
     return <SiYoutube className={iconClass} />;
@@ -229,7 +229,7 @@ const Production = () => {
   const [propsChecked, setPropsChecked] = useState(false);
   const [propsText, setPropsText] = useState("");
   const [filmingNotes, setFilmingNotes] = useState("");
-  const [cardStatus, setCardStatus] = useState<'to-start' | 'needs-work' | 'ready' | null>(null);
+  const [cardStatus, setCardStatus] = useState<'to-start' | 'needs-work' | 'ready'>('to-start');
   // Refs for filming checklist navigation
   const titleInputRef = useRef<HTMLInputElement>(null);
   const locationInputRef = useRef<HTMLInputElement>(null);
@@ -1142,7 +1142,7 @@ const Production = () => {
     setPropsChecked(card.propsChecked || false);
     setPropsText(card.propsText || "");
     setFilmingNotes(card.filmingNotes || "");
-    setCardStatus(card.status || null);
+    setCardStatus(card.status || 'to-start');
     setCustomVideoFormats(card.customVideoFormats || []);
     setCustomPhotoFormats(card.customPhotoFormats || []);
     // Check if card has brain dump notes from Ideate column
@@ -1207,7 +1207,7 @@ const Production = () => {
     setPropsChecked(false);
     setPropsText("");
     setFilmingNotes("");
-    setCardStatus(null);
+    setCardStatus('to-start');
   };
 
   // Storyboard editor handlers
@@ -1454,6 +1454,43 @@ const Production = () => {
     );
 
     resetIdeateCardEditorState();
+  };
+
+  const handleMoveIdeateToScript = () => {
+    if (!editingIdeateCard) return;
+
+    // Update the card and move it to shape-ideas column
+    const updatedCard: ProductionCard = {
+      ...editingIdeateCard,
+      title: ideateCardTitle,
+      description: ideateCardNotes,
+      columnId: 'shape-ideas',
+      status: 'to-start' as const,
+    };
+
+    setColumns((prev) =>
+      prev.map((col) => {
+        // Remove from ideate column
+        if (col.id === 'ideate') {
+          return {
+            ...col,
+            cards: col.cards.filter((card) => card.id !== editingIdeateCard.id),
+          };
+        }
+        // Add to shape-ideas column
+        if (col.id === 'shape-ideas') {
+          return {
+            ...col,
+            cards: [...col.cards, updatedCard],
+          };
+        }
+        return col;
+      })
+    );
+
+    // Close ideate editor and open script editor
+    resetIdeateCardEditorState();
+    handleOpenScriptEditor(updatedCard);
   };
 
   const resetIdeateCardEditorState = () => {
@@ -2465,8 +2502,8 @@ const Production = () => {
                                             {card.status === 'to-start' && <PenLine className="w-2.5 h-2.5" />}
                                             {card.status === 'needs-work' && <Wrench className="w-2.5 h-2.5" />}
                                             {card.status === 'ready' && <Check className="w-2.5 h-2.5" />}
-                                            {card.status === 'to-start' ? 'To start scripting' :
-                                             card.status === 'needs-work' ? 'Needs more work' :
+                                            {card.status === 'to-start' ? 'To Start' :
+                                             card.status === 'needs-work' ? 'In Progress' :
                                              card.status === 'ready' ? 'Scripted' : ''}
                                           </>
                                         )}
@@ -2531,9 +2568,7 @@ const Production = () => {
                           key={`add-button-${column.id}`}
                           className={cn(
                             "group/btn px-4 py-2.5 border transition-all duration-200 cursor-pointer active:scale-[0.98]",
-                            column.id === 'ideate'
-                              ? "w-full rounded-xl bg-white/80 hover:bg-white border-[#C9BFC6] hover:-translate-y-0.5"
-                              : "w-fit rounded-full bg-[#F5F2F4] hover:bg-[#EBE7E9] border-dashed hover:border-solid border-[#DDD6DA] hover:scale-105",
+                            "w-full rounded-xl bg-white/80 hover:bg-white border-[#C9BFC6] hover:-translate-y-0.5",
                             colors.buttonText
                           )}
                           onClick={() => {
@@ -2585,12 +2620,8 @@ const Production = () => {
                           }}
                         >
                           <div className={cn("flex items-center justify-center gap-2", colors.buttonText)}>
-                            {column.id === 'ideate' ? (
-                              <Plus className="h-4 w-4 group-hover/btn:rotate-90 transition-transform duration-200" />
-                            ) : (
-                              <PlusCircle className="h-4 w-4 group-hover/btn:rotate-90 transition-transform duration-200" />
-                            )}
-                            <span className="text-sm font-semibold">
+                            <Plus className="h-4 w-4 group-hover/btn:rotate-90 transition-transform duration-200" />
+                            <span className="text-sm font-medium">
                               {column.id === 'ideate' ? 'Add quick idea' : 'Add new'}
                             </span>
                           </div>
@@ -2721,9 +2752,7 @@ const Production = () => {
 
             <DialogHeader className="flex-shrink-0">
               {!ideateMode && (
-                <DialogTitle className="text-2xl font-semibold text-black px-4 mb-2 tracking-tight">
-                  Content Ideation
-                </DialogTitle>
+                <DialogTitle className="sr-only">Content Ideation</DialogTitle>
               )}
 
 
@@ -2752,13 +2781,13 @@ const Production = () => {
               )}
             </DialogHeader>
 
-            <div className="overflow-y-auto flex-1 pr-2 py-4">
+            <div className="overflow-y-auto flex-1 pr-2 pb-4">
               {/* Method Selection - Always show unless in a specific mode */}
               {!ideateMode && (
                 <div className="space-y-8 px-6">
-                  <div className="text-center">
-                    <h3 className="text-xl font-semibold text-black tracking-tight">Choose Your Starting Point</h3>
-                    <p className="text-sm text-gray-700 mt-2">Select a method to guide your content ideation process</p>
+                  <div className="text-center pb-2">
+                    <h3 className="text-xl font-semibold text-black tracking-tight mb-2">Choose Your Starting Point</h3>
+                    <p className="text-sm text-gray-600">Select a method to guide your content ideation process</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-5">
@@ -4512,11 +4541,11 @@ Make each idea unique, creative, and directly tied to both the original content 
           onOpenChange={handleIdeateCardEditorOpenChange}
           onCancel={resetIdeateCardEditorState}
           onSave={handleSaveIdeateCard}
+          onMoveToScript={handleMoveIdeateToScript}
           title={ideateCardTitle}
           setTitle={setIdeateCardTitle}
           notes={ideateCardNotes}
           setNotes={setIdeateCardNotes}
-          onNavigateToStep={handleNavigateToStep}
         />
 
         <StoryboardEditorDialog

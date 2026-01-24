@@ -52,7 +52,7 @@ const isStaticFormat = (format: string): boolean => {
   return staticFormats.some(sf => format.toLowerCase().includes(sf) || sf.includes(format.toLowerCase()));
 };
 
-type CardStatus = "to-start" | "needs-work" | "ready" | null;
+type CardStatus = "to-start" | "needs-work" | "ready";
 
 interface ScriptEditorDialogProps {
   isOpen: boolean;
@@ -98,7 +98,7 @@ interface ScriptEditorDialogProps {
   filmingNotes: string;
   setFilmingNotes: (value: string) => void;
   cardStatus: CardStatus;
-  setCardStatus: (value: Exclude<CardStatus, null>) => void;
+  setCardStatus: (value: CardStatus) => void;
   onNavigateToStep?: (step: number) => void;
 }
 
@@ -190,11 +190,11 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   <Dialog open={isOpen} onOpenChange={onOpenChange}>
     <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] overflow-hidden border-0 shadow-2xl flex flex-col bg-gradient-to-br from-gray-50 to-white">
       {/* Step Progress Indicator */}
-      <ContentFlowProgress currentStep={2} className="border-b border-gray-100 flex-shrink-0" onStepClick={onNavigateToStep} />
+      <ContentFlowProgress currentStep={2} className="flex-shrink-0" onStepClick={onNavigateToStep} />
 
-      <div className="flex-1 overflow-y-auto px-6 pt-6 pb-6 space-y-6">
+      <div className="flex-1 overflow-y-auto px-6 pt-0 pb-2 space-y-4">
         {/* Title Section */}
-        <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+        <div className="border-b border-gray-200 pb-4">
           <input
             ref={titleInputRef}
             type="text"
@@ -202,271 +202,26 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
             onChange={(e) => setCardTitle(e.target.value)}
             tabIndex={-1}
             autoComplete="off"
-            placeholder="Content title..."
-            className="w-full px-0 py-2 text-2xl font-bold bg-transparent border-0 focus:outline-none focus:ring-0 placeholder:text-gray-300"
+            placeholder="Enter content title..."
+            className="w-full px-0 py-1 text-xl font-semibold bg-transparent border-0 focus:outline-none focus:ring-0 placeholder:text-[#A0A0A0]"
           />
         </div>
 
-        {/* Format and Platform Section - Clean minimal design */}
-        <div className="grid grid-cols-2 gap-8">
-          {/* Format Selection */}
-          <div className="space-y-2">
-            <h4 className="text-[11px] font-semibold text-blue-400 uppercase tracking-wider">
-              How It's Shot
-            </h4>
-            <div className="flex items-center gap-2 flex-wrap">
-              <Select
-                onValueChange={(value) => {
-                  if (value && !formatTags.includes(value)) {
-                    setFormatTags([...formatTags, value]);
-                  }
-                }}
-              >
-                <SelectTrigger className="w-auto bg-transparent border-0 shadow-none p-0 h-auto gap-1 hover:bg-gray-100 rounded-lg px-2 py-1" iconClassName="hidden">
-                  <ChevronDown className="w-4 h-4 text-gray-400" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel className="text-sm font-medium text-gray-500">Video</SelectLabel>
-                    <SelectItem value="Talking to camera"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Talking to camera</span></SelectItem>
-                    <SelectItem value="Voice-over"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Voice-over</span></SelectItem>
-                    <SelectItem value="Vlog"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Vlog</span></SelectItem>
-                    <SelectItem value="Tutorial"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Tutorial</span></SelectItem>
-                    <SelectItem value="GRWM"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />GRWM</span></SelectItem>
-                    {customVideoFormats.map((format) => (
-                      <SelectItem key={format} value={format}>
-                        <span className="flex items-center gap-2 w-full">
-                          <Video className="w-4 h-4 text-gray-400" />
-                          <span className="flex-1">{format}</span>
-                          <span
-                            role="button"
-                            onPointerDown={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              handleRemoveCustomFormat(format, 'video');
-                            }}
-                            className="text-gray-300 hover:text-red-500 transition-colors ml-2 cursor-pointer"
-                          >
-                            <X className="w-3 h-3" />
-                          </span>
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                  <div
-                    className="flex items-center gap-2 px-2 py-1.5 cursor-text border-b border-gray-100 mb-1"
-                    onPointerDown={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                    }}
-                  >
-                    <Video className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                    <input
-                      type="text"
-                      placeholder="+ Add video format..."
-                      className="flex-1 text-xs text-gray-500 bg-transparent border-none outline-none placeholder:text-gray-400 focus:placeholder:text-transparent"
-                      onPointerDown={(e) => e.stopPropagation()}
-                      onClick={(e) => e.stopPropagation()}
-                      onKeyDown={(e) => {
-                        e.stopPropagation();
-                        if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                          e.preventDefault();
-                          const value = e.currentTarget.value.trim();
-                          if (!customVideoFormats.includes(value)) {
-                            setCustomVideoFormats([...customVideoFormats, value]);
-                          }
-                          if (!formatTags.includes(value)) {
-                            setFormatTags([...formatTags, value]);
-                          }
-                          e.currentTarget.value = '';
-                        }
-                      }}
-                    />
-                  </div>
-                  <SelectGroup>
-                    <SelectLabel className="text-sm font-medium text-gray-500">Photo</SelectLabel>
-                    <SelectItem value="Photo post"><span className="flex items-center gap-2"><Camera className="w-4 h-4 text-gray-400" />Photo post</span></SelectItem>
-                    <SelectItem value="Carousel"><span className="flex items-center gap-2"><Camera className="w-4 h-4 text-gray-400" />Carousel</span></SelectItem>
-                    <SelectItem value="Text post"><span className="flex items-center gap-2"><Camera className="w-4 h-4 text-gray-400" />Text post</span></SelectItem>
-                    {customPhotoFormats.map((format) => (
-                      <SelectItem key={format} value={format}>
-                        <span className="flex items-center gap-2 w-full">
-                          <Camera className="w-4 h-4 text-gray-400" />
-                          <span className="flex-1">{format}</span>
-                          <span
-                            role="button"
-                            onPointerDown={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              handleRemoveCustomFormat(format, 'photo');
-                            }}
-                            className="text-gray-300 hover:text-red-500 transition-colors ml-2 cursor-pointer"
-                          >
-                            <X className="w-3 h-3" />
-                          </span>
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                  <div
-                    className="flex items-center gap-2 px-2 py-1.5 cursor-text"
-                    onPointerDown={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                    }}
-                  >
-                    <Camera className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                    <input
-                      type="text"
-                      placeholder="+ Add photo format..."
-                      className="flex-1 text-xs text-gray-500 bg-transparent border-none outline-none placeholder:text-gray-400 focus:placeholder:text-transparent"
-                      onPointerDown={(e) => e.stopPropagation()}
-                      onClick={(e) => e.stopPropagation()}
-                      onKeyDown={(e) => {
-                        e.stopPropagation();
-                        if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                          e.preventDefault();
-                          const value = e.currentTarget.value.trim();
-                          if (!customPhotoFormats.includes(value)) {
-                            setCustomPhotoFormats([...customPhotoFormats, value]);
-                          }
-                          if (!formatTags.includes(value)) {
-                            setFormatTags([...formatTags, value]);
-                          }
-                          e.currentTarget.value = '';
-                        }
-                      }}
-                    />
-                  </div>
-                </SelectContent>
-              </Select>
-              {formatTags.length === 0 && (
-                <span className="text-[13px] text-gray-400">Select format</span>
-              )}
-              {formatTags.map((tag, idx) => (
-                <span
-                  key={idx}
-                  className="inline-flex items-center gap-1.5 text-[13px] text-gray-700"
-                >
-                  {isStaticFormat(tag) ? <Camera className="w-3.5 h-3.5 text-gray-400" /> : <Video className="w-3.5 h-3.5 text-gray-400" />}
-                  {tag}
-                  <button
-                    onClick={() => onRemoveFormatTag(tag)}
-                    className="text-gray-300 hover:text-gray-500 transition-colors"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Platform Selection */}
-          <div className="space-y-2">
-            <h4 className="text-[11px] font-semibold text-blue-400 uppercase tracking-wider">
-              Platforms
-            </h4>
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {[
-                { name: "Instagram", icon: <SiInstagram className="w-4 h-4" /> },
-                { name: "TikTok", icon: <SiTiktok className="w-4 h-4" /> },
-                { name: "YouTube", icon: <SiYoutube className="w-4 h-4" /> },
-                { name: "Facebook", icon: <SiFacebook className="w-4 h-4" /> },
-                { name: "LinkedIn", icon: <SiLinkedin className="w-4 h-4" /> },
-                { name: "X / Threads", icon: <RiTwitterXLine className="w-4 h-4" /> },
-              ].map((platform) => {
-                const isSelected = platformTags.includes(platform.name);
-                return (
-                  <button
-                    key={platform.name}
-                    type="button"
-                    onClick={() => {
-                      if (isSelected) {
-                        onRemovePlatformTag(platform.name);
-                      } else {
-                        setPlatformTags([...platformTags, platform.name]);
-                      }
-                    }}
-                    className={cn(
-                      "p-2 rounded-lg transition-all",
-                      isSelected
-                        ? "bg-gray-500 text-white"
-                        : "text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-                    )}
-                    title={platform.name}
-                  >
-                    {platform.icon}
-                  </button>
-                );
-              })}
-              <button
-                type="button"
-                onClick={() => setShowCustomPlatformInput(!showCustomPlatformInput)}
-                className={cn(
-                  "p-2 rounded-lg transition-all",
-                  showCustomPlatformInput
-                    ? "bg-gray-500 text-white"
-                    : "text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-                )}
-                title="Add other platform"
-              >
-                <MoreHorizontal className="w-4 h-4" />
-              </button>
-            </div>
-
-            {showCustomPlatformInput && (
-              <div className="flex gap-2 mt-1">
-                <input
-                  type="text"
-                  value={customPlatformInput}
-                  onChange={(e) => setCustomPlatformInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && customPlatformInput.trim()) {
-                      e.preventDefault();
-                      if (!platformTags.includes(customPlatformInput.trim())) {
-                        setPlatformTags([...platformTags, customPlatformInput.trim()]);
-                      }
-                      setCustomPlatformInput("");
-                      setShowCustomPlatformInput(false);
-                    }
-                  }}
-                  placeholder="Enter platform name..."
-                  className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-transparent"
-                  autoFocus
-                />
-                <Button
-                  type="button"
-                  onClick={() => {
-                    if (customPlatformInput.trim() && !platformTags.includes(customPlatformInput.trim())) {
-                      setPlatformTags([...platformTags, customPlatformInput.trim()]);
-                      setCustomPlatformInput("");
-                      setShowCustomPlatformInput(false);
-                    }
-                  }}
-                  size="sm"
-                  className="h-auto py-1.5 bg-gray-500 hover:bg-gray-600"
-                >
-                  Add
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Talking Points Section */}
-        <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+        {/* Two Column Layout */}
+        <div className="grid grid-cols-[1fr,280px] gap-6 items-start">
+          {/* Left Column - Talking Points */}
           <div className="space-y-3">
-            <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-              <span className="text-lg">💬</span> Talking Points
+            <label className="text-[12px] font-medium text-[#8B7082] uppercase tracking-wider">
+              Talking Points
             </label>
 
             {/* Brain Dump Suggestion Block */}
             {showBrainDumpSuggestion && brainDumpSuggestion && (
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 space-y-3">
+              <div className="bg-gradient-to-r from-[#C4A4B5]/15 to-[#D4B4C5]/15 border border-[#C4A4B5]/30 rounded-lg p-4 space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
-                    <p className="text-xs font-medium text-purple-700 mb-2 flex items-center gap-1">
-                      <span>💡</span> From your brain dump notes:
+                    <p className="text-xs font-medium text-[#9E7089] mb-2">
+                      From your brainstorming notes:
                     </p>
                     <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
                       {brainDumpSuggestion}
@@ -474,7 +229,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                   </div>
                   <button
                     onClick={() => setShowBrainDumpSuggestion(false)}
-                    className="text-purple-400 hover:text-purple-600 transition-colors"
+                    className="text-[#C4A4B5] hover:text-[#9E7089] transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -487,7 +242,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                       setScriptContent(scriptContent + (scriptContent ? "\n\n" : "") + brainDumpSuggestion);
                       setShowBrainDumpSuggestion(false);
                     }}
-                    className="text-xs px-3 py-1.5 bg-white text-purple-600 border border-purple-600 rounded-md hover:bg-purple-50 transition-colors"
+                    className="text-xs px-3 py-1.5 bg-white text-[#9E7089] border border-[#C4A4B5] rounded-md hover:bg-[#C4A4B5]/15 transition-colors"
                   >
                     Append to script
                   </button>
@@ -499,153 +254,460 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
               value={scriptContent}
               onChange={(e) => setScriptContent(e.target.value)}
               placeholder="Write your script here..."
-              className="min-h-[300px] resize-none border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm leading-relaxed bg-gray-50"
+              className="min-h-[400px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#8B7082] focus:border-[#8B7082] transition-all text-sm leading-relaxed bg-white placeholder:text-gray-400 shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
             />
           </div>
-        </div>
 
-        {/* Filming Plan Section - Clean minimal design */}
-        <div className="space-y-3">
-          <h4 className="text-[11px] font-semibold text-blue-400 uppercase tracking-wider">
-            Filming Plan
-          </h4>
+          {/* Right Column - Settings */}
+          <div className="space-y-6">
+            {/* How It's Shot */}
+            <div className="space-y-2">
+              <h4 className="text-[12px] font-medium text-[#8B7082] uppercase tracking-wider">
+                How It's Shot
+              </h4>
 
-          <div className="space-y-1">
-            {/* Location */}
-            <div className="flex items-center gap-3 group">
-              <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
-              <input
-                ref={locationInputRef}
-                type="text"
-                value={locationText}
-                onChange={(e) => setLocationText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    outfitInputRef.current?.focus();
-                  }
-                }}
-                placeholder="Add location..."
-                className="flex-1 text-[13px] text-gray-700 bg-transparent border-none outline-none placeholder:text-gray-400 hover:bg-gray-50 focus:bg-gray-50 rounded px-2 py-1.5 -ml-2 transition-colors"
-              />
-            </div>
+              {/* Format selection */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                {/* Format dropdown */}
+                <Select
+                  value=""
+                  onValueChange={(value) => {
+                    if (value && !formatTags.includes(value)) {
+                      setFormatTags([...formatTags, value]);
+                    }
+                  }}
+                >
+                  {formatTags.length === 0 ? (
+                    <SelectTrigger className="w-full bg-white border border-gray-200 shadow-none h-9 text-sm rounded-lg px-3" iconClassName="text-gray-400">
+                      <span className="text-gray-400">Select format</span>
+                    </SelectTrigger>
+                  ) : (
+                    <SelectTrigger className="w-auto bg-transparent border-0 shadow-none p-0 h-auto hover:bg-gray-100 rounded px-1.5 py-1 focus:ring-0 focus:ring-offset-0 focus:outline-none" iconClassName="hidden">
+                      <ChevronDown className="w-4 h-4 text-gray-400" />
+                    </SelectTrigger>
+                  )}
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel className="text-sm font-medium text-gray-500">Video</SelectLabel>
+                      {!formatTags.includes("Talking to camera") && (
+                        <SelectItem value="Talking to camera"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Talking to camera</span></SelectItem>
+                      )}
+                      {!formatTags.includes("Voice-over") && (
+                        <SelectItem value="Voice-over"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Voice-over</span></SelectItem>
+                      )}
+                      {!formatTags.includes("Vlog") && (
+                        <SelectItem value="Vlog"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Vlog</span></SelectItem>
+                      )}
+                      {!formatTags.includes("Tutorial") && (
+                        <SelectItem value="Tutorial"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Tutorial</span></SelectItem>
+                      )}
+                      {!formatTags.includes("GRWM") && (
+                        <SelectItem value="GRWM"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />GRWM</span></SelectItem>
+                      )}
+                      {customVideoFormats.filter(f => !formatTags.includes(f)).map((format) => (
+                        <SelectItem key={format} value={format}>
+                          <span className="flex items-center gap-2 w-full">
+                            <Video className="w-4 h-4 text-gray-400" />
+                            <span className="flex-1">{format}</span>
+                            <span
+                              role="button"
+                              onPointerDown={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                handleRemoveCustomFormat(format, 'video');
+                              }}
+                              className="text-gray-300 hover:text-red-500 transition-colors ml-2 cursor-pointer"
+                            >
+                              <X className="w-3 h-3" />
+                            </span>
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                    <div
+                      className="flex items-center gap-2 px-2 py-1.5 cursor-text border-b border-gray-100 mb-1"
+                      onPointerDown={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                      }}
+                    >
+                      <Video className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                      <input
+                        type="text"
+                        placeholder="+ Add video format..."
+                        className="flex-1 text-xs text-gray-500 bg-transparent border-none outline-none placeholder:text-gray-400 focus:placeholder:text-transparent"
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => {
+                          e.stopPropagation();
+                          if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                            e.preventDefault();
+                            const value = e.currentTarget.value.trim();
+                            if (!customVideoFormats.includes(value)) {
+                              setCustomVideoFormats([...customVideoFormats, value]);
+                            }
+                            if (!formatTags.includes(value)) {
+                              setFormatTags([...formatTags, value]);
+                            }
+                            e.currentTarget.value = '';
+                          }
+                        }}
+                      />
+                    </div>
+                    <SelectGroup>
+                      <SelectLabel className="text-sm font-medium text-gray-500">Photo</SelectLabel>
+                      {!formatTags.includes("Photo post") && (
+                        <SelectItem value="Photo post"><span className="flex items-center gap-2"><Camera className="w-4 h-4 text-gray-400" />Photo post</span></SelectItem>
+                      )}
+                      {!formatTags.includes("Carousel") && (
+                        <SelectItem value="Carousel"><span className="flex items-center gap-2"><Camera className="w-4 h-4 text-gray-400" />Carousel</span></SelectItem>
+                      )}
+                      {!formatTags.includes("Text post") && (
+                        <SelectItem value="Text post"><span className="flex items-center gap-2"><Camera className="w-4 h-4 text-gray-400" />Text post</span></SelectItem>
+                      )}
+                      {customPhotoFormats.filter(f => !formatTags.includes(f)).map((format) => (
+                        <SelectItem key={format} value={format}>
+                          <span className="flex items-center gap-2 w-full">
+                            <Camera className="w-4 h-4 text-gray-400" />
+                            <span className="flex-1">{format}</span>
+                            <span
+                              role="button"
+                              onPointerDown={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                handleRemoveCustomFormat(format, 'photo');
+                              }}
+                              className="text-gray-300 hover:text-red-500 transition-colors ml-2 cursor-pointer"
+                            >
+                              <X className="w-3 h-3" />
+                            </span>
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                    <div
+                      className="flex items-center gap-2 px-2 py-1.5 cursor-text"
+                      onPointerDown={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                      }}
+                    >
+                      <Camera className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                      <input
+                        type="text"
+                        placeholder="+ Add photo format..."
+                        className="flex-1 text-xs text-gray-500 bg-transparent border-none outline-none placeholder:text-gray-400 focus:placeholder:text-transparent"
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => {
+                          e.stopPropagation();
+                          if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                            e.preventDefault();
+                            const value = e.currentTarget.value.trim();
+                            if (!customPhotoFormats.includes(value)) {
+                              setCustomPhotoFormats([...customPhotoFormats, value]);
+                            }
+                            if (!formatTags.includes(value)) {
+                              setFormatTags([...formatTags, value]);
+                            }
+                            e.currentTarget.value = '';
+                          }
+                        }}
+                      />
+                    </div>
+                  </SelectContent>
+                </Select>
 
-            {/* Outfit */}
-            <div className="flex items-center gap-3 group">
-              <Shirt className="w-4 h-4 text-gray-400 flex-shrink-0" />
-              <input
-                ref={outfitInputRef}
-                type="text"
-                value={outfitText}
-                onChange={(e) => setOutfitText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    propsInputRef.current?.focus();
-                  }
-                }}
-                placeholder="Add outfit..."
-                className="flex-1 text-[13px] text-gray-700 bg-transparent border-none outline-none placeholder:text-gray-400 hover:bg-gray-50 focus:bg-gray-50 rounded px-2 py-1.5 -ml-2 transition-colors"
-              />
-            </div>
-
-            {/* Props */}
-            <div className="flex items-center gap-3 group">
-              <Boxes className="w-4 h-4 text-gray-400 flex-shrink-0" />
-              <input
-                ref={propsInputRef}
-                type="text"
-                value={propsText}
-                onChange={(e) => setPropsText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    notesInputRef.current?.focus();
-                  }
-                }}
-                placeholder="Add props..."
-                className="flex-1 text-[13px] text-gray-700 bg-transparent border-none outline-none placeholder:text-gray-400 hover:bg-gray-50 focus:bg-gray-50 rounded px-2 py-1.5 -ml-2 transition-colors"
-              />
-            </div>
-
-            {/* Notes */}
-            <div className="flex items-start gap-3 group">
-              <NotebookPen className="w-4 h-4 text-gray-400 flex-shrink-0 mt-1.5" />
-              <textarea
-                ref={notesInputRef}
-                value={filmingNotes}
-                onChange={(e) => setFilmingNotes(e.target.value)}
-                placeholder="Add notes..."
-                rows={2}
-                className="flex-1 text-[13px] text-gray-700 bg-transparent border-none outline-none resize-none placeholder:text-gray-400 hover:bg-gray-50 focus:bg-gray-50 rounded px-2 py-1.5 -ml-2 transition-colors"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Status Section - Clean minimal design */}
-        <div className="space-y-3">
-          <h4 className="text-[11px] font-semibold text-blue-400 uppercase tracking-wider">
-            Scripting Status
-          </h4>
-
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setCardStatus('to-start')}
-              className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-xl text-[13px] font-medium transition-all",
-                cardStatus === 'to-start'
-                  ? "bg-blue-100 text-blue-700"
-                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-              )}
-            >
-              <PenLine className="w-3.5 h-3.5 flex-shrink-0" />
-              <div className="text-left">
-                <div>To Start Scripting</div>
-                <div className={cn("text-[10px] font-normal", cardStatus === 'to-start' ? "text-blue-600" : "text-gray-400")}>Haven't started yet</div>
+                {/* Selected format tags */}
+                {formatTags.map((tag, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-700"
+                  >
+                    {isStaticFormat(tag) ? <Camera className="w-3 h-3 text-gray-400" /> : <Video className="w-3 h-3 text-gray-400" />}
+                    {tag}
+                    <button
+                      onClick={() => onRemoveFormatTag(tag)}
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
               </div>
-            </button>
+            </div>
 
-            <button
-              type="button"
-              onClick={() => setCardStatus('needs-work')}
-              className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-xl text-[13px] font-medium transition-all",
-                cardStatus === 'needs-work'
-                  ? "bg-amber-100 text-amber-700"
-                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-              )}
-            >
-              <Wrench className="w-3.5 h-3.5 flex-shrink-0" />
-              <div className="text-left">
-                <div>Needs More Work</div>
-                <div className={cn("text-[10px] font-normal", cardStatus === 'needs-work' ? "text-amber-600" : "text-gray-400")}>In progress</div>
+            {/* Platforms */}
+            <div className="space-y-2">
+              <h4 className="text-[12px] font-medium text-[#8B7082] uppercase tracking-wider">
+                Platforms
+              </h4>
+              <div className="flex items-center gap-1 flex-wrap">
+                {[
+                  { name: "Instagram", color: "#E1306C", bgColor: "bg-[#E1306C]/10" },
+                  { name: "TikTok", color: "#000000", bgColor: "bg-black/10" },
+                  { name: "YouTube", color: "#FF0000", bgColor: "bg-[#FF0000]/10" },
+                  { name: "Facebook", color: "#1877F2", bgColor: "bg-[#1877F2]/10" },
+                  { name: "LinkedIn", color: "#0A66C2", bgColor: "bg-[#0A66C2]/10" },
+                  { name: "X", color: "#000000", bgColor: "bg-black/10" },
+                  { name: "Threads", color: "#000000", bgColor: "bg-black/10" },
+                ].map((platform) => {
+                  const isSelected = platformTags.includes(platform.name);
+                  const IconComponent = {
+                    Instagram: SiInstagram,
+                    TikTok: SiTiktok,
+                    YouTube: SiYoutube,
+                    Facebook: SiFacebook,
+                    LinkedIn: SiLinkedin,
+                    X: RiTwitterXLine,
+                    Threads: RiThreadsLine,
+                  }[platform.name];
+                  return (
+                    <button
+                      key={platform.name}
+                      type="button"
+                      onClick={() => {
+                        if (isSelected) {
+                          onRemovePlatformTag(platform.name);
+                        } else {
+                          setPlatformTags([...platformTags, platform.name]);
+                        }
+                      }}
+                      className={cn(
+                        "p-1.5 rounded-lg transition-all",
+                        isSelected
+                          ? platform.bgColor
+                          : "text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                      )}
+                      style={isSelected ? { color: platform.color } : undefined}
+                      title={platform.name}
+                    >
+                      {IconComponent && <IconComponent className="w-4 h-4" />}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  onClick={() => setShowCustomPlatformInput(!showCustomPlatformInput)}
+                  className={cn(
+                    "p-1.5 rounded-lg transition-all",
+                    showCustomPlatformInput
+                      ? "bg-[#8B7082] text-white"
+                      : "text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                  )}
+                  title="Add other platform"
+                >
+                  <MoreHorizontal className="w-4 h-4" />
+                </button>
               </div>
-            </button>
 
-            <button
-              type="button"
-              onClick={() => setCardStatus('ready')}
-              className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-xl text-[13px] font-medium transition-all",
-                cardStatus === 'ready'
-                  ? "bg-emerald-100 text-emerald-700"
-                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+              {showCustomPlatformInput && (
+                <div className="flex gap-2 mt-1">
+                  <input
+                    type="text"
+                    value={customPlatformInput}
+                    onChange={(e) => setCustomPlatformInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && customPlatformInput.trim()) {
+                        e.preventDefault();
+                        if (!platformTags.includes(customPlatformInput.trim())) {
+                          setPlatformTags([...platformTags, customPlatformInput.trim()]);
+                        }
+                        setCustomPlatformInput("");
+                        setShowCustomPlatformInput(false);
+                      }
+                    }}
+                    placeholder="Platform name..."
+                    className="flex-1 px-2 py-1 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#8B7082] focus:border-transparent"
+                    autoFocus
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      if (customPlatformInput.trim() && !platformTags.includes(customPlatformInput.trim())) {
+                        setPlatformTags([...platformTags, customPlatformInput.trim()]);
+                        setCustomPlatformInput("");
+                        setShowCustomPlatformInput(false);
+                      }
+                    }}
+                    size="sm"
+                    className="h-auto py-1 bg-[#8B7082] hover:bg-[#7A6073]"
+                  >
+                    Add
+                  </Button>
+                </div>
               )}
-            >
-              <Check className="w-3.5 h-3.5 flex-shrink-0" />
-              <div className="text-left">
-                <div>Scripted</div>
-                <div className={cn("text-[10px] font-normal", cardStatus === 'ready' ? "text-emerald-600" : "text-gray-400")}>Ready to film</div>
+
+              {/* Custom platforms display */}
+              {platformTags.filter(p => !["Instagram", "TikTok", "YouTube", "Facebook", "LinkedIn", "X", "Threads"].includes(p)).length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  {platformTags
+                    .filter(p => !["Instagram", "TikTok", "YouTube", "Facebook", "LinkedIn", "X", "Threads"].includes(p))
+                    .map((platform) => (
+                      <span
+                        key={platform}
+                        className="inline-flex items-center gap-1 px-2 py-1 bg-[#8B7082]/10 text-[#8B7082] rounded-full text-xs"
+                      >
+                        {platform}
+                        <button
+                          onClick={() => onRemovePlatformTag(platform)}
+                          className="text-[#8B7082]/60 hover:text-[#8B7082] transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+                </div>
+              )}
+            </div>
+
+            {/* Shooting Plan */}
+            <div className="space-y-2">
+              <h4 className="text-[12px] font-medium text-[#8B7082] uppercase tracking-wider">
+                Shooting Plan
+              </h4>
+
+              <div className="space-y-2.5 bg-gray-50 rounded-lg p-3">
+                {/* Location */}
+                <div className="flex items-start gap-2">
+                  <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
+                  <textarea
+                    ref={locationInputRef as React.RefObject<HTMLTextAreaElement>}
+                    value={locationText}
+                    onChange={(e) => {
+                      setLocationText(e.target.value);
+                      e.target.style.height = 'auto';
+                      e.target.style.height = e.target.scrollHeight + 'px';
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        outfitInputRef.current?.focus();
+                      }
+                    }}
+                    placeholder="Location..."
+                    className="flex-1 text-xs text-gray-700 bg-transparent border-none outline-none placeholder:text-gray-400 py-0.5 resize-none leading-relaxed"
+                    style={{ fieldSizing: 'content', minHeight: '1.25rem' } as React.CSSProperties}
+                  />
+                </div>
+
+                {/* Outfit */}
+                <div className="flex items-start gap-2">
+                  <Shirt className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
+                  <textarea
+                    ref={outfitInputRef as React.RefObject<HTMLTextAreaElement>}
+                    value={outfitText}
+                    onChange={(e) => {
+                      setOutfitText(e.target.value);
+                      e.target.style.height = 'auto';
+                      e.target.style.height = e.target.scrollHeight + 'px';
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        propsInputRef.current?.focus();
+                      }
+                    }}
+                    placeholder="Outfit..."
+                    className="flex-1 text-xs text-gray-700 bg-transparent border-none outline-none placeholder:text-gray-400 py-0.5 resize-none leading-relaxed"
+                    style={{ fieldSizing: 'content', minHeight: '1.25rem' } as React.CSSProperties}
+                  />
+                </div>
+
+                {/* Props */}
+                <div className="flex items-start gap-2">
+                  <Boxes className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
+                  <textarea
+                    ref={propsInputRef as React.RefObject<HTMLTextAreaElement>}
+                    value={propsText}
+                    onChange={(e) => {
+                      setPropsText(e.target.value);
+                      e.target.style.height = 'auto';
+                      e.target.style.height = e.target.scrollHeight + 'px';
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        notesInputRef.current?.focus();
+                      }
+                    }}
+                    placeholder="Props..."
+                    className="flex-1 text-xs text-gray-700 bg-transparent border-none outline-none placeholder:text-gray-400 py-0.5 resize-none leading-relaxed"
+                    style={{ fieldSizing: 'content', minHeight: '1.25rem' } as React.CSSProperties}
+                  />
+                </div>
+
+                {/* Notes */}
+                <div className="flex items-start gap-2">
+                  <NotebookPen className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
+                  <textarea
+                    ref={notesInputRef}
+                    value={filmingNotes}
+                    onChange={(e) => setFilmingNotes(e.target.value)}
+                    placeholder="Notes..."
+                    rows={2}
+                    className="flex-1 text-xs text-gray-700 bg-transparent border-none outline-none resize-none placeholder:text-gray-400 py-0.5"
+                  />
+                </div>
               </div>
-            </button>
+            </div>
+
+            {/* Status */}
+            <div className="space-y-2">
+              <h4 className="text-[12px] font-medium text-[#8B7082] uppercase tracking-wider">
+                Status
+              </h4>
+
+              <div className="flex gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setCardStatus('to-start')}
+                  className={cn(
+                    "px-2.5 py-1 rounded-full text-[11px] font-medium transition-all flex items-center gap-1",
+                    cardStatus === 'to-start'
+                      ? "bg-[#8B7082]/15 text-[#8B7082]"
+                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  )}
+                >
+                  <PenLine className="w-3 h-3" />
+                  To Start
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setCardStatus('needs-work')}
+                  className={cn(
+                    "px-2.5 py-1 rounded-full text-[11px] font-medium transition-all flex items-center gap-1",
+                    cardStatus === 'needs-work'
+                      ? "bg-[#8B7082]/15 text-[#8B7082]"
+                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  )}
+                >
+                  <Wrench className="w-3 h-3" />
+                  In Progress
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setCardStatus('ready')}
+                  className={cn(
+                    "px-2.5 py-1 rounded-full text-[11px] font-medium transition-all flex items-center gap-1",
+                    cardStatus === 'ready'
+                      ? "bg-[#8B7082]/15 text-[#8B7082]"
+                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  )}
+                >
+                  <Check className="w-3 h-3" />
+                  Scripted
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 flex-shrink-0">
+      {/* Fixed Footer with Action Buttons */}
+      <div className="flex-shrink-0 px-6 pt-2 pb-1 border-t border-gray-200 bg-white flex justify-end gap-3">
         <Button
           variant="outline"
           onClick={onCancel}
@@ -655,7 +717,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
         </Button>
         <Button
           onClick={onSave}
-          className="px-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
+          className="px-6 bg-[#8B7082] hover:bg-[#7A6073] text-white shadow-[0_2px_8px_rgba(139,112,130,0.25)]"
         >
           Save Changes
         </Button>
