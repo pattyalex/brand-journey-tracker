@@ -1235,13 +1235,14 @@ const Production = () => {
     setIsEditChecklistDialogOpen(true);
   };
 
-  const handleSaveEditChecklist = (checklist: EditingChecklist, title?: string, script?: string) => {
+  const handleSaveEditChecklist = (checklist: EditingChecklist, title?: string, hook?: string, script?: string) => {
     if (!editingEditCard) return;
 
     // Move card to 'to-edit' column (Edit step) and update data
     moveCardToColumn(editingEditCard.id, 'to-edit', {
       editingChecklist: checklist,
       ...(title !== undefined && { title }),
+      ...(hook !== undefined && { hook }),
       ...(script !== undefined && { script }),
     });
 

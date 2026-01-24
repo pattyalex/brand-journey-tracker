@@ -64,7 +64,7 @@ interface EditChecklistDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   card: ProductionCard | null;
-  onSave: (checklist: EditingChecklist, title?: string, script?: string) => void;
+  onSave: (checklist: EditingChecklist, title?: string, hook?: string, script?: string) => void;
   onNavigateToStep?: (step: number, savedCardData?: Partial<ProductionCard>) => void;
   slideDirection?: 'left' | 'right';
 }
@@ -137,6 +137,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState<EditingStatus | null>(null);
   const [title, setTitle] = useState("");
+  const [hook, setHook] = useState("");
   const [script, setScript] = useState("");
   const [isEditing, setIsEditing] = useState(false);
 
@@ -148,6 +149,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
     setNotes(card?.editingChecklist?.notes || "");
     setStatus(card?.editingChecklist?.status || null);
     setTitle(card?.title || "");
+    setHook(card?.hook || "");
     setScript(card?.script || "");
   }, [card, isOpen]);
 
@@ -179,7 +181,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
       externalLinks: [],
       status,
     };
-    onSave(checklist, title, script);
+    onSave(checklist, title, hook, script);
     onOpenChange(false);
   };
 
@@ -195,6 +197,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
     const savedData: Partial<ProductionCard> = {
       editingChecklist: checklist,
       title,
+      hook,
       script,
     };
     onNavigateToStep?.(step, savedData);
@@ -280,15 +283,15 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
                 {isEditing ? (
                   <input
                     type="text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    value={hook}
+                    onChange={(e) => setHook(e.target.value)}
                     className="w-full text-[13px] text-gray-700 leading-relaxed bg-transparent border-none p-0 focus:outline-none focus:ring-0"
                     placeholder="Enter your hook..."
                   />
                 ) : (
                   <p className="text-[13px] leading-relaxed">
-                    {title ? (
-                      <span className="text-gray-700">{title}</span>
+                    {hook ? (
+                      <span className="text-gray-700">{hook}</span>
                     ) : (
                       <span className="text-gray-400 italic">No hook added</span>
                     )}
