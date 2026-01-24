@@ -109,7 +109,7 @@ interface StoryboardEditorDialogProps {
   onOpenChange: (open: boolean) => void;
   card: ProductionCard | null;
   onSave: (storyboard: StoryboardScene[], title?: string, script?: string, hook?: string, status?: "to-start" | "needs-work" | "ready" | null) => void;
-  onNavigateToStep?: (step: number) => void;
+  onNavigateToStep?: (step: number, savedCardData?: Partial<ProductionCard>) => void;
   slideDirection?: 'left' | 'right';
 }
 
@@ -382,11 +382,16 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
 
   // Auto-save and navigate to another step
   const handleNavigateWithSave = useCallback((step: number) => {
-    if (card) {
-      onSave(scenes, cardTitle, scriptContent, hookContent, filmingStatus);
-    }
-    onNavigateToStep?.(step);
-  }, [card, scenes, cardTitle, scriptContent, hookContent, filmingStatus, onSave, onNavigateToStep]);
+    // Pass saved data directly to navigation handler to avoid async state timing issues
+    const savedData: Partial<ProductionCard> = {
+      storyboard: scenes,
+      title: cardTitle,
+      script: scriptContent,
+      hook: hookContent,
+      status: filmingStatus || undefined,
+    };
+    onNavigateToStep?.(step, savedData);
+  }, [scenes, cardTitle, scriptContent, hookContent, filmingStatus, onNavigateToStep]);
 
   // Focus title input when editing
   useEffect(() => {

@@ -1590,7 +1590,8 @@ const Production = () => {
   };
 
   // Navigation handler for step progress clicks
-  const handleNavigateToStep = (step: number) => {
+  // savedCardData is optional - when provided (from Storyboard/Edit dialogs), use it directly
+  const handleNavigateToStep = (step: number, savedCardData?: Partial<ProductionCard>) => {
     // Get the current card from whichever dialog is open
     const currentCard = editingIdeateCard || editingScriptCard || editingStoryboardCard || editingEditCard || schedulingCard;
     if (!currentCard) return;
@@ -1608,8 +1609,21 @@ const Production = () => {
     }
     if (!latestCard) return;
 
+    // If savedCardData is provided (from Storyboard/Edit dialogs), merge it with latestCard
+    if (savedCardData) {
+      latestCard = { ...latestCard, ...savedCardData };
+      // Save to state
+      setColumns((prev) =>
+        prev.map((col) => ({
+          ...col,
+          cards: col.cards.map((card) =>
+            card.id === currentCard.id ? latestCard! : card
+          ),
+        }))
+      );
+    }
     // Auto-save current dialog and update latestCard with current form values
-    if (isIdeateCardEditorOpen && editingIdeateCard) {
+    else if (isIdeateCardEditorOpen && editingIdeateCard) {
       // Update latestCard with current form values
       latestCard = {
         ...latestCard,
@@ -1655,7 +1669,6 @@ const Production = () => {
         }))
       );
     }
-    // Note: Storyboard and Edit dialogs handle their own save via handleNavigateWithSave
 
     const stepLabels: Record<number, string> = {
       1: 'Ideate',

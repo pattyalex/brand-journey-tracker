@@ -65,7 +65,7 @@ interface EditChecklistDialogProps {
   onOpenChange: (open: boolean) => void;
   card: ProductionCard | null;
   onSave: (checklist: EditingChecklist, title?: string, script?: string) => void;
-  onNavigateToStep?: (step: number) => void;
+  onNavigateToStep?: (step: number, savedCardData?: Partial<ProductionCard>) => void;
   slideDirection?: 'left' | 'right';
 }
 
@@ -191,8 +191,13 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
       externalLinks: [],
       status,
     };
-    onSave(checklist, title, script);
-    onNavigateToStep?.(step);
+    // Pass saved data directly to navigation handler to avoid async state timing issues
+    const savedData: Partial<ProductionCard> = {
+      editingChecklist: checklist,
+      title,
+      script,
+    };
+    onNavigateToStep?.(step, savedData);
   };
 
   // Progress calculation
