@@ -1908,28 +1908,19 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                   </button>
                 </div>
               </div>
-              {onClose && !(singleCard && isLeftPanelCollapsed) && (
-                singleCardScheduled ? (
-                  <button
-                    onClick={onClose}
-                    className="px-6 py-2 text-sm font-medium bg-gradient-to-r from-[#8B7082] to-[#612A4F] hover:from-[#7A6073] hover:to-[#4E2240] text-white rounded-lg shadow-[0_2px_8px_rgba(97,42,79,0.3)] transition-all"
-                  >
-                    Done
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => {
-                      // Move card to schedule column if not yet scheduled
-                      if (singleCard && onMoveToScheduleColumn) {
-                        onMoveToScheduleColumn(singleCard);
-                      }
-                      onClose();
-                    }}
-                    className="px-4 py-2 text-sm font-medium bg-[#612A4F] hover:bg-[#4E2240] text-white rounded-lg shadow-[0_2px_8px_rgba(97,42,79,0.3)] transition-colors"
-                  >
-                    Stop Here, Finish Later
-                  </button>
-                )
+              {onClose && !(singleCard && isLeftPanelCollapsed) && !singleCardScheduled && (
+                <button
+                  onClick={() => {
+                    // Move card to schedule column if not yet scheduled
+                    if (singleCard && onMoveToScheduleColumn) {
+                      onMoveToScheduleColumn(singleCard);
+                    }
+                    onClose();
+                  }}
+                  className="px-4 py-2 text-sm font-medium bg-[#612A4F] hover:bg-[#4E2240] text-white rounded-lg shadow-[0_2px_8px_rgba(97,42,79,0.3)] transition-colors"
+                >
+                  Stop Here, Finish Later
+                </button>
               )}
             </div>
           )}
