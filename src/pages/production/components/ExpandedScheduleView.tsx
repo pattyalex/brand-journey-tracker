@@ -124,6 +124,9 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
 }) => {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [displayedMonth, setDisplayedMonth] = useState(new Date().getMonth());
+  const [displayedYear, setDisplayedYear] = useState(new Date().getFullYear());
+  const calendarScrollRef = useRef<HTMLDivElement>(null);
   const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
   const [draggedPlannedCardId, setDraggedPlannedCardId] = useState<string | null>(null);
   const [dragOverDate, setDragOverDate] = useState<string | null>(null);
@@ -939,17 +942,15 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
     return next7Days;
   }, [embedded, today, scheduledCardsByDate, plannedCardsByDate]);
 
-  // Get calendar days for the current month view
+  // Get calendar days for continuous scrolling view (current month + next 2 months)
   const calendarDays = useMemo(() => {
     const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
-    const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
     // Adjust so Monday = 0, Sunday = 6
     const startingDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7;
-    const daysInMonth = lastDayOfMonth.getDate();
 
-    const days: { date: Date; isCurrentMonth: boolean; isToday: boolean }[] = [];
+    const days: { date: Date; isCurrentMonth: boolean; isToday: boolean; monthLabel?: string }[] = [];
 
-    // Previous month days
+    // Previous month days to fill first week
     const prevMonth = new Date(currentYear, currentMonth, 0);
     const daysInPrevMonth = prevMonth.getDate();
     for (let i = startingDayOfWeek - 1; i >= 0; i--) {
@@ -961,22 +962,32 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
       });
     }
 
-    // Current month days
-    for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(currentYear, currentMonth, day);
-      const isToday = date.toDateString() === today.toDateString();
-      days.push({
-        date,
-        isCurrentMonth: true,
-        isToday,
-      });
+    // Add 3 months worth of days (current + next 2)
+    for (let monthOffset = 0; monthOffset < 3; monthOffset++) {
+      const month = currentMonth + monthOffset;
+      const year = currentYear + Math.floor(month / 12);
+      const normalizedMonth = ((month % 12) + 12) % 12;
+      const daysInMonth = new Date(year, normalizedMonth + 1, 0).getDate();
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, normalizedMonth, day);
+        const isToday = date.toDateString() === today.toDateString();
+        const isFirstDay = day === 1 && monthOffset > 0;
+        days.push({
+          date,
+          isCurrentMonth: monthOffset === 0,
+          isToday,
+          monthLabel: isFirstDay ? monthNames[normalizedMonth] : undefined,
+        });
+      }
     }
 
-    // Next month days - only fill to complete the last week that contains current month days
+    // Fill to complete the last week
     const totalDaysNeeded = Math.ceil(days.length / 7) * 7;
     const remainingDays = totalDaysNeeded - days.length;
+    const lastDate = days[days.length - 1].date;
     for (let day = 1; day <= remainingDays; day++) {
-      const date = new Date(currentYear, currentMonth + 1, day);
+      const date = new Date(lastDate.getFullYear(), lastDate.getMonth() + 1, day);
       days.push({
         date,
         isCurrentMonth: false,
@@ -989,11 +1000,47 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
 
   const goToPreviousMonth = () => {
     setCurrentDate(new Date(currentYear, currentMonth - 1, 1));
+    setDisplayedMonth(currentMonth - 1 < 0 ? 11 : currentMonth - 1);
+    setDisplayedYear(currentMonth - 1 < 0 ? currentYear - 1 : currentYear);
   };
 
   const goToNextMonth = () => {
     setCurrentDate(new Date(currentYear, currentMonth + 1, 1));
+    setDisplayedMonth((currentMonth + 1) % 12);
+    setDisplayedYear(currentMonth + 1 > 11 ? currentYear + 1 : currentYear);
   };
+
+  // Scroll handler to update displayed month based on visible calendar days
+  useEffect(() => {
+    const scrollContainer = calendarScrollRef.current;
+    if (!scrollContainer) return;
+
+    const handleScroll = () => {
+      const containerRect = scrollContainer.getBoundingClientRect();
+      const headerHeight = 60; // Approximate height of header
+      const checkY = containerRect.top + headerHeight + 50; // Check point below header
+
+      // Find all day cells and check which one is at the check point
+      const dayCells = scrollContainer.querySelectorAll('[data-calendar-date]');
+      for (const cell of dayCells) {
+        const rect = cell.getBoundingClientRect();
+        if (rect.top <= checkY && rect.bottom > checkY) {
+          const dateStr = cell.getAttribute('data-calendar-date');
+          if (dateStr) {
+            const date = new Date(dateStr);
+            if (date.getMonth() !== displayedMonth || date.getFullYear() !== displayedYear) {
+              setDisplayedMonth(date.getMonth());
+              setDisplayedYear(date.getFullYear());
+            }
+          }
+          break;
+        }
+      }
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll);
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, [displayedMonth, displayedYear]);
 
   // Drag and drop handlers
   const handleDragStart = (e: React.DragEvent, cardId: string) => {
@@ -1869,10 +1916,12 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
         )}
 
         {/* Right Panel - Calendar */}
-        <div className={cn(
-          "flex flex-col h-full overflow-y-auto relative",
-          singleCard && isLeftPanelCollapsed && "pl-9"
-        )}>
+        <div
+          ref={calendarScrollRef}
+          className={cn(
+            "flex flex-col h-full overflow-y-auto relative",
+            singleCard && isLeftPanelCollapsed && "pl-9"
+          )}>
           {/* Expand button - show on left edge when collapsed in single card mode */}
           {singleCard && isLeftPanelCollapsed && (
             <button
@@ -1882,10 +1931,11 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
               <ChevronRight className="w-6 h-6 text-gray-500" strokeWidth={2.5} />
             </button>
           )}
-          {/* Calendar Header - only show in modal mode */}
+          {/* Floating Calendar Controls - only show in modal mode */}
           {!embedded && (
-            <div className="flex items-center justify-between px-6 py-2 border-b border-gray-100 sticky top-0 z-10">
-              <div className="flex items-center gap-4">
+            <div className="sticky -top-1 z-20 flex items-center justify-between px-4 pt-1 pb-1">
+              {/* Floating left: Content Calendar + Month Navigation */}
+              <div className="flex items-center gap-4 px-4 py-2 bg-gray-50 rounded-xl shadow-md">
                 <div className="flex items-center gap-2">
                   <CalendarDays className="w-4 h-4 text-[#8B7082]" />
                   <span className="text-sm font-bold text-gray-900">Content Calendar</span>
@@ -1898,7 +1948,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                     <ChevronLeft className="w-4 h-4 text-gray-600" />
                   </button>
                   <span className="text-sm font-medium text-gray-700 min-w-[120px] text-center">
-                    {monthNames[currentMonth]} {currentYear}
+                    {monthNames[displayedMonth]} {displayedYear}
                   </span>
                   <button
                     onClick={goToNextMonth}
@@ -1908,6 +1958,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                   </button>
                 </div>
               </div>
+              {/* Floating right: Stop Here Button */}
               {onClose && !(singleCard && isLeftPanelCollapsed) && !singleCardScheduled && (
                 <button
                   onClick={() => {
@@ -1917,7 +1968,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                     }
                     onClose();
                   }}
-                  className="px-4 py-2 text-sm font-medium bg-[#612A4F] hover:bg-[#4E2240] text-white rounded-lg shadow-[0_2px_8px_rgba(97,42,79,0.3)] transition-colors"
+                  className="px-4 py-2 text-sm font-medium bg-[#612A4F] hover:bg-[#4E2240] text-white rounded-xl shadow-md"
                 >
                   Stop Here, Finish Later
                 </button>
@@ -1933,9 +1984,9 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
           )}
 
           {/* Calendar Grid */}
-          <CardContent className="pl-6 pr-4 flex flex-col">
+          <CardContent className="pl-6 pr-4 pt-0 flex flex-col">
             {/* Day headers */}
-            <div className="grid grid-cols-7 mb-2">
+            <div className="grid grid-cols-7 mb-1">
               {daysOfWeek.map((day) => (
                 <div
                   key={day}
@@ -1973,12 +2024,13 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                   >
                     <PopoverTrigger asChild>
                       <div
+                        data-calendar-date={dateStr}
                         onDragOver={(e) => handleDragOver(e, dateStr)}
                         onDragLeave={handleDragLeave}
                         onDrop={(e) => handleDrop(e, day.date)}
                         onClick={(e) => {
                           // In planning mode, clicking a date sets the planned date
-                          if (planningMode && planningCard && onPlanDate && day.isCurrentMonth) {
+                          if (planningMode && planningCard && onPlanDate) {
                             e.stopPropagation();
                             onPlanDate(planningCard.id, day.date);
                             return;
@@ -1991,16 +2043,21 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                         className={cn(
                           "group",
                           isLeftPanelCollapsed ? "rounded-lg border min-h-[120px] relative p-2" : "rounded-lg border min-h-[120px] relative p-1.5",
-                          day.isCurrentMonth && !day.isToday && day.date < today
+                          day.date < today && !day.isToday
                             ? "bg-gray-50 border-gray-100 text-gray-400"
-                            : day.isCurrentMonth
-                              ? "bg-white border-gray-200 text-gray-900 hover:bg-gray-50"
-                              : "bg-gray-50 border-gray-100 text-gray-400",
+                            : "bg-white border-gray-200 text-gray-900",
                           isDragOver && "bg-indigo-100 border-indigo-400 border-2 scale-105",
                           (embedded || planningMode) && "cursor-pointer",
-                          planningMode && day.isCurrentMonth && "hover:bg-violet-50 hover:border-violet-300"
+                          planningMode && "hover:bg-violet-50 hover:border-violet-300",
+                          day.monthLabel && "mt-6"
                         )}
                       >
+                        {/* Month label for first day of new months */}
+                        {day.monthLabel && (
+                          <span className="absolute -top-5 left-0 text-xs font-semibold text-[#8B7082]">
+                            {day.monthLabel}
+                          </span>
+                        )}
                         <span className={cn(
                           "absolute top-1.5 left-2 text-sm font-medium",
                           day.isToday && "text-indigo-600 font-bold"
