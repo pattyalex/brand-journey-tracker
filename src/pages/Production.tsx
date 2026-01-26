@@ -1503,7 +1503,6 @@ const Production = () => {
     'to-film': 3,
     'to-edit': 4,
     'to-schedule': 5,
-    'posted': 6,
   };
 
   const stepToColumn: Record<number, string> = {
@@ -1512,7 +1511,91 @@ const Production = () => {
     3: 'to-film',
     4: 'to-edit',
     5: 'to-schedule',
-    6: 'posted',
+  };
+
+  // Determine appropriate column based on card content
+  const determineColumnByContent = (card: Partial<ProductionCard>): string => {
+    // Check from most advanced to least advanced stage
+
+    // 1. Has scheduled date → Schedule column
+    if (card.scheduledDate) {
+      return 'to-schedule';
+    }
+
+    // 2. Has editing checklist with items → Edit column
+    if (card.editingChecklist?.items && card.editingChecklist.items.length > 0) {
+      return 'to-edit';
+    }
+
+    // 3. Has storyboard scenes → Film column
+    if (card.storyboard && card.storyboard.length > 0) {
+      return 'to-film';
+    }
+
+    // 4. Has script content → Script column
+    if (card.script && card.script.trim().length > 0) {
+      return 'shape-ideas';
+    }
+
+    // 5. Default → Ideate column
+    return 'ideate';
+  };
+
+  // Close content flow dialog and place card in appropriate column based on content
+  const handleCloseContentFlowDialog = () => {
+    if (!contentFlowCard) {
+      setActiveContentFlowStep(null);
+      setContentFlowCard(null);
+      return;
+    }
+
+    // Get the latest card data from columns state (in case it was updated during the session)
+    let latestCardFromColumns: ProductionCard | undefined;
+    for (const col of columns) {
+      const found = col.cards.find(c => c.id === contentFlowCard.id);
+      if (found) {
+        latestCardFromColumns = found;
+        break;
+      }
+    }
+    const baseCard = latestCardFromColumns || contentFlowCard;
+
+    // Gather all current state into an updated card object
+    const updatedCardData: Partial<ProductionCard> = {
+      // From Ideate step
+      title: ideateCardTitle || cardTitle || baseCard.title,
+      description: ideateCardNotes || baseCard.description,
+      // From Script step
+      hook: cardHook || baseCard.hook,
+      script: scriptContent || baseCard.script,
+      platforms: platformTags.length > 0 ? platformTags : baseCard.platforms,
+      formats: formatTags.length > 0 ? formatTags : baseCard.formats,
+      locationChecked,
+      locationText,
+      outfitChecked,
+      outfitText,
+      propsChecked,
+      propsText,
+      filmingNotes,
+      status: cardStatus || baseCard.status,
+      // From Film step (storyboard)
+      storyboard: editingStoryboardCard?.storyboard || baseCard.storyboard,
+      // From Edit step
+      editingChecklist: editingEditCard?.editingChecklist || baseCard.editingChecklist,
+      // From Schedule step
+      scheduledDate: baseCard.scheduledDate,
+      schedulingStatus: baseCard.schedulingStatus,
+    };
+
+    // Determine target column based on content
+    const targetColumnId = determineColumnByContent(updatedCardData);
+
+    // Move card to the appropriate column
+    moveCardToColumn(contentFlowCard.id, targetColumnId, updatedCardData);
+
+    // Reset state
+    setActiveContentFlowStep(null);
+    setContentFlowCard(null);
   };
 
   // Helper to move a card to a specific column
@@ -1700,11 +1783,11 @@ const Production = () => {
     const currentWorkflowStep = cardColumnId ? columnToStep[cardColumnId] || 1 : 1;
 
     // Determine slide direction based on step comparison
-    const currentDialogStep = activeContentFlowStep || (isIdeateCardEditorOpen ? 1 : isScriptEditorOpen ? 2 : isStoryboardDialogOpen ? 3 : isEditChecklistDialogOpen ? 4 : isScheduleColumnExpanded ? 5 : 6);
+    const currentDialogStep = activeContentFlowStep || (isIdeateCardEditorOpen ? 1 : isScriptEditorOpen ? 2 : isStoryboardDialogOpen ? 3 : isEditChecklistDialogOpen ? 4 : isScheduleColumnExpanded ? 5 : 5);
     setSlideDirection(step > currentDialogStep ? 'left' : 'right');
 
     // If we're in the unified content flow dialog, just update the step (no blink!)
-    if (activeContentFlowStep !== null && step >= 1 && step <= 6) {
+    if (activeContentFlowStep !== null && step >= 1 && step <= 5) {
       // Initialize state for the target step
       switch (step) {
         case 1: // Ideate
@@ -1739,16 +1822,13 @@ const Production = () => {
         case 5: // Schedule
           setSchedulingCard(latestCard!);
           break;
-        case 6: // Post/Archive
-          // No special state needed for archive view
-          break;
       }
       setContentFlowCard(latestCard!);
       setActiveContentFlowStep(step);
       return;
     }
 
-    // Legacy approach for opening from outside or for step 6 (archive)
+    // Legacy approach for opening from outside
     const performNavigation = () => {
       // Close all dialogs
       setIsIdeateCardEditorOpen(false);
@@ -4737,26 +4817,17 @@ Make each idea unique, creative, and directly tied to both the original content 
         {/* Unified Content Flow Dialog - seamless transitions between steps */}
         <ContentFlowDialog
           activeStep={activeContentFlowStep}
-          onClose={() => {
-            // Save current state before closing
-            if (activeContentFlowStep === 1 && editingIdeateCard) {
-              handleSaveIdeateCard();
-            } else if (activeContentFlowStep === 2 && editingScriptCard) {
-              handleSaveScript();
-            } else if (activeContentFlowStep === 3 && editingStoryboardCard) {
-              handleSaveStoryboard(editingStoryboardCard.storyboard || []);
-            } else if (activeContentFlowStep === 4 && editingEditCard) {
-              handleSaveEditChecklist(editingEditCard.editingChecklist || { items: [], notes: '', externalLinks: [] });
-            }
-            setActiveContentFlowStep(null);
-            setContentFlowCard(null);
-          }}
+          onClose={handleCloseContentFlowDialog}
           slideDirection={slideDirection}
         >
           {activeContentFlowStep === 1 && contentFlowCard && (
             <BrainDumpGuidanceDialog
               isOpen={true}
-              onOpenChange={() => {}}
+              onOpenChange={(open) => {
+                if (!open) {
+                  handleCloseContentFlowDialog();
+                }
+              }}
               onCancel={resetIdeateCardEditorState}
               onSave={handleSaveIdeateCard}
               onMoveToScript={handleMoveIdeateToScript}
@@ -4772,7 +4843,11 @@ Make each idea unique, creative, and directly tied to both the original content 
           {activeContentFlowStep === 2 && contentFlowCard && (
             <ScriptEditorDialog
               isOpen={true}
-              onOpenChange={() => {}}
+              onOpenChange={(open) => {
+                if (!open) {
+                  handleCloseContentFlowDialog();
+                }
+              }}
               card={contentFlowCard}
               onSave={handleSaveScript}
               cardTitle={cardTitle}
@@ -4817,7 +4892,11 @@ Make each idea unique, creative, and directly tied to both the original content 
           {activeContentFlowStep === 3 && contentFlowCard && (
             <StoryboardEditorDialog
               open={true}
-              onOpenChange={() => {}}
+              onOpenChange={(open) => {
+                if (!open) {
+                  handleCloseContentFlowDialog();
+                }
+              }}
               card={contentFlowCard}
               onSave={handleSaveStoryboard}
               onNavigateToStep={handleNavigateToStep}
@@ -4828,7 +4907,11 @@ Make each idea unique, creative, and directly tied to both the original content 
           {activeContentFlowStep === 4 && contentFlowCard && (
             <EditChecklistDialog
               isOpen={true}
-              onOpenChange={() => {}}
+              onOpenChange={(open) => {
+                if (!open) {
+                  handleCloseContentFlowDialog();
+                }
+              }}
               card={contentFlowCard}
               onSave={handleSaveEditChecklist}
               onNavigateToStep={handleNavigateToStep}
@@ -4840,10 +4923,7 @@ Make each idea unique, creative, and directly tied to both the original content 
             <ExpandedScheduleView
               embedded={true}
               singleCard={contentFlowCard}
-              onClose={() => {
-                setActiveContentFlowStep(null);
-                setContentFlowCard(null);
-              }}
+              onClose={handleCloseContentFlowDialog}
               onSchedule={handleScheduleContent}
               onUnschedule={handleUnscheduleContent}
               onUpdateColor={handleUpdateScheduledColor}
@@ -4887,18 +4967,6 @@ Make each idea unique, creative, and directly tied to both the original content 
                   });
                 });
               }}
-            />
-          )}
-          {activeContentFlowStep === 6 && (
-            <ArchiveDialog
-              isOpen={true}
-              onOpenChange={() => {}}
-              archivedCards={columns.find(col => col.id === 'archive')?.cards || []}
-              onRepurpose={handleRepurposeContent}
-              onRestore={handleRestoreContent}
-              onDelete={handleDeleteArchivedContent}
-              onNavigateToStep={handleNavigateToStep}
-              embedded={true}
             />
           )}
         </ContentFlowDialog>

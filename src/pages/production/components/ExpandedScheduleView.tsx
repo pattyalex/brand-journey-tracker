@@ -473,6 +473,60 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
     setDeleteConfirmCard({ id: cardId, element: cardElement });
   };
 
+  // Track which cards have been marked as posted (local UI state)
+  const [markedAsPostedIds, setMarkedAsPostedIds] = useState<Set<string>>(new Set());
+
+  // Mark as Posted - marks content visually and archives a copy
+  const handleMarkAsPosted = (cardId: string) => {
+    // Toggle the posted state
+    const newMarkedIds = new Set(markedAsPostedIds);
+    const isCurrentlyMarked = newMarkedIds.has(cardId);
+
+    if (isCurrentlyMarked) {
+      // Unmark - just remove from local state (don't un-archive)
+      newMarkedIds.delete(cardId);
+      setMarkedAsPostedIds(newMarkedIds);
+      return;
+    }
+
+    // Mark as posted
+    newMarkedIds.add(cardId);
+    setMarkedAsPostedIds(newMarkedIds);
+
+    // Find the card to archive - could be in columns or could be the singleCard
+    const toScheduleCol = columns.find(col => col.id === 'to-schedule');
+    let card = toScheduleCol?.cards.find(c => c.id === cardId);
+
+    // If not found in columns, check if it's the singleCard (embedded mode)
+    if (!card && singleCard && singleCard.id === cardId) {
+      card = {
+        ...singleCard,
+        schedulingStatus: 'scheduled' as const,
+        scheduledDate: scheduledDate?.toISOString().split('T')[0],
+      };
+    }
+
+    if (!card) {
+      console.log('Card not found for marking as posted:', cardId);
+      return;
+    }
+
+    // Create archive copy (but don't remove from calendar yet)
+    const archivedCopy: ProductionCard = {
+      ...card,
+      id: `archived-${card.id}-${Date.now()}`,
+      columnId: 'posted',
+      schedulingStatus: undefined,
+      archivedAt: new Date().toISOString(),
+      postedAt: new Date().toISOString(),
+    } as ProductionCard & { archivedAt: string; postedAt: string };
+
+    // Emit event to add to archive in Production.tsx
+    emit(window, EVENTS.contentArchived, { card: archivedCopy });
+
+    toast.success("Posted! 🎉");
+  };
+
   // Archive & Remove - creates archive copy then removes from calendar
   const handleArchiveAndRemove = () => {
     if (!deleteConfirmCard) return;
@@ -817,15 +871,8 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
 
   // Use toScheduleCards instead of cards
   const cards = toScheduleCards;
-  // Start collapsed in embedded single card mode (content flow)
-  const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(embedded && !!singleCard);
-
-  // Ensure collapsed state is set when entering embedded single card mode
-  useEffect(() => {
-    if (embedded && singleCard) {
-      setIsLeftPanelCollapsed(true);
-    }
-  }, [embedded, singleCard]);
+  // Start expanded in embedded single card mode (content flow) to show calendar
+  const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -863,6 +910,65 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
     return map;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cards, colorUpdateVersion, singleCardScheduled, singleCard, scheduledDate]);
+
+  // Auto-archive content when scheduled date has passed
+  useEffect(() => {
+    const now = new Date();
+    const cardsToAutoArchive: ProductionCard[] = [];
+
+    // Check all scheduled cards for past dates
+    Object.entries(scheduledCardsByDate).forEach(([dateKey, scheduledCards]) => {
+      const scheduledDate = new Date(dateKey);
+      scheduledDate.setHours(23, 59, 59, 999); // End of the scheduled day
+
+      if (scheduledDate < now) {
+        cardsToAutoArchive.push(...scheduledCards);
+      }
+    });
+
+    if (cardsToAutoArchive.length > 0) {
+      // Archive each card
+      cardsToAutoArchive.forEach(card => {
+        // Create archive copy
+        const archivedCopy: ProductionCard = {
+          ...card,
+          id: `archived-${card.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          columnId: 'posted',
+          schedulingStatus: undefined,
+          archivedAt: new Date().toISOString(),
+          postedAt: card.scheduledDate || new Date().toISOString(),
+        } as ProductionCard & { archivedAt: string; postedAt: string };
+
+        // Emit event to add to archive
+        emit(window, EVENTS.contentArchived, { card: archivedCopy });
+      });
+
+      // Remove all auto-archived cards from calendar
+      const cardIdsToRemove = new Set(cardsToAutoArchive.map(c => c.id));
+      const newColumns = columns.map(col => {
+        if (col.id === 'to-schedule') {
+          return {
+            ...col,
+            cards: col.cards.filter(c => !cardIdsToRemove.has(c.id)),
+          };
+        }
+        return col;
+      });
+
+      saveColumns(newColumns);
+      emit(window, EVENTS.productionKanbanUpdated);
+      emit(window, EVENTS.scheduledContentUpdated);
+
+      // Show toast for auto-archived content
+      if (cardsToAutoArchive.length === 1) {
+        toast.success(`"${cardsToAutoArchive[0].hook || cardsToAutoArchive[0].title}" was posted and archived 🎉`);
+      } else {
+        toast.success(`${cardsToAutoArchive.length} items were posted and archived 🎉`);
+      }
+    }
+  // Run only once on mount to avoid repeated auto-archiving
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Create a map of planned (tentative) cards from Ideate by date
   const plannedCardsByDate = useMemo(() => {
@@ -1301,21 +1407,6 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
               className="w-[400px]"
             />
           </div>
-          {/* Stop button on right */}
-          {onClose && (
-            <button
-              onClick={() => {
-                // Move card to schedule column if not yet scheduled
-                if (singleCard && !singleCardScheduled && onMoveToScheduleColumn) {
-                  onMoveToScheduleColumn(singleCard);
-                }
-                onClose();
-              }}
-              className="px-4 py-2 text-sm font-medium bg-[#612A4F] hover:bg-[#4E2240] text-white rounded-lg shadow-[0_2px_8px_rgba(97,42,79,0.3)] transition-colors flex-shrink-0"
-            >
-              Stop Here, Finish Later
-            </button>
-          )}
         </div>
       )}
       {/* Collapsed single card mode AFTER scheduling - compact confirmation in top bar */}
@@ -1967,21 +2058,6 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                   </button>
                 </div>
               </div>
-              {/* Floating right: Stop Here Button - hide when in single card collapsed mode (button is in top bar) */}
-              {onClose && !(singleCard && isLeftPanelCollapsed) && !singleCardScheduled && (
-                <button
-                  onClick={() => {
-                    // Move card to schedule column if not yet scheduled
-                    if (singleCard && onMoveToScheduleColumn) {
-                      onMoveToScheduleColumn(singleCard);
-                    }
-                    onClose();
-                  }}
-                  className="px-4 py-2 text-sm font-medium bg-[#612A4F] hover:bg-[#4E2240] text-white rounded-xl shadow-md"
-                >
-                  Stop Here, Finish Later
-                </button>
-              )}
             </div>
           )}
 
@@ -2138,17 +2214,52 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                               >
                                 {/* Title row */}
                                 <div className="flex items-start gap-1.5">
-                                  {!scheduledCard.fromCalendar && !isPublished && (
-                                    <CalendarDays className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                                  )}
-                                  <TooltipProvider>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <span className="leading-tight truncate flex-1 cursor-default">{scheduledCard.hook || scheduledCard.title || "Scheduled"}</span>
-                                      </TooltipTrigger>
-                                      <TooltipContent side="bottom" variant="light">{scheduledCard.hook || scheduledCard.title || "Scheduled"}</TooltipContent>
-                                    </Tooltip>
-                                  </TooltipProvider>
+                                  {/* Mark as Posted checkbox */}
+                                  {(() => {
+                                    const isMarkedPosted = markedAsPostedIds.has(scheduledCard.id);
+                                    return (
+                                      <TooltipProvider>
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <button
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleMarkAsPosted(scheduledCard.id);
+                                              }}
+                                              className={cn(
+                                                "w-4 h-4 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center transition-colors",
+                                                isMarkedPosted
+                                                  ? "bg-green-500 border-green-500 text-white"
+                                                  : "border-current hover:bg-white/30 group/check"
+                                              )}
+                                            >
+                                              <Check className={cn(
+                                                "w-2.5 h-2.5 transition-opacity",
+                                                isMarkedPosted ? "opacity-100" : "opacity-0 group-hover/check:opacity-100"
+                                              )} />
+                                            </button>
+                                          </TooltipTrigger>
+                                          <TooltipContent side="top">{isMarkedPosted ? "Marked as posted" : "Mark as posted"}</TooltipContent>
+                                        </Tooltip>
+                                      </TooltipProvider>
+                                    );
+                                  })()}
+                                  {(() => {
+                                    const isMarkedPosted = markedAsPostedIds.has(scheduledCard.id);
+                                    return (
+                                      <TooltipProvider>
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <span className={cn(
+                                              "leading-tight truncate flex-1 cursor-default",
+                                              isMarkedPosted && "line-through opacity-60"
+                                            )}>{scheduledCard.hook || scheduledCard.title || "Scheduled"}</span>
+                                          </TooltipTrigger>
+                                          <TooltipContent side="bottom" variant="light">{scheduledCard.hook || scheduledCard.title || "Scheduled"}</TooltipContent>
+                                        </Tooltip>
+                                      </TooltipProvider>
+                                    );
+                                  })()}
                                   {/* Posted button - only for past dates */}
                                   {isPublished && (
                                     <TooltipProvider>
@@ -2803,6 +2914,16 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   if (embedded) {
     return (
       <>
+        {/* Close Button */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors z-10"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
+
         <div
           className={cn(
             "flex flex-col h-full flex-1 overflow-hidden",

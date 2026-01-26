@@ -45,6 +45,7 @@ import {
   Wrench,
   CheckCircle2,
   SquarePen,
+  ArrowRight,
 } from "lucide-react";
 import { ProductionCard, StoryboardScene } from "../types";
 import { shotTemplates, getShotTemplateById, ShotTemplate } from "../utils/shotTemplates";
@@ -756,6 +757,14 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
 
   const dialogContent = (
     <>
+      {/* Close Button */}
+      <button
+        onClick={() => onOpenChange(false)}
+        className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors z-10"
+      >
+        <X className="w-5 h-5" />
+      </button>
+
       {/* Step Progress Row - Centered */}
       <div className="flex justify-center pt-4 pb-2 bg-transparent">
         <ContentFlowProgress currentStep={3} className="w-[550px]" onStepClick={handleNavigateWithSave} />
@@ -800,17 +809,13 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                     Regenerate
                   </Button>
                 )}
-                <motion.div
-                  animate={shakeButton ? { x: [0, -8, 8, -8, 8, 0], scale: [1, 1.02, 1.02, 1.02, 1.02, 1] } : {}}
-                  transition={{ duration: 0.5 }}
+                <Button
+                  size="sm"
+                  onClick={() => handleNavigateWithSave(4)}
+                  className="bg-[#612A4F] hover:bg-[#4A1F3D] text-white text-xs"
                 >
-                  <Button
-                    onClick={() => handleClose(false)}
-                    className="bg-[#612A4F] hover:bg-[#4E2240] text-white rounded-lg shadow-sm h-9 px-4"
-                  >
-                    Stop Here, Finish Later
-                  </Button>
-                </motion.div>
+                  Move to Edit <ArrowRight className="w-3 h-3 ml-1" />
+                </Button>
               </div>
             </div>
           </div>

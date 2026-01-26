@@ -27,7 +27,6 @@ const ContentFlowDialog: React.FC<ContentFlowDialogProps> = ({
     3: "bg-gradient-to-br from-[#FFF9EE] via-white to-[#FFF9EE]/30", // Film - warm amber
     4: "bg-gradient-to-br from-[#F5EEF2] via-white to-[#F5EEF2]/30", // Edit - pink
     5: "bg-gradient-to-br from-[#E5E8F4] via-white to-[#E5E8F4]", // Schedule - lilac
-    6: "bg-gradient-to-br from-emerald-50 via-white to-green-50", // Post/Archive - green
   };
 
   // Different max widths for different steps
@@ -37,12 +36,11 @@ const ContentFlowDialog: React.FC<ContentFlowDialogProps> = ({
     3: "sm:max-w-[1100px]",  // Film (Storyboard needs more width)
     4: "sm:max-w-[950px]",   // Edit
     5: "sm:max-w-[1200px]",  // Schedule (needs more width for calendar)
-    6: "sm:max-w-[900px]",   // Post/Archive
   };
 
   const slideVariants = {
     enter: (direction: 'left' | 'right') => ({
-      x: direction === 'left' ? 100 : -100,
+      x: direction === 'left' ? 150 : -150,
       opacity: 0,
     }),
     center: {
@@ -50,7 +48,7 @@ const ContentFlowDialog: React.FC<ContentFlowDialogProps> = ({
       opacity: 1,
     },
     exit: (direction: 'left' | 'right') => ({
-      x: direction === 'left' ? -100 : 100,
+      x: direction === 'left' ? -150 : 150,
       opacity: 0,
     }),
   };

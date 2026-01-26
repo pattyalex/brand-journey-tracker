@@ -13,11 +13,10 @@ const CONTENT_FLOW_STEPS: Step[] = [
   { label: "Film", shortLabel: "Film" },
   { label: "To Edit", shortLabel: "Edit" },
   { label: "To Schedule", shortLabel: "Schedule" },
-  { label: "Post", shortLabel: "Post" },
 ];
 
 interface ContentFlowProgressProps {
-  currentStep: 1 | 2 | 3 | 4 | 5 | 6;
+  currentStep: 1 | 2 | 3 | 4 | 5;
   allCompleted?: boolean;
   className?: string;
   onStepClick?: (step: number) => void;
@@ -45,7 +44,7 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
               ? 'calc(100% - 3rem)'
               : currentStep === 1
                 ? '0%'
-                : `calc(${((currentStep - 1) / 5) * 100}% - ${(currentStep - 1) * 0.5}rem)`
+                : `calc(${((currentStep - 1) / 4) * 100}% - ${(currentStep - 1) * 0.5}rem)`
           }}
         />
 

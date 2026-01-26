@@ -262,23 +262,49 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   // Content that's shared between embedded and standalone modes
   const dialogContent = (
     <>
+      {/* Close Button */}
+      <button
+        onClick={() => onOpenChange(false)}
+        className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors z-10"
+      >
+        <X className="w-5 h-5" />
+      </button>
+
       {/* Step Progress Indicator - Centered */}
-      <div className="flex justify-center pt-2 pb-0 flex-shrink-0">
+      <div className="flex justify-center pt-2 pb-12 flex-shrink-0">
         <ContentFlowProgress currentStep={2} className="w-[550px]" onStepClick={onNavigateToStep} />
       </div>
-      <div className="flex-1 overflow-y-auto px-6 -mt-1 pb-1 space-y-2">
-        {/* Title Section */}
-        <div className="border-b border-gray-200 pb-1 mb-3">
-          <input
-            ref={titleInputRef}
-            type="text"
-            value={cardTitle}
-            onChange={(e) => setCardTitle(e.target.value)}
-            tabIndex={-1}
-            autoComplete="off"
-            placeholder="Enter content title..."
-            className="w-full px-0 py-1 text-xl font-semibold bg-transparent border-0 focus:outline-none focus:ring-0 placeholder:text-[#A0A0A0]"
-          />
+      <div className="flex-1 overflow-y-auto px-6 -mt-1 pb-1">
+        {/* Title Section + Move to Film Button */}
+        <div className="flex items-center gap-4 border-b border-gray-200 pb-2 mb-16">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <input
+                  ref={titleInputRef}
+                  type="text"
+                  value={cardTitle}
+                  onChange={(e) => setCardTitle(e.target.value)}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  placeholder="Enter content title..."
+                  className="w-2/3 px-0 py-1 text-xl font-semibold bg-transparent border-0 focus:outline-none focus:ring-0 placeholder:text-[#A0A0A0] truncate"
+                />
+              </TooltipTrigger>
+              {cardTitle && cardTitle.length > 30 && (
+                <TooltipContent side="bottom" className="max-w-md">
+                  {cardTitle}
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
+          <Button
+            size="sm"
+            onClick={() => onNavigateToStep?.(3)}
+            className="bg-[#612A4F] hover:bg-[#4A1F3D] text-white flex-shrink-0 ml-auto text-xs"
+          >
+            Move to Film <ArrowRight className="w-3 h-3 ml-1" />
+          </Button>
         </div>
 
         {/* Two Column Layout */}
@@ -373,7 +399,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.2 }}
-                className="absolute top-8 right-0 w-[300px] z-30 flex flex-col h-[480px] bg-gradient-to-b from-[#F8F6F9] to-white rounded-xl border border-[#E5E0E8] shadow-xl overflow-hidden"
+                className="absolute -top-4 right-0 w-[300px] z-30 flex flex-col h-[420px] bg-gradient-to-b from-[#F8F6F9] to-white rounded-xl border border-[#E5E0E8] shadow-xl overflow-hidden"
               >
                 {/* Chat Header */}
                 <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[#612A4F] to-[#8B7082] text-white">
@@ -881,21 +907,6 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
 
           </div>
         </div>
-      </div>
-
-      {/* Fixed Footer with Action Buttons */}
-      <div className="flex-shrink-0 px-6 pt-3 pb-0 border-t border-gray-200 bg-white flex justify-end">
-        <motion.div
-          animate={shakeButton ? { x: [0, -8, 8, -8, 8, 0], scale: [1, 1.02, 1.02, 1.02, 1.02, 1] } : {}}
-          transition={{ duration: 0.5 }}
-        >
-          <Button
-            onClick={onSave}
-            className="px-6 bg-[#612A4F] hover:bg-[#4E2240] text-white shadow-[0_2px_8px_rgba(97,42,79,0.3)]"
-          >
-            Stop Here, Finish Later
-          </Button>
-        </motion.div>
       </div>
     </>
   );

@@ -23,6 +23,8 @@ import {
   Check,
   Sparkles,
   MessageSquare,
+  ArrowRight,
+  X,
 } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
@@ -218,6 +220,14 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
 
   const dialogContent = (
     <>
+      {/* Close Button */}
+      <button
+        onClick={() => onOpenChange(false)}
+        className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors z-10"
+      >
+        <X className="w-5 h-5" />
+      </button>
+
       {/* Step Progress Indicator */}
       <ContentFlowProgress
         currentStep={4}
@@ -235,11 +245,18 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
             </h3>
           </div>
           {/* Checklist Header */}
-          <div className="flex-1 px-4 py-3 bg-transparent flex items-center">
+          <div className="flex-1 px-4 py-3 bg-transparent flex items-center justify-between">
             <h3 className="font-semibold text-[#612A4F] flex items-center gap-2 text-base">
               <CheckSquare className="w-5 h-5" />
               Editing Checklist
             </h3>
+            <Button
+              size="sm"
+              onClick={() => handleNavigateWithSave(5)}
+              className="bg-[#612A4F] hover:bg-[#4A1F3D] text-white text-xs"
+            >
+              Move to Schedule <ArrowRight className="w-3 h-3 ml-1" />
+            </Button>
           </div>
         </div>
 
@@ -605,21 +622,6 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
               />
             </div>
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="flex justify-end px-6 py-4 bg-white border-t border-gray-100">
-          <motion.div
-            animate={shakeButton ? { x: [0, -8, 8, -8, 8, 0], scale: [1, 1.02, 1.02, 1.02, 1.02, 1] } : {}}
-            transition={{ duration: 0.5 }}
-          >
-            <Button
-              onClick={handleSave}
-              className="bg-[#612A4F] hover:bg-[#4E2240] text-white rounded-lg shadow-sm h-9 px-4"
-            >
-              Stop Here, Finish Later
-            </Button>
-          </motion.div>
         </div>
     </>
   );
