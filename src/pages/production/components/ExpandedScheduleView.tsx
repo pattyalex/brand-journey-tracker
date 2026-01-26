@@ -127,6 +127,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   const [displayedMonth, setDisplayedMonth] = useState(new Date().getMonth());
   const [displayedYear, setDisplayedYear] = useState(new Date().getFullYear());
   const calendarScrollRef = useRef<HTMLDivElement>(null);
+  const todayRef = useRef<HTMLDivElement>(null);
   const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
   const [draggedPlannedCardId, setDraggedPlannedCardId] = useState<string | null>(null);
   const [dragOverDate, setDragOverDate] = useState<string | null>(null);
@@ -176,6 +177,16 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
       setPendingPlanDate(null);
     }
   }, [planningCard?.id, planningCard?.plannedDate]);
+
+  // Scroll to today's date when calendar opens
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (todayRef.current && calendarScrollRef.current) {
+        todayRef.current.scrollIntoView({ behavior: 'auto', block: 'center' });
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [embedded]);
 
   const isResizing = useRef(false);
   const resizeStart = useRef({ x: 0, y: 0, width: 450, height: 500 });
@@ -1161,35 +1172,38 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
     setDraggedCardId(cardId);
     e.dataTransfer.effectAllowed = 'move';
 
-    // Create a compact drag image for single card mode
-    if (singleCard && cardId === singleCard.id) {
-      const dragPreview = document.createElement('div');
-      dragPreview.style.cssText = `
-        position: absolute;
-        top: -1000px;
-        left: -1000px;
-        padding: 8px 12px;
-        background: white;
-        border: 2px solid #8B7082;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        font-size: 12px;
-        font-weight: 600;
-        color: #333;
-        max-width: 150px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      `;
-      dragPreview.textContent = singleCard.hook || singleCard.title || "Content";
-      document.body.appendChild(dragPreview);
-      e.dataTransfer.setDragImage(dragPreview, 75, 20);
+    // Find the card being dragged
+    const draggedCard = singleCard?.id === cardId
+      ? singleCard
+      : cards?.find(c => c.id === cardId);
 
-      // Clean up after drag starts
-      setTimeout(() => {
-        document.body.removeChild(dragPreview);
-      }, 0);
-    }
+    // Create a compact drag image for all cards
+    const dragPreview = document.createElement('div');
+    dragPreview.style.cssText = `
+      position: absolute;
+      top: -1000px;
+      left: -1000px;
+      padding: 6px 10px;
+      background: white;
+      border: 2px solid #8B7082;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      font-size: 11px;
+      font-weight: 600;
+      color: #333;
+      max-width: 120px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    `;
+    dragPreview.textContent = draggedCard?.hook || draggedCard?.title || "Content";
+    document.body.appendChild(dragPreview);
+    e.dataTransfer.setDragImage(dragPreview, 60, 15);
+
+    // Clean up after drag starts
+    setTimeout(() => {
+      document.body.removeChild(dragPreview);
+    }, 0);
   };
 
   const handleDragEnd = () => {
@@ -1375,7 +1389,16 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
 
   // Content component - shared between modal and embedded modes
   const content = (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden relative">
+      {/* Expand button when collapsed - positioned at left edge, vertically centered */}
+      {singleCard && isLeftPanelCollapsed && (
+        <button
+          onClick={() => setIsLeftPanelCollapsed(false)}
+          className="absolute left-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-30 p-1.5 bg-white/80 hover:bg-white shadow-md rounded-lg border border-gray-200 transition-colors"
+        >
+          <ChevronRight className="w-5 h-5 text-[#612A4F]" strokeWidth={2.5} />
+        </button>
+      )}
       {/* Collapsed single card mode - card on left, stepper in middle, button on right */}
       {!planningMode && singleCard && isLeftPanelCollapsed && !singleCardScheduled && (
         <div className="flex items-center gap-4 px-4 py-3 border-b border-gray-100 flex-shrink-0">
@@ -1407,6 +1430,16 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
               className="w-[400px]"
             />
           </div>
+          {/* Batch Schedule link */}
+          <button
+            onClick={() => {
+              if (onClose) onClose();
+              emit(window, EVENTS.OPEN_BATCH_SCHEDULE);
+            }}
+            className="text-sm text-[#8B7082] underline hover:text-[#612A4F] transition-colors flex-shrink-0"
+          >
+            Batch Schedule
+          </button>
         </div>
       )}
       {/* Collapsed single card mode AFTER scheduling - compact confirmation in top bar */}
@@ -1475,9 +1508,8 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
         <div
           className={cn(
             "border-r flex flex-col min-h-0 transition-all duration-300 relative",
-            embedded && !singleCard ? "border-violet-100 bg-violet-50/40" : "border-transparent",
-            dragOverUnschedule && singleCardScheduled && "bg-gradient-to-br from-amber-50 to-amber-100",
-            dragOverUnschedule && !singleCardScheduled && "bg-indigo-200 ring-2 ring-inset ring-indigo-400"
+            embedded && !singleCard && !dragOverUnschedule ? "border-violet-100 bg-violet-50/40" : "border-transparent",
+            dragOverUnschedule && "bg-gradient-to-br from-amber-100 to-amber-200 border-amber-300 rounded-tl-2xl"
           )}
           onDragOver={(e) => {
             e.preventDefault();
@@ -1721,16 +1753,23 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                 <div className="flex flex-col items-center justify-center h-full pb-8 px-4">
                   {dragOverUnschedule ? (
                     // Show drop indicator when dragging over
-                    <div className="text-center">
+                    <div className="flex flex-col items-center justify-center flex-1 text-center px-4">
                       <motion.div
                         initial={{ scale: 0.8 }}
                         animate={{ scale: 1 }}
                         transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                        className="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-200 to-amber-300 flex items-center justify-center mb-4 mx-auto shadow-lg border-2 border-dashed border-amber-400"
+                        className="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-300 to-amber-400 flex items-center justify-center mb-4 shadow-lg"
                       >
                         <CalendarDays className="w-10 h-10 text-amber-700" />
                       </motion.div>
-                      <h3 className="text-lg font-bold text-amber-700">Drop to unschedule</h3>
+                      <h3 className="text-lg font-bold text-amber-700 mb-2">Drop to unschedule</h3>
+                      <p className="text-sm text-amber-600 leading-relaxed">
+                        This content will move to<br />
+                        <span className="font-semibold">"To Schedule"</span> column
+                      </p>
+                      <p className="text-xs text-amber-500 mt-2">
+                        Find it in Batch Schedule or its own dialog
+                      </p>
                     </div>
                   ) : (
                     <>
@@ -1776,6 +1815,26 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                       </motion.button>
                     </>
                   )}
+                </div>
+              ) : dragOverUnschedule ? (
+                // Yellow drop zone when dragging another scheduled card over
+                <div className="flex flex-col items-center justify-center flex-1 text-center px-4">
+                  <motion.div
+                    initial={{ scale: 0.8 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-300 to-amber-400 flex items-center justify-center mb-4 shadow-lg"
+                  >
+                    <CalendarDays className="w-10 h-10 text-amber-700" />
+                  </motion.div>
+                  <h3 className="text-lg font-bold text-amber-700 mb-2">Drop to unschedule</h3>
+                  <p className="text-sm text-amber-600 leading-relaxed">
+                    This content will move to<br />
+                    <span className="font-semibold">"To Schedule"</span> column
+                  </p>
+                  <p className="text-sm text-amber-700 mt-5 font-medium">
+                    Reschedule via <span className="font-bold">Batch Schedule</span> or by clicking on the card
+                  </p>
                 </div>
               ) : (
                 // Card to schedule
@@ -1838,22 +1897,50 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                     <CalendarDays className="w-4 h-4" />
                     <span className="italic">Drag to a date on the calendar</span>
                   </div>
+
+                  {/* Batch Schedule link */}
+                  <div className="!mt-32 pt-16 text-center">
+                    <button
+                      onClick={() => {
+                        if (onClose) onClose();
+                        emit(window, EVENTS.OPEN_BATCH_SCHEDULE);
+                      }}
+                      className="text-sm text-[#8B7082] underline hover:text-[#612A4F] transition-colors"
+                    >
+                      Batch Schedule
+                    </button>
+                  </div>
                 </div>
               )
             ) : (
             <div className="space-y-2">
-              {unscheduledCards.length === 0 && !dragOverUnschedule ? (
+              {/* Yellow drop zone when dragging a scheduled card over */}
+              {dragOverUnschedule ? (
+                <div className="flex flex-col items-center justify-center py-12 flex-1 text-center px-4">
+                  <motion.div
+                    initial={{ scale: 0.8 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-300 to-amber-400 flex items-center justify-center mb-4 shadow-lg"
+                  >
+                    <CalendarDays className="w-10 h-10 text-amber-700" />
+                  </motion.div>
+                  <h3 className="text-lg font-bold text-amber-700 mb-2">Drop to unschedule</h3>
+                  <p className="text-sm text-amber-600 leading-relaxed">
+                    This content will move to<br />
+                    <span className="font-semibold">"To Schedule"</span> column
+                  </p>
+                  <p className="text-sm text-amber-700 mt-5 font-medium">
+                    Reschedule via <span className="font-bold">Batch Schedule</span> or by clicking on the card
+                  </p>
+                </div>
+              ) : unscheduledCards.length === 0 ? (
                 <div className="text-center py-8 text-gray-400">
                   <CalendarDays className="w-10 h-10 mx-auto mb-3 opacity-50" />
                   <p className="text-sm font-medium">No content to schedule</p>
                   <p className="text-xs mt-1 leading-relaxed px-2">
                     Drag cards into the "To Schedule" column<br />to add content here
                   </p>
-                </div>
-              ) : unscheduledCards.length === 0 && dragOverUnschedule ? (
-                <div className="text-center py-8 text-indigo-500">
-                  <CalendarDays className="w-10 h-10 mx-auto mb-3" />
-                  <p className="text-sm font-medium">Drop here to unschedule</p>
                 </div>
               ) : (
                 unscheduledCards.map((c) => {
@@ -2109,6 +2196,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                   >
                     <PopoverTrigger asChild>
                       <div
+                        ref={day.isToday ? todayRef : undefined}
                         data-calendar-date={dateStr}
                         onDragOver={(e) => handleDragOver(e, dateStr)}
                         onDragLeave={handleDragLeave}

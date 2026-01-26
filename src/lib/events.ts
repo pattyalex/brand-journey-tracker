@@ -6,6 +6,7 @@ export const EVENTS = {
   productionKanbanUpdated: 'productionKanbanUpdated',
   openArchiveDialog: 'openArchiveDialog',
   contentArchived: 'contentArchived',
+  OPEN_BATCH_SCHEDULE: 'openBatchSchedule',
 } as const;
 
 type EventName = (typeof EVENTS)[keyof typeof EVENTS];

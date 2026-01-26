@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -162,6 +162,14 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   const [megAIMessages, setMegAIMessages] = useState<{role: 'user' | 'assistant', content: string}[]>([]);
   const [megAIInput, setMegAIInput] = useState("");
   const [isAILoading, setIsAILoading] = useState(false);
+  const chatMessagesRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    if (chatMessagesRef.current) {
+      chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
+    }
+  }, [megAIMessages, isAILoading]);
 
   const getSystemPrompt = () => `You are MegAI, a helpful script writing assistant for social media content creators. You help improve scripts, suggest hooks, make content more engaging, and provide actionable feedback.
 
@@ -554,7 +562,7 @@ Guidelines:
                     </div>
                     <div>
                       <h3 className="text-sm font-semibold">Ask MegAI</h3>
-                      <p className="text-[10px] text-white/70">Your script assistant</p>
+                      <p className="text-[10px] text-white/70">Your content assistant</p>
                     </div>
                   </div>
                   <button
@@ -566,7 +574,7 @@ Guidelines:
                 </div>
 
                 {/* Chat Messages */}
-                <div className="flex-1 overflow-y-auto p-3 space-y-3">
+                <div ref={chatMessagesRef} className="flex-1 overflow-y-auto p-3 space-y-3">
                   {megAIMessages.length === 0 && (
                     <div className="text-center py-6 px-2">
                       <div className="w-12 h-12 rounded-full bg-[#612A4F]/10 flex items-center justify-center mx-auto mb-3">
@@ -575,7 +583,7 @@ Guidelines:
                       <p className="text-base font-medium text-gray-700 mb-1">How can I help?</p>
                       <p className="text-sm text-gray-500 mb-4">Ask me to improve your script, suggest hooks, or make it more engaging.</p>
                       <div className="space-y-2">
-                        {["Make it more engaging", "Suggest a hook", "Make it shorter"].map((suggestion) => (
+                        {["Make it more engaging", "Make it shorter"].map((suggestion) => (
                           <button
                             key={suggestion}
                             onClick={() => handleMegAISend(suggestion)}
@@ -584,6 +592,12 @@ Guidelines:
                             {suggestion}
                           </button>
                         ))}
+                        <button
+                          onClick={() => setMegAIInput("Write a script about ")}
+                          className="block w-full text-left px-3 py-2.5 text-sm bg-white border border-gray-200 rounded-lg hover:border-[#612A4F] hover:bg-[#612A4F]/5 transition-colors"
+                        >
+                          Write a script about...
+                        </button>
                       </div>
                     </div>
                   )}

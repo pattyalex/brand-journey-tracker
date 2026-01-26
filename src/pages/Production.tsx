@@ -381,6 +381,14 @@ const Production = () => {
     return cleanup;
   }, []);
 
+  // Listen for openBatchSchedule event from schedule dialog
+  useEffect(() => {
+    const cleanup = on(window, EVENTS.OPEN_BATCH_SCHEDULE, () => {
+      setIsScheduleColumnExpanded(true);
+    });
+    return cleanup;
+  }, []);
+
   // Save archived cards to localStorage when they change
   useEffect(() => {
     setString(StorageKeys.archivedContent, JSON.stringify(archivedCards));
@@ -2880,15 +2888,15 @@ const Production = () => {
                         </div>
                       ) : null}
 
-                      {/* See Content Calendar button - only for to-schedule column */}
+                      {/* Batch Schedule button - only for to-schedule column */}
                       {column.id === 'to-schedule' && (
                         <div
-                          className="group/btn px-4 py-2 rounded-full border border-dashed hover:border-solid transition-all duration-200 cursor-pointer w-fit hover:scale-105 active:scale-95 bg-[#F5F2F4] hover:bg-[#EBE7E9] border-[#DDD6DA]"
+                          className="group/btn px-4 py-2.5 rounded-xl transition-all duration-200 cursor-pointer w-full hover:-translate-y-0.5 active:scale-[0.98] bg-[#8B7082] hover:bg-[#7A6272] shadow-sm hover:shadow-md"
                           onClick={() => setIsScheduleColumnExpanded(true)}
                         >
-                          <div className="flex items-center gap-2 text-[#8B7082]">
+                          <div className="flex items-center justify-center gap-2 text-white">
                             <CalendarDays className="h-4 w-4" />
-                            <span className="text-sm font-semibold">Schedule in Content Calendar</span>
+                            <span className="text-sm font-semibold">Batch Schedule</span>
                           </div>
                         </div>
                       )}
