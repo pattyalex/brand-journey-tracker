@@ -20,9 +20,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { getFormatColors, getPlatformColors } from "../utils/productionHelpers";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
-import { MoreHorizontal, Video, Camera, ChevronDown, X, Circle, Wrench, CheckCircle2, MapPin, Shirt, Boxes, NotebookPen, PenLine, Check, Plus, ArrowRight, ArrowDown, Sparkles, Send, Bot, User } from "lucide-react";
+import { MoreHorizontal, Video, Camera, ChevronDown, X, Circle, Wrench, CheckCircle2, MapPin, Shirt, Boxes, NotebookPen, PenLine, Check, Plus, ArrowRight, ArrowDown, Sparkles, Send, Bot, User, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { StorageKeys, getString } from "@/lib/storage";
+import { toast } from "sonner";
 
 // Helper to get platform icon
 const getPlatformIcon = (platform: string): React.ReactNode => {
@@ -161,40 +163,178 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   const [megAIInput, setMegAIInput] = useState("");
   const [isAILoading, setIsAILoading] = useState(false);
 
-  const handleMegAISend = async () => {
-    if (!megAIInput.trim() || isAILoading) return;
+  const getSystemPrompt = () => `You are MegAI, a helpful script writing assistant for social media content creators. You help improve scripts, suggest hooks, make content more engaging, and provide actionable feedback.
 
-    const userMessage = megAIInput.trim();
-    setMegAIMessages(prev => [...prev, { role: 'user', content: userMessage }]);
-    setMegAIInput("");
-    setIsAILoading(true);
+${scriptContent ? `The user is working on a script titled "${cardTitle || 'Untitled'}":
+---
+${scriptContent}
+---` : `The user is starting a new script${cardTitle ? ` titled "${cardTitle}"` : ''}.`}
 
-    // Simulate AI response (replace with actual API call)
-    setTimeout(() => {
-      const context = scriptContent ? `Based on your current script: "${scriptContent.substring(0, 200)}..."` : "I see you're starting fresh.";
-      const aiResponse = generateMegAIResponse(userMessage, context, cardTitle);
-      setMegAIMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
-      setIsAILoading(false);
-    }, 1000);
+${platformTags.length > 0 ? `Target platforms: ${platformTags.join(', ')}` : ''}
+${formatTags.length > 0 ? `Content format: ${formatTags.join(', ')}` : ''}
+
+Guidelines:
+- SKIP introductions like "I'll help you..." or "Here's a..." - go STRAIGHT to the content
+- Give specific, actionable suggestions based on the actual script content
+- When asked to rewrite or improve, provide the actual improved text immediately
+- Keep responses concise and direct
+- Use bullet points for multiple suggestions
+- If suggesting a hook, provide 2-3 specific options they can use right away
+- Match the tone and style of their existing content
+- Never use filler phrases - be direct and get to the point`;
+
+  const callClaude = async (userMessage: string): Promise<string> => {
+    const apiKey = getString(StorageKeys.anthropicApiKey);
+
+    if (!apiKey) {
+      return "⚠️ Claude API key not configured. Please add your Anthropic API key in Settings.";
+    }
+
+    const systemPrompt = getSystemPrompt();
+
+    try {
+      const conversationHistory = megAIMessages.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+
+      conversationHistory.push({
+        role: "user" as const,
+        content: userMessage
+      });
+
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true"
+        },
+        body: JSON.stringify({
+          model: "claude-3-5-haiku-20241022",
+          max_tokens: 800,
+          system: systemPrompt,
+          messages: conversationHistory
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Claude API error:", data);
+        const errorMessage = data.error?.message || "Unknown error";
+
+        if (errorMessage.includes("invalid") && errorMessage.includes("key")) {
+          return "⚠️ Invalid API key. Please check your Anthropic API key in Settings.";
+        }
+        if (errorMessage.includes("credit") || errorMessage.includes("billing")) {
+          return "⚠️ Your Anthropic account needs credits. Please add a payment method at console.anthropic.com";
+        }
+        return `⚠️ Claude Error: ${errorMessage}`;
+      }
+
+      return data.content[0].text;
+    } catch (error) {
+      console.error("Error calling Claude API:", error);
+      return `Sorry, I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`;
+    }
   };
 
-  const generateMegAIResponse = (query: string, context: string, title: string): string => {
-    const lowerQuery = query.toLowerCase();
+  const callOpenAI = async (userMessage: string): Promise<string> => {
+    const apiKey = getString(StorageKeys.openaiApiKey);
 
-    if (lowerQuery.includes('hook') || lowerQuery.includes('opening')) {
-      return `Here are some hook ideas for "${title}":\n\n1. "You won't believe what happens when..."\n2. "Stop scrolling if you've ever..."\n3. "The secret nobody talks about..."\n\nWould you like me to make these more specific to your content?`;
-    }
-    if (lowerQuery.includes('shorter') || lowerQuery.includes('concise')) {
-      return `I'd suggest trimming your script to focus on:\n\n• One main point per sentence\n• Cut filler words like "actually", "basically"\n• Use punchy, direct language\n\nWant me to help rewrite a specific section?`;
-    }
-    if (lowerQuery.includes('engaging') || lowerQuery.includes('interesting')) {
-      return `To make your content more engaging:\n\n• Start with a question or bold statement\n• Add personal anecdotes\n• Use "you" language to connect with viewers\n• Include a clear call-to-action\n\nShall I suggest specific improvements?`;
-    }
-    if (lowerQuery.includes('help') || lowerQuery.includes('improve')) {
-      return `I can help you with:\n\n• Writing compelling hooks\n• Making your script more concise\n• Adding engaging elements\n• Structuring your talking points\n• Tailoring content for specific platforms\n\nWhat would you like to focus on?`;
+    if (!apiKey) {
+      return "⚠️ OpenAI API key not configured. Please add your API key in Settings to enable AI assistance.";
     }
 
-    return `Great question! ${context}\n\nFor "${title}", I'd suggest focusing on clarity and engagement. Would you like specific suggestions for your hook, main points, or call-to-action?`;
+    const systemPrompt = getSystemPrompt();
+
+    try {
+      const conversationHistory = megAIMessages.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+
+      conversationHistory.push({
+        role: "user" as const,
+        content: userMessage
+      });
+
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: systemPrompt },
+            ...conversationHistory
+          ],
+          temperature: 0.7,
+          max_tokens: 800
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("OpenAI API error:", data);
+        const errorMessage = data.error?.message || "Unknown error";
+        const errorCode = data.error?.code || "";
+
+        if (errorCode === "invalid_api_key") {
+          return "⚠️ Invalid API key. Please check your OpenAI API key in Settings.";
+        }
+        if (errorCode === "insufficient_quota" || errorMessage.includes("quota")) {
+          return "⚠️ Your OpenAI account has no credits. Please add a payment method at platform.openai.com/account/billing";
+        }
+        if (errorCode === "rate_limit_exceeded") {
+          return "⚠️ Rate limit exceeded. Please wait a moment and try again.";
+        }
+        return `⚠️ OpenAI Error: ${errorMessage}`;
+      }
+
+      return data.choices[0].message.content;
+    } catch (error) {
+      console.error("Error calling OpenAI API:", error);
+      return `Sorry, I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`;
+    }
+  };
+
+  const callAI = async (userMessage: string): Promise<string> => {
+    // Try Claude first if key is set, otherwise use OpenAI
+    const anthropicKey = getString(StorageKeys.anthropicApiKey);
+    const openaiKey = getString(StorageKeys.openaiApiKey);
+
+    if (anthropicKey) {
+      return callClaude(userMessage);
+    } else if (openaiKey) {
+      return callOpenAI(userMessage);
+    } else {
+      return "⚠️ No API key configured. Please add your Claude or OpenAI API key in Settings.";
+    }
+  };
+
+  const handleMegAISend = async (directMessage?: string) => {
+    const messageToSend = directMessage || megAIInput.trim();
+    if (!messageToSend || isAILoading) return;
+
+    setMegAIMessages(prev => [...prev, { role: 'user', content: messageToSend }]);
+    if (!directMessage) setMegAIInput("");
+    setIsAILoading(true);
+
+    try {
+      const aiResponse = await callAI(messageToSend);
+      setMegAIMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
+    } catch (error) {
+      console.error("MegAI error:", error);
+      toast.error("Failed to get AI response");
+    } finally {
+      setIsAILoading(false);
+    }
   };
 
   const applyAISuggestion = (suggestion: string) => {
@@ -261,7 +401,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
 
   // Content that's shared between embedded and standalone modes
   const dialogContent = (
-    <>
+    <div onClick={() => isMegAIOpen && setIsMegAIOpen(false)} className="flex flex-col h-full">
       {/* Close Button */}
       <button
         onClick={() => onOpenChange(false)}
@@ -364,6 +504,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
               <Textarea
                 value={scriptContent}
                 onChange={(e) => setScriptContent(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
                 placeholder="Write your script here..."
                 className="min-h-[400px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#612A4F] focus:border-[#612A4F] transition-all text-sm leading-relaxed bg-white placeholder:text-gray-400 shadow-[0_1px_3px_rgba(0,0,0,0.06)] pr-12"
               />
@@ -399,10 +540,14 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.2 }}
-                className="absolute -top-4 right-0 w-[300px] z-30 flex flex-col h-[420px] bg-gradient-to-b from-[#F8F6F9] to-white rounded-xl border border-[#E5E0E8] shadow-xl overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+                className="fixed bottom-6 right-0 w-[380px] z-[100] flex flex-col h-[550px] bg-gradient-to-b from-[#F8F6F9] to-white rounded-xl border border-[#E5E0E8] shadow-2xl overflow-hidden"
               >
                 {/* Chat Header */}
-                <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[#612A4F] to-[#8B7082] text-white">
+                <div
+                  onClick={() => setIsMegAIOpen(false)}
+                  className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[#612A4F] to-[#8B7082] text-white cursor-pointer"
+                >
                   <div className="flex items-center gap-2">
                     <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
                       <Sparkles className="w-4 h-4" />
@@ -427,17 +572,14 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                       <div className="w-12 h-12 rounded-full bg-[#612A4F]/10 flex items-center justify-center mx-auto mb-3">
                         <Bot className="w-6 h-6 text-[#612A4F]" />
                       </div>
-                      <p className="text-sm font-medium text-gray-700 mb-1">How can I help?</p>
-                      <p className="text-xs text-gray-500 mb-4">Ask me to improve your script, suggest hooks, or make it more engaging.</p>
+                      <p className="text-base font-medium text-gray-700 mb-1">How can I help?</p>
+                      <p className="text-sm text-gray-500 mb-4">Ask me to improve your script, suggest hooks, or make it more engaging.</p>
                       <div className="space-y-2">
                         {["Make it more engaging", "Suggest a hook", "Make it shorter"].map((suggestion) => (
                           <button
                             key={suggestion}
-                            onClick={() => {
-                              setMegAIInput(suggestion);
-                              setTimeout(() => handleMegAISend(), 100);
-                            }}
-                            className="block w-full text-left px-3 py-2 text-xs bg-white border border-gray-200 rounded-lg hover:border-[#612A4F] hover:bg-[#612A4F]/5 transition-colors"
+                            onClick={() => handleMegAISend(suggestion)}
+                            className="block w-full text-left px-3 py-2.5 text-sm bg-white border border-gray-200 rounded-lg hover:border-[#612A4F] hover:bg-[#612A4F]/5 transition-colors"
                           >
                             {suggestion}
                           </button>
@@ -460,7 +602,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                       )}
                       <div
                         className={cn(
-                          "max-w-[85%] px-3 py-2 rounded-xl text-xs leading-relaxed",
+                          "max-w-[85%] px-3 py-2.5 rounded-xl text-sm leading-relaxed",
                           msg.role === 'user'
                             ? "bg-[#612A4F] text-white rounded-br-sm"
                             : "bg-white border border-gray-200 text-gray-700 rounded-bl-sm shadow-sm"
@@ -505,10 +647,10 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                         }
                       }}
                       placeholder="Ask MegAI..."
-                      className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#612A4F] focus:border-[#612A4F]"
+                      className="flex-1 px-4 py-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#612A4F] focus:border-[#612A4F]"
                     />
                     <button
-                      onClick={handleMegAISend}
+                      onClick={() => handleMegAISend()}
                       disabled={!megAIInput.trim() || isAILoading}
                       className="px-3 py-2 bg-[#612A4F] text-white rounded-lg hover:bg-[#4E2240] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
@@ -908,7 +1050,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 
   // Embedded mode: return content without Dialog wrapper

@@ -23,13 +23,22 @@ const APIKeySettings = () => {
       toast.error("Please enter a valid API key");
       return;
     }
-    
-    // In a real implementation, this would make a server-side request to store the key
-    // For now, we'll just simulate successful storage
+
+    if (!apiKey.startsWith("sk-")) {
+      toast.error("This doesn't look like a valid OpenAI API key. API keys typically start with 'sk-'");
+      return;
+    }
+
+    // Store the actual API key
+    setString(StorageKeys.openaiApiKey, apiKey);
+
+    // Store a masked version for display
+    const maskedKey = `${apiKey.substring(0, 5)}...${apiKey.substring(apiKey.length - 5)}`;
+    setString(StorageKeys.openaiApiKeyMasked, maskedKey);
+
+    // Set the flag indicating the key is set
     setString(StorageKeys.openaiKeySet, "true");
-    
-    // Don't actually store the key in local storage - it's a security risk
-    // Instead, just store a flag that indicates the key has been set
+
     setIsKeySet(true);
     setApiKey("");
     toast.success("API key saved successfully");
@@ -37,6 +46,8 @@ const APIKeySettings = () => {
   
   const handleRemoveKey = () => {
     if (confirm("Are you sure you want to remove your API key? This will disable AI-powered recommendations.")) {
+      remove(StorageKeys.openaiApiKey);
+      remove(StorageKeys.openaiApiKeyMasked);
       remove(StorageKeys.openaiKeySet);
       setIsKeySet(false);
       toast.info("API key removed");

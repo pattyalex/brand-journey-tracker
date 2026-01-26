@@ -8,7 +8,7 @@ import { MenuItem } from '@/types/sidebar';
 import { UserButton } from "@clerk/clerk-react";
 import { MembershipPage } from "@/components/MembershipPage";
 import { CreditCard } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 interface SidebarFooterSectionProps {
@@ -26,8 +26,8 @@ const SidebarFooterSection = ({ settingsItem, myAccountItem, helpItem }: Sidebar
         {!settingsItem.hidden && (
           <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={location.pathname === settingsItem.url}>
-              <a
-                href={settingsItem.url}
+              <Link
+                to={settingsItem.url}
                 className={cn(
                   "flex items-center gap-2",
                   location.pathname === settingsItem.url && "bg-gray-100 font-medium"
@@ -35,7 +35,7 @@ const SidebarFooterSection = ({ settingsItem, myAccountItem, helpItem }: Sidebar
               >
                 <settingsItem.icon size={20} />
                 <span>{settingsItem.title}</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         )}
@@ -64,8 +64,8 @@ const SidebarFooterSection = ({ settingsItem, myAccountItem, helpItem }: Sidebar
 
         <SidebarMenuItem>
           <SidebarMenuButton asChild isActive={location.pathname === myAccountItem.url}>
-            <a
-              href={myAccountItem.url}
+            <Link
+              to={myAccountItem.url}
               className={cn(
                 "flex items-center gap-2",
                 location.pathname === myAccountItem.url && "bg-gray-100 font-medium"
@@ -73,15 +73,15 @@ const SidebarFooterSection = ({ settingsItem, myAccountItem, helpItem }: Sidebar
             >
               <myAccountItem.icon size={20} />
               <span>{myAccountItem.title}</span>
-            </a>
+            </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
 
         {helpItem && (
           <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={location.pathname === helpItem.url}>
-              <a
-                href={helpItem.url}
+              <Link
+                to={helpItem.url}
                 className={cn(
                   "flex items-center gap-2",
                   location.pathname === helpItem.url && "bg-gray-100 font-medium"
@@ -89,7 +89,7 @@ const SidebarFooterSection = ({ settingsItem, myAccountItem, helpItem }: Sidebar
               >
                 <helpItem.icon size={20} />
                 <span>{helpItem.title}</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         )}

@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import APIKeySettings from "@/components/settings/APIKeySettings";
 import OpenAISettings from "@/components/settings/OpenAISettings";
+import ClaudeAPISettings from "@/components/settings/ClaudeAPISettings";
 import { Globe, Check } from "lucide-react";
 import { StorageKeys, getString, setString } from "@/lib/storage";
 import { cn } from "@/lib/utils";
@@ -121,9 +122,12 @@ const Settings = () => {
           </CardContent>
         </Card>
 
-        {/* API Integration Settings */}
+        {/* Claude API Integration - Recommended */}
+        <ClaudeAPISettings />
+
+        {/* OpenAI API Integration - Alternative */}
         <APIKeySettings />
-        
+
         {/* OpenAI API Integration */}
         <OpenAISettings />
 
