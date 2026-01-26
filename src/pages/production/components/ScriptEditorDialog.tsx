@@ -20,7 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { getFormatColors, getPlatformColors } from "../utils/productionHelpers";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
-import { MoreHorizontal, Video, Camera, ChevronDown, X, Circle, Wrench, CheckCircle2, MapPin, Shirt, Boxes, NotebookPen, PenLine, Check, Plus, ArrowRight, ArrowDown } from "lucide-react";
+import { MoreHorizontal, Video, Camera, ChevronDown, X, Circle, Wrench, CheckCircle2, MapPin, Shirt, Boxes, NotebookPen, PenLine, Check, Plus, ArrowRight, ArrowDown, Sparkles, Send, Bot, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -61,6 +61,7 @@ interface ScriptEditorDialogProps {
   onOpenChange: (open: boolean) => void;
   onCancel: () => void;
   onSave: () => void;
+  embedded?: boolean;
   titleInputRef: React.RefObject<HTMLInputElement>;
   locationInputRef: React.RefObject<HTMLInputElement>;
   outfitInputRef: React.RefObject<HTMLInputElement>;
@@ -110,6 +111,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   onOpenChange,
   onCancel,
   onSave,
+  embedded = false,
   titleInputRef,
   locationInputRef,
   outfitInputRef,
@@ -154,6 +156,50 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   slideDirection = 'right',
 }) => {
   const [shakeButton, setShakeButton] = useState(false);
+  const [isMegAIOpen, setIsMegAIOpen] = useState(false);
+  const [megAIMessages, setMegAIMessages] = useState<{role: 'user' | 'assistant', content: string}[]>([]);
+  const [megAIInput, setMegAIInput] = useState("");
+  const [isAILoading, setIsAILoading] = useState(false);
+
+  const handleMegAISend = async () => {
+    if (!megAIInput.trim() || isAILoading) return;
+
+    const userMessage = megAIInput.trim();
+    setMegAIMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+    setMegAIInput("");
+    setIsAILoading(true);
+
+    // Simulate AI response (replace with actual API call)
+    setTimeout(() => {
+      const context = scriptContent ? `Based on your current script: "${scriptContent.substring(0, 200)}..."` : "I see you're starting fresh.";
+      const aiResponse = generateMegAIResponse(userMessage, context, cardTitle);
+      setMegAIMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
+      setIsAILoading(false);
+    }, 1000);
+  };
+
+  const generateMegAIResponse = (query: string, context: string, title: string): string => {
+    const lowerQuery = query.toLowerCase();
+
+    if (lowerQuery.includes('hook') || lowerQuery.includes('opening')) {
+      return `Here are some hook ideas for "${title}":\n\n1. "You won't believe what happens when..."\n2. "Stop scrolling if you've ever..."\n3. "The secret nobody talks about..."\n\nWould you like me to make these more specific to your content?`;
+    }
+    if (lowerQuery.includes('shorter') || lowerQuery.includes('concise')) {
+      return `I'd suggest trimming your script to focus on:\n\n• One main point per sentence\n• Cut filler words like "actually", "basically"\n• Use punchy, direct language\n\nWant me to help rewrite a specific section?`;
+    }
+    if (lowerQuery.includes('engaging') || lowerQuery.includes('interesting')) {
+      return `To make your content more engaging:\n\n• Start with a question or bold statement\n• Add personal anecdotes\n• Use "you" language to connect with viewers\n• Include a clear call-to-action\n\nShall I suggest specific improvements?`;
+    }
+    if (lowerQuery.includes('help') || lowerQuery.includes('improve')) {
+      return `I can help you with:\n\n• Writing compelling hooks\n• Making your script more concise\n• Adding engaging elements\n• Structuring your talking points\n• Tailoring content for specific platforms\n\nWhat would you like to focus on?`;
+    }
+
+    return `Great question! ${context}\n\nFor "${title}", I'd suggest focusing on clarity and engagement. Would you like specific suggestions for your hook, main points, or call-to-action?`;
+  };
+
+  const applyAISuggestion = (suggestion: string) => {
+    setScriptContent(prev => prev + (prev ? "\n\n" : "") + suggestion);
+  };
 
   const handleInteractOutside = (e: Event) => {
     e.preventDefault();
@@ -213,25 +259,13 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
     onRemoveFormatTag(format);
   };
 
-  return (
-  <Dialog open={isOpen} onOpenChange={onOpenChange}>
-    <DialogContent hideCloseButton onInteractOutside={handleInteractOutside} onEscapeKeyDown={handleInteractOutside} className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] overflow-hidden border-0 shadow-2xl flex flex-col bg-gradient-to-br from-[#f0f7fa] via-white to-[#f0f7fa]/30">
+  // Content that's shared between embedded and standalone modes
+  const dialogContent = (
+    <>
       {/* Step Progress Indicator - Centered */}
       <div className="flex justify-center pt-2 pb-0 flex-shrink-0">
         <ContentFlowProgress currentStep={2} className="w-[550px]" onStepClick={onNavigateToStep} />
       </div>
-
-      <AnimatePresence mode="wait" custom={slideDirection}>
-        <motion.div
-          key="script-content"
-          custom={slideDirection}
-          variants={slideVariants}
-          initial="enter"
-          animate="center"
-          exit="exit"
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="flex-1 flex flex-col overflow-hidden"
-        >
       <div className="flex-1 overflow-y-auto px-6 -mt-1 pb-1 space-y-2">
         {/* Title Section */}
         <div className="border-b border-gray-200 pb-1 mb-3">
@@ -248,7 +282,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
         </div>
 
         {/* Two Column Layout */}
-        <div className="grid grid-cols-[1fr,280px] gap-6 items-start">
+        <div className="grid grid-cols-[1fr,280px] gap-6 items-start relative">
           {/* Left Column - Talking Points */}
           <div className="space-y-3">
             <label className="text-[12px] font-medium text-[#612A4F] uppercase tracking-wider">
@@ -299,13 +333,166 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
               </div>
             )}
 
-            <Textarea
-              value={scriptContent}
-              onChange={(e) => setScriptContent(e.target.value)}
-              placeholder="Write your script here..."
-              className="min-h-[400px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#612A4F] focus:border-[#612A4F] transition-all text-sm leading-relaxed bg-white placeholder:text-gray-400 shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
-            />
+            {/* Textarea with AI button */}
+            <div className="relative">
+              <Textarea
+                value={scriptContent}
+                onChange={(e) => setScriptContent(e.target.value)}
+                placeholder="Write your script here..."
+                className="min-h-[400px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#612A4F] focus:border-[#612A4F] transition-all text-sm leading-relaxed bg-white placeholder:text-gray-400 shadow-[0_1px_3px_rgba(0,0,0,0.06)] pr-12"
+              />
+              {/* MegAI Button */}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setIsMegAIOpen(!isMegAIOpen)}
+                      className={cn(
+                        "absolute bottom-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-lg",
+                        isMegAIOpen
+                          ? "bg-[#612A4F] text-white"
+                          : "bg-gradient-to-br from-[#8B7082] to-[#612A4F] text-white hover:scale-105"
+                      )}
+                    >
+                      <Sparkles className="w-4 h-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left">
+                    <p>Ask MegAI for help</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
           </div>
+
+          {/* MegAI Chat Panel - Overlays the right column */}
+          <AnimatePresence>
+            {isMegAIOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.2 }}
+                className="absolute top-8 right-0 w-[300px] z-30 flex flex-col h-[480px] bg-gradient-to-b from-[#F8F6F9] to-white rounded-xl border border-[#E5E0E8] shadow-xl overflow-hidden"
+              >
+                {/* Chat Header */}
+                <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[#612A4F] to-[#8B7082] text-white">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
+                      <Sparkles className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold">Ask MegAI</h3>
+                      <p className="text-[10px] text-white/70">Your script assistant</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setIsMegAIOpen(false)}
+                    className="p-1 hover:bg-white/10 rounded transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Chat Messages */}
+                <div className="flex-1 overflow-y-auto p-3 space-y-3">
+                  {megAIMessages.length === 0 && (
+                    <div className="text-center py-6 px-2">
+                      <div className="w-12 h-12 rounded-full bg-[#612A4F]/10 flex items-center justify-center mx-auto mb-3">
+                        <Bot className="w-6 h-6 text-[#612A4F]" />
+                      </div>
+                      <p className="text-sm font-medium text-gray-700 mb-1">How can I help?</p>
+                      <p className="text-xs text-gray-500 mb-4">Ask me to improve your script, suggest hooks, or make it more engaging.</p>
+                      <div className="space-y-2">
+                        {["Make it more engaging", "Suggest a hook", "Make it shorter"].map((suggestion) => (
+                          <button
+                            key={suggestion}
+                            onClick={() => {
+                              setMegAIInput(suggestion);
+                              setTimeout(() => handleMegAISend(), 100);
+                            }}
+                            className="block w-full text-left px-3 py-2 text-xs bg-white border border-gray-200 rounded-lg hover:border-[#612A4F] hover:bg-[#612A4F]/5 transition-colors"
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {megAIMessages.map((msg, idx) => (
+                    <div
+                      key={idx}
+                      className={cn(
+                        "flex gap-2",
+                        msg.role === 'user' ? "justify-end" : "justify-start"
+                      )}
+                    >
+                      {msg.role === 'assistant' && (
+                        <div className="w-6 h-6 rounded-full bg-[#612A4F] flex items-center justify-center flex-shrink-0">
+                          <Bot className="w-3 h-3 text-white" />
+                        </div>
+                      )}
+                      <div
+                        className={cn(
+                          "max-w-[85%] px-3 py-2 rounded-xl text-xs leading-relaxed",
+                          msg.role === 'user'
+                            ? "bg-[#612A4F] text-white rounded-br-sm"
+                            : "bg-white border border-gray-200 text-gray-700 rounded-bl-sm shadow-sm"
+                        )}
+                      >
+                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                      </div>
+                      {msg.role === 'user' && (
+                        <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                          <User className="w-3 h-3 text-gray-600" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {isAILoading && (
+                    <div className="flex gap-2 justify-start">
+                      <div className="w-6 h-6 rounded-full bg-[#612A4F] flex items-center justify-center flex-shrink-0">
+                        <Bot className="w-3 h-3 text-white" />
+                      </div>
+                      <div className="bg-white border border-gray-200 rounded-xl rounded-bl-sm px-3 py-2 shadow-sm">
+                        <div className="flex gap-1">
+                          <span className="w-2 h-2 bg-[#612A4F]/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <span className="w-2 h-2 bg-[#612A4F]/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <span className="w-2 h-2 bg-[#612A4F]/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Chat Input */}
+                <div className="p-3 border-t border-gray-100 bg-white">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={megAIInput}
+                      onChange={(e) => setMegAIInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleMegAISend();
+                        }
+                      }}
+                      placeholder="Ask MegAI..."
+                      className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#612A4F] focus:border-[#612A4F]"
+                    />
+                    <button
+                      onClick={handleMegAISend}
+                      disabled={!megAIInput.trim() || isAILoading}
+                      className="px-3 py-2 bg-[#612A4F] text-white rounded-lg hover:bg-[#4E2240] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <Send className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Right Column - Settings */}
           <div className="space-y-10 pt-8">
@@ -710,10 +897,34 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
           </Button>
         </motion.div>
       </div>
-        </motion.div>
-      </AnimatePresence>
-    </DialogContent>
-  </Dialog>
+    </>
+  );
+
+  // Embedded mode: return content without Dialog wrapper
+  if (embedded) {
+    return dialogContent;
+  }
+
+  // Standalone mode: return with full Dialog wrapper
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent hideCloseButton onInteractOutside={handleInteractOutside} onEscapeKeyDown={handleInteractOutside} className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] overflow-hidden border-0 shadow-2xl flex flex-col bg-gradient-to-br from-[#f0f7fa] via-white to-[#f0f7fa]/30">
+        <AnimatePresence mode="wait" custom={slideDirection}>
+          <motion.div
+            key="script-content"
+            custom={slideDirection}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="flex-1 flex flex-col overflow-hidden"
+          >
+            {dialogContent}
+          </motion.div>
+        </AnimatePresence>
+      </DialogContent>
+    </Dialog>
   );
 };
 

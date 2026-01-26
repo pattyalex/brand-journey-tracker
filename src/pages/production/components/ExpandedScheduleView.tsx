@@ -817,7 +817,15 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
 
   // Use toScheduleCards instead of cards
   const cards = toScheduleCards;
-  const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
+  // Start collapsed in embedded single card mode (content flow)
+  const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(embedded && !!singleCard);
+
+  // Ensure collapsed state is set when entering embedded single card mode
+  useEffect(() => {
+    if (embedded && singleCard) {
+      setIsLeftPanelCollapsed(true);
+    }
+  }, [embedded, singleCard]);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -1263,7 +1271,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   const content = (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Collapsed single card mode - card on left, stepper in middle, button on right */}
-      {!embedded && !planningMode && singleCard && isLeftPanelCollapsed && !singleCardScheduled && (
+      {!planningMode && singleCard && isLeftPanelCollapsed && !singleCardScheduled && (
         <div className="flex items-center gap-4 px-4 py-3 border-b border-gray-100 flex-shrink-0">
           {/* Compact card preview */}
           <div
@@ -1286,7 +1294,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
             <ContentFlowProgress
               currentStep={5}
               onStepClick={onNavigateToStep ? (step) => {
-                if (step < 5) {
+                if (step !== 5) {
                   onNavigateToStep(step);
                 }
               } : undefined}
@@ -1311,7 +1319,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
         </div>
       )}
       {/* Collapsed single card mode AFTER scheduling - compact confirmation in top bar */}
-      {!embedded && !planningMode && singleCard && isLeftPanelCollapsed && singleCardScheduled && (
+      {!planningMode && singleCard && isLeftPanelCollapsed && singleCardScheduled && (
         <div className="flex items-center gap-4 px-4 py-3 border-b border-gray-100 flex-shrink-0">
           {/* Compact confirmation */}
           <motion.div
@@ -1334,7 +1342,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
             <ContentFlowProgress
               currentStep={5}
               onStepClick={onNavigateToStep ? (step) => {
-                if (step < 5) {
+                if (step !== 5) {
                   onNavigateToStep(step);
                 }
               } : undefined}
@@ -1355,16 +1363,16 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
       {/* Main content - split panels with step progress integrated */}
       <div className={cn(
         "flex-1 overflow-y-auto grid transition-all duration-300 min-h-0",
-        isLeftPanelCollapsed && singleCard ? "grid-cols-[1fr]" : isLeftPanelCollapsed ? "grid-cols-[48px_1fr]" : "grid-cols-[320px_1fr]"
+        singleCard && isLeftPanelCollapsed ? "grid-cols-[1fr]" : isLeftPanelCollapsed ? "grid-cols-[48px_1fr]" : "grid-cols-[320px_1fr]"
       )} style={{ gridTemplateRows: '1fr' }}>
-        {/* Step Progress Indicator - centered across full width (hide when collapsed in single card mode - both scheduled and unscheduled) */}
-        {!embedded && !planningMode && !(singleCard && isLeftPanelCollapsed) && (
+        {/* Step Progress Indicator - centered across full width (hide when collapsed in single card mode) */}
+        {!planningMode && !(singleCard && isLeftPanelCollapsed) && (
           <div className="col-span-2 flex-shrink-0 pt-3 pb-2">
             <ContentFlowProgress
               currentStep={5}
               onStepClick={onNavigateToStep ? (step) => {
-                // Only allow navigation to previous steps (before Schedule)
-                if (step < 5) {
+                // Allow navigation to any step except current
+                if (step !== 5) {
                   onNavigateToStep(step);
                 }
               } : undefined}
@@ -1376,9 +1384,9 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
         <div
           className={cn(
             "border-r flex flex-col min-h-0 transition-all duration-300 relative",
-            embedded ? "border-violet-100 bg-violet-50/40" : "border-transparent",
-            !embedded && dragOverUnschedule && singleCardScheduled && "bg-gradient-to-br from-amber-50 to-amber-100",
-            !embedded && dragOverUnschedule && !singleCardScheduled && "bg-indigo-200 ring-2 ring-inset ring-indigo-400"
+            embedded && !singleCard ? "border-violet-100 bg-violet-50/40" : "border-transparent",
+            dragOverUnschedule && singleCardScheduled && "bg-gradient-to-br from-amber-50 to-amber-100",
+            dragOverUnschedule && !singleCardScheduled && "bg-indigo-200 ring-2 ring-inset ring-indigo-400"
           )}
           onDragOver={(e) => {
             e.preventDefault();
@@ -1403,16 +1411,16 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
           {/* Collapse/Expand Button */}
           <button
             onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 p-1 hover:bg-gray-100 rounded transition-colors"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-30 p-1.5 bg-white/80 hover:bg-white shadow-md rounded-lg border border-gray-200 transition-colors"
           >
             <ChevronLeft className={cn(
-              "w-6 h-6 text-gray-500 transition-transform duration-300",
+              "w-5 h-5 text-[#612A4F] transition-transform duration-300",
               isLeftPanelCollapsed && "rotate-180"
             )} strokeWidth={2.5} />
           </button>
 
-          {/* Header - only show in embedded mode since modal mode has it in the step progress row */}
-          {embedded && (
+          {/* Header - only show in embedded mode WITHOUT singleCard since modal mode has it in the step progress row */}
+          {embedded && !singleCard && (
             <div className={cn(
               "flex items-center gap-3 px-6 py-4 border-b flex-shrink-0 transition-all duration-300",
               "border-violet-100",
@@ -1432,8 +1440,9 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
             "flex-1 min-h-0 overflow-y-auto transition-all duration-300",
             isLeftPanelCollapsed ? "p-0 opacity-0 overflow-hidden" : "px-4 -mt-2 pb-4 opacity-100"
           )}>
-            {/* Embedded mode: Show hybrid panel with stats and upcoming */}
-            {embedded ? (
+            {/* Embedded mode WITHOUT single card: Show hybrid panel with stats and upcoming */}
+            {/* When singleCard is provided (even in embedded mode), show the single card content instead */}
+            {embedded && !singleCard ? (
               <div className="space-y-5">
                 {/* Monthly Stats */}
                 <div className="bg-gradient-to-br from-violet-50 to-indigo-50 rounded-xl p-4 border border-violet-100/50">
@@ -1926,13 +1935,13 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
           {singleCard && isLeftPanelCollapsed && (
             <button
               onClick={() => setIsLeftPanelCollapsed(false)}
-              className="absolute left-1 top-1/2 -translate-y-1/2 z-10 p-1 hover:bg-gray-100 rounded transition-colors"
+              className="absolute left-1 top-1/2 -translate-y-1/2 z-30 p-1.5 bg-white/80 hover:bg-white shadow-md rounded-lg border border-gray-200 transition-colors"
             >
-              <ChevronRight className="w-6 h-6 text-gray-500" strokeWidth={2.5} />
+              <ChevronRight className="w-5 h-5 text-[#612A4F]" strokeWidth={2.5} />
             </button>
           )}
-          {/* Floating Calendar Controls - only show in modal mode */}
-          {!embedded && (
+          {/* Floating Calendar Controls - show in modal mode and embedded single card mode */}
+          {(!embedded || (embedded && singleCard)) && (
             <div className="sticky -top-1 z-20 flex items-center justify-between px-4 pt-1 pb-1">
               {/* Floating left: Content Calendar + Month Navigation */}
               <div className="flex items-center gap-4 px-4 py-2 bg-gray-50 rounded-xl shadow-md">
@@ -1958,7 +1967,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                   </button>
                 </div>
               </div>
-              {/* Floating right: Stop Here Button */}
+              {/* Floating right: Stop Here Button - hide when in single card collapsed mode (button is in top bar) */}
               {onClose && !(singleCard && isLeftPanelCollapsed) && !singleCardScheduled && (
                 <button
                   onClick={() => {
@@ -2420,18 +2429,6 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                 </Tooltip>
                               </TooltipProvider>
                             </div>
-                            {/* Progress indicator - 6 lines, first 1 colored for planned */}
-                            <div className="flex gap-0.5 mt-1.5">
-                              {[1, 2, 3, 4, 5, 6].map((step) => (
-                                <div
-                                  key={step}
-                                  className={cn(
-                                    "h-1 flex-1 rounded-full",
-                                    step <= 1 ? "bg-[#8B7082]" : "bg-[#D4C9CF]"
-                                  )}
-                                />
-                              ))}
-                            </div>
                           </div>
                         ))}
                       </div>
@@ -2807,7 +2804,10 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
     return (
       <>
         <div
-          className="bg-white flex flex-col h-full flex-1 overflow-hidden"
+          className={cn(
+            "flex flex-col h-full flex-1 overflow-hidden",
+            !singleCard && "bg-white" // Only add bg-white for Planner page embed, not content flow
+          )}
           onClick={() => {
             // Close any open popover when clicking on the content area
             if (popoverCardId) {

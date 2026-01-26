@@ -67,6 +67,7 @@ interface EditChecklistDialogProps {
   onSave: (checklist: EditingChecklist, title?: string, hook?: string, script?: string) => void;
   onNavigateToStep?: (step: number, savedCardData?: Partial<ProductionCard>) => void;
   slideDirection?: 'left' | 'right';
+  embedded?: boolean;
 }
 
 // Default example items for the global checklist
@@ -107,6 +108,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
   onSave,
   onNavigateToStep,
   slideDirection = 'right',
+  embedded = false,
 }) => {
   const [shakeButton, setShakeButton] = useState(false);
 
@@ -214,27 +216,14 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (progressPercent / 100) * circumference;
 
-  return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent hideCloseButton onInteractOutside={handleInteractOutside} onEscapeKeyDown={handleInteractOutside} className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[950px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-gradient-to-br from-[#F5EEF2] via-white to-[#F5EEF2]/30">
-        {/* Step Progress Indicator */}
-        <ContentFlowProgress
-          currentStep={4}
-          className="flex-shrink-0 pt-4 pb-2"
-          onStepClick={handleNavigateWithSave}
-        />
-
-        <AnimatePresence mode="wait" custom={slideDirection}>
-          <motion.div
-            key="edit-content"
-            custom={slideDirection}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="flex-1 flex flex-col overflow-hidden"
-          >
+  const dialogContent = (
+    <>
+      {/* Step Progress Indicator */}
+      <ContentFlowProgress
+        currentStep={4}
+        className="flex-shrink-0 pt-4 pb-2"
+        onStepClick={handleNavigateWithSave}
+      />
         {/* Headers row */}
         <div className="flex border-b border-[#8B7082]/30">
           {/* Content Overview Header */}
@@ -632,6 +621,28 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
             </Button>
           </motion.div>
         </div>
+    </>
+  );
+
+  if (embedded) {
+    return dialogContent;
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent hideCloseButton onInteractOutside={handleInteractOutside} onEscapeKeyDown={handleInteractOutside} className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[950px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-gradient-to-br from-[#F5EEF2] via-white to-[#F5EEF2]/30">
+        <AnimatePresence mode="wait" custom={slideDirection}>
+          <motion.div
+            key="edit-content"
+            custom={slideDirection}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="flex-1 flex flex-col overflow-hidden"
+          >
+            {dialogContent}
           </motion.div>
         </AnimatePresence>
       </DialogContent>

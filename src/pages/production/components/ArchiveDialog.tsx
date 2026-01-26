@@ -51,6 +51,7 @@ interface ArchiveDialogProps {
   onRestore: (card: ProductionCard) => void;
   onDelete: (card: ProductionCard) => void;
   onNavigateToStep?: (step: number) => void;
+  embedded?: boolean;
 }
 
 const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
@@ -61,6 +62,7 @@ const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
   onRestore,
   onDelete,
   onNavigateToStep,
+  embedded = false,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCard, setSelectedCard] = useState<ProductionCard | null>(null);
@@ -92,20 +94,19 @@ const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="h-[calc(100vh-4rem)] max-h-[700px] sm:max-w-[900px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-gradient-to-br from-emerald-50 via-white to-green-50">
-        {/* Step Progress Indicator - Fixed */}
-        <div className="border-b border-emerald-100 flex-shrink-0 pt-4 pb-2 bg-gradient-to-br from-emerald-50/80 via-white to-green-50/50">
-          <div className="flex items-center justify-center gap-3 max-w-xl mx-auto px-4 pr-12">
-            <ContentFlowProgress currentStep={6} allCompleted className="flex-1" onStepClick={onNavigateToStep} />
-            {/* Celebratory icon */}
-            <PartyPopper className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-          </div>
+  const content = (
+    <>
+      {/* Step Progress Indicator - Fixed */}
+      <div className="border-b border-emerald-100 flex-shrink-0 pt-4 pb-2">
+        <div className="flex items-center justify-center gap-3 max-w-xl mx-auto px-4 pr-12">
+          <ContentFlowProgress currentStep={6} allCompleted className="flex-1" onStepClick={onNavigateToStep} />
+          {/* Celebratory icon */}
+          <PartyPopper className="w-5 h-5 text-emerald-500 flex-shrink-0" />
         </div>
+      </div>
 
-        {/* Content - Scrollable */}
-        <div className="flex-1 overflow-hidden flex">
+      {/* Content - Scrollable */}
+      <div className="flex-1 overflow-hidden flex">
           {/* Left side - Header + Cards list */}
           <div className="w-1/2 border-r border-emerald-100 overflow-y-auto flex flex-col">
             {/* Header - Scrolls with content */}
@@ -462,8 +463,19 @@ const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
             </div>
           </div>
         )}
-      </DialogContent>
+    </>
+  );
 
+  // If embedded, return just the content without Dialog wrapper
+  if (embedded) {
+    return <div className="flex flex-col h-full overflow-hidden">{content}</div>;
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="h-[calc(100vh-4rem)] max-h-[700px] sm:max-w-[900px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-gradient-to-br from-emerald-50 via-white to-green-50">
+        {content}
+      </DialogContent>
     </Dialog>
   );
 };

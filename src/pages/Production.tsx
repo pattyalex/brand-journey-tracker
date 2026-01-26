@@ -46,6 +46,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import TitleHookSuggestions from "@/components/content/TitleHookSuggestions";
 import ScriptEditorDialog from "./production/components/ScriptEditorDialog";
 import ContentFlowProgress from "./production/components/ContentFlowProgress";
+import ContentFlowDialog from "./production/components/ContentFlowDialog";
 import BrainDumpGuidanceDialog from "./production/components/BrainDumpGuidanceDialog";
 import { KanbanColumn, ProductionCard, StoryboardScene, EditingChecklist, SchedulingStatus } from "./production/types";
 import StoryboardEditorDialog from "./production/components/StoryboardEditorDialog";
@@ -175,6 +176,10 @@ const Production = () => {
   // Schedule expanded view state
   const [isScheduleColumnExpanded, setIsScheduleColumnExpanded] = useState(false);
   const [schedulingCard, setSchedulingCard] = useState<ProductionCard | null>(null);
+
+  // Unified Content Flow Dialog state (for seamless transitions between steps)
+  const [activeContentFlowStep, setActiveContentFlowStep] = useState<number | null>(null);
+  const [contentFlowCard, setContentFlowCard] = useState<ProductionCard | null>(null);
 
   // Archive state - load from localStorage
   const [archivedCards, setArchivedCards] = useState<ProductionCard[]>(() => {
@@ -1160,7 +1165,9 @@ const Production = () => {
       setBrainDumpSuggestion("");
       setShowBrainDumpSuggestion(false);
     }
-    setIsScriptEditorOpen(true);
+    // Use unified content flow dialog
+    setContentFlowCard(card);
+    setActiveContentFlowStep(2);
   };
 
   const handleSaveScript = () => {
@@ -1191,6 +1198,8 @@ const Production = () => {
   const resetScriptEditorState = () => {
     setIsScriptEditorOpen(false);
     setEditingScriptCard(null);
+    setActiveContentFlowStep(null);
+    setContentFlowCard(null);
     setCardTitle("");
     setCardHook("");
     setScriptContent("");
@@ -1211,7 +1220,9 @@ const Production = () => {
   // Storyboard editor handlers
   const handleOpenStoryboard = (card: ProductionCard) => {
     setEditingStoryboardCard(card);
-    setIsStoryboardDialogOpen(true);
+    // Use unified content flow dialog
+    setContentFlowCard(card);
+    setActiveContentFlowStep(3);
   };
 
   const handleSaveStoryboard = (storyboard: StoryboardScene[], title?: string, script?: string, hook?: string, status?: "to-start" | "needs-work" | "ready" | null) => {
@@ -1232,7 +1243,9 @@ const Production = () => {
   // Edit checklist handlers
   const handleOpenEditChecklist = (card: ProductionCard) => {
     setEditingEditCard(card);
-    setIsEditChecklistDialogOpen(true);
+    // Use unified content flow dialog
+    setContentFlowCard(card);
+    setActiveContentFlowStep(4);
   };
 
   const handleSaveEditChecklist = (checklist: EditingChecklist, title?: string, hook?: string, script?: string) => {
@@ -1412,7 +1425,9 @@ const Production = () => {
     setEditingIdeateCard(card);
     setIdeateCardTitle(card.title || "");
     setIdeateCardNotes(card.description || "");
-    setIsIdeateCardEditorOpen(true);
+    // Use unified content flow dialog
+    setContentFlowCard(card);
+    setActiveContentFlowStep(1);
   };
 
   const handleSaveIdeateCard = () => {
@@ -1467,6 +1482,8 @@ const Production = () => {
   const resetIdeateCardEditorState = () => {
     setIsIdeateCardEditorOpen(false);
     setEditingIdeateCard(null);
+    setActiveContentFlowStep(null);
+    setContentFlowCard(null);
     setIdeateCardTitle("");
     setIdeateCardNotes("");
   };
@@ -1683,10 +1700,55 @@ const Production = () => {
     const currentWorkflowStep = cardColumnId ? columnToStep[cardColumnId] || 1 : 1;
 
     // Determine slide direction based on step comparison
-    const currentDialogStep = isIdeateCardEditorOpen ? 1 : isScriptEditorOpen ? 2 : isStoryboardDialogOpen ? 3 : isEditChecklistDialogOpen ? 4 : isScheduleColumnExpanded ? 5 : 6;
+    const currentDialogStep = activeContentFlowStep || (isIdeateCardEditorOpen ? 1 : isScriptEditorOpen ? 2 : isStoryboardDialogOpen ? 3 : isEditChecklistDialogOpen ? 4 : isScheduleColumnExpanded ? 5 : 6);
     setSlideDirection(step > currentDialogStep ? 'left' : 'right');
 
-    // Function to actually perform the navigation
+    // If we're in the unified content flow dialog, just update the step (no blink!)
+    if (activeContentFlowStep !== null && step >= 1 && step <= 6) {
+      // Initialize state for the target step
+      switch (step) {
+        case 1: // Ideate
+          setEditingIdeateCard(latestCard!);
+          setIdeateCardTitle(latestCard!.title || "");
+          setIdeateCardNotes(latestCard!.description || "");
+          break;
+        case 2: // Script
+          setEditingScriptCard(latestCard!);
+          setCardTitle(latestCard!.title || "");
+          setCardHook(latestCard!.hook || "");
+          setScriptContent(latestCard!.script || "");
+          setPlatformTags(latestCard!.platforms || []);
+          setFormatTags(latestCard!.formats || []);
+          setLocationChecked(latestCard!.locationChecked || false);
+          setLocationText(latestCard!.locationText || "");
+          setOutfitChecked(latestCard!.outfitChecked || false);
+          setOutfitText(latestCard!.outfitText || "");
+          setPropsChecked(latestCard!.propsChecked || false);
+          setPropsText(latestCard!.propsText || "");
+          setFilmingNotes(latestCard!.filmingNotes || "");
+          setCardStatus(latestCard!.status || 'to-start');
+          setCustomVideoFormats(latestCard!.customVideoFormats || []);
+          setCustomPhotoFormats(latestCard!.customPhotoFormats || []);
+          break;
+        case 3: // Film
+          setEditingStoryboardCard(latestCard!);
+          break;
+        case 4: // Edit
+          setEditingEditCard(latestCard!);
+          break;
+        case 5: // Schedule
+          setSchedulingCard(latestCard!);
+          break;
+        case 6: // Post/Archive
+          // No special state needed for archive view
+          break;
+      }
+      setContentFlowCard(latestCard!);
+      setActiveContentFlowStep(step);
+      return;
+    }
+
+    // Legacy approach for opening from outside or for step 6 (archive)
     const performNavigation = () => {
       // Close all dialogs
       setIsIdeateCardEditorOpen(false);
@@ -1695,34 +1757,41 @@ const Production = () => {
       setIsEditChecklistDialogOpen(false);
       setIsScheduleColumnExpanded(false);
       setIsArchiveDialogOpen(false);
+      setActiveContentFlowStep(null);
 
       // Reset all editing states
       setEditingIdeateCard(null);
       setEditingScriptCard(null);
       setEditingStoryboardCard(null);
       setEditingEditCard(null);
+      setContentFlowCard(null);
 
       // Small delay to allow dialogs to close before opening new one
       setTimeout(() => {
         switch (step) {
           case 1: // Ideate
-            handleOpenIdeateCardEditor(latestCard!);
+            setContentFlowCard(latestCard!);
+            setActiveContentFlowStep(1);
             break;
           case 2: // Script
-            handleOpenScriptEditor(latestCard!);
+            setContentFlowCard(latestCard!);
+            setActiveContentFlowStep(2);
             break;
           case 3: // Film
-            handleOpenStoryboard(latestCard!);
+            setContentFlowCard(latestCard!);
+            setActiveContentFlowStep(3);
             break;
           case 4: // Edit
-            handleOpenEditChecklist(latestCard!);
+            setContentFlowCard(latestCard!);
+            setActiveContentFlowStep(4);
             break;
           case 5: // Schedule
-            setSchedulingCard(latestCard!);
-            setIsScheduleColumnExpanded(true);
+            setContentFlowCard(latestCard!);
+            setActiveContentFlowStep(5);
             break;
           case 6: // Post/Archive
-            setIsArchiveDialogOpen(true);
+            setContentFlowCard(latestCard!);
+            setActiveContentFlowStep(6);
             break;
         }
       }, 50);
@@ -4664,6 +4733,175 @@ Make each idea unique, creative, and directly tied to both the original content 
           onNavigateToStep={handleNavigateToStep}
           slideDirection={slideDirection}
         />
+
+        {/* Unified Content Flow Dialog - seamless transitions between steps */}
+        <ContentFlowDialog
+          activeStep={activeContentFlowStep}
+          onClose={() => {
+            // Save current state before closing
+            if (activeContentFlowStep === 1 && editingIdeateCard) {
+              handleSaveIdeateCard();
+            } else if (activeContentFlowStep === 2 && editingScriptCard) {
+              handleSaveScript();
+            } else if (activeContentFlowStep === 3 && editingStoryboardCard) {
+              handleSaveStoryboard(editingStoryboardCard.storyboard || []);
+            } else if (activeContentFlowStep === 4 && editingEditCard) {
+              handleSaveEditChecklist(editingEditCard.editingChecklist || { items: [], notes: '', externalLinks: [] });
+            }
+            setActiveContentFlowStep(null);
+            setContentFlowCard(null);
+          }}
+          slideDirection={slideDirection}
+        >
+          {activeContentFlowStep === 1 && contentFlowCard && (
+            <BrainDumpGuidanceDialog
+              isOpen={true}
+              onOpenChange={() => {}}
+              onCancel={resetIdeateCardEditorState}
+              onSave={handleSaveIdeateCard}
+              onMoveToScript={handleMoveIdeateToScript}
+              title={ideateCardTitle}
+              setTitle={setIdeateCardTitle}
+              notes={ideateCardNotes}
+              setNotes={setIdeateCardNotes}
+              onNavigateToStep={handleNavigateToStep}
+              slideDirection={slideDirection}
+              embedded={true}
+            />
+          )}
+          {activeContentFlowStep === 2 && contentFlowCard && (
+            <ScriptEditorDialog
+              isOpen={true}
+              onOpenChange={() => {}}
+              card={contentFlowCard}
+              onSave={handleSaveScript}
+              cardTitle={cardTitle}
+              setCardTitle={setCardTitle}
+              cardHook={cardHook}
+              setCardHook={setCardHook}
+              scriptContent={scriptContent}
+              setScriptContent={setScriptContent}
+              platformTags={platformTags}
+              setPlatformTags={setPlatformTags}
+              formatTags={formatTags}
+              setFormatTags={setFormatTags}
+              platformInput={platformInput}
+              setPlatformInput={setPlatformInput}
+              formatInput={formatInput}
+              setFormatInput={setFormatInput}
+              locationChecked={locationChecked}
+              setLocationChecked={setLocationChecked}
+              locationText={locationText}
+              setLocationText={setLocationText}
+              outfitChecked={outfitChecked}
+              setOutfitChecked={setOutfitChecked}
+              outfitText={outfitText}
+              setOutfitText={setOutfitText}
+              propsChecked={propsChecked}
+              setPropsChecked={setPropsChecked}
+              propsText={propsText}
+              setPropsText={setPropsText}
+              filmingNotes={filmingNotes}
+              setFilmingNotes={setFilmingNotes}
+              cardStatus={cardStatus}
+              setCardStatus={(value) => setCardStatus(value)}
+              customVideoFormats={customVideoFormats}
+              setCustomVideoFormats={setCustomVideoFormats}
+              customPhotoFormats={customPhotoFormats}
+              setCustomPhotoFormats={setCustomPhotoFormats}
+              onNavigateToStep={handleNavigateToStep}
+              slideDirection={slideDirection}
+              embedded={true}
+            />
+          )}
+          {activeContentFlowStep === 3 && contentFlowCard && (
+            <StoryboardEditorDialog
+              open={true}
+              onOpenChange={() => {}}
+              card={contentFlowCard}
+              onSave={handleSaveStoryboard}
+              onNavigateToStep={handleNavigateToStep}
+              slideDirection={slideDirection}
+              embedded={true}
+            />
+          )}
+          {activeContentFlowStep === 4 && contentFlowCard && (
+            <EditChecklistDialog
+              isOpen={true}
+              onOpenChange={() => {}}
+              card={contentFlowCard}
+              onSave={handleSaveEditChecklist}
+              onNavigateToStep={handleNavigateToStep}
+              slideDirection={slideDirection}
+              embedded={true}
+            />
+          )}
+          {activeContentFlowStep === 5 && contentFlowCard && (
+            <ExpandedScheduleView
+              embedded={true}
+              singleCard={contentFlowCard}
+              onClose={() => {
+                setActiveContentFlowStep(null);
+                setContentFlowCard(null);
+              }}
+              onSchedule={handleScheduleContent}
+              onUnschedule={handleUnscheduleContent}
+              onUpdateColor={handleUpdateScheduledColor}
+              onNavigateToStep={handleNavigateToStep}
+              onMoveToScheduleColumn={(card) => {
+                setColumns((prev) => {
+                  let sourceColumnId: string | undefined;
+                  for (const col of prev) {
+                    if (col.cards.find(c => c.id === card.id)) {
+                      sourceColumnId = col.id;
+                      break;
+                    }
+                  }
+                  const updatedCard: ProductionCard = {
+                    ...card,
+                    columnId: 'to-schedule',
+                    schedulingStatus: 'to-schedule' as const,
+                  };
+                  if (sourceColumnId) {
+                    if (sourceColumnId === 'to-schedule') {
+                      return prev.map((col) => ({
+                        ...col,
+                        cards: col.cards.map((c) => c.id === card.id ? updatedCard : c),
+                      }));
+                    }
+                    return prev.map((col) => {
+                      if (col.id === sourceColumnId) {
+                        return { ...col, cards: col.cards.filter(c => c.id !== card.id) };
+                      }
+                      if (col.id === 'to-schedule') {
+                        return { ...col, cards: [...col.cards, updatedCard] };
+                      }
+                      return col;
+                    });
+                  }
+                  return prev.map((col) => {
+                    if (col.id === 'to-schedule') {
+                      return { ...col, cards: [...col.cards, updatedCard] };
+                    }
+                    return col;
+                  });
+                });
+              }}
+            />
+          )}
+          {activeContentFlowStep === 6 && (
+            <ArchiveDialog
+              isOpen={true}
+              onOpenChange={() => {}}
+              archivedCards={columns.find(col => col.id === 'archive')?.cards || []}
+              onRepurpose={handleRepurposeContent}
+              onRestore={handleRestoreContent}
+              onDelete={handleDeleteArchivedContent}
+              onNavigateToStep={handleNavigateToStep}
+              embedded={true}
+            />
+          )}
+        </ContentFlowDialog>
 
         {/* Expanded Schedule Column View */}
         {isScheduleColumnExpanded && (

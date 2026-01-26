@@ -111,6 +111,7 @@ interface StoryboardEditorDialogProps {
   onSave: (storyboard: StoryboardScene[], title?: string, script?: string, hook?: string, status?: "to-start" | "needs-work" | "ready" | null) => void;
   onNavigateToStep?: (step: number, savedCardData?: Partial<ProductionCard>) => void;
   slideDirection?: 'left' | 'right';
+  embedded?: boolean;
 }
 
 // Sortable Scene Card Component
@@ -303,6 +304,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   onSave,
   onNavigateToStep,
   slideDirection = 'right',
+  embedded = false,
 }) => {
   const [shakeButton, setShakeButton] = useState(false);
 
@@ -752,27 +754,12 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
 
   if (!card) return null;
 
-  return (
+  const dialogContent = (
     <>
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent hideCloseButton onInteractOutside={handleInteractOutside} onEscapeKeyDown={handleInteractOutside} className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[1100px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-gradient-to-br from-[#FFF9EE] via-white to-[#FFF9EE]/30">
-        {/* Step Progress Row - Centered */}
-        <div className="flex justify-center pt-4 pb-2 bg-transparent">
-          <DialogTitle className="sr-only">Storyboard Editor</DialogTitle>
-          <ContentFlowProgress currentStep={3} className="w-[550px]" onStepClick={handleNavigateWithSave} />
-        </div>
-
-        <AnimatePresence mode="wait" custom={slideDirection}>
-          <motion.div
-            key="storyboard-content"
-            custom={slideDirection}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="flex-1 flex flex-col overflow-hidden"
-          >
+      {/* Step Progress Row - Centered */}
+      <div className="flex justify-center pt-4 pb-2 bg-transparent">
+        <ContentFlowProgress currentStep={3} className="w-[550px]" onStepClick={handleNavigateWithSave} />
+      </div>
         {/* Main content - side by side layout */}
         <div
           ref={leftPanelRef}
@@ -1114,10 +1101,44 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
           </div>
 
         </div>
-          </motion.div>
-        </AnimatePresence>
-      </DialogContent>
-    </Dialog>
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <>
+        {dialogContent}
+        {/* Shot Library Dialog */}
+        <ShotLibraryDialog
+          open={isLibraryOpen}
+          onOpenChange={setIsLibraryOpen}
+          onSelectShot={handleLibrarySelect}
+          currentShotId={librarySceneId ? scenes.find(s => s.id === librarySceneId)?.selectedShotTemplateId : undefined}
+        />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Dialog open={open} onOpenChange={handleClose}>
+        <DialogContent hideCloseButton onInteractOutside={handleInteractOutside} onEscapeKeyDown={handleInteractOutside} className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[1100px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-gradient-to-br from-[#FFF9EE] via-white to-[#FFF9EE]/30">
+          <AnimatePresence mode="wait" custom={slideDirection}>
+            <motion.div
+              key="storyboard-content"
+              custom={slideDirection}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="flex-1 flex flex-col overflow-hidden"
+            >
+              {dialogContent}
+            </motion.div>
+          </AnimatePresence>
+        </DialogContent>
+      </Dialog>
 
       {/* Shot Library Dialog */}
       <ShotLibraryDialog
