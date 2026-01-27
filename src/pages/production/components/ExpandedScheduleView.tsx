@@ -1532,7 +1532,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
       {/* Main content - split panels with step progress integrated */}
       <div className={cn(
         "flex-1 overflow-y-auto grid transition-all duration-300 min-h-0",
-        singleCard && isLeftPanelCollapsed ? "grid-cols-[1fr]" : isLeftPanelCollapsed ? "grid-cols-[48px_1fr]" : "grid-cols-[320px_1fr]"
+        singleCard && isLeftPanelCollapsed ? "grid-cols-[1fr]" : isLeftPanelCollapsed ? "grid-cols-[48px_1fr]" : "grid-cols-[300px_1fr]"
       )} style={{ gridTemplateRows: '1fr' }}>
         {/* Step Progress Indicator - centered across full width (hide when collapsed in single card mode) */}
         {!planningMode && !(singleCard && isLeftPanelCollapsed) && (
@@ -1571,7 +1571,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
           className={cn(
             "border-r flex flex-col min-h-0 transition-all duration-300 relative",
             embedded && !singleCard && !dragOverUnschedule ? "border-violet-100 bg-violet-50/40" : "border-transparent",
-            dragOverUnschedule && "bg-gradient-to-br from-amber-100 to-amber-200 border-amber-300 rounded-tl-2xl"
+            dragOverUnschedule && "bg-gradient-to-br from-amber-100 to-amber-200 border-2 border-amber-300 rounded-2xl m-2"
           )}
           onDragOver={(e) => {
             e.preventDefault();
@@ -1623,7 +1623,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
           {/* Body - scrollable */}
           <div className={cn(
             "flex-1 min-h-0 overflow-y-auto transition-all duration-300",
-            isLeftPanelCollapsed ? "p-0 opacity-0 overflow-hidden" : "px-4 -mt-2 pb-4 opacity-100"
+            isLeftPanelCollapsed ? "p-0 opacity-0 overflow-hidden" : "px-2 -mt-2 pb-4 opacity-100"
           )}>
             {/* Embedded mode WITHOUT single card: Show hybrid panel with stats and upcoming */}
             {/* When singleCard is provided (even in embedded mode), show the single card content instead */}
@@ -1900,20 +1900,14 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                 </div>
               ) : (
                 // Card to schedule
-                <div className="space-y-4 pt-4">
-                  {/* Header question */}
-                  <div className="text-center px-2">
-                    <p className="text-sm text-[#8B7082] font-medium mb-1">Almost there!</p>
-                    <h3 className="text-lg font-bold text-gray-900">When do you want to post this?</h3>
-                  </div>
-
+                <div className="space-y-4 pt-32">
                   {/* Single card preview */}
                   <div
                     draggable
                     onDragStart={(e) => handleDragStart(e, singleCard.id)}
                     onDragEnd={handleDragEnd}
                     className={cn(
-                      "p-5 rounded-2xl bg-white border-2 border-[#8B7082]/30 shadow-lg cursor-grab active:cursor-grabbing transition-all hover:shadow-xl hover:border-[#8B7082]/50",
+                      "p-5 rounded-2xl bg-white border-2 border-[#8B7082]/30 shadow-lg cursor-grab active:cursor-grabbing transition-all hover:shadow-xl hover:border-[#8B7082]/50 ml-4",
                       draggedCardId === singleCard.id && "opacity-40 scale-[0.98]"
                     )}
                   >
@@ -1955,10 +1949,10 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                   </div>
 
                   {/* Drag hint */}
-                  <div className="flex items-center justify-center gap-2 text-sm text-[#8B7082]">
-                    <CalendarDays className="w-4 h-4" />
-                    <span className="italic">Drag to a date on the calendar</span>
-                  </div>
+                  <p className="text-sm text-[#8B7082] text-center italic">
+                    <CalendarDays className="w-4 h-4 inline-block align-middle mr-1" />
+                    Drag to a date on the calendar<br />to schedule
+                  </p>
 
                   {/* Batch Schedule link */}
                   <div className="!mt-32 pt-16 text-center">
@@ -2005,7 +1999,12 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                   </p>
                 </div>
               ) : (
-                unscheduledCards.map((c) => {
+                <>
+                  {/* Title for unscheduled content */}
+                  <h3 className="text-base font-semibold text-[#612A4F] mb-3 px-1">
+                    Ready to Schedule
+                  </h3>
+                  {unscheduledCards.map((c) => {
                   const formats = c.formats || [];
                   const platforms = c.platforms || [];
                   const hasPlatforms = platforms.length > 0;
@@ -2085,7 +2084,8 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                       )}
                     </div>
                   );
-                })
+                })}
+                </>
               )}
 
               {/* Drag hint */}
