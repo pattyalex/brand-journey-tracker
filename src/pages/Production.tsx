@@ -240,9 +240,9 @@ const Production = () => {
   const [cardStatus, setCardStatus] = useState<'to-start' | 'needs-work' | 'ready'>('to-start');
   // Refs for filming checklist navigation
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const locationInputRef = useRef<HTMLInputElement>(null);
-  const outfitInputRef = useRef<HTMLInputElement>(null);
-  const propsInputRef = useRef<HTMLInputElement>(null);
+  const locationInputRef = useRef<HTMLTextAreaElement>(null);
+  const outfitInputRef = useRef<HTMLTextAreaElement>(null);
+  const propsInputRef = useRef<HTMLTextAreaElement>(null);
   const notesInputRef = useRef<HTMLTextAreaElement>(null);
   const deletedCardRef = useRef<{ card: ProductionCard; columnId: string; index: number } | null>(null);
   const [addedAngleText, setAddedAngleText] = useState<string | null>(null);
@@ -2328,7 +2328,7 @@ const Production = () => {
       <div className="w-full h-screen flex flex-col pl-5 pr-3 pt-4 bg-[#F5F3F4]">
         <div
           ref={horizontalScrollRef}
-          className="flex gap-5 flex-1 overflow-x-auto overflow-y-visible ml-[-34px] pl-[34px] mt-[-16px] pt-[16px] hide-scrollbar"
+          className="flex gap-5 flex-1 overflow-x-auto overflow-y-visible ml-[-34px] pl-[34px] mt-[-16px] pt-[16px] hide-scrollbar items-start"
           onScroll={(e) => {
             const target = e.currentTarget;
             const maxScroll = target.scrollWidth - target.clientWidth;
@@ -2353,8 +2353,8 @@ const Production = () => {
                     if (el) columnRefs.current.set(column.id, el);
                   }}
                   className={cn(
-                    "flex flex-col rounded-2xl transition-all duration-300 overflow-hidden",
-                    "shadow-[0_1px_2px_rgba(0,0,0,0.04),0_2px_4px_rgba(0,0,0,0.03),0_4px_8px_rgba(0,0,0,0.03),0_8px_16px_rgba(0,0,0,0.02)]",
+                    "flex flex-col rounded-2xl transition-all duration-300 max-h-[calc(100vh-48px)]",
+                    "shadow-[0_-1px_2px_rgba(0,0,0,0.04),-2px_0_4px_rgba(0,0,0,0.03),2px_0_4px_rgba(0,0,0,0.03),0_-4px_8px_rgba(0,0,0,0.02)]",
                                         draggedOverColumn === column.id && draggedCard
                       ? column.id === "ideate" && columns.find(col => col.cards.some(c => c.id === draggedCard.id))?.id !== "ideate"
                         ? "ring-2 ring-offset-2 ring-red-400 opacity-60"
@@ -2364,13 +2364,15 @@ const Production = () => {
                     colors.bg
                   )}
                 >
-                  <div className="px-5 pt-5 pb-4 border-b-0">
+                  {/* Column Header - Fixed */}
+                  <div className="flex-shrink-0 px-5 pt-5 pb-4 border-b-0">
                     <h2 className={cn("font-medium text-[13px] tracking-[0.04em] uppercase border-0", colors.text)}>
                       {column.title}
                     </h2>
                   </div>
 
-                      <div className="flex-1 overflow-y-auto px-4 pt-1 pb-4 space-y-3 hide-scrollbar hover:hide-scrollbar relative border-t-0">
+                      {/* Scrollable Cards Area */}
+                      <div className="flex-1 overflow-y-auto px-4 pt-1 pb-2 space-y-3 hide-scrollbar hover:hide-scrollbar relative border-t-0 min-h-0">
                         {/* Not Allowed Overlay for Ideate Column */}
                         {column.id === "ideate" && draggedCard && draggedOverColumn === column.id &&
                          columns.find(col => col.cards.some(c => c.id === draggedCard.id))?.id !== "ideate" && (
@@ -2386,12 +2388,18 @@ const Production = () => {
                           {column.cards.filter(card => {
                             // Basic filter: has id, has title, not empty, not add quick idea
                             const basicFilter = card.id && card.title && card.title.trim() && !card.title.toLowerCase().includes('add quick idea');
-                            // For to-schedule column: hide cards that already have a scheduledDate
-                            if (column.id === 'to-schedule' && card.scheduledDate) {
-                              return false;
-                            }
                             return basicFilter;
-                          }).sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0)).map((card, cardIndex) => {
+                          }).sort((a, b) => {
+                            // Sort: pinned first, then unscheduled before scheduled
+                            if (a.isPinned !== b.isPinned) return (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0);
+                            // Then sort scheduled cards to the bottom
+                            if (column.id === 'to-schedule') {
+                              const aScheduled = !!a.scheduledDate;
+                              const bScheduled = !!b.scheduledDate;
+                              if (aScheduled !== bScheduled) return aScheduled ? 1 : -1;
+                            }
+                            return 0;
+                          }).map((card, cardIndex) => {
                             const isEditing = editingCardId === card.id;
 
                             // Find dragged card's current index in this column
@@ -2462,8 +2470,8 @@ const Production = () => {
                                 }
                               }}
                               className={cn(
-                                "group relative bg-white",
-                                "rounded-xl border border-stone-200",
+                                "group relative",
+                                "rounded-xl border",
                                 "shadow-[0_0_0_1px_rgba(0,0,0,0.02),0_2px_4px_rgba(0,0,0,0.04),0_8px_20px_rgba(0,0,0,0.06)]",
                                 "hover:shadow-[0_0_0_1px_rgba(0,0,0,0.02),0_4px_8px_rgba(0,0,0,0.05),0_12px_28px_rgba(0,0,0,0.08)]",
                                 "hover:-translate-y-[3px]",
@@ -2474,7 +2482,8 @@ const Production = () => {
                                 card.isCompleted && "opacity-60",
                                 recentlyRepurposedCardId === card.id && "ring-2 ring-emerald-500 ring-offset-2",
                                 highlightedUnscheduledCardId === card.id && "ring-2 ring-indigo-500 ring-offset-2",
-                                card.isNew && "ring-1 ring-[#8B7082]"
+                                card.isNew && "ring-1 ring-[#8B7082]",
+                                "bg-white border-stone-200"
                               )}
                             >
                             {highlightedUnscheduledCardId === card.id && (
@@ -2487,8 +2496,19 @@ const Production = () => {
                                 REPURPOSED
                               </div>
                             )}
+                            {/* Scheduled date indicator for to-schedule column */}
+                            {column.id === 'to-schedule' && card.scheduledDate && (
+                              <div className="flex items-center gap-1 mb-1.5">
+                                <div className="flex items-center gap-1 px-1.5 py-0.5 bg-[#F5F0F4] rounded-md border border-[#B8A0AD]">
+                                  <Check className="w-3 h-3 text-[#8B7082]" />
+                                  <span className="text-[11px] font-medium text-[#8B7082]">
+                                    Scheduled: {new Date(card.scheduledDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
                             {/* Calendar origin indicator */}
-                            {card.fromCalendar && (
+                            {card.fromCalendar && !card.scheduledDate && (
                               <div className="flex items-center gap-1 mb-1.5">
                                 <div className="flex items-center gap-1 px-1.5 py-0.5 bg-[#F5F2F4] rounded-md border border-[#DDD6DA]">
                                   <CalendarDays className="w-3 h-3 text-[#8B7082]" />
@@ -2720,7 +2740,7 @@ const Production = () => {
                             {/* Tags for cards with metadata */}
                             {column.id !== "ideate" && ((card.formats && card.formats.length > 0) || card.schedulingStatus || (card.platforms && card.platforms.length > 0)) && (() => {
                               const formats = card.formats || [];
-                              const hasStatus = column.id === 'to-schedule' && !!card.schedulingStatus && card.schedulingStatus !== 'to-schedule';
+                              const hasStatus = false; // Status now shown via badge at top of card
                               const schedulingStatus = card.schedulingStatus;
                               const platforms = card.platforms || [];
                               const hasPlatforms = platforms.length > 0;
@@ -2842,7 +2862,11 @@ const Production = () => {
                           </div>
                         );
                       })()}
+                        </AnimatePresence>
+                      </div>
 
+                      {/* Fixed Buttons Area */}
+                      <div className="flex-shrink-0 px-4 pb-4 pt-2 space-y-2">
                       {addingToColumn === column.id ? (
                         <div key={`inline-input-${column.id}`}>
                           <InlineCardInput
@@ -2944,8 +2968,7 @@ const Production = () => {
                           </div>
                         </div>
                       )}
-                    </AnimatePresence>
-                  </div>
+                      </div>
                 </div>
               </motion.div>
             );
@@ -2956,7 +2979,7 @@ const Production = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: columns.length * 0.1 }}
-            className="flex-shrink-0 w-[240px] mr-4"
+            className="flex-shrink-0 w-[240px] mr-4 self-stretch"
             onDragOver={(e) => handleDragOver(e, "posted")}
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, "posted")}

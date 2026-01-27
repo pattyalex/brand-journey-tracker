@@ -37,19 +37,10 @@ export const getCompletedSteps = (card: ProductionCard | null | undefined): numb
     completed.push(3);
   }
 
-  // Step 4 - Edit: has editing checklist with items checked
-  const hasEditingContent = card.editingChecklist && (
-    card.editingChecklist.reviewedFootage ||
-    card.editingChecklist.selectedBestTakes ||
-    card.editingChecklist.cutTightened ||
-    card.editingChecklist.addedCaptions ||
-    card.editingChecklist.colorCorrected ||
-    card.editingChecklist.audioLevelsAdjusted ||
-    card.editingChecklist.addedMusicSFX ||
-    card.editingChecklist.exportedFormats ||
-    card.editingChecklist.notes?.trim()
-  );
-  if (hasEditingContent) {
+  // Step 4 - Edit: all checklist items are checked (notes are optional)
+  const editItems = card.editingChecklist?.items || [];
+  const allItemsChecked = editItems.length > 0 && editItems.every(item => item.checked);
+  if (allItemsChecked) {
     completed.push(4);
   }
 

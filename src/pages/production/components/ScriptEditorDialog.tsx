@@ -65,9 +65,9 @@ interface ScriptEditorDialogProps {
   onSave: () => void;
   embedded?: boolean;
   titleInputRef: React.RefObject<HTMLInputElement>;
-  locationInputRef: React.RefObject<HTMLInputElement>;
-  outfitInputRef: React.RefObject<HTMLInputElement>;
-  propsInputRef: React.RefObject<HTMLInputElement>;
+  locationInputRef: React.RefObject<HTMLTextAreaElement>;
+  outfitInputRef: React.RefObject<HTMLTextAreaElement>;
+  propsInputRef: React.RefObject<HTMLTextAreaElement>;
   notesInputRef: React.RefObject<HTMLTextAreaElement>;
   cardTitle: string;
   setCardTitle: (value: string) => void;

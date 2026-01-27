@@ -111,11 +111,11 @@ const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
             <div className="px-6 pt-4 pb-4">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-[#4A3542] flex items-center justify-center shadow-lg">
+                  <div className="w-12 h-12 rounded-2xl bg-[#8B7082] flex items-center justify-center shadow-lg">
                     <Archive className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">Published Content</h2>
+                    <h2 className="text-xl font-bold text-[#8B7082]">Published Content</h2>
                     <p className="text-sm text-[#8B7082]">
                       {archivedCards.length} {archivedCards.length === 1 ? 'post' : 'posts'}
                     </p>
@@ -315,7 +315,7 @@ const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
                           onRepurpose(selectedCard);
                           onOpenChange(false);
                         }}
-                        className="flex items-center gap-2 px-4 py-2 bg-[#4A3542] hover:bg-[#3A2832] text-white rounded-xl font-medium text-sm transition-all hover:shadow-lg hover:scale-105 active:scale-95"
+                        className="flex items-center gap-2 px-4 py-2 bg-[#8B7082] hover:bg-[#6B5062] text-white rounded-xl font-medium text-sm transition-all hover:shadow-lg hover:scale-105 active:scale-95"
                       >
                         <RefreshCw className="w-4 h-4" />
                         Repurpose
