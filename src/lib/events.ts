@@ -7,6 +7,7 @@ export const EVENTS = {
   openArchiveDialog: 'openArchiveDialog',
   contentArchived: 'contentArchived',
   OPEN_BATCH_SCHEDULE: 'openBatchSchedule',
+  OPEN_CONTENT_FLOW: 'openContentFlow',
 } as const;
 
 type EventName = (typeof EVENTS)[keyof typeof EVENTS];

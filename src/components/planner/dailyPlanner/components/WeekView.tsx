@@ -96,6 +96,7 @@ interface WeekViewProps {
   }>>;
   loadProductionContent?: () => void;
   onOpenContentDialog?: (content: ProductionCard, type: 'scheduled' | 'planned') => void;
+  onOpenContentFlow?: (cardId: string) => void;
 }
 
 export const WeekView = ({
@@ -144,6 +145,7 @@ export const WeekView = ({
   setWeeklyAddDialogState,
   loadProductionContent,
   onOpenContentDialog,
+  onOpenContentFlow,
 }: WeekViewProps) => {
   const navigate = useNavigate();
 
@@ -389,11 +391,25 @@ export const WeekView = ({
         if (toScheduleColumn) {
           const card = toScheduleColumn.cards.find(c => c.id === contentId);
           if (card) {
-            card.isCompleted = !card.isCompleted;
+            const newCompletedState = !card.isCompleted;
+            card.isCompleted = newCompletedState;
             setString(StorageKeys.productionKanban, JSON.stringify(columns));
             emit(window, EVENTS.productionKanbanUpdated);
             emit(window, EVENTS.scheduledContentUpdated);
             loadProductionContent?.();
+            if (newCompletedState) {
+              // Create archive copy
+              const archivedCopy: ProductionCard = {
+                ...card,
+                id: `archived-${card.id}-${Date.now()}`,
+                columnId: 'posted',
+                schedulingStatus: undefined,
+                archivedAt: new Date().toISOString(),
+                postedAt: new Date().toISOString(),
+              } as ProductionCard & { archivedAt: string; postedAt: string };
+              emit(window, EVENTS.contentArchived, { card: archivedCopy });
+              toast.success("Posted! 🎉");
+            }
           }
         }
       } catch (err) {
@@ -808,7 +824,14 @@ export const WeekView = ({
                                   onDragEnd={(e) => {
                                     e.currentTarget.style.opacity = '1';
                                   }}
-                                  onClick={() => onOpenContentDialog?.(content, isPlanned ? 'planned' : 'scheduled')}
+                                  onClick={() => {
+                                    if (isPlanned) {
+                                      onOpenContentDialog?.(content, 'planned');
+                                    } else {
+                                      // Open content flow dialog directly for scheduled content
+                                      onOpenContentFlow?.(content.id);
+                                    }
+                                  }}
                                   className="absolute left-1 right-1 rounded-lg cursor-pointer transition-all hover:brightness-95 hover:shadow-md overflow-hidden group"
                                   style={{
                                     top: `${topPos}px`,
@@ -1249,7 +1272,14 @@ export const WeekView = ({
                                   <div
                                     key={content.id}
                                     draggable={true}
-                                    onClick={() => onOpenContentDialog?.(content, isPlanned ? 'planned' : 'scheduled')}
+                                    onClick={() => {
+                                      if (isPlanned) {
+                                        onOpenContentDialog?.(content, 'planned');
+                                      } else {
+                                        // Open content flow dialog directly for scheduled content
+                                        onOpenContentFlow?.(content.id);
+                                      }
+                                    }}
                                     onDragStart={(e) => {
                                       e.stopPropagation();
                                       e.dataTransfer.setData('contentId', content.id);

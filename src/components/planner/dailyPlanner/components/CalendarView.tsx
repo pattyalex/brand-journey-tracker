@@ -57,6 +57,7 @@ interface CalendarViewProps {
   }>>;
   loadProductionContent?: () => void;
   onOpenContentDialog?: (content: ProductionCard, type: 'scheduled' | 'planned') => void;
+  onOpenContentFlow?: (cardId: string) => void;
   savePlannerData?: (data: PlannerDay[]) => void;
 }
 
@@ -91,6 +92,7 @@ export const CalendarView = ({
   setProductionContent,
   loadProductionContent,
   onOpenContentDialog,
+  onOpenContentFlow,
   savePlannerData,
 }: CalendarViewProps) => {
   const navigate = useNavigate();
@@ -380,11 +382,25 @@ export const CalendarView = ({
         if (toScheduleColumn) {
           const card = toScheduleColumn.cards.find(c => c.id === contentId);
           if (card) {
-            card.isCompleted = !card.isCompleted;
+            const newCompletedState = !card.isCompleted;
+            card.isCompleted = newCompletedState;
             setString(StorageKeys.productionKanban, JSON.stringify(columns));
             emit(window, EVENTS.productionKanbanUpdated);
             emit(window, EVENTS.scheduledContentUpdated);
             loadProductionContent?.();
+            if (newCompletedState) {
+              // Create archive copy
+              const archivedCopy: ProductionCard = {
+                ...card,
+                id: `archived-${card.id}-${Date.now()}`,
+                columnId: 'posted',
+                schedulingStatus: undefined,
+                archivedAt: new Date().toISOString(),
+                postedAt: new Date().toISOString(),
+              } as ProductionCard & { archivedAt: string; postedAt: string };
+              emit(window, EVENTS.contentArchived, { card: archivedCopy });
+              toast.success("Posted! 🎉");
+            }
           }
         }
       } catch (err) {
@@ -606,7 +622,8 @@ export const CalendarView = ({
                           draggable={true}
                           onClick={(e) => {
                             e.stopPropagation();
-                            onOpenContentDialog?.(content, 'scheduled');
+                            // Open content flow dialog directly
+                            onOpenContentFlow?.(content.id);
                           }}
                           onMouseDown={(e) => e.stopPropagation()}
                           onDragStart={(e) => {

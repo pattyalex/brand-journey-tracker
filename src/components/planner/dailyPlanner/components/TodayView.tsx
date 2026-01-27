@@ -40,9 +40,10 @@ interface TodayViewProps {
     endTime: string;
   }>>;
   onOpenContentDialog?: (content: ProductionCard, type: 'scheduled' | 'planned') => void;
+  onOpenContentFlow?: (cardId: string) => void;
 }
 
-export const TodayView = ({ state, derived, refs, helpers, setters, actions, todayAddDialogState, setTodayAddDialogState, onOpenContentDialog }: TodayViewProps) => {
+export const TodayView = ({ state, derived, refs, helpers, setters, actions, todayAddDialogState, setTodayAddDialogState, onOpenContentDialog, onOpenContentFlow }: TodayViewProps) => {
   const navigate = useNavigate();
 
   const {
@@ -337,11 +338,25 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
         if (toScheduleColumn) {
           const card = toScheduleColumn.cards.find(c => c.id === contentId);
           if (card) {
-            card.isCompleted = !card.isCompleted;
+            const newCompletedState = !card.isCompleted;
+            card.isCompleted = newCompletedState;
             setString(StorageKeys.productionKanban, JSON.stringify(columns));
             emit(window, EVENTS.productionKanbanUpdated);
             emit(window, EVENTS.scheduledContentUpdated);
             loadProductionContent();
+            if (newCompletedState) {
+              // Create archive copy
+              const archivedCopy: ProductionCard = {
+                ...card,
+                id: `archived-${card.id}-${Date.now()}`,
+                columnId: 'posted',
+                schedulingStatus: undefined,
+                archivedAt: new Date().toISOString(),
+                postedAt: new Date().toISOString(),
+              } as ProductionCard & { archivedAt: string; postedAt: string };
+              emit(window, EVENTS.contentArchived, { card: archivedCopy });
+              toast.success("Posted! 🎉");
+            }
           }
         }
       } catch (err) {
@@ -1057,7 +1072,14 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
               return (
                 <div
                   key={content.id}
-                  onClick={() => onOpenContentDialog?.(content, isPlanned ? 'planned' : 'scheduled')}
+                  onClick={() => {
+                    if (isPlanned) {
+                      onOpenContentDialog?.(content, 'planned');
+                    } else {
+                      // Open content flow dialog directly for scheduled content
+                      onOpenContentFlow?.(content.id);
+                    }
+                  }}
                   className="absolute left-0 right-0 rounded-lg cursor-pointer transition-all hover:brightness-95 hover:shadow-md overflow-hidden group"
                   style={{
                     top: `${top}px`,

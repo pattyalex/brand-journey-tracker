@@ -17,6 +17,7 @@ import { CalendarView } from "./dailyPlanner/components/CalendarView";
 import ExpandedScheduleView from "@/pages/production/components/ExpandedScheduleView";
 import { TaskDialog } from "./dailyPlanner/components/TaskDialog";
 import { ContentDialog } from "./dailyPlanner/components/ContentDialog";
+import StandaloneContentFlow from "./dailyPlanner/components/StandaloneContentFlow";
 import { ProductionCard } from "@/pages/production/types";
 import {
   AlertDialog,
@@ -69,6 +70,9 @@ export const DailyPlanner = () => {
     content: ProductionCard | null;
     type: 'scheduled' | 'planned';
   }>({ open: false, content: null, type: 'planned' });
+
+  // State for standalone content flow (for scheduled content)
+  const [contentFlowCardId, setContentFlowCardId] = useState<string | null>(null);
 
   // State for monthly add dialog
   const [monthlyAddDialogState, setMonthlyAddDialogState] = useState<{
@@ -157,9 +161,14 @@ export const DailyPlanner = () => {
     closeMonthlyDialog();
   };
 
-  // Handler to open content dialog
+  // Handler to open content dialog (for planned/ideas)
   const handleOpenContentDialog = useCallback((content: ProductionCard, type: 'scheduled' | 'planned') => {
     setContentDialogState({ open: true, content, type });
+  }, []);
+
+  // Handler to open content flow (for scheduled content)
+  const handleOpenContentFlow = useCallback((cardId: string) => {
+    setContentFlowCardId(cardId);
   }, []);
 
   // Callback for when drag-to-create completes in 'both' or 'content' mode
@@ -464,6 +473,7 @@ export const DailyPlanner = () => {
               todayAddDialogState={todayAddDialogState}
               setTodayAddDialogState={setTodayAddDialogState}
               onOpenContentDialog={handleOpenContentDialog}
+              onOpenContentFlow={handleOpenContentFlow}
             />
           </div>
         )}
@@ -516,6 +526,7 @@ export const DailyPlanner = () => {
               setWeeklyAddDialogState={setWeeklyAddDialogState}
               loadProductionContent={loadProductionContent}
               onOpenContentDialog={handleOpenContentDialog}
+              onOpenContentFlow={handleOpenContentFlow}
             />
           </div>
         )}
@@ -553,6 +564,7 @@ export const DailyPlanner = () => {
               setProductionContent={setProductionContent}
               loadProductionContent={loadProductionContent}
               onOpenContentDialog={handleOpenContentDialog}
+              onOpenContentFlow={handleOpenContentFlow}
               savePlannerData={persistence.savePlannerData}
             />
           </div>
@@ -927,6 +939,17 @@ export const DailyPlanner = () => {
         type={contentDialogState.type}
         onSave={() => helpers.loadProductionContent()}
       />
+
+      {/* Standalone Content Flow (for scheduled content) */}
+      {contentFlowCardId && (
+        <StandaloneContentFlow
+          cardId={contentFlowCardId}
+          onClose={() => {
+            setContentFlowCardId(null);
+            helpers.loadProductionContent();
+          }}
+        />
+      )}
 
       {/* Floating Action Button */}
       {currentView === 'day' && (
