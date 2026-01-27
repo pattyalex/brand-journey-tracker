@@ -970,33 +970,6 @@ const Production = () => {
         }))
       );
 
-      // Show toast with undo option
-      toast("Card deleted", {
-        description: deletedCard.hook || deletedCard.title || "Untitled card",
-        action: {
-          label: "Undo",
-          onClick: () => {
-            if (deletedCardRef.current) {
-              const { card, columnId, index } = deletedCardRef.current;
-              setColumns((prev) =>
-                prev.map((col) => {
-                  if (col.id === columnId) {
-                    const newCards = [...col.cards];
-                    // Insert at original position, or at end if position no longer valid
-                    const insertIndex = Math.min(index, newCards.length);
-                    newCards.splice(insertIndex, 0, card);
-                    return { ...col, cards: newCards };
-                  }
-                  return col;
-                })
-              );
-              deletedCardRef.current = null;
-              toast.success("Card restored");
-            }
-          },
-        },
-        duration: 7000,
-      });
     }
   };
 
@@ -1346,7 +1319,7 @@ const Production = () => {
     );
   };
 
-  // Repurpose archived content - creates a copy in Script Ideas
+  // Repurpose archived content - creates a copy in Ideate
   const handleRepurposeContent = (card: ProductionCard) => {
     const newCardId = `card-${Date.now()}`;
     const repurposedCard: ProductionCard = {
@@ -1358,14 +1331,14 @@ const Production = () => {
       formats: card.formats,
       customVideoFormats: card.customVideoFormats,
       customPhotoFormats: card.customPhotoFormats,
-      columnId: 'shape-ideas',
+      columnId: 'ideate',
       status: 'to-start' as const,
       isCompleted: false,
     };
 
     setColumns((prev) =>
       prev.map((col) =>
-        col.id === 'shape-ideas'
+        col.id === 'ideate'
           ? { ...col, cards: [repurposedCard, ...col.cards] }
           : col
       )
@@ -1382,10 +1355,10 @@ const Production = () => {
         <span>
           A copy has been added to{" "}
           <button
-            onClick={() => scrollToAndHighlightColumn('shape-ideas')}
+            onClick={() => scrollToAndHighlightColumn('ideate')}
             className="text-[#8B7082] hover:text-[#6B5062] font-medium underline underline-offset-2"
           >
-            Script Ideas
+            Ideate
           </button>
         </span>
       )
@@ -1439,8 +1412,6 @@ const Production = () => {
   const handleDeleteArchivedContent = (card: ProductionCard) => {
     // Remove from archived cards
     setArchivedCards((prev) => prev.filter((c) => c.id !== card.id));
-
-    toast.success("Content deleted");
   };
 
   const handleScriptEditorOpenChange = (open: boolean) => {
@@ -2749,7 +2720,7 @@ const Production = () => {
                             {/* Tags for cards with metadata */}
                             {column.id !== "ideate" && ((card.formats && card.formats.length > 0) || card.schedulingStatus || (card.platforms && card.platforms.length > 0)) && (() => {
                               const formats = card.formats || [];
-                              const hasStatus = column.id === 'to-schedule' && !!card.schedulingStatus;
+                              const hasStatus = column.id === 'to-schedule' && !!card.schedulingStatus && card.schedulingStatus !== 'to-schedule';
                               const schedulingStatus = card.schedulingStatus;
                               const platforms = card.platforms || [];
                               const hasPlatforms = platforms.length > 0;
@@ -2995,8 +2966,8 @@ const Production = () => {
                 "flex flex-col items-center justify-center h-full min-h-[400px] rounded-2xl transition-all duration-300",
                 "border-2 border-dashed",
                 draggedOverColumn === "posted" && draggedCard
-                  ? "border-[#887098] bg-[#F5F0F7]/80 scale-[1.02]"
-                  : "border-[#D4C8DC] bg-[#FAF8FB]/50",
+                  ? "border-[#8B7082] bg-[#F5F0F7]/80 scale-[1.02]"
+                  : "border-[#C9B5C0] bg-[#FAF8FB]/50",
               )}
             >
               <motion.div
@@ -3010,15 +2981,15 @@ const Production = () => {
                 <Archive className={cn(
                   "w-7 h-7 mb-2 transition-colors",
                   draggedOverColumn === "posted" && draggedCard
-                    ? "text-[#685078]"
-                    : "text-[#A090AC]"
+                    ? "text-[#6B5062]"
+                    : "text-[#8B7082]"
                 )} />
 
                 <p className={cn(
                   "text-xs text-center transition-colors font-medium mb-3",
                   draggedOverColumn === "posted" && draggedCard
                     ? "text-[#5C466C]"
-                    : "text-[#8B7A94]"
+                    : "text-[#8B7082]"
                 )}>
                   {draggedOverColumn === "posted" && draggedCard
                     ? "Release to archive"
@@ -3029,13 +3000,10 @@ const Production = () => {
                 {/* View archive button */}
                 <button
                   onClick={() => setIsArchiveDialogOpen(true)}
-                  className="flex items-center gap-1.5 text-xs text-white font-medium bg-[#887098] hover:bg-[#786088] px-3 py-2 rounded-lg transition-colors shadow-sm"
+                  className="flex items-center gap-1.5 text-xs text-white font-medium bg-[#8B7082] hover:bg-[#7A6272] px-3 py-2 rounded-lg transition-colors shadow-sm"
                 >
                   <Archive className="w-3.5 h-3.5" />
-                  {archivedCards.length > 0
-                    ? `View (${archivedCards.length})`
-                    : "View archive"
-                  }
+                  View Archive
                 </button>
 
                 {/* Undo button */}
