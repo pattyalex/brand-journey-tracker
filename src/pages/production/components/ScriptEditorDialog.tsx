@@ -71,6 +71,8 @@ interface ScriptEditorDialogProps {
   notesInputRef: React.RefObject<HTMLTextAreaElement>;
   cardTitle: string;
   setCardTitle: (value: string) => void;
+  cardHook: string;
+  setCardHook: (value: string) => void;
   scriptContent: string;
   setScriptContent: (value: string) => void;
   showBrainDumpSuggestion: boolean;
@@ -122,6 +124,8 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   notesInputRef,
   cardTitle,
   setCardTitle,
+  cardHook,
+  setCardHook,
   scriptContent,
   setScriptContent,
   showBrainDumpSuggestion,
@@ -175,10 +179,10 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
 
   const getSystemPrompt = () => `You are MegAI, a helpful script writing assistant for social media content creators. You help improve scripts, suggest hooks, make content more engaging, and provide actionable feedback.
 
-${scriptContent ? `The user is working on a script titled "${cardTitle || 'Untitled'}":
+${scriptContent ? `The user is working on a script titled "${cardHook || cardTitle || 'Untitled'}":
 ---
 ${scriptContent}
----` : `The user is starting a new script${cardTitle ? ` titled "${cardTitle}"` : ''}.`}
+---` : `The user is starting a new script${(cardHook || cardTitle) ? ` titled "${cardHook || cardTitle}"` : ''}.`}
 
 ${platformTags.length > 0 ? `Target platforms: ${platformTags.join(', ')}` : ''}
 ${formatTags.length > 0 ? `Content format: ${formatTags.join(', ')}` : ''}
@@ -433,17 +437,21 @@ Guidelines:
                 <input
                   ref={titleInputRef}
                   type="text"
-                  value={cardTitle}
-                  onChange={(e) => setCardTitle(e.target.value)}
+                  value={cardHook || cardTitle}
+                  onChange={(e) => {
+                    setCardHook(e.target.value);
+                    // Also sync to title for backwards compatibility
+                    if (!cardTitle) setCardTitle(e.target.value);
+                  }}
                   tabIndex={-1}
                   autoComplete="off"
                   placeholder="Enter content title..."
                   className="w-2/3 px-0 py-1 text-xl font-semibold bg-transparent border-0 focus:outline-none focus:ring-0 placeholder:text-[#A0A0A0] truncate"
                 />
               </TooltipTrigger>
-              {cardTitle && cardTitle.length > 30 && (
+              {(cardHook || cardTitle) && (cardHook || cardTitle).length > 30 && (
                 <TooltipContent side="bottom" className="max-w-md">
-                  {cardTitle}
+                  {cardHook || cardTitle}
                 </TooltipContent>
               )}
             </Tooltip>

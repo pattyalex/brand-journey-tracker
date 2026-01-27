@@ -158,8 +158,8 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
     // Load per-card notes and status
     setNotes(card?.editingChecklist?.notes || "");
     setStatus(card?.editingChecklist?.status || null);
-    setTitle(card?.title || "");
-    setHook(card?.hook || "");
+    setTitle(card?.hook || card?.title || "");
+    setHook(card?.hook || card?.title || "");
     setScript(card?.script || "");
   }, [card, isOpen]);
 

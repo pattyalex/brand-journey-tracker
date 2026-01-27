@@ -1463,6 +1463,17 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
               completedSteps={completedSteps}
             />
           </div>
+          {/* Save & Schedule Later button */}
+          {onMoveToScheduleColumn && (
+            <button
+              onClick={() => {
+                onMoveToScheduleColumn(singleCard);
+              }}
+              className="px-4 py-2 text-sm font-medium bg-[#612A4F] hover:bg-[#4A1F3D] text-white rounded-lg transition-colors flex-shrink-0 whitespace-nowrap"
+            >
+              Save & Schedule Later
+            </button>
+          )}
           {/* Batch Schedule link */}
           <button
             onClick={() => {
@@ -1525,7 +1536,10 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
       )} style={{ gridTemplateRows: '1fr' }}>
         {/* Step Progress Indicator - centered across full width (hide when collapsed in single card mode) */}
         {!planningMode && !(singleCard && isLeftPanelCollapsed) && (
-          <div className="col-span-2 flex-shrink-0 pt-3 pb-2">
+          <div className="col-span-2 flex-shrink-0 pt-3 pb-2 flex items-center justify-between px-4">
+            {/* Spacer for balance */}
+            <div className="w-[160px]" />
+            {/* Centered stepper */}
             <ContentFlowProgress
               currentStep={5}
               onStepClick={onNavigateToStep ? (step) => {
@@ -1536,6 +1550,19 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
               } : undefined}
               completedSteps={completedSteps}
             />
+            {/* Save & Schedule Later button - top right */}
+            {singleCard && onMoveToScheduleColumn && !singleCardScheduled ? (
+              <button
+                onClick={() => {
+                  onMoveToScheduleColumn(singleCard);
+                }}
+                className="px-4 py-2 text-sm font-medium bg-[#612A4F] hover:bg-[#4A1F3D] text-white rounded-lg transition-colors whitespace-nowrap"
+              >
+                Save & Schedule Later
+              </button>
+            ) : (
+              <div className="w-[160px]" />
+            )}
           </div>
         )}
         {/* Left Panel - Content to Schedule / Your Week (hidden when collapsed in single card mode) */}
@@ -3058,16 +3085,6 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   if (embedded) {
     return (
       <>
-        {/* Close Button */}
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors z-10"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        )}
-
         <div
           className={cn(
             "flex flex-col h-full flex-1 overflow-hidden",

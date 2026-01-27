@@ -365,9 +365,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
     } else {
       setScenes([]);
     }
-    if (card?.title) {
-      setCardTitle(card.title);
-    }
+    setCardTitle(card?.hook || card?.title || "");
     setHookContent(card?.hook || card?.title || "");
     setScriptContent(card?.script || "");
     setFilmingStatus(card?.status || "to-start");

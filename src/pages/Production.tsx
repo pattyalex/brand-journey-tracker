@@ -1424,8 +1424,11 @@ const Production = () => {
 
   const handleOpenIdeateCardEditor = (card: ProductionCard) => {
     setEditingIdeateCard(card);
-    setIdeateCardTitle(card.title || "");
+    const initialTitle = card.hook || card.title || "";
+    setIdeateCardTitle(initialTitle);
     setIdeateCardNotes(card.description || "");
+    // Also initialize cardHook to keep forms in sync from the start
+    setCardHook(initialTitle);
     // Use unified content flow dialog
     setContentFlowCard(card);
     setActiveContentFlowStep(1);
@@ -1448,11 +1451,11 @@ const Production = () => {
 
     // Initialize all state for the card
     setEditingIdeateCard(card);
-    setIdeateCardTitle(card.title || "");
+    setIdeateCardTitle(card.hook || card.title || "");
     setIdeateCardNotes(card.description || "");
     setEditingScriptCard(card);
     setCardTitle(card.title || "");
-    setCardHook(card.hook || "");
+    setCardHook(card.hook || card.title || "");
     setScriptContent(card.script || "");
     setPlatformTags(card.platforms || []);
     setFormatTags(card.formats || []);
@@ -1754,7 +1757,8 @@ const Production = () => {
   // savedCardData is optional - when provided (from Storyboard/Edit dialogs), use it directly
   const handleNavigateToStep = (step: number, savedCardData?: Partial<ProductionCard>) => {
     // Get the current card from whichever dialog is open
-    const currentCard = editingIdeateCard || editingScriptCard || editingStoryboardCard || editingEditCard || schedulingCard;
+    // IMPORTANT: contentFlowCard should be checked first as it's the primary card in the unified content flow
+    const currentCard = contentFlowCard || editingIdeateCard || editingScriptCard || editingStoryboardCard || editingEditCard || schedulingCard;
     if (!currentCard) return;
 
     // Find the current version of the card and its column
@@ -1768,110 +1772,90 @@ const Production = () => {
         break;
       }
     }
-    if (!latestCard) return;
+    // Fallback: if card not found in columns, use currentCard directly
+    if (!latestCard) {
+      latestCard = { ...currentCard };
+      cardColumnId = currentCard.columnId || 'ideate';
+    }
 
-    // If savedCardData is provided (from Storyboard/Edit dialogs), merge it with latestCard
-    if (savedCardData) {
-      latestCard = { ...latestCard, ...savedCardData };
-      // Save to state
-      setColumns((prev) =>
-        prev.map((col) => ({
-          ...col,
-          cards: col.cards.map((card) =>
-            card.id === currentCard.id ? latestCard! : card
-          ),
-        }))
-      );
-    }
-    // Auto-save current dialog and update latestCard with current form values
-    // Handle ContentFlowDialog auto-save based on current step
-    else if (activeContentFlowStep !== null) {
-      switch (activeContentFlowStep) {
-        case 1: // Ideate
-          latestCard = {
-            ...latestCard,
-            title: ideateCardTitle,
-            description: ideateCardNotes,
-          };
-          break;
-        case 2: // Script
-          latestCard = {
-            ...latestCard,
-            title: cardTitle,
-            hook: cardHook,
-            script: scriptContent,
-            platforms: platformTags,
-            formats: formatTags,
-            locationChecked,
-            locationText,
-            outfitChecked,
-            outfitText,
-            propsChecked,
-            propsText,
-            filmingNotes,
-            status: cardStatus,
-            customVideoFormats,
-            customPhotoFormats,
-          };
-          break;
-        // Steps 3, 4, 5 (Film, Edit, Schedule) pass savedCardData directly
+    // Get the current step we're LEAVING (this determines which form data to save)
+    const currentStep = activeContentFlowStep ||
+      (isIdeateCardEditorOpen ? 1 : isScriptEditorOpen ? 2 : isStoryboardDialogOpen ? 3 : isEditChecklistDialogOpen ? 4 : isScheduleColumnExpanded ? 5 : 1);
+
+    // Build form data based on CURRENT step only - don't mix form data from different steps
+    const currentFormData: Partial<ProductionCard> = {};
+
+    if (currentStep === 1) {
+      // Leaving Ideate - save Ideate form data
+      // Use explicit check for undefined to allow empty strings
+      if (ideateCardTitle !== undefined && ideateCardTitle !== "") {
+        currentFormData.title = ideateCardTitle;
+        currentFormData.hook = ideateCardTitle; // Ideate title IS the hook
       }
-      // Save to state
-      setColumns((prev) =>
-        prev.map((col) => ({
-          ...col,
-          cards: col.cards.map((card) =>
-            card.id === currentCard.id ? latestCard! : card
-          ),
-        }))
-      );
+      if (ideateCardNotes !== undefined) {
+        currentFormData.description = ideateCardNotes;
+      }
+    } else if (currentStep === 2) {
+      // Leaving Script - save Script form data
+      if (cardHook !== undefined && cardHook !== "") {
+        currentFormData.hook = cardHook;
+        currentFormData.title = cardHook; // Keep title in sync with hook
+      }
+      if (scriptContent !== undefined) {
+        currentFormData.script = scriptContent;
+      }
+      if (platformTags.length > 0) {
+        currentFormData.platforms = platformTags;
+      }
+      if (formatTags.length > 0) {
+        currentFormData.formats = formatTags;
+      }
+      currentFormData.locationChecked = locationChecked;
+      currentFormData.locationText = locationText;
+      currentFormData.outfitChecked = outfitChecked;
+      currentFormData.outfitText = outfitText;
+      currentFormData.propsChecked = propsChecked;
+      currentFormData.propsText = propsText;
+      if (filmingNotes !== undefined) {
+        currentFormData.filmingNotes = filmingNotes;
+      }
+      if (cardStatus) {
+        currentFormData.status = cardStatus;
+      }
+      if (customVideoFormats.length > 0) {
+        currentFormData.customVideoFormats = customVideoFormats;
+      }
+      if (customPhotoFormats.length > 0) {
+        currentFormData.customPhotoFormats = customPhotoFormats;
+      }
     }
-    else if (isIdeateCardEditorOpen && editingIdeateCard) {
-      // Update latestCard with current form values
-      latestCard = {
-        ...latestCard,
-        title: ideateCardTitle,
-        description: ideateCardNotes,
-      };
-      // Save to state
-      setColumns((prev) =>
-        prev.map((col) => ({
-          ...col,
-          cards: col.cards.map((card) =>
-            card.id === editingIdeateCard.id ? latestCard! : card
-          ),
-        }))
-      );
-    } else if (isScriptEditorOpen && editingScriptCard) {
-      // Update latestCard with current form values
-      latestCard = {
-        ...latestCard,
-        title: cardTitle,
-        hook: cardHook,
-        script: scriptContent,
-        platforms: platformTags,
-        formats: formatTags,
-        locationChecked,
-        locationText,
-        outfitChecked,
-        outfitText,
-        propsChecked,
-        propsText,
-        filmingNotes,
-        status: cardStatus,
-        customVideoFormats,
-        customPhotoFormats,
-      };
-      // Save to state
-      setColumns((prev) =>
-        prev.map((col) => ({
-          ...col,
-          cards: col.cards.map((card) =>
-            card.id === editingScriptCard.id ? latestCard! : card
-          ),
-        }))
-      );
-    }
+    // Steps 3, 4, 5 save their own data through their respective dialogs
+
+    // Merge: savedCardData (if provided) > currentFormData > latestCard
+    latestCard = { ...latestCard, ...currentFormData, ...(savedCardData || {}) };
+
+    // Save to columns
+    setColumns((prev) => {
+      let cardFound = false;
+      const updated = prev.map((col) => ({
+        ...col,
+        cards: col.cards.map((card) => {
+          if (card.id === currentCard.id) {
+            cardFound = true;
+            return latestCard!;
+          }
+          return card;
+        }),
+      }));
+      if (!cardFound && cardColumnId) {
+        return updated.map((col) =>
+          col.id === cardColumnId
+            ? { ...col, cards: [...col.cards, latestCard!] }
+            : col
+        );
+      }
+      return updated;
+    });
 
     const stepLabels: Record<number, string> = {
       1: 'Ideate',
@@ -1894,13 +1878,19 @@ const Production = () => {
       switch (step) {
         case 1: // Ideate
           setEditingIdeateCard(latestCard!);
-          setIdeateCardTitle(latestCard!.title || "");
+          const ideateTitle = latestCard!.hook || latestCard!.title || "";
+          setIdeateCardTitle(ideateTitle);
           setIdeateCardNotes(latestCard!.description || "");
+          // Also sync cardHook so it's up-to-date if user navigates to Script later
+          setCardHook(ideateTitle);
           break;
         case 2: // Script
           setEditingScriptCard(latestCard!);
+          const scriptTitle = latestCard!.hook || latestCard!.title || "";
           setCardTitle(latestCard!.title || "");
-          setCardHook(latestCard!.hook || "");
+          setCardHook(scriptTitle);
+          // Also sync ideateCardTitle so it's up-to-date if user navigates back to Ideate
+          setIdeateCardTitle(scriptTitle);
           setScriptContent(latestCard!.script || "");
           setPlatformTags(latestCard!.platforms || []);
           setFormatTags(latestCard!.formats || []);
@@ -4897,6 +4887,8 @@ Make each idea unique, creative, and directly tied to both the original content 
           notesInputRef={notesInputRef}
           cardTitle={cardTitle}
           setCardTitle={setCardTitle}
+          cardHook={cardHook}
+          setCardHook={setCardHook}
           scriptContent={scriptContent}
           setScriptContent={setScriptContent}
           showBrainDumpSuggestion={showBrainDumpSuggestion}
@@ -5129,6 +5121,9 @@ Make each idea unique, creative, and directly tied to both the original content 
                     return col;
                   });
                 });
+                // Close the content flow dialog after moving
+                setActiveContentFlowStep(null);
+                setContentFlowCard(null);
               }}
               completedSteps={getCompletedSteps(contentFlowCard)}
               onOpenContentFlow={handleOpenContentFlowForCard}
@@ -5202,6 +5197,9 @@ Make each idea unique, creative, and directly tied to both the original content 
                   });
                 }
               });
+              // Close the expanded schedule view after moving
+              setIsScheduleColumnExpanded(false);
+              setSchedulingCard(null);
             }}
             completedSteps={getCompletedSteps(schedulingCard)}
           />
