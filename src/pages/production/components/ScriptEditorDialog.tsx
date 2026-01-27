@@ -106,6 +106,7 @@ interface ScriptEditorDialogProps {
   setCardStatus: (value: CardStatus) => void;
   onNavigateToStep?: (step: number) => void;
   slideDirection?: 'left' | 'right';
+  completedSteps?: number[];
 }
 
 const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
@@ -156,6 +157,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   setCardStatus,
   onNavigateToStep,
   slideDirection = 'right',
+  completedSteps = [],
 }) => {
   const [shakeButton, setShakeButton] = useState(false);
   const [isMegAIOpen, setIsMegAIOpen] = useState(false);
@@ -420,7 +422,7 @@ Guidelines:
 
       {/* Step Progress Indicator - Centered */}
       <div className="flex justify-center pt-2 pb-12 flex-shrink-0">
-        <ContentFlowProgress currentStep={2} className="w-[550px]" onStepClick={onNavigateToStep} />
+        <ContentFlowProgress currentStep={2} className="w-[550px]" onStepClick={onNavigateToStep} completedSteps={completedSteps} />
       </div>
       <div className="flex-1 overflow-y-auto px-6 -mt-1 pb-1">
         {/* Title Section + Move to Film Button */}

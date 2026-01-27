@@ -20,7 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CalendarDays, ChevronLeft, ChevronRight, Video, Camera, Check, X, Pin, PartyPopper, Lightbulb, Send, Plus, ArrowRight, TrendingUp, Clock, Sparkles, Archive, Trash2 } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Video, Camera, Check, X, Pin, PartyPopper, Lightbulb, Send, Plus, ArrowRight, TrendingUp, Clock, Sparkles, Archive, Trash2, AlertCircle } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
@@ -105,6 +105,10 @@ interface ExpandedScheduleViewProps {
   onNavigateToStep?: (step: number) => void;
   /** Callback when "Stop Here, Finish Later" is clicked - moves card to schedule column */
   onMoveToScheduleColumn?: (card: ProductionCard) => void;
+  /** Array of completed step numbers based on card data */
+  completedSteps?: number[];
+  /** Callback to open content flow dialog for a card */
+  onOpenContentFlow?: (card: ProductionCard) => void;
 }
 
 const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
@@ -121,6 +125,8 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   onPlanDate,
   onNavigateToStep,
   onMoveToScheduleColumn,
+  completedSteps = [],
+  onOpenContentFlow,
 }) => {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -164,6 +170,10 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   const [startTime, setStartTime] = useState("9:00");
   const [endTime, setEndTime] = useState("10:00");
   const [timePeriod, setTimePeriod] = useState<"AM" | "PM">("AM");
+
+  // Incomplete content warning state
+  const [showIncompleteWarning, setShowIncompleteWarning] = useState(false);
+  const [incompleteWarningMissingSteps, setIncompleteWarningMissingSteps] = useState<string[]>([]);
 
   // Track when single card has been scheduled (for congratulation state)
   const [singleCardScheduled, setSingleCardScheduled] = useState(false);
@@ -773,9 +783,10 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   };
 
   // Use internal or prop handlers based on mode
-  const onSchedule = embedded ? handleScheduleInternal : propOnSchedule;
-  const onUnschedule = embedded ? handleUnscheduleInternal : propOnUnschedule;
-  const onUpdateColor = embedded ? handleUpdateColorInternal : propOnUpdateColor;
+  // Prefer prop handlers when provided (they may have additional logic like incomplete content warnings)
+  const onSchedule = propOnSchedule || (embedded ? handleScheduleInternal : undefined);
+  const onUnschedule = propOnUnschedule || (embedded ? handleUnscheduleInternal : undefined);
+  const onUpdateColor = propOnUpdateColor || (embedded ? handleUpdateColorInternal : undefined);
 
   // Function to save idea directly to calendar (scheduled on the selected date)
   const handleSaveToCalendar = () => {
@@ -1227,14 +1238,35 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
 
   const handleDrop = (e: React.DragEvent, date: Date) => {
     e.preventDefault();
-    // Handle dropping a scheduled card - show time picker
+    // Handle dropping a scheduled card - check for incomplete content first
     if (draggedCardId && onSchedule) {
+      // Find the card being dropped
+      const cardToDrop = cards.find(c => c.id === draggedCardId) || (singleCard?.id === draggedCardId ? singleCard : null);
+
+      // Check for incomplete content
+      const missingSteps: string[] = [];
+      if (cardToDrop) {
+        if (!cardToDrop.hook?.trim() && !cardToDrop.title?.trim()) {
+          missingSteps.push("Title/Hook (Ideate)");
+        }
+        if (!cardToDrop.script?.trim()) {
+          missingSteps.push("Script");
+        }
+      }
+
       setPendingScheduleDate(date);
       setPendingScheduleCardId(draggedCardId);
       setStartTime("9:00");
       setEndTime("10:00");
       setTimePeriod("AM");
-      setTimePickerOpen(true);
+
+      // Show warning if incomplete, otherwise go straight to time picker
+      if (missingSteps.length > 0) {
+        setIncompleteWarningMissingSteps(missingSteps);
+        setShowIncompleteWarning(true);
+      } else {
+        setTimePickerOpen(true);
+      }
     }
     // Handle dropping a planned card (update its planned date)
     if (draggedPlannedCardId) {
@@ -1428,6 +1460,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                 }
               } : undefined}
               className="w-[400px]"
+              completedSteps={completedSteps}
             />
           </div>
           {/* Batch Schedule link */}
@@ -1471,6 +1504,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                 }
               } : undefined}
               className="w-[400px]"
+              completedSteps={completedSteps}
             />
           </div>
           {/* Done button on right */}
@@ -1500,6 +1534,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                   onNavigateToStep(step);
                 }
               } : undefined}
+              completedSteps={completedSteps}
             />
           </div>
         )}
@@ -2288,7 +2323,13 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                 }}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setPopoverCardId(popoverCardId === scheduledCard.id ? null : scheduledCard.id);
+                                  // For content hub cards, go directly to content flow
+                                  if (!scheduledCard.fromCalendar && onOpenContentFlow) {
+                                    onOpenContentFlow(scheduledCard);
+                                  } else {
+                                    // For calendar quick ideas, show the popover
+                                    setPopoverCardId(popoverCardId === scheduledCard.id ? null : scheduledCard.id);
+                                  }
                                 }}
                                 className={cn(
                                   "text-[11px] px-2 py-1.5 rounded-md cursor-grab active:cursor-grabbing transition-colors group/schedcard",
@@ -2542,6 +2583,21 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                     /* Cards from Content Hub - Show full details */
                                     <div>
                                       {renderContentDetails(scheduledCard)}
+
+                                      {/* Edit in Content Flow button */}
+                                      {onOpenContentFlow && (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setPopoverCardId(null);
+                                            onOpenContentFlow(scheduledCard);
+                                          }}
+                                          className="mt-4 w-full py-2 px-3 bg-[#8B7082] hover:bg-[#7A6272] text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+                                        >
+                                          <Sparkles className="w-4 h-4" />
+                                          Edit in Content Flow
+                                        </button>
+                                      )}
 
                                       {/* Color Picker for Content Hub cards too */}
                                       <div className="mt-4 pt-4 border-t border-gray-100">
@@ -3027,6 +3083,71 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
           {content}
         </div>
 
+        {/* Incomplete Content Warning Modal */}
+        {showIncompleteWarning && (
+          <div
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30"
+            onClick={() => {
+              setShowIncompleteWarning(false);
+              setPendingScheduleDate(null);
+              setPendingScheduleCardId(null);
+            }}
+          >
+            <div
+              className="bg-white rounded-2xl shadow-2xl p-6 w-[340px] max-w-[90vw]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Warning Icon */}
+              <div className="flex justify-center mb-4">
+                <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center">
+                  <AlertCircle className="w-7 h-7 text-amber-500" />
+                </div>
+              </div>
+
+              {/* Title */}
+              <h3 className="text-lg font-semibold text-center text-gray-900 mb-2">
+                Content is incomplete
+              </h3>
+
+              {/* Missing steps */}
+              <div className="text-center text-sm text-gray-600 mb-4">
+                <p className="mb-2">This content is missing:</p>
+                <ul className="list-disc list-inside text-amber-600 font-medium">
+                  {incompleteWarningMissingSteps.map((step, idx) => (
+                    <li key={idx}>{step}</li>
+                  ))}
+                </ul>
+                <p className="mt-3 text-gray-500 text-xs">
+                  You can complete these steps later by clicking on the scheduled content.
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setShowIncompleteWarning(false);
+                    setPendingScheduleDate(null);
+                    setPendingScheduleCardId(null);
+                  }}
+                  className="flex-1 h-10 text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    setShowIncompleteWarning(false);
+                    setTimePickerOpen(true);
+                  }}
+                  className="flex-1 h-10 text-sm font-medium text-white bg-amber-500 hover:bg-amber-600 rounded-xl transition-colors"
+                >
+                  Schedule anyway
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Time Picker Modal */}
         {timePickerOpen && (
           <div
@@ -3150,6 +3271,71 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
           {content}
         </div>
       </div>
+
+      {/* Incomplete Content Warning Modal */}
+      {showIncompleteWarning && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30"
+          onClick={() => {
+            setShowIncompleteWarning(false);
+            setPendingScheduleDate(null);
+            setPendingScheduleCardId(null);
+          }}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl p-6 w-[340px] max-w-[90vw]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Warning Icon */}
+            <div className="flex justify-center mb-4">
+              <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center">
+                <AlertCircle className="w-7 h-7 text-amber-500" />
+              </div>
+            </div>
+
+            {/* Title */}
+            <h3 className="text-lg font-semibold text-center text-gray-900 mb-2">
+              Content is incomplete
+            </h3>
+
+            {/* Missing steps */}
+            <div className="text-center text-sm text-gray-600 mb-4">
+              <p className="mb-2">This content is missing:</p>
+              <ul className="list-disc list-inside text-amber-600 font-medium">
+                {incompleteWarningMissingSteps.map((step, idx) => (
+                  <li key={idx}>{step}</li>
+                ))}
+              </ul>
+              <p className="mt-3 text-gray-500 text-xs">
+                You can complete these steps later by clicking on the scheduled content.
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setShowIncompleteWarning(false);
+                  setPendingScheduleDate(null);
+                  setPendingScheduleCardId(null);
+                }}
+                className="flex-1 h-10 text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowIncompleteWarning(false);
+                  setTimePickerOpen(true);
+                }}
+                className="flex-1 h-10 text-sm font-medium text-white bg-amber-500 hover:bg-amber-600 rounded-xl transition-colors"
+              >
+                Schedule anyway
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Time Picker Modal */}
       {timePickerOpen && (

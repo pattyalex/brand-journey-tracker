@@ -113,6 +113,7 @@ interface StoryboardEditorDialogProps {
   onNavigateToStep?: (step: number, savedCardData?: Partial<ProductionCard>) => void;
   slideDirection?: 'left' | 'right';
   embedded?: boolean;
+  completedSteps?: number[];
 }
 
 // Sortable Scene Card Component
@@ -306,6 +307,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   onNavigateToStep,
   slideDirection = 'right',
   embedded = false,
+  completedSteps = [],
 }) => {
   const [shakeButton, setShakeButton] = useState(false);
 
@@ -767,7 +769,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
 
       {/* Step Progress Row - Centered */}
       <div className="flex justify-center pt-4 pb-2 bg-transparent">
-        <ContentFlowProgress currentStep={3} className="w-[550px]" onStepClick={handleNavigateWithSave} />
+        <ContentFlowProgress currentStep={3} className="w-[550px]" onStepClick={handleNavigateWithSave} completedSteps={completedSteps} />
       </div>
         {/* Main content - side by side layout */}
         <div

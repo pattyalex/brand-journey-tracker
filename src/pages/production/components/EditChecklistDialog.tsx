@@ -70,6 +70,7 @@ interface EditChecklistDialogProps {
   onNavigateToStep?: (step: number, savedCardData?: Partial<ProductionCard>) => void;
   slideDirection?: 'left' | 'right';
   embedded?: boolean;
+  completedSteps?: number[];
 }
 
 // Default example items for the global checklist
@@ -111,6 +112,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
   onNavigateToStep,
   slideDirection = 'right',
   embedded = false,
+  completedSteps = [],
 }) => {
   const [shakeButton, setShakeButton] = useState(false);
 
@@ -233,6 +235,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
         currentStep={4}
         className="flex-shrink-0 pt-4 pb-2"
         onStepClick={handleNavigateWithSave}
+        completedSteps={completedSteps}
       />
         {/* Headers row */}
         <div className="flex border-b border-[#8B7082]/30">

@@ -25,6 +25,7 @@ interface BrainDumpGuidanceDialogProps {
   onNavigateToStep?: (step: number) => void;
   slideDirection?: 'left' | 'right';
   embedded?: boolean;
+  completedSteps?: number[];
 }
 
 const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
@@ -40,6 +41,7 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
   onNavigateToStep,
   slideDirection = 'right',
   embedded = false,
+  completedSteps = [],
 }) => {
   const [shakeButton, setShakeButton] = useState(false);
 
@@ -76,7 +78,7 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
 
       {/* Stepper Progress */}
       <div className="pt-6 pb-8">
-        <ContentFlowProgress currentStep={1} onStepClick={onNavigateToStep} />
+        <ContentFlowProgress currentStep={1} onStepClick={onNavigateToStep} completedSteps={completedSteps} />
       </div>
 
       {/* Content Area */}
