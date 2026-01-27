@@ -108,9 +108,9 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
           <Button
             size="sm"
             onClick={() => onNavigateToStep?.(2)}
-            className="bg-[#612A4F] hover:bg-[#4A1F3D] text-white flex-shrink-0 ml-auto text-xs"
+            className="bg-[#612A4F] hover:bg-[#4A1F3D] text-white flex-shrink-0 ml-auto text-sm"
           >
-            Move to Script <ArrowRight className="w-3 h-3 ml-1" />
+            Save & Move to Script <ArrowRight className="w-3 h-3 ml-1" />
           </Button>
         </div>
 

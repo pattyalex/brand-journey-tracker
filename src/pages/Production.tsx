@@ -3016,7 +3016,7 @@ const Production = () => {
                 )}>
                   {draggedOverColumn === "posted" && draggedCard
                     ? "Release to archive"
-                    : "Drop here to archive"
+                    : <>Drop here content cards<br />to archive</>
                   }
                 </p>
 

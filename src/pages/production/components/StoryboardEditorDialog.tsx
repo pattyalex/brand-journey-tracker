@@ -814,9 +814,9 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                 <Button
                   size="sm"
                   onClick={() => handleNavigateWithSave(4)}
-                  className="bg-[#612A4F] hover:bg-[#4A1F3D] text-white text-xs"
+                  className="bg-[#612A4F] hover:bg-[#4A1F3D] text-white text-sm"
                 >
-                  Move to Edit <ArrowRight className="w-3 h-3 ml-1" />
+                  Save & Move to Edit <ArrowRight className="w-3 h-3 ml-1" />
                 </Button>
               </div>
             </div>

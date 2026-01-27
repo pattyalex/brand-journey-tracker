@@ -87,7 +87,11 @@ const loadGlobalChecklist = (): EditingChecklistItem[] => {
   try {
     const saved = localStorage.getItem(GLOBAL_CHECKLIST_KEY);
     if (saved) {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      // If saved data is empty or invalid, return defaults
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
     }
   } catch (e) {
     console.error('Failed to load global checklist:', e);
@@ -233,7 +237,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
       {/* Step Progress Indicator */}
       <ContentFlowProgress
         currentStep={4}
-        className="flex-shrink-0 pt-4 pb-2"
+        className="flex-shrink-0 pt-4 pb-6"
         onStepClick={handleNavigateWithSave}
         completedSteps={completedSteps}
       />
@@ -256,9 +260,9 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
             <Button
               size="sm"
               onClick={() => handleNavigateWithSave(5)}
-              className="bg-[#612A4F] hover:bg-[#4A1F3D] text-white text-xs"
+              className="bg-[#612A4F] hover:bg-[#4A1F3D] text-white text-sm"
             >
-              Move to Schedule <ArrowRight className="w-3 h-3 ml-1" />
+              Save & Move to Schedule <ArrowRight className="w-3 h-3 ml-1" />
             </Button>
           </div>
         </div>

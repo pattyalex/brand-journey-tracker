@@ -451,9 +451,9 @@ Guidelines:
           <Button
             size="sm"
             onClick={() => onNavigateToStep?.(3)}
-            className="bg-[#612A4F] hover:bg-[#4A1F3D] text-white flex-shrink-0 ml-auto text-xs"
+            className="bg-[#612A4F] hover:bg-[#4A1F3D] text-white flex-shrink-0 ml-auto text-sm"
           >
-            Move to Film <ArrowRight className="w-3 h-3 ml-1" />
+            Save & Move to Film <ArrowRight className="w-3 h-3 ml-1" />
           </Button>
         </div>
 
