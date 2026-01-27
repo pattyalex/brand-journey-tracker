@@ -97,11 +97,9 @@ const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
   const content = (
     <>
       {/* Step Progress Indicator - Fixed */}
-      <div className="border-b border-emerald-100 flex-shrink-0 pt-4 pb-2">
-        <div className="flex items-center justify-center gap-3 max-w-xl mx-auto px-4 pr-12">
+      <div className="flex-shrink-0 pt-4 pb-2">
+        <div className="flex items-center justify-center max-w-xl mx-auto px-4">
           <ContentFlowProgress currentStep={6} allCompleted className="flex-1" onStepClick={onNavigateToStep} />
-          {/* Celebratory icon */}
-          <PartyPopper className="w-5 h-5 text-emerald-500 flex-shrink-0" />
         </div>
       </div>
 
@@ -168,7 +166,7 @@ const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        onClick={() => setSelectedCard(card)}
+                        onClick={() => setSelectedCard(selectedCard?.id === card.id ? null : card)}
                         className={cn(
                           "p-3 rounded-xl border-2 cursor-pointer transition-all group",
                           selectedCard?.id === card.id

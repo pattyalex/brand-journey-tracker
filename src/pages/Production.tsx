@@ -45,7 +45,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "framer-motion";
 import TitleHookSuggestions from "@/components/content/TitleHookSuggestions";
 import ScriptEditorDialog from "./production/components/ScriptEditorDialog";
-import ContentFlowProgress from "./production/components/ContentFlowProgress";
+import ContentFlowProgress, { getCompletedSteps } from "./production/components/ContentFlowProgress";
 import ContentFlowDialog from "./production/components/ContentFlowDialog";
 import BrainDumpGuidanceDialog from "./production/components/BrainDumpGuidanceDialog";
 import { KanbanColumn, ProductionCard, StoryboardScene, EditingChecklist, SchedulingStatus } from "./production/types";
@@ -211,7 +211,8 @@ const Production = () => {
     dropPosition: { columnId: string; index: number };
     sourceColumnId: string;
   } | null>(null);
-  const [showBrainDumpSuggestion, setShowBrainDumpSuggestion] = useState(false);
+
+    const [showBrainDumpSuggestion, setShowBrainDumpSuggestion] = useState(false);
   const [cardTitle, setCardTitle] = useState("");
 
   // Planning state for Ideate cards
@@ -425,19 +426,23 @@ const Production = () => {
     };
   }, []);
 
+  // Helper to scroll to and highlight a column
+  const scrollToAndHighlightColumn = (columnId: string) => {
+    const columnElement = columnRefs.current.get(columnId);
+    if (columnElement) {
+      columnElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      setHighlightedColumn(columnId);
+      setTimeout(() => setHighlightedColumn(null), 2000);
+    }
+  };
+
   // Handle scrolling to specific column from URL parameter
   useEffect(() => {
     const scrollToColumn = searchParams.get('scrollTo');
     if (scrollToColumn && columnRefs.current.has(scrollToColumn)) {
       // Wait for DOM to be fully rendered
       setTimeout(() => {
-        const columnElement = columnRefs.current.get(scrollToColumn);
-        if (columnElement) {
-          columnElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-          // Highlight the column briefly
-          setHighlightedColumn(scrollToColumn);
-          setTimeout(() => setHighlightedColumn(null), 2000);
-        }
+        scrollToAndHighlightColumn(scrollToColumn);
       }, 300);
     }
   }, [searchParams]);
@@ -693,6 +698,12 @@ const Production = () => {
     if (!isDraggingRef.current || !draggedCard) return;
 
     setDraggedOverColumn(columnId);
+
+    // Handle archive zone specially (not a real column)
+    if (columnId === "posted") {
+      setDropPosition({ columnId: "posted", index: 0 });
+      return;
+    }
 
     // If dragging over empty space in column, set position to end
     const column = columns.find(col => col.id === columnId);
@@ -1272,11 +1283,6 @@ const Production = () => {
 
   const handleScheduleContent = (cardId: string, date: Date) => {
     const dateString = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
-    const formattedDate = date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
 
     // Extract time from the date object
     const hours = date.getHours();
@@ -1289,13 +1295,6 @@ const Production = () => {
     const endHours = endDate.getHours();
     const endMinutes = endDate.getMinutes();
     const endTime = `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
-
-    // Format time for toast message
-    const formattedTime = date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
 
     setColumns((prev) =>
       prev.map((col) => ({
@@ -1378,8 +1377,18 @@ const Production = () => {
       setRecentlyRepurposedCardId(null);
     }, 5000); // Clear highlight after 5 seconds
 
-    toast.success("Content repurposed! 🔄", {
-      description: "A copy has been added to Script Ideas"
+    toast.success("Content repurposed!", {
+      description: (
+        <span>
+          A copy has been added to{" "}
+          <button
+            onClick={() => scrollToAndHighlightColumn('shape-ideas')}
+            className="text-[#8B7082] hover:text-[#6B5062] font-medium underline underline-offset-2"
+          >
+            Script Ideas
+          </button>
+        </span>
+      )
     });
   };
 
@@ -1388,10 +1397,13 @@ const Production = () => {
     setArchivedCards((prev) => prev.filter((c) => c.id !== card.id));
 
     // Create restored card for to-schedule column
+    // Clear scheduling properties so it shows as unscheduled in the column
     const restoredCard: ProductionCard = {
       ...card,
       columnId: 'to-schedule',
       archivedAt: undefined,
+      scheduledDate: undefined,
+      schedulingStatus: 'to-schedule',
     };
 
     // Add to to-schedule column
@@ -1409,7 +1421,17 @@ const Production = () => {
     }
 
     toast.success("Content restored!", {
-      description: "Moved back to To Schedule"
+      description: (
+        <span>
+          Moved back to{" "}
+          <button
+            onClick={() => scrollToAndHighlightColumn('to-schedule')}
+            className="text-[#8B7082] hover:text-[#6B5062] font-medium underline underline-offset-2"
+          >
+            To Schedule
+          </button>
+        </span>
+      )
     });
   };
 
@@ -1436,6 +1458,65 @@ const Production = () => {
     // Use unified content flow dialog
     setContentFlowCard(card);
     setActiveContentFlowStep(1);
+  };
+
+  // Open content flow dialog for any card (used for scheduled content)
+  const handleOpenContentFlowForCard = (card: ProductionCard, startStep?: number) => {
+    // Determine which step to start on based on what's completed
+    const completedSteps = getCompletedSteps(card);
+    let step = startStep || 1;
+
+    // If no startStep provided, start at first incomplete step or step 1
+    if (!startStep) {
+      if (!completedSteps.includes(1)) step = 1;
+      else if (!completedSteps.includes(2)) step = 2;
+      else if (!completedSteps.includes(3)) step = 3;
+      else if (!completedSteps.includes(4)) step = 4;
+      else step = 5;
+    }
+
+    // Initialize all state for the card
+    setEditingIdeateCard(card);
+    setIdeateCardTitle(card.title || "");
+    setIdeateCardNotes(card.description || "");
+    setEditingScriptCard(card);
+    setCardTitle(card.title || "");
+    setCardHook(card.hook || "");
+    setScriptContent(card.script || "");
+    setPlatformTags(card.platforms || []);
+    setFormatTags(card.formats || []);
+    setLocationChecked(card.locationChecked || false);
+    setLocationText(card.locationText || "");
+    setOutfitChecked(card.outfitChecked || false);
+    setOutfitText(card.outfitText || "");
+    setPropsChecked(card.propsChecked || false);
+    setPropsText(card.propsText || "");
+    setFilmingNotes(card.filmingNotes || "");
+    setCardStatus(card.status || 'to-start');
+    setCustomVideoFormats(card.customVideoFormats || []);
+    setCustomPhotoFormats(card.customPhotoFormats || []);
+    setEditingStoryboardCard(card);
+    setEditingEditCard(card);
+    setSchedulingCard(card);
+
+    // Check for brain dump suggestion
+    const notesText = card.description?.trim() || "";
+    const scriptText = card.script?.trim() || "";
+    const notesAlreadyInScript = notesText && scriptText.includes(notesText);
+    if (notesText && !notesAlreadyInScript) {
+      setBrainDumpSuggestion(card.description!);
+      setShowBrainDumpSuggestion(true);
+    } else {
+      setBrainDumpSuggestion("");
+      setShowBrainDumpSuggestion(false);
+    }
+
+    // Close the ExpandedScheduleView if it's open (to keep screen clean)
+    setIsScheduleColumnExpanded(false);
+
+    // Open the content flow dialog
+    setContentFlowCard(card);
+    setActiveContentFlowStep(step);
   };
 
   const handleSaveIdeateCard = () => {
@@ -1732,6 +1813,48 @@ const Production = () => {
       );
     }
     // Auto-save current dialog and update latestCard with current form values
+    // Handle ContentFlowDialog auto-save based on current step
+    else if (activeContentFlowStep !== null) {
+      switch (activeContentFlowStep) {
+        case 1: // Ideate
+          latestCard = {
+            ...latestCard,
+            title: ideateCardTitle,
+            description: ideateCardNotes,
+          };
+          break;
+        case 2: // Script
+          latestCard = {
+            ...latestCard,
+            title: cardTitle,
+            hook: cardHook,
+            script: scriptContent,
+            platforms: platformTags,
+            formats: formatTags,
+            locationChecked,
+            locationText,
+            outfitChecked,
+            outfitText,
+            propsChecked,
+            propsText,
+            filmingNotes,
+            status: cardStatus,
+            customVideoFormats,
+            customPhotoFormats,
+          };
+          break;
+        // Steps 3, 4, 5 (Film, Edit, Schedule) pass savedCardData directly
+      }
+      // Save to state
+      setColumns((prev) =>
+        prev.map((col) => ({
+          ...col,
+          cards: col.cards.map((card) =>
+            card.id === currentCard.id ? latestCard! : card
+          ),
+        }))
+      );
+    }
     else if (isIdeateCardEditorOpen && editingIdeateCard) {
       // Update latestCard with current form values
       latestCard = {
@@ -1820,6 +1943,19 @@ const Production = () => {
           setCardStatus(latestCard!.status || 'to-start');
           setCustomVideoFormats(latestCard!.customVideoFormats || []);
           setCustomPhotoFormats(latestCard!.customPhotoFormats || []);
+          // Show brain dump suggestion if notes exist and not already in script
+          {
+            const notesText = latestCard!.description?.trim() || "";
+            const scriptText = latestCard!.script?.trim() || "";
+            const notesAlreadyInScript = notesText && scriptText.includes(notesText);
+            if (notesText && !notesAlreadyInScript) {
+              setBrainDumpSuggestion(latestCard!.description!);
+              setShowBrainDumpSuggestion(true);
+            } else {
+              setBrainDumpSuggestion("");
+              setShowBrainDumpSuggestion(false);
+            }
+          }
           break;
         case 3: // Film
           setEditingStoryboardCard(latestCard!);
@@ -2253,98 +2389,17 @@ const Production = () => {
                         ? "ring-2 ring-offset-2 ring-red-400 opacity-60"
                         : "ring-2 ring-offset-2 ring-[#B8A0C4] scale-[1.02]"
                       : "",
-                    highlightedColumn === column.id ? "ring-4 ring-[#B8A0C4] ring-offset-4 shadow-2xl scale-105" : "",
+                    highlightedColumn === column.id ? "ring-2 ring-[#B8A0C4] ring-offset-2 shadow-xl scale-[1.02]" : "",
                     colors.bg
                   )}
                 >
-                  {/* Special Archive UI for Posted column */}
-                  {column.id === "posted" ? (
-                    <>
-                      <div className="px-5 pt-5 pb-4">
-                        <div className="flex items-center gap-2">
-                          <h2 className={cn("font-medium text-[13px] tracking-[0.04em] uppercase", colors.text)}>
-                            {column.title}
-                          </h2>
-                          <PartyPopper className={cn("w-4 h-4", colors.text)} />
-                        </div>
-                      </div>
+                  <div className="px-5 pt-5 pb-4 border-b-0">
+                    <h2 className={cn("font-medium text-[13px] tracking-[0.04em] uppercase border-0", colors.text)}>
+                      {column.title}
+                    </h2>
+                  </div>
 
-                      {/* Minimal archive drop zone */}
-                      <div className="flex-1 flex flex-col items-center justify-start pt-44 px-4">
-                        <motion.div
-                          className={cn(
-                            "flex flex-col items-center transition-all duration-200",
-                            draggedOverColumn === "posted" && draggedCard
-                              ? "scale-105"
-                              : ""
-                          )}
-                        >
-                          <Archive className={cn(
-                            "w-8 h-8 mb-3 transition-colors",
-                            draggedOverColumn === "posted" && draggedCard
-                              ? "text-[#685078]"
-                              : "text-[#887098]"
-                          )} />
-
-                          <p className={cn(
-                            "text-sm text-center transition-colors max-w-[180px] font-medium",
-                            draggedOverColumn === "posted" && draggedCard
-                              ? "text-[#5C466C]"
-                              : "text-[#675275]"
-                          )}>
-                            {draggedOverColumn === "posted" && draggedCard
-                              ? "Release to archive"
-                              : "Drop published content here to archive"
-                            }
-                          </p>
-
-                          {/* Open archive button */}
-                          <button
-                            onClick={() => setIsArchiveDialogOpen(true)}
-                            className="mt-4 flex items-center gap-2 text-sm text-white hover:text-white font-medium bg-[#887098] hover:bg-[#786088] px-4 py-2.5 rounded-lg transition-colors shadow-sm"
-                          >
-                            <Archive className="w-4 h-4" />
-                            {archivedCards.length > 0
-                              ? `View archive (${archivedCards.length})`
-                              : "Open archive"
-                            }
-                          </button>
-                        </motion.div>
-
-                        {/* Undo button - positioned in center area */}
-                        {lastArchivedCard && (
-                          <button
-                            onClick={() => {
-                              // Remove from archive
-                              setArchivedCards((prev) => prev.filter((c) => c.id !== lastArchivedCard.card.id));
-                              // Add to To Schedule column
-                              setColumns((prev) =>
-                                prev.map((col) =>
-                                  col.id === 'to-schedule'
-                                    ? { ...col, cards: [{ ...lastArchivedCard.card, columnId: 'to-schedule' }, ...col.cards] }
-                                    : col
-                                )
-                              );
-                              setLastArchivedCard(null);
-                              toast.success("Restored to To Schedule");
-                            }}
-                            className="mt-6 flex items-center gap-1.5 text-sm text-[#7D6B87] hover:text-[#5C466C] font-medium bg-[#F5F0F7] hover:bg-[#E8DFED] px-3 py-1.5 rounded-lg transition-colors"
-                          >
-                            <RefreshCw className="w-3.5 h-3.5" />
-                            Undo archive
-                          </button>
-                        )}
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="px-5 pt-5 pb-4">
-                        <h2 className={cn("font-medium text-[13px] tracking-[0.04em] uppercase", colors.text)}>
-                          {column.title}
-                        </h2>
-                      </div>
-
-                      <div className="flex-1 overflow-y-auto px-4 pt-1 pb-4 space-y-3 hide-scrollbar hover:hide-scrollbar relative">
+                      <div className="flex-1 overflow-y-auto px-4 pt-1 pb-4 space-y-3 hide-scrollbar hover:hide-scrollbar relative border-t-0">
                         {/* Not Allowed Overlay for Ideate Column */}
                         {column.id === "ideate" && draggedCard && draggedOverColumn === column.id &&
                          columns.find(col => col.cards.some(c => c.id === draggedCard.id))?.id !== "ideate" && (
@@ -2920,12 +2975,110 @@ const Production = () => {
                       )}
                     </AnimatePresence>
                   </div>
-                    </>
-                  )}
                 </div>
               </motion.div>
             );
           })}
+
+          {/* Archive Drop Zone - visually distinct from columns */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: columns.length * 0.1 }}
+            className="flex-shrink-0 w-[240px] mr-4"
+            onDragOver={(e) => handleDragOver(e, "posted")}
+            onDragLeave={handleDragLeave}
+            onDrop={(e) => handleDrop(e, "posted")}
+          >
+            <div
+              className={cn(
+                "flex flex-col items-center justify-center h-full min-h-[400px] rounded-2xl transition-all duration-300",
+                "border-2 border-dashed",
+                draggedOverColumn === "posted" && draggedCard
+                  ? "border-[#887098] bg-[#F5F0F7]/80 scale-[1.02]"
+                  : "border-[#D4C8DC] bg-[#FAF8FB]/50",
+              )}
+            >
+              <motion.div
+                className={cn(
+                  "flex flex-col items-center transition-all duration-200 px-4",
+                  draggedOverColumn === "posted" && draggedCard
+                    ? "scale-105"
+                    : ""
+                )}
+              >
+                <Archive className={cn(
+                  "w-7 h-7 mb-2 transition-colors",
+                  draggedOverColumn === "posted" && draggedCard
+                    ? "text-[#685078]"
+                    : "text-[#A090AC]"
+                )} />
+
+                <p className={cn(
+                  "text-xs text-center transition-colors font-medium mb-3",
+                  draggedOverColumn === "posted" && draggedCard
+                    ? "text-[#5C466C]"
+                    : "text-[#8B7A94]"
+                )}>
+                  {draggedOverColumn === "posted" && draggedCard
+                    ? "Release to archive"
+                    : "Drop here to archive"
+                  }
+                </p>
+
+                {/* View archive button */}
+                <button
+                  onClick={() => setIsArchiveDialogOpen(true)}
+                  className="flex items-center gap-1.5 text-xs text-white font-medium bg-[#887098] hover:bg-[#786088] px-3 py-2 rounded-lg transition-colors shadow-sm"
+                >
+                  <Archive className="w-3.5 h-3.5" />
+                  {archivedCards.length > 0
+                    ? `View (${archivedCards.length})`
+                    : "View archive"
+                  }
+                </button>
+
+                {/* Undo button */}
+                {lastArchivedCard && (
+                  <button
+                    onClick={() => {
+                      setArchivedCards((prev) => prev.filter((c) => c.id !== lastArchivedCard.card.id));
+                      setColumns((prev) =>
+                        prev.map((col) =>
+                          col.id === 'to-schedule'
+                            ? { ...col, cards: [{
+                                ...lastArchivedCard.card,
+                                columnId: 'to-schedule',
+                                scheduledDate: undefined,
+                                schedulingStatus: 'to-schedule',
+                              }, ...col.cards] }
+                            : col
+                        )
+                      );
+                      setLastArchivedCard(null);
+                      toast.success("Content restored!", {
+                        description: (
+                          <span>
+                            Moved back to{" "}
+                            <button
+                              onClick={() => scrollToAndHighlightColumn('to-schedule')}
+                              className="text-[#8B7082] hover:text-[#6B5062] font-medium underline underline-offset-2"
+                            >
+                              To Schedule
+                            </button>
+                          </span>
+                        )
+                      });
+                    }}
+                    className="mt-3 flex items-center gap-1 text-[11px] text-[#7D6B87] hover:text-[#5C466C] font-medium bg-[#F5F0F7] hover:bg-[#E8DFED] px-2.5 py-1.5 rounded-md transition-colors"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    Undo
+                  </button>
+                )}
+              </motion.div>
+            </div>
+          </motion.div>
         </div>
 
         {/* Invisible scroll area at bottom - enables horizontal scroll when cursor is here */}
@@ -4788,6 +4941,7 @@ Make each idea unique, creative, and directly tied to both the original content 
           setCustomPhotoFormats={setCustomPhotoFormats}
           onNavigateToStep={handleNavigateToStep}
           slideDirection={slideDirection}
+          completedSteps={getCompletedSteps(editingScriptCard)}
         />
 
         <BrainDumpGuidanceDialog
@@ -4802,6 +4956,7 @@ Make each idea unique, creative, and directly tied to both the original content 
           setNotes={setIdeateCardNotes}
           onNavigateToStep={handleNavigateToStep}
           slideDirection={slideDirection}
+          completedSteps={getCompletedSteps(editingIdeateCard)}
         />
 
         <StoryboardEditorDialog
@@ -4811,6 +4966,7 @@ Make each idea unique, creative, and directly tied to both the original content 
           onSave={handleSaveStoryboard}
           onNavigateToStep={handleNavigateToStep}
           slideDirection={slideDirection}
+          completedSteps={getCompletedSteps(editingStoryboardCard)}
         />
 
         <EditChecklistDialog
@@ -4820,6 +4976,7 @@ Make each idea unique, creative, and directly tied to both the original content 
           onSave={handleSaveEditChecklist}
           onNavigateToStep={handleNavigateToStep}
           slideDirection={slideDirection}
+          completedSteps={getCompletedSteps(editingEditCard)}
         />
 
         {/* Unified Content Flow Dialog - seamless transitions between steps */}
@@ -4846,6 +5003,7 @@ Make each idea unique, creative, and directly tied to both the original content 
               onNavigateToStep={handleNavigateToStep}
               slideDirection={slideDirection}
               embedded={true}
+              completedSteps={getCompletedSteps(contentFlowCard)}
             />
           )}
           {activeContentFlowStep === 2 && contentFlowCard && (
@@ -4864,6 +5022,9 @@ Make each idea unique, creative, and directly tied to both the original content 
               setCardHook={setCardHook}
               scriptContent={scriptContent}
               setScriptContent={setScriptContent}
+              showBrainDumpSuggestion={showBrainDumpSuggestion}
+              brainDumpSuggestion={brainDumpSuggestion}
+              setShowBrainDumpSuggestion={setShowBrainDumpSuggestion}
               platformTags={platformTags}
               setPlatformTags={setPlatformTags}
               formatTags={formatTags}
@@ -4895,6 +5056,7 @@ Make each idea unique, creative, and directly tied to both the original content 
               onNavigateToStep={handleNavigateToStep}
               slideDirection={slideDirection}
               embedded={true}
+              completedSteps={getCompletedSteps(contentFlowCard)}
             />
           )}
           {activeContentFlowStep === 3 && contentFlowCard && (
@@ -4910,6 +5072,7 @@ Make each idea unique, creative, and directly tied to both the original content 
               onNavigateToStep={handleNavigateToStep}
               slideDirection={slideDirection}
               embedded={true}
+              completedSteps={getCompletedSteps(contentFlowCard)}
             />
           )}
           {activeContentFlowStep === 4 && contentFlowCard && (
@@ -4925,6 +5088,7 @@ Make each idea unique, creative, and directly tied to both the original content 
               onNavigateToStep={handleNavigateToStep}
               slideDirection={slideDirection}
               embedded={true}
+              completedSteps={getCompletedSteps(contentFlowCard)}
             />
           )}
           {activeContentFlowStep === 5 && contentFlowCard && (
@@ -4975,6 +5139,8 @@ Make each idea unique, creative, and directly tied to both the original content 
                   });
                 });
               }}
+              completedSteps={getCompletedSteps(contentFlowCard)}
+              onOpenContentFlow={handleOpenContentFlowForCard}
             />
           )}
         </ContentFlowDialog>
@@ -4992,6 +5158,7 @@ Make each idea unique, creative, and directly tied to both the original content 
             onUnschedule={handleUnscheduleContent}
             onUpdateColor={handleUpdateScheduledColor}
             onNavigateToStep={handleNavigateToStep}
+            onOpenContentFlow={handleOpenContentFlowForCard}
             onMoveToScheduleColumn={(card) => {
               // Move card to 'to-schedule' column
               setColumns((prev) => {
@@ -5045,6 +5212,7 @@ Make each idea unique, creative, and directly tied to both the original content 
                 }
               });
             }}
+            completedSteps={getCompletedSteps(schedulingCard)}
           />
         )}
 
@@ -5102,7 +5270,8 @@ Make each idea unique, creative, and directly tied to both the original content 
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
+
+              </div>
     </Layout>
   );
 };

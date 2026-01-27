@@ -26,5 +26,4 @@ export const defaultColumns: KanbanColumn[] = [
   { id: "to-film", title: "To Film", cards: [] },
   { id: "to-edit", title: "To Edit", cards: [] },
   { id: "to-schedule", title: "To Schedule", cards: [] },
-  { id: "posted", title: "Posted", cards: [] },
 ];
