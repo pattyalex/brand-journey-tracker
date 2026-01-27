@@ -385,6 +385,8 @@ const Production = () => {
   // Listen for openBatchSchedule event from schedule dialog
   useEffect(() => {
     const cleanup = on(window, EVENTS.OPEN_BATCH_SCHEDULE, () => {
+      // Clear any single card state to ensure batch view shows properly
+      setSchedulingCard(null);
       setIsScheduleColumnExpanded(true);
     });
     return cleanup;

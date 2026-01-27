@@ -188,14 +188,15 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
     }
   }, [planningCard?.id, planningCard?.plannedDate]);
 
-  // Scroll to today's date when calendar opens
+  // Scroll to today's date when calendar opens - use requestAnimationFrame for immediate scroll
   useEffect(() => {
-    const timer = setTimeout(() => {
+    // Use requestAnimationFrame to scroll immediately after first paint
+    const frameId = requestAnimationFrame(() => {
       if (todayRef.current && calendarScrollRef.current) {
-        todayRef.current.scrollIntoView({ behavior: 'auto', block: 'center' });
+        todayRef.current.scrollIntoView({ behavior: 'instant', block: 'center' });
       }
-    }, 100);
-    return () => clearTimeout(timer);
+    });
+    return () => cancelAnimationFrame(frameId);
   }, [embedded]);
 
   const isResizing = useRef(false);
@@ -1534,8 +1535,12 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
         "flex-1 overflow-y-auto grid transition-all duration-300 min-h-0",
         singleCard && isLeftPanelCollapsed ? "grid-cols-[1fr]" : isLeftPanelCollapsed ? "grid-cols-[48px_1fr]" : "grid-cols-[300px_1fr]"
       )} style={{ gridTemplateRows: '1fr' }}>
-        {/* Step Progress Indicator - centered across full width (hide when collapsed in single card mode) */}
-        {!planningMode && !(singleCard && isLeftPanelCollapsed) && (
+        {/* Top spacing for batch view (no stepper) */}
+        {!planningMode && !singleCard && (
+          <div className="col-span-2 flex-shrink-0 pt-12 pb-2" />
+        )}
+        {/* Step Progress Indicator - only show for single card content flow (not batch view) */}
+        {!planningMode && singleCard && !isLeftPanelCollapsed && (
           <div className="col-span-2 flex-shrink-0 pt-3 pb-2 flex items-center justify-between px-4">
             {/* Spacer for balance */}
             <div className="w-[160px]" />
@@ -1551,7 +1556,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
               completedSteps={completedSteps}
             />
             {/* Save & Schedule Later button - top right */}
-            {singleCard && onMoveToScheduleColumn && !singleCardScheduled ? (
+            {onMoveToScheduleColumn && !singleCardScheduled ? (
               <button
                 onClick={() => {
                   onMoveToScheduleColumn(singleCard);

@@ -11,7 +11,7 @@ import { defaultScheduledColor, getTaskColorByHex } from "../utils/colorConstant
 import { useColorPalette } from "../hooks/useColorPalette";
 import { ProductionCard, KanbanColumn } from "@/pages/production/types";
 import { defaultColumns } from "@/pages/production/utils/productionConstants";
-import { Video, Lightbulb, X, Clock, FileText, ArrowRight, Trash2, CalendarCheck } from "lucide-react";
+import { Video, Lightbulb, X, Clock, FileText, ArrowRight, Trash2, Check } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { autoFormatTime } from "../utils/timeUtils";
@@ -369,6 +369,30 @@ export const CalendarView = ({
     }
   };
 
+  // Handle toggling completion for scheduled content
+  const handleToggleComplete = (contentId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const savedData = getString(StorageKeys.productionKanban);
+    if (savedData) {
+      try {
+        const columns: KanbanColumn[] = JSON.parse(savedData);
+        const toScheduleColumn = columns.find(c => c.id === 'to-schedule');
+        if (toScheduleColumn) {
+          const card = toScheduleColumn.cards.find(c => c.id === contentId);
+          if (card) {
+            card.isCompleted = !card.isCompleted;
+            setString(StorageKeys.productionKanban, JSON.stringify(columns));
+            emit(window, EVENTS.productionKanbanUpdated);
+            emit(window, EVENTS.scheduledContentUpdated);
+            loadProductionContent?.();
+          }
+        }
+      } catch (err) {
+        console.error('Error toggling completion:', err);
+      }
+    }
+  };
+
   // Handle drop for both tasks and content
   const handleDrop = (e: React.DragEvent, toDate: string, dayCellElement: HTMLElement) => {
     e.preventDefault();
@@ -605,8 +629,19 @@ export const CalendarView = ({
                           style={{ backgroundColor: colors.bg, color: colors.text }}
                         >
                           <div className="flex items-center gap-1 px-2 py-1.5">
-                            <CalendarCheck className="w-3 h-3 flex-shrink-0" />
-                            <span className="flex-1 truncate leading-tight">{content.hook || content.title}</span>
+                            <button
+                              onClick={(e) => handleToggleComplete(content.id, e)}
+                              className={cn(
+                                "w-3 h-3 rounded-full border-[1.5px] flex-shrink-0 flex items-center justify-center transition-colors",
+                                content.isCompleted ? "bg-white border-white" : "border-current hover:bg-current/20"
+                              )}
+                            >
+                              {content.isCompleted && <Check className="w-2 h-2 text-[#612A4F]" />}
+                            </button>
+                            <span className={cn(
+                              "flex-1 truncate leading-tight",
+                              content.isCompleted && "line-through opacity-60"
+                            )}>{content.hook || content.title}</span>
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();

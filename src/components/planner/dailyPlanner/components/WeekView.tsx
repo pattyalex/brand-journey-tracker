@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { eachDayOfInterval, endOfWeek, format, isSameDay, startOfWeek } from "date-fns";
-import { Trash2, Video, Lightbulb, X, Clock, FileText, ArrowRight, ListTodo, CalendarCheck } from "lucide-react";
+import { Trash2, Video, Lightbulb, X, Clock, FileText, ArrowRight, ListTodo, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { autoFormatTime } from "../utils/timeUtils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -374,6 +374,30 @@ export const WeekView = ({
         }
       } catch (err) {
         console.error('Error removing content:', err);
+      }
+    }
+  };
+
+  // Handle toggling completion for scheduled content
+  const handleToggleComplete = (contentId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const savedData = getString(StorageKeys.productionKanban);
+    if (savedData) {
+      try {
+        const columns: KanbanColumn[] = JSON.parse(savedData);
+        const toScheduleColumn = columns.find(c => c.id === 'to-schedule');
+        if (toScheduleColumn) {
+          const card = toScheduleColumn.cards.find(c => c.id === contentId);
+          if (card) {
+            card.isCompleted = !card.isCompleted;
+            setString(StorageKeys.productionKanban, JSON.stringify(columns));
+            emit(window, EVENTS.productionKanbanUpdated);
+            emit(window, EVENTS.scheduledContentUpdated);
+            loadProductionContent?.();
+          }
+        }
+      } catch (err) {
+        console.error('Error toggling completion:', err);
       }
     }
   };
@@ -799,10 +823,22 @@ export const WeekView = ({
                                       {isPlanned ? (
                                         <Lightbulb className="w-3 h-3 flex-shrink-0 mt-0.5" style={{ color: colors.text }} />
                                       ) : (
-                                        <CalendarCheck className="w-3 h-3 flex-shrink-0 mt-0.5" style={{ color: colors.text }} />
+                                        <button
+                                          onClick={(e) => handleToggleComplete(content.id, e)}
+                                          className={cn(
+                                            "w-3 h-3 rounded-full border-[1.5px] flex-shrink-0 mt-0.5 flex items-center justify-center transition-colors",
+                                            content.isCompleted ? "bg-white border-white" : "hover:bg-current/20"
+                                          )}
+                                          style={{ borderColor: content.isCompleted ? 'white' : colors.text }}
+                                        >
+                                          {content.isCompleted && <Check className="w-2 h-2 text-[#612A4F]" />}
+                                        </button>
                                       )}
                                       <div className="flex-1 min-w-0">
-                                        <div className="text-[10px] font-medium truncate" style={{ color: colors.text }}>
+                                        <div className={cn(
+                                          "text-[10px] font-medium truncate",
+                                          content.isCompleted && "line-through opacity-60"
+                                        )} style={{ color: colors.text }}>
                                           {content.hook || content.title}
                                         </div>
                                         <div className="text-[9px] opacity-70" style={{ color: colors.text }}>
@@ -1236,9 +1272,21 @@ export const WeekView = ({
                                       {isPlanned ? (
                                         <Lightbulb className="w-3 h-3 flex-shrink-0" style={{ color: colors.text }} />
                                       ) : (
-                                        <CalendarCheck className="w-3 h-3 flex-shrink-0" style={{ color: colors.text }} />
+                                        <button
+                                          onClick={(e) => handleToggleComplete(content.id, e)}
+                                          className={cn(
+                                            "w-3 h-3 rounded-full border-[1.5px] flex-shrink-0 flex items-center justify-center transition-colors",
+                                            content.isCompleted ? "bg-white border-white" : "hover:bg-current/20"
+                                          )}
+                                          style={{ borderColor: content.isCompleted ? 'white' : colors.text }}
+                                        >
+                                          {content.isCompleted && <Check className="w-2 h-2 text-[#612A4F]" />}
+                                        </button>
                                       )}
-                                      <span className="break-words flex-1 text-[11px]" style={{ color: colors.text }}>
+                                      <span className={cn(
+                                        "break-words flex-1 text-[11px]",
+                                        content.isCompleted && "line-through opacity-60"
+                                      )} style={{ color: colors.text }}>
                                         {content.hook || content.title}
                                       </span>
                                       <button
