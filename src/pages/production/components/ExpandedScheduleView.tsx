@@ -495,17 +495,61 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
     setDeleteConfirmCard({ id: cardId, element: cardElement });
   };
 
-  // Track which cards have been marked as posted (local UI state)
-  const [markedAsPostedIds, setMarkedAsPostedIds] = useState<Set<string>>(new Set());
+  // Track which cards have been marked as posted (synced with isCompleted)
+  const [markedAsPostedIds, setMarkedAsPostedIds] = useState<Set<string>>(() => {
+    // Initialize from cards' isCompleted state
+    const completedIds = new Set<string>();
+    columns.forEach(col => {
+      col.cards.forEach(card => {
+        if (card.isCompleted) {
+          completedIds.add(card.id);
+        }
+      });
+    });
+    return completedIds;
+  });
 
-  // Mark as Posted - marks content visually and archives a copy
+  // Sync markedAsPostedIds when columns change (e.g., from external updates)
+  useEffect(() => {
+    const completedIds = new Set<string>();
+    columns.forEach(col => {
+      col.cards.forEach(card => {
+        if (card.isCompleted) {
+          completedIds.add(card.id);
+        }
+      });
+    });
+    setMarkedAsPostedIds(completedIds);
+  }, [columns]);
+
+  // Mark as Posted - marks content visually, persists to storage, and archives a copy
   const handleMarkAsPosted = (cardId: string) => {
     // Toggle the posted state
     const newMarkedIds = new Set(markedAsPostedIds);
     const isCurrentlyMarked = newMarkedIds.has(cardId);
 
+    // Update localStorage to sync across all calendars
+    const savedData = getString(StorageKeys.productionKanban);
+    if (savedData) {
+      try {
+        const storedColumns: KanbanColumn[] = JSON.parse(savedData);
+        const toScheduleColumn = storedColumns.find(c => c.id === 'to-schedule');
+        if (toScheduleColumn) {
+          const card = toScheduleColumn.cards.find(c => c.id === cardId);
+          if (card) {
+            card.isCompleted = !isCurrentlyMarked;
+            setString(StorageKeys.productionKanban, JSON.stringify(storedColumns));
+            emit(window, EVENTS.productionKanbanUpdated);
+            emit(window, EVENTS.scheduledContentUpdated);
+          }
+        }
+      } catch (err) {
+        console.error('Error toggling completion:', err);
+      }
+    }
+
     if (isCurrentlyMarked) {
-      // Unmark - just remove from local state (don't un-archive)
+      // Unmark - remove from local state
       newMarkedIds.delete(cardId);
       setMarkedAsPostedIds(newMarkedIds);
       return;
@@ -1706,17 +1750,39 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                   }}
                                 >
                                   <div className="flex items-center gap-1.5">
-                                    {!isPastDate && (
-                                      <Check className="w-3 h-3 flex-shrink-0" />
-                                    )}
-                                    <TooltipProvider>
-                                      <Tooltip>
-                                        <TooltipTrigger asChild>
-                                          <span className="truncate flex-1 cursor-default">{card.hook || card.title}</span>
-                                        </TooltipTrigger>
-                                        <TooltipContent side="bottom" variant="light">{card.hook || card.title}</TooltipContent>
-                                      </Tooltip>
-                                    </TooltipProvider>
+                                    {!isPastDate && (() => {
+                                      const isMarkedPosted = markedAsPostedIds.has(card.id);
+                                      return (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleMarkAsPosted(card.id);
+                                          }}
+                                          className={cn(
+                                            "w-3 h-3 rounded-full border-[1.5px] flex-shrink-0 flex items-center justify-center transition-colors",
+                                            isMarkedPosted ? "bg-white border-white" : "border-current hover:bg-current/20"
+                                          )}
+                                        >
+                                          {isMarkedPosted && <Check className="w-2 h-2 text-[#612A4F]" />}
+                                        </button>
+                                      );
+                                    })()}
+                                    {(() => {
+                                      const isMarkedPosted = markedAsPostedIds.has(card.id);
+                                      return (
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <span className={cn(
+                                                "truncate flex-1 cursor-default",
+                                                isMarkedPosted && "line-through opacity-60"
+                                              )}>{card.hook || card.title}</span>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="bottom" variant="light">{card.hook || card.title}</TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+                                      );
+                                    })()}
                                     {/* Posted button - only for past dates */}
                                     {isPastDate && (
                                       <TooltipProvider>
@@ -2379,46 +2445,40 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                   {(() => {
                                     const isMarkedPosted = markedAsPostedIds.has(scheduledCard.id);
                                     return (
-                                      <TooltipProvider>
-                                        <Tooltip>
-                                          <TooltipTrigger asChild>
-                                            <button
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleMarkAsPosted(scheduledCard.id);
-                                              }}
-                                              className={cn(
-                                                "w-4 h-4 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center transition-colors",
-                                                isMarkedPosted
-                                                  ? "bg-green-500 border-green-500 text-white"
-                                                  : "border-current hover:bg-white/30 group/check"
-                                              )}
-                                            >
-                                              <Check className={cn(
-                                                "w-2.5 h-2.5 transition-opacity",
-                                                isMarkedPosted ? "opacity-100" : "opacity-0 group-hover/check:opacity-100"
-                                              )} />
-                                            </button>
-                                          </TooltipTrigger>
-                                          <TooltipContent side="top">{isMarkedPosted ? "Marked as posted" : "Mark as posted"}</TooltipContent>
-                                        </Tooltip>
-                                      </TooltipProvider>
-                                    );
-                                  })()}
-                                  {(() => {
-                                    const isMarkedPosted = markedAsPostedIds.has(scheduledCard.id);
-                                    return (
-                                      <TooltipProvider>
-                                        <Tooltip>
-                                          <TooltipTrigger asChild>
-                                            <span className={cn(
-                                              "leading-tight truncate flex-1 cursor-default",
-                                              isMarkedPosted && "line-through opacity-60"
-                                            )}>{scheduledCard.hook || scheduledCard.title || "Scheduled"}</span>
-                                          </TooltipTrigger>
-                                          <TooltipContent side="bottom" variant="light">{scheduledCard.hook || scheduledCard.title || "Scheduled"}</TooltipContent>
-                                        </Tooltip>
-                                      </TooltipProvider>
+                                      <>
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleMarkAsPosted(scheduledCard.id);
+                                                }}
+                                                className={cn(
+                                                  "w-4 h-4 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center transition-colors",
+                                                  isMarkedPosted
+                                                    ? "bg-white border-white"
+                                                    : "border-current hover:bg-white/30"
+                                                )}
+                                              >
+                                                {isMarkedPosted && <Check className="w-2.5 h-2.5 text-[#612A4F]" />}
+                                              </button>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="top">{isMarkedPosted ? "Marked as posted" : "Mark as posted"}</TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <span className={cn(
+                                                "leading-tight truncate flex-1 cursor-default",
+                                                isMarkedPosted && "line-through opacity-60"
+                                              )}>{scheduledCard.hook || scheduledCard.title || "Scheduled"}</span>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="bottom" variant="light">{scheduledCard.hook || scheduledCard.title || "Scheduled"}</TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+                                      </>
                                     );
                                   })()}
                                   {/* Posted button - only for past dates */}
