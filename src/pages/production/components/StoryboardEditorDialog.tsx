@@ -57,20 +57,19 @@ import { toast } from "sonner";
 import ShotLibraryDialog from "./ShotLibraryDialog";
 import ContentFlowProgress from "./ContentFlowProgress";
 
-// Shot illustrations
+// Shot illustrations - import all 10 images for each shot type
+import wideShotIllustration from "@/assets/shot-illustrations/wide-shot.png";
+import mediumShotIllustration from "@/assets/shot-illustrations/medium-shot.png";
+import closeUpShotIllustration from "@/assets/shot-illustrations/close-up-shot.png";
+import handsDoingIllustration from "@/assets/shot-illustrations/hands-doing.png";
 import closeDetailIllustration from "@/assets/shot-illustrations/close-detail.png";
+import atDeskIllustration from "@/assets/shot-illustrations/at-desk.png";
 import neutralVisualIllustration from "@/assets/shot-illustrations/neutral-visual.png";
 import movingThroughIllustration from "@/assets/shot-illustrations/moving-through.png";
+import quietCutawayIllustration from "@/assets/shot-illustrations/quiet-cutaway.png";
 import reactionMomentIllustration from "@/assets/shot-illustrations/reaction-moment.png";
 
-const wideShotIllustration = movingThroughIllustration;
-const mediumShotIllustration = neutralVisualIllustration;
-const closeUpShotIllustration = closeDetailIllustration;
-const handsDoingIllustration = closeDetailIllustration;
-const atDeskIllustration = neutralVisualIllustration;
-const quietCutawayIllustration = reactionMomentIllustration;
-
-// Map shot IDs to illustrations
+// Map shot IDs to their matching illustrations
 const shotIllustrations: Record<string, string> = {
   'wide-shot': wideShotIllustration,
   'medium-shot': mediumShotIllustration,

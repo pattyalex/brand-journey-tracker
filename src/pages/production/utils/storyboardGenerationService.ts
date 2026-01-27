@@ -35,7 +35,7 @@ export const generateStoryboardFromScript = async (
         script,
         format,
         platform,
-        shotTemplates // Send templates to server for validation
+        shotTemplates // Send all templates - all 10 have matching images now
       })
     });
 

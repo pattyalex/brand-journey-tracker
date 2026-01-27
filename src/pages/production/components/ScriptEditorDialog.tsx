@@ -61,14 +61,14 @@ type CardStatus = "to-start" | "needs-work" | "ready";
 interface ScriptEditorDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onCancel: () => void;
+  onCancel?: () => void;
   onSave: () => void;
   embedded?: boolean;
-  titleInputRef: React.RefObject<HTMLInputElement>;
-  locationInputRef: React.RefObject<HTMLTextAreaElement>;
-  outfitInputRef: React.RefObject<HTMLTextAreaElement>;
-  propsInputRef: React.RefObject<HTMLTextAreaElement>;
-  notesInputRef: React.RefObject<HTMLTextAreaElement>;
+  titleInputRef?: React.RefObject<HTMLInputElement>;
+  locationInputRef?: React.RefObject<HTMLTextAreaElement>;
+  outfitInputRef?: React.RefObject<HTMLTextAreaElement>;
+  propsInputRef?: React.RefObject<HTMLTextAreaElement>;
+  notesInputRef?: React.RefObject<HTMLTextAreaElement>;
   cardTitle: string;
   setCardTitle: (value: string) => void;
   cardHook: string;
@@ -117,11 +117,11 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   onCancel,
   onSave,
   embedded = false,
-  titleInputRef,
-  locationInputRef,
-  outfitInputRef,
-  propsInputRef,
-  notesInputRef,
+  titleInputRef: externalTitleRef,
+  locationInputRef: externalLocationRef,
+  outfitInputRef: externalOutfitRef,
+  propsInputRef: externalPropsRef,
+  notesInputRef: externalNotesRef,
   cardTitle,
   setCardTitle,
   cardHook,
@@ -163,6 +163,20 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   slideDirection = 'right',
   completedSteps = [],
 }) => {
+  // Internal refs for shooting plan navigation (fallback when external refs not provided)
+  const internalTitleRef = useRef<HTMLInputElement>(null);
+  const internalLocationRef = useRef<HTMLTextAreaElement>(null);
+  const internalOutfitRef = useRef<HTMLTextAreaElement>(null);
+  const internalPropsRef = useRef<HTMLTextAreaElement>(null);
+  const internalNotesRef = useRef<HTMLTextAreaElement>(null);
+
+  // Use external refs if provided, otherwise use internal refs
+  const titleInputRef = externalTitleRef || internalTitleRef;
+  const locationInputRef = externalLocationRef || internalLocationRef;
+  const outfitInputRef = externalOutfitRef || internalOutfitRef;
+  const propsInputRef = externalPropsRef || internalPropsRef;
+  const notesInputRef = externalNotesRef || internalNotesRef;
+
   const [shakeButton, setShakeButton] = useState(false);
   const [isMegAIOpen, setIsMegAIOpen] = useState(false);
   const [megAIMessages, setMegAIMessages] = useState<{role: 'user' | 'assistant', content: string}[]>([]);

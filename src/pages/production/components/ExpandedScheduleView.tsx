@@ -1627,6 +1627,16 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
             ) : (
               <div className="w-[160px]" />
             )}
+            {/* Close button - absolute top right */}
+            {onClose && (
+              <button
+                onClick={onClose}
+                className="absolute top-3 right-3 p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors z-10"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
           </div>
         )}
         {/* Left Panel - Content to Schedule / Your Week (hidden when collapsed in single card mode) */}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -62,6 +62,13 @@ const StandaloneContentFlow: React.FC<StandaloneContentFlowProps> = ({
   const [activeStep, setActiveStep] = useState<number>(initialStep || 1);
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
 
+  // Refs for shooting plan navigation
+  const titleInputRef = useRef<HTMLInputElement>(null);
+  const locationInputRef = useRef<HTMLTextAreaElement>(null);
+  const outfitInputRef = useRef<HTMLTextAreaElement>(null);
+  const propsInputRef = useRef<HTMLTextAreaElement>(null);
+  const notesInputRef = useRef<HTMLTextAreaElement>(null);
+
   // Step 1: Ideate state
   const [ideateTitle, setIdeateTitle] = useState("");
   const [ideateNotes, setIdeateNotes] = useState("");
@@ -76,6 +83,10 @@ const StandaloneContentFlow: React.FC<StandaloneContentFlowProps> = ({
   const [formatTags, setFormatTags] = useState<string[]>([]);
   const [platformInput, setPlatformInput] = useState("");
   const [formatInput, setFormatInput] = useState("");
+  const [showCustomFormatInput, setShowCustomFormatInput] = useState(false);
+  const [customFormatInput, setCustomFormatInput] = useState("");
+  const [showCustomPlatformInput, setShowCustomPlatformInput] = useState(false);
+  const [customPlatformInput, setCustomPlatformInput] = useState("");
   const [locationChecked, setLocationChecked] = useState(false);
   const [locationText, setLocationText] = useState("");
   const [outfitChecked, setOutfitChecked] = useState(false);
@@ -252,6 +263,15 @@ const StandaloneContentFlow: React.FC<StandaloneContentFlowProps> = ({
     saveCard({ scheduledColor: color });
   };
 
+  // Tag removal handlers
+  const handleRemoveFormatTag = (tag: string) => {
+    setFormatTags(formatTags.filter(t => t !== tag));
+  };
+
+  const handleRemovePlatformTag = (tag: string) => {
+    setPlatformTags(platformTags.filter(t => t !== tag));
+  };
+
   // Close handler - save current step data
   const handleClose = () => {
     // Save any pending changes based on current step
@@ -301,7 +321,7 @@ const StandaloneContentFlow: React.FC<StandaloneContentFlowProps> = ({
       <DialogContent
         hideCloseButton
         className={cn(
-          "h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden border-0 shadow-2xl p-0 flex flex-col transition-all duration-300",
+          "!top-6 !translate-y-0 h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden border-0 shadow-2xl p-0 flex flex-col transition-all duration-300",
           stepBackgrounds[activeStep] || 'bg-white',
           stepMaxWidths[activeStep] || 'sm:max-w-[900px]'
         )}
@@ -338,8 +358,14 @@ const StandaloneContentFlow: React.FC<StandaloneContentFlowProps> = ({
               <ScriptEditorDialog
                 isOpen={true}
                 onOpenChange={(open) => !open && handleClose()}
+                onCancel={handleClose}
                 card={card}
                 onSave={handleSaveScript}
+                titleInputRef={titleInputRef}
+                locationInputRef={locationInputRef}
+                outfitInputRef={outfitInputRef}
+                propsInputRef={propsInputRef}
+                notesInputRef={notesInputRef}
                 cardTitle={cardTitle}
                 setCardTitle={setCardTitle}
                 cardHook={cardHook}
@@ -353,20 +379,20 @@ const StandaloneContentFlow: React.FC<StandaloneContentFlowProps> = ({
                 setPlatformTags={setPlatformTags}
                 formatTags={formatTags}
                 setFormatTags={setFormatTags}
-                platformInput={platformInput}
-                setPlatformInput={setPlatformInput}
-                formatInput={formatInput}
-                setFormatInput={setFormatInput}
-                locationChecked={locationChecked}
-                setLocationChecked={setLocationChecked}
+                showCustomFormatInput={showCustomFormatInput}
+                setShowCustomFormatInput={setShowCustomFormatInput}
+                customFormatInput={customFormatInput}
+                setCustomFormatInput={setCustomFormatInput}
+                showCustomPlatformInput={showCustomPlatformInput}
+                setShowCustomPlatformInput={setShowCustomPlatformInput}
+                customPlatformInput={customPlatformInput}
+                setCustomPlatformInput={setCustomPlatformInput}
+                onRemoveFormatTag={handleRemoveFormatTag}
+                onRemovePlatformTag={handleRemovePlatformTag}
                 locationText={locationText}
                 setLocationText={setLocationText}
-                outfitChecked={outfitChecked}
-                setOutfitChecked={setOutfitChecked}
                 outfitText={outfitText}
                 setOutfitText={setOutfitText}
-                propsChecked={propsChecked}
-                setPropsChecked={setPropsChecked}
                 propsText={propsText}
                 setPropsText={setPropsText}
                 filmingNotes={filmingNotes}
