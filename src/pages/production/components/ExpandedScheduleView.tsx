@@ -1591,7 +1591,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
       )}
       {/* Main content - split panels with step progress integrated */}
       <div className={cn(
-        "flex-1 overflow-y-auto grid transition-all duration-300 min-h-0",
+        "flex-1 overflow-hidden grid transition-all duration-300 min-h-0",
         singleCard && isLeftPanelCollapsed ? "grid-cols-[1fr]" : isLeftPanelCollapsed ? "grid-cols-[48px_1fr]" : "grid-cols-[300px_1fr]"
       )} style={{ gridTemplateRows: '1fr' }}>
         {/* Top spacing for batch view (no stepper) */}
@@ -1694,7 +1694,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
             </div>
           )}
 
-          {/* Body - scrollable */}
+          {/* Body */}
           <div className={cn(
             "flex-1 min-h-0 overflow-y-auto transition-all duration-300",
             isLeftPanelCollapsed ? "p-0 opacity-0 overflow-hidden" : "px-2 -mt-2 pb-4 opacity-100"
@@ -2027,7 +2027,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                   </p>
 
                   {/* Batch Schedule link */}
-                  <div className="!mt-32 pt-16 text-center">
+                  <div className="!mt-20 text-center">
                     <button
                       onClick={() => {
                         if (onClose) onClose();

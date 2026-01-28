@@ -203,7 +203,7 @@ const SortableSceneCard: React.FC<SortableSceneCardProps> = ({
             <img
               src={shotIllustrations[selectedTemplate.id]}
               alt={selectedTemplate.user_facing_name}
-              className="h-full object-contain"
+              className="h-full object-contain scale-[1.2]"
             />
           </button>
         ) : (

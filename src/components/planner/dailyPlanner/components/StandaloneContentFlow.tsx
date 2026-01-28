@@ -143,13 +143,26 @@ const StandaloneContentFlow: React.FC<StandaloneContentFlowProps> = ({
     setCustomPhotoFormats(card.customPhotoFormats || []);
 
     // Check for brain dump suggestion
+    // Show if: notes exist AND notes are different from what was already handled (appended or dismissed)
     const notesText = card.description?.trim() || "";
-    const scriptText = card.script?.trim() || "";
-    const notesAlreadyInScript = notesText && scriptText.includes(notesText);
-    if (notesText && !notesAlreadyInScript) {
+    const alreadyHandledText = card.brainDumpHandledText?.trim() || "";
+
+    // Only show if there are actual notes AND they haven't been handled yet
+    const hasNotes = notesText.length > 0;
+    const alreadyHandled = alreadyHandledText.length > 0 && notesText === alreadyHandledText;
+
+    if (hasNotes && !alreadyHandled) {
       setBrainDumpSuggestion(card.description!);
       setShowBrainDumpSuggestion(true);
+    } else {
+      setBrainDumpSuggestion("");
+      setShowBrainDumpSuggestion(false);
     }
+
+    // Debug log - remove after testing
+    console.log('[BrainDump] notesText:', notesText);
+    console.log('[BrainDump] alreadyHandledText:', alreadyHandledText);
+    console.log('[BrainDump] hasNotes:', hasNotes, 'alreadyHandled:', alreadyHandled);
 
     // Determine initial step based on completion
     if (!initialStep) {
@@ -272,6 +285,18 @@ const StandaloneContentFlow: React.FC<StandaloneContentFlowProps> = ({
     setPlatformTags(platformTags.filter(t => t !== tag));
   };
 
+  // Handle brain dump suggestion dismissal - also save to card so it doesn't show again
+  const handleBrainDumpDismiss = useCallback((show: boolean) => {
+    console.log('[BrainDump] handleBrainDumpDismiss called with show:', show);
+    console.log('[BrainDump] card?.description:', card?.description);
+    setShowBrainDumpSuggestion(show);
+    if (!show && card?.description) {
+      // Save the current notes text so it won't show again (unless edited in Ideate)
+      console.log('[BrainDump] Saving brainDumpHandledText:', card.description);
+      saveCard({ brainDumpHandledText: card.description });
+    }
+  }, [card?.description, saveCard]);
+
   // Close handler - save current step data
   const handleClose = () => {
     // Save any pending changes based on current step
@@ -374,7 +399,7 @@ const StandaloneContentFlow: React.FC<StandaloneContentFlowProps> = ({
                 setScriptContent={setScriptContent}
                 showBrainDumpSuggestion={showBrainDumpSuggestion}
                 brainDumpSuggestion={brainDumpSuggestion}
-                setShowBrainDumpSuggestion={setShowBrainDumpSuggestion}
+                setShowBrainDumpSuggestion={handleBrainDumpDismiss}
                 platformTags={platformTags}
                 setPlatformTags={setPlatformTags}
                 formatTags={formatTags}

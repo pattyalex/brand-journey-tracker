@@ -61,25 +61,25 @@ const ShotIllustration: React.FC<{ shotId: string; className?: string }> = ({ sh
     case 'wide-shot':
       // PNG illustration - full body in room
       return (
-        <img src={wideShotIllustration} alt="Wide shot" className={cn("w-full h-full object-contain", className)} />
+        <img src={wideShotIllustration} alt="Wide shot" className={cn("w-full h-full object-contain scale-[1.2]", className)} />
       );
 
     case 'medium-shot':
       // PNG illustration - chest up talking
       return (
-        <img src={mediumShotIllustration} alt="Medium shot" className={cn("w-full h-full object-contain", className)} />
+        <img src={mediumShotIllustration} alt="Medium shot" className={cn("w-full h-full object-contain scale-[1.2]", className)} />
       );
 
     case 'close-up-shot':
       // PNG illustration - face close up
       return (
-        <img src={closeUpShotIllustration} alt="Close-up shot" className={cn("w-full h-full object-contain", className)} />
+        <img src={closeUpShotIllustration} alt="Close-up shot" className={cn("w-full h-full object-contain scale-[1.2]", className)} />
       );
 
     case 'hands-doing':
       // PNG illustration - hands cooking
       return (
-        <img src={handsDoingIllustration} alt="Hands doing something" className={cn("w-full h-full object-contain", className)} />
+        <img src={handsDoingIllustration} alt="Hands doing something" className={cn("w-full h-full object-contain scale-[1.2]", className)} />
       );
 
     case 'close-detail':
@@ -91,25 +91,25 @@ const ShotIllustration: React.FC<{ shotId: string; className?: string }> = ({ sh
     case 'at-desk':
       // PNG illustration - in your environment
       return (
-        <img src={atDeskIllustration} alt="In your environment" className={cn("w-full h-full object-contain", className)} />
+        <img src={atDeskIllustration} alt="In your environment" className={cn("w-full h-full object-contain scale-[1.2]", className)} />
       );
 
     case 'neutral-visual':
       // PNG illustration - city view
       return (
-        <img src={neutralVisualIllustration} alt="Neutral visual" className={cn("w-full h-full object-contain", className)} />
+        <img src={neutralVisualIllustration} alt="Neutral visual" className={cn("w-full h-full object-contain scale-[1.2]", className)} />
       );
 
     case 'moving-through':
       // PNG illustration - walking with dog
       return (
-        <img src={movingThroughIllustration} alt="Moving through space" className={cn("w-full h-full object-contain", className)} />
+        <img src={movingThroughIllustration} alt="Moving through space" className={cn("w-full h-full object-contain scale-[1.2]", className)} />
       );
 
     case 'quiet-cutaway':
       // PNG illustration - person adjusting shirt
       return (
-        <img src={quietCutawayIllustration} alt="Quiet cutaway" className={cn("w-full h-full object-contain", className)} />
+        <img src={quietCutawayIllustration} alt="Quiet cutaway" className={cn("w-full h-full object-contain scale-[1.2]", className)} />
       );
 
     case 'reaction-moment':
@@ -227,7 +227,9 @@ const ShotLibraryDialog: React.FC<ShotLibraryDialogProps> = ({
                   >
                     <div className="flex items-start gap-4">
                       {/* Shot illustration */}
-                      <ShotIllustration shotId={template.id} className="w-20 h-20 flex-shrink-0" />
+                      <div className="w-20 h-20 flex-shrink-0 overflow-hidden rounded-lg">
+                        <ShotIllustration shotId={template.id} className="w-full h-full" />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <h3 className={cn(
@@ -275,7 +277,9 @@ const ShotLibraryDialog: React.FC<ShotLibraryDialogProps> = ({
                 <div className="space-y-5">
                   {/* Shot illustration - large */}
                   <div className="flex justify-center">
-                    <ShotIllustration shotId={selectedShot.id} className="w-40 h-40" />
+                    <div className="w-40 h-40 overflow-hidden rounded-xl">
+                      <ShotIllustration shotId={selectedShot.id} className="w-full h-full" />
+                    </div>
                   </div>
 
                   {/* Shot title */}

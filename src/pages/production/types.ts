@@ -69,6 +69,7 @@ export interface ProductionCard {
   plannedColor?: 'indigo' | 'rose' | 'amber' | 'emerald' | 'sky' | 'violet' | 'orange' | 'cyan' | 'sage'; // Color for planned items on calendar
   plannedStartTime?: string; // Start time for planned content (e.g., "9:00 am")
   plannedEndTime?: string; // End time for planned content (e.g., "10:00 am")
+  brainDumpHandledText?: string; // The notes text that was already appended or dismissed in script editor
 }
 
 export interface KanbanColumn {

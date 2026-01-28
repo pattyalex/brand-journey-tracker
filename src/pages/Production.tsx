@@ -1147,12 +1147,13 @@ const Production = () => {
     setCustomVideoFormats(card.customVideoFormats || []);
     setCustomPhotoFormats(card.customPhotoFormats || []);
     // Check if card has brain dump notes from Ideate column
-    // Only show if notes exist AND haven't already been appended to the script
+    // Only show if notes exist AND haven't already been handled (dismissed or appended)
     const notesText = card.description?.trim() || "";
-    const scriptText = card.script?.trim() || "";
-    const notesAlreadyInScript = notesText && scriptText.includes(notesText);
+    const alreadyHandledText = card.brainDumpHandledText?.trim() || "";
+    const hasNotes = notesText.length > 0;
+    const alreadyHandled = alreadyHandledText.length > 0 && notesText === alreadyHandledText;
 
-    if (notesText && !notesAlreadyInScript) {
+    if (hasNotes && !alreadyHandled) {
       setBrainDumpSuggestion(card.description!);
       setShowBrainDumpSuggestion(true);
     } else {
@@ -1476,10 +1477,12 @@ const Production = () => {
     setSchedulingCard(card);
 
     // Check for brain dump suggestion
+    // Only show if notes exist AND haven't already been handled (dismissed or appended)
     const notesText = card.description?.trim() || "";
-    const scriptText = card.script?.trim() || "";
-    const notesAlreadyInScript = notesText && scriptText.includes(notesText);
-    if (notesText && !notesAlreadyInScript) {
+    const alreadyHandledText = card.brainDumpHandledText?.trim() || "";
+    const hasNotes = notesText.length > 0;
+    const alreadyHandled = alreadyHandledText.length > 0 && notesText === alreadyHandledText;
+    if (hasNotes && !alreadyHandled) {
       setBrainDumpSuggestion(card.description!);
       setShowBrainDumpSuggestion(true);
     } else {
@@ -1708,6 +1711,33 @@ const Production = () => {
     });
   };
 
+  // Handler for brain dump suggestion dismissal - saves the handled text to prevent reappearing
+  const handleBrainDumpDismiss = (show: boolean) => {
+    console.log('[BrainDump Prod] handleBrainDumpDismiss called with show:', show);
+    setShowBrainDumpSuggestion(show);
+
+    if (!show) {
+      // When dismissing, save the current description as handled text
+      const currentCard = contentFlowCard || editingScriptCard;
+      console.log('[BrainDump Prod] currentCard:', currentCard?.id, 'description:', currentCard?.description);
+
+      if (currentCard && currentCard.description) {
+        // Update the card with brainDumpHandledText
+        setColumns((prev) =>
+          prev.map((col) => ({
+            ...col,
+            cards: col.cards.map((card) =>
+              card.id === currentCard.id
+                ? { ...card, brainDumpHandledText: currentCard.description }
+                : card
+            ),
+          }))
+        );
+        console.log('[BrainDump Prod] Saved brainDumpHandledText:', currentCard.description);
+      }
+    }
+  };
+
   // Auto-save helper for Ideate dialog (saves without closing/resetting)
   const autoSaveIdeateCard = () => {
     if (!editingIdeateCard) return;
@@ -1906,12 +1936,17 @@ const Production = () => {
           setCardStatus(latestCard!.status || 'to-start');
           setCustomVideoFormats(latestCard!.customVideoFormats || []);
           setCustomPhotoFormats(latestCard!.customPhotoFormats || []);
-          // Show brain dump suggestion if notes exist and not already in script
+          // Check for brain dump suggestion
+          // Only show if notes exist AND haven't already been handled (dismissed or appended)
           {
             const notesText = latestCard!.description?.trim() || "";
-            const scriptText = latestCard!.script?.trim() || "";
-            const notesAlreadyInScript = notesText && scriptText.includes(notesText);
-            if (notesText && !notesAlreadyInScript) {
+            const alreadyHandledText = latestCard!.brainDumpHandledText?.trim() || "";
+            const hasNotes = notesText.length > 0;
+            const alreadyHandled = alreadyHandledText.length > 0 && notesText === alreadyHandledText;
+            console.log('[BrainDump Prod case 2] notesText:', notesText);
+            console.log('[BrainDump Prod case 2] alreadyHandledText:', alreadyHandledText);
+            console.log('[BrainDump Prod case 2] hasNotes:', hasNotes, 'alreadyHandled:', alreadyHandled);
+            if (hasNotes && !alreadyHandled) {
               setBrainDumpSuggestion(latestCard!.description!);
               setShowBrainDumpSuggestion(true);
             } else {
@@ -4895,7 +4930,7 @@ Make each idea unique, creative, and directly tied to both the original content 
           setScriptContent={setScriptContent}
           showBrainDumpSuggestion={showBrainDumpSuggestion}
           brainDumpSuggestion={brainDumpSuggestion}
-          setShowBrainDumpSuggestion={setShowBrainDumpSuggestion}
+          setShowBrainDumpSuggestion={handleBrainDumpDismiss}
           formatTags={formatTags}
           setFormatTags={setFormatTags}
           showCustomFormatInput={showCustomFormatInput}
@@ -5009,7 +5044,7 @@ Make each idea unique, creative, and directly tied to both the original content 
               setScriptContent={setScriptContent}
               showBrainDumpSuggestion={showBrainDumpSuggestion}
               brainDumpSuggestion={brainDumpSuggestion}
-              setShowBrainDumpSuggestion={setShowBrainDumpSuggestion}
+              setShowBrainDumpSuggestion={handleBrainDumpDismiss}
               platformTags={platformTags}
               setPlatformTags={setPlatformTags}
               formatTags={formatTags}
