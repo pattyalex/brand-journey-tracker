@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar, ChevronLeft, ChevronRight, Lightbulb, Clapperboard, CheckCircle2 } from "lucide-react";
+import { Calendar, CalendarDays, ChevronLeft, ChevronRight, Lightbulb, Clapperboard, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StorageKeys, getString } from "@/lib/storage";
 import { startOfMonth, endOfMonth, parseISO, isWithinInterval } from "date-fns";
@@ -17,11 +17,14 @@ interface ContentCounts {
 interface ContentOverviewSidebarProps {
   isCollapsed: boolean;
   setIsCollapsed: (collapsed: boolean) => void;
+  /** When true, renders just the content without outer wrapper (for combined sidebar) */
+  embedded?: boolean;
 }
 
 export const ContentOverviewSidebar = ({
   isCollapsed,
   setIsCollapsed,
+  embedded = false,
 }: ContentOverviewSidebarProps) => {
   const navigate = useNavigate();
   const [counts, setCounts] = useState<ContentCounts>({
@@ -67,15 +70,32 @@ export const ContentOverviewSidebar = ({
           }
 
           // Scheduled to Publish: cards in 'to-schedule' that HAVE been scheduled (have scheduledDate)
-          if (column.id === 'to-schedule' && card.scheduledDate) {
+          // but NOT yet marked as completed/posted
+          if (column.id === 'to-schedule' && card.scheduledDate && !card.isCompleted) {
             scheduledToPublish++;
           }
 
-          // Published this month: cards in 'published' column with publishedDate in current month
-          if (column.id === 'published' && card.publishedDate) {
-            const pubDate = parseISO(card.publishedDate);
-            if (isWithinInterval(pubDate, { start: monthStart, end: monthEnd })) {
-              publishedThisMonth++;
+          // Published this month:
+          // 1. Cards in 'posted' column with postedAt in current month
+          // 2. Cards marked as completed (isCompleted) with scheduledDate in current month
+          if (column.id === 'posted' && (card as any).postedAt) {
+            try {
+              const postedDate = parseISO((card as any).postedAt);
+              if (isWithinInterval(postedDate, { start: monthStart, end: monthEnd })) {
+                publishedThisMonth++;
+              }
+            } catch (e) {
+              // Ignore parsing errors
+            }
+          } else if (card.isCompleted && card.scheduledDate) {
+            // Cards marked as posted via checkbox but still on calendar
+            try {
+              const schedDate = parseISO(card.scheduledDate);
+              if (isWithinInterval(schedDate, { start: monthStart, end: monthEnd })) {
+                publishedThisMonth++;
+              }
+            } catch (e) {
+              // Ignore parsing errors
             }
           }
         });
@@ -108,11 +128,81 @@ export const ContentOverviewSidebar = ({
     };
   }, []);
 
+  // Embedded mode - render just the content for combined sidebar
+  if (embedded) {
+    return (
+      <div>
+        {/* Header */}
+        <div className="flex items-center gap-2.5 mb-5">
+          <CalendarDays className="w-5 h-5 text-indigo-600" />
+          <h2 className="text-base font-semibold text-gray-900">Content Overview</h2>
+        </div>
+
+        {/* Content Overview Stats */}
+        <div className="space-y-4">
+          {/* In Ideation */}
+          <div className="flex items-center justify-between py-2">
+            <div className="flex items-center gap-2.5">
+              <Lightbulb className="w-4 h-4 text-gray-400" />
+              <span className="text-sm text-gray-700">In Ideation</span>
+            </div>
+            <span className="text-sm font-semibold text-gray-900">{counts.inIdeation}</span>
+          </div>
+
+          {/* In Production */}
+          <div className="flex items-center justify-between py-2">
+            <div className="flex items-center gap-2.5">
+              <Clapperboard className="w-4 h-4 text-gray-400" />
+              <span className="text-sm text-gray-700">In Production</span>
+            </div>
+            <span className="text-sm font-semibold text-gray-900">{counts.inProduction}</span>
+          </div>
+
+          {/* Scheduled to Publish */}
+          <div className="flex items-center justify-between py-2">
+            <div className="flex items-center gap-2.5">
+              <Calendar className="w-4 h-4 text-gray-400" />
+              <span className="text-sm text-gray-700">Scheduled to Publish</span>
+            </div>
+            <span className="text-sm font-semibold text-gray-900">{counts.scheduledToPublish}</span>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-gray-200 my-2" />
+
+          {/* Published this month */}
+          <div className="flex items-center justify-between py-2">
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-gray-400" />
+              <span className="text-sm text-gray-500">Published this month</span>
+            </div>
+            <span className="text-sm font-semibold text-green-600">{counts.publishedThisMonth}</span>
+          </div>
+        </div>
+
+        {/* Content Hub guidance */}
+        <div className="mt-6">
+          <p className="text-sm font-medium text-gray-800 mb-1">Ready to create?</p>
+          <p className="text-xs text-gray-500">
+            Head to{' '}
+            <button
+              onClick={() => navigate('/production')}
+              className="text-indigo-600 font-semibold hover:text-indigo-700 transition-colors"
+            >
+              Content Hub →
+            </button>
+            {' '}to develop your ideas
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
         "h-full flex-shrink-0 bg-gradient-to-br from-indigo-50/50 to-violet-50/50 transition-all duration-300 relative",
-        isCollapsed ? "w-0 overflow-hidden" : "w-80"
+        isCollapsed ? "w-12" : "w-80"
       )}
     >
       {/* Collapse/Expand Button */}
@@ -127,13 +217,15 @@ export const ContentOverviewSidebar = ({
         )}
       </button>
 
-      {!isCollapsed && (
-        <div className="p-5 h-full flex flex-col">
+      {/* Content wrapper with overflow-hidden to prevent text reflow during transition */}
+      <div className="h-full overflow-hidden">
+        <div className={cn(
+          "p-5 h-full flex flex-col w-80 transition-opacity duration-300",
+          isCollapsed ? "opacity-0" : "opacity-100"
+        )}>
           {/* Header */}
           <div className="flex items-center gap-2.5 mb-5">
-            <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center">
-              <Calendar className="w-4 h-4 text-indigo-600" />
-            </div>
+            <CalendarDays className="w-5 h-5 text-indigo-600" />
             <h2 className="text-base font-semibold text-gray-900">Content Overview</h2>
           </div>
 
@@ -196,7 +288,7 @@ export const ContentOverviewSidebar = ({
 
           <div className="flex-1" />
         </div>
-      )}
+      </div>
     </div>
   );
 };

@@ -422,6 +422,60 @@ export const DailyPlanner = () => {
               isCollapsed={isAllTasksCollapsed}
               setIsCollapsed={setIsAllTasksCollapsed}
             />
+          ) : contentDisplayMode === 'both' ? (
+            // Combined sidebar for "Both" view - show All Tasks + Content Overview
+            <div
+              className={cn(
+                "h-full flex-shrink-0 bg-gradient-to-br from-indigo-50/50 to-violet-50/50 transition-all duration-300 relative",
+                isAllTasksCollapsed ? "w-12" : "w-80"
+              )}
+            >
+              {/* Collapse/Expand Button */}
+              <button
+                onClick={() => setIsAllTasksCollapsed(!isAllTasksCollapsed)}
+                className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-6 h-12 bg-white border border-gray-200 rounded-full shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors"
+              >
+                {isAllTasksCollapsed ? (
+                  <ChevronRight className="w-4 h-4 text-gray-400" />
+                ) : (
+                  <ChevronLeft className="w-4 h-4 text-gray-400" />
+                )}
+              </button>
+
+              {/* Content wrapper with overflow-hidden to prevent text reflow during transition */}
+              <div className="h-full overflow-hidden">
+                <div className={cn(
+                  "p-5 h-full overflow-y-auto w-80 transition-opacity duration-300",
+                  isAllTasksCollapsed ? "opacity-0" : "opacity-100"
+                )}>
+                  {/* All Tasks Section */}
+                  <AllTasksSidebar
+                    isAllTasksCollapsed={false}
+                    setIsAllTasksCollapsed={() => {}}
+                    setIsDraggingOverAllTasks={setIsDraggingOverAllTasks}
+                    allTasks={allTasks}
+                    handleToggleAllTask={handleToggleAllTask}
+                    handleDeleteAllTask={handleDeleteAllTask}
+                    handleEditAllTask={handleEditAllTask}
+                    handleAddAllTask={handleAddAllTask}
+                    handleReorderAllTasks={handleReorderAllTasks}
+                    handleDropTaskFromWeeklyToAllTasks={handleDropTaskFromWeeklyToAllTasks}
+                    handleDropTaskFromCalendarToAllTasks={handleDropTaskFromCalendarToAllTasks}
+                    embedded={true}
+                  />
+
+                  {/* Divider */}
+                  <div className="border-t border-gray-200 my-4" />
+
+                  {/* Content Overview Section */}
+                  <ContentOverviewSidebar
+                    isCollapsed={false}
+                    setIsCollapsed={() => {}}
+                    embedded={true}
+                  />
+                </div>
+              </div>
+            </div>
           ) : (
             <AllTasksSidebar
               isAllTasksCollapsed={isAllTasksCollapsed}
