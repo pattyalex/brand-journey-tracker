@@ -427,13 +427,23 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
               onDragOver={(e) => {
                 e.preventDefault();
                 e.dataTransfer.dropEffect = 'move';
-                setDragOverUnschedule(true);
+                // Only show unschedule zone if the dragged card is already scheduled
+                if (draggedCardId) {
+                  const draggedCard = allCards.find(c => c.id === draggedCardId) || (card?.id === draggedCardId ? card : null);
+                  if (draggedCard?.schedulingStatus === 'scheduled') {
+                    setDragOverUnschedule(true);
+                  }
+                }
               }}
               onDragLeave={() => setDragOverUnschedule(false)}
               onDrop={(e) => {
                 e.preventDefault();
                 if (draggedCardId && onUnschedule) {
-                  onUnschedule(draggedCardId);
+                  // Only unschedule if the card was actually scheduled
+                  const draggedCard = allCards.find(c => c.id === draggedCardId) || (card?.id === draggedCardId ? card : null);
+                  if (draggedCard?.schedulingStatus === 'scheduled') {
+                    onUnschedule(draggedCardId);
+                  }
                 }
                 setDraggedCardId(null);
                 setDragOverUnschedule(false);

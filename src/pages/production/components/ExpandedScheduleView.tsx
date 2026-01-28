@@ -178,6 +178,8 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   // Track when single card has been scheduled (for congratulation state)
   const [singleCardScheduled, setSingleCardScheduled] = useState(false);
   const [scheduledDate, setScheduledDate] = useState<Date | null>(null);
+  // Track if the card was just scheduled (for showing celebration)
+  const [showCelebration, setShowCelebration] = useState(false);
 
   // Initialize singleCardScheduled if the card is already scheduled
   useEffect(() => {
@@ -188,9 +190,12 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
       const datePart = singleCard.scheduledDate.split('T')[0];
       const [year, month, day] = datePart.split('-').map(Number);
       setScheduledDate(new Date(year, month - 1, day, 12, 0, 0)); // noon local time
+      // Don't show celebration when opening an already-scheduled card
+      setShowCelebration(false);
     } else {
       setSingleCardScheduled(false);
       setScheduledDate(null);
+      setShowCelebration(false);
     }
   }, [singleCard?.id, singleCard?.scheduledDate]);
 
@@ -1357,6 +1362,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
       if (singleCard && pendingScheduleCardId === singleCard.id) {
         setSingleCardScheduled(true);
         setScheduledDate(dateWithTime);
+        setShowCelebration(true); // Show celebration when user just scheduled
       }
     }
     setTimePickerOpen(false);
@@ -1650,17 +1656,28 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
           onDragOver={(e) => {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
-            setDragOverUnschedule(true);
+            // Only show unschedule zone if the dragged card is already scheduled
+            if (draggedCardId) {
+              const draggedCard = cards.find(c => c.id === draggedCardId) || (singleCard?.id === draggedCardId ? singleCard : null);
+              if (draggedCard?.schedulingStatus === 'scheduled') {
+                setDragOverUnschedule(true);
+              }
+            }
           }}
           onDragLeave={() => setDragOverUnschedule(false)}
           onDrop={(e) => {
             e.preventDefault();
             if (draggedCardId && onUnschedule) {
-              onUnschedule(draggedCardId);
-              // If this was the single card, reset the scheduled state
-              if (singleCard && draggedCardId === singleCard.id) {
-                setSingleCardScheduled(false);
-                setScheduledDate(null);
+              // Only unschedule if the card was actually scheduled
+              const draggedCard = cards.find(c => c.id === draggedCardId) || (singleCard?.id === draggedCardId ? singleCard : null);
+              if (draggedCard?.schedulingStatus === 'scheduled') {
+                onUnschedule(draggedCardId);
+                // If this was the single card, reset the scheduled state
+                if (singleCard && draggedCardId === singleCard.id) {
+                  setSingleCardScheduled(false);
+                  setScheduledDate(null);
+                  setShowCelebration(false);
+                }
               }
             }
             setDraggedCardId(null);
@@ -1906,8 +1923,77 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
               </div>
             ) : singleCard ? (
               // Single card mode - show impressive single card view or congratulation
-              singleCardScheduled ? (
-                // Congratulation state after scheduling - parent handles drop zone
+              singleCardScheduled && showCelebration ? (
+                // Celebration state after just scheduling - "You're all set!"
+                <div className="flex flex-col items-center justify-center h-full py-8 px-4">
+                  {dragOverUnschedule ? (
+                    // Show drop indicator when dragging over
+                    <div className="flex flex-col items-center justify-center flex-1 text-center px-4">
+                      <motion.div
+                        initial={{ scale: 0.8 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                        className="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-300 to-amber-400 flex items-center justify-center mb-4 shadow-lg"
+                      >
+                        <CalendarDays className="w-10 h-10 text-amber-700" />
+                      </motion.div>
+                      <h3 className="text-lg font-bold text-amber-700 mb-2">Drop to unschedule</h3>
+                      <p className="text-sm text-amber-600 leading-relaxed">
+                        This content will move to<br />
+                        <span className="font-semibold">"To Schedule"</span> column
+                      </p>
+                      <p className="text-xs text-amber-500 mt-2">
+                        Find it in Batch Schedule or its own dialog
+                      </p>
+                    </div>
+                  ) : (
+                    // Celebration view - "You're all set!"
+                    <>
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                        className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center mb-4 shadow-lg"
+                      >
+                        <Check className="w-10 h-10 text-white" strokeWidth={3} />
+                      </motion.div>
+                      <motion.h3
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="text-xl font-bold text-gray-900 mb-2"
+                      >
+                        You're all set!
+                      </motion.h3>
+                      <motion.p
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="text-sm text-[#8B7082] text-center"
+                      >
+                        Scheduled for{" "}
+                        <span className="font-semibold">
+                          {scheduledDate?.toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </span>
+                      </motion.p>
+                      <motion.button
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.5 }}
+                        onClick={onClose}
+                        className="mt-6 px-6 py-2.5 bg-gradient-to-r from-[#612A4F] to-[#8B7082] text-white text-sm font-medium rounded-xl hover:shadow-lg transition-shadow"
+                      >
+                        Done
+                      </motion.button>
+                    </>
+                  )}
+                </div>
+              ) : singleCardScheduled && !showCelebration ? (
+                // Already scheduled state (opened an existing scheduled card) - no celebration
                 <div className="flex flex-col items-center justify-center h-full pb-8 px-4">
                   {dragOverUnschedule ? (
                     // Show drop indicator when dragging over
@@ -2515,6 +2601,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                               if (singleCard && scheduledCard.id === singleCard.id) {
                                                 setSingleCardScheduled(false);
                                                 setScheduledDate(null);
+                                                setShowCelebration(false);
                                               }
                                             }
                                           }}
