@@ -32,8 +32,16 @@ import {
   Upload,
   ExternalLink,
   ChevronDown,
+  ChevronUp,
   Heart,
-  Compass
+  Compass,
+  Check,
+  Copy,
+  Sparkles,
+  X,
+  Link2,
+  Paperclip,
+  StickyNote
 } from "lucide-react";
 
 const StrategyGrowth = () => {
@@ -44,12 +52,46 @@ const StrategyGrowth = () => {
   const [audienceStruggles, setAudienceStruggles] = useState("");
   const [audienceDesires, setAudienceDesires] = useState("");
   const [selectedTones, setSelectedTones] = useState<string[]>(["relatable"]);
+  const [brandValues, setBrandValues] = useState<string[]>(() => {
+    const saved = getString(StorageKeys.brandValues);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
+  const [customValueInput, setCustomValueInput] = useState("");
+  const [editingValueIndex, setEditingValueIndex] = useState<number | null>(null);
+  const [editingValueText, setEditingValueText] = useState("");
   const [missionStatement, setMissionStatement] = useState(() => getString(StorageKeys.missionStatement) || "");
   const [missionStatementFocused, setMissionStatementFocused] = useState(false);
   const [showMissionExamples, setShowMissionExamples] = useState(true);
   const [contentValues, setContentValues] = useState(() => getString(StorageKeys.contentValues) || "");
   const [contentValuesFocused, setContentValuesFocused] = useState(false);
   const [showValuesExamples, setShowValuesExamples] = useState(true);
+  const [showMissionSaved, setShowMissionSaved] = useState(false);
+  const [showValuesSaved, setShowValuesSaved] = useState(false);
+  const [additionalNotes, setAdditionalNotes] = useState(() => getString("strategyNotes") || "");
+  const [noteLinks, setNoteLinks] = useState<{ url: string; title: string }[]>(() => {
+    const saved = getString("strategyNoteLinks");
+    if (saved) {
+      try { return JSON.parse(saved); } catch { return []; }
+    }
+    return [];
+  });
+  const [noteFiles, setNoteFiles] = useState<{ name: string; data: string }[]>(() => {
+    const saved = getString("strategyNoteFiles");
+    if (saved) {
+      try { return JSON.parse(saved); } catch { return []; }
+    }
+    return [];
+  });
+  const [newLinkUrl, setNewLinkUrl] = useState("");
+  const [newLinkTitle, setNewLinkTitle] = useState("");
+  const [showAddLinkForm, setShowAddLinkForm] = useState(false);
   const [strugglesFocused, setStrugglesFocused] = useState(false);
   const [desiresFocused, setDesiresFocused] = useState(false);
   const { images: visionBoardImages, pinterestUrl, addImage: addVisionBoardImage, removeImage: removeVisionBoardImage, updatePinterestUrl } = useVisionBoard();
@@ -172,20 +214,70 @@ const StrategyGrowth = () => {
   }, [longTermGoals]);
 
   useEffect(() => {
-    try {
-      setString(StorageKeys.missionStatement, missionStatement);
-    } catch (error) {
-      console.error('Failed to save mission statement:', error);
-    }
+    const timer = setTimeout(() => {
+      try {
+        setString(StorageKeys.missionStatement, missionStatement);
+        if (missionStatement.trim()) {
+          setShowMissionSaved(true);
+          setTimeout(() => setShowMissionSaved(false), 1500);
+        }
+      } catch (error) {
+        console.error('Failed to save mission statement:', error);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
   }, [missionStatement]);
 
   useEffect(() => {
-    try {
-      setString(StorageKeys.contentValues, contentValues);
-    } catch (error) {
-      console.error('Failed to save content values:', error);
-    }
+    const timer = setTimeout(() => {
+      try {
+        setString(StorageKeys.contentValues, contentValues);
+        if (contentValues.trim()) {
+          setShowValuesSaved(true);
+          setTimeout(() => setShowValuesSaved(false), 1500);
+        }
+      } catch (error) {
+        console.error('Failed to save content values:', error);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
   }, [contentValues]);
+
+  useEffect(() => {
+    try {
+      setString(StorageKeys.brandValues, JSON.stringify(brandValues));
+    } catch (error) {
+      console.error('Failed to save brand values:', error);
+    }
+  }, [brandValues]);
+
+  // Save notes data
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      try {
+        setString("strategyNotes", additionalNotes);
+      } catch (error) {
+        console.error('Failed to save notes:', error);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [additionalNotes]);
+
+  useEffect(() => {
+    try {
+      setString("strategyNoteLinks", JSON.stringify(noteLinks));
+    } catch (error) {
+      console.error('Failed to save note links:', error);
+    }
+  }, [noteLinks]);
+
+  useEffect(() => {
+    try {
+      setString("strategyNoteFiles", JSON.stringify(noteFiles));
+    } catch (error) {
+      console.error('Failed to save note files:', error);
+    }
+  }, [noteFiles]);
 
   // Listen for storage events to sync with HomePage in real-time
   useEffect(() => {
@@ -518,27 +610,20 @@ const StrategyGrowth = () => {
       <GoalsOnboarding run={showOnboarding && activeTab === 'growth-goals'} onComplete={completeOnboarding} />
       <div className="w-full h-full mx-auto px-8 py-6 bg-gradient-to-br from-gray-50 to-gray-100 overflow-auto">
         <div className="max-w-[1600px] mx-auto space-y-6">
-          {/* Header */}
-          <div className="flex flex-col space-y-2">
-            <h1 className="text-3xl font-bold text-gray-900">Strategy & Goals</h1>
-            <p className="text-sm text-gray-600">
-              Define your brand positioning and track your growth goals
-            </p>
-          </div>
-
+          
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="inline-flex items-center gap-0 bg-white rounded-lg shadow-sm border border-gray-200 p-1 mb-6">
               <TabsTrigger
                 value="brand-identity"
-                className="relative px-6 py-2 rounded-md text-sm font-medium transition-all data-[state=active]:bg-indigo-500 data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900"
+                className="relative px-6 py-2 rounded-md text-sm font-medium transition-all data-[state=active]:bg-[#612A4F] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900"
               >
                 <PenTool className="w-4 h-4 mr-2 inline-block" />
                 Positioning
               </TabsTrigger>
               <TabsTrigger
                 value="growth-goals"
-                className="relative px-6 py-2 rounded-md text-sm font-medium transition-all data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900"
+                className="relative px-6 py-2 rounded-md text-sm font-medium transition-all data-[state=active]:bg-[#612A4F] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900"
               >
                 <TrendingUp className="w-4 h-4 mr-2 inline-block" />
                 Growth Goals
@@ -548,171 +633,405 @@ const StrategyGrowth = () => {
             {/* Positioning Tab */}
             <TabsContent value="brand-identity" className="space-y-4 mt-0">
               {/* Mission Statement */}
-              <Card className="rounded-lg border border-indigo-100 shadow-sm bg-white hover:shadow-md transition-all">
-                <CardHeader className="border-b border-indigo-50 bg-gradient-to-r from-indigo-50/50 to-transparent">
+              <Card className="rounded-xl bg-white border-0 shadow-none">
+                <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-3 text-base">
-                    <div className="p-2 rounded-lg bg-indigo-500 text-white shadow-sm">
+                    <div className="p-2 rounded-lg bg-[#8B7082] text-white shadow-sm">
                       <Target className="w-4 h-4" />
                     </div>
                     <span className="font-semibold text-gray-900">Mission Statement</span>
+                    {missionStatement.trim() && (
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#E8F0E8] text-[#5C7A5C] rounded-full text-xs font-medium">
+                        <Check className="w-3 h-3" />
+                        Complete
+                      </div>
+                    )}
+                    {showMissionSaved && (
+                      <div className="flex items-center gap-1 px-2 py-0.5 text-[#8B7082] text-xs font-medium animate-in fade-in duration-200">
+                        <Check className="w-3 h-3" />
+                        Saved
+                      </div>
+                    )}
                   </CardTitle>
-                  <CardDescription className="ml-11 text-sm text-gray-600">
+                  <CardDescription className="ml-11 text-sm text-gray-500">
                     Why you create content and who you help
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="pt-8 space-y-4">
-                  <div className="relative">
-                    <Textarea
-                      value={missionStatement}
-                      onChange={(e) => setMissionStatement(e.target.value)}
-                      className="min-h-[160px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent p-4 pb-12 text-sm leading-relaxed"
-                      placeholder={missionStatementFocused ? "" : "Write a short sentence that explains who your content is for and what you want it to do for them..."}
-                      onFocus={() => setMissionStatementFocused(true)}
-                      onBlur={() => setMissionStatementFocused(false)}
-                    />
-                    {showMissionExamples && (
-                      <Button
-                        onClick={() => setShowMissionExamples(false)}
-                        size="sm"
-                        className="absolute bottom-3 left-3 text-xs bg-indigo-500 hover:bg-indigo-600 text-white"
-                      >
-                        Done
-                      </Button>
-                    )}
-                  </div>
-                  {showMissionExamples && (
-                    <div className="space-y-2">
-                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Examples</p>
+                <CardContent className="pt-4">
+                  <div className="flex gap-6">
+                    {/* Textarea */}
+                    <div className="flex-1">
+                      <Textarea
+                        value={missionStatement}
+                        onChange={(e) => setMissionStatement(e.target.value)}
+                        className="min-h-[160px] h-full resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#8B7082] focus:border-transparent p-4 text-sm leading-relaxed bg-white"
+                        placeholder={missionStatementFocused ? "" : "Write a short sentence that explains who your content is for and what you want it to do for them..."}
+                        onFocus={() => setMissionStatementFocused(true)}
+                        onBlur={() => setMissionStatementFocused(false)}
+                      />
+                    </div>
+
+                    {/* Examples Panel */}
+                    <div className="w-[420px] flex-shrink-0 bg-gradient-to-b from-[#FAF8F9] to-[#F0E8ED] rounded-xl p-4">
+                      <p className="text-[11px] text-[#8B7082] mb-3">Examples</p>
                       <div className="space-y-2">
-                        <div className="text-sm text-gray-600 bg-indigo-50/50 rounded-md px-3 py-2 border border-indigo-100/50">
-                          "I create content to help busy people build healthy routines they can actually stick to"
-                        </div>
-                        <div className="text-sm text-gray-600 bg-indigo-50/50 rounded-md px-3 py-2 border border-indigo-100/50">
-                          "I create content to inspire women to dress well without overthinking or overspending"
-                        </div>
-                        <div className="text-sm text-gray-600 bg-indigo-50/50 rounded-md px-3 py-2 border border-indigo-100/50">
+                        {[
+                          "I create content to help busy people build healthy routines they can actually stick to",
+                          "I create content to inspire women to dress well without overthinking or overspending",
                           "I create content to help small business founders scale their businesses without burning out"
-                        </div>
+                        ].map((example, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setMissionStatement(example)}
+                            className="w-full text-left text-[13px] text-gray-600 hover:text-gray-900 hover:bg-white/80 rounded-lg px-3 py-2.5 transition-all"
+                          >
+                            <span className="leading-relaxed">"{example}"</span>
+                          </button>
+                        ))}
                       </div>
                     </div>
-                  )}
+                  </div>
                 </CardContent>
               </Card>
 
-              {/* Core Values & Non-Negotiables */}
-              <Card className="rounded-lg border border-rose-100 shadow-sm bg-white hover:shadow-md transition-all">
-                <CardHeader className="border-b border-rose-50 bg-gradient-to-r from-rose-50/50 to-transparent">
+              {/* Brand Values */}
+              <Card className="rounded-xl bg-white border-0 shadow-none">
+                <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-3 text-base">
-                    <div className="p-2 rounded-lg bg-rose-500 text-white shadow-sm">
-                      <Heart className="w-4 h-4" />
+                    <div className="p-2 rounded-lg bg-[#8B7082] text-white shadow-sm">
+                      <Sparkles className="w-4 h-4" />
                     </div>
-                    <span className="font-semibold text-gray-900">Core Values & Non-Negotiables</span>
+                    <span className="font-semibold text-gray-900">Brand Values</span>
+                    {brandValues.length >= 3 && (
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#E8F0E8] text-[#5C7A5C] rounded-full text-xs font-medium">
+                        <Check className="w-3 h-3" />
+                        Complete
+                      </div>
+                    )}
                   </CardTitle>
-                  <CardDescription className="ml-11 text-sm text-gray-600">
-                    Define the principles and values that guide your content
+                  <CardDescription className="ml-11 text-sm text-gray-500">
+                    Define 3–5 values that guide your content creation and personal brand
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="pt-8 space-y-4">
-                  <div className="relative">
-                    <Textarea
-                      value={contentValues}
-                      onChange={(e) => setContentValues(e.target.value)}
-                      className="min-h-[160px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent p-4 pb-12 text-sm leading-relaxed"
-                      placeholder={contentValuesFocused ? "" : "What values and principles are non-negotiable in your content?"}
-                      onFocus={() => setContentValuesFocused(true)}
-                      onBlur={() => setContentValuesFocused(false)}
-                    />
-                    {showValuesExamples && (
-                      <Button
-                        onClick={() => setShowValuesExamples(false)}
-                        size="sm"
-                        className="absolute bottom-3 left-3 text-xs bg-rose-500 hover:bg-rose-600 text-white"
-                      >
-                        Done
-                      </Button>
-                    )}
-                  </div>
-                  {showValuesExamples && (
-                    <div className="space-y-2">
-                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Examples</p>
-                      <div className="space-y-2">
-                        <div className="text-sm text-gray-600 bg-rose-50/50 rounded-md px-3 py-2 border border-rose-100/50">
-                          "My content will always be kind and never attack others"
+                <CardContent className="pt-4">
+                  <div className="flex gap-6">
+                    {/* Input area */}
+                    <div className="flex-1 space-y-4">
+                      {/* Add value input */}
+                      <div className="flex gap-2 items-center">
+                        <input
+                          type="text"
+                          value={customValueInput}
+                          onChange={(e) => setCustomValueInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && customValueInput.trim() && brandValues.length < 5) {
+                              e.preventDefault();
+                              if (!brandValues.includes(customValueInput.trim())) {
+                                setBrandValues([...brandValues, customValueInput.trim()]);
+                                setCustomValueInput("");
+                              }
+                            }
+                          }}
+                          placeholder="Add a value (e.g., 'I don't take myself too seriously online')..."
+                          disabled={brandValues.length >= 5}
+                          className="flex-1 px-4 py-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#8B7082] focus:border-[#8B7082] disabled:bg-gray-50 disabled:text-gray-400"
+                        />
+                        <button
+                          onClick={() => {
+                            if (customValueInput.trim() && brandValues.length < 5 && !brandValues.includes(customValueInput.trim())) {
+                              setBrandValues([...brandValues, customValueInput.trim()]);
+                              setCustomValueInput("");
+                            }
+                          }}
+                          disabled={!customValueInput.trim() || brandValues.length >= 5}
+                          className="px-5 py-3 text-sm font-medium bg-[#8B7082] text-white rounded-lg hover:bg-[#7A6171] disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+                        >
+                          Add
+                        </button>
+                      </div>
+
+                      {/* Selected values display - Quote style cards */}
+                      {brandValues.length > 0 && (
+                        <div>
+                          <p className="text-[11px] text-gray-500 mb-3">Your values ({brandValues.length}/5)</p>
+                          <div className="space-y-3">
+                            {brandValues.map((value, index) => (
+                              <div
+                                key={index}
+                                className="relative bg-white rounded-xl pl-5 pr-5 py-4 shadow-sm hover:shadow-md transition-shadow group"
+                              >
+                                <span className="absolute top-3 left-4 text-[#612A4F] text-4xl font-serif leading-none">{index + 1}</span>
+                                {editingValueIndex === index ? (
+                                  <input
+                                    type="text"
+                                    value={editingValueText}
+                                    onChange={(e) => setEditingValueText(e.target.value)}
+                                    onBlur={() => {
+                                      if (editingValueText.trim()) {
+                                        const newValues = [...brandValues];
+                                        newValues[index] = editingValueText.trim();
+                                        setBrandValues(newValues);
+                                      }
+                                      setEditingValueIndex(null);
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        if (editingValueText.trim()) {
+                                          const newValues = [...brandValues];
+                                          newValues[index] = editingValueText.trim();
+                                          setBrandValues(newValues);
+                                        }
+                                        setEditingValueIndex(null);
+                                      } else if (e.key === 'Escape') {
+                                        setEditingValueIndex(null);
+                                      }
+                                    }}
+                                    autoFocus
+                                    className="w-full text-sm text-gray-700 pl-8 pr-6 leading-relaxed bg-transparent border-none outline-none focus:ring-0"
+                                  />
+                                ) : (
+                                  <p
+                                    onClick={() => {
+                                      setEditingValueIndex(index);
+                                      setEditingValueText(value);
+                                    }}
+                                    className="text-sm text-gray-700 pl-8 pr-6 leading-relaxed cursor-text hover:text-gray-900"
+                                  >
+                                    "{value}"
+                                  </p>
+                                )}
+                                <button
+                                  onClick={() => setBrandValues(brandValues.filter((_, i) => i !== index))}
+                                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-gray-300 hover:text-gray-500 transition-all"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-600 bg-rose-50/50 rounded-md px-3 py-2 border border-rose-100/50">
-                          "I value honesty and transparency with my community"
+                      )}
+
+                      {brandValues.length < 3 && (
+                        <p className="text-xs text-amber-600">Add at least {3 - brandValues.length} more value{3 - brandValues.length > 1 ? 's' : ''}</p>
+                      )}
+                    </div>
+
+                    {/* Guidelines panel - 2x2 grid */}
+                    <div className="w-[420px] flex-shrink-0">
+                      <p className="text-[11px] text-[#8B7082] font-medium px-1 mb-3">Examples</p>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        {/* Truth values */}
+                        <div className="bg-gradient-to-b from-[#FAF8F9] to-[#F0E8ED] rounded-lg p-3">
+                          <p className="text-[11px] font-medium text-gray-700 mb-1">Alignment</p>
+                          <p className="text-[10px] text-gray-400 mb-2">Being true to yourself</p>
+                          <div className="space-y-1">
+                            {[
+                              "I won't say things I'm not fully aligned with just because they perform well",
+                              "I won't promote brands I don't believe in, even if the money is good"
+                            ].map((example) => (
+                              <button
+                                key={example}
+                                onClick={() => {
+                                  if (brandValues.length < 5 && !brandValues.includes(example)) {
+                                    setBrandValues([...brandValues, example]);
+                                  }
+                                }}
+                                className="block w-full text-left text-[10px] px-2 py-1.5 rounded-md bg-white text-gray-500 hover:bg-[#E8DDE5] hover:text-[#612A4F] transition-colors"
+                              >
+                                {example}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-600 bg-rose-50/50 rounded-md px-3 py-2 border border-rose-100/50">
-                          "I only promote brands I genuinely use and believe in - alignment over revenue"
+
+                        {/* Boundary values */}
+                        <div className="bg-gradient-to-b from-[#FAF8F9] to-[#F0E8ED] rounded-lg p-3">
+                          <p className="text-[11px] font-medium text-gray-700 mb-1">Boundaries</p>
+                          <p className="text-[10px] text-gray-400 mb-2">Your non-negotiables</p>
+                          <div className="space-y-1">
+                            {[
+                              "No content that puts others down",
+                              "I share everything about my life and show up fully as myself",
+                              "I keep certain parts of my life private"
+                            ].map((example) => (
+                              <button
+                                key={example}
+                                onClick={() => {
+                                  if (brandValues.length < 5 && !brandValues.includes(example)) {
+                                    setBrandValues([...brandValues, example]);
+                                  }
+                                }}
+                                className="block w-full text-left text-[10px] px-2 py-1.5 rounded-md bg-white text-gray-500 hover:bg-[#E8DDE5] hover:text-[#612A4F] transition-colors"
+                              >
+                                {example}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Craft values */}
+                        <div className="bg-gradient-to-b from-[#FAF8F9] to-[#F0E8ED] rounded-lg p-3">
+                          <p className="text-[11px] font-medium text-gray-700 mb-1">Craft Values</p>
+                          <p className="text-[10px] text-gray-400 mb-2">How you create</p>
+                          <div className="flex flex-wrap gap-1">
+                            {["Quality over quantity", "Taste over trends", "Post often without overthinking"].map((example) => (
+                              <button
+                                key={example}
+                                onClick={() => {
+                                  if (brandValues.length < 5 && !brandValues.includes(example)) {
+                                    setBrandValues([...brandValues, example]);
+                                  }
+                                }}
+                                className="text-[10px] px-2 py-1 rounded-md bg-white text-gray-500 hover:bg-[#E8DDE5] hover:text-[#612A4F] transition-colors"
+                              >
+                                {example}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Power values */}
+                        <div className="bg-gradient-to-b from-[#FAF8F9] to-[#F0E8ED] rounded-lg p-3">
+                          <p className="text-[11px] font-medium text-gray-700 mb-1">Presence</p>
+                          <p className="text-[10px] text-gray-400 mb-2">The energy people feel from you</p>
+                          <div className="flex flex-wrap gap-1">
+                            {["Self-respect", "Elegance", "Calm authority", "Boldness", "Confidence"].map((example) => (
+                              <button
+                                key={example}
+                                onClick={() => {
+                                  if (brandValues.length < 5 && !brandValues.includes(example)) {
+                                    setBrandValues([...brandValues, example]);
+                                  }
+                                }}
+                                className="text-[10px] px-2 py-1 rounded-md bg-white text-gray-500 hover:bg-[#E8DDE5] hover:text-[#612A4F] transition-colors"
+                              >
+                                {example}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Content Style */}
+              <Card className="rounded-xl bg-white border-0 shadow-none">
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-3 text-base">
+                    <div className="p-2 rounded-lg bg-[#8B7082] text-white shadow-sm">
+                      <MessageSquare className="w-4 h-4" />
+                    </div>
+                    <span className="font-semibold text-gray-900">Content Style</span>
+                    {selectedTones.length > 0 && (
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#E8F0E8] text-[#5C7A5C] rounded-full text-xs font-medium">
+                        <Check className="w-3 h-3" />
+                        Complete
+                      </div>
+                    )}
+                  </CardTitle>
+                  <CardDescription className="ml-11 text-sm text-gray-500">
+                    How you choose to deliver your message — select one or more
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  <div className="grid grid-cols-5 gap-3">
+                    {["Humorous", "Aspirational", "Warm", "Educational", "Relatable", "Motivational", "Bold", "Cinematic", "Calming", "Inspirational"].map((tone) => {
+                      const toneKey = tone.toLowerCase();
+                      const isSelected = selectedTones.includes(toneKey);
+                      return (
+                        <button
+                          key={tone}
+                          onClick={() => {
+                            if (isSelected) {
+                              setSelectedTones(selectedTones.filter(t => t !== toneKey));
+                            } else {
+                              setSelectedTones([...selectedTones, toneKey]);
+                            }
+                          }}
+                          className={`py-2.5 rounded-lg text-[13px] font-medium transition-all ${
+                            isSelected
+                              ? "bg-[#612A4F] text-white shadow-sm"
+                              : "bg-[#FAF8F9] text-gray-600 hover:bg-[#F0E8ED] border border-[#EBE4E9]"
+                          }`}
+                        >
+                          {tone}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </CardContent>
               </Card>
 
               {/* Target Audience */}
-              <Card className="rounded-lg border border-purple-100 shadow-sm bg-white hover:shadow-md transition-all">
-                <CardHeader className="border-b border-purple-50 bg-gradient-to-r from-purple-50/50 to-transparent">
+              <Card className="rounded-xl bg-white border-0 shadow-none">
+                <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-3 text-base">
-                    <div className="p-2 rounded-lg bg-purple-500 text-white shadow-sm">
+                    <div className="p-2 rounded-lg bg-[#8B7082] text-white shadow-sm">
                       <Users className="w-4 h-4" />
                     </div>
                     <span className="font-semibold text-gray-900">Target Audience</span>
+                    {(audienceAgeRanges.length > 0 || audienceDesires.trim()) && (
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#E8F0E8] text-[#5C7A5C] rounded-full text-xs font-medium">
+                        <Check className="w-3 h-3" />
+                        Complete
+                      </div>
+                    )}
                   </CardTitle>
-                  <CardDescription className="ml-11 text-sm text-gray-600">
+                  <CardDescription className="ml-11 text-sm text-gray-500">
                     Define who your ideal audience is
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-8 pt-8">
+                <CardContent className="space-y-6 pt-4 pb-6">
                   <div className="space-y-3">
                     <Label htmlFor="age-range" className="text-sm font-semibold text-gray-800">Age Range</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {["18-24", "25-34", "35-44", "45-54", "55+"].map((range) => (
-                        <label
-                          key={range}
-                          htmlFor={`age-${range}`}
-                          className={`px-4 py-2.5 border-2 rounded-lg cursor-pointer transition-all flex items-center gap-2 text-sm font-medium ${
-                            audienceAgeRanges.includes(range)
-                              ? "border-purple-500 bg-purple-50 text-purple-700 shadow-sm"
-                              : "border-gray-200 hover:border-purple-300 hover:bg-purple-50/30 text-gray-700"
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            id={`age-${range}`}
-                            checked={audienceAgeRanges.includes(range)}
-                            onChange={() => {
-                              if (audienceAgeRanges.includes(range)) {
+                    <div className="inline-flex rounded-lg border border-[#EBE4E9] overflow-hidden">
+                      {["18-24", "25-34", "35-44", "45-54", "55+"].map((range, index) => {
+                        const isSelected = audienceAgeRanges.includes(range);
+                        return (
+                          <button
+                            key={range}
+                            type="button"
+                            onClick={() => {
+                              if (isSelected) {
                                 setAudienceAgeRanges(audienceAgeRanges.filter(r => r !== range));
                               } else if (audienceAgeRanges.length < 3) {
                                 setAudienceAgeRanges([...audienceAgeRanges, range]);
                               } else {
-                                // Show toast notification when maximum selections reached
                                 import("@/hooks/use-toast").then(({ showMaxAgeRangesSelectedToast }) => {
                                   showMaxAgeRangesSelectedToast();
                                 });
                               }
                             }}
-                            className="h-4 w-4 rounded border-gray-300 text-purple-500 focus:ring-purple-500 cursor-pointer"
-                          />
-                          <span>{range}</span>
-                        </label>
-                      ))}
+                            className={`px-5 py-2.5 text-[13px] font-medium transition-all ${
+                              index > 0 ? "border-l border-[#EBE4E9]" : ""
+                            } ${
+                              isSelected
+                                ? "bg-[#612A4F] text-white"
+                                : "bg-[#FAF8F9] text-gray-600 hover:bg-[#F0E8ED]"
+                            }`}
+                          >
+                            {range}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
-                  <div className="space-y-8">
+                  <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-3">
                       <Label htmlFor="struggles" className="text-sm font-semibold text-gray-800">Struggles</Label>
                       <Textarea
                         id="struggles"
                         value={audienceStruggles}
                         onChange={(e) => setAudienceStruggles(e.target.value)}
-                        placeholder={strugglesFocused ? "" : "What pain points or challenges does your audience face? What problems are they trying to solve? Understanding their struggles helps you create content that truly resonates."}
+                        placeholder={strugglesFocused ? "" : "What pain points or challenges does your audience face? What problems are they trying to solve?"}
                         onFocus={() => setStrugglesFocused(true)}
                         onBlur={() => setStrugglesFocused(false)}
-                        className="min-h-[120px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent p-4 text-sm leading-relaxed"
+                        className="h-[240px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#8B7082] focus:border-transparent p-4 text-sm leading-relaxed"
                       />
                     </div>
 
@@ -722,77 +1041,36 @@ const StrategyGrowth = () => {
                         id="desires"
                         value={audienceDesires}
                         onChange={(e) => setAudienceDesires(e.target.value)}
-                        placeholder={desiresFocused ? "" : "What are your audience's goals and aspirations? What transformation are they seeking? What does success look like for them?"}
+                        placeholder={desiresFocused ? "" : "What are your audience's goals and aspirations? What transformation are they seeking?"}
                         onFocus={() => setDesiresFocused(true)}
                         onBlur={() => setDesiresFocused(false)}
-                        className="min-h-[120px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent p-4 text-sm leading-relaxed"
+                        className="h-[240px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#8B7082] focus:border-transparent p-4 text-sm leading-relaxed"
                       />
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Tone of Voice */}
-              <Card className="rounded-lg border border-blue-100 shadow-sm bg-white hover:shadow-md transition-all">
-                <CardHeader className="border-b border-blue-50 bg-gradient-to-r from-blue-50/50 to-transparent">
-                  <CardTitle className="flex items-center gap-3 text-base">
-                    <div className="p-2 rounded-lg bg-blue-500 text-white shadow-sm">
-                      <MessageSquare className="w-4 h-4" />
-                    </div>
-                    <span className="font-semibold text-gray-900">Tone of Voice</span>
-                  </CardTitle>
-                  <CardDescription className="ml-11 text-sm text-gray-600">
-                    Select one or more tones that reflect how you want to communicate with your community
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-8">
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
-                      {["humorous", "aspirational", "educational/informative", "relatable", "motivational", "bold/opinionated", "cinematic/narrative", "comforting/calming"].map((tone) => (
-                        <label
-                          key={tone}
-                          htmlFor={`tone-${tone}`}
-                          className={`p-3.5 border-2 rounded-lg cursor-pointer transition-all flex items-center gap-3 ${
-                            selectedTones.includes(tone)
-                              ? "border-blue-500 bg-blue-50 text-blue-700 shadow-sm"
-                              : "border-gray-200 hover:border-blue-300 hover:bg-blue-50/30 text-gray-700"
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            id={`tone-${tone}`}
-                            checked={selectedTones.includes(tone)}
-                            onChange={() => {
-                              if (selectedTones.includes(tone)) {
-                                setSelectedTones(selectedTones.filter(t => t !== tone));
-                              } else {
-                                setSelectedTones([...selectedTones, tone]);
-                              }
-                            }}
-                            className="h-4 w-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-pointer"
-                          />
-                          <span className="font-medium capitalize text-sm">{tone}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
               {/* Vision Board */}
-              <Card id="vision-board" className="rounded-lg border border-rose-100 shadow-sm bg-white hover:shadow-md transition-all scroll-mt-6">
-                <CardHeader className="border-b border-rose-50 bg-gradient-to-r from-rose-50/50 to-transparent">
+              <Card id="vision-board" className="rounded-xl bg-white border-0 shadow-none scroll-mt-6">
+                <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-3 text-base">
-                    <div className="p-2 rounded-lg bg-rose-500 text-white shadow-sm">
+                    <div className="p-2 rounded-lg bg-[#8B7082] text-white shadow-sm">
                       <ImageIcon className="w-4 h-4" />
                     </div>
                     <span className="font-semibold text-gray-900">Vision Board</span>
+                    {(visionBoardImages.length > 0 || pinterestUrl) && (
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#E8F0E8] text-[#5C7A5C] rounded-full text-xs font-medium">
+                        <Check className="w-3 h-3" />
+                        Complete
+                      </div>
+                    )}
                   </CardTitle>
-                  <CardDescription className="ml-11 text-sm text-gray-600">
-                    Upload images or link your Pinterest board
+                  <CardDescription className="ml-11 text-sm text-gray-500">
+                    Keep your visual inspiration close — revisit it whenever you need creative direction
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-8 pt-8">
+                <CardContent className="space-y-6 pt-4">
                   {/* Images Display - Large */}
                   {visionBoardImages.length > 0 && (
                     <div className="grid grid-cols-1 gap-6">
@@ -805,7 +1083,7 @@ const StrategyGrowth = () => {
                           />
                           <button
                             onClick={() => removeVisionBoardImage(index)}
-                            className="absolute top-4 right-4 p-2 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
+                            className="absolute top-4 right-4 p-2 bg-gray-800/70 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-gray-900/80"
                           >
                             <Trash2 className="h-5 w-5" />
                           </button>
@@ -814,33 +1092,36 @@ const StrategyGrowth = () => {
                     </div>
                   )}
 
-                  {/* Upload Section - only show when no images */}
-                  {visionBoardImages.length === 0 && (
-                    <div className="border-2 border-dashed border-gray-200 rounded-xl p-10 text-center hover:border-rose-300 hover:bg-rose-50/30 transition-all">
-                      <ImageIcon className="mx-auto h-12 w-12 text-gray-300" />
-                      <h3 className="mt-3 text-sm font-semibold text-gray-800">Upload images</h3>
+                  {/* Upload Section - show based on state */}
+                  {visionBoardImages.length === 0 && !pinterestUrl && (
+                    <div
+                      onClick={handleUploadClick}
+                      className="border-2 border-dashed border-[#DDD0D8] rounded-xl p-10 text-center hover:border-[#8B7082] hover:bg-[#F5F0F4]/30 transition-all cursor-pointer"
+                    >
+                      <Upload className="mx-auto h-10 w-10 text-[#C9B8C4]" />
+                      <h3 className="mt-3 text-sm font-semibold text-gray-800">Upload your vision board</h3>
                       <p className="mt-1.5 text-xs text-gray-500">Any image format up to 2MB each</p>
                       <p className="mt-0.5 text-xs text-gray-400">Accepts both landscape and portrait images</p>
-                      <div className="mt-5">
-                        <Button
-                          variant="outline"
-                          className="flex items-center gap-2 border-2 hover:bg-rose-50 hover:border-rose-300"
-                          onClick={handleUploadClick}
-                          type="button"
-                        >
-                          <Upload className="h-4 w-4" />
-                          <span>Choose Files</span>
-                        </Button>
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          className="hidden"
-                          multiple
-                          accept="image/*"
-                          onChange={handleVisionBoardUpload}
-                        />
-                      </div>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        className="hidden"
+                        multiple
+                        accept="image/*"
+                        onChange={handleVisionBoardUpload}
+                      />
                     </div>
+                  )}
+
+                  {/* Small upload option when Pinterest exists but no images */}
+                  {visionBoardImages.length === 0 && pinterestUrl && (
+                    <button
+                      onClick={handleUploadClick}
+                      className="flex items-center gap-2 text-[12px] text-[#8B7082] hover:text-[#612A4F] transition-colors"
+                    >
+                      <Upload className="w-4 h-4" />
+                      <span>Upload image instead</span>
+                    </button>
                   )}
 
                   {/* Hidden file input for when images exist */}
@@ -855,26 +1136,192 @@ const StrategyGrowth = () => {
                     />
                   )}
 
-                  <div className="space-y-3">
-                    <Label htmlFor="pinterest" className="text-sm font-semibold text-gray-800">Pinterest Board URL</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        id="pinterest"
-                        placeholder="https://pinterest.com/username/board-name"
+                  {/* Pinterest Board - Button style */}
+                  {pinterestUrl ? (
+                    <div className="flex items-center gap-3 group">
+                      <button
+                        onClick={() => window.open(pinterestUrl, '_blank')}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#F5F0F4] to-[#EDE5EB] hover:from-[#EDE5EB] hover:to-[#E5DAE2] rounded-lg text-[13px] font-medium text-[#612A4F] transition-all shadow-sm hover:shadow"
+                      >
+                        <Link2 className="w-4 h-4" />
+                        <span>Open Pinterest Board</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => updatePinterestUrl("")}
+                        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600 transition-all"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Link2 className="w-4 h-4 text-[#8B7082]" />
+                      <input
+                        type="text"
+                        placeholder="Add Pinterest board URL..."
                         value={pinterestUrl}
                         onChange={(e) => updatePinterestUrl(e.target.value)}
-                        className="border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+                        className="text-[13px] px-0 py-1 bg-transparent border-none focus:outline-none focus:ring-0 placeholder:text-[#8B7082] text-gray-700 w-64"
                       />
-                      {pinterestUrl && (
-                        <Button
-                          variant="outline"
-                          onClick={() => window.open(pinterestUrl, '_blank')}
-                          className="flex items-center gap-2 whitespace-nowrap border-2 hover:bg-rose-50 hover:border-rose-300"
-                        >
-                          <span>View Board</span>
-                          <ExternalLink className="h-4 w-4" />
-                        </Button>
-                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Additional Notes */}
+              <Card className="rounded-xl bg-white border-0 shadow-none">
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-3 text-base">
+                    <div className="p-2 rounded-lg bg-[#8B7082] text-white shadow-sm">
+                      <StickyNote className="w-4 h-4" />
+                    </div>
+                    <span className="font-semibold text-gray-900">Notes</span>
+                    {(additionalNotes.trim() || noteLinks.length > 0 || noteFiles.length > 0) && (
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#E8F0E8] text-[#5C7A5C] rounded-full text-xs font-medium">
+                        <Check className="w-3 h-3" />
+                        Complete
+                      </div>
+                    )}
+                  </CardTitle>
+                  <CardDescription className="ml-11 text-sm text-gray-500">
+                    Capture any additional thoughts, resources, or references
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  <div className="flex gap-6">
+                    {/* Textarea */}
+                    <div className="flex-1">
+                      <Textarea
+                        value={additionalNotes}
+                        onChange={(e) => setAdditionalNotes(e.target.value)}
+                        placeholder="Write any additional notes about your brand strategy..."
+                        className="min-h-[180px] h-full resize-none border border-gray-200 rounded-lg focus:ring-1 focus:ring-[#8B7082] focus:border-[#8B7082] p-4 text-sm leading-relaxed"
+                      />
+                    </div>
+
+                    {/* Links & Attachments Panel */}
+                    <div className="w-72 flex-shrink-0 bg-gradient-to-b from-[#FAF8F9] to-[#F0E8ED] rounded-xl p-4 space-y-4">
+                      {/* Links */}
+                      <div className="space-y-2.5">
+                        <p className="text-[11px] text-[#8B7082] font-medium flex items-center gap-1.5">
+                          <Link2 className="w-3 h-3" /> Links
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {noteLinks.map((link, index) => (
+                            <div key={index} className="group flex items-center gap-1 bg-white rounded-lg pl-2.5 pr-1.5 py-1.5 shadow-sm hover:shadow transition-shadow">
+                              <button
+                                onClick={() => window.open(link.url, '_blank')}
+                                className="flex items-center gap-1.5 text-[11px] font-medium text-[#612A4F] hover:text-[#4A1F3D] transition-colors"
+                              >
+                                <ExternalLink className="w-3 h-3" />
+                                {link.title}
+                              </button>
+                              <button
+                                onClick={() => setNoteLinks(noteLinks.filter((_, i) => i !== index))}
+                                className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600 p-0.5"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                          {!showAddLinkForm && (
+                            <button
+                              onClick={() => setShowAddLinkForm(true)}
+                              className="flex items-center gap-1 text-[11px] text-[#8B7082] hover:text-[#612A4F] border border-dashed border-[#C9B8C4] hover:border-[#8B7082] rounded-lg px-2.5 py-1.5 transition-colors"
+                            >
+                              <Plus className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                        {showAddLinkForm && (
+                          <div className="space-y-1.5">
+                            <input
+                              value={newLinkTitle}
+                              onChange={(e) => setNewLinkTitle(e.target.value)}
+                              placeholder="Link name..."
+                              autoFocus
+                              className="w-full text-[11px] px-2.5 py-1.5 rounded-lg border border-[#D8C8E0] focus:outline-none focus:ring-1 focus:ring-[#8B7082] bg-white/80"
+                            />
+                            <div className="flex gap-1.5">
+                              <input
+                                value={newLinkUrl}
+                                onChange={(e) => setNewLinkUrl(e.target.value)}
+                                placeholder="URL..."
+                                className="flex-1 text-[11px] px-2.5 py-1.5 rounded-lg border border-[#D8C8E0] focus:outline-none focus:ring-1 focus:ring-[#8B7082] bg-white/80"
+                              />
+                              <button
+                                onClick={() => {
+                                  if (newLinkUrl.trim() && newLinkTitle.trim()) {
+                                    setNoteLinks([...noteLinks, { url: newLinkUrl.trim(), title: newLinkTitle.trim() }]);
+                                    setNewLinkUrl("");
+                                    setNewLinkTitle("");
+                                    setShowAddLinkForm(false);
+                                  }
+                                }}
+                                disabled={!newLinkUrl.trim() || !newLinkTitle.trim()}
+                                className="text-[11px] px-3 py-1.5 bg-[#8B7082] text-white rounded-lg hover:bg-[#7A6171] disabled:bg-gray-300 disabled:text-gray-500"
+                              >
+                                Add
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setShowAddLinkForm(false);
+                                  setNewLinkTitle("");
+                                  setNewLinkUrl("");
+                                }}
+                                className="text-[11px] px-2 py-1.5 text-gray-500 hover:text-gray-700"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Attachments */}
+                      <div className="space-y-2.5">
+                        <p className="text-[11px] text-[#8B7082] font-medium flex items-center gap-1.5">
+                          <Paperclip className="w-3 h-3" /> Files
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {noteFiles.map((file, index) => (
+                            <div key={index} className="group flex items-center gap-1 bg-white rounded-lg pl-2.5 pr-1.5 py-1.5 shadow-sm hover:shadow transition-shadow">
+                              <FileText className="w-3 h-3 text-[#8B7082] flex-shrink-0" />
+                              <span className="text-[11px] font-medium text-gray-600 max-w-[100px] truncate">{file.name}</span>
+                              <button
+                                onClick={() => setNoteFiles(noteFiles.filter((_, i) => i !== index))}
+                                className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600 p-0.5"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                          <input
+                            type="file"
+                            id="note-file-upload"
+                            className="hidden"
+                            accept=".pdf,.doc,.docx,.txt"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file && file.size <= 5 * 1024 * 1024) {
+                                const reader = new FileReader();
+                                reader.onload = () => {
+                                  setNoteFiles([...noteFiles, { name: file.name, data: reader.result as string }]);
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                              e.target.value = "";
+                            }}
+                          />
+                          <button
+                            onClick={() => document.getElementById("note-file-upload")?.click()}
+                            className="flex items-center gap-1 text-[11px] text-[#8B7082] hover:text-[#612A4F] border border-dashed border-[#C9B8C4] hover:border-[#8B7082] rounded-lg px-2.5 py-1.5 transition-colors"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -894,6 +1341,12 @@ const StrategyGrowth = () => {
                       <Calendar className="w-4 h-4" />
                     </div>
                     <span className="font-semibold text-gray-900">Monthly Goals</span>
+                    {monthlyGoalsData[selectedYear] && Object.values(monthlyGoalsData[selectedYear]).some(goals => goals.length > 0) && (
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#E8F0E8] text-[#5C7A5C] rounded-full text-xs font-medium">
+                        <Check className="w-3 h-3" />
+                        Complete
+                      </div>
+                    )}
                   </CardTitle>
                   <CardDescription className="ml-11 text-sm text-gray-600">
                     Set and track goals for any month
@@ -1066,6 +1519,12 @@ const StrategyGrowth = () => {
                         <Target className="w-4 h-4" />
                       </div>
                       <span className="font-semibold text-gray-900">Short-Term (1 Year)</span>
+                      {shortTermGoals.length > 0 && (
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#E8F0E8] text-[#5C7A5C] rounded-full text-xs font-medium">
+                          <Check className="w-3 h-3" />
+                          Complete
+                        </div>
+                      )}
                     </CardTitle>
                     <CardDescription className="ml-11 text-sm text-gray-600">
                       Goals within the next year
@@ -1160,6 +1619,12 @@ const StrategyGrowth = () => {
                         <TrendingUp className="w-4 h-4" />
                       </div>
                       <span className="font-semibold text-gray-900">Long-Term (3 Years)</span>
+                      {longTermGoals.length > 0 && (
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#E8F0E8] text-[#5C7A5C] rounded-full text-xs font-medium">
+                          <Check className="w-3 h-3" />
+                          Complete
+                        </div>
+                      )}
                     </CardTitle>
                     <CardDescription className="ml-11 text-sm text-gray-600">
                       Your 3-year vision

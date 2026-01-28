@@ -45,11 +45,13 @@ export const StorageKeys = {
   bankOfIdeas: "bankOfIdeas",
   productionKanban: "productionKanban",
   contentValues: "contentValues",
+  brandValues: "brandValues",
   missionStatement: "missionStatement",
   pinnedContentIdeas: "pinnedContentIdeas",
   contentIdeas: "contentIdeas",
   highlightedUnscheduledCard: "highlightedUnscheduledCard",
-  archivedContent: "archivedContent"
+  archivedContent: "archivedContent",
+  selectedTaskPalette: "selectedTaskPalette"
 } as const;
 
 export const contentFormatsByPillar = (pillarId: string) => `content-formats-${pillarId}`;
