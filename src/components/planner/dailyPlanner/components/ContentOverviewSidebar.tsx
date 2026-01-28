@@ -201,7 +201,7 @@ export const ContentOverviewSidebar = ({
   return (
     <div
       className={cn(
-        "h-full flex-shrink-0 bg-[#FAF8F9] transition-all duration-300 relative",
+        "h-full flex-shrink-0 bg-[#FDFAFC] transition-all duration-300 relative",
         isCollapsed ? "w-12" : "w-80"
       )}
     >

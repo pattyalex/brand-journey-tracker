@@ -440,7 +440,9 @@ export const WeekView = ({
                     key={getDateString(day)}
                     className={cn(
                       "h-[60px] flex flex-col items-center justify-center transition-colors hover:bg-gray-100",
-                      isToday ? 'bg-[#8B7082]/5' : 'bg-gray-50'
+                      isToday
+                        ? contentDisplayMode === 'tasks' ? 'bg-[#7A909F]/5' : 'bg-[#8B7082]/5'
+                        : 'bg-gray-50'
                     )}
                     style={{
                       borderRight: index < 6 ? '1px solid #f3f4f6' : 'none',
@@ -453,7 +455,9 @@ export const WeekView = ({
                     <div className={cn(
                       "text-lg font-semibold",
                       isToday
-                        ? "bg-[#8B7082] text-white w-8 h-8 rounded-full flex items-center justify-center"
+                        ? contentDisplayMode === 'tasks'
+                          ? "bg-[#7A909F] text-white w-8 h-8 rounded-full flex items-center justify-center"
+                          : "bg-[#8B7082] text-white w-8 h-8 rounded-full flex items-center justify-center"
                         : "text-gray-900"
                     )}>
                       {format(day, "d")}
@@ -1181,9 +1185,10 @@ export const WeekView = ({
                                       <button
                                         onClick={(e) => {
                                           e.stopPropagation();
+                                          e.preventDefault();
                                           handleDeleteWeeklyTask(item.id, dayString);
                                         }}
-                                        className="p-0.5 rounded text-gray-400 hover:text-red-600 hover:bg-white/50 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                                        className="p-0.5 rounded text-gray-400 hover:text-red-600 hover:bg-white/50 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 relative z-[200] pointer-events-auto"
                                       >
                                         <Trash2 size={12} />
                                       </button>
@@ -1400,9 +1405,10 @@ export const WeekView = ({
                                       <button
                                         onClick={(e) => {
                                           e.stopPropagation();
+                                          e.preventDefault();
                                           handleDeleteWeeklyTask(item.id, dayString);
                                         }}
-                                        className="p-1 rounded text-gray-400 hover:text-red-600 hover:bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        className="p-1 rounded text-gray-400 hover:text-red-600 hover:bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity relative z-[200] pointer-events-auto"
                                       >
                                         <Trash2 size={10} />
                                       </button>

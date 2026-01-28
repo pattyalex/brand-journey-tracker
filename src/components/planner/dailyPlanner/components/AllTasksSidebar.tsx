@@ -62,7 +62,7 @@ export const AllTasksSidebar = ({
       >
         {/* Header */}
         <div className="flex items-center gap-2 mb-4">
-          <ListTodo className="w-5 h-5 text-purple-600" />
+          <ListTodo className="w-5 h-5 text-black" />
           <h2 className="text-lg font-semibold text-gray-800">All Tasks</h2>
         </div>
 
@@ -89,7 +89,7 @@ export const AllTasksSidebar = ({
   return (
     <div
       className={cn(
-        "h-full flex-shrink-0 bg-gradient-to-br from-purple-50/50 to-pink-50/50 transition-all duration-300 relative",
+        "h-full flex-shrink-0 bg-[#F7F8FC] transition-all duration-300 relative",
         isAllTasksCollapsed ? 'w-12' : 'w-80'
       )}
       onDragEnter={(e) => {
@@ -128,7 +128,7 @@ export const AllTasksSidebar = ({
         )}>
           {/* Header */}
           <div className="flex items-center gap-2.5 mb-5">
-            <ListTodo className="w-5 h-5 text-purple-600" />
+            <ListTodo className="w-5 h-5 text-black" />
             <h2 className="text-base font-semibold text-gray-900">All Tasks</h2>
           </div>
 

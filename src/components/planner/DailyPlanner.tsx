@@ -426,9 +426,10 @@ export const DailyPlanner = () => {
             // Combined sidebar for "Both" view - show All Tasks + Content Overview
             <div
               className={cn(
-                "h-full flex-shrink-0 bg-[#FAF8F9] transition-all duration-300 relative",
+                "h-full flex-shrink-0 transition-all duration-300 relative",
                 isAllTasksCollapsed ? "w-12" : "w-80"
               )}
+              style={{ background: 'linear-gradient(to bottom, #F2F5F6 0%, #FDFAFC 60%, #FDFAFC 100%)' }}
             >
               {/* Collapse/Expand Button */}
               <button
