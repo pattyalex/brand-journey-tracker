@@ -2382,7 +2382,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
               {daysOfWeek.map((day) => (
                 <div
                   key={day}
-                  className="text-center text-sm font-medium text-gray-500 py-2"
+                  className="text-center text-[11px] font-medium text-gray-400 uppercase tracking-wider py-2"
                 >
                   {day}
                 </div>
@@ -2434,11 +2434,14 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                           }
                         }}
                         className={cn(
-                          "group",
+                          "group transition-colors",
                           isLeftPanelCollapsed ? "rounded-lg border min-h-[120px] relative p-2" : "rounded-lg border min-h-[120px] relative p-1.5",
-                          day.date < today && !day.isToday
-                            ? "bg-gray-50 border-gray-100 text-gray-400"
-                            : "bg-white border-gray-200 text-gray-900",
+                          !day.isCurrentMonth
+                            ? "bg-gray-50/50 border-gray-100 text-[#CCCCCC]"
+                            : day.date < today && !day.isToday
+                              ? "bg-gray-50 border-gray-100 text-gray-400"
+                              : "bg-white border-gray-200 text-gray-900 hover:bg-gray-50/70",
+                          day.isToday && "bg-[#8B7082]/5 border-[#8B7082]/30",
                           isDragOver && "bg-indigo-100 border-indigo-400 border-2 scale-105",
                           (embedded || planningMode) && "cursor-pointer",
                           planningMode && "hover:bg-violet-50 hover:border-violet-300",
@@ -2452,8 +2455,9 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                           </span>
                         )}
                         <span className={cn(
-                          "absolute top-1.5 left-2 text-sm font-medium",
-                          day.isToday && "text-indigo-600 font-bold"
+                          "absolute top-1.5 left-2 text-[11px] font-medium",
+                          !day.isCurrentMonth && "text-[#CCCCCC]",
+                          day.isToday && "bg-[#612a4f] text-white w-5 h-5 rounded-full flex items-center justify-center -top-0.5 left-1 text-[10px]"
                         )}>
                           {day.date.getDate()}
                         </span>
@@ -3048,7 +3052,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
         {/* Day headers */}
         <div className="grid grid-cols-7 mb-2">
           {daysOfWeek.map((day) => (
-            <div key={day} className="text-center text-xs font-medium text-gray-500 py-1">
+            <div key={day} className="text-center text-[10px] font-medium text-gray-400 uppercase tracking-wider py-1">
               {day}
             </div>
           ))}
@@ -3094,15 +3098,17 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                 className={cn(
                   "min-h-[70px] rounded-lg border p-1.5 transition-all",
                   day.isCurrentMonth
-                    ? "bg-white border-gray-200 text-gray-900 cursor-pointer hover:bg-violet-50/50"
-                    : "bg-gray-50 border-gray-100 text-gray-400",
+                    ? "bg-white border-gray-200 text-gray-900 cursor-pointer hover:bg-gray-50/70"
+                    : "bg-gray-50/50 border-gray-100 text-[#CCCCCC]",
+                  day.isToday && "bg-[#8B7082]/5 border-[#8B7082]/30",
                   isPendingDate && "bg-violet-50/70",
                   isDragOver && day.isCurrentMonth && "bg-violet-100"
                 )}
               >
                 <span className={cn(
-                  "text-xs font-medium",
-                  day.isToday && "text-violet-600 font-bold"
+                  "text-xs font-medium inline-flex items-center justify-center",
+                  !day.isCurrentMonth && "text-[#CCCCCC]",
+                  day.isToday && "bg-[#612a4f] text-white w-5 h-5 rounded-full"
                 )}>
                   {day.date.getDate()}
                 </span>

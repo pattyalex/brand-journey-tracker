@@ -69,7 +69,7 @@ export const PlannerHeader = ({
             className={cn(
               "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200",
               contentDisplayMode === 'content'
-                ? "bg-[#5f55a8] text-white shadow-sm"
+                ? "bg-[#612a4f] text-white shadow-sm"
                 : "text-gray-500 hover:text-gray-700"
             )}
           >
@@ -81,7 +81,7 @@ export const PlannerHeader = ({
             className={cn(
               "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200",
               contentDisplayMode === 'both'
-                ? "bg-gradient-to-r from-[#7a4570] to-[#5f55a8] text-white shadow-sm"
+                ? "bg-gradient-to-r from-[#7a4570] to-[#612a4f] text-white shadow-sm"
                 : "text-gray-500 hover:text-gray-700"
             )}
           >
@@ -101,9 +101,9 @@ export const PlannerHeader = ({
               "px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200",
               currentView === 'today'
                 ? contentDisplayMode === 'content'
-                  ? "bg-[#5f55a8] text-white shadow-sm"
+                  ? "bg-[#612a4f] text-white shadow-sm"
                   : contentDisplayMode === 'both'
-                    ? "bg-gradient-to-r from-[#7a4570] to-[#5f55a8] text-white shadow-sm"
+                    ? "bg-gradient-to-r from-[#7a4570] to-[#612a4f] text-white shadow-sm"
                     : "bg-[#7a4570] text-white shadow-sm"
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
             )}
@@ -116,9 +116,9 @@ export const PlannerHeader = ({
               "px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200",
               currentView === 'week'
                 ? contentDisplayMode === 'content'
-                  ? "bg-[#5f55a8] text-white shadow-sm"
+                  ? "bg-[#612a4f] text-white shadow-sm"
                   : contentDisplayMode === 'both'
-                    ? "bg-gradient-to-r from-[#7a4570] to-[#5f55a8] text-white shadow-sm"
+                    ? "bg-gradient-to-r from-[#7a4570] to-[#612a4f] text-white shadow-sm"
                     : "bg-[#7a4570] text-white shadow-sm"
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
             )}
@@ -131,9 +131,9 @@ export const PlannerHeader = ({
               "px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200",
               currentView === 'calendar'
                 ? contentDisplayMode === 'content'
-                  ? "bg-[#5f55a8] text-white shadow-sm"
+                  ? "bg-[#612a4f] text-white shadow-sm"
                   : contentDisplayMode === 'both'
-                    ? "bg-gradient-to-r from-[#7a4570] to-[#5f55a8] text-white shadow-sm"
+                    ? "bg-gradient-to-r from-[#7a4570] to-[#612a4f] text-white shadow-sm"
                     : "bg-[#7a4570] text-white shadow-sm"
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
             )}

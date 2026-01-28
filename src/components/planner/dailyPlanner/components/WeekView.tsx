@@ -438,16 +438,24 @@ export const WeekView = ({
                 return (
                   <div
                     key={getDateString(day)}
-                    className={`h-[60px] flex flex-col items-center justify-center ${isToday ? 'bg-purple-50' : 'bg-gray-50'}`}
+                    className={cn(
+                      "h-[60px] flex flex-col items-center justify-center transition-colors hover:bg-gray-100",
+                      isToday ? 'bg-[#8B7082]/5' : 'bg-gray-50'
+                    )}
                     style={{
                       borderRight: index < 6 ? '1px solid #f3f4f6' : 'none',
                       opacity: isPast ? 0.5 : 1
                     }}
                   >
-                    <div className="text-xs font-medium text-gray-500 uppercase">
+                    <div className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">
                       {format(day, "EEE")}
                     </div>
-                    <div className={`text-2xl font-semibold ${isToday ? 'text-purple-600' : 'text-gray-900'}`}>
+                    <div className={cn(
+                      "text-lg font-semibold",
+                      isToday
+                        ? "bg-[#8B7082] text-white w-8 h-8 rounded-full flex items-center justify-center"
+                        : "text-gray-900"
+                    )}>
                       {format(day, "d")}
                     </div>
                   </div>
@@ -521,7 +529,7 @@ export const WeekView = ({
                               style={{ top: `${hour * 48}px`, height: '48px', zIndex: 100 }}
                             >
                               <div
-                                className={`h-full w-full relative ${(isTaskDialogOpen || addDialogOpen) ? 'pointer-events-none' : 'pointer-events-auto cursor-crosshair'}`}
+                                className={`h-full w-full relative hover:bg-gray-100 transition-colors ${(isTaskDialogOpen || addDialogOpen) ? 'pointer-events-none' : 'pointer-events-auto cursor-crosshair'}`}
                                 onMouseDown={(e) => {
                                   // Don't allow drag-to-create when dialog is open
                                   if (isTaskDialogOpen || addDialogOpen) return;

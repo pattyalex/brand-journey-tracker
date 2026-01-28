@@ -426,7 +426,7 @@ export const DailyPlanner = () => {
             // Combined sidebar for "Both" view - show All Tasks + Content Overview
             <div
               className={cn(
-                "h-full flex-shrink-0 bg-gradient-to-br from-indigo-50/50 to-violet-50/50 transition-all duration-300 relative",
+                "h-full flex-shrink-0 bg-[#FAF8F9] transition-all duration-300 relative",
                 isAllTasksCollapsed ? "w-12" : "w-80"
               )}
             >

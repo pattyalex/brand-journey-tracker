@@ -134,8 +134,8 @@ export const ContentOverviewSidebar = ({
       <div>
         {/* Header */}
         <div className="flex items-center gap-2.5 mb-5">
-          <CalendarDays className="w-5 h-5 text-indigo-600" />
-          <h2 className="text-base font-semibold text-gray-900">Content Overview</h2>
+          <CalendarDays className="w-5 h-5 text-black" />
+          <h2 className="text-base font-semibold text-black">Content Overview</h2>
         </div>
 
         {/* Content Overview Stats */}
@@ -143,28 +143,28 @@ export const ContentOverviewSidebar = ({
           {/* In Ideation */}
           <div className="flex items-center justify-between py-2">
             <div className="flex items-center gap-2.5">
-              <Lightbulb className="w-4 h-4 text-gray-400" />
+              <Lightbulb className="w-4 h-4 text-[#8B7082]" />
               <span className="text-sm text-gray-700">In Ideation</span>
             </div>
-            <span className="text-sm font-semibold text-gray-900">{counts.inIdeation}</span>
+            <span className="text-sm font-semibold text-[#8B7082]">{counts.inIdeation}</span>
           </div>
 
           {/* In Production */}
           <div className="flex items-center justify-between py-2">
             <div className="flex items-center gap-2.5">
-              <Clapperboard className="w-4 h-4 text-gray-400" />
+              <Clapperboard className="w-4 h-4 text-[#8B7082]" />
               <span className="text-sm text-gray-700">In Production</span>
             </div>
-            <span className="text-sm font-semibold text-gray-900">{counts.inProduction}</span>
+            <span className="text-sm font-semibold text-[#8B7082]">{counts.inProduction}</span>
           </div>
 
           {/* Scheduled to Publish */}
           <div className="flex items-center justify-between py-2">
             <div className="flex items-center gap-2.5">
-              <Calendar className="w-4 h-4 text-gray-400" />
+              <Calendar className="w-4 h-4 text-[#8B7082]" />
               <span className="text-sm text-gray-700">Scheduled to Publish</span>
             </div>
-            <span className="text-sm font-semibold text-gray-900">{counts.scheduledToPublish}</span>
+            <span className="text-sm font-semibold text-[#8B7082]">{counts.scheduledToPublish}</span>
           </div>
 
           {/* Divider */}
@@ -173,10 +173,10 @@ export const ContentOverviewSidebar = ({
           {/* Published this month */}
           <div className="flex items-center justify-between py-2">
             <div className="flex items-center gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-gray-400" />
+              <CheckCircle2 className="w-4 h-4 text-[#8B7082]" />
               <span className="text-sm text-gray-500">Published this month</span>
             </div>
-            <span className="text-sm font-semibold text-green-600">{counts.publishedThisMonth}</span>
+            <span className="text-sm font-semibold text-[#8B7082]">{counts.publishedThisMonth}</span>
           </div>
         </div>
 
@@ -187,7 +187,7 @@ export const ContentOverviewSidebar = ({
             Head to{' '}
             <button
               onClick={() => navigate('/production')}
-              className="text-indigo-600 font-semibold hover:text-indigo-700 transition-colors"
+              className="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold text-[#612a4f] bg-[#8B7082]/10 hover:bg-[#8B7082]/20 rounded-md transition-colors"
             >
               Content Hub →
             </button>
@@ -201,7 +201,7 @@ export const ContentOverviewSidebar = ({
   return (
     <div
       className={cn(
-        "h-full flex-shrink-0 bg-gradient-to-br from-indigo-50/50 to-violet-50/50 transition-all duration-300 relative",
+        "h-full flex-shrink-0 bg-[#FAF8F9] transition-all duration-300 relative",
         isCollapsed ? "w-12" : "w-80"
       )}
     >
@@ -225,8 +225,8 @@ export const ContentOverviewSidebar = ({
         )}>
           {/* Header */}
           <div className="flex items-center gap-2.5 mb-5">
-            <CalendarDays className="w-5 h-5 text-indigo-600" />
-            <h2 className="text-base font-semibold text-gray-900">Content Overview</h2>
+            <CalendarDays className="w-5 h-5 text-black" />
+            <h2 className="text-base font-semibold text-black">Content Overview</h2>
           </div>
 
           {/* Content Overview Stats */}
@@ -234,28 +234,28 @@ export const ContentOverviewSidebar = ({
             {/* In Ideation */}
             <div className="flex items-center justify-between py-2">
               <div className="flex items-center gap-2.5">
-                <Lightbulb className="w-4 h-4 text-gray-400" />
+                <Lightbulb className="w-4 h-4 text-[#8B7082]" />
                 <span className="text-sm text-gray-700">In Ideation</span>
               </div>
-              <span className="text-sm font-semibold text-gray-900">{counts.inIdeation}</span>
+              <span className="text-sm font-semibold text-[#8B7082]">{counts.inIdeation}</span>
             </div>
 
             {/* In Production */}
             <div className="flex items-center justify-between py-2">
               <div className="flex items-center gap-2.5">
-                <Clapperboard className="w-4 h-4 text-gray-400" />
+                <Clapperboard className="w-4 h-4 text-[#8B7082]" />
                 <span className="text-sm text-gray-700">In Production</span>
               </div>
-              <span className="text-sm font-semibold text-gray-900">{counts.inProduction}</span>
+              <span className="text-sm font-semibold text-[#8B7082]">{counts.inProduction}</span>
             </div>
 
             {/* Scheduled to Publish */}
             <div className="flex items-center justify-between py-2">
               <div className="flex items-center gap-2.5">
-                <Calendar className="w-4 h-4 text-gray-400" />
+                <Calendar className="w-4 h-4 text-[#8B7082]" />
                 <span className="text-sm text-gray-700">Scheduled to Publish</span>
               </div>
-              <span className="text-sm font-semibold text-gray-900">{counts.scheduledToPublish}</span>
+              <span className="text-sm font-semibold text-[#8B7082]">{counts.scheduledToPublish}</span>
             </div>
 
             {/* Divider */}
@@ -264,10 +264,10 @@ export const ContentOverviewSidebar = ({
             {/* Published this month */}
             <div className="flex items-center justify-between py-2">
               <div className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-gray-400" />
+                <CheckCircle2 className="w-4 h-4 text-[#8B7082]" />
                 <span className="text-sm text-gray-500">Published this month</span>
               </div>
-              <span className="text-sm font-semibold text-green-600">{counts.publishedThisMonth}</span>
+              <span className="text-sm font-semibold text-[#8B7082]">{counts.publishedThisMonth}</span>
             </div>
           </div>
 
@@ -278,7 +278,7 @@ export const ContentOverviewSidebar = ({
               Head to{' '}
               <button
                 onClick={() => navigate('/production')}
-                className="text-indigo-600 font-semibold hover:text-indigo-700 transition-colors"
+                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold text-[#612a4f] bg-[#8B7082]/10 hover:bg-[#8B7082]/20 rounded-md transition-colors"
               >
                 Content Hub →
               </button>

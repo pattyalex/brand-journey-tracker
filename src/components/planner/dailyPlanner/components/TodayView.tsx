@@ -536,7 +536,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                     return (
                       <div
                         key={`${hour}-${minute}`}
-                        className={`flex-1 relative group/slot ${addDialogOpen ? 'pointer-events-none' : 'cursor-crosshair'}`}
+                        className={`flex-1 relative group/slot hover:bg-gray-100 transition-colors ${addDialogOpen ? 'pointer-events-none' : 'cursor-crosshair'}`}
                         onMouseDown={(e) => {
                           // Don't allow drag-to-create when dialog is open
                           if (addDialogOpen) return;
