@@ -616,7 +616,7 @@ export const ContentAddDialog = ({
               </button>
               <button
                 onClick={handleSave}
-                className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+                className="px-6 py-2 text-sm font-medium text-white bg-[#612a4f] rounded-lg hover:bg-[#4d2240] transition-colors"
               >
                 Create
               </button>

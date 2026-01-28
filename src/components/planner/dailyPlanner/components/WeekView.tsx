@@ -16,6 +16,7 @@ import { getDateString } from "../utils/plannerUtils";
 import { parseTimeTo24 } from "../utils/timeUtils";
 import { scheduleColors, defaultScheduledColor, getTaskColorByHex } from "../utils/colorConstants";
 import { TaskColorPicker } from "./TaskColorPicker";
+import { TimePicker } from "./TimePicker";
 import { useColorPalette } from "../hooks/useColorPalette";
 import { ProductionCard, KanbanColumn } from "@/pages/production/types";
 import { defaultColumns } from "@/pages/production/utils/productionConstants";
@@ -455,9 +456,7 @@ export const WeekView = ({
                     <div className={cn(
                       "text-lg font-semibold",
                       isToday
-                        ? contentDisplayMode === 'tasks'
-                          ? "bg-[#7A909F] text-white w-8 h-8 rounded-full flex items-center justify-center"
-                          : "bg-[#8B7082] text-white w-8 h-8 rounded-full flex items-center justify-center"
+                        ? "bg-[#8B7082] text-white w-8 h-8 rounded-full flex items-center justify-center"
                         : "text-gray-900"
                     )}>
                       {format(day, "d")}
@@ -627,7 +626,7 @@ export const WeekView = ({
                                   const relativeY = e.clientY - rect.top;
                                   const minuteFraction = relativeY / 48; // 48px per hour
                                   const minute = Math.floor(minuteFraction * 60);
-                                  const roundedMinute = Math.floor(minute / 20) * 20; // Round to 20-minute intervals
+                                  const roundedMinute = Math.floor(minute / 10) * 10; // Round to 10-minute intervals
 
                                   const hourStr = hour.toString().padStart(2, '0');
                                   const minuteStr = roundedMinute.toString().padStart(2, '0');
@@ -1430,17 +1429,23 @@ export const WeekView = ({
                             const actualStart = startMinutes < endMinutes ? start : end;
                             const actualEnd = startMinutes < endMinutes ? end : start;
 
+                            // Mauve colors for drag preview
+                            const bgColor = 'rgba(139, 112, 130, 0.08)';
+                            const borderColor = '#B8A0B0';
+                            const textColor = '#9A8090';
+
                             return (
                               <div
-                                className="absolute left-2 right-2 rounded-md pointer-events-none z-50 border-l-4"
+                                className="absolute left-2 right-2 rounded-lg pointer-events-none z-50 border-l-[3px] backdrop-blur-sm"
                                 style={{
                                   top: `${topPos}px`,
                                   height: `${Math.max(height, 45)}px`,
-                                  backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                  borderLeftColor: '#3b82f6'
+                                  backgroundColor: bgColor,
+                                  borderLeftColor: borderColor,
+                                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
                                 }}
                               >
-                                <div className="p-2 text-[10px] font-medium text-blue-700">
+                                <div className="p-2 text-[10px] font-medium" style={{ color: textColor }}>
                                   {actualStart.hour === 0 ? '12' : actualStart.hour > 12 ? actualStart.hour - 12 : actualStart.hour}:{actualStart.minute.toString().padStart(2, '0')} {actualStart.hour >= 12 ? 'PM' : 'AM'}
                                   {' - '}
                                   {actualEnd.hour === 0 ? '12' : actualEnd.hour > 12 ? actualEnd.hour - 12 : actualEnd.hour}:{actualEnd.minute.toString().padStart(2, '0')} {actualEnd.hour >= 12 ? 'PM' : 'AM'}
@@ -1522,41 +1527,18 @@ export const WeekView = ({
                 {/* Time */}
                 <div className="flex items-center gap-3">
                   <Clock className="w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="9:00 am"
+                  <TimePicker
                     value={taskStartTime}
-                    onChange={(e) => setTaskStartTime(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        const formatted = autoFormatTime(taskStartTime);
-                        if (formatted.time) {
-                          setTaskStartTime(`${formatted.time} ${formatted.period || 'am'}`);
-                        }
-                        const endInput = document.getElementById('week-task-end-time') as HTMLInputElement;
-                        endInput?.focus();
-                      }
-                    }}
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    onChange={setTaskStartTime}
+                    placeholder="Start time"
+                    className="flex-1"
                   />
                   <span className="text-gray-400">—</span>
-                  <input
-                    id="week-task-end-time"
-                    type="text"
-                    placeholder="10:00 am"
+                  <TimePicker
                     value={taskEndTime}
-                    onChange={(e) => setTaskEndTime(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        const formatted = autoFormatTime(taskEndTime);
-                        if (formatted.time) {
-                          setTaskEndTime(`${formatted.time} ${formatted.period || 'am'}`);
-                        }
-                      }
-                    }}
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    onChange={setTaskEndTime}
+                    placeholder="End time"
+                    className="flex-1"
                   />
                 </div>
 
@@ -1591,7 +1573,7 @@ export const WeekView = ({
                   </button>
                   <button
                     onClick={handleCreateTaskFromDialog}
-                    className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+                    className="px-6 py-2 text-sm font-medium text-white bg-[#1E4256] rounded-lg hover:bg-[#163544] transition-colors"
                   >
                     Create
                   </button>
@@ -1616,41 +1598,18 @@ export const WeekView = ({
                 {/* Time inputs */}
                 <div className="flex items-center gap-3">
                   <Clock className="w-5 h-5 text-gray-400" />
-                  <Input
-                    type="text"
+                  <TimePicker
                     value={contentStartTime}
-                    onChange={(e) => setContentStartTime(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        const formatted = autoFormatTime(contentStartTime);
-                        if (formatted.time) {
-                          setContentStartTime(`${formatted.time} ${formatted.period || 'am'}`);
-                        }
-                        const endInput = document.getElementById('week-content-end-time') as HTMLInputElement;
-                        endInput?.focus();
-                      }
-                    }}
-                    placeholder="9:00 am"
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    onChange={setContentStartTime}
+                    placeholder="Start time"
+                    className="flex-1"
                   />
                   <span className="text-gray-400">—</span>
-                  <Input
-                    id="week-content-end-time"
-                    type="text"
+                  <TimePicker
                     value={contentEndTime}
-                    onChange={(e) => setContentEndTime(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        const formatted = autoFormatTime(contentEndTime);
-                        if (formatted.time) {
-                          setContentEndTime(`${formatted.time} ${formatted.period || 'am'}`);
-                        }
-                      }
-                    }}
-                    placeholder="10:00 am"
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    onChange={setContentEndTime}
+                    placeholder="End time"
+                    className="flex-1"
                   />
                 </div>
 
@@ -1741,7 +1700,7 @@ export const WeekView = ({
                 <button
                   type="button"
                   onClick={handleCreateContentFromDialog}
-                  className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+                  className="px-6 py-2 text-sm font-medium text-white bg-[#612a4f] rounded-lg hover:bg-[#4d2240] transition-colors"
                 >
                   Create
                 </button>

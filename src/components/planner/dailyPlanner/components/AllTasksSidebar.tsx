@@ -89,7 +89,7 @@ export const AllTasksSidebar = ({
   return (
     <div
       className={cn(
-        "h-full flex-shrink-0 bg-[#F7F8FC] transition-all duration-300 relative",
+        "h-full flex-shrink-0 bg-[#F8F8F8] transition-all duration-300 relative",
         isAllTasksCollapsed ? 'w-12' : 'w-80'
       )}
       onDragEnter={(e) => {

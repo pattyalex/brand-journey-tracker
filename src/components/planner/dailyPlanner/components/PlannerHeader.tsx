@@ -55,10 +55,10 @@ export const PlannerHeader = ({
           <button
             onClick={() => setContentDisplayMode('tasks')}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200",
+              "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 border-2",
               contentDisplayMode === 'tasks'
-                ? "bg-[#44457C] text-white shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
+                ? "bg-white text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
+                : "text-gray-500 hover:text-gray-700 border-transparent"
             )}
           >
             <ListTodo className="w-4 h-4" />
@@ -67,10 +67,10 @@ export const PlannerHeader = ({
           <button
             onClick={() => setContentDisplayMode('content')}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200",
+              "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 border-2",
               contentDisplayMode === 'content'
-                ? "bg-[#612a4f] text-white shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
+                ? "bg-[#612a4f] text-white shadow-sm border-[#612a4f]"
+                : "text-gray-500 hover:text-gray-700 border-transparent"
             )}
           >
             <CalendarLucide className="w-4 h-4" />
@@ -79,10 +79,10 @@ export const PlannerHeader = ({
           <button
             onClick={() => setContentDisplayMode('both')}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200",
+              "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 border-2",
               contentDisplayMode === 'both'
-                ? "bg-gradient-to-r from-[#44457C] to-[#612a4f] text-white shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
+                ? "bg-gradient-to-r from-white to-[#612a4f] text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
+                : "text-gray-500 hover:text-gray-700 border-transparent"
             )}
           >
             <LayoutGrid className="w-4 h-4" />
@@ -98,14 +98,14 @@ export const PlannerHeader = ({
           <button
             onClick={() => setCurrentView('today')}
             className={cn(
-              "px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200",
+              "px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200 border-2",
               currentView === 'today'
                 ? contentDisplayMode === 'content'
-                  ? "bg-[#612a4f] text-white shadow-sm"
+                  ? "bg-[#612a4f] text-white shadow-sm border-[#612a4f]"
                   : contentDisplayMode === 'both'
-                    ? "bg-gradient-to-r from-[#44457C] to-[#612a4f] text-white shadow-sm"
-                    : "bg-[#44457C] text-white shadow-sm"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    ? "bg-gradient-to-r from-white to-[#612a4f] text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
+                    : "bg-white text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent"
             )}
           >
             Today
@@ -113,14 +113,14 @@ export const PlannerHeader = ({
           <button
             onClick={() => setCurrentView('week')}
             className={cn(
-              "px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200",
+              "px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200 border-2",
               currentView === 'week'
                 ? contentDisplayMode === 'content'
-                  ? "bg-[#612a4f] text-white shadow-sm"
+                  ? "bg-[#612a4f] text-white shadow-sm border-[#612a4f]"
                   : contentDisplayMode === 'both'
-                    ? "bg-gradient-to-r from-[#44457C] to-[#612a4f] text-white shadow-sm"
-                    : "bg-[#44457C] text-white shadow-sm"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    ? "bg-gradient-to-r from-white to-[#612a4f] text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
+                    : "bg-white text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent"
             )}
           >
             Weekly
@@ -128,14 +128,14 @@ export const PlannerHeader = ({
           <button
             onClick={() => setCurrentView('calendar')}
             className={cn(
-              "px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200",
+              "px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200 border-2",
               currentView === 'calendar'
                 ? contentDisplayMode === 'content'
-                  ? "bg-[#612a4f] text-white shadow-sm"
+                  ? "bg-[#612a4f] text-white shadow-sm border-[#612a4f]"
                   : contentDisplayMode === 'both'
-                    ? "bg-gradient-to-r from-[#44457C] to-[#612a4f] text-white shadow-sm"
-                    : "bg-[#44457C] text-white shadow-sm"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    ? "bg-gradient-to-r from-white to-[#612a4f] text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
+                    : "bg-white text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent"
             )}
           >
             Monthly

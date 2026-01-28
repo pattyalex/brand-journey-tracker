@@ -13,6 +13,7 @@ import { getDateString } from "../utils/plannerUtils";
 import { parseTimeTo24 } from "../utils/timeUtils";
 import { scheduleColors, defaultScheduledColor, getTaskColorByHex, defaultTaskColor } from "../utils/colorConstants";
 import { TaskColorPicker } from "./TaskColorPicker";
+import { TimePicker } from "./TimePicker";
 import { PlannerDerived, PlannerHelpers, PlannerRefs, PlannerSetters, PlannerState } from "../hooks/usePlannerState";
 import { usePlannerActions } from "../hooks/usePlannerActions";
 import { useColorPalette } from "../hooks/useColorPalette";
@@ -529,7 +530,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                   style={{ top: `${hour * 90 * todayZoomLevel}px`, height: `${90 * todayZoomLevel}px` }}
                 >
                   {/* Hour row container */}
-                  <div className="flex h-full border-t border-gray-200 bg-white">
+                  <div className="flex h-full border-t border-gray-300 bg-white">
                     {/* 10-minute slots (6 slots per hour) */}
                     <div className="flex-1 flex flex-col">
                   {[0, 10, 20, 30, 40, 50].map((minute, idx) => {
@@ -1163,23 +1164,30 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
             const startTimeStr = formatTime12Hour(startHour, startMin);
             const endTimeStr = formatTime12Hour(endHour, endMin);
 
+            // Mauve colors for drag preview
+            const bgColor = 'rgba(139, 112, 130, 0.08)';
+            const borderColor = '#B8A0B0';
+            const textColor = '#9A8090';
+
             return (
               <div
-                className="absolute rounded px-2 py-1 border-l-4 border-blue-400"
+                className="absolute rounded-lg px-3 py-2 border-l-[3px] backdrop-blur-sm"
                 style={{
                   top: `${top}px`,
                   height: `${height}px`,
                   left: '0',
                   right: '0',
-                  backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                  pointerEvents: 'none'
+                  backgroundColor: bgColor,
+                  borderLeftColor: borderColor,
+                  pointerEvents: 'none',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
                 }}
               >
-                <div className="text-xs text-blue-700 font-semibold">
+                <div className="text-xs font-medium" style={{ color: textColor }}>
                   {startTimeStr}
                 </div>
                 {height > 40 && (
-                  <div className="text-xs text-blue-700 font-semibold absolute bottom-1 left-2">
+                  <div className="text-xs font-medium absolute bottom-2 left-3" style={{ color: textColor }}>
                     {endTimeStr}
                   </div>
                 )}
@@ -1261,41 +1269,18 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                 {/* Time */}
                 <div className="flex items-center gap-3">
                   <Clock className="w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="9:00 am"
+                  <TimePicker
                     value={taskStartTime}
-                    onChange={(e) => setTaskStartTime(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        const formatted = autoFormatTime(taskStartTime);
-                        if (formatted.time) {
-                          setTaskStartTime(`${formatted.time} ${formatted.period || 'am'}`);
-                        }
-                        const endInput = document.getElementById('today-task-end-time') as HTMLInputElement;
-                        endInput?.focus();
-                      }
-                    }}
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    onChange={setTaskStartTime}
+                    placeholder="Start time"
+                    className="flex-1"
                   />
                   <span className="text-gray-400">—</span>
-                  <input
-                    id="today-task-end-time"
-                    type="text"
-                    placeholder="10:00 am"
+                  <TimePicker
                     value={taskEndTime}
-                    onChange={(e) => setTaskEndTime(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        const formatted = autoFormatTime(taskEndTime);
-                        if (formatted.time) {
-                          setTaskEndTime(`${formatted.time} ${formatted.period || 'am'}`);
-                        }
-                      }
-                    }}
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    onChange={setTaskEndTime}
+                    placeholder="End time"
+                    className="flex-1"
                   />
                 </div>
 
@@ -1330,7 +1315,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                   </button>
                   <button
                     onClick={handleCreateTaskFromDialog}
-                    className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+                    className="px-6 py-2 text-sm font-medium text-white bg-[#1E4256] rounded-lg hover:bg-[#163544] transition-colors"
                   >
                     Create
                   </button>
@@ -1355,41 +1340,18 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                 {/* Time inputs */}
                 <div className="flex items-center gap-3">
                   <Clock className="w-5 h-5 text-gray-400" />
-                  <Input
-                    type="text"
+                  <TimePicker
                     value={contentStartTime}
-                    onChange={(e) => setContentStartTime(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        const formatted = autoFormatTime(contentStartTime);
-                        if (formatted.time) {
-                          setContentStartTime(`${formatted.time} ${formatted.period || 'am'}`);
-                        }
-                        const endInput = document.getElementById('today-content-end-time') as HTMLInputElement;
-                        endInput?.focus();
-                      }
-                    }}
-                    placeholder="9:00 am"
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    onChange={setContentStartTime}
+                    placeholder="Start time"
+                    className="flex-1"
                   />
                   <span className="text-gray-400">—</span>
-                  <Input
-                    id="today-content-end-time"
-                    type="text"
+                  <TimePicker
                     value={contentEndTime}
-                    onChange={(e) => setContentEndTime(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        const formatted = autoFormatTime(contentEndTime);
-                        if (formatted.time) {
-                          setContentEndTime(`${formatted.time} ${formatted.period || 'am'}`);
-                        }
-                      }
-                    }}
-                    placeholder="10:00 am"
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    onChange={setContentEndTime}
+                    placeholder="End time"
+                    className="flex-1"
                   />
                 </div>
 
@@ -1478,7 +1440,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                 <button
                   type="button"
                   onClick={handleCreateContentFromDialog}
-                  className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+                  className="px-6 py-2 text-sm font-medium text-white bg-[#612a4f] rounded-lg hover:bg-[#4d2240] transition-colors"
                 >
                   Create
                 </button>

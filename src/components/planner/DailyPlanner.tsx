@@ -429,7 +429,7 @@ export const DailyPlanner = () => {
                 "h-full flex-shrink-0 transition-all duration-300 relative",
                 isAllTasksCollapsed ? "w-12" : "w-80"
               )}
-              style={{ background: 'linear-gradient(to bottom, #F2F5F6 0%, #FDFAFC 60%, #FDFAFC 100%)' }}
+              style={{ background: 'linear-gradient(to bottom, #F7F8FC 0%, #F7F8FC 35%, #F8F5F8 60%, #FDFAFC 100%)' }}
             >
               {/* Collapse/Expand Button */}
               <button

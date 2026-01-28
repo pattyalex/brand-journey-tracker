@@ -5,6 +5,7 @@ import { PlannerDerived, PlannerRefs, PlannerSetters, PlannerState } from "../ho
 import { usePlannerActions } from "../hooks/usePlannerActions";
 import { defaultTaskColor } from "../utils/colorConstants";
 import { TaskColorPicker } from "./TaskColorPicker";
+import { TimePicker } from "./TimePicker";
 
 interface TaskDialogProps {
   state: PlannerState;
@@ -150,30 +151,18 @@ export const TaskDialog = ({ state, derived, refs, setters, actions }: TaskDialo
           {/* Time inputs */}
           <div className="flex items-center gap-3">
             <Clock className="w-5 h-5 text-gray-400" />
-            <Input
-              ref={startTimeInputRef}
-              type="text"
+            <TimePicker
               value={dialogStartTime}
-              onChange={handleStartTimeChange}
-              onFocus={handleStartTimeFocus}
-              onBlur={handleStartTimeBlur}
-              onKeyDown={handleStartTimeKeyDown}
+              onChange={(value) => setDialogStartTime(value)}
               placeholder="Start time"
-              className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-              maxLength={8}
+              className="flex-1"
             />
             <span className="text-gray-400">—</span>
-            <Input
-              ref={endTimeInputRef}
-              type="text"
+            <TimePicker
               value={dialogEndTime}
-              onChange={handleEndTimeChange}
-              onFocus={handleEndTimeFocus}
-              onBlur={handleEndTimeBlur}
-              onKeyDown={handleEndTimeKeyDown}
+              onChange={(value) => setDialogEndTime(value)}
               placeholder="End time"
-              className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-              maxLength={8}
+              className="flex-1"
             />
           </div>
 
@@ -206,7 +195,7 @@ export const TaskDialog = ({ state, derived, refs, setters, actions }: TaskDialo
             </button>
             <button
               onClick={handleSaveTaskDialog}
-              className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+              className="px-6 py-2 text-sm font-medium text-white bg-[#1E4256] rounded-lg hover:bg-[#163544] transition-colors"
             >
               {editingTask?.id ? 'Save' : 'Create'}
             </button>

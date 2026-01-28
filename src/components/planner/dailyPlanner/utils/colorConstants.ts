@@ -10,57 +10,81 @@ export const taskColorCategories = {
   stone: {
     name: 'Stone',
     colors: [
-      { id: 'stone-light', name: 'Stone Light', fill: '#F0EDEA', border: '#A8A098', text: '#686058' },
-      { id: 'stone-medium', name: 'Stone Medium', fill: '#E5E0DA', border: '#908880', text: '#585048' },
-      { id: 'stone-deep', name: 'Stone Deep', fill: '#D8D2CA', border: '#787068', text: '#484038' },
+      { id: 'stone-light', name: 'Stone Light', fill: '#F8F5F2', border: '#A8A098', text: '#686058' },
+      { id: 'stone-medium', name: 'Stone Medium', fill: '#F0EAE2', border: '#908880', text: '#585048' },
+      { id: 'stone-deep', name: 'Stone Deep', fill: '#E6DED4', border: '#787068', text: '#484038' },
     ],
   },
   blue: {
     name: 'Blue',
     colors: [
-      { id: 'link-water', name: 'Link Water', fill: '#E8ECF2', border: '#8898B0', text: '#485870' },
-      { id: 'echo-blue', name: 'Echo Blue', fill: '#D8E0ED', border: '#7088A8', text: '#384868' },
-      { id: 'wedgewood', name: 'Wedgewood', fill: '#C8D4E5', border: '#5878A0', text: '#283858' },
+      { id: 'link-water', name: 'Link Water', fill: '#F0F5FB', border: '#8898B0', text: '#485870' },
+      { id: 'echo-blue', name: 'Echo Blue', fill: '#E5EDF8', border: '#7088A8', text: '#384868' },
+      { id: 'wedgewood', name: 'Wedgewood', fill: '#D8E4F4', border: '#5878A0', text: '#283858' },
     ],
   },
   lilac: {
     name: 'Lilac',
     colors: [
-      { id: 'soft-lilac', name: 'Soft Lilac', fill: '#EDE8F2', border: '#A090B8', text: '#605078' },
-      { id: 'wisteria', name: 'Wisteria', fill: '#E0D8EB', border: '#8878A8', text: '#504068' },
-      { id: 'violet-haze', name: 'Violet Haze', fill: '#D2C8E0', border: '#706898', text: '#403058' },
+      { id: 'soft-lilac', name: 'Soft Lilac', fill: '#F5F0FB', border: '#A090B8', text: '#605078' },
+      { id: 'wisteria', name: 'Wisteria', fill: '#ECE5F6', border: '#8878A8', text: '#504068' },
+      { id: 'violet-haze', name: 'Violet Haze', fill: '#E2D8EE', border: '#706898', text: '#403058' },
     ],
   },
   mauve: {
     name: 'Mauve',
     colors: [
-      { id: 'blush-mauve', name: 'Blush Mauve', fill: '#F2E8ED', border: '#B898A8', text: '#785868' },
-      { id: 'dusty-rose', name: 'Dusty Rose', fill: '#EADCE5', border: '#A88098', text: '#684058' },
-      { id: 'berry-cream', name: 'Berry Cream', fill: '#E0D0D8', border: '#987088', text: '#583048' },
+      { id: 'blush-mauve', name: 'Blush Mauve', fill: '#FBF0F6', border: '#B898A8', text: '#785868' },
+      { id: 'dusty-rose', name: 'Dusty Rose', fill: '#F6E8F0', border: '#A88098', text: '#684058' },
+      { id: 'berry-cream', name: 'Berry Cream', fill: '#EDDDE6', border: '#987088', text: '#583048' },
     ],
   },
   sand: {
     name: 'Sand',
     colors: [
-      { id: 'oyster', name: 'Oyster', fill: '#F2EDE5', border: '#B8A890', text: '#786850' },
-      { id: 'warm-sand', name: 'Warm Sand', fill: '#EAE2D5', border: '#A89878', text: '#685840' },
-      { id: 'sandstone', name: 'Sandstone', fill: '#E0D5C5', border: '#988860', text: '#584830' },
+      { id: 'oyster', name: 'Oyster', fill: '#FBF7EF', border: '#B8A890', text: '#786850' },
+      { id: 'warm-sand', name: 'Warm Sand', fill: '#F6EEE2', border: '#A89878', text: '#685840' },
+      { id: 'sandstone', name: 'Sandstone', fill: '#EDE3D2', border: '#988860', text: '#584830' },
     ],
   },
   mint: {
     name: 'Mint',
     colors: [
-      { id: 'pistachio', name: 'Pistachio', fill: '#EAF0E8', border: '#90A888', text: '#506848' },
-      { id: 'sage-mint', name: 'Sage Mint', fill: '#DCE8D8', border: '#789878', text: '#405838' },
-      { id: 'eucalyptus', name: 'Eucalyptus', fill: '#CEDECA', border: '#608868', text: '#304828' },
+      { id: 'pistachio', name: 'Pistachio', fill: '#F2F8EF', border: '#90A888', text: '#506848' },
+      { id: 'sage-mint', name: 'Sage Mint', fill: '#E9F4E5', border: '#789878', text: '#405838' },
+      { id: 'eucalyptus', name: 'Eucalyptus', fill: '#DCEAD6', border: '#608868', text: '#304828' },
     ],
   },
   turquoise: {
     name: 'Turquoise',
     colors: [
-      { id: 'seafoam', name: 'Seafoam', fill: '#E5F0EE', border: '#80A8A0', text: '#406860' },
-      { id: 'aqua-mist', name: 'Aqua Mist', fill: '#D5E8E5', border: '#689890', text: '#305850' },
-      { id: 'teal-light', name: 'Teal Light', fill: '#C5DED8', border: '#508880', text: '#204840' },
+      { id: 'seafoam', name: 'Seafoam', fill: '#EEF8F6', border: '#80A8A0', text: '#406860' },
+      { id: 'aqua-mist', name: 'Aqua Mist', fill: '#E4F4F0', border: '#689890', text: '#305850' },
+      { id: 'teal-light', name: 'Teal Light', fill: '#D6ECE6', border: '#508880', text: '#204840' },
+    ],
+  },
+  slate: {
+    name: 'Slate',
+    colors: [
+      { id: 'silver-mist', name: 'Silver Mist', fill: '#DEE2E2', border: '#788A94', text: '#4A5560' },
+      { id: 'slate-grey', name: 'Slate Grey', fill: '#D0D6D8', border: '#6A7A84', text: '#3A454E' },
+      { id: 'steel', name: 'Steel', fill: '#C2CACC', border: '#5A6A74', text: '#2A353E' },
+    ],
+  },
+  plum: {
+    name: 'Plum',
+    colors: [
+      { id: 'lavender-grey', name: 'Lavender Grey', fill: '#ECEDF2', border: '#5d627a', text: '#29304c' },
+      { id: 'twilight', name: 'Twilight', fill: '#DCDEE6', border: '#4D5268', text: '#1F2640' },
+      { id: 'midnight', name: 'Midnight', fill: '#CCCED8', border: '#3D4258', text: '#151C34' },
+    ],
+  },
+  rose: {
+    name: 'Rose',
+    colors: [
+      { id: 'blush-pink', name: 'Blush Pink', fill: '#e8d5d5', border: '#A08080', text: '#605050' },
+      { id: 'dusty-pink', name: 'Dusty Pink', fill: '#DCC8C8', border: '#907070', text: '#504040' },
+      { id: 'rose-taupe', name: 'Rose Taupe', fill: '#D0BCBC', border: '#806060', text: '#403030' },
     ],
   },
 };

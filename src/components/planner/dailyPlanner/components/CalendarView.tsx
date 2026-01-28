@@ -15,6 +15,7 @@ import { Video, Lightbulb, X, Clock, FileText, ArrowRight, Trash2, Check } from 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { autoFormatTime } from "../utils/timeUtils";
+import { TimePicker } from "./TimePicker";
 import { StorageKeys, getString, setString } from "@/lib/storage";
 import { EVENTS, emit } from "@/lib/events";
 import { ContentDisplayMode } from "../hooks/usePlannerState";
@@ -818,41 +819,18 @@ export const CalendarView = ({
                 {/* Time inputs */}
                 <div className="flex items-center gap-3">
                   <Clock className="w-5 h-5 text-gray-400" />
-                  <Input
-                    type="text"
+                  <TimePicker
                     value={contentStartTime}
-                    onChange={(e) => setContentStartTime(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        const formatted = autoFormatTime(contentStartTime);
-                        if (formatted.time) {
-                          setContentStartTime(`${formatted.time} ${formatted.period || 'am'}`);
-                        }
-                        const endInput = document.getElementById('content-end-time') as HTMLInputElement;
-                        endInput?.focus();
-                      }
-                    }}
-                    placeholder="9:00 am"
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    onChange={setContentStartTime}
+                    placeholder="Start time"
+                    className="flex-1"
                   />
                   <span className="text-gray-400">—</span>
-                  <Input
-                    id="content-end-time"
-                    type="text"
+                  <TimePicker
                     value={contentEndTime}
-                    onChange={(e) => setContentEndTime(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        const formatted = autoFormatTime(contentEndTime);
-                        if (formatted.time) {
-                          setContentEndTime(`${formatted.time} ${formatted.period || 'am'}`);
-                        }
-                      }
-                    }}
-                    placeholder="10:00 am"
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    onChange={setContentEndTime}
+                    placeholder="End time"
+                    className="flex-1"
                   />
                 </div>
 
@@ -941,7 +919,7 @@ export const CalendarView = ({
               <button
                 type="button"
                 onClick={handleCreateContent}
-                className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+                className="px-6 py-2 text-sm font-medium text-white bg-[#612a4f] rounded-lg hover:bg-[#4d2240] transition-colors"
               >
                 Create
               </button>

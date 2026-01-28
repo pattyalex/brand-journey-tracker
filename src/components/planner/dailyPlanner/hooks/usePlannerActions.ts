@@ -277,10 +277,10 @@ export const usePlannerActions = ({
           const scrollTop = scrollArea.scrollTop || 0;
           const relativeY = e.clientY - rect.top + scrollTop;
 
-          // Each hour is 90px * zoom, each 20-minute slot is 30px * zoom
+          // Each hour is 90px * zoom, each 10-minute slot is 15px * zoom
           const totalMinutes = Math.floor((relativeY / (90 * todayZoomLevel)) * 60);
           const hour = Math.floor(totalMinutes / 60);
-          const minute = Math.floor((totalMinutes % 60) / 20) * 20; // Round to nearest 20-min slot
+          const minute = Math.floor((totalMinutes % 60) / 10) * 10; // Round to nearest 10-min slot
 
           if (hour >= 0 && hour < 24) {
             setDragCreateEnd({ hour, minute });
@@ -298,7 +298,7 @@ export const usePlannerActions = ({
           const endMinutes = dragCreateEnd.hour * 60 + dragCreateEnd.minute;
 
           const actualStart = Math.min(startMinutes, endMinutes);
-          const actualEnd = Math.max(startMinutes, endMinutes + 20);
+          const actualEnd = Math.max(startMinutes, endMinutes + 10);
 
           const startHour = Math.floor(actualStart / 60);
           const startMin = actualStart % 60;
