@@ -38,6 +38,7 @@ interface WeekViewProps {
   selectedTimezone: string;
   timezones: TimezoneOption[];
   weeklyScrollRef: React.RefObject<HTMLDivElement>;
+  weeklyZoomLevel: number;
   isTaskDialogOpen: boolean;
   weeklyDraggingCreate: Record<string, boolean>;
   weeklyDragCreateStart: Record<string, { hour: number; minute: number }>;
@@ -113,6 +114,7 @@ export const WeekView = ({
   selectedTimezone,
   timezones,
   weeklyScrollRef,
+  weeklyZoomLevel,
   isTaskDialogOpen,
   weeklyDraggingCreate,
   weeklyDragCreateStart,
@@ -472,12 +474,17 @@ export const WeekView = ({
               <div className="flex">
                 {/* Time column */}
                 <div className="flex-shrink-0 bg-white border-r border-gray-200" style={{ width: '40px' }}>
-                  <div className="relative" style={{ height: '1152px' }}>
+                  <div
+                    data-zoom-container="weekly-time"
+                    className="relative"
+                    style={{ height: `${24 * 48 * weeklyZoomLevel}px` }}
+                  >
                     {Array.from({ length: 24 }, (_, hour) => (
                       <div
                         key={hour}
+                        data-hour-row={hour}
                         className="absolute left-0 right-0 flex items-start justify-end pr-1 pt-0.5"
-                        style={{ top: `${hour * 48}px`, height: '48px' }}
+                        style={{ top: `${hour * 48 * weeklyZoomLevel}px`, height: `${48 * weeklyZoomLevel}px` }}
                       >
                         <span className="text-[10px] text-gray-400 leading-none">
                           {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
@@ -490,13 +497,14 @@ export const WeekView = ({
                 {/* Day columns */}
                 <div className="flex-1 grid grid-cols-7 gap-0 relative">
                   {/* Horizontal grid lines spanning all days */}
-                  <div className="absolute inset-0 pointer-events-none">
+                  <div className="absolute inset-0 pointer-events-none" style={{ height: `${24 * 48 * weeklyZoomLevel}px` }}>
                     {Array.from({ length: 24 }, (_, hour) => (
                       <div
                         key={hour}
+                        data-grid-line={hour}
                         className="absolute left-0 right-0"
                         style={{
-                          top: `${hour * 48}px`,
+                          top: `${hour * 48 * weeklyZoomLevel}px`,
                           borderTop: '1px solid #eceef0'
                         }}
                       />
@@ -522,14 +530,15 @@ export const WeekView = ({
                         style={{ borderRight: index < 6 ? '1px solid #eceef0' : 'none' }}
                       >
                         {/* Timeline container */}
-                        <div className="relative" data-timeline style={{ height: '1152px' }}>
+                        <div className="relative" data-timeline style={{ height: `${24 * 48 * weeklyZoomLevel}px` }}>
 
                           {/* Time slot grid for drag and drop */}
                           {Array.from({ length: 24 }, (_, hour) => (
                             <div
                               key={`slot-${hour}`}
+                              data-time-slot={hour}
                               className="absolute left-0 right-0 pointer-events-none"
-                              style={{ top: `${hour * 48}px`, height: '48px', zIndex: 100 }}
+                              style={{ top: `${hour * 48 * weeklyZoomLevel}px`, height: `${48 * weeklyZoomLevel}px`, zIndex: 100 }}
                             >
                               <div
                                 className={`h-full w-full relative hover:bg-gray-100 transition-colors ${(isTaskDialogOpen || addDialogOpen) ? 'pointer-events-none' : 'pointer-events-auto cursor-crosshair'}`}
@@ -543,7 +552,7 @@ export const WeekView = ({
                                     e.preventDefault();
                                     const rect = e.currentTarget.getBoundingClientRect();
                                     const relativeY = e.clientY - rect.top;
-                                    const minuteFraction = relativeY / 48; // 48px per hour
+                                    const minuteFraction = relativeY / (48 * weeklyZoomLevel); // 48px per hour * zoom
                                     const minute = Math.floor(minuteFraction * 60);
 
                                     setWeeklyDraggingCreate(prev => ({ ...prev, [dayString]: true }));
@@ -624,7 +633,7 @@ export const WeekView = ({
                                   // Calculate minute based on position within the hour
                                   const rect = e.currentTarget.getBoundingClientRect();
                                   const relativeY = e.clientY - rect.top;
-                                  const minuteFraction = relativeY / 48; // 48px per hour
+                                  const minuteFraction = relativeY / (48 * weeklyZoomLevel); // 48px per hour * zoom
                                   const minute = Math.floor(minuteFraction * 60);
                                   const roundedMinute = Math.floor(minute / 10) * 10; // Round to 10-minute intervals
 
@@ -812,8 +821,8 @@ export const WeekView = ({
                               const endTotalMinutes = endHour * 60 + endMinute;
                               const durationMinutes = Math.max(endTotalMinutes - startTotalMinutes, 30);
 
-                              const topPos = startTotalMinutes * 0.8;
-                              const height = Math.max(durationMinutes * 0.8 - 1, 24);
+                              const topPos = startTotalMinutes * 0.8 * weeklyZoomLevel;
+                              const height = Math.max(durationMinutes * 0.8 * weeklyZoomLevel - 1, 20);
 
                               const isPlanned = !content.scheduledDate;
                               const colors = isPlanned
@@ -823,6 +832,9 @@ export const WeekView = ({
                               return (
                                 <div
                                   key={content.id}
+                                  data-time-item
+                                  data-start-minutes={startTotalMinutes}
+                                  data-duration-minutes={durationMinutes}
                                   draggable={true}
                                   onDragStart={(e) => {
                                     e.stopPropagation();
@@ -843,7 +855,7 @@ export const WeekView = ({
                                       onOpenContentFlow?.(content.id);
                                     }
                                   }}
-                                  className="absolute left-1 right-1 rounded-lg cursor-pointer transition-all hover:brightness-95 hover:shadow-md overflow-hidden group"
+                                  className="absolute left-1 right-1 rounded-lg cursor-pointer hover:brightness-95 hover:shadow-md overflow-hidden group"
                                   style={{
                                     top: `${topPos}px`,
                                     height: `${height}px`,
@@ -982,8 +994,8 @@ export const WeekView = ({
 
                             return tasksWithLayout.map(({ task: item, startMinutes, endMinutes, column, totalColumns, isBackground, inOverlapGroup }) => {
                               const durationMinutes = endMinutes - startMinutes;
-                              const topPos = startMinutes * 0.8;
-                              const height = Math.max(durationMinutes * 0.8 - 1, 24);
+                              const topPos = startMinutes * 0.8 * weeklyZoomLevel;
+                              const height = Math.max(durationMinutes * 0.8 * weeklyZoomLevel - 1, 20);
 
                               // Get task color info - use preview color if this task is being edited
                               const isBeingEdited = editingTask?.id === item.id;
@@ -1016,6 +1028,9 @@ export const WeekView = ({
                               return (
                                 <div
                                   key={item.id}
+                                  data-time-item
+                                  data-start-minutes={startMinutes}
+                                  data-duration-minutes={durationMinutes}
                                   className="absolute group px-1"
                                   style={{
                                     top: `${topPos}px`,
@@ -1424,8 +1439,8 @@ export const WeekView = ({
                             const end = weeklyDragCreateEnd[dayString];
                             const startMinutes = start.hour * 60 + start.minute;
                             const endMinutes = end.hour * 60 + end.minute;
-                            const topPos = Math.min(startMinutes, endMinutes) * 0.8;
-                            const height = Math.abs(endMinutes - startMinutes) * 0.8;
+                            const topPos = Math.min(startMinutes, endMinutes) * 0.8 * weeklyZoomLevel;
+                            const height = Math.abs(endMinutes - startMinutes) * 0.8 * weeklyZoomLevel;
                             const actualStart = startMinutes < endMinutes ? start : end;
                             const actualEnd = startMinutes < endMinutes ? end : start;
 
@@ -1439,7 +1454,7 @@ export const WeekView = ({
                                 className="absolute left-2 right-2 rounded-lg pointer-events-none z-50 border-l-[3px] backdrop-blur-sm"
                                 style={{
                                   top: `${topPos}px`,
-                                  height: `${Math.max(height, 45)}px`,
+                                  height: `${Math.max(height, 45 * weeklyZoomLevel)}px`,
                                   backgroundColor: bgColor,
                                   borderLeftColor: borderColor,
                                   boxShadow: '0 2px 8px rgba(0,0,0,0.06)'

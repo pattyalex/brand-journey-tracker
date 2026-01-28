@@ -6,13 +6,14 @@ import { GlobalPlannerData, PlannerDay, PlannerItem } from "@/types/planner";
 
 export const getPlannerInitialSettings = () => {
   const selectedTimezone = getString(StorageKeys.selectedTimezone) || 'auto';
-  const saved = getString(StorageKeys.todayZoomLevel);
-  const todayZoomLevel = saved ? parseFloat(saved) : 1;
+  const savedTodayZoom = getString(StorageKeys.todayZoomLevel);
+  const todayZoomLevel = savedTodayZoom ? parseFloat(savedTodayZoom) : 1;
+
+  const savedWeeklyZoom = getString(StorageKeys.weeklyZoomLevel);
+  const weeklyZoomLevel = savedWeeklyZoom ? parseFloat(savedWeeklyZoom) : 1;
 
   // Default to 7am (7 hours * 90px per hour * zoom = 630px at 100% zoom)
-  const savedZoom = getString(StorageKeys.todayZoomLevel);
-  const zoom = savedZoom ? parseFloat(savedZoom) : 1;
-  const defaultScroll = 7 * 90 * zoom;
+  const defaultScroll = 7 * 90 * todayZoomLevel;
 
   const savedDate = getString(StorageKeys.plannerLastAccessDate);
   const today = format(new Date(), 'yyyy-MM-dd');
@@ -28,8 +29,8 @@ export const getPlannerInitialSettings = () => {
     todayScrollPosition = savedPosition ? parseInt(savedPosition, 10) : defaultScroll;
   }
 
-  // Default to 7am (7 hours * 48px per hour for weekly view = 336px)
-  const weeklyDefaultScroll = 7 * 48;
+  // Default to 7am (7 hours * 48px per hour for weekly view * zoom)
+  const weeklyDefaultScroll = 7 * 48 * weeklyZoomLevel;
 
   const weeklySavedDate = getString(StorageKeys.plannerLastAccessDate);
   let weeklyScrollPosition = weeklyDefaultScroll;
@@ -46,6 +47,7 @@ export const getPlannerInitialSettings = () => {
   return {
     selectedTimezone,
     todayZoomLevel,
+    weeklyZoomLevel,
     todayScrollPosition,
     weeklyScrollPosition,
   };
@@ -276,6 +278,10 @@ export const usePlannerPersistence = ({
     setString(StorageKeys.todayZoomLevel, zoomLevel.toString());
   };
 
+  const saveWeeklyZoomLevel = (zoomLevel: number) => {
+    setString(StorageKeys.weeklyZoomLevel, zoomLevel.toString());
+  };
+
   // Force refresh plannerData from localStorage
   const refreshPlannerData = () => {
     const savedData = getString(StorageKeys.plannerData);
@@ -297,6 +303,7 @@ export const usePlannerPersistence = ({
     saveWeeklyScrollPosition,
     saveSelectedTimezone,
     saveTodayZoomLevel,
+    saveWeeklyZoomLevel,
     refreshPlannerData,
   };
 };

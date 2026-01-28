@@ -19,6 +19,7 @@ interface UsePlannerActionsArgs {
   currentView: string;
   contentDisplayMode?: 'tasks' | 'content' | 'both';
   todayZoomLevel: number;
+  weeklyZoomLevel: number;
   todayScrollPosition: number;
   weeklyScrollPosition: number;
   isDraggingCreate: boolean;
@@ -59,6 +60,7 @@ interface UsePlannerActionsArgs {
   setCurrentView: React.Dispatch<React.SetStateAction<any>>;
   setSelectedTimezone: React.Dispatch<React.SetStateAction<string>>;
   setTodayZoomLevel: React.Dispatch<React.SetStateAction<number>>;
+  setWeeklyZoomLevel: React.Dispatch<React.SetStateAction<number>>;
   setTodayScrollPosition: React.Dispatch<React.SetStateAction<number>>;
   setWeeklyScrollPosition: React.Dispatch<React.SetStateAction<number>>;
   setIsDraggingCreate: React.Dispatch<React.SetStateAction<boolean>>;
@@ -104,6 +106,7 @@ interface UsePlannerActionsArgs {
   saveWeeklyScrollPosition: (scrollPosition: number) => void;
   saveSelectedTimezone: (timezone: string) => void;
   saveTodayZoomLevel: (zoomLevel: number) => void;
+  saveWeeklyZoomLevel: (zoomLevel: number) => void;
   onWeeklyAddDialogOpen?: (dayString: string, startTime: string, endTime: string) => void;
   onTodayAddDialogOpen?: (startTime: string, endTime: string) => void;
 }
@@ -120,6 +123,7 @@ export const usePlannerActions = ({
   grateful,
   currentView,
   todayZoomLevel,
+  weeklyZoomLevel,
   todayScrollPosition,
   weeklyScrollPosition,
   isDraggingCreate,
@@ -160,6 +164,7 @@ export const usePlannerActions = ({
   setCurrentView,
   setSelectedTimezone,
   setTodayZoomLevel,
+  setWeeklyZoomLevel,
   setTodayScrollPosition,
   setWeeklyScrollPosition,
   setIsDraggingCreate,
@@ -205,6 +210,7 @@ export const usePlannerActions = ({
   saveWeeklyScrollPosition,
   saveSelectedTimezone,
   saveTodayZoomLevel,
+  saveWeeklyZoomLevel,
   contentDisplayMode = 'tasks',
   onWeeklyAddDialogOpen,
   onTodayAddDialogOpen,
@@ -480,54 +486,167 @@ export const usePlannerActions = ({
     };
   }, [weeklyDraggingCreate, weeklyDragCreateStart, weeklyDragCreateEnd, isTaskDialogOpen]);
 
-  // Handle pinch-to-zoom for Today view
+  // Handle pinch-to-zoom for Today and Weekly views - using refs and CSS variables for smooth performance
   useEffect(() => {
+    // Use refs to track current zoom to avoid stale closures
+    let currentTodayZoom = todayZoomLevel;
+    let currentWeeklyZoom = weeklyZoomLevel;
+    let saveTimeout: NodeJS.Timeout | null = null;
+
     const handleWheel = (e: WheelEvent) => {
-      // Only handle zoom when in today view and ctrl key is pressed (pinch gesture)
-      if (currentView === 'today' && e.ctrlKey) {
+      // Only handle zoom when ctrl key is pressed (pinch gesture)
+      if (!e.ctrlKey) return;
+
+      // Handle Today view zoom
+      if (currentView === 'today') {
         e.preventDefault();
 
-        // Get the scroll container
-        const scrollArea = todayScrollRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+        const scrollArea = todayScrollRef.current?.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement;
+        const timeColumn = todayScrollRef.current?.querySelector('[data-zoom-container="time"]') as HTMLElement;
+        const contentColumn = todayScrollRef.current?.querySelector('[data-zoom-container="content"]') as HTMLElement;
+
+        if (!scrollArea || !timeColumn || !contentColumn) return;
+
+        const scrollRect = scrollArea.getBoundingClientRect();
+        const cursorY = e.clientY - scrollRect.top;
+        const currentScrollTop = scrollArea.scrollTop;
+        const contentYUnderCursor = currentScrollTop + cursorY;
+
+        const HOUR_HEIGHT = 90; // px per hour at 100% zoom
+        const oldTotalHeight = 24 * HOUR_HEIGHT * currentTodayZoom;
+        const timeRatio = contentYUnderCursor / oldTotalHeight;
+
+        const zoomDelta = e.deltaY > 0 ? -0.025 : 0.025;
+        const newZoom = Math.max(0.5, Math.min(1.5, currentTodayZoom + zoomDelta));
+
+        if (Math.abs(newZoom - currentTodayZoom) > 0.001) {
+          const newTotalHeight = 24 * HOUR_HEIGHT * newZoom;
+          const newContentYUnderCursor = timeRatio * newTotalHeight;
+          const newScrollTop = newContentYUnderCursor - cursorY;
+
+          currentTodayZoom = newZoom;
+
+          timeColumn.style.height = `${newTotalHeight}px`;
+          contentColumn.style.height = `${newTotalHeight}px`;
+
+          const hourRows = todayScrollRef.current?.querySelectorAll('[data-hour-row]');
+          hourRows?.forEach((row, hour) => {
+            const el = row as HTMLElement;
+            el.style.top = `${hour * HOUR_HEIGHT * newZoom}px`;
+            el.style.height = `${HOUR_HEIGHT * newZoom}px`;
+          });
+
+          const items = todayScrollRef.current?.querySelectorAll('[data-time-item]');
+          items?.forEach((item) => {
+            const el = item as HTMLElement;
+            const startMinutes = parseFloat(el.dataset.startMinutes || '0');
+            const durationMinutes = parseFloat(el.dataset.durationMinutes || '60');
+            el.style.top = `${(startMinutes * 1.5 * newZoom) + 0.5}px`;
+            el.style.height = `${Math.max(durationMinutes * 1.5 * newZoom, 28) - 1}px`;
+          });
+
+          scrollArea.scrollTop = Math.max(0, newScrollTop);
+
+          if (saveTimeout) clearTimeout(saveTimeout);
+          saveTimeout = setTimeout(() => {
+            setTodayZoomLevel(newZoom);
+            saveTodayZoomLevel(newZoom);
+          }, 150);
+        }
+      }
+
+      // Handle Weekly view zoom
+      if (currentView === 'week') {
+        e.preventDefault();
+
+        const scrollArea = weeklyScrollRef.current as HTMLElement;
         if (!scrollArea) return;
 
-        // Get current scroll position and viewport info
+        const scrollRect = scrollArea.getBoundingClientRect();
+        const cursorY = e.clientY - scrollRect.top;
         const currentScrollTop = scrollArea.scrollTop;
-        const viewportHeight = scrollArea.clientHeight;
-        const oldTotalHeight = 24 * 90 * todayZoomLevel;
+        const contentYUnderCursor = currentScrollTop + cursorY;
 
-        // Calculate what content is at the center of the viewport
-        const centerPoint = currentScrollTop + (viewportHeight / 2);
-        const centerRatio = centerPoint / oldTotalHeight;
+        const HOUR_HEIGHT = 48; // px per hour at 100% zoom for weekly view
+        const oldTotalHeight = 24 * HOUR_HEIGHT * currentWeeklyZoom;
+        const timeRatio = contentYUnderCursor / oldTotalHeight;
 
-        // Calculate zoom change (deltaY < 0 means zoom in) - ultra slow zoom for precise control
-        const zoomDelta = e.deltaY > 0 ? -0.01 : 0.01;
-        const newZoom = Math.max(0.5, Math.min(1, todayZoomLevel + zoomDelta));
+        const zoomDelta = e.deltaY > 0 ? -0.025 : 0.025;
+        const newZoom = Math.max(0.5, Math.min(1.5, currentWeeklyZoom + zoomDelta));
 
-        // Only update if zoom actually changed
-        if (newZoom !== todayZoomLevel) {
-          setTodayZoomLevel(newZoom);
-          saveTodayZoomLevel(newZoom);
+        if (Math.abs(newZoom - currentWeeklyZoom) > 0.001) {
+          const newTotalHeight = 24 * HOUR_HEIGHT * newZoom;
+          const newContentYUnderCursor = timeRatio * newTotalHeight;
+          const newScrollTop = newContentYUnderCursor - cursorY;
 
-          // Calculate new scroll position to maintain center point
-          // Need to do this after React updates, so use setTimeout
-          setTimeout(() => {
-            const newTotalHeight = 24 * 90 * newZoom;
-            const newCenterPoint = centerRatio * newTotalHeight;
-            const newScrollTop = newCenterPoint - (viewportHeight / 2);
-            scrollArea.scrollTop = Math.max(0, newScrollTop);
-          }, 0);
+          currentWeeklyZoom = newZoom;
+
+          // Update time column
+          const timeColumn = weeklyScrollRef.current?.querySelector('[data-zoom-container="weekly-time"]') as HTMLElement;
+          if (timeColumn) {
+            timeColumn.style.height = `${newTotalHeight}px`;
+          }
+
+          // Update all timeline containers in each day column
+          const timelines = weeklyScrollRef.current?.querySelectorAll('[data-timeline]');
+          timelines?.forEach((timeline) => {
+            (timeline as HTMLElement).style.height = `${newTotalHeight}px`;
+          });
+
+          // Update hour rows
+          const hourRows = weeklyScrollRef.current?.querySelectorAll('[data-hour-row]');
+          hourRows?.forEach((row) => {
+            const el = row as HTMLElement;
+            const hour = parseInt(el.dataset.hourRow || '0', 10);
+            el.style.top = `${hour * HOUR_HEIGHT * newZoom}px`;
+            el.style.height = `${HOUR_HEIGHT * newZoom}px`;
+          });
+
+          // Update grid lines
+          const gridLines = weeklyScrollRef.current?.querySelectorAll('[data-grid-line]');
+          gridLines?.forEach((line) => {
+            const el = line as HTMLElement;
+            const hour = parseInt(el.dataset.gridLine || '0', 10);
+            el.style.top = `${hour * HOUR_HEIGHT * newZoom}px`;
+          });
+
+          // Update time slot containers
+          const timeSlots = weeklyScrollRef.current?.querySelectorAll('[data-time-slot]');
+          timeSlots?.forEach((slot) => {
+            const el = slot as HTMLElement;
+            const hour = parseInt(el.dataset.timeSlot || '0', 10);
+            el.style.top = `${hour * HOUR_HEIGHT * newZoom}px`;
+            el.style.height = `${HOUR_HEIGHT * newZoom}px`;
+          });
+
+          // Update task/content items
+          const items = weeklyScrollRef.current?.querySelectorAll('[data-time-item]');
+          items?.forEach((item) => {
+            const el = item as HTMLElement;
+            const startMinutes = parseFloat(el.dataset.startMinutes || '0');
+            const durationMinutes = parseFloat(el.dataset.durationMinutes || '60');
+            el.style.top = `${(startMinutes / 60) * HOUR_HEIGHT * newZoom}px`;
+            el.style.height = `${Math.max((durationMinutes / 60) * HOUR_HEIGHT * newZoom, 20)}px`;
+          });
+
+          scrollArea.scrollTop = Math.max(0, newScrollTop);
+
+          if (saveTimeout) clearTimeout(saveTimeout);
+          saveTimeout = setTimeout(() => {
+            setWeeklyZoomLevel(newZoom);
+            saveWeeklyZoomLevel(newZoom);
+          }, 150);
         }
       }
     };
 
-    // Add event listener with passive: false to allow preventDefault
     document.addEventListener('wheel', handleWheel, { passive: false });
 
     return () => {
       document.removeEventListener('wheel', handleWheel);
+      if (saveTimeout) clearTimeout(saveTimeout);
     };
-  }, [currentView, todayZoomLevel]);
+  }, [currentView, todayZoomLevel, weeklyZoomLevel]);
 
   // Restore scroll position when switching to Today view
   useEffect(() => {

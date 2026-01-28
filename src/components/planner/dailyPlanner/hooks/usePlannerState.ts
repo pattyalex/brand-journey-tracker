@@ -17,6 +17,7 @@ export interface ContentDisplaySettings {
 export interface PlannerInitialSettings {
   selectedTimezone: string;
   todayZoomLevel: number;
+  weeklyZoomLevel: number;
   todayScrollPosition: number;
   weeklyScrollPosition: number;
 }
@@ -24,6 +25,7 @@ export interface PlannerInitialSettings {
 export const usePlannerState = ({
   selectedTimezone: initialSelectedTimezone,
   todayZoomLevel: initialTodayZoomLevel,
+  weeklyZoomLevel: initialWeeklyZoomLevel,
   todayScrollPosition: initialTodayScrollPosition,
   weeklyScrollPosition: initialWeeklyScrollPosition,
 }: PlannerInitialSettings) => {
@@ -61,8 +63,9 @@ export const usePlannerState = ({
     planned: ProductionCard[];
   }>({ scheduled: [], planned: [] });
 
-  // Zoom level for Today view (0.5 = 50%, 1 = 100%, 2 = 200%)
+  // Zoom levels for Today and Weekly views (0.5 = 50%, 1 = 100%, 1.5 = 150%)
   const [todayZoomLevel, setTodayZoomLevel] = useState<number>(initialTodayZoomLevel);
+  const [weeklyZoomLevel, setWeeklyZoomLevel] = useState<number>(initialWeeklyZoomLevel);
   const [todayScrollPosition, setTodayScrollPosition] = useState(initialTodayScrollPosition);
   const [weeklyScrollPosition, setWeeklyScrollPosition] = useState(initialWeeklyScrollPosition);
 
@@ -361,6 +364,7 @@ export const usePlannerState = ({
       selectedTimezone,
       calendarFilterMode,
       todayZoomLevel,
+      weeklyZoomLevel,
       todayScrollPosition,
       weeklyScrollPosition,
       isDraggingCreate,
@@ -419,6 +423,7 @@ export const usePlannerState = ({
       setContentDisplayMode,
       setProductionContent,
       setTodayZoomLevel,
+      setWeeklyZoomLevel,
       setTodayScrollPosition,
       setWeeklyScrollPosition,
       setIsDraggingCreate,

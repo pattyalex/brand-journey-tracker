@@ -4,6 +4,7 @@ export const StorageKeys = {
   user: "user",
   selectedTimezone: "selectedTimezone",
   todayZoomLevel: "todayZoomLevel",
+  weeklyZoomLevel: "weeklyZoomLevel",
   plannerLastAccessDate: "plannerLastAccessDate",
   todayScrollPosition: "todayScrollPosition",
   weeklyScrollPosition: "weeklyScrollPosition",

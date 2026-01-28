@@ -213,6 +213,7 @@ export const DailyPlanner = () => {
     grateful: state.grateful,
     currentView: state.currentView,
     todayZoomLevel: state.todayZoomLevel,
+    weeklyZoomLevel: state.weeklyZoomLevel,
     todayScrollPosition: state.todayScrollPosition,
     weeklyScrollPosition: state.weeklyScrollPosition,
     isDraggingCreate: state.isDraggingCreate,
@@ -254,6 +255,7 @@ export const DailyPlanner = () => {
     setCurrentView: setters.setCurrentView,
     setSelectedTimezone: setters.setSelectedTimezone,
     setTodayZoomLevel: setters.setTodayZoomLevel,
+    setWeeklyZoomLevel: setters.setWeeklyZoomLevel,
     setTodayScrollPosition: setters.setTodayScrollPosition,
     setWeeklyScrollPosition: setters.setWeeklyScrollPosition,
     setIsDraggingCreate: setters.setIsDraggingCreate,
@@ -299,6 +301,7 @@ export const DailyPlanner = () => {
     saveWeeklyScrollPosition: persistence.saveWeeklyScrollPosition,
     saveSelectedTimezone: persistence.saveSelectedTimezone,
     saveTodayZoomLevel: persistence.saveTodayZoomLevel,
+    saveWeeklyZoomLevel: persistence.saveWeeklyZoomLevel,
     contentDisplayMode: state.contentDisplayMode,
     onWeeklyAddDialogOpen: handleWeeklyAddDialogOpen,
     onTodayAddDialogOpen: handleTodayAddDialogOpen,
@@ -313,6 +316,7 @@ export const DailyPlanner = () => {
     weeklyDraggingCreate,
     weeklyDragCreateStart,
     weeklyDragCreateEnd,
+    weeklyZoomLevel,
     allTasks,
     isAllTasksCollapsed,
     showContentCalendar,
@@ -548,6 +552,7 @@ export const DailyPlanner = () => {
               selectedTimezone={selectedTimezone}
               timezones={TIMEZONES}
               weeklyScrollRef={weeklyScrollRef}
+              weeklyZoomLevel={weeklyZoomLevel}
               isTaskDialogOpen={isTaskDialogOpen}
               weeklyDraggingCreate={weeklyDraggingCreate}
               weeklyDragCreateStart={weeklyDragCreateStart}

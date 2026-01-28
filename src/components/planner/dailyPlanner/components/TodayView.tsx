@@ -501,10 +501,15 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
         <div className="flex">
           {/* Time column */}
           <div className="flex-shrink-0 bg-white border-r border-gray-200" style={{ width: '60px' }}>
-            <div className="relative" style={{ height: `${24 * 90 * todayZoomLevel}px` }}>
+            <div
+              data-zoom-container="time"
+              className="relative"
+              style={{ height: `${24 * 90 * todayZoomLevel}px` }}
+            >
               {Array.from({ length: 24 }, (_, hour) => (
                 <div
                   key={hour}
+                  data-hour-row={hour}
                   className="absolute left-0 right-0 flex items-start justify-end pr-2 pt-0.5"
                   style={{ top: `${hour * 90 * todayZoomLevel}px`, height: `${90 * todayZoomLevel}px` }}
                 >
@@ -518,7 +523,11 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
 
           {/* Main content area */}
           <div className="flex-1 relative">
-            <div className="relative" style={{ height: `${24 * 90 * todayZoomLevel}px` }}>
+            <div
+              data-zoom-container="content"
+              className="relative"
+              style={{ height: `${24 * 90 * todayZoomLevel}px` }}
+            >
             {/* Hour labels and grid lines */}
             {Array.from({ length: 24 }, (_, i) => {
               const hour = i;
@@ -526,6 +535,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
               return (
                 <div
                   key={hour}
+                  data-hour-row={hour}
                   className="absolute left-0 right-0"
                   style={{ top: `${hour * 90 * todayZoomLevel}px`, height: `${90 * todayZoomLevel}px` }}
                 >
@@ -868,7 +878,10 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                     }
                     handleOpenTaskDialog(startHour, task);
                   }}
-                  className="group absolute rounded px-2 py-1 border-l-4 hover:shadow-sm transition-all cursor-pointer overflow-hidden"
+                  data-time-item
+                  data-start-minutes={startMinutes}
+                  data-duration-minutes={durationMinutes}
+                  className="group absolute rounded px-2 py-1 border-l-4 hover:shadow-sm cursor-pointer overflow-hidden"
                   style={{
                     top: `${top}px`,
                     height: `${height}px`,
@@ -1073,6 +1086,9 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
               return (
                 <div
                   key={content.id}
+                  data-time-item
+                  data-start-minutes={startTotalMinutes}
+                  data-duration-minutes={durationMinutes}
                   onClick={() => {
                     if (isPlanned) {
                       onOpenContentDialog?.(content, 'planned');
@@ -1081,7 +1097,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                       onOpenContentFlow?.(content.id);
                     }
                   }}
-                  className="absolute left-0 right-0 rounded-lg cursor-pointer transition-all hover:brightness-95 hover:shadow-md overflow-hidden group"
+                  className="absolute left-0 right-0 rounded-lg cursor-pointer hover:brightness-95 hover:shadow-md overflow-hidden group"
                   style={{
                     top: `${top}px`,
                     height: `${height}px`,
