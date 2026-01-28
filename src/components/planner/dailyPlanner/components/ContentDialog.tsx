@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { format, parseISO } from "date-fns";
 import {
   X,
@@ -14,7 +14,8 @@ import {
   ExternalLink,
   CalendarCheck,
   Camera,
-  Image
+  Image,
+  GripHorizontal
 } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin, SiPinterest } from "react-icons/si";
 import { FaXTwitter } from "react-icons/fa6";
@@ -112,6 +113,49 @@ export const ContentDialog = ({
   const [editHook, setEditHook] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editColor, setEditColor] = useState("violet");
+  const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number } | null>(null);
+
+  // Reset drag offset when dialog opens
+  useEffect(() => {
+    if (open) {
+      setDragOffset({ x: 0, y: 0 });
+    }
+  }, [open]);
+
+  // Handle drag start
+  const handleDragStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    dragStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      offsetX: dragOffset.x,
+      offsetY: dragOffset.y,
+    };
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      if (dragStartRef.current) {
+        const deltaX = moveEvent.clientX - dragStartRef.current.x;
+        const deltaY = moveEvent.clientY - dragStartRef.current.y;
+        setDragOffset({
+          x: dragStartRef.current.offsetX + deltaX,
+          y: dragStartRef.current.offsetY + deltaY,
+        });
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      dragStartRef.current = null;
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
 
   // Sync form state when content changes
   useEffect(() => {
@@ -169,9 +213,19 @@ export const ContentDialog = ({
 
         {/* Dialog */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="pointer-events-auto bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[85vh] overflow-hidden flex flex-col">
+          <div
+            className="pointer-events-auto bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[85vh] overflow-hidden flex flex-col"
+            style={{ transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)` }}
+          >
+            {/* Drag handle */}
+            <div
+              onMouseDown={handleDragStart}
+              className="flex justify-center py-2 cursor-grab active:cursor-grabbing hover:bg-indigo-100/50 transition-colors bg-gradient-to-r from-indigo-50 to-purple-50"
+            >
+              <GripHorizontal className="w-5 h-5 text-indigo-300" />
+            </div>
             {/* Header */}
-            <div className="px-6 py-4 border-b border-indigo-100 flex items-center justify-between bg-gradient-to-r from-indigo-50 to-purple-50">
+            <div className="px-6 py-3 border-b border-indigo-100 flex items-center justify-between bg-gradient-to-r from-indigo-50 to-purple-50">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
                   <CalendarCheck className="w-5 h-5 text-white" />
@@ -288,9 +342,19 @@ export const ContentDialog = ({
 
       {/* Dialog */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="pointer-events-auto bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4">
+        <div
+          className="pointer-events-auto bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4"
+          style={{ transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)` }}
+        >
+          {/* Drag handle */}
+          <div
+            onMouseDown={handleDragStart}
+            className="flex justify-center py-2 cursor-grab active:cursor-grabbing hover:bg-violet-100/50 transition-colors bg-gradient-to-r from-violet-50 to-purple-50 rounded-t-2xl"
+          >
+            <GripHorizontal className="w-5 h-5 text-violet-300" />
+          </div>
           {/* Header */}
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-violet-50 to-purple-50">
+          <div className="px-6 py-3 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-violet-50 to-purple-50">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
                 <Lightbulb className="w-5 h-5 text-white" />

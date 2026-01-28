@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { eachDayOfInterval, endOfWeek, format, isSameDay, startOfWeek } from "date-fns";
-import { Trash2, Video, Lightbulb, X, Clock, FileText, ArrowRight, ListTodo, Check } from "lucide-react";
+import { Trash2, Video, Lightbulb, X, Clock, FileText, ArrowRight, ListTodo, Check, GripHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { autoFormatTime } from "../utils/timeUtils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -187,6 +187,41 @@ export const WeekView = ({
   const contentColor = contentColorPalette.selectedColor;
   const setContentColor = contentColorPalette.setSelectedColor;
 
+  // Dialog drag state
+  const [dialogDragOffset, setDialogDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const dialogDragStartRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number } | null>(null);
+
+  // Handle dialog drag
+  const handleDialogDragStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    dialogDragStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      offsetX: dialogDragOffset.x,
+      offsetY: dialogDragOffset.y,
+    };
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      if (dialogDragStartRef.current) {
+        const deltaX = moveEvent.clientX - dialogDragStartRef.current.x;
+        const deltaY = moveEvent.clientY - dialogDragStartRef.current.y;
+        setDialogDragOffset({
+          x: dialogDragStartRef.current.offsetX + deltaX,
+          y: dialogDragStartRef.current.offsetY + deltaY,
+        });
+      }
+    };
+
+    const handleMouseUp = () => {
+      dialogDragStartRef.current = null;
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
+
   // Reset form state
   const resetFormState = () => {
     setTaskTitle("");
@@ -207,6 +242,8 @@ export const WeekView = ({
   // Sync state when dialog opens
   useEffect(() => {
     if (addDialogOpen) {
+      // Reset drag offset when dialog opens
+      setDialogDragOffset({ x: 0, y: 0 });
       // Set times for both tasks and content
       setTaskStartTime(addDialogStartTime);
       setTaskEndTime(addDialogEndTime);
@@ -855,10 +892,12 @@ export const WeekView = ({
                                       onOpenContentFlow?.(content.id);
                                     }
                                   }}
-                                  className="absolute left-1 right-1 rounded-lg cursor-pointer hover:brightness-95 hover:shadow-md overflow-hidden group"
+                                  className="absolute rounded-lg cursor-pointer hover:brightness-95 hover:shadow-md overflow-hidden group"
                                   style={{
                                     top: `${topPos}px`,
                                     height: `${height}px`,
+                                    left: '4px',
+                                    width: '85%',
                                     backgroundColor: colors.bg,
                                     border: isPlanned ? '1px dashed #D4C9CF' : 'none',
                                     zIndex: 104,
@@ -1006,21 +1045,21 @@ export const WeekView = ({
                               let widthPercent, leftPercent, zIndex;
 
                               if (isBackground) {
-                                // Background task: full width, behind others
-                                widthPercent = 100;
+                                // Background task: leave 15% on right for clicking to add new tasks
+                                widthPercent = 85;
                                 leftPercent = 0;
                                 zIndex = 105;
                               } else if (inOverlapGroup) {
                                 // Foreground tasks: position on right side
-                                // Leave left 50% for background task visibility (wider for weekly view)
-                                const availableSpace = 50;
-                                const startPosition = 50;
+                                // Leave left 40% for background task visibility
+                                const availableSpace = 45;
+                                const startPosition = 40;
                                 widthPercent = availableSpace / totalColumns;
                                 leftPercent = startPosition + (column * widthPercent);
                                 zIndex = 115 + column;
                               } else {
-                                // Standalone task (no overlap): full width
-                                widthPercent = 100;
+                                // Standalone task (no overlap): leave 15% on right for clicking to add new tasks
+                                widthPercent = 85;
                                 leftPercent = 0;
                                 zIndex = 110;
                               }
@@ -1491,7 +1530,17 @@ export const WeekView = ({
           />
 
           {/* Dialog */}
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 pt-8 max-h-[90vh] overflow-y-auto">
+          <div
+            className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto"
+            style={{ transform: `translate(${dialogDragOffset.x}px, ${dialogDragOffset.y}px)` }}
+          >
+            {/* Drag handle */}
+            <div
+              onMouseDown={handleDialogDragStart}
+              className="flex justify-center py-2 cursor-grab active:cursor-grabbing hover:bg-gray-50 transition-colors rounded-t-2xl"
+            >
+              <GripHorizontal className="w-5 h-5 text-gray-300" />
+            </div>
             {/* Tabs - only show in "both" mode */}
             {contentDisplayMode === 'both' && (
               <div className="flex px-6 gap-1 mb-4">
@@ -1501,7 +1550,7 @@ export const WeekView = ({
                   className={cn(
                     "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer select-none",
                     addDialogTab === 'task'
-                      ? "bg-purple-100 text-purple-700"
+                      ? "bg-[#F5E8EE] text-[#8B7082]"
                       : "text-gray-600 hover:bg-gray-100"
                   )}
                 >
@@ -1514,7 +1563,7 @@ export const WeekView = ({
                   className={cn(
                     "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer select-none",
                     addDialogTab === 'content'
-                      ? "bg-violet-100 text-violet-700"
+                      ? "bg-[#F5E8EE] text-[#8B7082]"
                       : "text-gray-600 hover:bg-gray-100"
                   )}
                 >
@@ -1588,7 +1637,7 @@ export const WeekView = ({
                   </button>
                   <button
                     onClick={handleCreateTaskFromDialog}
-                    className="px-6 py-2 text-sm font-medium text-white bg-[#1E4256] rounded-lg hover:bg-[#163544] transition-colors"
+                    className="px-6 py-2 text-sm font-medium text-white bg-[#612a4f] rounded-lg hover:bg-[#4a1f3c] transition-colors"
                   >
                     Create
                   </button>

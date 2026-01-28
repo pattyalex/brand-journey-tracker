@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { eachDayOfInterval, endOfMonth, endOfWeek, format, isSameDay, startOfMonth, startOfWeek } from "date-fns";
 import { CardContent } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import { defaultScheduledColor, getTaskColorByHex } from "../utils/colorConstant
 import { useColorPalette } from "../hooks/useColorPalette";
 import { ProductionCard, KanbanColumn } from "@/pages/production/types";
 import { defaultColumns } from "@/pages/production/utils/productionConstants";
-import { Video, Lightbulb, X, Clock, FileText, ArrowRight, Trash2, Check } from "lucide-react";
+import { Video, Lightbulb, X, Clock, FileText, ArrowRight, Trash2, Check, GripHorizontal } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { autoFormatTime } from "../utils/timeUtils";
@@ -126,6 +126,41 @@ export const CalendarView = ({
   // View content dialog state
   const [viewContentDialog, setViewContentDialog] = useState<ProductionCard | null>(null);
 
+  // Dialog drag state
+  const [dialogDragOffset, setDialogDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const dialogDragStartRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number } | null>(null);
+
+  // Handle dialog drag
+  const handleDialogDragStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    dialogDragStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      offsetX: dialogDragOffset.x,
+      offsetY: dialogDragOffset.y,
+    };
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      if (dialogDragStartRef.current) {
+        const deltaX = moveEvent.clientX - dialogDragStartRef.current.x;
+        const deltaY = moveEvent.clientY - dialogDragStartRef.current.y;
+        setDialogDragOffset({
+          x: dialogDragStartRef.current.offsetX + deltaX,
+          y: dialogDragStartRef.current.offsetY + deltaY,
+        });
+      }
+    };
+
+    const handleMouseUp = () => {
+      dialogDragStartRef.current = null;
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
+
   // Reset form state
   const resetFormState = () => {
     setTaskTitle("");
@@ -141,6 +176,12 @@ export const CalendarView = ({
     setContentEndTime("");
     // Reset color picker popover states
     contentColorPalette.resetPickerState();
+  };
+
+  // Reset drag offset when dialog opens
+  const openAddDialog = () => {
+    setDialogDragOffset({ x: 0, y: 0 });
+    setAddDialogOpen(true);
   };
 
   // Handle day click based on display mode
@@ -164,7 +205,7 @@ export const CalendarView = ({
       setAddDialogDate(dayString);
       setAddDialogTab('content');
       resetFormState();
-      setAddDialogOpen(true);
+      openAddDialog();
     } else if (contentDisplayMode === 'both') {
       // Both mode: open TaskDialog (for tasks)
       setEditingTask({ id: '', text: '', date: dayString } as PlannerItem);
@@ -801,7 +842,17 @@ export const CalendarView = ({
           />
 
           {/* Dialog */}
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 pt-8 max-h-[90vh] overflow-y-auto">
+          <div
+            className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto"
+            style={{ transform: `translate(${dialogDragOffset.x}px, ${dialogDragOffset.y}px)` }}
+          >
+            {/* Drag handle */}
+            <div
+              onMouseDown={handleDialogDragStart}
+              className="flex justify-center py-2 cursor-grab active:cursor-grabbing hover:bg-gray-50 transition-colors rounded-t-2xl"
+            >
+              <GripHorizontal className="w-5 h-5 text-gray-300" />
+            </div>
             {/* Content Form */}
             <div className="px-6 pb-4 space-y-4">
                 {/* Hook/Title */}

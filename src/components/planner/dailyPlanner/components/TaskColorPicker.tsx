@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Palette, Plus, Check, X } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { taskColorCategories, allTaskColors, getTaskColorByHex } from "../utils/colorConstants";
+import { taskColorPalettes, getTaskColorByHex } from "../utils/colorConstants";
 import { cn } from "@/lib/utils";
 import { StorageKeys, getString, setString } from "@/lib/storage";
 
@@ -10,202 +10,132 @@ interface TaskColorPickerProps {
   onColorSelect: (color: string) => void;
 }
 
-interface SavedPaletteColor {
-  fill: string;
-  border: string;
-  text: string;
-  name: string;
-}
-
-const SAVED_PALETTE_KEY = 'task-color-palette';
+const DEFAULT_PALETTE = 'mauve';
 
 export const TaskColorPicker = ({ selectedColor, onColorSelect }: TaskColorPickerProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [savedPalette, setSavedPalette] = useState<SavedPaletteColor[]>([]);
-  const [showAddToPalette, setShowAddToPalette] = useState<string | null>(null);
+  const [isPalettePickerOpen, setIsPalettePickerOpen] = useState(false);
+  const [selectedPaletteId, setSelectedPaletteId] = useState<string>(DEFAULT_PALETTE);
 
-  // Load saved palette from storage
+  // Load saved palette preference on mount
   useEffect(() => {
-    const saved = getString(SAVED_PALETTE_KEY as any);
-    if (saved) {
-      try {
-        setSavedPalette(JSON.parse(saved));
-      } catch (e) {
-        console.error('Error loading saved palette:', e);
-      }
+    const savedPalette = getString(StorageKeys.selectedTaskPalette);
+    if (savedPalette && taskColorPalettes[savedPalette as keyof typeof taskColorPalettes]) {
+      setSelectedPaletteId(savedPalette);
     }
   }, []);
 
-  // Save palette to storage
-  const savePaletteToStorage = (palette: SavedPaletteColor[]) => {
-    setString(SAVED_PALETTE_KEY as any, JSON.stringify(palette));
-    setSavedPalette(palette);
-  };
+  // Get the current palette
+  const currentPalette = taskColorPalettes[selectedPaletteId as keyof typeof taskColorPalettes] || taskColorPalettes[DEFAULT_PALETTE];
 
-  // Add color to saved palette
-  const addToPalette = (color: SavedPaletteColor) => {
-    if (savedPalette.length >= 7) {
-      // Replace oldest color if palette is full
-      const newPalette = [...savedPalette.slice(1), color];
-      savePaletteToStorage(newPalette);
-    } else if (!savedPalette.find(c => c.fill === color.fill)) {
-      savePaletteToStorage([...savedPalette, color]);
+  // Handle palette selection
+  const handlePaletteSelect = (paletteId: string) => {
+    setSelectedPaletteId(paletteId);
+    setString(StorageKeys.selectedTaskPalette, paletteId);
+    setIsPalettePickerOpen(false);
+
+    // Auto-select the first color from the new palette
+    const palette = taskColorPalettes[paletteId as keyof typeof taskColorPalettes];
+    if (palette) {
+      onColorSelect(palette.colors[0].fill);
     }
-    setShowAddToPalette(null);
   };
 
-  // Remove color from saved palette
-  const removeFromPalette = (fill: string) => {
-    savePaletteToStorage(savedPalette.filter(c => c.fill !== fill));
-  };
-
-  // Handle color selection (keep popover open to preview)
-  const handleColorClick = (color: typeof allTaskColors[0]) => {
-    onColorSelect(color.fill);
-    // Don't close popover - let user see the preview
+  // Handle color selection from current palette
+  const handleColorClick = (colorFill: string) => {
+    onColorSelect(colorFill);
   };
 
   // Get selected color info
   const selectedColorInfo = getTaskColorByHex(selectedColor);
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all"
+    <div className="flex items-center gap-2">
+      {/* Color swatches from current palette */}
+      <div className="flex items-center gap-1.5">
+        {currentPalette.colors.map((color) => (
+          <button
+            key={color.id}
+            type="button"
+            onClick={() => handleColorClick(color.fill)}
+            className={cn(
+              "w-8 h-8 rounded-lg border-l-[3px] transition-all hover:scale-110 relative",
+              selectedColor === color.fill && "ring-2 ring-offset-1 ring-gray-400"
+            )}
+            style={{
+              backgroundColor: color.fill,
+              borderLeftColor: color.border
+            }}
+            title={color.name}
+          >
+            {selectedColor === color.fill && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Check className="w-3.5 h-3.5" style={{ color: color.border }} />
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Palette picker button */}
+      <Popover open={isPalettePickerOpen} onOpenChange={setIsPalettePickerOpen}>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            className="flex items-center gap-1 px-2 py-1.5 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all"
+            title="Change palette"
+          >
+            <ChevronDown className="w-3.5 h-3.5" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent
+          className="w-[260px] p-2 bg-white shadow-xl border rounded-xl overflow-hidden z-[300]"
+          align="end"
+          side="top"
+          sideOffset={8}
         >
-          {selectedColor ? (
-            <div
-              className="w-6 h-6 rounded-md border-l-[3px]"
-              style={{
-                backgroundColor: selectedColorInfo.fill,
-                borderLeftColor: selectedColorInfo.border
-              }}
-            />
-          ) : (
-            <Palette className="w-5 h-5 text-gray-400" />
-          )}
-          <span className="text-sm" style={{ color: selectedColor ? selectedColorInfo.text : '#6b7280' }}>
-            {selectedColor ? selectedColorInfo.name : 'Add color'}
-          </span>
-        </button>
-      </PopoverTrigger>
-      <PopoverContent
-        className="w-auto p-0 bg-white shadow-xl border rounded-2xl overflow-visible z-[300]"
-        align="start"
-        side="top"
-        sideOffset={8}
-        avoidCollisions={false}
-      >
-        <div className="p-3">
-          {/* Saved Palette Section */}
-          {savedPalette.length > 0 && (
-            <div className="mb-3">
-              <div className="text-[9px] font-medium text-gray-500 uppercase tracking-wide mb-1.5">
-                Your Palette
-              </div>
-              <div className="flex gap-1">
-                {savedPalette.map((color) => (
-                  <div key={color.fill} className="relative group">
-                    <button
-                      type="button"
-                      onClick={() => handleColorClick(color as any)}
-                      className={cn(
-                        "w-8 h-8 rounded-md border-l-[3px] transition-all hover:scale-105",
-                        selectedColor === color.fill && "ring-2 ring-offset-1 ring-gray-400"
-                      )}
-                      style={{
-                        backgroundColor: color.fill,
-                        borderLeftColor: color.border
-                      }}
-                      title={color.name}
-                    />
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeFromPalette(color.fill);
-                      }}
-                      className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-gray-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                    >
-                      <X className="w-2 h-2" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* All colors in one horizontal row */}
-          <div className="flex flex-col">
-            {/* Color strips row */}
-            <div className="flex rounded-xl overflow-hidden">
-              {Object.values(taskColorCategories).flatMap((category, catIdx) =>
-                category.colors.map((color, idx) => {
-                  const totalCategories = Object.keys(taskColorCategories).length;
-                  const isFirstColor = catIdx === 0 && idx === 0;
-                  const isLastColor = catIdx === totalCategories - 1 && idx === category.colors.length - 1;
-
-                  return (
-                    <button
-                      key={color.id}
-                      type="button"
-                      onClick={() => {
-                        handleColorClick(color);
-                        setShowAddToPalette(color.fill);
-                      }}
-                      className={cn(
-                        "w-[18px] h-16 transition-all hover:brightness-90 relative",
-                        isFirstColor && "rounded-l-xl",
-                        isLastColor && "rounded-r-xl",
-                      )}
-                      style={{ backgroundColor: color.fill }}
-                      title={color.name}
-                    >
-                      {selectedColor === color.fill && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <Check className="w-3 h-3" style={{ color: color.border }} />
-                        </div>
-                      )}
-                    </button>
-                  );
-                })
-              )}
-            </div>
-
-            {/* Category names row */}
-            <div className="flex mt-2">
-              {Object.values(taskColorCategories).map((category) => (
-                <div
-                  key={category.name}
-                  className="text-[9px] text-gray-400 text-center font-medium"
-                  style={{ width: `${18 * 3}px` }}
-                >
-                  {category.name}
-                </div>
-              ))}
-            </div>
+          <div className="text-[10px] font-medium text-gray-400 uppercase tracking-wider mb-2 px-2">
+            Choose Palette
           </div>
+          <div className="space-y-1">
+            {Object.entries(taskColorPalettes).map(([key, palette]) => {
+              const isSelected = selectedPaletteId === key;
 
-          {/* Add to palette button */}
-          {showAddToPalette && (
-            <div className="mt-3">
-              <button
-                type="button"
-                onClick={() => {
-                  const color = allTaskColors.find(c => c.fill === showAddToPalette);
-                  if (color) addToPalette(color);
-                }}
-                className="w-full px-4 py-2 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-xl transition-all flex items-center justify-center gap-1.5 border border-dashed border-gray-200 hover:border-gray-300"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Add to palette
-              </button>
-            </div>
-          )}
-        </div>
-      </PopoverContent>
-    </Popover>
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => handlePaletteSelect(key)}
+                  className={cn(
+                    "w-full flex items-center gap-2 px-2 py-2 transition-all rounded-lg",
+                    isSelected ? "bg-gray-100" : "hover:bg-gray-50"
+                  )}
+                >
+                  {/* Color preview strip */}
+                  <div className="flex rounded-md overflow-hidden shrink-0">
+                    {palette.colors.map((color) => (
+                      <div
+                        key={color.id}
+                        className="w-5 h-5"
+                        style={{ backgroundColor: color.fill }}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Palette name */}
+                  <div className="flex-1 text-left">
+                    <span className="text-xs font-medium text-gray-700">{palette.name}</span>
+                  </div>
+
+                  {/* Selected indicator */}
+                  {isSelected && (
+                    <Check className="w-3.5 h-3.5 text-gray-500" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </PopoverContent>
+      </Popover>
+    </div>
   );
 };

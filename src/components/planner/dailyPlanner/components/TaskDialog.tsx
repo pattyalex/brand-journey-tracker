@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { Clock, FileText } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { Clock, FileText, GripHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { PlannerDerived, PlannerRefs, PlannerSetters, PlannerState } from "../hooks/usePlannerState";
 import { usePlannerActions } from "../hooks/usePlannerActions";
@@ -16,6 +16,9 @@ interface TaskDialogProps {
 }
 
 export const TaskDialog = ({ state, derived, refs, setters, actions }: TaskDialogProps) => {
+  const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number } | null>(null);
 
   const {
     isTaskDialogOpen,
@@ -27,6 +30,46 @@ export const TaskDialog = ({ state, derived, refs, setters, actions }: TaskDialo
     dialogEndTime,
     dialogTaskColor,
   } = state;
+
+  // Reset drag offset when dialog opens at a new position
+  useEffect(() => {
+    if (isTaskDialogOpen) {
+      setDragOffset({ x: 0, y: 0 });
+    }
+  }, [isTaskDialogOpen, taskDialogPosition]);
+
+  // Handle drag start
+  const handleDragStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    dragStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      offsetX: dragOffset.x,
+      offsetY: dragOffset.y,
+    };
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      if (dragStartRef.current) {
+        const deltaX = moveEvent.clientX - dragStartRef.current.x;
+        const deltaY = moveEvent.clientY - dragStartRef.current.y;
+        setDragOffset({
+          x: dragStartRef.current.offsetX + deltaX,
+          y: dragStartRef.current.offsetY + deltaY,
+        });
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      dragStartRef.current = null;
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
 
   const { titleInputRef, startTimeInputRef, endTimeInputRef, descriptionInputRef } = refs;
   const {
@@ -111,8 +154,8 @@ export const TaskDialog = ({ state, derived, refs, setters, actions }: TaskDialo
     }
 
     return {
-      top: y,
-      left: x,
+      top: y + dragOffset.y,
+      left: x + dragOffset.x,
       transform: 'none',
     };
   };
@@ -130,7 +173,15 @@ export const TaskDialog = ({ state, derived, refs, setters, actions }: TaskDialo
         className="absolute w-full max-w-md px-4"
         style={getPopoverStyle()}
       >
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden pt-6 animate-in fade-in-0 zoom-in-95 duration-200">
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200">
+          {/* Drag handle */}
+          <div
+            onMouseDown={handleDragStart}
+            className="flex justify-center py-2 cursor-grab active:cursor-grabbing hover:bg-gray-50 transition-colors"
+          >
+            <GripHorizontal className="w-5 h-5 text-gray-300" />
+          </div>
+
           {/* Content */}
           <div className="px-5 pb-5 space-y-4">
           {/* Task Title */}
@@ -195,7 +246,7 @@ export const TaskDialog = ({ state, derived, refs, setters, actions }: TaskDialo
             </button>
             <button
               onClick={handleSaveTaskDialog}
-              className="px-6 py-2 text-sm font-medium text-white bg-[#1E4256] rounded-lg hover:bg-[#163544] transition-colors"
+              className="px-6 py-2 text-sm font-medium text-white bg-[#612a4f] rounded-lg hover:bg-[#4a1f3c] transition-colors"
             >
               {editingTask?.id ? 'Save' : 'Create'}
             </button>
