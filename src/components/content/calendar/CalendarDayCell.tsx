@@ -1,6 +1,6 @@
 
 import React from "react";
-import { format as formatDate, isSameMonth, isToday } from "date-fns";
+import { format as formatDate, isSameMonth, isToday, isBefore, startOfDay } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -42,13 +42,17 @@ const CalendarDayCell: React.FC<CalendarDayCellProps> = ({
   const isWeekendDay = isWeekend(day);
   const dateStr = formatDate(day, 'yyyy-MM-dd');
   const isDropTarget = dropTarget === dateStr;
+  const today = startOfDay(new Date());
+  const isPastDate = isBefore(day, today) && !isCurrentDay;
 
   return (
     <div
       data-date={dateStr}
       className={cn(
         "group relative border-r border-b min-h-[120px] p-2 transition-colors hover:bg-gray-50",
-        !isCurrentMonth ? "bg-gray-50/50 text-gray-400" : "bg-white",
+        // Only gray out past dates, future dates should be white
+        isPastDate ? "bg-gray-50/50 text-gray-400" : "bg-white",
+        !isCurrentMonth && !isPastDate && "text-gray-500",
         isDropTarget ? "ring-2 ring-inset ring-blue-400 bg-blue-50" : ""
       )}
       onDragOver={(e) => isCurrentMonth && onDragOver(e, dateStr)}

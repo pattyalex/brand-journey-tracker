@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 
 const TooltipProvider = ({
   children,
-  delayDuration = 50,
+  delayDuration = 0,
   ...props
 }: TooltipPrimitive.TooltipProviderProps) => (
   <TooltipPrimitive.Provider delayDuration={delayDuration} {...props}>
@@ -26,11 +26,12 @@ const TooltipContent = React.forwardRef<
     ref={ref}
     sideOffset={sideOffset}
     className={cn(
-      "z-50 overflow-hidden rounded-md px-2 py-1 text-xs shadow-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-      variant === 'default' && "bg-black text-white",
-      variant === 'light' && "bg-white text-gray-900 border border-gray-200 shadow-lg",
+      "z-[9999] overflow-hidden rounded-md px-3 py-1.5 text-xs animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+      variant === 'default' && "bg-gray-900 text-white shadow-md",
+      variant === 'light' && "bg-white text-gray-900 border border-gray-200 shadow-xl",
       className
     )}
+    style={{ backgroundColor: variant === 'light' ? '#ffffff' : undefined }}
     {...props}
   />
 ))

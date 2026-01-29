@@ -63,6 +63,19 @@ const isStaticFormat = (format: string): boolean => {
   return staticFormats.some(sf => format.toLowerCase().includes(sf) || sf.includes(format.toLowerCase()));
 };
 
+// Helper to parse time string (e.g., "9:00", "09:00 AM", "10:30 PM") to minutes for sorting
+const parseTimeToMinutes = (timeStr: string | undefined): number => {
+  if (!timeStr) return 9999; // Put items without time at the end
+  const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+  if (!match) return 9999;
+  let hours = parseInt(match[1], 10);
+  const minutes = parseInt(match[2], 10);
+  const period = match[3]?.toUpperCase();
+  if (period === 'PM' && hours !== 12) hours += 12;
+  if (period === 'AM' && hours === 12) hours = 0;
+  return hours * 60 + minutes;
+};
+
 // Color options for scheduled content - using hex values for inline styles
 const scheduleColors = {
   indigo: { bg: '#e0e7ff', text: '#4338ca', dot: 'bg-indigo-300' },
@@ -967,7 +980,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   // Filter unscheduled cards
   const unscheduledCards = cards.filter(c => c.schedulingStatus !== 'scheduled');
 
-  // Create a map of scheduled cards by date
+  // Create a map of scheduled cards by date, sorted by start time
   const scheduledCardsByDate = useMemo(() => {
     const map: Record<string, ProductionCard[]> = {};
     cards.forEach(c => {
@@ -994,6 +1007,12 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
         });
       }
     }
+    // Sort each day's cards by start time
+    Object.keys(map).forEach(dateKey => {
+      map[dateKey].sort((a, b) =>
+        parseTimeToMinutes(a.scheduledStartTime) - parseTimeToMinutes(b.scheduledStartTime)
+      );
+    });
     return map;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cards, colorUpdateVersion, singleCardScheduled, singleCard, scheduledDate]);
@@ -1057,7 +1076,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Create a map of planned (tentative) cards from Ideate by date
+  // Create a map of planned (tentative) cards from Ideate by date, sorted by start time
   const plannedCardsByDate = useMemo(() => {
     const map: Record<string, ProductionCard[]> = {};
     plannedIdeateCards.forEach(c => {
@@ -1068,6 +1087,12 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
         }
         map[dateKey].push(c);
       }
+    });
+    // Sort each day's cards by start time
+    Object.keys(map).forEach(dateKey => {
+      map[dateKey].sort((a, b) =>
+        parseTimeToMinutes(a.plannedStartTime) - parseTimeToMinutes(b.plannedStartTime)
+      );
     });
     return map;
   }, [plannedIdeateCards]);
@@ -1812,17 +1837,22 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                     {(() => {
                                       const isMarkedPosted = markedAsPostedIds.has(card.id);
                                       return (
-                                        <TooltipProvider>
-                                          <Tooltip>
-                                            <TooltipTrigger asChild>
-                                              <span className={cn(
-                                                "truncate flex-1 cursor-default",
-                                                isMarkedPosted && "line-through opacity-60"
-                                              )}>{card.hook || card.title}</span>
-                                            </TooltipTrigger>
-                                            <TooltipContent side="bottom" variant="light">{card.hook || card.title}</TooltipContent>
-                                          </Tooltip>
-                                        </TooltipProvider>
+                                        <div className={cn(
+                                          "flex-1 min-w-0 cursor-default",
+                                          isMarkedPosted && "line-through opacity-60"
+                                        )}>
+                                          <TooltipProvider>
+                                            <Tooltip>
+                                              <TooltipTrigger asChild>
+                                                <div className="truncate">{card.hook || card.title}</div>
+                                              </TooltipTrigger>
+                                              <TooltipContent side="bottom" className="bg-white text-gray-900 border border-gray-200 shadow-xl max-w-xs">{card.hook || card.title}</TooltipContent>
+                                            </Tooltip>
+                                          </TooltipProvider>
+                                          {card.scheduledStartTime && (
+                                            <div className="text-[8px] opacity-60 whitespace-nowrap">{card.scheduledStartTime}{card.scheduledEndTime && ` - ${card.scheduledEndTime}`}</div>
+                                          )}
+                                        </div>
                                       );
                                     })()}
                                     {/* Posted button - only for past dates */}
@@ -1870,11 +1900,16 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                               {planned.map(card => (
                                 <div
                                   key={card.id}
-                                  className="text-xs px-2 py-1.5 rounded-md truncate bg-[#F5F2F4] border border-dashed border-[#D4C9CF] text-[#8B7082] group/sideplan"
+                                  className="text-xs px-2 py-1.5 rounded-md bg-[#F5F2F4] border border-dashed border-[#D4C9CF] text-[#8B7082] group/sideplan"
                                 >
-                                  <div className="flex items-center gap-1.5">
-                                    <Lightbulb className="w-3 h-3 flex-shrink-0 text-[#8B7082]" />
-                                    <span className="truncate flex-1">{card.hook || card.title}</span>
+                                  <div className="flex items-start gap-1.5">
+                                    <Lightbulb className="w-3 h-3 flex-shrink-0 mt-0.5 text-[#8B7082]" />
+                                    <div className="flex-1 min-w-0">
+                                      <div className="truncate">{card.hook || card.title}</div>
+                                      {card.plannedStartTime && (
+                                        <div className="text-[8px] opacity-75 whitespace-nowrap">{card.plannedStartTime}{card.plannedEndTime && ` - ${card.plannedEndTime}`}</div>
+                                      )}
+                                    </div>
                                     <TooltipProvider>
                                       <Tooltip>
                                         <TooltipTrigger asChild>
@@ -2017,6 +2052,12 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                     </div>
                   ) : (
                     <div className="text-center px-4">
+                      {/* Content title */}
+                      {singleCard && (
+                        <p className="text-sm font-semibold text-gray-700 mb-4 line-clamp-2">
+                          {singleCard.hook || singleCard.title || "Untitled content"}
+                        </p>
+                      )}
                       <div className="w-12 h-12 rounded-full bg-[#8B7082]/10 flex items-center justify-center mx-auto mb-4">
                         <CalendarDays className="w-6 h-6 text-[#8B7082]" />
                       </div>
@@ -2436,10 +2477,11 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                         className={cn(
                           "group transition-colors",
                           isLeftPanelCollapsed ? "rounded-lg border min-h-[120px] relative p-2" : "rounded-lg border min-h-[120px] relative p-1.5",
-                          !day.isCurrentMonth
-                            ? "bg-gray-50/50 border-gray-100 text-[#CCCCCC]"
-                            : day.date < today && !day.isToday
-                              ? "bg-gray-50 border-gray-100 text-gray-400"
+                          // Only gray out past dates (both current month and other months)
+                          day.date < today && !day.isToday
+                            ? "bg-gray-50 border-gray-100 text-gray-400"
+                            : !day.isCurrentMonth
+                              ? "bg-white border-gray-200 text-[#999999]"
                               : "bg-white border-gray-200 text-gray-900 hover:bg-gray-50/70",
                           day.isToday && "bg-[#8B7082]/5 border-[#8B7082]/30",
                           isDragOver && "bg-indigo-100 border-indigo-400 border-2 scale-105",
@@ -2456,7 +2498,8 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                         )}
                         <span className={cn(
                           "absolute top-1.5 left-2 text-[11px] font-medium",
-                          !day.isCurrentMonth && "text-[#CCCCCC]",
+                          !day.isCurrentMonth && day.date >= today && "text-[#999999]",
+                          !day.isCurrentMonth && day.date < today && "text-[#CCCCCC]",
                           day.isToday && "bg-[#612a4f] text-white w-5 h-5 rounded-full flex items-center justify-center -top-0.5 left-1 text-[10px]"
                         )}>
                           {day.date.getDate()}
@@ -2477,12 +2520,21 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                         )}
 
                         {/* Content indicators - scrollable (both scheduled and planned) */}
-                        {hasContent && (
-                      <div className="absolute top-7 left-1 right-1 bottom-1 flex flex-col gap-1 overflow-y-auto">
-                        {/* Scheduled content (from To Schedule column) */}
-                        {scheduledForDay.map((scheduledCard) => {
-                          const isPublished = day.date < today;
+                        {hasContent && (() => {
+                          // Combine and sort all content by time
+                          const allContentItems = [
+                            ...scheduledForDay.map(card => ({ card, type: 'scheduled' as const, sortTime: parseTimeToMinutes(card.scheduledStartTime) })),
+                            ...plannedForDay.map(card => ({ card, type: 'planned' as const, sortTime: parseTimeToMinutes(card.plannedStartTime) }))
+                          ].sort((a, b) => a.sortTime - b.sortTime);
+
                           return (
+                      <div className="absolute top-7 left-1 right-1 bottom-1 flex flex-col gap-1 overflow-y-auto">
+                        {/* All content sorted by time */}
+                        {allContentItems.map(({ card: itemCard, type }) => {
+                          if (type === 'scheduled') {
+                            const scheduledCard = itemCard;
+                            const isPublished = day.date < today;
+                            return (
                           <Popover
                             key={scheduledCard.id}
                             open={popoverCardId === scheduledCard.id}
@@ -2558,17 +2610,22 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                                             <TooltipContent side="top">{isMarkedPosted ? "Marked as posted" : "Mark as posted"}</TooltipContent>
                                           </Tooltip>
                                         </TooltipProvider>
-                                        <TooltipProvider>
-                                          <Tooltip>
-                                            <TooltipTrigger asChild>
-                                              <span className={cn(
-                                                "leading-tight truncate flex-1 cursor-default",
-                                                isMarkedPosted && "line-through opacity-60"
-                                              )}>{scheduledCard.hook || scheduledCard.title || "Scheduled"}</span>
-                                            </TooltipTrigger>
-                                            <TooltipContent side="bottom" variant="light">{scheduledCard.hook || scheduledCard.title || "Scheduled"}</TooltipContent>
-                                          </Tooltip>
-                                        </TooltipProvider>
+                                        <div className={cn(
+                                          "flex-1 min-w-0 cursor-default",
+                                          isMarkedPosted && "line-through opacity-60"
+                                        )}>
+                                          <TooltipProvider>
+                                            <Tooltip>
+                                              <TooltipTrigger asChild>
+                                                <div className="leading-tight truncate">{scheduledCard.hook || scheduledCard.title || "Scheduled"}</div>
+                                              </TooltipTrigger>
+                                              <TooltipContent side="bottom" className="bg-white text-gray-900 border border-gray-200 shadow-xl max-w-xs">{scheduledCard.hook || scheduledCard.title || "Scheduled"}</TooltipContent>
+                                            </Tooltip>
+                                          </TooltipProvider>
+                                          {scheduledCard.scheduledStartTime && (
+                                            <div className="text-[8px] opacity-60 whitespace-nowrap">{scheduledCard.scheduledStartTime}{scheduledCard.scheduledEndTime && ` - ${scheduledCard.scheduledEndTime}`}</div>
+                                          )}
+                                        </div>
                                       </>
                                     );
                                   })()}
@@ -2816,10 +2873,11 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                               </div>
                             </PopoverContent>
                           </Popover>
-                        );})}
-
-                        {/* Planned content from Ideate column - lighter/dashed styling */}
-                        {plannedForDay.map((plannedCard) => (
+                        );
+                          } else {
+                            // Planned content
+                            const plannedCard = itemCard;
+                            return (
                           <div
                             key={`planned-${plannedCard.id}`}
                             draggable
@@ -2838,19 +2896,23 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                               "bg-[#F5F2F4] border border-dashed border-[#D4C9CF] text-[#8B7082]",
                               draggedPlannedCardId === plannedCard.id && "opacity-50"
                             )}
-                            title={`Planned: ${plannedCard.title}`}
                           >
                             {/* Title row */}
                             <div className="flex items-start gap-1.5">
                               <Lightbulb className="w-3 h-3 flex-shrink-0 mt-0.5 text-[#8B7082]" />
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <span className="leading-tight opacity-80 truncate flex-1 cursor-default">{plannedCard.hook || plannedCard.title || "Planned idea"}</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="bottom" variant="light">{plannedCard.hook || plannedCard.title || "Planned idea"}</TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
+                              <div className="flex-1 min-w-0 cursor-default opacity-80">
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <div className="leading-tight truncate">{plannedCard.hook || plannedCard.title || "Planned idea"}</div>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="bottom" className="bg-white text-gray-900 border border-gray-200 shadow-xl max-w-xs">{plannedCard.hook || plannedCard.title || "Planned idea"}</TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                                {plannedCard.plannedStartTime && (
+                                  <div className="text-[8px] opacity-75 whitespace-nowrap">{plannedCard.plannedStartTime}{plannedCard.plannedEndTime && ` - ${plannedCard.plannedEndTime}`}</div>
+                                )}
+                              </div>
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
@@ -2869,9 +2931,12 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                               </TooltipProvider>
                             </div>
                           </div>
-                        ))}
+                            );
+                          }
+                        })}
                       </div>
-                    )}
+                          );
+                        })()}
                       </div>
                     </PopoverTrigger>
 
@@ -3097,17 +3162,21 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                 }}
                 className={cn(
                   "min-h-[70px] rounded-lg border p-1.5 transition-all",
-                  day.isCurrentMonth
-                    ? "bg-white border-gray-200 text-gray-900 cursor-pointer hover:bg-gray-50/70"
-                    : "bg-gray-50/50 border-gray-100 text-[#CCCCCC]",
+                  // Only gray out past dates
+                  day.date < today && !day.isToday
+                    ? "bg-gray-50 border-gray-100 text-gray-400"
+                    : day.isCurrentMonth
+                      ? "bg-white border-gray-200 text-gray-900 cursor-pointer hover:bg-gray-50/70"
+                      : "bg-white border-gray-200 text-[#999999] cursor-pointer hover:bg-gray-50/70",
                   day.isToday && "bg-[#8B7082]/5 border-[#8B7082]/30",
                   isPendingDate && "bg-violet-50/70",
-                  isDragOver && day.isCurrentMonth && "bg-violet-100"
+                  isDragOver && (day.isCurrentMonth || day.date >= today) && "bg-violet-100"
                 )}
               >
                 <span className={cn(
                   "text-xs font-medium inline-flex items-center justify-center",
-                  !day.isCurrentMonth && "text-[#CCCCCC]",
+                  !day.isCurrentMonth && day.date >= today && "text-[#999999]",
+                  !day.isCurrentMonth && day.date < today && "text-[#CCCCCC]",
                   day.isToday && "bg-[#612a4f] text-white w-5 h-5 rounded-full"
                 )}>
                   {day.date.getDate()}
@@ -3136,27 +3205,40 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
                         {planningCard.hook || planningCard.title}
                       </div>
                     )}
-                    {scheduledForDay.slice(0, isPendingDate ? 1 : 2).map((card) => (
-                      <div
-                        key={card.id}
-                        className="text-[9px] px-1 py-0.5 rounded bg-indigo-100 text-indigo-700 truncate"
-                      >
-                        {card.hook || card.title}
-                      </div>
-                    ))}
-                    {plannedForDay.filter(c => c.id !== planningCard?.id).slice(0, isPendingDate ? 1 : 2).map((card) => (
-                      <div
-                        key={card.id}
-                        className="text-[9px] px-1 py-0.5 rounded border border-dashed border-[#D4C9CF] bg-[#F5F2F4] text-[#8B7082] truncate"
-                      >
-                        {card.hook || card.title}
-                      </div>
-                    ))}
-                    {(scheduledForDay.length + plannedForDay.filter(c => c.id !== planningCard?.id).length) > (isPendingDate ? 1 : 2) && (
-                      <div className="text-[8px] text-gray-400 px-1">
-                        +{scheduledForDay.length + plannedForDay.filter(c => c.id !== planningCard?.id).length - (isPendingDate ? 1 : 2)} more
-                      </div>
-                    )}
+                    {(() => {
+                      // Combine and sort all items by time
+                      const allItems = [
+                        ...scheduledForDay.map(card => ({ card, type: 'scheduled' as const })),
+                        ...plannedForDay.filter(c => c.id !== planningCard?.id).map(card => ({ card, type: 'planned' as const }))
+                      ].sort((a, b) => {
+                        const timeA = a.type === 'scheduled' ? a.card.scheduledStartTime : a.card.plannedStartTime;
+                        const timeB = b.type === 'scheduled' ? b.card.scheduledStartTime : b.card.plannedStartTime;
+                        return parseTimeToMinutes(timeA) - parseTimeToMinutes(timeB);
+                      });
+                      const limit = isPendingDate ? 1 : 2;
+                      return (
+                        <>
+                          {allItems.slice(0, limit).map(({ card, type }) => (
+                            <div
+                              key={card.id}
+                              className={type === 'scheduled'
+                                ? "text-[9px] px-1 py-0.5 rounded bg-indigo-100 text-indigo-700"
+                                : "text-[9px] px-1 py-0.5 rounded border border-dashed border-[#D4C9CF] bg-[#F5F2F4] text-[#8B7082]"
+                              }
+                            >
+                              <div className="truncate">{card.hook || card.title}</div>
+                              {type === 'scheduled' && card.scheduledStartTime && <div className="text-[8px] opacity-70">{card.scheduledStartTime}</div>}
+                              {type === 'planned' && card.plannedStartTime && <div className="text-[8px] opacity-70">{card.plannedStartTime}</div>}
+                            </div>
+                          ))}
+                          {allItems.length > limit && (
+                            <div className="text-[8px] text-gray-400 px-1">
+                              +{allItems.length - limit} more
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 )}
               </div>

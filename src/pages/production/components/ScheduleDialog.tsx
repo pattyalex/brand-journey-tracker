@@ -54,6 +54,19 @@ const isStaticFormat = (format: string): boolean => {
   return staticFormats.some(sf => format.toLowerCase().includes(sf) || sf.includes(format.toLowerCase()));
 };
 
+// Helper to parse time string (e.g., "9:00", "09:00 AM", "10:30 PM") to minutes for sorting
+const parseTimeToMinutes = (timeStr: string | undefined): number => {
+  if (!timeStr) return 9999; // Put items without time at the end
+  const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+  if (!match) return 9999;
+  let hours = parseInt(match[1], 10);
+  const minutes = parseInt(match[2], 10);
+  const period = match[3]?.toUpperCase();
+  if (period === 'PM' && hours !== 12) hours += 12;
+  if (period === 'AM' && hours === 12) hours = 0;
+  return hours * 60 + minutes;
+};
+
 interface ScheduleDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
@@ -101,7 +114,7 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
   // Filter unscheduled cards
   const unscheduledCards = allCards.filter(c => c.schedulingStatus !== 'scheduled');
 
-  // Create a map of scheduled cards by date
+  // Create a map of scheduled cards by date, sorted by start time
   const scheduledCardsByDate = useMemo(() => {
     const map: Record<string, ProductionCard[]> = {};
     allCards.forEach(c => {
@@ -113,10 +126,16 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
         map[dateKey].push(c);
       }
     });
+    // Sort each day's cards by start time
+    Object.keys(map).forEach(dateKey => {
+      map[dateKey].sort((a, b) =>
+        parseTimeToMinutes(a.scheduledStartTime) - parseTimeToMinutes(b.scheduledStartTime)
+      );
+    });
     return map;
   }, [allCards]);
 
-  // Create a map of planned cards by date
+  // Create a map of planned cards by date, sorted by start time
   const plannedCardsByDate = useMemo(() => {
     const map: Record<string, ProductionCard[]> = {};
     plannedCards.forEach(c => {
@@ -127,6 +146,12 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
         }
         map[dateKey].push(c);
       }
+    });
+    // Sort each day's cards by start time
+    Object.keys(map).forEach(dateKey => {
+      map[dateKey].sort((a, b) =>
+        parseTimeToMinutes(a.plannedStartTime) - parseTimeToMinutes(b.plannedStartTime)
+      );
     });
     return map;
   }, [plannedCards]);
@@ -641,8 +666,8 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
                   const dayDateStr = day.date.toISOString().split('T')[0];
                   const todayStr = today.toISOString().split('T')[0];
                   const isPastDate = dayDateStr < todayStr;
-                  // Only gray out days that are both outside current month AND in the past
-                  const shouldBeGray = !day.isCurrentMonth && isPastDate;
+                  // Gray out all past dates, keep future dates white
+                  const shouldBeGray = isPastDate;
 
                   return (
                     <div
@@ -656,7 +681,9 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
                         "hover:border-indigo-300 hover:bg-indigo-50",
                         shouldBeGray
                           ? "border-gray-100 text-gray-400"
-                          : "border-gray-200 text-gray-900",
+                          : !day.isCurrentMonth
+                            ? "border-gray-200 text-gray-500"
+                            : "border-gray-200 text-gray-900",
                         isDragOver && "bg-indigo-100 border-indigo-400 border-2 scale-105"
                       )}
                       style={{
@@ -671,21 +698,32 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
                       </span>
 
                       {/* Content indicators - positioned at top below day number */}
-                      {(scheduledForDay.length > 0 || plannedForDay.length > 0) && (
+                      {(scheduledForDay.length > 0 || plannedForDay.length > 0) && (() => {
+                        // Combine and sort all items by time
+                        const allItems = [
+                          ...scheduledForDay.map(card => ({ card, type: 'scheduled' as const })),
+                          ...plannedForDay.map(card => ({ card, type: 'planned' as const }))
+                        ].sort((a, b) => {
+                          const timeA = a.type === 'scheduled' ? a.card.scheduledStartTime : a.card.plannedStartTime;
+                          const timeB = b.type === 'scheduled' ? b.card.scheduledStartTime : b.card.plannedStartTime;
+                          return parseTimeToMinutes(timeA) - parseTimeToMinutes(timeB);
+                        });
+
+                        return (
                         <div className="absolute top-6 left-1 right-1 flex flex-col gap-0.5">
-                          {/* Scheduled content */}
-                          {scheduledForDay.slice(0, 2).map((scheduledCard) => (
+                          {allItems.slice(0, 2).map(({ card: itemCard, type }) => (
+                            type === 'scheduled' ? (
                             <Popover
-                              key={scheduledCard.id}
-                              open={popoverCardId === scheduledCard.id}
-                              onOpenChange={(open) => setPopoverCardId(open ? scheduledCard.id : null)}
+                              key={itemCard.id}
+                              open={popoverCardId === itemCard.id}
+                              onOpenChange={(open) => setPopoverCardId(open ? itemCard.id : null)}
                             >
                               <PopoverTrigger asChild>
                                 <div
                                   draggable
                                   onDragStart={(e) => {
                                     e.stopPropagation();
-                                    setDraggedCardId(scheduledCard.id);
+                                    setDraggedCardId(itemCard.id);
                                     setPopoverCardId(null);
                                     e.dataTransfer.effectAllowed = 'move';
                                   }}
@@ -696,20 +734,33 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
                                   }}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setPopoverCardId(popoverCardId === scheduledCard.id ? null : scheduledCard.id);
+                                    setPopoverCardId(popoverCardId === itemCard.id ? null : itemCard.id);
                                   }}
                                   className={cn(
                                     "text-[9px] px-1 py-0.5 rounded truncate flex items-center gap-1 cursor-grab active:cursor-grabbing hover:brightness-110 transition-colors group/card",
-                                    draggedCardId === scheduledCard.id && "opacity-50"
+                                    draggedCardId === itemCard.id && "opacity-50"
                                   )}
                                   style={{
                                     backgroundColor: '#8B7082',
                                     color: '#ffffff'
                                   }}
-                                  title={scheduledCard.hook || scheduledCard.title}
                                 >
                                   <Check className="w-2.5 h-2.5 flex-shrink-0" />
-                                  <span className="truncate flex-1">{scheduledCard.hook || scheduledCard.title || "Scheduled"}</span>
+                                  <div className="flex-1 min-w-0">
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <div className="truncate cursor-default">{itemCard.hook || itemCard.title || "Scheduled"}</div>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="bottom" className="bg-white text-gray-900 border border-gray-200 shadow-xl max-w-xs">
+                                          {itemCard.hook || itemCard.title || "Scheduled"}
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                    {itemCard.scheduledStartTime && (
+                                      <div className="text-[7px] opacity-75 whitespace-nowrap">{itemCard.scheduledStartTime}{itemCard.scheduledEndTime && ` - ${itemCard.scheduledEndTime}`}</div>
+                                    )}
+                                  </div>
                                   <TooltipProvider>
                                     <Tooltip>
                                       <TooltipTrigger asChild>
@@ -717,7 +768,7 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             if (onUnschedule) {
-                                              onUnschedule(scheduledCard.id);
+                                              onUnschedule(itemCard.id);
                                               // Emit events to sync with content calendar
                                               emit(window, EVENTS.productionKanbanUpdated);
                                               emit(window, EVENTS.scheduledContentUpdated);
@@ -760,26 +811,23 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
                                   </div>
                                   {/* Popover Body - no height limit, shows all content */}
                                   <div className="p-4">
-                                    {renderContentDetails(scheduledCard)}
+                                    {renderContentDetails(itemCard)}
                                   </div>
                                 </div>
                               </PopoverContent>
                             </Popover>
-                          ))}
-
-                          {/* Planned content */}
-                          {plannedForDay.slice(0, scheduledForDay.length >= 2 ? 0 : 2 - scheduledForDay.length).map((plannedCard) => (
+                            ) : (
                             <Popover
-                              key={plannedCard.id}
-                              open={popoverCardId === plannedCard.id}
-                              onOpenChange={(open) => setPopoverCardId(open ? plannedCard.id : null)}
+                              key={itemCard.id}
+                              open={popoverCardId === itemCard.id}
+                              onOpenChange={(open) => setPopoverCardId(open ? itemCard.id : null)}
                             >
                               <PopoverTrigger asChild>
                                 <div
                                   draggable
                                   onDragStart={(e) => {
                                     e.stopPropagation();
-                                    setDraggedCardId(plannedCard.id);
+                                    setDraggedCardId(itemCard.id);
                                     setPopoverCardId(null);
                                     e.dataTransfer.effectAllowed = 'move';
                                   }}
@@ -790,21 +838,34 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
                                   }}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setPopoverCardId(popoverCardId === plannedCard.id ? null : plannedCard.id);
+                                    setPopoverCardId(popoverCardId === itemCard.id ? null : itemCard.id);
                                   }}
                                   className={cn(
                                     "text-[9px] px-1 py-0.5 rounded truncate flex items-center gap-1 cursor-grab active:cursor-grabbing hover:brightness-95 transition-colors group/card border border-dashed",
-                                    draggedCardId === plannedCard.id && "opacity-50"
+                                    draggedCardId === itemCard.id && "opacity-50"
                                   )}
                                   style={{
                                     backgroundColor: '#F5F2F4',
                                     borderColor: '#D4C9CF',
                                     color: '#8B7082'
                                   }}
-                                  title={plannedCard.hook || plannedCard.title}
                                 >
                                   <Lightbulb className="w-2.5 h-2.5 flex-shrink-0" />
-                                  <span className="truncate flex-1">{plannedCard.hook || plannedCard.title || "Planned"}</span>
+                                  <div className="flex-1 min-w-0">
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <div className="truncate cursor-default">{itemCard.hook || itemCard.title || "Planned"}</div>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="bottom" className="bg-white text-gray-900 border border-gray-200 shadow-xl max-w-xs">
+                                          {itemCard.hook || itemCard.title || "Planned"}
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                    {itemCard.plannedStartTime && (
+                                      <div className="text-[7px] opacity-75 whitespace-nowrap">{itemCard.plannedStartTime}{itemCard.plannedEndTime && ` - ${itemCard.plannedEndTime}`}</div>
+                                    )}
+                                  </div>
                                   <TooltipProvider>
                                     <Tooltip>
                                       <TooltipTrigger asChild>
@@ -812,7 +873,7 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             if (onRemovePlannedContent) {
-                                              onRemovePlannedContent(plannedCard.id);
+                                              onRemovePlannedContent(itemCard.id);
                                               // Emit events to sync with content calendar
                                               emit(window, EVENTS.productionKanbanUpdated);
                                               emit(window, EVENTS.scheduledContentUpdated);
@@ -855,20 +916,22 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
                                   </div>
                                   {/* Popover Body */}
                                   <div className="p-4">
-                                    {renderContentDetails(plannedCard)}
+                                    {renderContentDetails(itemCard)}
                                   </div>
                                 </div>
                               </PopoverContent>
                             </Popover>
+                            )
                           ))}
 
-                          {(scheduledForDay.length + plannedForDay.length) > 2 && (
+                          {allItems.length > 2 && (
                             <div className="text-[9px] text-purple-500 px-1">
-                              +{scheduledForDay.length + plannedForDay.length - 2} more
+                              +{allItems.length - 2} more
                             </div>
                           )}
                         </div>
-                      )}
+                        );
+                      })()}
                     </div>
                   );
                 })}

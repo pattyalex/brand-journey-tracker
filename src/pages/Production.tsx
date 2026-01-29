@@ -1118,7 +1118,7 @@ const Production = () => {
 
     if (useAsScheduled && card.plannedDate) {
       toast.success("Scheduled!", {
-        description: `Scheduled for ${new Date(card.plannedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+        description: `Scheduled for ${new Date(card.plannedDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
       });
     }
 
@@ -2529,7 +2529,7 @@ const Production = () => {
                                 <div className="flex items-center gap-1 px-1.5 py-0.5 bg-[#F5F0F4] rounded-md border border-[#B8A0AD]">
                                   <Check className="w-3 h-3 text-[#8B7082]" />
                                   <span className="text-[11px] font-medium text-[#8B7082]">
-                                    Scheduled: {new Date(card.scheduledDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                    Scheduled: {new Date(card.scheduledDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                   </span>
                                 </div>
                               </div>
@@ -2540,7 +2540,7 @@ const Production = () => {
                                 <div className="flex items-center gap-1 px-1.5 py-0.5 bg-[#F5F2F4] rounded-md border border-[#DDD6DA]">
                                   <CalendarDays className="w-3 h-3 text-[#8B7082]" />
                                   <span className="text-[11px] font-normal text-[#8B7082]">
-                                    {card.plannedDate ? `Planned for ${new Date(card.plannedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : 'From Calendar'}
+                                    {card.plannedDate ? `Planned for ${new Date(card.plannedDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : 'From Calendar'}
                                   </span>
                                 </div>
                               </div>
@@ -2567,7 +2567,7 @@ const Production = () => {
                                     >
                                       <CalendarDays className="w-3 h-3 text-[#8B7082]" />
                                       <span className="text-[11px] font-normal text-[#8B7082]">
-                                        Planned: {new Date(card.plannedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                        Planned: {new Date(card.plannedDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                       </span>
                                     </button>
                                   </PopoverTrigger>
