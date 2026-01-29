@@ -70,7 +70,7 @@ export const taskColorPalettes = {
   },
   playful: {
     id: 'playful',
-    name: 'Sweet Pastels',
+    name: 'Spring Pastels',
     description: 'Cheerful pastels with pops of color',
     colors: [
       { id: 'playful-butter', name: 'Butter', fill: '#FDF6E3', border: '#E0C878', text: '#7A6830' },
@@ -78,6 +78,18 @@ export const taskColorPalettes = {
       { id: 'playful-sky', name: 'Sky', fill: '#E8F4FC', border: '#88C0E8', text: '#306080' },
       { id: 'playful-mint', name: 'Mint', fill: '#D4F0E0', border: '#70B890', text: '#2A5840' },
       { id: 'playful-coral', name: 'Coral', fill: '#F4A4A0', border: '#C86060', text: '#602828' },
+    ],
+  },
+  denim: {
+    id: 'denim',
+    name: 'Denim & Clay',
+    description: 'Classic blues paired with warm earth tones',
+    colors: [
+      { id: 'denim-glacier', name: 'Glacier', fill: '#D2E2EC', border: '#8AAEC8', text: '#3A5060' },
+      { id: 'denim-chambray', name: 'Chambray', fill: '#79A3C3', border: '#5A7A94', text: '#1A3040' },
+      { id: 'denim-bisque', name: 'Bisque', fill: '#EBCDB7', border: '#C9A080', text: '#5A4030' },
+      { id: 'denim-clay', name: 'Clay', fill: '#957662', border: '#6A5040', text: '#F5EBE8' },
+      { id: 'denim-espresso', name: 'Espresso', fill: '#3A2119', border: '#1A0A05', text: '#F5EBE8' },
     ],
   },
 };

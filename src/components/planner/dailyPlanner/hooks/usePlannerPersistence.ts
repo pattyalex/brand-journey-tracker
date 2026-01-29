@@ -12,8 +12,8 @@ export const getPlannerInitialSettings = () => {
   const savedWeeklyZoom = getString(StorageKeys.weeklyZoomLevel);
   const weeklyZoomLevel = savedWeeklyZoom ? parseFloat(savedWeeklyZoom) : 1;
 
-  // Default to 7am (7 hours * 90px per hour * zoom = 630px at 100% zoom)
-  const defaultScroll = 7 * 90 * todayZoomLevel;
+  // Default to 6am (6 hours * 90px per hour * zoom = 540px at 100% zoom)
+  const defaultScroll = 6 * 90 * todayZoomLevel;
 
   const savedDate = getString(StorageKeys.plannerLastAccessDate);
   const today = format(new Date(), 'yyyy-MM-dd');
@@ -29,8 +29,8 @@ export const getPlannerInitialSettings = () => {
     todayScrollPosition = savedPosition ? parseInt(savedPosition, 10) : defaultScroll;
   }
 
-  // Default to 7am (7 hours * 48px per hour for weekly view * zoom)
-  const weeklyDefaultScroll = 7 * 48 * weeklyZoomLevel;
+  // Default to 6am (6 hours * 48px per hour for weekly view * zoom)
+  const weeklyDefaultScroll = 6 * 48 * weeklyZoomLevel;
 
   const weeklySavedDate = getString(StorageKeys.plannerLastAccessDate);
   let weeklyScrollPosition = weeklyDefaultScroll;

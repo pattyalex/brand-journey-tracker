@@ -827,22 +827,48 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                 longestTask.totalColumns = 1;
                 longestTask.inOverlapGroup = true;
 
-                // Other tasks are positioned on top in columns
+                // Other tasks are positioned on top - but only in columns if they directly overlap
                 const foregroundTasks = overlappingTasks.filter(t => t !== longestTask);
-                const totalColumns = foregroundTasks.length;
 
-                foregroundTasks.forEach((t) => {
-                  const originalIndex = tasksWithLayout.indexOf(t);
-                  const columnIndex = foregroundTasks
-                    .map(ot => tasksWithLayout.indexOf(ot))
-                    .sort((a, b) => a - b)
-                    .indexOf(originalIndex);
+                // Group foreground tasks that directly overlap with each other
+                const directOverlapGroups: typeof foregroundTasks[] = [];
+                const assignedToGroup = new Set<typeof foregroundTasks[0]>();
 
-                  t.column = columnIndex;
-                  t.totalColumns = totalColumns;
-                  t.isBackground = false;
-                  t.inOverlapGroup = true;
-                });
+                for (const task of foregroundTasks) {
+                  if (assignedToGroup.has(task)) continue;
+
+                  const group = [task];
+                  assignedToGroup.add(task);
+
+                  // Find other foreground tasks that directly overlap with this one
+                  for (const otherTask of foregroundTasks) {
+                    if (assignedToGroup.has(otherTask)) continue;
+
+                    // Check if otherTask overlaps with any task in current group
+                    const overlapsWithGroup = group.some(groupTask =>
+                      groupTask.startMinutes < otherTask.endMinutes &&
+                      groupTask.endMinutes > otherTask.startMinutes
+                    );
+
+                    if (overlapsWithGroup) {
+                      group.push(otherTask);
+                      assignedToGroup.add(otherTask);
+                    }
+                  }
+
+                  directOverlapGroups.push(group);
+                }
+
+                // Assign columns within each direct overlap group
+                for (const group of directOverlapGroups) {
+                  const totalColumns = group.length;
+                  group.forEach((t, idx) => {
+                    t.column = idx;
+                    t.totalColumns = totalColumns;
+                    t.isBackground = false;
+                    t.inOverlapGroup = true;
+                  });
+                }
               }
             }
 
@@ -876,10 +902,10 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                 leftPercent = 0;
                 zIndex = 5; // Lower z-index to stay behind
               } else if (inOverlapGroup) {
-                // Foreground tasks in an overlapping group: position on right side
-                // Leave left 35% for background task visibility
-                const availableSpace = 53;
-                const startPosition = 35;
+                // Foreground tasks in an overlapping group: position starting from left for better visibility
+                // Start at 10% to show they're on top of background
+                const availableSpace = 75;
+                const startPosition = 10;
                 widthPercent = availableSpace / totalColumns;
                 leftPercent = startPosition + (column * widthPercent);
                 zIndex = 15 + column; // Higher z-index to appear on top

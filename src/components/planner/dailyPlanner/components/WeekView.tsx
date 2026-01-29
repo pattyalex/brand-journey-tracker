@@ -578,7 +578,7 @@ export const WeekView = ({
                               style={{ top: `${hour * 48 * weeklyZoomLevel}px`, height: `${48 * weeklyZoomLevel}px`, zIndex: 100 }}
                             >
                               <div
-                                className={`h-full w-full relative hover:bg-gray-100 transition-colors ${(isTaskDialogOpen || addDialogOpen) ? 'pointer-events-none' : 'pointer-events-auto cursor-crosshair'}`}
+                                className={`h-full w-full relative transition-colors ${(isTaskDialogOpen || addDialogOpen) ? 'pointer-events-none' : 'pointer-events-auto cursor-crosshair'} ${Object.values(weeklyDraggingCreate).some(v => v) ? '' : 'hover:bg-gray-100'}`}
                                 onMouseDown={(e) => {
                                   // Don't allow drag-to-create when dialog is open
                                   if (isTaskDialogOpen || addDialogOpen) return;
@@ -590,7 +590,9 @@ export const WeekView = ({
                                     const rect = e.currentTarget.getBoundingClientRect();
                                     const relativeY = e.clientY - rect.top;
                                     const minuteFraction = relativeY / (48 * weeklyZoomLevel); // 48px per hour * zoom
-                                    const minute = Math.floor(minuteFraction * 60);
+                                    // Round to nearest 30 minutes (0 or 30)
+                                    const rawMinute = Math.floor(minuteFraction * 60);
+                                    const minute = Math.round(rawMinute / 30) * 30;
 
                                     setWeeklyDraggingCreate(prev => ({ ...prev, [dayString]: true }));
                                     setWeeklyDragCreateStart(prev => ({
@@ -672,7 +674,7 @@ export const WeekView = ({
                                   const relativeY = e.clientY - rect.top;
                                   const minuteFraction = relativeY / (48 * weeklyZoomLevel); // 48px per hour * zoom
                                   const minute = Math.floor(minuteFraction * 60);
-                                  const roundedMinute = Math.floor(minute / 10) * 10; // Round to 10-minute intervals
+                                  const roundedMinute = Math.round(minute / 30) * 30; // Round to 30-minute intervals
 
                                   const hourStr = hour.toString().padStart(2, '0');
                                   const minuteStr = roundedMinute.toString().padStart(2, '0');
@@ -921,7 +923,7 @@ export const WeekView = ({
                                       )}
                                       <div className="flex-1 min-w-0">
                                         <div className={cn(
-                                          "text-[10px] font-medium truncate",
+                                          "text-[10px] font-medium line-clamp-2",
                                           content.isCompleted && "line-through opacity-60"
                                         )} style={{ color: colors.text }}>
                                           {content.hook || content.title}
@@ -1012,22 +1014,48 @@ export const WeekView = ({
                                 longestTask.totalColumns = 1;
                                 longestTask.inOverlapGroup = true;
 
-                                // Other tasks are positioned on top in columns
+                                // Other tasks are positioned on top - but only in columns if they directly overlap
                                 const foregroundTasks = overlappingTasks.filter(t => t !== longestTask);
-                                const totalColumns = foregroundTasks.length;
 
-                                foregroundTasks.forEach((t) => {
-                                  const originalIndex = tasksWithLayout.indexOf(t);
-                                  const columnIndex = foregroundTasks
-                                    .map(ot => tasksWithLayout.indexOf(ot))
-                                    .sort((a, b) => a - b)
-                                    .indexOf(originalIndex);
+                                // Group foreground tasks that directly overlap with each other
+                                const directOverlapGroups: typeof foregroundTasks[] = [];
+                                const assignedToGroup = new Set<typeof foregroundTasks[0]>();
 
-                                  t.column = columnIndex;
-                                  t.totalColumns = totalColumns;
-                                  t.isBackground = false;
-                                  t.inOverlapGroup = true;
-                                });
+                                for (const task of foregroundTasks) {
+                                  if (assignedToGroup.has(task)) continue;
+
+                                  const group = [task];
+                                  assignedToGroup.add(task);
+
+                                  // Find other foreground tasks that directly overlap with this one
+                                  for (const otherTask of foregroundTasks) {
+                                    if (assignedToGroup.has(otherTask)) continue;
+
+                                    // Check if otherTask overlaps with any task in current group
+                                    const overlapsWithGroup = group.some(groupTask =>
+                                      groupTask.startMinutes < otherTask.endMinutes &&
+                                      groupTask.endMinutes > otherTask.startMinutes
+                                    );
+
+                                    if (overlapsWithGroup) {
+                                      group.push(otherTask);
+                                      assignedToGroup.add(otherTask);
+                                    }
+                                  }
+
+                                  directOverlapGroups.push(group);
+                                }
+
+                                // Assign columns within each direct overlap group
+                                for (const group of directOverlapGroups) {
+                                  const totalColumns = group.length;
+                                  group.forEach((t, idx) => {
+                                    t.column = idx;
+                                    t.totalColumns = totalColumns;
+                                    t.isBackground = false;
+                                    t.inOverlapGroup = true;
+                                  });
+                                }
                               }
                             }
 
@@ -1050,10 +1078,10 @@ export const WeekView = ({
                                 leftPercent = 0;
                                 zIndex = 105;
                               } else if (inOverlapGroup) {
-                                // Foreground tasks: position on right side
-                                // Leave left 40% for background task visibility
-                                const availableSpace = 45;
-                                const startPosition = 40;
+                                // Foreground tasks: position starting from left for better visibility
+                                // Start at 10% to show they're on top of background
+                                const availableSpace = 70;
+                                const startPosition = 10;
                                 widthPercent = availableSpace / totalColumns;
                                 leftPercent = startPosition + (column * widthPercent);
                                 zIndex = 115 + column;
@@ -1138,14 +1166,16 @@ export const WeekView = ({
                                           const deltaMinutes = Math.round(deltaY / 0.8);
                                           const [hour, minute] = originalStartTime.split(':').map(Number);
                                           const originalMinutes = hour * 60 + minute;
-                                          const newMinutes = Math.max(0, Math.min(1439, originalMinutes + deltaMinutes));
+                                          // Snap to 10-minute intervals
+                                          const rawNewMinutes = originalMinutes + deltaMinutes;
+                                          const newMinutes = Math.max(0, Math.min(1439, Math.round(rawNewMinutes / 10) * 10));
 
                                           // Get end time in minutes
                                           const [endHour, endMinute] = item.endTime!.split(':').map(Number);
                                           const endTotalMinutes = endHour * 60 + endMinute;
 
-                                          // Ensure start time is before end time (at least 15 min duration)
-                                          if (newMinutes < endTotalMinutes - 15) {
+                                          // Ensure start time is before end time (at least 10 min duration)
+                                          if (newMinutes < endTotalMinutes - 10) {
                                             const newHour = Math.floor(newMinutes / 60);
                                             const newMinute = newMinutes % 60;
                                             const newStartTime = `${newHour.toString().padStart(2, '0')}:${newMinute.toString().padStart(2, '0')}`;
@@ -1181,14 +1211,16 @@ export const WeekView = ({
                                           const deltaMinutes = Math.round(deltaY / 0.8);
                                           const [hour, minute] = originalEndTime.split(':').map(Number);
                                           const originalMinutes = hour * 60 + minute;
-                                          const newMinutes = Math.max(0, Math.min(1439, originalMinutes + deltaMinutes));
+                                          // Snap to 10-minute intervals
+                                          const rawNewMinutes = originalMinutes + deltaMinutes;
+                                          const newMinutes = Math.max(0, Math.min(1439, Math.round(rawNewMinutes / 10) * 10));
 
                                           // Get start time in minutes
                                           const [startHour, startMinute] = item.startTime!.split(':').map(Number);
                                           const startTotalMinutes = startHour * 60 + startMinute;
 
-                                          // Ensure end time is after start time (at least 15 min duration)
-                                          if (newMinutes > startTotalMinutes + 15) {
+                                          // Ensure end time is after start time (at least 10 min duration)
+                                          if (newMinutes > startTotalMinutes + 10) {
                                             const newHour = Math.floor(newMinutes / 60);
                                             const newMinute = newMinutes % 60;
                                             const newEndTime = `${newHour.toString().padStart(2, '0')}:${newMinute.toString().padStart(2, '0')}`;
@@ -1222,7 +1254,7 @@ export const WeekView = ({
                                       />
                                       <div className="flex-1 min-w-0 flex flex-col">
                                         <div
-                                          className={`text-[11px] font-medium leading-tight ${item.isCompleted ? 'line-through opacity-50' : ''} truncate`}
+                                          className={`text-[11px] font-medium leading-tight line-clamp-2 ${item.isCompleted ? 'line-through opacity-50' : ''}`}
                                           style={{ color: item.isCompleted ? undefined : taskColorInfo.text }}
                                         >
                                           {item.text}
@@ -1472,10 +1504,15 @@ export const WeekView = ({
                             })()}
                           </div>
 
-                          {/* Drag-to-create preview */}
+                          {/* Drag-to-create preview - only show when start and end differ (actual drag happened) */}
                           {weeklyDraggingCreate[dayString] && weeklyDragCreateStart[dayString] && weeklyDragCreateEnd[dayString] && (() => {
                             const start = weeklyDragCreateStart[dayString];
                             const end = weeklyDragCreateEnd[dayString];
+
+                            // Don't show preview if no actual drag movement (start equals end)
+                            if (start.hour === end.hour && start.minute === end.minute) {
+                              return null;
+                            }
                             const startMinutes = start.hour * 60 + start.minute;
                             const endMinutes = end.hour * 60 + end.minute;
                             const topPos = Math.min(startMinutes, endMinutes) * 0.8 * weeklyZoomLevel;
@@ -1519,7 +1556,7 @@ export const WeekView = ({
 
       {/* Add Task/Content Dialog */}
       {addDialogOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-[300] flex items-center justify-center">
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/15"

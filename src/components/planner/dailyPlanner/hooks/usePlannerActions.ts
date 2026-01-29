@@ -378,12 +378,14 @@ export const usePlannerActions = ({
           const relativeY = e.clientY - rect.top;
           const totalMinutes = Math.floor(relativeY / 0.8);
           const hour = Math.floor(totalMinutes / 60);
-          const minute = totalMinutes % 60;
+          // Round to 30-minute intervals
+          const rawMinute = totalMinutes % 60;
+          const minute = Math.round(rawMinute / 30) * 30;
 
           if (hour >= 0 && hour < 24) {
             setWeeklyDragCreateEnd(prev => ({
               ...prev,
-              [targetDay!]: { hour, minute }
+              [targetDay!]: { hour: minute === 60 ? hour + 1 : hour, minute: minute === 60 ? 0 : minute }
             }));
           }
         }
@@ -398,11 +400,11 @@ export const usePlannerActions = ({
           const end = weeklyDragCreateEnd[dayString];
 
           if (start && end) {
-            // Calculate times
+            // Calculate times - round to 30-minute intervals
             const startMinutes = start.hour * 60 + start.minute;
             const endMinutes = end.hour * 60 + end.minute;
-            const actualStart = Math.min(startMinutes, endMinutes);
-            const actualEnd = Math.max(startMinutes, endMinutes);
+            const actualStart = Math.round(Math.min(startMinutes, endMinutes) / 30) * 30;
+            const actualEnd = Math.round(Math.max(startMinutes, endMinutes) / 30) * 30;
 
             // Ensure minimum duration of 30 minutes
             const duration = actualEnd - actualStart;

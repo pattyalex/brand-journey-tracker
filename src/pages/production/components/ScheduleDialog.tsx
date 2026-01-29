@@ -637,7 +637,12 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
                   const isDragOver = dragOverDate === dateStr;
                   const scheduledForDay = scheduledCardsByDate[dateStr] || [];
                   const plannedForDay = plannedCardsByDate[dateStr] || [];
-                  const isPastDate = day.date < today;
+                  // Compare dates using string format to avoid timezone issues
+                  const dayDateStr = day.date.toISOString().split('T')[0];
+                  const todayStr = today.toISOString().split('T')[0];
+                  const isPastDate = dayDateStr < todayStr;
+                  // Only gray out days that are both outside current month AND in the past
+                  const shouldBeGray = !day.isCurrentMonth && isPastDate;
 
                   return (
                     <div
@@ -649,11 +654,14 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
                       className={cn(
                         "aspect-square rounded-lg border transition-all min-h-[70px] relative p-1 cursor-pointer",
                         "hover:border-indigo-300 hover:bg-indigo-50",
-                        day.isCurrentMonth
-                          ? "bg-white border-gray-200 text-gray-900"
-                          : "bg-gray-50 border-gray-100 text-gray-400",
+                        shouldBeGray
+                          ? "border-gray-100 text-gray-400"
+                          : "border-gray-200 text-gray-900",
                         isDragOver && "bg-indigo-100 border-indigo-400 border-2 scale-105"
                       )}
+                      style={{
+                        backgroundColor: isDragOver ? undefined : (shouldBeGray ? '#f9fafb' : '#ffffff')
+                      }}
                     >
                       <span className={cn(
                         "absolute top-1.5 left-2 text-sm font-medium",
