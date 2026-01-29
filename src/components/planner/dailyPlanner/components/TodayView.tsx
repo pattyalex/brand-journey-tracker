@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getDateString } from "../utils/plannerUtils";
 import { parseTimeTo24 } from "../utils/timeUtils";
-import { scheduleColors, defaultScheduledColor, getTaskColorByHex, defaultTaskColor } from "../utils/colorConstants";
+import { scheduleColors, defaultScheduledColor, getTaskColorByHex, defaultTaskColor, isColorDark } from "../utils/colorConstants";
 import { TaskColorPicker } from "./TaskColorPicker";
 import { TimePicker } from "./TimePicker";
 import { PlannerDerived, PlannerHelpers, PlannerRefs, PlannerSetters, PlannerState } from "../hooks/usePlannerState";
@@ -894,24 +894,25 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
               const taskColorInfo = getTaskColorByHex(colorToUse);
 
               // Calculate width and position for overlapping tasks
+              // When showing both content and tasks, tasks take left 50%, content takes right 45%
+              const maxTaskWidth = showContent ? 50 : 88;
               let widthPercent, leftPercent, zIndex;
 
               if (isBackground) {
-                // Background task: leave 12% on right for clicking to add new tasks
-                widthPercent = 88;
+                // Background task
+                widthPercent = maxTaskWidth;
                 leftPercent = 0;
                 zIndex = 5; // Lower z-index to stay behind
               } else if (inOverlapGroup) {
                 // Foreground tasks in an overlapping group: position starting from left for better visibility
-                // Start at 10% to show they're on top of background
-                const availableSpace = 75;
-                const startPosition = 10;
+                const availableSpace = showContent ? 40 : 75;
+                const startPosition = showContent ? 5 : 10;
                 widthPercent = availableSpace / totalColumns;
                 leftPercent = startPosition + (column * widthPercent);
                 zIndex = 15 + column; // Higher z-index to appear on top
               } else {
-                // Standalone task (no overlap): leave 12% on right for clicking to add new tasks
-                widthPercent = 88;
+                // Standalone task (no overlap)
+                widthPercent = maxTaskWidth;
                 leftPercent = 0;
                 zIndex = 10;
               }
@@ -1114,7 +1115,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
 
         {/* Render timed content on calendar grid - independent of showTasks */}
         {showContent && (
-        <div className="absolute top-0 left-2 right-2" style={{ zIndex: 5 }}>
+        <div className="absolute top-0 left-2 right-2" style={{ zIndex: 20 }}>
           {(() => {
             const allContent = [...scheduledContent, ...plannedContent];
             // Include content with either planned or scheduled time fields
@@ -1125,6 +1126,10 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
 
             console.log('TodayView content render - allContent:', allContent.length, 'timedContent:', timedContent.length);
             allContent.forEach((c, i) => console.log(`  Content ${i}:`, c.id, c.plannedStartTime, c.plannedEndTime));
+
+            // Check if any tasks for today have dark colors
+            const todayTasks = currentDay?.items || [];
+            const hasDarkTasks = todayTasks.some(task => isColorDark(task.color));
 
             return timedContent.map((content) => {
               // Use scheduled times if available, otherwise use planned times
@@ -1160,15 +1165,18 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                       onOpenContentFlow?.(content.id);
                     }
                   }}
-                  className="absolute rounded-lg cursor-pointer hover:brightness-95 hover:shadow-md overflow-hidden group"
+                  className={cn(
+                    "absolute rounded-lg cursor-pointer hover:brightness-95 overflow-hidden group border-l-4",
+                    "shadow-[0_2px_8px_rgba(139,112,130,0.25)] hover:shadow-[0_4px_12px_rgba(139,112,130,0.35)]"
+                  )}
                   style={{
                     top: `${top}px`,
                     height: `${height}px`,
-                    left: 0,
-                    width: '88%',
+                    // In "Both" mode: content on right side (45% width). In "Content only" mode: full width
+                    ...(showTasks ? { right: 0, width: '45%' } : { left: 0, width: '88%' }),
                     backgroundColor: isPlanned ? '#F5F2F4' : colors.bg,
-                    border: isPlanned ? '1px dashed #D4C9CF' : 'none',
-                    zIndex: 5,
+                    borderLeftColor: isPlanned ? '#B8A0AD' : '#612a4f',
+                    zIndex: 20,
                   }}
                 >
                   <div className="p-2 h-full flex flex-col">
@@ -1194,7 +1202,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                         )} style={{ color: isPlanned ? '#8B7082' : colors.text }}>
                           {content.hook || content.title}
                         </div>
-                        <div className="text-[10px] opacity-70" style={{ color: isPlanned ? '#8B7082' : colors.text }}>
+                        <div className="text-[9px] opacity-70 whitespace-nowrap" style={{ color: isPlanned ? '#8B7082' : colors.text }}>
                           {convert24To12Hour(startTimeStr)} - {convert24To12Hour(endTimeStr)}
                         </div>
                       </div>

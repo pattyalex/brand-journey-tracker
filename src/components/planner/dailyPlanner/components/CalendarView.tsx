@@ -7,7 +7,7 @@ import { PlannerDay, PlannerItem } from "@/types/planner";
 import { PlannerView, TimezoneOption } from "../types";
 import { getDateString } from "../utils/plannerUtils";
 import { parseTimeTo24 } from "../utils/timeUtils";
-import { defaultScheduledColor, getTaskColorByHex } from "../utils/colorConstants";
+import { defaultScheduledColor, getTaskColorByHex, isColorDark } from "../utils/colorConstants";
 import { useColorPalette } from "../hooks/useColorPalette";
 import { ProductionCard, KanbanColumn } from "@/pages/production/types";
 import { defaultColumns } from "@/pages/production/utils/productionConstants";
@@ -598,6 +598,13 @@ export const CalendarView = ({
               const contentToShow = showContent ? [...scheduledContent, ...plannedContent] : [];
               const totalItems = tasksToShow.length + contentToShow.length;
 
+              // Check if any tasks have dark colors (for content card outline contrast)
+              const hasDarkTasks = tasksToShow.some(task => isColorDark(task.color));
+              // Outline colors for content cards based on task background
+              const contentOutlineClass = hasDarkTasks
+                ? "ring-1 ring-white/70" // Light outline for dark task backgrounds
+                : "ring-1 ring-[#8B7082]/40"; // Dark outline for light task backgrounds
+
               return (
                 <div
                   key={dayString}
@@ -684,8 +691,11 @@ export const CalendarView = ({
                           onDragEnd={(e) => {
                             e.currentTarget.style.opacity = '1';
                           }}
-                          className="group text-[11px] rounded-lg transition-colors hover:brightness-95 cursor-pointer flex flex-col overflow-hidden flex-shrink-0 border-0"
-                          style={{ backgroundColor: colors.bg, color: colors.text }}
+                          className={cn(
+                            "group text-[11px] rounded-lg transition-colors hover:brightness-95 cursor-pointer flex flex-col overflow-hidden flex-shrink-0 border-l-4",
+                            "shadow-[0_1px_4px_rgba(139,112,130,0.3)] hover:shadow-[0_2px_6px_rgba(139,112,130,0.4)]"
+                          )}
+                          style={{ backgroundColor: colors.bg, color: colors.text, borderLeftColor: '#612a4f' }}
                         >
                           <div className="flex items-center gap-1 px-2 py-1.5">
                             <button
@@ -741,7 +751,11 @@ export const CalendarView = ({
                         onDragEnd={(e) => {
                           e.currentTarget.style.opacity = '1';
                         }}
-                        className="group text-[11px] rounded-lg border border-dashed border-[#D4C9CF] bg-[#F5F2F4] text-[#8B7082] cursor-pointer hover:brightness-95 flex flex-col overflow-hidden flex-shrink-0"
+                        className={cn(
+                          "group text-[11px] rounded-lg bg-[#F5F2F4] text-[#8B7082] cursor-pointer hover:brightness-95 flex flex-col overflow-hidden flex-shrink-0 border-l-4",
+                          "shadow-[0_1px_4px_rgba(139,112,130,0.3)] hover:shadow-[0_2px_6px_rgba(139,112,130,0.4)]"
+                        )}
+                        style={{ borderLeftColor: '#B8A0AD' }}
                       >
                         <div className="flex items-center gap-1 px-2 py-1.5">
                           <Lightbulb className="w-3 h-3 flex-shrink-0" />

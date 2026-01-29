@@ -201,6 +201,21 @@ export const scheduleColors: Record<string, { bg: string; text: string }> = {
 // Default color for all scheduled content cards
 export const defaultScheduledColor = { bg: '#8B7082', text: '#ffffff' };
 
+// Helper to determine if a hex color is dark (for contrast purposes)
+export const isColorDark = (hex: string | undefined): boolean => {
+  if (!hex) return false;
+  // Remove # if present
+  const cleanHex = hex.replace('#', '');
+  // Parse RGB values
+  const r = parseInt(cleanHex.substring(0, 2), 16);
+  const g = parseInt(cleanHex.substring(2, 4), 16);
+  const b = parseInt(cleanHex.substring(4, 6), 16);
+  // Calculate relative luminance (per WCAG guidelines)
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  // Return true if dark (luminance below threshold)
+  return luminance < 0.6;
+};
+
 /**
  * Color palette groups for content color picker
  */

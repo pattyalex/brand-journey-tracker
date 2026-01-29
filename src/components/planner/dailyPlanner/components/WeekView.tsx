@@ -14,7 +14,7 @@ import { PlannerDay, PlannerItem } from "@/types/planner";
 import { TimezoneOption } from "../types";
 import { getDateString } from "../utils/plannerUtils";
 import { parseTimeTo24 } from "../utils/timeUtils";
-import { scheduleColors, defaultScheduledColor, getTaskColorByHex } from "../utils/colorConstants";
+import { scheduleColors, defaultScheduledColor, getTaskColorByHex, isColorDark } from "../utils/colorConstants";
 import { TaskColorPicker } from "./TaskColorPicker";
 import { TimePicker } from "./TimePicker";
 import { useColorPalette } from "../hooks/useColorPalette";
@@ -843,6 +843,10 @@ export const WeekView = ({
                               c.plannedDate?.split('T')[0] === dayString
                             );
                             const allContent = [...scheduledContent, ...plannedContent];
+
+                            // Check if any tasks for this day have dark colors
+                            const dayTasks = dayData?.items || [];
+                            const hasDarkTasks = dayTasks.some(task => isColorDark(task.color));
                             // Include content with either planned or scheduled time fields
                             const timedContent = allContent.filter(c =>
                               (c.plannedStartTime && c.plannedEndTime) ||
@@ -894,15 +898,18 @@ export const WeekView = ({
                                       onOpenContentFlow?.(content.id);
                                     }
                                   }}
-                                  className="absolute rounded-lg cursor-pointer hover:brightness-95 hover:shadow-md overflow-hidden group"
+                                  className={cn(
+                                    "absolute rounded-lg cursor-pointer hover:brightness-95 overflow-hidden group border-l-4",
+                                    "shadow-[0_2px_8px_rgba(139,112,130,0.25)] hover:shadow-[0_4px_12px_rgba(139,112,130,0.35)]"
+                                  )}
                                   style={{
                                     top: `${topPos}px`,
                                     height: `${height}px`,
-                                    left: '4px',
-                                    width: '85%',
+                                    // In "Both" mode: content on right side (45% width). In "Content only" mode: full width
+                                    ...(showTasks ? { right: '4px', width: '45%' } : { left: '4px', width: '85%' }),
                                     backgroundColor: colors.bg,
-                                    border: isPlanned ? '1px dashed #D4C9CF' : 'none',
-                                    zIndex: 104,
+                                    borderLeftColor: isPlanned ? '#B8A0AD' : '#612a4f',
+                                    zIndex: 120,
                                   }}
                                 >
                                   <div className="p-1 h-full flex flex-col">
@@ -928,7 +935,7 @@ export const WeekView = ({
                                         )} style={{ color: colors.text }}>
                                           {content.hook || content.title}
                                         </div>
-                                        <div className="text-[9px] opacity-70" style={{ color: colors.text }}>
+                                        <div className="text-[8px] opacity-70 whitespace-nowrap" style={{ color: colors.text }}>
                                           {convert24To12Hour(startTimeStr)} - {convert24To12Hour(endTimeStr)}
                                         </div>
                                       </div>
@@ -1070,24 +1077,25 @@ export const WeekView = ({
                               const taskColorInfo = getTaskColorByHex(colorToUse);
 
                               // Calculate width and position for overlapping tasks
+                              // When showing both content and tasks, tasks take left 50%, content takes right 45%
+                              const maxTaskWidth = showContent ? 50 : 85;
                               let widthPercent, leftPercent, zIndex;
 
                               if (isBackground) {
-                                // Background task: leave 15% on right for clicking to add new tasks
-                                widthPercent = 85;
+                                // Background task
+                                widthPercent = maxTaskWidth;
                                 leftPercent = 0;
                                 zIndex = 105;
                               } else if (inOverlapGroup) {
                                 // Foreground tasks: position starting from left for better visibility
-                                // Start at 10% to show they're on top of background
-                                const availableSpace = 70;
-                                const startPosition = 10;
+                                const availableSpace = showContent ? 40 : 70;
+                                const startPosition = showContent ? 5 : 10;
                                 widthPercent = availableSpace / totalColumns;
                                 leftPercent = startPosition + (column * widthPercent);
                                 zIndex = 115 + column;
                               } else {
-                                // Standalone task (no overlap): leave 15% on right for clicking to add new tasks
-                                widthPercent = 85;
+                                // Standalone task (no overlap)
+                                widthPercent = maxTaskWidth;
                                 leftPercent = 0;
                                 zIndex = 110;
                               }
@@ -1360,6 +1368,10 @@ export const WeekView = ({
                                 (!c.scheduledStartTime || !c.scheduledEndTime)
                               );
 
+                              // Check if any tasks for this day have dark colors
+                              const dayTasks = dayData?.items || [];
+                              const hasDarkTasks = dayTasks.some(task => isColorDark(task.color));
+
                               return untimedContent.map((content) => {
                                 const isPlanned = !content.scheduledDate;
                                 const colors = isPlanned
@@ -1389,10 +1401,13 @@ export const WeekView = ({
                                     onDragEnd={(e) => {
                                       e.currentTarget.style.opacity = '1';
                                     }}
-                                    className="group text-xs px-2 py-1.5 rounded-md hover:shadow-sm transition-all cursor-pointer relative"
+                                    className={cn(
+                                      "group text-xs px-2 py-1.5 rounded-md transition-all cursor-pointer relative border-l-4",
+                                      "shadow-[0_2px_8px_rgba(139,112,130,0.25)] hover:shadow-[0_4px_12px_rgba(139,112,130,0.35)]"
+                                    )}
                                     style={{
                                       backgroundColor: colors.bg,
-                                      border: isPlanned ? '1px dashed #D4C9CF' : 'none',
+                                      borderLeftColor: isPlanned ? '#B8A0AD' : '#612a4f',
                                       opacity: isPast ? 0.5 : 1
                                     }}
                                   >
