@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { format, parseISO, isWithinInterval, startOfMonth, endOfMonth, startOfYear, endOfYear, isBefore, addDays } from "date-fns";
 import {
@@ -28,7 +29,7 @@ import {
   FileText,
   Mail,
   Building2,
-  Package,
+  Send,
   User,
   StickyNote,
   ChevronDown,
@@ -53,6 +54,9 @@ interface Deliverable {
   publishDeadline?: string; // Date content must go live
   status: DeliverableStatus;
   notes?: string;
+  isSubmitted?: boolean; // Checkbox: submitted for approval
+  isPublished?: boolean; // Checkbox: content published
+  isPaid?: boolean; // Checkbox: payment received for this deliverable
 }
 
 interface BrandDeal {
@@ -242,7 +246,7 @@ const Brands = () => {
         <div className="p-6 lg:p-8">
             {/* Header */}
             <div className="mb-8">
-              <h1 className="text-2xl font-bold text-[#4A3542]">Brand Partnerships</h1>
+              <h1 className="text-2xl font-bold text-[#612a4f]">Brand Partnerships</h1>
               <p className="text-[#8B7082] mt-1">Track and manage your brand deals and sponsorships</p>
             </div>
 
@@ -255,7 +259,7 @@ const Brands = () => {
                   </div>
                   <div>
                     <p className="text-xs text-[#8B7082] font-medium">This Month</p>
-                    <p className="text-xl font-bold text-[#4A3542]">${metrics.monthlyEarnings.toLocaleString()}</p>
+                    <p className="text-xl font-bold text-[#612a4f]">${metrics.monthlyEarnings.toLocaleString()}</p>
                   </div>
                 </div>
               </Card>
@@ -266,7 +270,7 @@ const Brands = () => {
                   </div>
                   <div>
                     <p className="text-xs text-[#8B7082] font-medium">This Year</p>
-                    <p className="text-xl font-bold text-[#4A3542]">${metrics.yearlyEarnings.toLocaleString()}</p>
+                    <p className="text-xl font-bold text-[#612a4f]">${metrics.yearlyEarnings.toLocaleString()}</p>
                   </div>
                 </div>
               </Card>
@@ -277,7 +281,7 @@ const Brands = () => {
                   </div>
                   <div>
                     <p className="text-xs text-[#8B7082] font-medium">Pending</p>
-                    <p className="text-xl font-bold text-[#4A3542]">${metrics.pendingAmount.toLocaleString()}</p>
+                    <p className="text-xl font-bold text-[#612a4f]">${metrics.pendingAmount.toLocaleString()}</p>
                   </div>
                 </div>
               </Card>
@@ -288,7 +292,7 @@ const Brands = () => {
                   </div>
                   <div>
                     <p className="text-xs text-[#8B7082] font-medium">Active Deals</p>
-                    <p className="text-xl font-bold text-[#4A3542]">{metrics.activeDeals}</p>
+                    <p className="text-xl font-bold text-[#612a4f]">{metrics.activeDeals}</p>
                   </div>
                 </div>
               </Card>
@@ -303,11 +307,11 @@ const Brands = () => {
                     placeholder="Search brands..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 bg-white border-[#E8E4E6] focus:border-[#8B7082] focus:ring-[#8B7082]/20"
+                    className="pl-9 bg-white border-[#8B7082]/30 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0 focus:ring-1 focus:ring-[#612a4f]/30"
                   />
                 </div>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-[140px] bg-white border-[#E8E4E6]">
+                  <SelectTrigger className="w-[140px] bg-white border-[#8B7082]/30">
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -318,7 +322,7 @@ const Brands = () => {
                   </SelectContent>
                 </Select>
                 <Select value={paymentFilter} onValueChange={setPaymentFilter}>
-                  <SelectTrigger className="w-[140px] bg-white border-[#E8E4E6]">
+                  <SelectTrigger className="w-[140px] bg-white border-[#8B7082]/30">
                     <SelectValue placeholder="Payment" />
                   </SelectTrigger>
                   <SelectContent>
@@ -329,12 +333,12 @@ const Brands = () => {
                 </Select>
               </div>
               <div className="flex gap-2">
-                <div className="flex bg-white rounded-lg border border-[#E8E4E6] p-1">
+                <div className="flex bg-white rounded-lg border border-[#8B7082]/30 p-1">
                   <button
                     onClick={() => setView('kanban')}
                     className={cn(
                       "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
-                      view === 'kanban' ? "bg-[#4A3542] text-white" : "text-[#8B7082] hover:text-[#4A3542]"
+                      view === 'kanban' ? "bg-[#612a4f] text-white" : "text-[#8B7082] hover:text-[#612a4f]"
                     )}
                   >
                     <LayoutGrid className="w-4 h-4" />
@@ -343,7 +347,7 @@ const Brands = () => {
                     onClick={() => setView('table')}
                     className={cn(
                       "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
-                      view === 'table' ? "bg-[#4A3542] text-white" : "text-[#8B7082] hover:text-[#4A3542]"
+                      view === 'table' ? "bg-[#612a4f] text-white" : "text-[#8B7082] hover:text-[#612a4f]"
                     )}
                   >
                     <Table2 className="w-4 h-4" />
@@ -351,7 +355,7 @@ const Brands = () => {
                 </div>
                 <Button
                   onClick={() => setIsAddDialogOpen(true)}
-                  className="bg-[#4A3542] hover:bg-[#3a2a34] text-white"
+                  className="bg-[#612a4f] hover:bg-[#4d2140] text-white"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Deal
@@ -415,9 +419,22 @@ interface KanbanViewProps {
 }
 
 const KanbanView = ({ dealsByStatus, onDragStart, onDragOver, onDrop, onEdit, onDelete, onQuickUpdate }: KanbanViewProps) => {
+  // Only show columns that have deals
+  const activeStatuses = statusOrder.filter(status => dealsByStatus[status].length > 0);
+
+  if (activeStatuses.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 bg-[#F5F3F4] rounded-xl">
+        <Building2 className="w-12 h-12 text-[#E8E4E6] mb-3" />
+        <p className="text-[#8B7082] font-medium">No brand deals yet</p>
+        <p className="text-xs text-[#8B7082]/60 mt-1">Click "Add Deal" to get started</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex gap-4 overflow-x-auto pb-4">
-      {statusOrder.map(status => (
+      {activeStatuses.map(status => (
         <div
           key={status}
           className="flex-shrink-0 w-72"
@@ -461,66 +478,62 @@ interface DealCardProps {
 }
 
 const DealCard = ({ deal, onDragStart, onEdit, onDelete, onQuickUpdate }: DealCardProps) => {
-  // Find next upcoming deadline
+  const [selectedDeliverableId, setSelectedDeliverableId] = useState<string | null>(null);
   const now = new Date();
-  const nextDeadline = deal.deliverables
-    ?.filter(d => d.status !== 'published')
-    .map(d => ({
-      date: d.submissionDeadline || d.publishDeadline,
-      type: d.submissionDeadline ? 'submit' : 'publish'
-    }))
-    .filter(d => d.date)
-    .sort((a, b) => new Date(a.date!).getTime() - new Date(b.date!).getTime())[0];
 
-  const isPastDue = nextDeadline?.date && isBefore(parseISO(nextDeadline.date), now);
-  const publishedCount = deal.deliverables?.filter(d => d.status === 'published').length || 0;
+  // Get the selected deliverable or default to the first one with upcoming dates
+  const selectedDeliverable = selectedDeliverableId
+    ? deal.deliverables?.find(d => d.id === selectedDeliverableId)
+    : null;
+
+  // If a deliverable is selected, show its dates; otherwise show earliest upcoming
+  const displayDeliverable = selectedDeliverable || deal.deliverables?.find(d =>
+    (!d.isSubmitted && d.submissionDeadline) || (!d.isPublished && d.publishDeadline)
+  );
+
+  const displaySubmitDate = displayDeliverable?.submissionDeadline;
+  const displayPublishDate = displayDeliverable?.publishDeadline;
+  const isSubmitDone = displayDeliverable?.isSubmitted || false;
+  const isPublishDone = displayDeliverable?.isPublished || false;
+
+  const isSubmitPastDue = displaySubmitDate && !isSubmitDone && isBefore(parseISO(displaySubmitDate), now);
+  const isPublishPastDue = displayPublishDate && !isPublishDone && isBefore(parseISO(displayPublishDate), now);
+  const publishedCount = deal.deliverables?.filter(d => d.isPublished).length || 0;
   const totalDeliverables = deal.deliverables?.length || 0;
 
   return (
     <div
       draggable
       onDragStart={() => onDragStart(deal.id)}
-      className="bg-white rounded-lg p-4 shadow-sm border border-[#E8E4E6] cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
+      onClick={() => onEdit(deal)}
+      className="bg-white rounded-lg p-4 shadow-sm border border-[#8B7082]/30 cursor-pointer hover:shadow-md transition-shadow h-[260px] flex flex-col"
     >
       <div className="flex items-start justify-between mb-3">
         <div>
-          <h3 className="font-semibold text-[#4A3542] text-sm">{deal.brandName}</h3>
-          <p className="text-xs text-[#8B7082]">{deal.productCampaign}</p>
+          <h3 className="font-semibold text-[#612a4f] text-sm">{deal.brandName}</h3>
+          <p className="text-xs text-[#8B7082] min-h-[16px]">{deal.productCampaign || '\u00A0'}</p>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="p-1 hover:bg-[#F5F3F4] rounded">
-              <MoreHorizontal className="w-4 h-4 text-[#8B7082]" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem onClick={() => onEdit(deal)}>
-              Edit Details
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onQuickUpdate(deal.id, { invoiceSent: !deal.invoiceSent, invoiceSentDate: !deal.invoiceSent ? new Date().toISOString() : undefined })}>
-              {deal.invoiceSent ? 'Mark Invoice Unsent' : 'Mark Invoice Sent'}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onQuickUpdate(deal.id, { paymentReceived: !deal.paymentReceived, paymentReceivedDate: !deal.paymentReceived ? new Date().toISOString() : undefined })}>
-              {deal.paymentReceived ? 'Mark Unpaid' : 'Mark as Paid'}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => onDelete(deal.id)} className="text-red-600">
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <button
+          className="p-1 hover:bg-red-50 rounded text-[#8B7082] hover:text-red-500 transition-colors"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(deal.id);
+          }}
+        >
+          <X className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Fee */}
       <div className="flex items-center justify-between mb-3">
-        <span className="text-lg font-bold text-[#4A3542]">${deal.totalFee.toLocaleString()}</span>
+        <span className="text-lg font-bold text-[#612a4f]">${deal.totalFee.toLocaleString()}</span>
         <div className="flex gap-1">
           {deal.depositPaid && (
             <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-medium rounded">
               Deposit
             </span>
           )}
-          {deal.paymentReceived && (
+          {displayDeliverable?.isPaid && (
             <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-medium rounded">
               Paid
             </span>
@@ -540,39 +553,102 @@ const DealCard = ({ deal, onDragStart, onEdit, onDelete, onQuickUpdate }: DealCa
               />
             </div>
           </div>
-          <div className="flex flex-wrap gap-1 mt-2">
-            {deal.deliverables.slice(0, 3).map(d => (
-              <span key={d.id} className={cn("px-1.5 py-0.5 text-[10px] font-medium rounded", deliverableStatusConfig[d.status].color)}>
+          <div className="flex gap-1 mt-2 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            {deal.deliverables.map(d => (
+              <button
+                key={d.id}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedDeliverableId(selectedDeliverableId === d.id ? null : d.id);
+                }}
+                className={cn(
+                  "px-1.5 py-0.5 text-[10px] font-medium rounded transition-all flex-shrink-0",
+                  selectedDeliverableId === d.id
+                    ? "bg-[#612a4f] text-white"
+                    : "bg-[#F5F3F4] text-[#8B7082]"
+                )}
+              >
                 {d.contentType === 'other' && d.customContentType ? d.customContentType : contentTypeConfig[d.contentType].short}
-              </span>
+              </button>
             ))}
-            {deal.deliverables.length > 3 && (
-              <span className="px-1.5 py-0.5 text-[10px] text-[#8B7082]">+{deal.deliverables.length - 3}</span>
-            )}
           </div>
         </div>
       )}
 
       {/* Footer */}
-      <div className="flex items-center justify-between pt-3 border-t border-[#F5F3F4]">
-        <div className="flex items-center gap-1 text-xs text-[#8B7082]">
-          {nextDeadline?.date && (
-            <>
-              <CalendarIcon className={cn("w-3 h-3", isPastDue && "text-red-500")} />
-              <span className={cn(isPastDue && "text-red-500 font-medium")}>
-                {nextDeadline.type === 'submit' ? 'Submit' : 'Publish'}: {format(parseISO(nextDeadline.date), "MMM d")}
+      <div className="flex flex-col gap-1.5 pt-3 border-t border-[#F5F3F4] mt-auto">
+        {displaySubmitDate && (
+          <div className="flex items-center justify-between text-xs text-[#8B7082]">
+            <div className="flex items-center gap-1">
+              <CalendarIcon className="w-3 h-3" />
+              <span className={cn(isSubmitDone && "line-through opacity-50")}>
+                Submit: {format(parseISO(displaySubmitDate), "MMM d")}
               </span>
-            </>
-          )}
-        </div>
-        <div className="flex gap-1">
-          {deal.contractFile && (
-            <FileText className="w-3.5 h-3.5 text-[#8B7082]" />
-          )}
-          {deal.invoiceSent && (
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-          )}
-        </div>
+            </div>
+            <label className="flex items-center gap-1 cursor-pointer" onClick={(e) => e.stopPropagation()}>
+              <Checkbox
+                checked={isSubmitDone}
+                onCheckedChange={(checked) => {
+                  if (displayDeliverable) {
+                    const updatedDeliverables = deal.deliverables.map(d =>
+                      d.id === displayDeliverable.id ? { ...d, isSubmitted: checked as boolean } : d
+                    );
+                    onQuickUpdate(deal.id, { deliverables: updatedDeliverables });
+                  }
+                }}
+                className="h-3 w-3"
+              />
+            </label>
+          </div>
+        )}
+        {displayPublishDate && (
+          <div className="flex items-center justify-between text-xs text-[#612a4f] font-medium">
+            <div className="flex items-center gap-1">
+              <CalendarIcon className="w-3 h-3" />
+              <span className={cn(isPublishDone && "line-through opacity-50")}>
+                Publish: {format(parseISO(displayPublishDate), "MMM d")}
+              </span>
+            </div>
+            <label className="flex items-center gap-1 cursor-pointer" onClick={(e) => e.stopPropagation()}>
+              <Checkbox
+                checked={isPublishDone}
+                onCheckedChange={(checked) => {
+                  if (displayDeliverable) {
+                    const updatedDeliverables = deal.deliverables.map(d =>
+                      d.id === displayDeliverable.id ? { ...d, isPublished: checked as boolean } : d
+                    );
+                    onQuickUpdate(deal.id, { deliverables: updatedDeliverables });
+                  }
+                }}
+                className="h-3 w-3"
+              />
+            </label>
+          </div>
+        )}
+        {/* Paid checkbox - always visible for selected deliverable */}
+        {displayDeliverable && (
+          <div className={cn(
+            "flex items-center justify-between text-xs pt-2 mt-1 border-t border-[#F5F3F4]",
+            displayDeliverable.isPaid ? "text-emerald-600" : "text-[#8B7082]"
+          )}>
+            <div className="flex items-center gap-1">
+              <DollarSign className="w-3 h-3" />
+              <span className="font-medium">Paid</span>
+            </div>
+            <label className="cursor-pointer" onClick={(e) => e.stopPropagation()}>
+              <Checkbox
+                checked={displayDeliverable.isPaid || false}
+                onCheckedChange={(checked) => {
+                  const updatedDeliverables = deal.deliverables.map(d =>
+                    d.id === displayDeliverable.id ? { ...d, isPaid: checked as boolean } : d
+                  );
+                  onQuickUpdate(deal.id, { deliverables: updatedDeliverables });
+                }}
+                className="h-3 w-3"
+              />
+            </label>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -588,11 +664,11 @@ interface TableViewProps {
 
 const TableView = ({ deals, onEdit, onDelete, onQuickUpdate }: TableViewProps) => {
   return (
-    <div className="bg-white rounded-xl border border-[#E8E4E6] overflow-hidden">
+    <div className="bg-white rounded-xl border border-[#8B7082]/30 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-[#FAF9F7] border-b border-[#E8E4E6]">
+            <tr className="bg-[#FAF9F7] border-b border-[#8B7082]/30">
               <th className="text-left py-3 px-4 text-xs font-semibold text-[#8B7082] uppercase tracking-wide">Brand</th>
               <th className="text-left py-3 px-4 text-xs font-semibold text-[#8B7082] uppercase tracking-wide">Status</th>
               <th className="text-left py-3 px-4 text-xs font-semibold text-[#8B7082] uppercase tracking-wide">Fee</th>
@@ -609,7 +685,7 @@ const TableView = ({ deals, onEdit, onDelete, onQuickUpdate }: TableViewProps) =
               <tr key={deal.id} className="border-b border-[#F5F3F4] hover:bg-[#FAF9F7]/50 transition-colors group">
                 <td className="py-3 px-4">
                   <div>
-                    <p className="font-medium text-[#4A3542] text-sm">{deal.brandName}</p>
+                    <p className="font-medium text-[#612a4f] text-sm">{deal.brandName}</p>
                     <p className="text-xs text-[#8B7082]">{deal.productCampaign}</p>
                   </div>
                 </td>
@@ -634,7 +710,7 @@ const TableView = ({ deals, onEdit, onDelete, onQuickUpdate }: TableViewProps) =
                   </Select>
                 </td>
                 <td className="py-3 px-4">
-                  <span className="font-semibold text-[#4A3542]">${deal.totalFee.toLocaleString()}</span>
+                  <span className="font-semibold text-[#612a4f]">${deal.totalFee.toLocaleString()}</span>
                 </td>
                 <td className="py-3 px-4">
                   <button
@@ -663,7 +739,7 @@ const TableView = ({ deals, onEdit, onDelete, onQuickUpdate }: TableViewProps) =
                 <td className="py-3 px-4">
                   {deal.deliverables?.length > 0 ? (
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-[#4A3542] font-medium">
+                      <span className="text-sm text-[#612a4f] font-medium">
                         {deal.deliverables.filter(d => d.status === 'published').length}/{deal.deliverables.length}
                       </span>
                       <div className="flex gap-0.5">
@@ -792,6 +868,23 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
     }));
   };
 
+  const handleEnterKey = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      const form = e.currentTarget.closest('form') || e.currentTarget.closest('[role="dialog"]');
+      if (!form) return;
+
+      const focusableElements = form.querySelectorAll<HTMLElement>(
+        'input:not([type="hidden"]):not([disabled]), textarea:not([disabled]), select:not([disabled]), button:not([disabled])'
+      );
+      const currentIndex = Array.from(focusableElements).indexOf(e.currentTarget);
+      const nextElement = focusableElements[currentIndex + 1];
+      if (nextElement) {
+        nextElement.focus();
+      }
+    }
+  };
+
   const handleSubmit = () => {
     if (!formData.brandName) return;
     onSave(formData);
@@ -799,16 +892,18 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-[#F8F8F8]">
         <DialogHeader>
-          <DialogTitle className="text-[#4A3542]">{deal ? 'Edit Deal' : 'Add New Deal'}</DialogTitle>
+          <DialogTitle className="text-[#612a4f]">{deal ? 'Edit Deal' : 'Add New Deal'}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
           {/* Partnership Details */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-[#4A3542] flex items-center gap-2">
-              <Building2 className="w-4 h-4" />
+          <div className="space-y-4 p-5 rounded-xl bg-white">
+            <h3 className="text-sm font-semibold text-[#612a4f] flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#8B7082] flex items-center justify-center">
+                <Building2 className="w-4 h-4 text-white" />
+              </div>
               Partnership Details
             </h3>
             <div className="grid grid-cols-2 gap-4">
@@ -817,8 +912,9 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                 <Input
                   value={formData.brandName}
                   onChange={(e) => setFormData(prev => ({ ...prev, brandName: e.target.value }))}
+                  onKeyDown={handleEnterKey}
                   placeholder="e.g., Nike"
-                  className="border-[#E8E4E6] focus:border-[#8B7082]"
+                  className="border-[#8B7082]/30 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0"
                 />
               </div>
               <div>
@@ -826,8 +922,9 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                 <Input
                   value={formData.productCampaign}
                   onChange={(e) => setFormData(prev => ({ ...prev, productCampaign: e.target.value }))}
+                  onKeyDown={handleEnterKey}
                   placeholder="e.g., Summer Collection"
-                  className="border-[#E8E4E6] focus:border-[#8B7082]"
+                  className="border-[#8B7082]/30 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0"
                 />
               </div>
               <div>
@@ -835,8 +932,9 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                 <Input
                   value={formData.contactPerson}
                   onChange={(e) => setFormData(prev => ({ ...prev, contactPerson: e.target.value }))}
-                  placeholder="e.g., John Smith"
-                  className="border-[#E8E4E6] focus:border-[#8B7082]"
+                  onKeyDown={handleEnterKey}
+                  placeholder="e.g., Maria Smith"
+                  className="border-[#8B7082]/30 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0"
                 />
               </div>
               <div>
@@ -845,14 +943,15 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                   type="email"
                   value={formData.contactEmail}
                   onChange={(e) => setFormData(prev => ({ ...prev, contactEmail: e.target.value }))}
-                  placeholder="john@brand.com"
-                  className="border-[#E8E4E6] focus:border-[#8B7082]"
+                  onKeyDown={handleEnterKey}
+                  placeholder="maria@brand.com"
+                  className="border-[#8B7082]/30 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0"
                 />
               </div>
               <div>
                 <label className="text-xs text-[#8B7082] mb-1 block">Status</label>
                 <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as BrandDeal['status'], customStatus: value === 'other' ? '' : undefined }))}>
-                  <SelectTrigger className="border-[#E8E4E6]">
+                  <SelectTrigger className="border-[#8B7082]/30">
                     <SelectValue>
                       {formData.status === 'other'
                         ? (formData.customStatus || 'Other')
@@ -879,7 +978,7 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                       }
                     }}
                     placeholder="Specify status..."
-                    className="border-[#E8E4E6] h-9 text-sm mt-2"
+                    className="border-[#8B7082]/30 h-9 text-sm mt-2"
                     autoFocus
                   />
                 )}
@@ -887,13 +986,13 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
               <div>
                 <label className="text-xs text-[#8B7082] mb-1 block">Contract</label>
                 {formData.contractFile ? (
-                  <div className="flex items-center gap-2 p-2 bg-[#FAF9F7] rounded-lg border border-[#E8E4E6]">
+                  <div className="flex items-center gap-2 p-2 bg-[#FAF9F7] rounded-lg border border-[#8B7082]/30">
                     <FileText className="w-4 h-4 text-[#8B7082] flex-shrink-0" />
-                    <span className="text-sm text-[#4A3542] flex-1 truncate">{formData.contractFile.name}</span>
+                    <span className="text-sm text-[#612a4f] flex-1 truncate">{formData.contractFile.name}</span>
                     <button
                       type="button"
                       onClick={() => window.open(formData.contractFile?.url, '_blank')}
-                      className="text-xs text-[#8B7082] hover:text-[#4A3542]"
+                      className="text-xs text-[#8B7082] hover:text-[#612a4f]"
                     >
                       View
                     </button>
@@ -907,7 +1006,7 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                   </div>
                 ) : (
                   <label className="cursor-pointer block">
-                    <div className="flex items-center justify-center gap-2 p-2 border border-dashed border-[#E8E4E6] rounded-lg hover:border-[#8B7082] hover:bg-[#FAF9F7] transition-colors h-10">
+                    <div className="flex items-center justify-center gap-2 h-10 border border-dashed border-[#8B7082]/40 rounded-lg bg-[#F8F5F7] hover:border-[#8B7082] hover:bg-[#F3EEF1] transition-colors">
                       <Upload className="w-4 h-4 text-[#8B7082]" />
                       <span className="text-sm text-[#8B7082]">Upload PDF</span>
                     </div>
@@ -938,93 +1037,138 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
             </div>
           </div>
 
-          {/* Payment Tracking */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-[#4A3542] flex items-center gap-2">
-              <DollarSign className="w-4 h-4" />
+          {/* Payment Details */}
+          <div className="space-y-5 p-5 rounded-xl bg-[#FAF8F6]">
+            <h3 className="text-sm font-semibold text-[#612a4f] flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#612a4f] flex items-center justify-center">
+                <DollarSign className="w-4 h-4 text-white" />
+              </div>
               Payment Details
             </h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs text-[#8B7082] mb-1 block">Total Fee ($)</label>
+
+            {/* Total Fee - Prominent */}
+            <div className="bg-white rounded-lg p-4">
+              <label className="text-xs font-semibold text-[#612a4f] uppercase tracking-wide mb-2 block">Total Fee</label>
+              <div className="flex items-center gap-2">
+                <span className="text-2xl font-bold text-[#612a4f]">$</span>
                 <Input
                   type="number"
                   value={formData.totalFee || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, totalFee: parseFloat(e.target.value) || 0 }))}
+                  onKeyDown={handleEnterKey}
                   placeholder="0"
-                  className="border-[#E8E4E6] focus:border-[#8B7082]"
+                  className="text-2xl font-bold h-12 border-[#8B7082]/30 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0"
                 />
               </div>
-              <div>
-                <label className="text-xs text-[#8B7082] mb-1 block">Deposit Amount ($)</label>
-                <Input
-                  type="number"
-                  value={formData.depositAmount || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, depositAmount: parseFloat(e.target.value) || 0 }))}
-                  placeholder="0"
-                  className="border-[#E8E4E6] focus:border-[#8B7082]"
-                />
-              </div>
-              <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.depositPaid}
-                    onChange={(e) => setFormData(prev => ({ ...prev, depositPaid: e.target.checked, depositPaidDate: e.target.checked ? new Date().toISOString() : undefined }))}
-                    className="w-4 h-4 rounded border-[#E8E4E6] text-[#4A3542] focus:ring-[#8B7082]"
-                  />
-                  <span className="text-sm text-[#4A3542]">Deposit Paid</span>
-                </label>
-              </div>
-              <div>
-                <label className="text-xs text-[#8B7082] mb-1 block">Final Payment Due</label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left font-normal border-[#E8E4E6]">
-                      <CalendarIcon className="mr-2 h-4 w-4 text-[#8B7082]" />
-                      {formData.finalPaymentDueDate ? format(parseISO(formData.finalPaymentDueDate), "MMM d, yyyy") : "Select date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 z-[9999]" sideOffset={5}>
-                    <Calendar
-                      mode="single"
-                      selected={formData.finalPaymentDueDate ? parseISO(formData.finalPaymentDueDate) : undefined}
-                      onSelect={(date) => setFormData(prev => ({ ...prev, finalPaymentDueDate: date?.toISOString() }))}
-                      className="pointer-events-auto"
+              <div className="flex items-center gap-4 mt-3 pt-3 border-t border-[#8B7082]/10">
+                <div className="flex-1">
+                  <label className="text-xs text-[#8B7082] mb-1 block">Deposit</label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-[#8B7082]">$</span>
+                    <Input
+                      type="number"
+                      value={formData.depositAmount || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, depositAmount: parseFloat(e.target.value) || 0 }))}
+                      onKeyDown={handleEnterKey}
+                      placeholder="0"
+                      className="h-8 text-sm border-[#8B7082]/30 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0"
                     />
-                  </PopoverContent>
-                </Popover>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-[#8B7082] mb-1 block">Due Date</label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="h-8 text-sm justify-start text-left font-normal border-[#8B7082]/30">
+                        <CalendarIcon className="mr-2 h-3.5 w-3.5 text-[#8B7082]" />
+                        {formData.finalPaymentDueDate ? format(parseISO(formData.finalPaymentDueDate), "MMM d") : "Select"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 z-[9999]" sideOffset={5}>
+                      <Calendar
+                        mode="single"
+                        selected={formData.finalPaymentDueDate ? parseISO(formData.finalPaymentDueDate) : undefined}
+                        onSelect={(date) => setFormData(prev => ({ ...prev, finalPaymentDueDate: date?.toISOString() }))}
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
-              <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.invoiceSent}
-                    onChange={(e) => setFormData(prev => ({ ...prev, invoiceSent: e.target.checked, invoiceSentDate: e.target.checked ? new Date().toISOString() : undefined }))}
-                    className="w-4 h-4 rounded border-[#E8E4E6] text-[#4A3542] focus:ring-[#8B7082]"
-                  />
-                  <span className="text-sm text-[#4A3542]">Invoice Sent</span>
-                </label>
-              </div>
-              <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.paymentReceived}
-                    onChange={(e) => setFormData(prev => ({ ...prev, paymentReceived: e.target.checked, paymentReceivedDate: e.target.checked ? new Date().toISOString() : undefined }))}
-                    className="w-4 h-4 rounded border-[#E8E4E6] text-[#4A3542] focus:ring-[#8B7082]"
-                  />
-                  <span className="text-sm text-[#4A3542]">Payment Received</span>
-                </label>
+            </div>
+
+            {/* Payment Progress Tracker */}
+            <div>
+              <label className="text-xs font-semibold text-[#612a4f] uppercase tracking-wide mb-3 block">Payment Progress</label>
+              <div className="flex items-center justify-between gap-2">
+                {/* Invoice Sent */}
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, invoiceSent: !prev.invoiceSent, invoiceSentDate: !prev.invoiceSent ? new Date().toISOString() : undefined }))}
+                  className={cn(
+                    "flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all",
+                    formData.invoiceSent
+                      ? "bg-[#612a4f] border-[#612a4f] text-white"
+                      : "bg-white border-[#8B7082]/20 text-[#8B7082] hover:border-[#8B7082]/40"
+                  )}
+                >
+                  <Mail className="w-5 h-5" />
+                  <span className="text-xs font-medium">Invoice Sent</span>
+                  <div className={cn("w-4 h-4 rounded-full border-2", formData.invoiceSent ? "bg-white border-white" : "border-current")}>
+                    {formData.invoiceSent && <CheckCircle2 className="w-full h-full text-[#612a4f]" />}
+                  </div>
+                </button>
+
+                <div className="w-8 h-0.5 bg-[#8B7082]/20" />
+
+                {/* Deposit Paid */}
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, depositPaid: !prev.depositPaid, depositPaidDate: !prev.depositPaid ? new Date().toISOString() : undefined }))}
+                  className={cn(
+                    "flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all",
+                    formData.depositPaid
+                      ? "bg-[#612a4f] border-[#612a4f] text-white"
+                      : "bg-white border-[#8B7082]/20 text-[#8B7082] hover:border-[#8B7082]/40"
+                  )}
+                >
+                  <Wallet className="w-5 h-5" />
+                  <span className="text-xs font-medium">Deposit Paid</span>
+                  <div className={cn("w-4 h-4 rounded-full border-2", formData.depositPaid ? "bg-white border-white" : "border-current")}>
+                    {formData.depositPaid && <CheckCircle2 className="w-full h-full text-[#612a4f]" />}
+                  </div>
+                </button>
+
+                <div className="w-8 h-0.5 bg-[#8B7082]/20" />
+
+                {/* Final Payment */}
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, paymentReceived: !prev.paymentReceived, paymentReceivedDate: !prev.paymentReceived ? new Date().toISOString() : undefined }))}
+                  className={cn(
+                    "flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all",
+                    formData.paymentReceived
+                      ? "bg-[#612a4f] border-[#612a4f] text-white"
+                      : "bg-white border-[#8B7082]/20 text-[#8B7082] hover:border-[#8B7082]/40"
+                  )}
+                >
+                  <CheckCircle2 className="w-5 h-5" />
+                  <span className="text-xs font-medium">Fully Paid</span>
+                  <div className={cn("w-4 h-4 rounded-full border-2", formData.paymentReceived ? "bg-white border-white" : "border-current")}>
+                    {formData.paymentReceived && <CheckCircle2 className="w-full h-full text-[#612a4f]" />}
+                  </div>
+                </button>
               </div>
             </div>
           </div>
 
           {/* Deliverables */}
-          <div className="space-y-4">
+          <div className="space-y-4 p-5 rounded-xl bg-white">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-[#4A3542] flex items-center gap-2">
-                <Package className="w-4 h-4" />
+              <h3 className="text-sm font-semibold text-[#612a4f] flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-[#612a4f] flex items-center justify-center">
+                  <Send className="w-4 h-4 text-white" />
+                </div>
                 Deliverables
               </h3>
               <Button
@@ -1032,7 +1176,7 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                 variant="outline"
                 size="sm"
                 onClick={addDeliverable}
-                className="border-[#E8E4E6] text-[#4A3542] hover:bg-[#F5F3F4]"
+                className="bg-[#8B7082] text-white hover:bg-[#7a6172] border-0"
               >
                 <Plus className="w-3 h-3 mr-1" />
                 Add Deliverable
@@ -1040,15 +1184,15 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
             </div>
 
             {formData.deliverables?.length === 0 ? (
-              <div className="text-center py-8 bg-[#FAF9F7] rounded-lg border border-dashed border-[#E8E4E6]">
-                <Package className="w-8 h-8 mx-auto text-[#E8E4E6] mb-2" />
+              <div className="text-center py-8 bg-[#FAF9F7] rounded-lg border border-dashed border-[#8B7082]/30">
+                <Send className="w-8 h-8 mx-auto text-[#E8E4E6] mb-2" />
                 <p className="text-sm text-[#8B7082]">No deliverables added yet</p>
                 <p className="text-xs text-[#8B7082]/60 mt-1">Click "Add Deliverable" to add content pieces</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-6">
                 {formData.deliverables?.map((deliverable, index) => (
-                  <div key={deliverable.id} className="p-4 bg-[#FAF9F7] rounded-lg border border-[#E8E4E6]">
+                  <div key={deliverable.id} className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <span className="text-xs font-medium text-[#8B7082]">Deliverable {index + 1}</span>
                       <button
@@ -1062,13 +1206,13 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
 
                     <div className="grid grid-cols-2 gap-3">
                       {/* Content Type */}
-                      <div>
-                        <label className="text-xs text-[#8B7082] mb-1 block">Content Type</label>
+                      <div className="border-l-4 border-[#612a4f] pl-3 rounded-r-lg bg-[#F8F5F7]">
+                        <label className="text-xs text-[#8B7082] mb-1 block pt-2">Content Type</label>
                         <Select
                           value={deliverable.contentType}
                           onValueChange={(value) => updateDeliverable(deliverable.id, { contentType: value as ContentType, customContentType: value === 'other' ? '' : undefined })}
                         >
-                          <SelectTrigger className="border-[#E8E4E6] bg-white h-9">
+                          <SelectTrigger className="border-[#8B7082]/30 bg-white h-9 mb-2">
                             <SelectValue>
                               {deliverable.contentType === 'other'
                                 ? (deliverable.customContentType || 'Other')
@@ -1096,20 +1240,20 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                               }
                             }}
                             placeholder="Specify content type..."
-                            className="border-[#E8E4E6] bg-white h-9 text-sm mt-2"
+                            className="border-[#8B7082]/30 bg-white h-9 text-sm mt-2"
                             autoFocus
                           />
                         )}
                       </div>
 
                       {/* Status */}
-                      <div>
+                      <div className="pt-2 pb-2">
                         <label className="text-xs text-[#8B7082] mb-1 block">Status</label>
                         <Select
                           value={deliverable.status}
                           onValueChange={(value) => updateDeliverable(deliverable.id, { status: value as DeliverableStatus })}
                         >
-                          <SelectTrigger className="border-[#E8E4E6] bg-white h-9">
+                          <SelectTrigger className="border-[#8B7082]/30 bg-white h-9">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -1121,11 +1265,21 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                       </div>
 
                       {/* Submit for Approval Date */}
-                      <div>
-                        <label className="text-xs text-[#8B7082] mb-1 block">Submit for Approval</label>
+                      <div className="pt-2 pb-2">
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="text-xs text-[#8B7082]">Submit for Approval</label>
+                          <label className="flex items-center gap-1.5 cursor-pointer">
+                            <Checkbox
+                              checked={deliverable.isSubmitted || false}
+                              onCheckedChange={(checked) => updateDeliverable(deliverable.id, { isSubmitted: checked as boolean })}
+                              className="h-3.5 w-3.5"
+                            />
+                            <span className="text-[10px] text-[#8B7082]">Done</span>
+                          </label>
+                        </div>
                         <Popover>
                           <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full justify-start text-left font-normal border-[#E8E4E6] bg-white h-9 text-sm">
+                            <Button variant="outline" className="w-full justify-start text-left font-normal border-[#8B7082]/30 bg-white h-9 text-sm">
                               <CalendarIcon className="mr-2 h-3.5 w-3.5 text-[#8B7082]" />
                               {deliverable.submissionDeadline ? format(parseISO(deliverable.submissionDeadline), "MMM d, yyyy") : "Select date"}
                             </Button>
@@ -1141,12 +1295,22 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                         </Popover>
                       </div>
 
-                      {/* Publish By Date */}
-                      <div>
-                        <label className="text-xs text-[#8B7082] mb-1 block">Publish</label>
+                      {/* Publish Due Date */}
+                      <div className="border-l-4 border-[#8B7082] pl-3 rounded-r-lg bg-[#F8F5F7]">
+                        <div className="flex items-center justify-between mb-1 pt-2">
+                          <label className="text-xs text-[#8B7082]">Publish Due Date</label>
+                          <label className="flex items-center gap-1.5 cursor-pointer">
+                            <Checkbox
+                              checked={deliverable.isPublished || false}
+                              onCheckedChange={(checked) => updateDeliverable(deliverable.id, { isPublished: checked as boolean })}
+                              className="h-3.5 w-3.5"
+                            />
+                            <span className="text-[10px] text-[#612a4f] font-medium">Done</span>
+                          </label>
+                        </div>
                         <Popover>
                           <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full justify-start text-left font-normal border-[#E8E4E6] bg-white h-9 text-sm">
+                            <Button variant="outline" className="w-full justify-start text-left font-normal border-[#8B7082]/30 bg-white h-9 text-sm mb-2">
                               <CalendarIcon className="mr-2 h-3.5 w-3.5 text-[#8B7082]" />
                               {deliverable.publishDeadline ? format(parseISO(deliverable.publishDeadline), "MMM d, yyyy") : "Select date"}
                             </Button>
@@ -1168,9 +1332,28 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                       <Input
                         value={deliverable.title}
                         onChange={(e) => updateDeliverable(deliverable.id, { title: e.target.value })}
+                        onKeyDown={handleEnterKey}
                         placeholder="Optional: Add a description..."
-                        className="border-[#E8E4E6] bg-white h-9 text-sm"
+                        className="border-[#8B7082]/30 bg-white h-9 text-sm"
                       />
+                    </div>
+
+                    {/* Paid Checkbox */}
+                    <div className="mt-3 pt-3 border-t border-[#8B7082]/20">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs text-[#612a4f] font-medium flex items-center gap-1.5">
+                          <DollarSign className="w-3.5 h-3.5" />
+                          Payment for this deliverable
+                        </label>
+                        <label className="flex items-center gap-1.5 cursor-pointer">
+                          <Checkbox
+                            checked={deliverable.isPaid || false}
+                            onCheckedChange={(checked) => updateDeliverable(deliverable.id, { isPaid: checked as boolean })}
+                            className="h-3.5 w-3.5"
+                          />
+                          <span className="text-[10px] text-[#612a4f] font-medium">Paid</span>
+                        </label>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -1179,9 +1362,11 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
           </div>
 
           {/* Campaign Dates */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-[#4A3542] flex items-center gap-2">
-              <CalendarIcon className="w-4 h-4" />
+          <div className="space-y-4 p-5 rounded-xl bg-[#FAF8F6]">
+            <h3 className="text-sm font-semibold text-[#612a4f] flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#8B7082] flex items-center justify-center">
+                <CalendarIcon className="w-4 h-4 text-white" />
+              </div>
               Campaign Period
             </h3>
             <div className="grid grid-cols-2 gap-4">
@@ -1189,7 +1374,7 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                 <label className="text-xs text-[#8B7082] mb-1 block">Campaign Start</label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left font-normal border-[#E8E4E6]">
+                    <Button variant="outline" className="w-full justify-start text-left font-normal border-[#8B7082]/30">
                       <CalendarIcon className="mr-2 h-4 w-4 text-[#8B7082]" />
                       {formData.campaignStart ? format(parseISO(formData.campaignStart), "MMM d, yyyy") : "Select date"}
                     </Button>
@@ -1208,7 +1393,7 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                 <label className="text-xs text-[#8B7082] mb-1 block">Campaign End</label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left font-normal border-[#E8E4E6]">
+                    <Button variant="outline" className="w-full justify-start text-left font-normal border-[#8B7082]/30">
                       <CalendarIcon className="mr-2 h-4 w-4 text-[#8B7082]" />
                       {formData.campaignEnd ? format(parseISO(formData.campaignEnd), "MMM d, yyyy") : "Select date"}
                     </Button>
@@ -1227,25 +1412,27 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
           </div>
 
           {/* Notes */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-[#4A3542] flex items-center gap-2">
-              <StickyNote className="w-4 h-4" />
+          <div className="space-y-4 p-5 rounded-xl bg-white">
+            <h3 className="text-sm font-semibold text-[#612a4f] flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#8B7082] flex items-center justify-center">
+                <StickyNote className="w-4 h-4 text-white" />
+              </div>
               Notes
             </h3>
             <Textarea
               value={formData.notes}
               onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
               placeholder="Any additional details..."
-              className="min-h-[100px] border-[#E8E4E6] focus:border-[#8B7082]"
+              className="min-h-[100px] border-[#8B7082]/30 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0"
             />
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-[#E8E4E6]">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-[#8B7082]/30">
             Cancel
           </Button>
-          <Button onClick={handleSubmit} className="bg-[#4A3542] hover:bg-[#3a2a34] text-white">
+          <Button onClick={handleSubmit} className="bg-[#612a4f] hover:bg-[#4d2140] text-white">
             {deal ? 'Save Changes' : 'Add Deal'}
           </Button>
         </DialogFooter>
