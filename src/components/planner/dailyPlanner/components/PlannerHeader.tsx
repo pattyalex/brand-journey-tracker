@@ -69,7 +69,7 @@ export const PlannerHeader = ({
             className={cn(
               "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 border-2",
               contentDisplayMode === 'content'
-                ? "bg-[#612a4f] text-white shadow-sm border-[#612a4f]"
+                ? "bg-white text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
                 : "text-gray-500 hover:text-gray-700 border-transparent"
             )}
           >
@@ -81,7 +81,7 @@ export const PlannerHeader = ({
             className={cn(
               "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 border-2",
               contentDisplayMode === 'both'
-                ? "bg-gradient-to-r from-white to-[#612a4f] text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
+                ? "bg-white text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
                 : "text-gray-500 hover:text-gray-700 border-transparent"
             )}
           >
@@ -100,11 +100,7 @@ export const PlannerHeader = ({
             className={cn(
               "px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200 border-2",
               currentView === 'today'
-                ? contentDisplayMode === 'content'
-                  ? "bg-[#612a4f] text-white shadow-sm border-[#612a4f]"
-                  : contentDisplayMode === 'both'
-                    ? "bg-gradient-to-r from-white to-[#612a4f] text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
-                    : "bg-white text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
+                ? "bg-white text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent"
             )}
           >
@@ -115,11 +111,7 @@ export const PlannerHeader = ({
             className={cn(
               "px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200 border-2",
               currentView === 'week'
-                ? contentDisplayMode === 'content'
-                  ? "bg-[#612a4f] text-white shadow-sm border-[#612a4f]"
-                  : contentDisplayMode === 'both'
-                    ? "bg-gradient-to-r from-white to-[#612a4f] text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
-                    : "bg-white text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
+                ? "bg-white text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent"
             )}
           >
@@ -130,11 +122,7 @@ export const PlannerHeader = ({
             className={cn(
               "px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200 border-2",
               currentView === 'calendar'
-                ? contentDisplayMode === 'content'
-                  ? "bg-[#612a4f] text-white shadow-sm border-[#612a4f]"
-                  : contentDisplayMode === 'both'
-                    ? "bg-gradient-to-r from-white to-[#612a4f] text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
-                    : "bg-white text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
+                ? "bg-white text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent"
             )}
           >

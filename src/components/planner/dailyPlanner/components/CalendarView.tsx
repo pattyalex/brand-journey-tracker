@@ -117,6 +117,7 @@ export const CalendarView = ({
   const [contentNotes, setContentNotes] = useState("");
   const [contentStartTime, setContentStartTime] = useState("");
   const [contentEndTime, setContentEndTime] = useState("");
+  const [addToContentHub, setAddToContentHub] = useState(true);
 
   // Color palette management (shared hook)
   const contentColorPalette = useColorPalette();
@@ -174,6 +175,7 @@ export const CalendarView = ({
     setContentColor("");
     setContentStartTime("");
     setContentEndTime("");
+    setAddToContentHub(true);
     // Reset color picker popover states
     contentColorPalette.resetPickerState();
   };
@@ -299,6 +301,7 @@ export const CalendarView = ({
         plannedEndTime: parseTimeTo24(contentEndTime) || undefined,
         isNew: true,
         addedFrom: 'calendar',
+        calendarOnly: !addToContentHub,
       };
       ideateColumn.cards.push(newCard);
       setString(StorageKeys.productionKanban, JSON.stringify(columns));
@@ -692,10 +695,14 @@ export const CalendarView = ({
                             e.currentTarget.style.opacity = '1';
                           }}
                           className={cn(
-                            "group text-[11px] rounded-lg transition-colors hover:brightness-95 cursor-pointer flex flex-col overflow-hidden flex-shrink-0 border-l-4",
+                            "group text-[11px] rounded-2xl transition-colors hover:brightness-95 cursor-pointer flex flex-col overflow-hidden flex-shrink-0 border-l-4",
                             "shadow-[0_1px_4px_rgba(139,112,130,0.3)] hover:shadow-[0_2px_6px_rgba(139,112,130,0.4)]"
                           )}
-                          style={{ backgroundColor: colors.bg, color: colors.text, borderLeftColor: '#612a4f' }}
+                          style={{
+                            background: 'linear-gradient(180deg, #A08898 0%, #8B7082 50%, #5A4052 100%)',
+                            color: colors.text,
+                            borderLeftColor: '#4a2a3f'
+                          }}
                         >
                           <div className="flex items-center gap-1 px-2 py-1.5">
                             <button
@@ -752,10 +759,13 @@ export const CalendarView = ({
                           e.currentTarget.style.opacity = '1';
                         }}
                         className={cn(
-                          "group text-[11px] rounded-lg bg-[#F5F2F4] text-[#8B7082] cursor-pointer hover:brightness-95 flex flex-col overflow-hidden flex-shrink-0 border-l-4",
+                          "group text-[11px] rounded-2xl text-[#8B7082] cursor-pointer hover:brightness-95 flex flex-col overflow-hidden flex-shrink-0 border-l-4",
                           "shadow-[0_1px_4px_rgba(139,112,130,0.3)] hover:shadow-[0_2px_6px_rgba(139,112,130,0.4)]"
                         )}
-                        style={{ borderLeftColor: '#B8A0AD' }}
+                        style={{
+                          background: 'linear-gradient(180deg, #FFFFFF 0%, #F5F2F4 50%, #E0D5DC 100%)',
+                          borderLeftColor: '#B8A0AD'
+                        }}
                       >
                         <div className="flex items-center gap-1 px-2 py-1.5">
                           <Lightbulb className="w-3 h-3 flex-shrink-0" />
@@ -816,7 +826,7 @@ export const CalendarView = ({
                             />
                             <div
                               className={`flex-1 truncate leading-tight ${task.isCompleted ? 'line-through opacity-50' : ''}`}
-                              style={{ color: task.isCompleted ? undefined : taskColorInfo.text }}
+                              style={{ color: taskColorInfo.text }}
                             >
                               {task.text}
                             </div>
@@ -912,60 +922,52 @@ export const CalendarView = ({
                 </div>
 
 
-                {/* Content Hub CTA */}
-                <button
-                  onClick={() => {
-                    if (contentHook.trim() && contentStartTime.trim() && contentEndTime.trim()) {
-                      try {
-                        const savedData = getString(StorageKeys.productionKanban);
-                        const columns: KanbanColumn[] = savedData ? JSON.parse(savedData) : JSON.parse(JSON.stringify(defaultColumns));
-                        let ideateColumn = columns.find(c => c.id === 'ideate');
-
-                        if (!ideateColumn) {
-                          ideateColumn = { id: 'ideate', title: 'Ideate', cards: [] };
-                          columns.unshift(ideateColumn);
-                        }
-
-                        const newCard: ProductionCard = {
-                          id: `card-${Date.now()}`,
-                          title: contentHook.trim(),
-                          hook: contentHook.trim(),
-                          description: contentNotes || undefined,
-                          columnId: 'ideate',
-                          plannedDate: addDialogDate,
-                          plannedColor: contentColor as any,
-                          plannedStartTime: parseTimeTo24(contentStartTime) || undefined,
-                          plannedEndTime: parseTimeTo24(contentEndTime) || undefined,
-                          isNew: true,
-                        };
-                        ideateColumn.cards.push(newCard);
-                        setString(StorageKeys.productionKanban, JSON.stringify(columns));
-                        emit(window, EVENTS.productionKanbanUpdated);
-                        emit(window, EVENTS.scheduledContentUpdated);
-                        loadProductionContent?.();
-                      } catch (err) {
-                        console.error('Error adding content:', err);
-                      }
-                    } else if (contentHook.trim() && (!contentStartTime.trim() || !contentEndTime.trim())) {
-                      toast.error('Please select a time slot for your content');
-                      return;
-                    }
-                    setAddDialogOpen(false);
-                    resetFormState();
-                    navigate('/production');
-                  }}
-                  className="w-full flex items-center justify-between p-3 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl border border-violet-100 hover:border-violet-200 transition-colors group"
+                {/* Add to Content Hub checkbox */}
+                <div
+                  className={cn(
+                    "flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200",
+                    addToContentHub
+                      ? "bg-gradient-to-r from-[#F5F0F3] to-[#EDE5EA] border-[#8B7082]/30 shadow-[0_2px_8px_rgba(139,112,130,0.15)]"
+                      : "bg-gray-50/50 border-gray-200 hover:border-gray-300"
+                  )}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center">
-                      <Video className="w-4 h-4 text-violet-600" />
-                    </div>
-                    <div className="text-left">
-                      <div className="text-sm font-medium text-gray-700">Go to Content Hub to develop your idea further</div>
-                    </div>
+                  <Checkbox
+                    id="addToContentHubCalendar"
+                    checked={addToContentHub}
+                    onCheckedChange={(checked) => setAddToContentHub(checked as boolean)}
+                    className={cn(
+                      "h-5 w-5 border-2 cursor-pointer transition-all",
+                      addToContentHub
+                        ? "data-[state=checked]:bg-[#612a4f] data-[state=checked]:border-[#612a4f]"
+                        : "border-gray-300"
+                    )}
+                  />
+                  <div className="flex-1">
+                    <label htmlFor="addToContentHubCalendar" className={cn(
+                      "text-sm font-medium cursor-pointer transition-colors",
+                      addToContentHub ? "text-[#4a2a3f]" : "text-gray-600"
+                    )}>
+                      Add to{' '}
+                      <span
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          navigate('/production');
+                        }}
+                        className="text-[#612a4f] hover:text-[#8B7082] underline underline-offset-2 decoration-[#8B7082]/50 cursor-pointer font-semibold"
+                      >
+                        Content Hub
+                      </span>
+                      {' '}for production
+                    </label>
+                    <p className={cn(
+                      "text-xs mt-0.5 transition-colors",
+                      addToContentHub ? "text-[#8B7082]" : "text-gray-400"
+                    )}>
+                      Uncheck for quick content like Stories
+                    </p>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-violet-500 group-hover:translate-x-1 transition-transform" />
-                </button>
+                </div>
 
             </div>
 

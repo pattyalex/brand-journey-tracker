@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { Clock, X as XIcon, Plus, Palette, FileText, Lightbulb, Video, ArrowRight } from "lucide-react";
+import { Clock, X as XIcon, Plus, Palette, FileText, Lightbulb, Video, ArrowRight, Kanban } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
@@ -94,8 +95,9 @@ interface ContentAddDialogProps {
     startTime: string;
     endTime: string;
     color: string;
+    addToContentHub: boolean;
   }) => void;
-  onNavigateToContentHub: (data: {
+  onNavigateToContentHub?: (data: {
     hook: string;
     description: string;
     startTime: string;
@@ -123,6 +125,7 @@ export const ContentAddDialog = ({
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [color, setColor] = useState("");
+  const [addToContentHub, setAddToContentHub] = useState(true);
 
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [userPalette, setUserPalette] = useState<string[]>(() => {
@@ -161,6 +164,7 @@ export const ContentAddDialog = ({
       setStartTime("");
       setEndTime("");
       setColor("");
+      setAddToContentHub(true);
     }
   }, [isOpen]);
 
@@ -203,11 +207,7 @@ export const ContentAddDialog = ({
   };
 
   const handleSave = () => {
-    onSave({ hook, description, startTime, endTime, color });
-  };
-
-  const handleGoToContentHub = () => {
-    onNavigateToContentHub({ hook, description, startTime, endTime, color });
+    onSave({ hook, description, startTime, endTime, color, addToContentHub });
   };
 
   // Time input handlers
@@ -590,21 +590,52 @@ export const ContentAddDialog = ({
               </Popover>
             </div>
 
-            {/* Content Hub CTA */}
-            <button
-              onClick={handleGoToContentHub}
-              className="w-full flex items-center justify-between p-3 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl border border-violet-100 hover:border-violet-200 transition-colors group"
+            {/* Add to Content Hub checkbox */}
+            <div
+              className={cn(
+                "flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200",
+                addToContentHub
+                  ? "bg-gradient-to-r from-[#F5F0F3] to-[#EDE5EA] border-[#8B7082]/30 shadow-[0_2px_8px_rgba(139,112,130,0.15)]"
+                  : "bg-gray-50/50 border-gray-200 hover:border-gray-300"
+              )}
             >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center">
-                  <Video className="w-4 h-4 text-violet-600" />
-                </div>
-                <div className="text-left">
-                  <div className="text-sm font-medium text-gray-700">Go to Content Hub to develop your idea further</div>
-                </div>
+              <Checkbox
+                id="addToContentHub"
+                checked={addToContentHub}
+                onCheckedChange={(checked) => setAddToContentHub(checked as boolean)}
+                className={cn(
+                  "h-5 w-5 border-2 cursor-pointer transition-all",
+                  addToContentHub
+                    ? "data-[state=checked]:bg-[#612a4f] data-[state=checked]:border-[#612a4f]"
+                    : "border-gray-300"
+                )}
+              />
+              <div className="flex-1">
+                <label htmlFor="addToContentHub" className={cn(
+                  "text-sm font-medium cursor-pointer transition-colors",
+                  addToContentHub ? "text-[#4a2a3f]" : "text-gray-600"
+                )}>
+                  Add to{' '}
+                  <span
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      navigate('/production');
+                    }}
+                    className="text-[#612a4f] hover:text-[#8B7082] underline underline-offset-2 decoration-[#8B7082]/50 cursor-pointer font-semibold"
+                  >
+                    Content Hub
+                  </span>
+                  {' '}for production
+                </label>
+                <p className={cn(
+                  "text-xs mt-0.5 transition-colors",
+                  addToContentHub ? "text-[#8B7082]" : "text-gray-400"
+                )}>
+                  Uncheck for quick content like Stories
+                </p>
               </div>
-              <ArrowRight className="w-4 h-4 text-violet-500 group-hover:translate-x-1 transition-transform" />
-            </button>
+            </div>
 
             {/* Actions */}
             <div className="flex justify-end gap-3 pt-2">

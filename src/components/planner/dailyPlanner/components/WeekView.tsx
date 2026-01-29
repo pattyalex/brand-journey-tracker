@@ -181,6 +181,7 @@ export const WeekView = ({
   const [contentNotes, setContentNotes] = useState("");
   const [contentStartTime, setContentStartTime] = useState(addDialogStartTime);
   const [contentEndTime, setContentEndTime] = useState(addDialogEndTime);
+  const [addToContentHub, setAddToContentHub] = useState(true);
 
   // Color palette management (shared hook)
   const contentColorPalette = useColorPalette();
@@ -235,6 +236,7 @@ export const WeekView = ({
     setContentColor("");
     setContentStartTime("");
     setContentEndTime("");
+    setAddToContentHub(true);
     // Reset color picker popover states
     contentColorPalette.resetPickerState();
   };
@@ -339,6 +341,7 @@ export const WeekView = ({
         plannedEndTime: parseTimeTo24(contentEndTime) || undefined,
         isNew: true,
         addedFrom: 'calendar',
+        calendarOnly: !addToContentHub,
       };
       ideateColumn.cards.push(newCard);
       setString(StorageKeys.productionKanban, JSON.stringify(columns));
@@ -899,7 +902,7 @@ export const WeekView = ({
                                     }
                                   }}
                                   className={cn(
-                                    "absolute rounded-lg cursor-pointer hover:brightness-95 overflow-hidden group border-l-4",
+                                    "absolute rounded-2xl cursor-pointer hover:brightness-95 overflow-hidden group border-l-4",
                                     "shadow-[0_2px_8px_rgba(139,112,130,0.25)] hover:shadow-[0_4px_12px_rgba(139,112,130,0.35)]"
                                   )}
                                   style={{
@@ -907,8 +910,10 @@ export const WeekView = ({
                                     height: `${height}px`,
                                     // In "Both" mode: content on right side (45% width). In "Content only" mode: full width
                                     ...(showTasks ? { right: '4px', width: '45%' } : { left: '4px', width: '85%' }),
-                                    backgroundColor: colors.bg,
-                                    borderLeftColor: isPlanned ? '#B8A0AD' : '#612a4f',
+                                    background: isPlanned
+                                      ? 'linear-gradient(180deg, #FFFFFF 0%, #F5F2F4 50%, #E0D5DC 100%)'
+                                      : 'linear-gradient(180deg, #A08898 0%, #8B7082 50%, #5A4052 100%)',
+                                    borderLeftColor: isPlanned ? '#B8A0AD' : '#4a2a3f',
                                     zIndex: 120,
                                   }}
                                 >
@@ -935,7 +940,7 @@ export const WeekView = ({
                                         )} style={{ color: colors.text }}>
                                           {content.hook || content.title}
                                         </div>
-                                        <div className="text-[8px] opacity-70 whitespace-nowrap" style={{ color: colors.text }}>
+                                        <div className="text-[8px] opacity-70 leading-tight" style={{ color: colors.text }}>
                                           {convert24To12Hour(startTimeStr)} - {convert24To12Hour(endTimeStr)}
                                         </div>
                                       </div>
@@ -1263,15 +1268,15 @@ export const WeekView = ({
                                       <div className="flex-1 min-w-0 flex flex-col">
                                         <div
                                           className={`text-[11px] font-medium leading-tight line-clamp-2 ${item.isCompleted ? 'line-through opacity-50' : ''}`}
-                                          style={{ color: item.isCompleted ? undefined : taskColorInfo.text }}
+                                          style={{ color: taskColorInfo.text }}
                                         >
                                           {item.text}
                                         </div>
                                         {(item.startTime || item.endTime) && (
-                                          <div className="text-[9px] mt-1 whitespace-nowrap opacity-70" style={{ color: taskColorInfo.text }}>
-                                            {item.startTime && convert24To12Hour(item.startTime)}
-                                            {item.startTime && item.endTime && ' - '}
-                                            {item.endTime && convert24To12Hour(item.endTime)}
+                                          <div className="text-[9px] mt-1 opacity-70 leading-tight" style={{ color: taskColorInfo.text }}>
+                                            {item.startTime && <span>{convert24To12Hour(item.startTime)}</span>}
+                                            {item.startTime && item.endTime && <span className="mx-0.5">-</span>}
+                                            {item.endTime && <span>{convert24To12Hour(item.endTime)}</span>}
                                           </div>
                                         )}
                                       </div>
@@ -1402,12 +1407,14 @@ export const WeekView = ({
                                       e.currentTarget.style.opacity = '1';
                                     }}
                                     className={cn(
-                                      "group text-xs px-2 py-1.5 rounded-md transition-all cursor-pointer relative border-l-4",
+                                      "group text-xs px-2 py-1.5 rounded-2xl transition-all cursor-pointer relative border-l-4",
                                       "shadow-[0_2px_8px_rgba(139,112,130,0.25)] hover:shadow-[0_4px_12px_rgba(139,112,130,0.35)]"
                                     )}
                                     style={{
-                                      backgroundColor: colors.bg,
-                                      borderLeftColor: isPlanned ? '#B8A0AD' : '#612a4f',
+                                      background: isPlanned
+                                        ? 'linear-gradient(180deg, #FFFFFF 0%, #E8B8D0 50%, #C090A8 100%)'
+                                        : 'linear-gradient(180deg, #C8A0B8 0%, #8B5070 50%, #4A2040 100%)',
+                                      borderLeftColor: isPlanned ? '#B8A0AD' : '#4a2a3f',
                                       opacity: isPast ? 0.5 : 1
                                     }}
                                   >
@@ -1498,7 +1505,7 @@ export const WeekView = ({
                                       />
                                       <span
                                         className={`${item.isCompleted ? 'line-through opacity-50' : ''} break-words flex-1 text-[11px]`}
-                                        style={{ color: item.isCompleted ? undefined : taskColorInfo.text }}
+                                        style={{ color: taskColorInfo.text }}
                                       >
                                         {item.text}
                                       </span>
@@ -1595,15 +1602,15 @@ export const WeekView = ({
             </div>
             {/* Tabs - only show in "both" mode */}
             {contentDisplayMode === 'both' && (
-              <div className="flex px-6 gap-1 mb-4">
+              <div className="flex px-6 gap-2 mb-4">
                 <button
                   type="button"
                   onClick={() => setAddDialogTab('task')}
                   className={cn(
                     "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer select-none",
                     addDialogTab === 'task'
-                      ? "bg-[#F5E8EE] text-[#8B7082]"
-                      : "text-gray-600 hover:bg-gray-100"
+                      ? "bg-[#8B7082] text-white shadow-sm"
+                      : "bg-[#F5F0F3] text-gray-700 hover:bg-[#EDE5EA]"
                   )}
                 >
                   <ListTodo className="w-4 h-4" />
@@ -1615,8 +1622,8 @@ export const WeekView = ({
                   className={cn(
                     "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer select-none",
                     addDialogTab === 'content'
-                      ? "bg-[#F5E8EE] text-[#8B7082]"
-                      : "text-gray-600 hover:bg-gray-100"
+                      ? "bg-[#8B7082] text-white shadow-sm"
+                      : "bg-[#F5F0F3] text-gray-700 hover:bg-[#EDE5EA]"
                   )}
                 >
                   <Lightbulb className="w-4 h-4" />
@@ -1742,60 +1749,52 @@ export const WeekView = ({
                 </div>
 
 
-                {/* Content Hub CTA */}
-                <button
-                  onClick={() => {
-                    if (contentHook.trim() && contentStartTime.trim() && contentEndTime.trim()) {
-                      try {
-                        const savedData = getString(StorageKeys.productionKanban);
-                        const columns: KanbanColumn[] = savedData ? JSON.parse(savedData) : JSON.parse(JSON.stringify(defaultColumns));
-                        let ideateColumn = columns.find(c => c.id === 'ideate');
-
-                        if (!ideateColumn) {
-                          ideateColumn = { id: 'ideate', title: 'Ideate', cards: [] };
-                          columns.unshift(ideateColumn);
-                        }
-
-                        const newCard: ProductionCard = {
-                          id: `card-${Date.now()}`,
-                          title: contentHook.trim(),
-                          hook: contentHook.trim(),
-                          description: contentNotes || undefined,
-                          columnId: 'ideate',
-                          plannedDate: addDialogDate,
-                          plannedColor: contentColor as any,
-                          plannedStartTime: parseTimeTo24(contentStartTime) || undefined,
-                          plannedEndTime: parseTimeTo24(contentEndTime) || undefined,
-                          isNew: true,
-                        };
-                        ideateColumn.cards.push(newCard);
-                        setString(StorageKeys.productionKanban, JSON.stringify(columns));
-                        emit(window, EVENTS.productionKanbanUpdated);
-                        emit(window, EVENTS.scheduledContentUpdated);
-                        loadProductionContent?.();
-                      } catch (err) {
-                        console.error('Error adding content:', err);
-                      }
-                    } else if (contentHook.trim() && (!contentStartTime.trim() || !contentEndTime.trim())) {
-                      toast.error('Please select a time slot for your content');
-                      return;
-                    }
-                    closeAddDialog();
-                    resetFormState();
-                    navigate('/production');
-                  }}
-                  className="w-full flex items-center justify-between p-3 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl border border-violet-100 hover:border-violet-200 transition-colors group"
+                {/* Add to Content Hub checkbox */}
+                <div
+                  className={cn(
+                    "flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200",
+                    addToContentHub
+                      ? "bg-gradient-to-r from-[#F5F0F3] to-[#EDE5EA] border-[#8B7082]/30 shadow-[0_2px_8px_rgba(139,112,130,0.15)]"
+                      : "bg-gray-50/50 border-gray-200 hover:border-gray-300"
+                  )}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center">
-                      <Video className="w-4 h-4 text-violet-600" />
-                    </div>
-                    <div className="text-left">
-                      <div className="text-sm font-medium text-gray-700">Go to Content Hub to develop your idea further</div>
-                    </div>
+                  <Checkbox
+                    id="addToContentHubWeek"
+                    checked={addToContentHub}
+                    onCheckedChange={(checked) => setAddToContentHub(checked as boolean)}
+                    className={cn(
+                      "h-5 w-5 border-2 cursor-pointer transition-all",
+                      addToContentHub
+                        ? "data-[state=checked]:bg-[#612a4f] data-[state=checked]:border-[#612a4f]"
+                        : "border-gray-300"
+                    )}
+                  />
+                  <div className="flex-1">
+                    <label htmlFor="addToContentHubWeek" className={cn(
+                      "text-sm font-medium cursor-pointer transition-colors",
+                      addToContentHub ? "text-[#4a2a3f]" : "text-gray-600"
+                    )}>
+                      Add to{' '}
+                      <span
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          navigate('/production');
+                        }}
+                        className="text-[#612a4f] hover:text-[#8B7082] underline underline-offset-2 decoration-[#8B7082]/50 cursor-pointer font-semibold"
+                      >
+                        Content Hub
+                      </span>
+                      {' '}for production
+                    </label>
+                    <p className={cn(
+                      "text-xs mt-0.5 transition-colors",
+                      addToContentHub ? "text-[#8B7082]" : "text-gray-400"
+                    )}>
+                      Uncheck for quick content like Stories
+                    </p>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-violet-500 group-hover:translate-x-1 transition-transform" />
-                </button>
+                </div>
 
               </div>
             )}

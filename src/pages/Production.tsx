@@ -2415,6 +2415,10 @@ const Production = () => {
                           {column.cards.filter(card => {
                             // Basic filter: has id, has title, not empty, not add quick idea
                             const basicFilter = card.id && card.title && card.title.trim() && !card.title.toLowerCase().includes('add quick idea');
+                            // For Ideate column, also filter out calendar-only content (Stories, quick posts)
+                            if (column.id === 'ideate' && card.calendarOnly) {
+                              return false;
+                            }
                             return basicFilter;
                           }).sort((a, b) => {
                             // Sort: pinned first, then unscheduled before scheduled

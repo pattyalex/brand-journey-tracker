@@ -70,6 +70,7 @@ export interface ProductionCard {
   plannedStartTime?: string; // Start time for planned content (e.g., "9:00 am")
   plannedEndTime?: string; // End time for planned content (e.g., "10:00 am")
   brainDumpHandledText?: string; // The notes text that was already appended or dismissed in script editor
+  calendarOnly?: boolean; // If true, this content only appears on calendar, not in Kanban Ideate column
 }
 
 export interface KanbanColumn {
