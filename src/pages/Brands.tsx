@@ -57,6 +57,7 @@ interface Deliverable {
   isSubmitted?: boolean; // Checkbox: submitted for approval
   isPublished?: boolean; // Checkbox: content published
   isPaid?: boolean; // Checkbox: payment received for this deliverable
+  paymentAmount?: number; // Expected payment amount for this deliverable
 }
 
 interface BrandDeal {
@@ -155,8 +156,14 @@ const Brands = () => {
 
     const pendingPayments = deals.filter(d => !d.paymentReceived && d.status !== 'inbound');
     const pendingAmount = pendingPayments.reduce((sum, d) => {
-      const remaining = d.totalFee - (d.depositPaid ? d.depositAmount : 0);
-      return sum + remaining;
+      // Calculate paid deliverable amounts
+      const paidDeliverableAmount = d.deliverables?.reduce((delSum, del) => {
+        return delSum + (del.isPaid && del.paymentAmount ? del.paymentAmount : 0);
+      }, 0) || 0;
+      // Also subtract deposit if paid
+      const depositPaid = d.depositPaid ? d.depositAmount : 0;
+      const remaining = d.totalFee - paidDeliverableAmount - depositPaid;
+      return sum + Math.max(0, remaining);
     }, 0);
 
     const upcomingDeadlines = deals.filter(d => {
@@ -632,8 +639,10 @@ const DealCard = ({ deal, onDragStart, onEdit, onDelete, onQuickUpdate }: DealCa
             displayDeliverable.isPaid ? "text-emerald-600" : "text-[#8B7082]"
           )}>
             <div className="flex items-center gap-1">
-              <DollarSign className="w-3 h-3" />
-              <span className="font-medium">Paid</span>
+              <Wallet className="w-3 h-3" />
+              <span className="font-medium">
+                Paid{displayDeliverable.paymentAmount ? ` $${displayDeliverable.paymentAmount.toLocaleString()}` : ''}
+              </span>
             </div>
             <label className="cursor-pointer" onClick={(e) => e.stopPropagation()}>
               <Checkbox
@@ -845,12 +854,12 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
     const newDeliverable: Deliverable = {
       id: `del_${Date.now()}`,
       title: '',
-      contentType: 'instagram-post',
-      status: 'pending',
+      contentType: '' as ContentType,
+      status: '' as DeliverableStatus,
     };
     setFormData(prev => ({
       ...prev,
-      deliverables: [...(prev.deliverables || []), newDeliverable]
+      deliverables: [newDeliverable, ...(prev.deliverables || [])]
     }));
   };
 
@@ -1052,10 +1061,18 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-bold text-[#612a4f]">$</span>
                 <Input
-                  type="number"
-                  value={formData.totalFee || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, totalFee: parseFloat(e.target.value) || 0 }))}
-                  onKeyDown={handleEnterKey}
+                  type="text"
+                  value={formData.totalFee ? formData.totalFee.toLocaleString() : ''}
+                  onChange={(e) => {
+                    const rawValue = e.target.value.replace(/,/g, '');
+                    const numValue = parseFloat(rawValue) || 0;
+                    setFormData(prev => ({ ...prev, totalFee: numValue }));
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.currentTarget.blur();
+                    }
+                  }}
                   placeholder="0"
                   className="text-2xl font-bold h-12 border-[#8B7082]/30 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0"
                 />
@@ -1194,7 +1211,7 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                 {formData.deliverables?.map((deliverable, index) => (
                   <div key={deliverable.id} className="p-4">
                     <div className="flex items-start justify-between mb-3">
-                      <span className="text-xs font-medium text-[#8B7082]">Deliverable {index + 1}</span>
+                      <span className="text-sm font-semibold text-[#612a4f]">Deliverable {index + 1}</span>
                       <button
                         type="button"
                         onClick={() => removeDeliverable(deliverable.id)}
@@ -1209,14 +1226,16 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                       <div className="border-l-4 border-[#612a4f] pl-3 rounded-r-lg bg-[#F8F5F7]">
                         <label className="text-xs text-[#8B7082] mb-1 block pt-2">Content Type</label>
                         <Select
-                          value={deliverable.contentType}
+                          value={deliverable.contentType || undefined}
                           onValueChange={(value) => updateDeliverable(deliverable.id, { contentType: value as ContentType, customContentType: value === 'other' ? '' : undefined })}
                         >
                           <SelectTrigger className="border-[#8B7082]/30 bg-white h-9 mb-2">
-                            <SelectValue>
-                              {deliverable.contentType === 'other'
-                                ? (deliverable.customContentType || 'Other')
-                                : contentTypeConfig[deliverable.contentType].label}
+                            <SelectValue placeholder="Select content">
+                              {deliverable.contentType
+                                ? (deliverable.contentType === 'other'
+                                  ? (deliverable.customContentType || 'Other')
+                                  : contentTypeConfig[deliverable.contentType]?.label)
+                                : null}
                             </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
@@ -1250,11 +1269,13 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                       <div className="pt-2 pb-2">
                         <label className="text-xs text-[#8B7082] mb-1 block">Status</label>
                         <Select
-                          value={deliverable.status}
+                          value={deliverable.status || undefined}
                           onValueChange={(value) => updateDeliverable(deliverable.id, { status: value as DeliverableStatus })}
                         >
                           <SelectTrigger className="border-[#8B7082]/30 bg-white h-9">
-                            <SelectValue />
+                            <SelectValue placeholder="Select status">
+                              {deliverable.status ? deliverableStatusConfig[deliverable.status]?.label : null}
+                            </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
                             {Object.entries(deliverableStatusConfig).map(([key, config]) => (
@@ -1339,10 +1360,9 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                     </div>
 
                     {/* Paid Checkbox */}
-                    <div className="mt-3 pt-3 border-t border-[#8B7082]/20">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs text-[#612a4f] font-medium flex items-center gap-1.5">
-                          <DollarSign className="w-3.5 h-3.5" />
+                    <div className="mt-3 mb-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-sm text-[#612a4f] font-semibold">
                           Payment for this deliverable
                         </label>
                         <label className="flex items-center gap-1.5 cursor-pointer">
@@ -1353,6 +1373,25 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                           />
                           <span className="text-[10px] text-[#612a4f] font-medium">Paid</span>
                         </label>
+                      </div>
+                      <div className="relative w-32">
+                        <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8B7082]" />
+                        <Input
+                          type="text"
+                          value={deliverable.paymentAmount ? deliverable.paymentAmount.toLocaleString() : ''}
+                          onChange={(e) => {
+                            const rawValue = e.target.value.replace(/,/g, '');
+                            const numValue = parseFloat(rawValue) || 0;
+                            updateDeliverable(deliverable.id, { paymentAmount: numValue });
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.currentTarget.blur();
+                            }
+                          }}
+                          placeholder="0"
+                          className="border-[#8B7082]/30 bg-white h-9 text-sm pl-8"
+                        />
                       </div>
                     </div>
                   </div>
