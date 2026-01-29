@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, Columns } from "lucide-react";
+import { Plus, Trash2, Columns, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import EditableTableCell from "@/components/collab/EditableTableCell";
 import StatusBadge from "@/components/collab/StatusBadge";
@@ -38,6 +38,7 @@ const ModernBrandsTable = ({}: ModernBrandsTableProps) => {
   const [customColumns, setCustomColumns] = useState<Array<{ key: string; title: string; editable: boolean; deletable: boolean }>>([]);
   const [allColumns, setAllColumns] = useState(defaultColumns);
   const [showNotification, setShowNotification] = useState(false);
+  const [showExampleRow, setShowExampleRow] = useState(true);
 
   // Sample data with state
   const [brands, setBrands] = useState([
@@ -56,22 +57,6 @@ const ModernBrandsTable = ({}: ModernBrandsTableProps) => {
       invoiceSent: 'Yes',
       paymentReceived: 'Paid',
       notes: 'Sample notes'
-    },
-    {
-      id: '2',
-      brandName: '',
-      product: '',
-      contact: '',
-      status: 'Inbound',
-      deliverables: '',
-      briefContract: '',
-      rate: '',
-      postDate: '',
-      depositPaid: 'No',
-      finalPaymentDueDate: '',
-      invoiceSent: 'No',
-      paymentReceived: 'Unpaid',
-      notes: ''
     }
   ]);
 
@@ -204,6 +189,7 @@ const ModernBrandsTable = ({}: ModernBrandsTableProps) => {
         <Table>
           <TableHeader>
             <TableRow className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-300">
+              <TableHead className="w-10 sticky left-0 z-10 bg-gray-50"></TableHead>
               {allColumns.map((column) => (
                 column.editable ? (
                   <EditableColumnHeader
@@ -212,38 +198,56 @@ const ModernBrandsTable = ({}: ModernBrandsTableProps) => {
                     onChange={(newTitle) => handleUpdateColumnTitle(column.key, newTitle)}
                     canDelete={column.deletable}
                     onDelete={column.deletable ? () => handleDeleteColumn(column.key) : undefined}
-                    className="font-semibold text-gray-800 py-4 px-8 text-sm uppercase tracking-wide whitespace-nowrap"
+                    className="font-semibold text-gray-800 py-4 px-4 text-sm uppercase tracking-wide whitespace-nowrap"
                   />
                 ) : (
                   <TableHead
                     key={column.key}
-                    className="font-semibold text-gray-800 py-4 px-8 text-sm uppercase tracking-wide whitespace-nowrap"
+                    className="font-semibold text-gray-800 py-4 px-4 text-sm uppercase tracking-wide whitespace-nowrap"
                   >
                     {column.title}
                   </TableHead>
                 )
               ))}
-              <TableHead className="w-[60px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {brands.map((brand, index) => (
+            {brands.filter(brand => brand.id !== '1' || showExampleRow).map((brand, index) => (
               <TableRow
                 key={brand.id}
                 className={cn(
                   "group hover:bg-gradient-to-r hover:from-indigo-50/30 hover:to-purple-50/30 transition-all duration-200 border-b border-gray-200",
-                  brand.id === '1' && "italic"
+                  brand.id === '1' && "italic bg-indigo-50/20"
                 )}
               >
+                <TableCell className="w-10 sticky left-0 z-10 bg-white group-hover:bg-indigo-50/30 text-center">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDeleteBrand(brand.id)}
+                    className="h-7 w-7 text-gray-300 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </TableCell>
                 {allColumns.map((column, colIndex) => (
                   <TableCell
                     key={`${brand.id}-${column.key}`}
-                    className="py-4 px-8 text-gray-700"
+                    className="py-4 px-4 text-gray-700"
                   >
                     <div className="flex items-center gap-2 whitespace-nowrap">
-                      {colIndex === 0 && brand.id === '1' && (
-                        <span className="text-[9px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded whitespace-nowrap">
+                      {column.key === 'brandName' && brand.id === '1' && (
+                        <span className="inline-flex items-center gap-1 text-[9px] font-bold text-indigo-600 bg-indigo-50 pl-1.5 pr-0.5 py-0.5 rounded whitespace-nowrap">
                           EXAMPLE
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowExampleRow(false);
+                            }}
+                            className="ml-0.5 p-0.5 hover:bg-indigo-100 rounded"
+                          >
+                            <X className="h-2.5 w-2.5" />
+                          </button>
                         </span>
                       )}
                       <div className="whitespace-nowrap">
@@ -297,16 +301,6 @@ const ModernBrandsTable = ({}: ModernBrandsTableProps) => {
                     </div>
                   </TableCell>
                 ))}
-                <TableCell className="py-4 px-4 text-right">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDeleteBrand(brand.id)}
-                    className="h-8 w-8 text-gray-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TableCell>
               </TableRow>
             ))}
             {brands.length === 0 && (

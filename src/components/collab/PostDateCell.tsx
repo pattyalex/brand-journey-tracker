@@ -19,13 +19,13 @@ const PostDateCell = ({ value, onChange }: PostDateCellProps) => {
   const [isOpen, setIsOpen] = useState(false);
   
   // Parse date from string if it exists
-  const date = value && value !== "Not set" ? new Date(value) : undefined;
+  const date = value && value !== "—" ? new Date(value) : undefined;
   
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
       onChange(selectedDate.toISOString());
     } else {
-      onChange("Not set");
+      onChange("—");
     }
     setIsOpen(false);
   };
@@ -38,7 +38,7 @@ const PostDateCell = ({ value, onChange }: PostDateCellProps) => {
           className="w-full justify-start text-left font-normal hover:bg-transparent p-0"
         >
           <span className={cn("truncate text-left", !date && "text-gray-400")}>
-            {date ? format(date, "MMM d, yyyy") : "Not set"}
+            {date ? format(date, "MMM d, yyyy") : "—"}
           </span>
         </Button>
       </PopoverTrigger>

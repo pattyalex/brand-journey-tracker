@@ -16,7 +16,7 @@ const EditableTableCell = ({
   onChange,
   className,
   type = "text",
-  placeholder = "Click to add"
+  placeholder = ""
 }: EditableTableCellProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
@@ -64,7 +64,7 @@ const EditableTableCell = ({
       className={cn("cursor-pointer hover:bg-gray-50 p-1 rounded text-left w-full !text-left", value ? "" : "text-gray-400", className)}
       style={{textAlign: 'left'}}
     >
-      {value || placeholder}
+      {value || "—"}
     </div>
   );
 };

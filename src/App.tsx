@@ -34,6 +34,7 @@ const WeeklyContentTasks = lazy(() => import('./pages/WeeklyContentTasks'));
 const SocialMediaScheduler = lazy(() => import('./pages/SocialMediaScheduler'));
 const Index = lazy(() => import('./pages/Index'));
 const PartnershipsManagement = lazy(() => import('./pages/PartnershipsManagement'));
+const Brands = lazy(() => import('./pages/Brands'));
 const EmailVerificationCallback = lazy(() => import('./pages/EmailVerificationCallback'));
 
 // Loading component
@@ -181,6 +182,11 @@ function App() {
               <Route path="/collab-management" element={
                 <ProtectedRoute>
                   <CollabManagement />
+                </ProtectedRoute>
+              } />
+              <Route path="/brands" element={
+                <ProtectedRoute>
+                  <Brands />
                 </ProtectedRoute>
               } />
               <Route path="/strategy-demo" element={

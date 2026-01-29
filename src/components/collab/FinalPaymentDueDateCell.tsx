@@ -20,13 +20,13 @@ const FinalPaymentDueDateCell = ({ value, onChange }: FinalPaymentDueDateCellPro
   const [isOpen, setIsOpen] = useState(false);
   
   // Parse date from string if it exists
-  const date = value && value !== "Not set" ? new Date(value) : undefined;
+  const date = value && value !== "—" ? new Date(value) : undefined;
   
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
       onChange(selectedDate.toISOString());
     } else {
-      onChange("Not set");
+      onChange("—");
     }
     setIsOpen(false);
   };
@@ -41,7 +41,7 @@ const FinalPaymentDueDateCell = ({ value, onChange }: FinalPaymentDueDateCellPro
           {date ? (
             format(date, "MMM d, yyyy")
           ) : (
-            "Not set"
+            "—"
           )}
         </Button>
       </PopoverTrigger>

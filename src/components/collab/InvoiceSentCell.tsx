@@ -21,20 +21,15 @@ const InvoiceSentCell = ({ value, onChange }: InvoiceSentCellProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           className={cn(
-            "h-8 w-full justify-start text-left font-normal",
-            isYes ? "text-green-600" : "text-red-500"
+            "h-8 w-full justify-center font-normal",
+            isYes ? "text-green-600" : "text-gray-400"
           )}
         >
-          <span className="flex items-center">
-            {isYes ? (
-              <Check className="h-4 w-4 mr-2 text-green-600" />
-            ) : (
-              <X className="h-4 w-4 mr-2 text-red-500" />
-            )}
-            {value || "No"}
+          <span className="text-lg">
+            {isYes ? "✓" : "—"}
           </span>
         </Button>
       </DropdownMenuTrigger>

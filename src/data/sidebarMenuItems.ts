@@ -1,5 +1,5 @@
 
-import { Home, FolderOpen, FileText, Settings, CreditCard, TrendingUp, BarChart, HelpCircle, CheckSquare, Clipboard, CheckCircle, Handshake, Clapperboard, Sparkles, Calendar } from 'lucide-react';
+import { Home, FolderOpen, FileText, Settings, CreditCard, TrendingUp, BarChart, HelpCircle, CheckSquare, Clipboard, CheckCircle, Handshake, Clapperboard, Sparkles, Calendar, Building2 } from 'lucide-react';
 import { MenuItem } from '@/types/sidebar';
 
 export const defaultMenuItems: MenuItem[] = [
@@ -15,6 +15,12 @@ export const defaultMenuItems: MenuItem[] = [
     title: 'Partnerships',
     icon: Handshake,
     url: '/collab-management',
+    isDeletable: false
+  },
+  {
+    title: 'Brands',
+    icon: Building2,
+    url: '/brands',
     isDeletable: false
   },
   {

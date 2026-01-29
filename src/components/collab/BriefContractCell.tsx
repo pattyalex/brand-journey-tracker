@@ -29,7 +29,7 @@ const BriefContractCell = ({ value, onChange }: BriefContractCellProps) => {
   const { toast } = useToast();
   
   // Parse the stored JSON string to get uploaded files
-  const files: UploadedFile[] = value && value !== "None" ? JSON.parse(value) : [];
+  const files: UploadedFile[] = value && value !== "None" && value !== "" ? JSON.parse(value) : [];
   
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFiles = Array.from(event.target.files || []);
@@ -67,9 +67,9 @@ const BriefContractCell = ({ value, onChange }: BriefContractCellProps) => {
   const handleRemoveFile = (index: number) => {
     const updatedFiles = [...files];
     updatedFiles.splice(index, 1);
-    
+
     if (updatedFiles.length === 0) {
-      onChange("None");
+      onChange("");
     } else {
       onChange(JSON.stringify(updatedFiles));
     }
@@ -96,10 +96,16 @@ const BriefContractCell = ({ value, onChange }: BriefContractCellProps) => {
           className="h-8 w-full justify-start text-left font-normal"
         >
           <div className="flex items-center">
-            <FileText size={16} className="text-blue-500 mr-2" />
-            <span className={`truncate ${files.length === 0 ? 'text-gray-400' : ''}`}>
-              {files.length === 1 ? files[0].name : files.length > 1 ? `${files.length} file(s)` : "None"}
-            </span>
+            {files.length > 0 ? (
+              <>
+                <FileText size={16} className="text-blue-500 mr-2" />
+                <span className="truncate">
+                  {files.length === 1 ? files[0].name : `${files.length} files`}
+                </span>
+              </>
+            ) : (
+              <Upload size={16} className="text-gray-400" />
+            )}
           </div>
         </Button>
       </DialogTrigger>

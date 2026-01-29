@@ -83,12 +83,11 @@ const DepositPaidCell = ({ value, onChange }: DepositPaidCellProps) => {
           variant="ghost"
           className={cn(
             "w-full justify-center font-normal hover:bg-transparent p-0",
-            isYes ? "text-green-600" : (isNo ? "text-red-500" : "text-gray-500")
+            isYes ? "text-green-600" : (isNo ? "text-gray-400" : "text-gray-400")
           )}
         >
-          <span className="flex items-center justify-center">
-            {renderStatusIcon()}
-            {value || "No"}
+          <span className="flex items-center justify-center text-lg">
+            {isYes ? "✓" : "—"}
           </span>
         </Button>
       </PopoverTrigger>
