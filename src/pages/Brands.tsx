@@ -22,6 +22,7 @@ import {
   Filter,
   DollarSign,
   Calendar as CalendarIcon,
+  CalendarDays,
   Clock,
   CheckCircle2,
   Upload,
@@ -58,6 +59,7 @@ interface Deliverable {
   isPublished?: boolean; // Checkbox: content published
   isPaid?: boolean; // Checkbox: payment received for this deliverable
   paymentAmount?: number; // Expected payment amount for this deliverable
+  paidDate?: string; // Date when payment was received for this deliverable
 }
 
 interface BrandDeal {
@@ -145,14 +147,52 @@ const Brands = () => {
     const yearStart = startOfYear(now);
     const yearEnd = endOfYear(now);
 
-    const completedThisMonth = deals.filter(d =>
-      d.paymentReceived && d.paymentReceivedDate &&
-      isWithinInterval(parseISO(d.paymentReceivedDate), { start: monthStart, end: monthEnd })
-    );
-    const completedThisYear = deals.filter(d =>
-      d.paymentReceived && d.paymentReceivedDate &&
-      isWithinInterval(parseISO(d.paymentReceivedDate), { start: yearStart, end: yearEnd })
-    );
+    // Calculate earnings from deposits and deliverable payments
+    const monthlyEarningsCalc = deals.reduce((sum, d) => {
+      let dealTotal = 0;
+      // Add deposit if paid this month (or no date recorded - assume current)
+      if (d.depositPaid) {
+        const depositInMonth = !d.depositPaidDate ||
+          isWithinInterval(parseISO(d.depositPaidDate), { start: monthStart, end: monthEnd });
+        if (depositInMonth) {
+          dealTotal += d.depositAmount || 0;
+        }
+      }
+      // Add deliverable payments paid this month (or no date recorded - assume current)
+      d.deliverables?.forEach(del => {
+        if (del.isPaid && del.paymentAmount) {
+          const delInMonth = !del.paidDate ||
+            isWithinInterval(parseISO(del.paidDate), { start: monthStart, end: monthEnd });
+          if (delInMonth) {
+            dealTotal += del.paymentAmount;
+          }
+        }
+      });
+      return sum + dealTotal;
+    }, 0);
+
+    const yearlyEarningsCalc = deals.reduce((sum, d) => {
+      let dealTotal = 0;
+      // Add deposit if paid this year (or no date recorded - assume current)
+      if (d.depositPaid) {
+        const depositInYear = !d.depositPaidDate ||
+          isWithinInterval(parseISO(d.depositPaidDate), { start: yearStart, end: yearEnd });
+        if (depositInYear) {
+          dealTotal += d.depositAmount || 0;
+        }
+      }
+      // Add deliverable payments paid this year (or no date recorded - assume current)
+      d.deliverables?.forEach(del => {
+        if (del.isPaid && del.paymentAmount) {
+          const delInYear = !del.paidDate ||
+            isWithinInterval(parseISO(del.paidDate), { start: yearStart, end: yearEnd });
+          if (delInYear) {
+            dealTotal += del.paymentAmount;
+          }
+        }
+      });
+      return sum + dealTotal;
+    }, 0);
 
     const pendingPayments = deals.filter(d => !d.paymentReceived && d.status !== 'inbound');
     const pendingAmount = pendingPayments.reduce((sum, d) => {
@@ -178,8 +218,8 @@ const Brands = () => {
     });
 
     return {
-      monthlyEarnings: completedThisMonth.reduce((sum, d) => sum + d.totalFee, 0),
-      yearlyEarnings: completedThisYear.reduce((sum, d) => sum + d.totalFee, 0),
+      monthlyEarnings: monthlyEarningsCalc,
+      yearlyEarnings: yearlyEarningsCalc,
       pendingAmount,
       pendingCount: pendingPayments.length,
       upcomingDeadlines: upcomingDeadlines.length,
@@ -249,14 +289,8 @@ const Brands = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-[#FAF9F7]">
+      <div className="min-h-screen bg-[#F9F8F8]">
         <div className="p-6 lg:p-8">
-            {/* Header */}
-            <div className="mb-8">
-              <h1 className="text-2xl font-bold text-[#612a4f]">Brand Partnerships</h1>
-              <p className="text-[#8B7082] mt-1">Track and manage your brand deals and sponsorships</p>
-            </div>
-
             {/* Dashboard Summary */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <Card className="p-4 bg-white border-0 shadow-sm">
@@ -340,26 +374,6 @@ const Brands = () => {
                 </Select>
               </div>
               <div className="flex gap-2">
-                <div className="flex bg-white rounded-lg border border-[#8B7082]/30 p-1">
-                  <button
-                    onClick={() => setView('kanban')}
-                    className={cn(
-                      "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
-                      view === 'kanban' ? "bg-[#612a4f] text-white" : "text-[#8B7082] hover:text-[#612a4f]"
-                    )}
-                  >
-                    <LayoutGrid className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setView('table')}
-                    className={cn(
-                      "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
-                      view === 'table' ? "bg-[#612a4f] text-white" : "text-[#8B7082] hover:text-[#612a4f]"
-                    )}
-                  >
-                    <Table2 className="w-4 h-4" />
-                  </button>
-                </div>
                 <Button
                   onClick={() => setIsAddDialogOpen(true)}
                   className="bg-[#612a4f] hover:bg-[#4d2140] text-white"
@@ -371,24 +385,15 @@ const Brands = () => {
             </div>
 
             {/* Main Content */}
-            {view === 'kanban' ? (
-              <KanbanView
-                dealsByStatus={dealsByStatus}
-                onDragStart={handleDragStart}
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-                onEdit={setEditingDeal}
-                onDelete={handleDeleteDeal}
-                onQuickUpdate={handleUpdateDeal}
-              />
-            ) : (
-              <TableView
-                deals={filteredDeals}
-                onEdit={setEditingDeal}
-                onDelete={handleDeleteDeal}
-                onQuickUpdate={handleUpdateDeal}
-              />
-            )}
+            <KanbanView
+              dealsByStatus={dealsByStatus}
+              onDragStart={handleDragStart}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+              onEdit={setEditingDeal}
+              onDelete={handleDeleteDeal}
+              onQuickUpdate={handleUpdateDeal}
+            />
 
             {/* Add/Edit Dialog */}
             <DealDialog
@@ -488,15 +493,15 @@ const DealCard = ({ deal, onDragStart, onEdit, onDelete, onQuickUpdate }: DealCa
   const [selectedDeliverableId, setSelectedDeliverableId] = useState<string | null>(null);
   const now = new Date();
 
-  // Get the selected deliverable or default to the first one with upcoming dates
+  // Get the selected deliverable or default to the first one
   const selectedDeliverable = selectedDeliverableId
     ? deal.deliverables?.find(d => d.id === selectedDeliverableId)
     : null;
 
-  // If a deliverable is selected, show its dates; otherwise show earliest upcoming
-  const displayDeliverable = selectedDeliverable || deal.deliverables?.find(d =>
-    (!d.isSubmitted && d.submissionDeadline) || (!d.isPublished && d.publishDeadline)
-  );
+  // If a deliverable is selected, show its dates; otherwise show first with pending work, or just the first one
+  const displayDeliverable = selectedDeliverable ||
+    deal.deliverables?.find(d => (!d.isSubmitted && d.submissionDeadline) || (!d.isPublished && d.publishDeadline)) ||
+    deal.deliverables?.[0];
 
   const displaySubmitDate = displayDeliverable?.submissionDeadline;
   const displayPublishDate = displayDeliverable?.publishDeadline;
@@ -537,12 +542,12 @@ const DealCard = ({ deal, onDragStart, onEdit, onDelete, onQuickUpdate }: DealCa
         <div className="flex gap-1">
           {deal.depositPaid && (
             <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-medium rounded">
-              Deposit
+              Deposit Paid
             </span>
           )}
           {displayDeliverable?.isPaid && (
             <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-medium rounded">
-              Paid
+              Deliverable Paid
             </span>
           )}
         </div>
@@ -566,11 +571,11 @@ const DealCard = ({ deal, onDragStart, onEdit, onDelete, onQuickUpdate }: DealCa
                 key={d.id}
                 onClick={(e) => {
                   e.stopPropagation();
-                  setSelectedDeliverableId(selectedDeliverableId === d.id ? null : d.id);
+                  setSelectedDeliverableId(d.id);
                 }}
                 className={cn(
                   "px-1.5 py-0.5 text-[10px] font-medium rounded transition-all flex-shrink-0",
-                  selectedDeliverableId === d.id
+                  displayDeliverable?.id === d.id
                     ? "bg-[#612a4f] text-white"
                     : "bg-[#F5F3F4] text-[#8B7082]"
                 )}
@@ -587,7 +592,7 @@ const DealCard = ({ deal, onDragStart, onEdit, onDelete, onQuickUpdate }: DealCa
         {displaySubmitDate && (
           <div className="flex items-center justify-between text-xs text-[#8B7082]">
             <div className="flex items-center gap-1">
-              <CalendarIcon className="w-3 h-3" />
+              <CalendarDays className="w-3 h-3" />
               <span className={cn(isSubmitDone && "line-through opacity-50")}>
                 Submit: {format(parseISO(displaySubmitDate), "MMM d")}
               </span>
@@ -609,9 +614,9 @@ const DealCard = ({ deal, onDragStart, onEdit, onDelete, onQuickUpdate }: DealCa
           </div>
         )}
         {displayPublishDate && (
-          <div className="flex items-center justify-between text-xs text-[#612a4f] font-medium">
+          <div className="flex items-center justify-between text-xs font-medium text-[#612a4f]">
             <div className="flex items-center gap-1">
-              <CalendarIcon className="w-3 h-3" />
+              <CalendarDays className="w-3 h-3" />
               <span className={cn(isPublishDone && "line-through opacity-50")}>
                 Publish: {format(parseISO(displayPublishDate), "MMM d")}
               </span>
@@ -635,8 +640,8 @@ const DealCard = ({ deal, onDragStart, onEdit, onDelete, onQuickUpdate }: DealCa
         {/* Paid checkbox - always visible for selected deliverable */}
         {displayDeliverable && (
           <div className={cn(
-            "flex items-center justify-between text-xs pt-2 mt-1 border-t border-[#F5F3F4]",
-            displayDeliverable.isPaid ? "text-emerald-600" : "text-[#8B7082]"
+            "flex items-center justify-between text-xs pt-2 mt-1 border-t border-[#F5F3F4] font-medium",
+            displayDeliverable.isPaid ? "text-emerald-600" : "text-[#612a4f]"
           )}>
             <div className="flex items-center gap-1">
               <Wallet className="w-3 h-3" />
@@ -649,7 +654,11 @@ const DealCard = ({ deal, onDragStart, onEdit, onDelete, onQuickUpdate }: DealCa
                 checked={displayDeliverable.isPaid || false}
                 onCheckedChange={(checked) => {
                   const updatedDeliverables = deal.deliverables.map(d =>
-                    d.id === displayDeliverable.id ? { ...d, isPaid: checked as boolean } : d
+                    d.id === displayDeliverable.id ? {
+                      ...d,
+                      isPaid: checked as boolean,
+                      paidDate: checked ? new Date().toISOString() : undefined
+                    } : d
                   );
                   onQuickUpdate(deal.id, { deliverables: updatedDeliverables });
                 }}
@@ -1368,7 +1377,10 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                         <label className="flex items-center gap-1.5 cursor-pointer">
                           <Checkbox
                             checked={deliverable.isPaid || false}
-                            onCheckedChange={(checked) => updateDeliverable(deliverable.id, { isPaid: checked as boolean })}
+                            onCheckedChange={(checked) => updateDeliverable(deliverable.id, {
+                              isPaid: checked as boolean,
+                              paidDate: checked ? new Date().toISOString() : undefined
+                            })}
                             className="h-3.5 w-3.5"
                           />
                           <span className="text-[10px] text-[#612a4f] font-medium">Paid</span>
