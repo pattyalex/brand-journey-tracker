@@ -48,7 +48,8 @@ import {
   Circle,
   ArrowUpRight,
   Coins,
-  HandCoins
+  HandCoins,
+  Banknote
 } from "lucide-react";
 import { getString, setString } from "@/lib/storage";
 import { toast } from "sonner";
@@ -497,7 +498,7 @@ const Brands = () => {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
               <Card className="group p-6 bg-white border border-[#E8E4E6] rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.05),0_1px_4px_rgba(0,0,0,0.03)]">
                 <div className="flex items-center gap-2 mb-3">
-                  <HandCoins className="w-4 h-4 text-[#8B7082]" strokeWidth={1.5} />
+                  <Banknote className="w-4 h-4 text-[#8B7082]" strokeWidth={1.5} />
                   <p className="text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em]">
                     {isYearView ? `${format(selectedMonth, "yyyy")} EARNINGS` : `${format(selectedMonth, "MMMM").toUpperCase()} EARNINGS`}
                   </p>
