@@ -166,8 +166,10 @@ const Brands = () => {
     const monthlyEarningsCalc = deals.reduce((sum, d) => {
       let dealTotal = 0;
       const totalDeliverables = d.deliverables?.length || 1;
+      // Balance after deposit (deposit is PART of totalFee, not in addition to it)
+      const balanceAfterDeposit = d.totalFee ? d.totalFee - (d.depositAmount || 0) : 0;
       // Amount per deliverable when no specific amounts are entered
-      const perDeliverableAmount = d.totalFee ? Math.round(d.totalFee / totalDeliverables) : 0;
+      const perDeliverableAmount = Math.round(balanceAfterDeposit / totalDeliverables);
 
       // Get deliverables that are due in the selected month
       const deliverablesInMonth = d.deliverables?.filter(del => {
@@ -185,7 +187,7 @@ const Brands = () => {
       }
 
       // Add deliverable payments for deliverables due in this month
-      // Use explicit paymentAmount if set, otherwise derive from totalFee
+      // Use explicit paymentAmount if set, otherwise derive from balance after deposit
       deliverablesInMonth.forEach(del => {
         if (del.isPaid) {
           const effectiveAmount = del.paymentAmount || perDeliverableAmount;
@@ -202,8 +204,10 @@ const Brands = () => {
     const yearlyEarningsCalc = deals.reduce((sum, d) => {
       let dealTotal = 0;
       const totalDeliverables = d.deliverables?.length || 1;
+      // Balance after deposit (deposit is PART of totalFee, not in addition to it)
+      const balanceAfterDeposit = d.totalFee ? d.totalFee - (d.depositAmount || 0) : 0;
       // Amount per deliverable when no specific amounts are entered
-      const perDeliverableAmount = d.totalFee ? Math.round(d.totalFee / totalDeliverables) : 0;
+      const perDeliverableAmount = Math.round(balanceAfterDeposit / totalDeliverables);
 
       // Get deliverables that are due in the selected year
       const deliverablesInYear = d.deliverables?.filter(del => {
@@ -220,7 +224,7 @@ const Brands = () => {
       }
 
       // Add deliverable payments for deliverables due in this year
-      // Use explicit paymentAmount if set, otherwise derive from totalFee
+      // Use explicit paymentAmount if set, otherwise derive from balance after deposit
       deliverablesInYear.forEach(del => {
         if (del.isPaid) {
           const effectiveAmount = del.paymentAmount || perDeliverableAmount;
@@ -929,9 +933,11 @@ const DealCard = ({ deal, selectedMonth, isYearView, showArchived, onDragStart, 
         )}
         {/* Paid checkbox - always visible for selected deliverable */}
         {displayDeliverable && (() => {
-          // Calculate effective paid amount: use paymentAmount if set, otherwise derive from totalFee
+          // Calculate effective paid amount: use paymentAmount if set, otherwise derive from balance after deposit
+          // Deposit is PART of totalFee, so deliverable payment = (totalFee - depositAmount) / numDeliverables
+          const balanceAfterDeposit = deal.totalFee ? deal.totalFee - (deal.depositAmount || 0) : 0;
           const effectivePaidAmount = displayDeliverable.paymentAmount ||
-            (displayDeliverable.isPaid && deal.totalFee ? Math.round(deal.totalFee / (deal.deliverables?.length || 1)) : 0);
+            (displayDeliverable.isPaid ? Math.round(balanceAfterDeposit / (deal.deliverables?.length || 1)) : 0);
 
           return (
           <div className={cn(
