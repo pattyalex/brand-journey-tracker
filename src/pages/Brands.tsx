@@ -538,16 +538,51 @@ const Brands = () => {
 
             {/* Toolbar */}
             <div className="flex justify-between items-center mb-8">
-              <div className="flex items-center gap-2">
+              {/* Active filter pills - left side */}
+              <div className="flex items-center gap-1.5">
+                {(searchQuery || statusFilter !== 'all' || paymentFilter !== 'all' || showArchived) ? (
+                  <>
+                    {searchQuery && (
+                      <span className="px-2 py-1 bg-[#F8F6F5] text-[#612a4f] text-xs rounded-full flex items-center gap-1">
+                        "{searchQuery}"
+                        <X className="w-3 h-3 cursor-pointer hover:text-[#612a4f]/70" onClick={() => setSearchQuery('')} />
+                      </span>
+                    )}
+                    {statusFilter !== 'all' && (
+                      <span className="px-2 py-1 bg-[#F8F6F5] text-[#612a4f] text-xs rounded-full flex items-center gap-1">
+                        {statusConfig[statusFilter as keyof typeof statusConfig]?.label}
+                        <X className="w-3 h-3 cursor-pointer hover:text-[#612a4f]/70" onClick={() => setStatusFilter('all')} />
+                      </span>
+                    )}
+                    {paymentFilter !== 'all' && (
+                      <span className="px-2 py-1 bg-[#F8F6F5] text-[#612a4f] text-xs rounded-full flex items-center gap-1">
+                        {paymentFilter === 'paid' ? 'Paid' : 'Unpaid'}
+                        <X className="w-3 h-3 cursor-pointer hover:text-[#612a4f]/70" onClick={() => setPaymentFilter('all')} />
+                      </span>
+                    )}
+                    {showArchived && (
+                      <span className="px-2 py-1 bg-[#612a4f]/10 text-[#612a4f] text-xs rounded-full flex items-center gap-1">
+                        Archive
+                        <X className="w-3 h-3 cursor-pointer hover:text-[#612a4f]/70" onClick={() => setShowArchived(false)} />
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <div />
+                )}
+              </div>
+
+              {/* Right side - Filter button + Add Deal */}
+              <div className="flex items-center gap-3">
                 {/* Filter Popover */}
                 <Popover>
                   <PopoverTrigger asChild>
                     <button
                       className={cn(
-                        "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200",
+                        "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 relative",
                         "bg-white border border-[#E8E4E6] shadow-[0_2px_8px_rgba(0,0,0,0.04)]",
                         "hover:border-[#612a4f]/30 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]",
-                        (searchQuery || statusFilter !== 'all' || paymentFilter !== 'all' || showArchived) && "border-[#612a4f]/40 bg-[#F8F6F5]"
+                        (searchQuery || statusFilter !== 'all' || paymentFilter !== 'all' || showArchived) && "border-[#612a4f]/40"
                       )}
                     >
                       <Search className="w-4 h-4 text-[#612a4f]" />
@@ -556,7 +591,7 @@ const Brands = () => {
                       )}
                     </button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-72 p-4" align="start" sideOffset={8}>
+                  <PopoverContent className="w-72 p-4" align="end" sideOffset={8}>
                     <div className="space-y-4">
                       {/* Search */}
                       <div>
@@ -634,38 +669,6 @@ const Brands = () => {
                   </PopoverContent>
                 </Popover>
 
-                {/* Active filter pills */}
-                {(searchQuery || statusFilter !== 'all' || paymentFilter !== 'all' || showArchived) && (
-                  <div className="flex items-center gap-1.5">
-                    {searchQuery && (
-                      <span className="px-2 py-1 bg-[#F8F6F5] text-[#612a4f] text-xs rounded-full flex items-center gap-1">
-                        "{searchQuery}"
-                        <X className="w-3 h-3 cursor-pointer hover:text-[#612a4f]/70" onClick={() => setSearchQuery('')} />
-                      </span>
-                    )}
-                    {statusFilter !== 'all' && (
-                      <span className="px-2 py-1 bg-[#F8F6F5] text-[#612a4f] text-xs rounded-full flex items-center gap-1">
-                        {statusConfig[statusFilter as keyof typeof statusConfig]?.label}
-                        <X className="w-3 h-3 cursor-pointer hover:text-[#612a4f]/70" onClick={() => setStatusFilter('all')} />
-                      </span>
-                    )}
-                    {paymentFilter !== 'all' && (
-                      <span className="px-2 py-1 bg-[#F8F6F5] text-[#612a4f] text-xs rounded-full flex items-center gap-1">
-                        {paymentFilter === 'paid' ? 'Paid' : 'Unpaid'}
-                        <X className="w-3 h-3 cursor-pointer hover:text-[#612a4f]/70" onClick={() => setPaymentFilter('all')} />
-                      </span>
-                    )}
-                    {showArchived && (
-                      <span className="px-2 py-1 bg-[#612a4f]/10 text-[#612a4f] text-xs rounded-full flex items-center gap-1">
-                        Archive
-                        <X className="w-3 h-3 cursor-pointer hover:text-[#612a4f]/70" onClick={() => setShowArchived(false)} />
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex gap-3">
                 <Button
                   onClick={() => setIsAddDialogOpen(true)}
                   className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#612a4f] to-[#4d2140] hover:from-[#4d2140] hover:to-[#3a1830] text-white shadow-[0_4px_16px_rgba(97,42,79,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_6px_24px_rgba(97,42,79,0.4)] hover:-translate-y-0.5 transition-all duration-200"
