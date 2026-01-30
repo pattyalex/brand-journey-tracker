@@ -537,64 +537,134 @@ const Brands = () => {
             </div>
 
             {/* Toolbar */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-8">
-              <div className="flex-1 flex gap-3 flex-wrap">
-                <div className="relative flex-1 max-w-xs">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#612a4f] z-10 pointer-events-none" />
-                  <Input
-                    placeholder="Search brands..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-11 h-11 bg-white border-[#E8E4E6] rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0 transition-all duration-200"
-                  />
-                </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-[150px] h-11 bg-white border-[#E8E4E6] rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    {statusOrder.map(status => (
-                      <SelectItem key={status} value={status}>{statusConfig[status].label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select value={paymentFilter} onValueChange={setPaymentFilter}>
-                  <SelectTrigger className="w-[150px] h-11 bg-white border-[#E8E4E6] rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-                    <SelectValue placeholder="Payment" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Payments</SelectItem>
-                    <SelectItem value="paid">Paid</SelectItem>
-                    <SelectItem value="unpaid">Unpaid</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowArchived(!showArchived)}
-                  className={cn(
-                    "h-11 rounded-xl border-[#E8E4E6] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:bg-[#F8F6F5] hover:border-[#8B7082]/40 hover:text-[#612a4f] transition-all duration-200",
-                    showArchived && "bg-[#F8F6F5] border-[#8B7082]/40"
-                  )}
-                >
-                  {showArchived ? (
-                    <>
-                      <ChevronLeft className="w-4 h-4 mr-1 text-[#8B7082]" />
-                      <span>Back to Active</span>
-                    </>
-                  ) : (
-                    <>
-                      <Archive className="w-4 h-4 mr-2 text-[#8B7082]" />
-                      <span>Archive</span>
-                      {archivedCount > 0 && (
-                        <span className="ml-1.5 px-1.5 py-0.5 bg-[#8B7082]/20 text-[#8B7082] text-xs rounded-full">
-                          {archivedCount}
-                        </span>
+            <div className="flex justify-between items-center mb-8">
+              <div className="flex items-center gap-2">
+                {/* Filter Popover */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      className={cn(
+                        "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200",
+                        "bg-white border border-[#E8E4E6] shadow-[0_2px_8px_rgba(0,0,0,0.04)]",
+                        "hover:border-[#612a4f]/30 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]",
+                        (searchQuery || statusFilter !== 'all' || paymentFilter !== 'all' || showArchived) && "border-[#612a4f]/40 bg-[#F8F6F5]"
                       )}
-                    </>
-                  )}
-                </Button>
+                    >
+                      <Search className="w-4 h-4 text-[#612a4f]" />
+                      {(searchQuery || statusFilter !== 'all' || paymentFilter !== 'all') && (
+                        <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#612a4f] rounded-full" />
+                      )}
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-72 p-4" align="start" sideOffset={8}>
+                    <div className="space-y-4">
+                      {/* Search */}
+                      <div>
+                        <label className="text-xs font-medium text-[#8B7082] uppercase tracking-wide mb-1.5 block">Search</label>
+                        <Input
+                          placeholder="Search brands..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="h-9 bg-white border-[#E8E4E6] rounded-lg text-sm"
+                        />
+                      </div>
+                      {/* Status */}
+                      <div>
+                        <label className="text-xs font-medium text-[#8B7082] uppercase tracking-wide mb-1.5 block">Status</label>
+                        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                          <SelectTrigger className="h-9 bg-white border-[#E8E4E6] rounded-lg text-sm">
+                            <SelectValue placeholder="All Status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Status</SelectItem>
+                            {statusOrder.map(status => (
+                              <SelectItem key={status} value={status}>{statusConfig[status].label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {/* Payments */}
+                      <div>
+                        <label className="text-xs font-medium text-[#8B7082] uppercase tracking-wide mb-1.5 block">Payments</label>
+                        <Select value={paymentFilter} onValueChange={setPaymentFilter}>
+                          <SelectTrigger className="h-9 bg-white border-[#E8E4E6] rounded-lg text-sm">
+                            <SelectValue placeholder="All Payments" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Payments</SelectItem>
+                            <SelectItem value="paid">Paid</SelectItem>
+                            <SelectItem value="unpaid">Unpaid</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {/* Archive Toggle */}
+                      <div className="pt-2 border-t border-[#E8E4E6]">
+                        <button
+                          onClick={() => setShowArchived(!showArchived)}
+                          className={cn(
+                            "w-full flex items-center justify-between py-2 px-3 rounded-lg transition-all duration-200 text-sm",
+                            showArchived ? "bg-[#612a4f]/10 text-[#612a4f]" : "hover:bg-[#F8F6F5] text-[#8B7082]"
+                          )}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Archive className="w-4 h-4" />
+                            <span>{showArchived ? "Viewing Archive" : "View Archive"}</span>
+                          </div>
+                          {archivedCount > 0 && (
+                            <span className="px-1.5 py-0.5 bg-[#8B7082]/20 text-[#8B7082] text-xs rounded-full">
+                              {archivedCount}
+                            </span>
+                          )}
+                        </button>
+                      </div>
+                      {/* Clear Filters */}
+                      {(searchQuery || statusFilter !== 'all' || paymentFilter !== 'all') && (
+                        <button
+                          onClick={() => {
+                            setSearchQuery('');
+                            setStatusFilter('all');
+                            setPaymentFilter('all');
+                          }}
+                          className="w-full text-xs text-[#8B7082] hover:text-[#612a4f] transition-colors"
+                        >
+                          Clear all filters
+                        </button>
+                      )}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+
+                {/* Active filter pills */}
+                {(searchQuery || statusFilter !== 'all' || paymentFilter !== 'all' || showArchived) && (
+                  <div className="flex items-center gap-1.5">
+                    {searchQuery && (
+                      <span className="px-2 py-1 bg-[#F8F6F5] text-[#612a4f] text-xs rounded-full flex items-center gap-1">
+                        "{searchQuery}"
+                        <X className="w-3 h-3 cursor-pointer hover:text-[#612a4f]/70" onClick={() => setSearchQuery('')} />
+                      </span>
+                    )}
+                    {statusFilter !== 'all' && (
+                      <span className="px-2 py-1 bg-[#F8F6F5] text-[#612a4f] text-xs rounded-full flex items-center gap-1">
+                        {statusConfig[statusFilter as keyof typeof statusConfig]?.label}
+                        <X className="w-3 h-3 cursor-pointer hover:text-[#612a4f]/70" onClick={() => setStatusFilter('all')} />
+                      </span>
+                    )}
+                    {paymentFilter !== 'all' && (
+                      <span className="px-2 py-1 bg-[#F8F6F5] text-[#612a4f] text-xs rounded-full flex items-center gap-1">
+                        {paymentFilter === 'paid' ? 'Paid' : 'Unpaid'}
+                        <X className="w-3 h-3 cursor-pointer hover:text-[#612a4f]/70" onClick={() => setPaymentFilter('all')} />
+                      </span>
+                    )}
+                    {showArchived && (
+                      <span className="px-2 py-1 bg-[#612a4f]/10 text-[#612a4f] text-xs rounded-full flex items-center gap-1">
+                        Archive
+                        <X className="w-3 h-3 cursor-pointer hover:text-[#612a4f]/70" onClick={() => setShowArchived(false)} />
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
+
               <div className="flex gap-3">
                 <Button
                   onClick={() => setIsAddDialogOpen(true)}
