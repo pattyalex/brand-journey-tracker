@@ -482,7 +482,7 @@ const Brands = () => {
                       : "bg-white text-[#612a4f] border-[#E8E4E6] hover:border-[#612a4f]/30"
                   )}
                 >
-                  {isYearView ? "Month View" : "Year View"}
+                  {isYearView ? "By Month" : `All ${format(selectedMonth, "yyyy")} Deals`}
                 </button>
               </div>
             )}
