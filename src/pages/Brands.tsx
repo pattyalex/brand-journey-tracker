@@ -440,28 +440,28 @@ const Brands = () => {
 
             {/* Dashboard Summary */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
-              <Card className="group p-6 bg-white border border-[#E8E4E6] rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.05),0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08),0_2px_8px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-300">
+              <Card className="group p-6 bg-white border border-[#E8E4E6] rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.05),0_1px_4px_rgba(0,0,0,0.03)]">
                 <div className="flex items-center gap-2 mb-3">
                   <Diamond className="w-4 h-4 text-[#8B7082] fill-[#8B7082]/20" />
                   <p className="text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em]">{format(selectedMonth, "MMMM").toUpperCase()} EARNINGS</p>
                 </div>
                 <p className="text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>${metrics.monthlyEarnings.toLocaleString()}</p>
               </Card>
-              <Card className="group p-6 bg-white border border-[#E8E4E6] rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.05),0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08),0_2px_8px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-300">
+              <Card className="group p-6 bg-white border border-[#E8E4E6] rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.05),0_1px_4px_rgba(0,0,0,0.03)]">
                 <div className="flex items-center gap-2 mb-3">
                   <ArrowUpRight className="w-4 h-4 text-[#8B7082]" />
                   <p className="text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em]">{format(selectedMonth, "yyyy")} EARNINGS</p>
                 </div>
                 <p className="text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>${metrics.yearlyEarnings.toLocaleString()}</p>
               </Card>
-              <Card className="group p-6 bg-white border border-[#E8E4E6] rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.05),0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08),0_2px_8px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-300">
+              <Card className="group p-6 bg-white border border-[#E8E4E6] rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.05),0_1px_4px_rgba(0,0,0,0.03)]">
                 <div className="flex items-center gap-2 mb-3">
                   <Circle className="w-4 h-4 text-[#8B7082]" strokeWidth={1.5} />
                   <p className="text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em]">PENDING</p>
                 </div>
                 <p className="text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>${metrics.pendingAmount.toLocaleString()}</p>
               </Card>
-              <Card className="group p-6 bg-white border border-[#E8E4E6] rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.05),0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08),0_2px_8px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-300">
+              <Card className="group p-6 bg-white border border-[#E8E4E6] rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.05),0_1px_4px_rgba(0,0,0,0.03)]">
                 <div className="flex items-center gap-2 mb-3">
                   <svg className="w-4 h-4 text-[#8B7082]" viewBox="0 0 24 24" fill="currentColor" fillOpacity="0.2" stroke="currentColor" strokeWidth="1.5"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" /></svg>
                   <p className="text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em]">ACTIVE DEALS</p>
@@ -708,7 +708,7 @@ const DealCard = ({ deal, selectedMonth, showArchived, onDragStart, onEdit, onDe
       draggable
       onDragStart={() => onDragStart(deal.id)}
       onClick={() => onEdit(deal)}
-      className="group bg-gradient-to-br from-white via-white to-[#FAF9F8] rounded-xl p-4 shadow-[0_6px_20px_rgba(0,0,0,0.06),0_2px_6px_rgba(0,0,0,0.03)] border border-[#E8E4E6] cursor-pointer hover:shadow-[0_12px_32px_rgba(0,0,0,0.1),0_4px_12px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 min-h-[300px] flex flex-col"
+      className="group bg-gradient-to-br from-white via-white to-[#FAF9F8] rounded-xl p-4 shadow-[0_6px_20px_rgba(0,0,0,0.06),0_2px_6px_rgba(0,0,0,0.03)] border border-[#E8E4E6] cursor-pointer hover:shadow-[0_8px_24px_rgba(0,0,0,0.08),0_3px_8px_rgba(0,0,0,0.04)] transition-shadow duration-200 min-h-[300px] flex flex-col"
       style={{ fontFamily: "'DM Sans', sans-serif" }}
     >
       <div className="flex items-start justify-between mb-3">
@@ -1139,16 +1139,16 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-[#FAF9F8] via-[#F8F6F5] to-[#F5F3F2] rounded-2xl border border-[#8B7082]/10 shadow-[0_24px_80px_rgba(97,42,79,0.15)]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-[#FAF9F8] via-[#F8F6F5] to-[#F5F3F2] border border-[#8B7082]/10" style={{ fontFamily: "'DM Sans', sans-serif", borderRadius: '20px', boxShadow: '0 24px 80px rgba(0,0,0,0.12)' }}>
         <DialogHeader>
           <DialogTitle className="text-2xl text-[#612a4f] tracking-[-0.02em]" style={{ fontFamily: "'Playfair Display', serif" }}>{deal ? 'Edit Deal' : 'Add New Deal'}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
           {/* Partnership Details */}
-          <div className="space-y-4 p-6 rounded-2xl bg-white/90 backdrop-blur-sm border border-[#8B7082]/5 shadow-[0_4px_16px_rgba(97,42,79,0.04)]">
+          <div className="space-y-4 p-6 rounded-2xl bg-white border border-[#E8E4E6] shadow-[0_2px_8px_rgba(0,0,0,0.04),0_4px_16px_rgba(97,42,79,0.06)]">
             <h3 className="text-sm font-semibold text-[#612a4f] flex items-center gap-3 tracking-wide">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#8B7082] to-[#7a6572] flex items-center justify-center shadow-sm">
+              <div className="w-9 h-9 rounded-lg bg-[#612a4f] flex items-center justify-center">
                 <Building2 className="w-4 h-4 text-white" />
               </div>
               Partnership Details
@@ -1161,7 +1161,7 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                   onChange={(e) => setFormData(prev => ({ ...prev, brandName: e.target.value }))}
                   onKeyDown={handleEnterKey}
                   placeholder="e.g., Nike"
-                  className="border-[#8B7082]/30 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0"
+                  className="rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200"
                 />
               </div>
               <div>
@@ -1171,7 +1171,7 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                   onChange={(e) => setFormData(prev => ({ ...prev, productCampaign: e.target.value }))}
                   onKeyDown={handleEnterKey}
                   placeholder="e.g., Summer Collection"
-                  className="border-[#8B7082]/30 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0"
+                  className="rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200"
                 />
               </div>
               <div>
@@ -1181,7 +1181,7 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                   onChange={(e) => setFormData(prev => ({ ...prev, contactPerson: e.target.value }))}
                   onKeyDown={handleEnterKey}
                   placeholder="e.g., Maria Smith"
-                  className="border-[#8B7082]/30 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0"
+                  className="rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200"
                 />
               </div>
               <div>
@@ -1192,13 +1192,13 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                   onChange={(e) => setFormData(prev => ({ ...prev, contactEmail: e.target.value }))}
                   onKeyDown={handleEnterKey}
                   placeholder="maria@brand.com"
-                  className="border-[#8B7082]/30 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0"
+                  className="rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200"
                 />
               </div>
               <div>
                 <label className="text-xs text-[#8B7082] mb-1 block">Status</label>
                 <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as BrandDeal['status'], customStatus: value === 'other' ? '' : undefined }))}>
-                  <SelectTrigger className="border-[#8B7082]/30">
+                  <SelectTrigger className="rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)]">
                     <SelectValue>
                       {formData.status === 'other'
                         ? (formData.customStatus || 'Other')
@@ -1225,7 +1225,7 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                       }
                     }}
                     placeholder="Specify status..."
-                    className="border-[#8B7082]/30 h-9 text-sm mt-2"
+                    className="rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] h-9 text-sm mt-2 transition-shadow duration-200"
                     autoFocus
                   />
                 )}
@@ -1233,7 +1233,7 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
               <div>
                 <label className="text-xs text-[#8B7082] mb-1 block">Contract</label>
                 {formData.contractFile ? (
-                  <div className="flex items-center gap-2 p-2 bg-[#FAF9F7] rounded-lg border border-[#8B7082]/30">
+                  <div className="flex items-center gap-2 p-2 bg-[#FAF9F7] rounded-[10px] border border-[#E8E4E6]">
                     <FileText className="w-4 h-4 text-[#8B7082] flex-shrink-0" />
                     <span className="text-sm text-[#612a4f] flex-1 truncate">{formData.contractFile.name}</span>
                     <button
@@ -1253,9 +1253,9 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                   </div>
                 ) : (
                   <label className="cursor-pointer block">
-                    <div className="flex items-center justify-center gap-2 h-10 border border-dashed border-[#8B7082]/40 rounded-lg bg-[#F8F5F7] hover:border-[#8B7082] hover:bg-[#F3EEF1] transition-colors">
-                      <Upload className="w-4 h-4 text-[#8B7082]" />
-                      <span className="text-sm text-[#8B7082]">Upload PDF</span>
+                    <div className="flex items-center justify-center gap-2 h-10 border border-[#E8E4E6] rounded-[10px] bg-[#F5F0F3] hover:bg-[#EDE6EB] hover:border-[#D5CDD2] transition-all duration-200">
+                      <Upload className="w-4 h-4 text-[#612a4f]" />
+                      <span className="text-sm text-[#612a4f] font-medium">Upload PDF</span>
                     </div>
                     <input
                       type="file"
@@ -1285,9 +1285,9 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
           </div>
 
           {/* Payment Details */}
-          <div className="space-y-5 p-6 rounded-2xl bg-white/90 backdrop-blur-sm border border-[#8B7082]/5 shadow-[0_4px_16px_rgba(97,42,79,0.04)]">
+          <div className="space-y-5 p-6 rounded-2xl bg-white border border-[#E8E4E6] shadow-[0_2px_8px_rgba(0,0,0,0.04),0_4px_16px_rgba(97,42,79,0.06)]">
             <h3 className="text-sm font-semibold text-[#612a4f] flex items-center gap-3 tracking-wide">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#612a4f] to-[#4d2140] flex items-center justify-center shadow-sm">
+              <div className="w-9 h-9 rounded-lg bg-[#612a4f] flex items-center justify-center">
                 <DollarSign className="w-4 h-4 text-white" />
               </div>
               Payment Details
@@ -1313,7 +1313,7 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                   }}
                   placeholder="0"
                   className={cn(
-                    "text-2xl font-bold h-12 border-[#8B7082]/30 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0",
+                    "text-2xl font-bold h-12 rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200",
                     hasMismatch && "bg-amber-50 border-amber-300"
                   )}
                 />
@@ -1330,7 +1330,7 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                       onKeyDown={handleEnterKey}
                       placeholder="0"
                       className={cn(
-                        "h-8 text-sm border-[#8B7082]/30 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0",
+                        "h-8 text-sm rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200",
                         hasMismatch && "bg-amber-50 border-amber-300"
                       )}
                     />
@@ -1340,7 +1340,7 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                   <label className="text-xs text-[#8B7082] mb-1 block">Due Date</label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="h-8 text-sm justify-start text-left font-normal border-[#8B7082]/30">
+                      <Button variant="outline" className="h-8 text-sm justify-start text-left font-normal rounded-[10px] border-[#E8E4E6] hover:border-[#D5CDD2] hover:bg-[#F5F5F5] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200">
                         <CalendarIcon className="mr-2 h-3.5 w-3.5 text-[#8B7082]" />
                         {formData.finalPaymentDueDate ? format(parseISO(formData.finalPaymentDueDate), "MMM d") : "Select"}
                       </Button>
@@ -1424,10 +1424,10 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
           </div>
 
           {/* Deliverables */}
-          <div className="space-y-4 p-6 rounded-2xl bg-white/90 backdrop-blur-sm border border-[#8B7082]/5 shadow-[0_4px_16px_rgba(97,42,79,0.04)]">
+          <div className="space-y-4 p-6 rounded-2xl bg-white border border-[#E8E4E6] shadow-[0_2px_8px_rgba(0,0,0,0.04),0_4px_16px_rgba(97,42,79,0.06)]">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-[#612a4f] flex items-center gap-3 tracking-wide">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#612a4f] to-[#4d2140] flex items-center justify-center shadow-sm">
+                <div className="w-9 h-9 rounded-lg bg-[#612a4f] flex items-center justify-center">
                   <Send className="w-4 h-4 text-white" />
                 </div>
                 Deliverables
@@ -1437,7 +1437,7 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                 variant="outline"
                 size="sm"
                 onClick={addDeliverable}
-                className="bg-gradient-to-r from-[#8B7082] to-[#7a6172] text-white hover:from-[#7a6172] hover:to-[#6a5162] border-0 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
+                className="bg-gradient-to-r from-[#612a4f] to-[#4d2140] text-white hover:from-[#4d2140] hover:to-[#3a1830] border-0 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
               >
                 <Plus className="w-3 h-3 mr-1" />
                 Add Deliverable
@@ -1469,13 +1469,13 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
 
                     <div className="grid grid-cols-2 gap-3">
                       {/* Content Type */}
-                      <div className="border-l-4 border-[#612a4f] pl-3 rounded-r-lg bg-[#F8F5F7]">
-                        <label className="text-xs text-[#8B7082] mb-1 block pt-2">Content Type</label>
+                      <div>
+                        <label className="text-xs text-[#8B7082] mb-1 block">Content Type</label>
                         <Select
                           value={deliverable.contentType || undefined}
                           onValueChange={(value) => updateDeliverable(deliverable.id, { contentType: value as ContentType, customContentType: value === 'other' ? '' : undefined })}
                         >
-                          <SelectTrigger className="border-[#8B7082]/30 bg-white h-9 mb-2">
+                          <SelectTrigger className="rounded-[10px] border-l-4 border-l-[#612a4f] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] bg-[#F5F0F3] h-9 transition-shadow duration-200">
                             <SelectValue placeholder="Select content">
                               {deliverable.contentType
                                 ? (deliverable.contentType === 'other'
@@ -1505,20 +1505,20 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                               }
                             }}
                             placeholder="Specify content type..."
-                            className="border-[#8B7082]/30 bg-white h-9 text-sm mt-2"
+                            className="rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] bg-[#F5F0F3] h-9 text-sm mt-2 transition-shadow duration-200"
                             autoFocus
                           />
                         )}
                       </div>
 
                       {/* Status */}
-                      <div className="pt-2 pb-2">
+                      <div>
                         <label className="text-xs text-[#8B7082] mb-1 block">Status</label>
                         <Select
                           value={deliverable.status || undefined}
                           onValueChange={(value) => updateDeliverable(deliverable.id, { status: value as DeliverableStatus })}
                         >
-                          <SelectTrigger className="border-[#8B7082]/30 bg-white h-9">
+                          <SelectTrigger className="rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] bg-white h-9 transition-shadow duration-200">
                             <SelectValue placeholder="Select status">
                               {deliverable.status ? deliverableStatusConfig[deliverable.status]?.label : null}
                             </SelectValue>
@@ -1532,21 +1532,21 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                       </div>
 
                       {/* Submit for Approval Date */}
-                      <div className="pt-2 pb-2">
+                      <div>
                         <div className="flex items-center justify-between mb-1">
                           <label className="text-xs text-[#8B7082]">Submit for Approval</label>
                           <label className="flex items-center gap-1.5 cursor-pointer">
                             <Checkbox
                               checked={deliverable.isSubmitted || false}
                               onCheckedChange={(checked) => updateDeliverable(deliverable.id, { isSubmitted: checked as boolean })}
-                              className="h-3.5 w-3.5"
+                              className="h-4 w-4 rounded-full border-[#8B7082]/30 data-[state=checked]:bg-gradient-to-b data-[state=checked]:from-[#6B9B6B] data-[state=checked]:to-[#4A7A4A] data-[state=checked]:border-[#4A7A4A] data-[state=checked]:shadow-[0_2px_8px_rgba(74,122,74,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]"
                             />
                             <span className="text-[10px] text-[#8B7082]">Done</span>
                           </label>
                         </div>
                         <Popover>
                           <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full justify-start text-left font-normal border-[#8B7082]/30 bg-white h-9 text-sm">
+                            <Button variant="outline" className="w-full justify-start text-left font-normal rounded-[10px] border-[#E8E4E6] hover:border-[#D5CDD2] hover:bg-[#F5F5F5] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] bg-white h-9 text-sm transition-shadow duration-200">
                               <CalendarIcon className="mr-2 h-3.5 w-3.5 text-[#8B7082]" />
                               {deliverable.submissionDeadline ? format(parseISO(deliverable.submissionDeadline), "MMM d, yyyy") : "Select date"}
                             </Button>
@@ -1563,21 +1563,21 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                       </div>
 
                       {/* Publish Due Date */}
-                      <div className="border-l-4 border-[#8B7082] pl-3 rounded-r-lg bg-[#F8F5F7]">
-                        <div className="flex items-center justify-between mb-1 pt-2">
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
                           <label className="text-xs text-[#8B7082]">Publish Due Date</label>
                           <label className="flex items-center gap-1.5 cursor-pointer">
                             <Checkbox
                               checked={deliverable.isPublished || false}
                               onCheckedChange={(checked) => updateDeliverable(deliverable.id, { isPublished: checked as boolean })}
-                              className="h-3.5 w-3.5"
+                              className="h-4 w-4 rounded-full border-[#8B7082]/30 data-[state=checked]:bg-gradient-to-b data-[state=checked]:from-[#6B9B6B] data-[state=checked]:to-[#4A7A4A] data-[state=checked]:border-[#4A7A4A] data-[state=checked]:shadow-[0_2px_8px_rgba(74,122,74,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]"
                             />
-                            <span className="text-[10px] text-[#612a4f] font-medium">Done</span>
+                            <span className="text-[10px] text-[#8B7082]">Done</span>
                           </label>
                         </div>
                         <Popover>
                           <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full justify-start text-left font-normal border-[#8B7082]/30 bg-white h-9 text-sm mb-2">
+                            <Button variant="outline" className="w-full justify-start text-left font-normal rounded-[10px] border-l-4 border-l-[#8B7082] border-[#E8E4E6] hover:border-[#D5CDD2] hover:bg-[#EDE8EB] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] bg-[#F5F0F3] h-9 text-sm transition-shadow duration-200">
                               <CalendarIcon className="mr-2 h-3.5 w-3.5 text-[#8B7082]" />
                               {deliverable.publishDeadline ? format(parseISO(deliverable.publishDeadline), "MMM d, yyyy") : "Select date"}
                             </Button>
@@ -1601,7 +1601,7 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                         onChange={(e) => updateDeliverable(deliverable.id, { title: e.target.value })}
                         onKeyDown={handleEnterKey}
                         placeholder="Optional: Add a description..."
-                        className="border-[#8B7082]/30 bg-white h-9 text-sm"
+                        className="rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] bg-white h-9 text-sm transition-shadow duration-200"
                       />
                     </div>
 
@@ -1618,9 +1618,9 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                               isPaid: checked as boolean,
                               paidDate: checked ? new Date().toISOString() : undefined
                             })}
-                            className="h-3.5 w-3.5"
+                            className="h-4 w-4 rounded-full border-[#8B7082]/30 data-[state=checked]:bg-gradient-to-b data-[state=checked]:from-[#6B9B6B] data-[state=checked]:to-[#4A7A4A] data-[state=checked]:border-[#4A7A4A] data-[state=checked]:shadow-[0_2px_8px_rgba(74,122,74,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]"
                           />
-                          <span className="text-[10px] text-[#612a4f] font-medium">Paid</span>
+                          <span className="text-[10px] text-[#8B7082]">Paid</span>
                         </label>
                       </div>
                       <div className="relative w-32">
@@ -1643,7 +1643,7 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                           }}
                           placeholder="0"
                           className={cn(
-                            "border-[#8B7082]/30 bg-white h-9 text-sm pl-8",
+                            "rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] bg-white h-9 text-sm pl-8 transition-shadow duration-200",
                             hasMismatch && "bg-amber-50 border-amber-300"
                           )}
                         />
@@ -1655,60 +1655,10 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
             )}
           </div>
 
-          {/* Campaign Dates */}
-          <div className="space-y-4 p-5 rounded-xl bg-[#FAF8F6]">
-            <h3 className="text-sm font-semibold text-[#612a4f] flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#8B7082] flex items-center justify-center">
-                <CalendarIcon className="w-4 h-4 text-white" />
-              </div>
-              Campaign Period
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs text-[#8B7082] mb-1 block">Campaign Start</label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left font-normal border-[#8B7082]/30">
-                      <CalendarIcon className="mr-2 h-4 w-4 text-[#8B7082]" />
-                      {formData.campaignStart ? format(parseISO(formData.campaignStart), "MMM d, yyyy") : "Select date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 z-[9999]" sideOffset={5}>
-                    <Calendar
-                      mode="single"
-                      selected={formData.campaignStart ? parseISO(formData.campaignStart) : undefined}
-                      onSelect={(date) => setFormData(prev => ({ ...prev, campaignStart: date?.toISOString() }))}
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              <div>
-                <label className="text-xs text-[#8B7082] mb-1 block">Campaign End</label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left font-normal border-[#8B7082]/30">
-                      <CalendarIcon className="mr-2 h-4 w-4 text-[#8B7082]" />
-                      {formData.campaignEnd ? format(parseISO(formData.campaignEnd), "MMM d, yyyy") : "Select date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 z-[9999]" sideOffset={5}>
-                    <Calendar
-                      mode="single"
-                      selected={formData.campaignEnd ? parseISO(formData.campaignEnd) : undefined}
-                      onSelect={(date) => setFormData(prev => ({ ...prev, campaignEnd: date?.toISOString() }))}
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
-          </div>
-
           {/* Notes */}
-          <div className="space-y-4 p-6 rounded-2xl bg-white/90 backdrop-blur-sm border border-[#8B7082]/5 shadow-[0_4px_16px_rgba(97,42,79,0.04)]">
+          <div className="space-y-4 p-6 rounded-2xl bg-white border border-[#E8E4E6] shadow-[0_2px_8px_rgba(0,0,0,0.04),0_4px_16px_rgba(97,42,79,0.06)]">
             <h3 className="text-sm font-semibold text-[#612a4f] flex items-center gap-3 tracking-wide">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#8B7082] to-[#7a6572] flex items-center justify-center shadow-sm">
+              <div className="w-9 h-9 rounded-lg bg-[#612a4f] flex items-center justify-center">
                 <StickyNote className="w-4 h-4 text-white" />
               </div>
               Notes
@@ -1717,7 +1667,7 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
               value={formData.notes}
               onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
               placeholder="Any additional details..."
-              className="min-h-[100px] border-[#8B7082]/20 rounded-xl bg-white/80 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0"
+              className="min-h-[100px] rounded-[10px] border-[#E8E4E6] bg-white focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200"
             />
           </div>
         </div>
@@ -1741,7 +1691,7 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
         )}
 
         <DialogFooter className="gap-3 pt-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-[#8B7082]/20 rounded-xl hover:bg-[#8B7082]/10 transition-all duration-200">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-[#612a4f]/20 rounded-xl hover:bg-[#612a4f]/10 hover:border-[#612a4f]/30 transition-all duration-200">
             Cancel
           </Button>
           <Button onClick={handleSubmit} className="bg-gradient-to-r from-[#612a4f] to-[#4d2140] hover:from-[#4d2140] hover:to-[#3a1830] text-white rounded-xl shadow-[0_4px_16px_rgba(97,42,79,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_6px_24px_rgba(97,42,79,0.4)] transition-all duration-200">
