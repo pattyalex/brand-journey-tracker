@@ -95,6 +95,7 @@ const StrategyGrowth = () => {
   const [showAddLinkForm, setShowAddLinkForm] = useState(false);
   const [strugglesFocused, setStrugglesFocused] = useState(false);
   const [desiresFocused, setDesiresFocused] = useState(false);
+  const [showPinterestInput, setShowPinterestInput] = useState(false);
   const { images: visionBoardImages, pinterestUrl, addImage: addVisionBoardImage, removeImage: removeVisionBoardImage, updatePinterestUrl } = useVisionBoard();
 
   // Growth Goals states with progress tracking
@@ -609,7 +610,7 @@ const StrategyGrowth = () => {
   return (
     <Layout>
       <GoalsOnboarding run={showOnboarding && activeTab === 'growth-goals'} onComplete={completeOnboarding} />
-      <div className="w-full h-full mx-auto px-8 py-6 bg-gradient-to-br from-gray-50 to-gray-100 overflow-auto">
+      <div className="w-full h-full mx-auto px-8 py-6 bg-gradient-to-br from-[#F7F4F5] via-[#FAFAFA] to-[#FFFDF9] overflow-auto">
         <div className="max-w-[1600px] mx-auto space-y-6">
           
           {/* Tabs */}
@@ -637,7 +638,7 @@ const StrategyGrowth = () => {
               <Card className="rounded-xl bg-white border border-[#E8E4E6] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-3 text-base">
-                    <div className="p-2 rounded-lg bg-[#8B7082] text-white shadow-sm">
+                    <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
                       <Target className="w-4 h-4" />
                     </div>
                     <span className="font-semibold text-[#612A4F]">Mission Statement</span>
@@ -699,7 +700,7 @@ const StrategyGrowth = () => {
               <Card className="rounded-xl bg-white border border-[#E8E4E6] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-3 text-base">
-                    <div className="p-2 rounded-lg bg-[#8B7082] text-white shadow-sm">
+                    <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
                       <Sparkles className="w-4 h-4" />
                     </div>
                     <span className="font-semibold text-[#612A4F]">Brand Values</span>
@@ -923,7 +924,7 @@ const StrategyGrowth = () => {
               <Card className="rounded-xl bg-white border border-[#E8E4E6] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-3 text-base">
-                    <div className="p-2 rounded-lg bg-[#8B7082] text-white shadow-sm">
+                    <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
                       <MessageSquare className="w-4 h-4" />
                     </div>
                     <span className="font-semibold text-[#612A4F]">Content Style</span>
@@ -971,7 +972,7 @@ const StrategyGrowth = () => {
               <Card className="rounded-xl bg-white border border-[#E8E4E6] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-3 text-base">
-                    <div className="p-2 rounded-lg bg-[#8B7082] text-white shadow-sm">
+                    <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
                       <Users className="w-4 h-4" />
                     </div>
                     <span className="font-semibold text-[#612A4F]">Target Audience</span>
@@ -1056,7 +1057,7 @@ const StrategyGrowth = () => {
               <Card id="vision-board" className="rounded-xl bg-white border-0 shadow-none scroll-mt-6">
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-3 text-base">
-                    <div className="p-2 rounded-lg bg-[#8B7082] text-white shadow-sm">
+                    <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
                       <ImageIcon className="w-4 h-4" />
                     </div>
                     <span className="font-semibold text-[#612A4F]">Vision Board</span>
@@ -1095,42 +1096,80 @@ const StrategyGrowth = () => {
 
                   {/* Upload Section - Two button layout */}
                   {visionBoardImages.length === 0 && (
-                    <div className="flex items-center gap-4">
-                      {/* Open Pinterest Board Button */}
-                      <button
-                        onClick={() => {
-                          if (pinterestUrl) {
-                            window.open(pinterestUrl, '_blank');
-                          } else {
-                            const url = prompt('Enter your Pinterest board URL:');
-                            if (url) updatePinterestUrl(url);
-                          }
-                        }}
-                        className="flex-1 flex items-center justify-center gap-2 py-4 px-6 bg-gradient-to-b from-white to-[#FAF7F8] border border-[#E8E4E6] rounded-xl hover:border-[#D5CDD2] hover:bg-[#F5F0F3]/50 transition-all"
-                      >
-                        <ArrowUpRight className="w-4 h-4 text-[#8B7082]" />
-                        <span className="text-sm font-medium text-[#4A4A4A]">Open Pinterest Board</span>
-                      </button>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4">
+                        {/* Open Pinterest Board Button */}
+                        {showPinterestInput ? (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              placeholder="Paste Pinterest board URL..."
+                              autoFocus
+                              className="px-4 py-2.5 text-sm border border-[#E8E4E6] rounded-xl focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 w-64"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && (e.target as HTMLInputElement).value) {
+                                  updatePinterestUrl((e.target as HTMLInputElement).value);
+                                  setShowPinterestInput(false);
+                                }
+                                if (e.key === 'Escape') {
+                                  setShowPinterestInput(false);
+                                }
+                              }}
+                              onBlur={(e) => {
+                                if (e.target.value) {
+                                  updatePinterestUrl(e.target.value);
+                                }
+                                setShowPinterestInput(false);
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 group">
+                            <button
+                              onClick={() => {
+                                if (pinterestUrl) {
+                                  window.open(pinterestUrl, '_blank');
+                                } else {
+                                  setShowPinterestInput(true);
+                                }
+                              }}
+                              className="flex items-center justify-center gap-2 py-3 px-5 bg-gradient-to-b from-white to-[#FAF7F8] border border-[#E8E4E6] rounded-xl hover:border-[#D5CDD2] hover:bg-[#F5F0F3]/50 transition-all"
+                            >
+                              <ArrowUpRight className="w-4 h-4 text-[#8B7082]" />
+                              <span className="text-sm font-medium text-[#4A4A4A]">{pinterestUrl ? 'Open Pinterest Board' : 'Link Pinterest Board'}</span>
+                            </button>
+                            {pinterestUrl && (
+                              <button
+                                onClick={() => updatePinterestUrl('')}
+                                className="p-1.5 text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-all"
+                                title="Remove Pinterest link"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        )}
 
-                      <span className="text-sm text-[#8B7082]">or</span>
+                        <span className="text-sm text-[#8B7082]">or</span>
 
-                      {/* Upload Image Button */}
-                      <button
-                        onClick={handleUploadClick}
-                        className="flex-1 flex items-center justify-center gap-2 py-4 px-6 bg-gradient-to-b from-white to-[#FAF7F8] border border-[#E8E4E6] rounded-xl hover:border-[#D5CDD2] hover:bg-[#F5F0F3]/50 transition-all"
-                      >
-                        <Upload className="w-4 h-4 text-[#8B7082]" />
-                        <span className="text-sm font-medium text-[#4A4A4A]">Upload image instead</span>
-                      </button>
+                        {/* Upload Image Button */}
+                        <button
+                          onClick={handleUploadClick}
+                          className="flex items-center justify-center gap-2 py-3 px-5 bg-gradient-to-b from-white to-[#FAF7F8] border border-[#E8E4E6] rounded-xl hover:border-[#D5CDD2] hover:bg-[#F5F0F3]/50 transition-all"
+                        >
+                          <Upload className="w-4 h-4 text-[#8B7082]" />
+                          <span className="text-sm font-medium text-[#4A4A4A]">Upload image instead</span>
+                        </button>
 
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        className="hidden"
-                        multiple
-                        accept="image/*"
-                        onChange={handleVisionBoardUpload}
-                      />
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          className="hidden"
+                          multiple
+                          accept="image/*"
+                          onChange={handleVisionBoardUpload}
+                        />
+                      </div>
                     </div>
                   )}
 
@@ -1146,36 +1185,6 @@ const StrategyGrowth = () => {
                     />
                   )}
 
-                  {/* Pinterest Board - Button style */}
-                  {pinterestUrl ? (
-                    <div className="flex items-center gap-3 group">
-                      <button
-                        onClick={() => window.open(pinterestUrl, '_blank')}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#F5F0F4] to-[#EDE5EB] hover:from-[#EDE5EB] hover:to-[#E5DAE2] rounded-lg text-[13px] font-medium text-[#612A4F] transition-all shadow-sm hover:shadow"
-                      >
-                        <Link2 className="w-4 h-4" />
-                        <span>Open Pinterest Board</span>
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => updatePinterestUrl("")}
-                        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600 transition-all"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <Link2 className="w-4 h-4 text-[#8B7082]" />
-                      <input
-                        type="text"
-                        placeholder="Add Pinterest board URL..."
-                        value={pinterestUrl}
-                        onChange={(e) => updatePinterestUrl(e.target.value)}
-                        className="text-[13px] px-0 py-1 bg-transparent border-none focus:outline-none focus:ring-0 placeholder:text-[#8B7082] text-gray-700 w-64"
-                      />
-                    </div>
-                  )}
                 </CardContent>
               </Card>
 
@@ -1183,7 +1192,7 @@ const StrategyGrowth = () => {
               <Card className="rounded-xl bg-white border border-[#E8E4E6] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-3 text-base">
-                    <div className="p-2 rounded-lg bg-[#8B7082] text-white shadow-sm">
+                    <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
                       <StickyNote className="w-4 h-4" />
                     </div>
                     <span className="font-semibold text-[#612A4F]">Notes</span>
@@ -1211,11 +1220,11 @@ const StrategyGrowth = () => {
                     </div>
 
                     {/* Links & Attachments Panel */}
-                    <div className="w-72 flex-shrink-0 bg-gradient-to-b from-[#FAF8F9] to-[#F0E8ED] rounded-xl p-4 space-y-4">
+                    <div className="w-72 flex-shrink-0 bg-gradient-to-b from-[#FAF8F9] to-[#F0E8ED] rounded-xl p-4 space-y-4 border-l-4 border-[#612A4F]/30">
                       {/* Links */}
                       <div className="space-y-2.5">
                         <p className="text-[11px] text-[#8B7082] font-medium flex items-center gap-1.5">
-                          <Link2 className="w-3 h-3" /> Links
+                          <ArrowUpRight className="w-3 h-3" /> Links
                         </p>
                         <div className="flex flex-wrap gap-1.5">
                           {noteLinks.map((link, index) => (
@@ -1224,7 +1233,7 @@ const StrategyGrowth = () => {
                                 onClick={() => window.open(link.url, '_blank')}
                                 className="flex items-center gap-1.5 text-[11px] font-medium text-[#612A4F] hover:text-[#4A1F3D] transition-colors"
                               >
-                                <ExternalLink className="w-3 h-3" />
+                                <ArrowUpRight className="w-3 h-3" />
                                 {link.title}
                               </button>
                               <button
@@ -1238,7 +1247,7 @@ const StrategyGrowth = () => {
                           {!showAddLinkForm && (
                             <button
                               onClick={() => setShowAddLinkForm(true)}
-                              className="flex items-center gap-1 text-[11px] text-[#8B7082] hover:text-[#612A4F] border border-[#E8E4E6] hover:border-[#8B7082] rounded-lg px-2.5 py-1.5 transition-colors bg-white/50"
+                              className="flex items-center gap-1 text-[11px] text-[#8B7082] hover:text-[#612A4F] border border-[#D5CDD2] hover:border-[#8B7082] rounded-lg px-2.5 py-1.5 transition-colors"
                             >
                               <Plus className="w-3 h-3" />
                             </button>
@@ -1292,12 +1301,12 @@ const StrategyGrowth = () => {
                       {/* Attachments */}
                       <div className="space-y-2.5">
                         <p className="text-[11px] text-[#8B7082] font-medium flex items-center gap-1.5">
-                          <Paperclip className="w-3 h-3" /> Files
+                          <FileText className="w-3 h-3" /> Files
                         </p>
                         <div className="flex flex-wrap gap-1.5">
                           {noteFiles.map((file, index) => (
                             <div key={index} className="group flex items-center gap-1 bg-white rounded-lg pl-2.5 pr-1.5 py-1.5 shadow-sm hover:shadow transition-shadow">
-                              <FileText className="w-3 h-3 text-[#8B7082] flex-shrink-0" />
+                              <FileText className="w-3 h-3 text-[#612A4F] flex-shrink-0" />
                               <span className="text-[11px] font-medium text-gray-600 max-w-[100px] truncate">{file.name}</span>
                               <button
                                 onClick={() => setNoteFiles(noteFiles.filter((_, i) => i !== index))}
@@ -1326,7 +1335,7 @@ const StrategyGrowth = () => {
                           />
                           <button
                             onClick={() => document.getElementById("note-file-upload")?.click()}
-                            className="flex items-center gap-1 text-[11px] text-[#8B7082] hover:text-[#612A4F] border border-[#E8E4E6] hover:border-[#8B7082] rounded-lg px-2.5 py-1.5 transition-colors bg-white/50"
+                            className="flex items-center gap-1 text-[11px] text-[#8B7082] hover:text-[#612A4F] border border-[#D5CDD2] hover:border-[#8B7082] rounded-lg px-2.5 py-1.5 transition-colors"
                           >
                             <Plus className="w-3 h-3" />
                           </button>
@@ -1347,7 +1356,7 @@ const StrategyGrowth = () => {
               <Card className="lg:col-span-1 rounded-xl bg-white border border-[#E8E4E6] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
                 <CardHeader className="border-b border-[#E8E4E6]/50 bg-gradient-to-r from-[#F5F0F3]/50 to-transparent">
                   <CardTitle className="flex items-center gap-3 text-base">
-                    <div className="p-2 rounded-lg bg-[#8B7082] text-white shadow-sm">
+                    <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
                       <Calendar className="w-4 h-4" />
                     </div>
                     <span className="font-semibold text-[#612A4F]">Monthly Goals</span>
