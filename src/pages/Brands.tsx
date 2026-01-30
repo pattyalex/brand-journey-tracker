@@ -261,7 +261,7 @@ const Brands = () => {
       pendingAmount,
       pendingCount: pendingPayments.length,
       upcomingDeadlines: upcomingDeadlines.length,
-      activeDeals: deals.filter(d => ['signed', 'in-progress'].includes(d.status)).length,
+      activeDeals: deals.filter(d => !d.isArchived).length,
     };
   }, [deals, selectedMonth]);
 
