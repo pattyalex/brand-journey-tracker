@@ -591,7 +591,7 @@ const Brands = () => {
                       )}
                     </button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-72 p-4" align="end" sideOffset={8}>
+                  <PopoverContent className="w-72 p-4 bg-white" align="end" sideOffset={8}>
                     <div className="space-y-4">
                       {/* Search */}
                       <div>
