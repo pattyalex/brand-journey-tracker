@@ -296,9 +296,23 @@ const Brands = () => {
 
       const matchesStatus = statusFilter === 'all' || deal.status === statusFilter;
 
+      // Auto-calculate "Paid in Full" based on deposit + all deliverables paid
+      const isPaidInFull = (() => {
+        const hasDeposit = deal.depositAmount && deal.depositAmount > 0;
+        const depositPaid = hasDeposit ? deal.depositPaid : true;
+
+        const deliverables = deal.deliverables || [];
+        const allDeliverablesPaid = deliverables.length === 0 || deliverables.every(d => d.isPaid);
+
+        // Must have at least one payment made (deposit or deliverable)
+        const hasSomethingPaid = (hasDeposit && deal.depositPaid) || deliverables.some(d => d.isPaid);
+
+        return depositPaid && allDeliverablesPaid && hasSomethingPaid;
+      })();
+
       const matchesPayment = paymentFilter === 'all' ||
-        (paymentFilter === 'paid' && deal.paymentReceived) ||
-        (paymentFilter === 'unpaid' && !deal.paymentReceived);
+        (paymentFilter === 'paid' && isPaidInFull) ||
+        (paymentFilter === 'unpaid' && !isPaidInFull);
 
       // When showing archived or searching, don't filter by date
       if (showArchived || searchQuery) {
@@ -556,7 +570,7 @@ const Brands = () => {
                     )}
                     {paymentFilter !== 'all' && (
                       <span className="px-2 py-1 bg-[#F8F6F5] text-[#612a4f] text-xs rounded-full flex items-center gap-1">
-                        {paymentFilter === 'paid' ? 'Paid' : 'Unpaid'}
+                        {paymentFilter === 'paid' ? 'Paid in Full' : 'Expected Payments'}
                         <X className="w-3 h-3 cursor-pointer hover:text-[#612a4f]/70" onClick={() => setPaymentFilter('all')} />
                       </span>
                     )}
@@ -623,12 +637,12 @@ const Brands = () => {
                         <label className="text-xs font-medium text-[#8B7082] uppercase tracking-wide mb-1.5 block">Payments</label>
                         <Select value={paymentFilter} onValueChange={setPaymentFilter}>
                           <SelectTrigger className="h-9 bg-white border-[#E8E4E6] rounded-lg text-sm">
-                            <SelectValue placeholder="All Payments" />
+                            <SelectValue placeholder="All" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="all">All Payments</SelectItem>
-                            <SelectItem value="paid">Paid</SelectItem>
-                            <SelectItem value="unpaid">Unpaid</SelectItem>
+                            <SelectItem value="all">All</SelectItem>
+                            <SelectItem value="paid">Paid in Full</SelectItem>
+                            <SelectItem value="unpaid">Expected Payments</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -1353,7 +1367,7 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                 />
               </div>
               <div>
-                <label className="text-xs text-[#8B7082] mb-1 block">Status</label>
+                <label className="text-xs text-[#8B7082] mb-1 block">Project Status</label>
                 <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as BrandDeal['status'], customStatus: value === 'other' ? '' : undefined }))}>
                   <SelectTrigger className="rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)]">
                     <SelectValue>
@@ -1670,7 +1684,7 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
 
                       {/* Status */}
                       <div>
-                        <label className="text-xs text-[#8B7082] mb-1 block">Status</label>
+                        <label className="text-xs text-[#8B7082] mb-1 block">Deliverable {index + 1} Status</label>
                         <Select
                           value={deliverable.status || undefined}
                           onValueChange={(value) => updateDeliverable(deliverable.id, { status: value as DeliverableStatus })}
