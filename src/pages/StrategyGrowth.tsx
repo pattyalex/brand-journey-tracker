@@ -1,4 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useSearchParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { useVisionBoard } from "@/hooks/useVisionBoard";
@@ -13,6 +28,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { StorageKeys, getString, setString } from "@/lib/storage";
 import { EVENTS, on } from "@/lib/events";
@@ -42,8 +58,190 @@ import {
   X,
   Link2,
   Paperclip,
-  StickyNote
+  StickyNote,
+  GripVertical
 } from "lucide-react";
+
+// Progress status types and colors for monthly goals
+type GoalProgressStatus = 'not-started' | 'somewhat-done' | 'great-progress' | 'completed';
+
+const progressStatuses: { value: GoalProgressStatus; label: string; color: string; bgColor: string; activeColor: string }[] = [
+  { value: 'not-started', label: 'Not Started', color: '#9ca3af', bgColor: 'rgba(156, 163, 175, 0.15)', activeColor: '#6b7280' },
+  { value: 'somewhat-done', label: 'Somewhat Done', color: '#d4a520', bgColor: 'rgba(212, 165, 32, 0.15)', activeColor: '#b8860b' },
+  { value: 'great-progress', label: 'Great Progress', color: '#7cb87c', bgColor: 'rgba(124, 184, 124, 0.15)', activeColor: '#5a9a5a' },
+  { value: 'completed', label: 'Fully Completed!', color: '#5a8a5a', bgColor: '#5a8a5a', activeColor: '#ffffff' },
+];
+
+// Sortable Goal Item Component for drag and drop
+interface SortableGoalItemProps {
+  goal: {
+    id: number;
+    text: string;
+    status: GoalProgressStatus;
+    linkedGoalId?: number;
+  };
+  onStatusChange: (status: GoalProgressStatus) => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  isEditing: boolean;
+  editingText: string;
+  onEditingTextChange: (text: string) => void;
+  onSave: () => void;
+  onCancelEdit: () => void;
+  linkedGoalIndex?: number;
+}
+
+const SortableGoalItem: React.FC<SortableGoalItemProps> = ({
+  goal,
+  onStatusChange,
+  onEdit,
+  onDelete,
+  isEditing,
+  editingText,
+  onEditingTextChange,
+  onSave,
+  onCancelEdit,
+  linkedGoalIndex,
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: goal.id,
+    transition: {
+      duration: 250,
+      easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+    },
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition: transition || 'transform 250ms cubic-bezier(0.25, 1, 0.5, 1)',
+    opacity: isDragging ? 0.9 : 1,
+    zIndex: isDragging ? 1000 : 'auto',
+    scale: isDragging ? '1.02' : '1',
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        ...style,
+        padding: '14px 16px',
+        borderRadius: '14px',
+        border: isDragging ? '1px solid #612A4F' : '1px solid rgba(139, 115, 130, 0.1)',
+        boxShadow: isDragging ? '0 12px 28px rgba(97, 42, 79, 0.2)' : '0 1px 3px rgba(0, 0, 0, 0.02)',
+        background: isDragging ? '#fefefe' : 'white',
+      }}
+      className={`flex items-center gap-3 group bg-white hover:shadow-md ${isDragging ? '' : 'transition-shadow duration-200'}`}
+    >
+      {/* Drag Handle */}
+      <div
+        {...attributes}
+        {...listeners}
+        className="flex-shrink-0 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 transition-colors"
+      >
+        <GripVertical className="w-4 h-4" />
+      </div>
+
+      {/* Goal Text */}
+      <div className="flex-1 min-w-0">
+        {isEditing ? (
+          <Input
+            value={editingText}
+            onChange={(e) => onEditingTextChange(e.target.value)}
+            onBlur={onSave}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') onSave();
+              if (e.key === 'Escape') onCancelEdit();
+            }}
+            autoFocus
+            className="h-8 text-sm"
+          />
+        ) : (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span
+              className="text-sm cursor-pointer hover:text-[#612A4F] transition-colors"
+              style={{
+                color: goal.status === 'completed' ? '#8b7a85' : '#3d3a38',
+                textDecoration: goal.status === 'completed' ? 'line-through' : 'none'
+              }}
+              onClick={onEdit}
+            >
+              {goal.text}
+            </span>
+            {goal.linkedGoalId && linkedGoalIndex !== undefined && (
+              <span
+                className="px-2 py-0.5 text-[10px] font-medium"
+                style={{
+                  background: 'rgba(107, 74, 94, 0.1)',
+                  color: '#6b4a5e',
+                  borderRadius: '6px'
+                }}
+              >
+                ↗ Goal {linkedGoalIndex + 1}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Progress Tabs */}
+      <div className="flex items-center gap-1 flex-shrink-0">
+        {progressStatuses.map((status) => {
+          const isActive = goal.status === status.value;
+          const button = (
+            <button
+              onClick={() => onStatusChange(status.value)}
+              className="transition-all duration-200"
+              style={{
+                padding: '4px 8px',
+                borderRadius: '6px',
+                fontSize: '10px',
+                fontWeight: isActive ? 600 : 500,
+                background: isActive ? status.bgColor : 'transparent',
+                color: isActive ? status.activeColor : '#b0a8ac',
+                border: isActive ? `1px solid ${status.color}40` : '1px solid transparent',
+              }}
+            >
+              {status.label}
+            </button>
+          );
+
+          // Only show tooltip for "Fully Completed!"
+          if (status.value === 'completed') {
+            return (
+              <TooltipProvider key={status.value}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    {button}
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Impeccable Work, Congrats!</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            );
+          }
+
+          return <span key={status.value}>{button}</span>;
+        })}
+      </div>
+
+      {/* Delete Button */}
+      <button
+        onClick={onDelete}
+        className="p-1.5 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
+      >
+        <Trash2 className="w-4 h-4" />
+      </button>
+    </div>
+  );
+};
 
 const StrategyGrowth = () => {
   // Brand Identity states
@@ -99,7 +297,7 @@ const StrategyGrowth = () => {
   const { images: visionBoardImages, pinterestUrl, addImage: addVisionBoardImage, removeImage: removeVisionBoardImage, updatePinterestUrl } = useVisionBoard();
 
   // Growth Goals states with progress tracking
-  type GoalStatus = 'not-started' | 'in-progress' | 'completed';
+  type GoalStatus = 'not-started' | 'somewhat-done' | 'great-progress' | 'completed';
   interface Goal {
     id: number;
     text: string;
@@ -179,7 +377,7 @@ const StrategyGrowth = () => {
   const [newShortTermGoal, setNewShortTermGoal] = useState("");
   const [newLongTermGoal, setNewLongTermGoal] = useState("");
 
-  const [selectedYear, setSelectedYear] = useState(2025);
+  const [selectedYear, setSelectedYear] = useState(2026);
   const [expandedMonths, setExpandedMonths] = useState<string[]>(["January"]);
   const [showAllMonths, setShowAllMonths] = useState(false);
   const [focusedMonth, setFocusedMonth] = useState("January");
@@ -382,20 +580,11 @@ const StrategyGrowth = () => {
     }
   };
 
-  const handleToggleMonthlyGoal = (year: number, month: string, id: number) => {
+  const handleChangeMonthlyGoalStatus = (year: number, month: string, id: number, newStatus: GoalStatus) => {
     const currentGoals = getMonthlyGoals(year, month);
     const updatedGoals = currentGoals.map(g => {
       if (g.id === id) {
-        // Cycle through statuses: not-started → in-progress → completed → not-started
-        const nextStatus: GoalStatus =
-          g.status === 'not-started' ? 'in-progress' :
-          g.status === 'in-progress' ? 'completed' :
-          'not-started';
-        // Clear progressNote when leaving in-progress status
-        if (g.status === 'in-progress' && nextStatus !== 'in-progress') {
-          return { ...g, status: nextStatus, progressNote: undefined };
-        }
-        return { ...g, status: nextStatus };
+        return { ...g, status: newStatus };
       }
       return g;
     });
@@ -436,6 +625,28 @@ const StrategyGrowth = () => {
     );
   };
 
+  // Drag and drop sensors for monthly goals
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    })
+  );
+
+  // Handle drag end for monthly goals reordering
+  const handleDragEndMonthlyGoals = useCallback((event: DragEndEvent, year: number, month: string) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const currentGoals = getMonthlyGoals(year, month);
+      const oldIndex = currentGoals.findIndex(g => g.id === active.id);
+      const newIndex = currentGoals.findIndex(g => g.id === over.id);
+      const reorderedGoals = arrayMove(currentGoals, oldIndex, newIndex);
+      updateMonthlyGoals(year, month, reorderedGoals);
+    }
+  }, [getMonthlyGoals, updateMonthlyGoals]);
+
   // Handlers for Short-Term Goals
   const handleAddShortTermGoal = () => {
     if (newShortTermGoal.trim()) {
@@ -449,19 +660,10 @@ const StrategyGrowth = () => {
     }
   };
 
-  const handleToggleShortTermGoal = (id: number) => {
+  const handleChangeShortTermGoalStatus = (id: number, newStatus: GoalStatus) => {
     setShortTermGoals(shortTermGoals.map(g => {
       if (g.id === id) {
-        // Cycle through statuses: not-started → in-progress → completed → not-started
-        const nextStatus: GoalStatus =
-          g.status === 'not-started' ? 'in-progress' :
-          g.status === 'in-progress' ? 'completed' :
-          'not-started';
-        // Clear progressNote when leaving in-progress status
-        if (g.status === 'in-progress' && nextStatus !== 'in-progress') {
-          return { ...g, status: nextStatus, progressNote: undefined };
-        }
-        return { ...g, status: nextStatus };
+        return { ...g, status: newStatus };
       }
       return g;
     }));
@@ -1494,18 +1696,28 @@ const StrategyGrowth = () => {
               {/* Goal Cards Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {shortTermGoals.map((goal, index) => {
-                  const colorSchemes = [
-                    { bg: 'rgba(107, 74, 94, 0.08)', accent: '#6b4a5e', accentRgb: '107, 74, 94' },
-                    { bg: 'rgba(122, 154, 122, 0.08)', accent: '#5a8a5a', accentRgb: '90, 138, 90' },
-                    { bg: 'rgba(166, 138, 100, 0.08)', accent: '#a68a64', accentRgb: '166, 138, 100' },
-                  ];
-                  const scheme = colorSchemes[index % 3];
-                  const progressPercent = goal.status === 'completed' ? 100 : goal.status === 'in-progress' ? 50 : 0;
+                  // Card colors based on status
+                  const statusSchemes = {
+                    'not-started': { bg: 'rgba(156, 163, 175, 0.1)', accent: '#9ca3af', accentRgb: '156, 163, 175' },
+                    'somewhat-done': { bg: 'rgba(166, 138, 100, 0.08)', accent: '#a68a64', accentRgb: '166, 138, 100' },
+                    'great-progress': { bg: 'rgba(107, 74, 94, 0.08)', accent: '#6b4a5e', accentRgb: '107, 74, 94' },
+                    'completed': { bg: 'rgba(122, 154, 122, 0.12)', accent: '#5a8a5a', accentRgb: '90, 138, 90' },
+                  };
+                  const scheme = statusSchemes[goal.status as keyof typeof statusSchemes] || statusSchemes['not-started'];
+
+                  // Progress and colors based on status
+                  const statusConfig = {
+                    'not-started': { percent: 0, color: '#9ca3af', label: '0%', barColor: '#9ca3af' },
+                    'somewhat-done': { percent: 25, color: '#d4a520', label: '25%', barColor: '#d4a520' },
+                    'great-progress': { percent: 75, color: '#7cb87c', label: '75%', barColor: '#7cb87c' },
+                    'completed': { percent: 100, color: '#5a8a5a', label: '100%', barColor: '#5a8a5a' },
+                  };
+                  const currentStatus = statusConfig[goal.status as keyof typeof statusConfig] || statusConfig['not-started'];
 
                   return (
                     <div
                       key={goal.id}
-                      className="relative group transition-all duration-200 hover:shadow-md"
+                      className="relative group transition-all duration-300 hover:shadow-md"
                       style={{
                         background: scheme.bg,
                         borderRadius: '16px',
@@ -1563,37 +1775,59 @@ const StrategyGrowth = () => {
                             <div
                               className="h-full transition-all duration-500"
                               style={{
-                                width: `${progressPercent}%`,
+                                width: `${currentStatus.percent}%`,
                                 borderRadius: '10px',
-                                background: `linear-gradient(90deg, ${scheme.accent} 0%, ${scheme.accent}cc 100%)`
+                                background: currentStatus.barColor
                               }}
                             />
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-[13px] font-bold" style={{ color: scheme.accent }}>{progressPercent}%</span>
+                            <span className="text-[13px] font-bold" style={{ color: currentStatus.barColor }}>{currentStatus.label}</span>
                           </div>
                         </div>
 
-                        {/* Status Toggle */}
-                        <div className="flex items-center gap-2 mt-4">
-                          <button
-                            onClick={() => handleToggleShortTermGoal(goal.id)}
-                            className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all"
-                            style={{
-                              background: goal.status === 'completed'
-                                ? 'linear-gradient(145deg, #8aae8a 0%, #6a9a6a 100%)'
-                                : goal.status === 'in-progress'
-                                ? 'linear-gradient(145deg, #f0c040 0%, #daa520 100%)'
-                                : 'white',
-                              color: goal.status !== 'not-started' ? 'white' : '#6b5b63',
-                              border: goal.status === 'not-started' ? '1px solid #e8e4e6' : 'none'
-                            }}
-                          >
-                            {goal.status === 'completed' ? '✓ Complete' : goal.status === 'in-progress' ? 'In Progress' : 'Not Started'}
-                          </button>
+                        {/* Progress Status Tabs */}
+                        <div className="flex items-center gap-1 mt-4">
+                          {progressStatuses.map((status) => {
+                            const isActive = goal.status === status.value;
+                            const button = (
+                              <button
+                                key={status.value}
+                                onClick={() => handleChangeShortTermGoalStatus(goal.id, status.value)}
+                                className="transition-all duration-200"
+                                style={{
+                                  padding: '4px 8px',
+                                  borderRadius: '6px',
+                                  fontSize: '10px',
+                                  fontWeight: isActive ? 600 : 500,
+                                  background: isActive ? status.bgColor : 'transparent',
+                                  color: isActive ? status.activeColor : '#b0a8ac',
+                                  border: isActive ? `1px solid ${status.color}40` : '1px solid transparent',
+                                }}
+                              >
+                                {status.label}
+                              </button>
+                            );
+
+                            if (status.value === 'completed') {
+                              return (
+                                <TooltipProvider key={status.value}>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      {button}
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Impeccable Work, Congrats!</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              );
+                            }
+                            return button;
+                          })}
                           <button
                             onClick={() => handleDeleteShortTermGoal(goal.id)}
-                            className="p-1.5 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                            className="p-1.5 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all ml-auto"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -1651,7 +1885,7 @@ const StrategyGrowth = () => {
                   style={{ borderRadius: '12px' }}
                 >
                   {[...Array(5)].map((_, i) => {
-                    const year = 2025 + i;
+                    const year = 2026 + i;
                     return <option key={year} value={year}>{year}</option>;
                   })}
                 </select>
@@ -1682,24 +1916,6 @@ const StrategyGrowth = () => {
                       }}
                     >
                       {month}
-                      {goals.length > 0 && (
-                        <span
-                          className="absolute flex items-center justify-center text-[10px] font-bold"
-                          style={{
-                            width: '18px',
-                            height: '18px',
-                            borderRadius: '50%',
-                            top: '-6px',
-                            right: '-6px',
-                            background: isSelected
-                              ? 'white'
-                              : 'linear-gradient(145deg, #612A4F 0%, #4d2140 100%)',
-                            color: isSelected ? '#612A4F' : 'white'
-                          }}
-                        >
-                          {goals.length}
-                        </span>
-                      )}
                     </button>
                   );
                 })}
@@ -1749,89 +1965,34 @@ const StrategyGrowth = () => {
                         <p className="text-xs mt-1" style={{ color: 'rgba(139, 115, 130, 0.6)' }}>Add a goal below to get started</p>
                       </div>
                     ) : (
-                      <div className="space-y-3">
-                        {goals.map((goal) => (
-                          <div
-                            key={goal.id}
-                            className="flex items-start gap-3 group bg-white transition-all duration-200 hover:shadow-md"
-                            style={{
-                              padding: '14px 16px',
-                              borderRadius: '14px',
-                              border: '1px solid rgba(139, 115, 130, 0.1)',
-                              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.02)'
-                            }}
-                          >
-                            {/* Checkbox */}
-                            <button
-                              onClick={() => handleToggleMonthlyGoal(selectedYear, fullMonth, goal.id)}
-                              className="flex-shrink-0 flex items-center justify-center transition-all duration-200"
-                              style={{
-                                width: '24px',
-                                height: '24px',
-                                borderRadius: '8px',
-                                background: goal.status === 'completed'
-                                  ? 'linear-gradient(145deg, #8aae8a 0%, #6a9a6a 100%)'
-                                  : goal.status === 'in-progress'
-                                  ? 'linear-gradient(145deg, #f0c040 0%, #daa520 100%)'
-                                  : 'transparent',
-                                border: goal.status === 'not-started' ? '2px solid rgba(139, 115, 130, 0.2)' : 'none',
-                                boxShadow: goal.status !== 'not-started' ? '0 2px 4px rgba(0, 0, 0, 0.1)' : 'none'
-                              }}
-                            >
-                              {goal.status === 'completed' && <Check className="w-3.5 h-3.5 text-white" />}
-                              {goal.status === 'in-progress' && <span className="w-2 h-2 bg-white rounded-full" />}
-                            </button>
-
-                            <div className="flex-1 min-w-0">
-                              {editingMonthlyId === goal.id ? (
-                                <Input
-                                  value={editingMonthlyText}
-                                  onChange={(e) => setEditingMonthlyText(e.target.value)}
-                                  onBlur={() => handleSaveMonthlyGoal(selectedYear, fullMonth)}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') handleSaveMonthlyGoal(selectedYear, fullMonth);
-                                    if (e.key === 'Escape') setEditingMonthlyId(null);
-                                  }}
-                                  autoFocus
-                                  className="h-8 text-sm"
-                                />
-                              ) : (
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span
-                                    className="text-sm cursor-pointer hover:text-[#612A4F] transition-colors"
-                                    style={{
-                                      color: goal.status === 'completed' ? '#8b7a85' : '#3d3a38',
-                                      textDecoration: goal.status === 'completed' ? 'line-through' : 'none'
-                                    }}
-                                    onClick={() => handleEditMonthlyGoal(goal.id, goal.text)}
-                                  >
-                                    {goal.text}
-                                  </span>
-                                  {goal.linkedGoalId && (
-                                    <span
-                                      className="px-2 py-0.5 text-[10px] font-medium"
-                                      style={{
-                                        background: 'rgba(107, 74, 94, 0.1)',
-                                        color: '#6b4a5e',
-                                        borderRadius: '6px'
-                                      }}
-                                    >
-                                      ↗ Goal {shortTermGoals.findIndex(g => g.id === goal.linkedGoalId) + 1}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-
-                            <button
-                              onClick={() => handleDeleteMonthlyGoal(selectedYear, fullMonth, goal.id)}
-                              className="p-1.5 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                      <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={(event) => handleDragEndMonthlyGoals(event, selectedYear, fullMonth)}
+                      >
+                        <SortableContext
+                          items={goals.map(g => g.id)}
+                          strategy={verticalListSortingStrategy}
+                        >
+                          <div className="space-y-3">
+                            {goals.map((goal) => (
+                              <SortableGoalItem
+                                key={goal.id}
+                                goal={goal}
+                                onStatusChange={(status) => handleChangeMonthlyGoalStatus(selectedYear, fullMonth, goal.id, status)}
+                                onEdit={() => handleEditMonthlyGoal(goal.id, goal.text)}
+                                onDelete={() => handleDeleteMonthlyGoal(selectedYear, fullMonth, goal.id)}
+                                isEditing={editingMonthlyId === goal.id}
+                                editingText={editingMonthlyText}
+                                onEditingTextChange={setEditingMonthlyText}
+                                onSave={() => handleSaveMonthlyGoal(selectedYear, fullMonth)}
+                                onCancelEdit={() => setEditingMonthlyId(null)}
+                                linkedGoalIndex={goal.linkedGoalId ? shortTermGoals.findIndex(g => g.id === goal.linkedGoalId) : undefined}
+                              />
+                            ))}
                           </div>
-                        ))}
-                      </div>
+                        </SortableContext>
+                      </DndContext>
                     )}
 
                     {/* Add Goal Input */}
