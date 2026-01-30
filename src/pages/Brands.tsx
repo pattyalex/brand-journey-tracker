@@ -829,8 +829,9 @@ const DealCard = ({ deal, selectedMonth, isYearView, showArchived, onDragStart, 
         <span className="text-[22px] font-semibold text-[#612a4f] tracking-[-0.02em]" style={{ fontFamily: "'Playfair Display', serif" }}>${deal.totalFee.toLocaleString()}</span>
         <div className="flex gap-1.5">
           {deal.depositPaid && (
-            <span className="px-3 py-1 bg-[#E8F0E8] text-[#5A8A5A] text-[10px] font-medium rounded-full border border-[#C5D9C5]/40">
-              Deposit Paid
+            <span className="px-3 py-1 bg-[#E8F0E8] text-[#5A8A5A] text-[10px] font-medium rounded-full border border-[#C5D9C5]/40 flex items-center gap-1">
+              <span>Deposit Paid</span>
+              {deal.depositAmount ? <span className="font-semibold">${deal.depositAmount.toLocaleString()}</span> : null}
             </span>
           )}
           {displayDeliverable?.isPaid && (
