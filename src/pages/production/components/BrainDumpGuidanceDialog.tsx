@@ -123,7 +123,7 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Write freely here... no need to organize, just capture your thoughts..."
-            className="min-h-[300px] flex-1 resize-none border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-[#8B7082]/20 focus:border-[#8B7082]/30 transition-all text-sm leading-relaxed bg-white p-4"
+            className="min-h-[300px] flex-1 resize-none rounded-lg focus:outline-none focus:ring-0 transition-all text-sm leading-relaxed bg-white p-4" style={{ border: '0.5px solid #e5e7eb' }}
           />
         </div>
       </div>

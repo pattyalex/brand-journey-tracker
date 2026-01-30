@@ -12,7 +12,7 @@ export const defaultMenuItems: MenuItem[] = [
     isDeletable: false
   },
   {
-    title: 'Brands',
+    title: 'Partnerships',
     icon: Handshake,
     url: '/brands',
     isDeletable: false
