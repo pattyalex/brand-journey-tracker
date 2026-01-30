@@ -59,16 +59,16 @@ interface Deliverable {
   id: string;
   title: string;
   contentType: ContentType;
-  customContentType?: string; // Used when contentType is 'other'
-  submissionDeadline?: string; // Date to submit for brand approval
-  publishDeadline?: string; // Date content must go live
+  customContentType?: string;
+  submissionDeadline?: string;
+  publishDeadline?: string;
   status: DeliverableStatus;
   notes?: string;
-  isSubmitted?: boolean; // Checkbox: submitted for approval
-  isPublished?: boolean; // Checkbox: content published
-  isPaid?: boolean; // Checkbox: payment received for this deliverable
-  paymentAmount?: number; // Expected payment amount for this deliverable
-  paidDate?: string; // Date when payment was received for this deliverable
+  isSubmitted?: boolean;
+  isPublished?: boolean;
+  isPaid?: boolean;
+  paymentAmount?: number;
+  paidDate?: string;
 }
 
 interface BrandDeal {
@@ -98,6 +98,8 @@ interface BrandDeal {
   archivedAt?: string;
 }
 
+const STORAGE_KEY = 'brandDeals';
+
 const contentTypeConfig: Record<ContentType, { label: string; short: string }> = {
   'tiktok': { label: 'TikTok Video', short: 'TikTok' },
   'instagram-post': { label: 'Instagram Post', short: 'IG Post' },
@@ -118,8 +120,6 @@ const deliverableStatusConfig: Record<DeliverableStatus, { label: string; color:
   'scheduled': { label: 'Scheduled', color: 'bg-violet-50 text-violet-600' },
   'published': { label: 'Published', color: 'bg-emerald-100 text-emerald-700' },
 };
-
-const STORAGE_KEY = 'brandDeals';
 
 const statusConfig: Record<string, { label: string; color: string }> = {
   'inbound': { label: 'Inbound', color: 'bg-stone-100 text-stone-700 border-stone-200' },
@@ -164,6 +164,9 @@ const Brands = () => {
     // Attribution: payments count toward the month when the WORK is due, not when payment was received
     const monthlyEarningsCalc = deals.reduce((sum, d) => {
       let dealTotal = 0;
+      const totalDeliverables = d.deliverables?.length || 1;
+      // Amount per deliverable when no specific amounts are entered
+      const perDeliverableAmount = d.totalFee ? Math.round(d.totalFee / totalDeliverables) : 0;
 
       // Get deliverables that are due in the selected month
       const deliverablesInMonth = d.deliverables?.filter(del => {
@@ -181,10 +184,11 @@ const Brands = () => {
       }
 
       // Add deliverable payments for deliverables due in this month
-      // Payment counts toward the month the deliverable is due, not when payment was received
+      // Use explicit paymentAmount if set, otherwise derive from totalFee
       deliverablesInMonth.forEach(del => {
-        if (del.isPaid && del.paymentAmount) {
-          dealTotal += del.paymentAmount;
+        if (del.isPaid) {
+          const effectiveAmount = del.paymentAmount || perDeliverableAmount;
+          dealTotal += effectiveAmount;
         }
       });
 
@@ -196,6 +200,9 @@ const Brands = () => {
     // Calculate yearly earnings - payments count toward the year when work is due
     const yearlyEarningsCalc = deals.reduce((sum, d) => {
       let dealTotal = 0;
+      const totalDeliverables = d.deliverables?.length || 1;
+      // Amount per deliverable when no specific amounts are entered
+      const perDeliverableAmount = d.totalFee ? Math.round(d.totalFee / totalDeliverables) : 0;
 
       // Get deliverables that are due in the selected year
       const deliverablesInYear = d.deliverables?.filter(del => {
@@ -212,9 +219,11 @@ const Brands = () => {
       }
 
       // Add deliverable payments for deliverables due in this year
+      // Use explicit paymentAmount if set, otherwise derive from totalFee
       deliverablesInYear.forEach(del => {
-        if (del.isPaid && del.paymentAmount) {
-          dealTotal += del.paymentAmount;
+        if (del.isPaid) {
+          const effectiveAmount = del.paymentAmount || perDeliverableAmount;
+          dealTotal += effectiveAmount;
         }
       });
 
@@ -862,7 +871,12 @@ const DealCard = ({ deal, selectedMonth, showArchived, onDragStart, onEdit, onDe
           </div>
         )}
         {/* Paid checkbox - always visible for selected deliverable */}
-        {displayDeliverable && (
+        {displayDeliverable && (() => {
+          // Calculate effective paid amount: use paymentAmount if set, otherwise derive from totalFee
+          const effectivePaidAmount = displayDeliverable.paymentAmount ||
+            (displayDeliverable.isPaid && deal.totalFee ? Math.round(deal.totalFee / (deal.deliverables?.length || 1)) : 0);
+
+          return (
           <div className={cn(
             "flex items-center justify-between text-xs pt-1.5 mt-1 border-t border-[#F5F3F4] font-medium",
             displayDeliverable.isPaid ? "text-[#5A8A5A]" : "text-[#612a4f]"
@@ -870,7 +884,7 @@ const DealCard = ({ deal, selectedMonth, showArchived, onDragStart, onEdit, onDe
             <div className="flex items-center gap-1.5">
               <Diamond className="w-2.5 h-2.5 fill-current" />
               <span className="font-semibold">
-                Paid{displayDeliverable.paymentAmount ? ` $${displayDeliverable.paymentAmount.toLocaleString()}` : ''}
+                Paid{effectivePaidAmount > 0 ? ` $${effectivePaidAmount.toLocaleString()}` : ''}
               </span>
             </div>
             <label className="cursor-pointer" onClick={(e) => e.stopPropagation()}>
@@ -890,7 +904,8 @@ const DealCard = ({ deal, selectedMonth, showArchived, onDragStart, onEdit, onDe
               />
             </label>
           </div>
-        )}
+          );
+        })()}
       </div>
     </div>
   );
