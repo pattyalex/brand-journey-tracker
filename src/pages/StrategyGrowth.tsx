@@ -2,10 +2,14 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   DndContext,
   closestCenter,
+  pointerWithin,
   PointerSensor,
   useSensor,
   useSensors,
   DragEndEvent,
+  DragOverEvent,
+  useDroppable,
+  DragOverlay,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -61,6 +65,7 @@ import {
   StickyNote,
   GripVertical
 } from "lucide-react";
+import { toast } from "sonner";
 
 // Progress status types and colors for monthly goals
 type GoalProgressStatus = 'not-started' | 'somewhat-done' | 'great-progress' | 'completed';
@@ -121,9 +126,8 @@ const SortableGoalItem: React.FC<SortableGoalItemProps> = ({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition: transition || 'transform 250ms cubic-bezier(0.25, 1, 0.5, 1)',
-    opacity: isDragging ? 0.9 : 1,
+    opacity: isDragging ? 0 : 1,
     zIndex: isDragging ? 1000 : 'auto',
-    scale: isDragging ? '1.02' : '1',
   };
 
   return (
@@ -133,11 +137,11 @@ const SortableGoalItem: React.FC<SortableGoalItemProps> = ({
         ...style,
         padding: '14px 16px',
         borderRadius: '14px',
-        border: isDragging ? '1px solid #612A4F' : '1px solid rgba(139, 115, 130, 0.1)',
-        boxShadow: isDragging ? '0 12px 28px rgba(97, 42, 79, 0.2)' : '0 1px 3px rgba(0, 0, 0, 0.02)',
-        background: isDragging ? '#fefefe' : 'white',
+        border: '1px solid rgba(139, 115, 130, 0.1)',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.02)',
+        background: 'white',
       }}
-      className={`flex items-center gap-3 group bg-white hover:shadow-md ${isDragging ? '' : 'transition-shadow duration-200'}`}
+      className={`flex items-center gap-3 group bg-white hover:shadow-md transition-shadow duration-200`}
     >
       {/* Drag Handle */}
       <div
@@ -238,6 +242,64 @@ const SortableGoalItem: React.FC<SortableGoalItemProps> = ({
         className="p-1.5 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
       >
         <Trash2 className="w-4 h-4" />
+      </button>
+    </div>
+  );
+};
+
+// Droppable Month Pill Component for cross-month drag and drop
+interface DroppableMonthPillProps {
+  month: string;
+  fullMonth: string;
+  isSelected: boolean;
+  isDropTarget: boolean;
+  onClick: () => void;
+}
+
+const DroppableMonthPill: React.FC<DroppableMonthPillProps> = ({
+  month,
+  fullMonth,
+  isSelected,
+  isDropTarget,
+  onClick,
+}) => {
+  const { setNodeRef, isOver } = useDroppable({
+    id: `month-${fullMonth}`,
+  });
+
+  const showDropHighlight = isOver || isDropTarget;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ paddingBottom: '80px' }}
+    >
+      <button
+        onClick={onClick}
+        className="relative px-5 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap"
+        style={{
+          borderRadius: '12px',
+          background: showDropHighlight
+            ? 'linear-gradient(145deg, #b8a0ae 0%, #a08090 100%)'
+            : isSelected
+            ? 'linear-gradient(145deg, #612A4F 0%, #4d2140 100%)'
+            : 'white',
+          color: showDropHighlight || isSelected ? 'white' : '#8B7082',
+          border: showDropHighlight || isSelected ? 'none' : '1px solid #E8E4E6',
+          boxShadow: showDropHighlight
+            ? '0 4px 12px rgba(160, 128, 144, 0.4)'
+            : isSelected
+            ? '0 4px 12px rgba(97, 42, 79, 0.25)'
+            : '0 2px 4px rgba(0, 0, 0, 0.02)',
+          transform: showDropHighlight ? 'scale(1.05)' : 'scale(1)',
+        }}
+      >
+        {month}
+        {showDropHighlight && (
+          <span className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full flex items-center justify-center">
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#a08090' }} />
+          </span>
+        )}
       </button>
     </div>
   );
@@ -634,18 +696,79 @@ const StrategyGrowth = () => {
     })
   );
 
-  // Handle drag end for monthly goals reordering
-  const handleDragEndMonthlyGoals = useCallback((event: DragEndEvent, year: number, month: string) => {
-    const { active, over } = event;
+  // State for tracking drag operations
+  const [draggedGoal, setDraggedGoal] = useState<{ id: number; text: string; sourceMonth: string } | null>(null);
+  const [dragOverMonth, setDragOverMonth] = useState<string | null>(null);
 
-    if (over && active.id !== over.id) {
-      const currentGoals = getMonthlyGoals(year, month);
+  // Handle drag start
+  const handleDragStart = useCallback((event: any) => {
+    const { active } = event;
+    const fullMonth = monthShortToFull[selectedMonthPill];
+    const goals = getMonthlyGoals(selectedYear, fullMonth);
+    const goal = goals.find(g => g.id === active.id);
+    if (goal) {
+      setDraggedGoal({ id: goal.id, text: goal.text, sourceMonth: fullMonth });
+    }
+  }, [selectedYear, selectedMonthPill, getMonthlyGoals, monthShortToFull]);
+
+  // Handle drag over
+  const handleDragOver = useCallback((event: DragOverEvent) => {
+    const { over } = event;
+    if (over && typeof over.id === 'string' && over.id.startsWith('month-')) {
+      const month = over.id.replace('month-', '');
+      setDragOverMonth(month);
+    } else {
+      setDragOverMonth(null);
+    }
+  }, []);
+
+  // Handle drag end for monthly goals - supports reordering and moving between months
+  const handleDragEndMonthlyGoals = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    const sourceMonth = draggedGoal?.sourceMonth || monthShortToFull[selectedMonthPill];
+
+    setDraggedGoal(null);
+    setDragOverMonth(null);
+
+    if (!over) return;
+
+    // Check if dropped on a different month pill
+    if (typeof over.id === 'string' && over.id.startsWith('month-')) {
+      const targetMonth = over.id.replace('month-', '');
+      if (targetMonth !== sourceMonth) {
+        // Move goal to different month
+        const sourceGoals = getMonthlyGoals(selectedYear, sourceMonth);
+        const goalToMove = sourceGoals.find(g => g.id === active.id);
+        if (goalToMove) {
+          // Remove from source month
+          updateMonthlyGoals(selectedYear, sourceMonth, sourceGoals.filter(g => g.id !== active.id));
+          // Add to target month
+          const targetGoals = getMonthlyGoals(selectedYear, targetMonth);
+          updateMonthlyGoals(selectedYear, targetMonth, [...targetGoals, goalToMove]);
+          // Show confirmation toast
+          toast.success(`Goal moved to ${targetMonth}`);
+        }
+      }
+      return;
+    }
+
+    // Reordering within the same month
+    if (active.id !== over.id) {
+      const currentGoals = getMonthlyGoals(selectedYear, sourceMonth);
       const oldIndex = currentGoals.findIndex(g => g.id === active.id);
       const newIndex = currentGoals.findIndex(g => g.id === over.id);
-      const reorderedGoals = arrayMove(currentGoals, oldIndex, newIndex);
-      updateMonthlyGoals(year, month, reorderedGoals);
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const reorderedGoals = arrayMove(currentGoals, oldIndex, newIndex);
+        updateMonthlyGoals(selectedYear, sourceMonth, reorderedGoals);
+      }
     }
-  }, [getMonthlyGoals, updateMonthlyGoals]);
+  }, [selectedYear, selectedMonthPill, draggedGoal, getMonthlyGoals, updateMonthlyGoals, monthShortToFull]);
+
+  // Handle drag cancel
+  const handleDragCancel = useCallback(() => {
+    setDraggedGoal(null);
+    setDragOverMonth(null);
+  }, []);
 
   // Handlers for Short-Term Goals
   const handleAddShortTermGoal = () => {
@@ -1891,85 +2014,78 @@ const StrategyGrowth = () => {
                 </select>
               </div>
 
-              {/* Month Pill Selector */}
-              <div className="flex gap-2 overflow-x-auto pb-4 mb-4">
-                {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map((month) => {
-                  const fullMonth = monthShortToFull[month];
+              {/* Month Pill Selector and Goals with Cross-Month Drag and Drop */}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={pointerWithin}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDragEnd={handleDragEndMonthlyGoals}
+                onDragCancel={handleDragCancel}
+              >
+                <div className="flex flex-wrap gap-2" style={{ marginBottom: '-60px' }}>
+                  {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map((month) => {
+                    const fullMonth = monthShortToFull[month];
+                    const isSelected = selectedMonthPill === month;
+                    const isDropTarget = dragOverMonth === fullMonth;
+
+                    return (
+                      <DroppableMonthPill
+                        key={month}
+                        month={month}
+                        fullMonth={fullMonth}
+                        isSelected={isSelected}
+                        isDropTarget={isDropTarget}
+                        onClick={() => setSelectedMonthPill(month)}
+                      />
+                    );
+                  })}
+                </div>
+
+                {/* Expanded Month View */}
+                {(() => {
+                  const fullMonth = monthShortToFull[selectedMonthPill];
                   const goals = getMonthlyGoals(selectedYear, fullMonth);
-                  const isSelected = selectedMonthPill === month;
+                  const inputKey = `${selectedYear}-${fullMonth}`;
+                  const completedCount = goals.filter(g => g.status === 'completed').length;
 
                   return (
-                    <button
-                      key={month}
-                      onClick={() => setSelectedMonthPill(month)}
-                      className="relative px-5 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap"
+                    <div
                       style={{
-                        borderRadius: '12px',
-                        background: isSelected
-                          ? 'linear-gradient(145deg, #612A4F 0%, #4d2140 100%)'
-                          : 'white',
-                        color: isSelected ? 'white' : '#8B7082',
-                        border: isSelected ? 'none' : '1px solid #E8E4E6',
-                        boxShadow: isSelected
-                          ? '0 4px 12px rgba(97, 42, 79, 0.25)'
-                          : '0 2px 4px rgba(0, 0, 0, 0.02)'
+                        background: 'linear-gradient(145deg, rgba(139, 115, 130, 0.03) 0%, rgba(139, 115, 130, 0.06) 100%)',
+                        borderRadius: '18px',
+                        padding: '24px',
+                        border: '1px solid rgba(139, 115, 130, 0.08)'
                       }}
                     >
-                      {month}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Expanded Month View */}
-              {(() => {
-                const fullMonth = monthShortToFull[selectedMonthPill];
-                const goals = getMonthlyGoals(selectedYear, fullMonth);
-                const inputKey = `${selectedYear}-${fullMonth}`;
-                const completedCount = goals.filter(g => g.status === 'completed').length;
-
-                return (
-                  <div
-                    style={{
-                      background: 'linear-gradient(145deg, rgba(139, 115, 130, 0.03) 0%, rgba(139, 115, 130, 0.06) 100%)',
-                      borderRadius: '18px',
-                      padding: '24px',
-                      border: '1px solid rgba(139, 115, 130, 0.08)'
-                    }}
-                  >
-                    <div className="flex items-center justify-between mb-5">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-5 h-5 text-[#612A4F]" />
-                        <h4 className="text-xl text-[#612A4F]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
-                          {fullMonth} {selectedYear}
-                        </h4>
+                      <div className="flex items-center justify-between mb-5">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-5 h-5 text-[#612A4F]" />
+                          <h4 className="text-xl text-[#612A4F]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+                            {fullMonth} {selectedYear}
+                          </h4>
+                        </div>
+                        {goals.length > 0 && (
+                          <span className="text-sm font-medium" style={{ color: '#7a9a7a' }}>
+                            {completedCount}/{goals.length} completed
+                          </span>
+                        )}
                       </div>
-                      {goals.length > 0 && (
-                        <span className="text-sm font-medium" style={{ color: '#7a9a7a' }}>
-                          {completedCount}/{goals.length} completed
-                        </span>
-                      )}
-                    </div>
 
-                    {goals.length === 0 ? (
-                      <div
-                        className="text-center py-10 border border-dashed"
-                        style={{
-                          background: 'rgba(255, 255, 255, 0.5)',
-                          borderRadius: '14px',
-                          borderColor: 'rgba(139, 115, 130, 0.15)'
-                        }}
-                      >
-                        <Calendar className="w-8 h-8 mx-auto mb-2" style={{ color: 'rgba(139, 115, 130, 0.3)' }} />
-                        <p className="text-sm" style={{ color: '#8B7082' }}>No goals for {fullMonth}</p>
-                        <p className="text-xs mt-1" style={{ color: 'rgba(139, 115, 130, 0.6)' }}>Add a goal below to get started</p>
-                      </div>
-                    ) : (
-                      <DndContext
-                        sensors={sensors}
-                        collisionDetection={closestCenter}
-                        onDragEnd={(event) => handleDragEndMonthlyGoals(event, selectedYear, fullMonth)}
-                      >
+                      {goals.length === 0 ? (
+                        <div
+                          className="text-center py-10 border border-dashed"
+                          style={{
+                            background: 'rgba(255, 255, 255, 0.5)',
+                            borderRadius: '14px',
+                            borderColor: 'rgba(139, 115, 130, 0.15)'
+                          }}
+                        >
+                          <Calendar className="w-8 h-8 mx-auto mb-2" style={{ color: 'rgba(139, 115, 130, 0.3)' }} />
+                          <p className="text-sm" style={{ color: '#8B7082' }}>No goals for {fullMonth}</p>
+                          <p className="text-xs mt-1" style={{ color: 'rgba(139, 115, 130, 0.6)' }}>Add a goal below to get started</p>
+                        </div>
+                      ) : (
                         <SortableContext
                           items={goals.map(g => g.id)}
                           strategy={verticalListSortingStrategy}
@@ -1992,36 +2108,74 @@ const StrategyGrowth = () => {
                             ))}
                           </div>
                         </SortableContext>
-                      </DndContext>
-                    )}
+                      )}
 
-                    {/* Add Goal Input */}
-                    <div className="flex gap-3 mt-5">
-                      <Input
-                        placeholder={`Add a goal for ${fullMonth}...`}
-                        value={newMonthlyGoalInputs[inputKey] || ''}
-                        onChange={(e) => setNewMonthlyGoalInputs(prev => ({ ...prev, [inputKey]: e.target.value }))}
-                        onKeyDown={(e) => e.key === 'Enter' && handleAddMonthlyGoal(selectedYear, fullMonth)}
-                        className="flex-1 h-12 text-sm bg-white border border-[#E8E4E6] focus:outline-none focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)]"
-                        style={{ borderRadius: '14px' }}
-                      />
-                      <button
-                        onClick={() => handleAddMonthlyGoal(selectedYear, fullMonth)}
-                        disabled={!(newMonthlyGoalInputs[inputKey] || '').trim()}
-                        className="flex items-center justify-center text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                        style={{
-                          width: '48px',
-                          height: '48px',
-                          borderRadius: '14px',
-                          background: 'linear-gradient(145deg, #612A4F 0%, #4d2140 100%)'
-                        }}
-                      >
-                        <Plus className="w-5 h-5" />
-                      </button>
+                      {/* Add Goal Input */}
+                      <div className="flex gap-3 mt-5">
+                        <Input
+                          placeholder={`Add a goal for ${fullMonth}...`}
+                          value={newMonthlyGoalInputs[inputKey] || ''}
+                          onChange={(e) => setNewMonthlyGoalInputs(prev => ({ ...prev, [inputKey]: e.target.value }))}
+                          onKeyDown={(e) => e.key === 'Enter' && handleAddMonthlyGoal(selectedYear, fullMonth)}
+                          className="flex-1 h-12 text-sm bg-white border border-[#E8E4E6] focus:outline-none focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)]"
+                          style={{ borderRadius: '14px' }}
+                        />
+                        <button
+                          onClick={() => handleAddMonthlyGoal(selectedYear, fullMonth)}
+                          disabled={!(newMonthlyGoalInputs[inputKey] || '').trim()}
+                          className="flex items-center justify-center text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                          style={{
+                            width: '48px',
+                            height: '48px',
+                            borderRadius: '14px',
+                            background: 'linear-gradient(145deg, #612A4F 0%, #4d2140 100%)'
+                          }}
+                        >
+                          <Plus className="w-5 h-5" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                );
-              })()}
+                  );
+                })()}
+
+                {/* Drag Overlay for visual feedback */}
+                <DragOverlay>
+                  {draggedGoal ? (
+                    dragOverMonth ? (
+                      // Compact version when hovering over month pills
+                      <div
+                        style={{
+                          padding: '8px 12px',
+                          borderRadius: '10px',
+                          border: '1px solid #612A4F',
+                          boxShadow: '0 8px 20px rgba(97, 42, 79, 0.3)',
+                          background: 'white',
+                          maxWidth: '200px',
+                        }}
+                        className="flex items-center gap-2"
+                      >
+                        <GripVertical className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                        <span className="text-xs text-[#3d3a38] truncate">{draggedGoal.text}</span>
+                      </div>
+                    ) : (
+                      // Full size version when reordering within goals list
+                      <div
+                        style={{
+                          padding: '14px 16px',
+                          borderRadius: '14px',
+                          border: '1px solid #612A4F',
+                          boxShadow: '0 12px 28px rgba(97, 42, 79, 0.25)',
+                          background: 'white',
+                        }}
+                        className="flex items-center gap-3"
+                      >
+                        <GripVertical className="w-4 h-4 text-gray-400" />
+                        <span className="text-sm text-[#3d3a38]">{draggedGoal.text}</span>
+                      </div>
+                    )
+                  ) : null}
+                </DragOverlay>
+              </DndContext>
             </div>
 
           </TabsContent>
