@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { format, parseISO, isWithinInterval, startOfMonth, endOfMonth, startOfYear, endOfYear, isBefore, addDays } from "date-fns";
+import { format, parseISO, isWithinInterval, startOfMonth, endOfMonth, startOfYear, endOfYear, isBefore, addDays, addMonths, subMonths, isSameMonth } from "date-fns";
 import {
   Plus,
   LayoutGrid,
@@ -34,6 +34,8 @@ import {
   User,
   StickyNote,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   X,
   AlertCircle,
   TrendingUp,
@@ -41,6 +43,7 @@ import {
   Target
 } from "lucide-react";
 import { getString, setString } from "@/lib/storage";
+import { toast } from "sonner";
 
 // Types
 type ContentType = 'tiktok' | 'instagram-post' | 'instagram-reel' | 'instagram-story' | 'youtube-video' | 'youtube-short' | 'blog-post' | 'other';
@@ -133,6 +136,7 @@ const Brands = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingDeal, setEditingDeal] = useState<BrandDeal | null>(null);
   const [draggedDeal, setDraggedDeal] = useState<string | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
 
   // Save to localStorage
   useEffect(() => {
@@ -142,58 +146,73 @@ const Brands = () => {
   // Dashboard metrics
   const metrics = useMemo(() => {
     const now = new Date();
-    const monthStart = startOfMonth(now);
-    const monthEnd = endOfMonth(now);
-    const yearStart = startOfYear(now);
-    const yearEnd = endOfYear(now);
+    const monthStart = startOfMonth(selectedMonth);
+    const monthEnd = endOfMonth(selectedMonth);
+    const yearStart = startOfYear(selectedMonth);
+    const yearEnd = endOfYear(selectedMonth);
 
-    // Calculate earnings from deposits and deliverable payments
+    // Calculate earnings from deposits and deliverable payments for selected month
+    // Attribution: payments count toward the month when the WORK is due, not when payment was received
     const monthlyEarningsCalc = deals.reduce((sum, d) => {
       let dealTotal = 0;
-      // Add deposit if paid this month (or no date recorded - assume current)
-      if (d.depositPaid) {
-        const depositInMonth = !d.depositPaidDate ||
-          isWithinInterval(parseISO(d.depositPaidDate), { start: monthStart, end: monthEnd });
-        if (depositInMonth) {
-          dealTotal += d.depositAmount || 0;
-        }
+
+      // Get deliverables that are due in the selected month
+      const deliverablesInMonth = d.deliverables?.filter(del => {
+        const submitInMonth = del.submissionDeadline && isSameMonth(parseISO(del.submissionDeadline), selectedMonth);
+        const publishInMonth = del.publishDeadline && isSameMonth(parseISO(del.publishDeadline), selectedMonth);
+        return submitInMonth || publishInMonth;
+      }) || [];
+
+      const dealHasDeliverablesInMonth = deliverablesInMonth.length > 0;
+
+      // Add deposit if paid AND deal has deliverables in this month
+      // The deposit counts toward the month when work is due, not when payment was received
+      if (d.depositPaid && d.depositAmount && dealHasDeliverablesInMonth) {
+        dealTotal += d.depositAmount;
       }
-      // Add deliverable payments paid this month (or no date recorded - assume current)
-      d.deliverables?.forEach(del => {
+
+      // Add deliverable payments for deliverables due in this month
+      // Payment counts toward the month the deliverable is due, not when payment was received
+      deliverablesInMonth.forEach(del => {
         if (del.isPaid && del.paymentAmount) {
-          const delInMonth = !del.paidDate ||
-            isWithinInterval(parseISO(del.paidDate), { start: monthStart, end: monthEnd });
-          if (delInMonth) {
-            dealTotal += del.paymentAmount;
-          }
+          dealTotal += del.paymentAmount;
         }
       });
+
       return sum + dealTotal;
     }, 0);
 
+    const selectedYear = selectedMonth.getFullYear();
+
+    // Calculate yearly earnings - payments count toward the year when work is due
     const yearlyEarningsCalc = deals.reduce((sum, d) => {
       let dealTotal = 0;
-      // Add deposit if paid this year (or no date recorded - assume current)
-      if (d.depositPaid) {
-        const depositInYear = !d.depositPaidDate ||
-          isWithinInterval(parseISO(d.depositPaidDate), { start: yearStart, end: yearEnd });
-        if (depositInYear) {
-          dealTotal += d.depositAmount || 0;
-        }
+
+      // Get deliverables that are due in the selected year
+      const deliverablesInYear = d.deliverables?.filter(del => {
+        const submitInYear = del.submissionDeadline && parseISO(del.submissionDeadline).getFullYear() === selectedYear;
+        const publishInYear = del.publishDeadline && parseISO(del.publishDeadline).getFullYear() === selectedYear;
+        return submitInYear || publishInYear;
+      }) || [];
+
+      const dealHasDeliverablesInYear = deliverablesInYear.length > 0;
+
+      // Add deposit if paid AND deal has deliverables in this year
+      if (d.depositPaid && d.depositAmount && dealHasDeliverablesInYear) {
+        dealTotal += d.depositAmount;
       }
-      // Add deliverable payments paid this year (or no date recorded - assume current)
-      d.deliverables?.forEach(del => {
+
+      // Add deliverable payments for deliverables due in this year
+      deliverablesInYear.forEach(del => {
         if (del.isPaid && del.paymentAmount) {
-          const delInYear = !del.paidDate ||
-            isWithinInterval(parseISO(del.paidDate), { start: yearStart, end: yearEnd });
-          if (delInYear) {
-            dealTotal += del.paymentAmount;
-          }
+          dealTotal += del.paymentAmount;
         }
       });
+
       return sum + dealTotal;
     }, 0);
 
+    // PENDING: Total unpaid across ALL deals (not month-specific)
     const pendingPayments = deals.filter(d => !d.paymentReceived && d.status !== 'inbound');
     const pendingAmount = pendingPayments.reduce((sum, d) => {
       // Calculate paid deliverable amounts
@@ -225,10 +244,13 @@ const Brands = () => {
       upcomingDeadlines: upcomingDeadlines.length,
       activeDeals: deals.filter(d => ['signed', 'in-progress'].includes(d.status)).length,
     };
-  }, [deals]);
+  }, [deals, selectedMonth]);
 
   // Filtered deals
   const filteredDeals = useMemo(() => {
+    const monthStart = startOfMonth(selectedMonth);
+    const monthEnd = endOfMonth(selectedMonth);
+
     return deals.filter(deal => {
       const matchesSearch = !searchQuery ||
         deal.brandName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -240,9 +262,23 @@ const Brands = () => {
         (paymentFilter === 'paid' && deal.paymentReceived) ||
         (paymentFilter === 'unpaid' && !deal.paymentReceived);
 
-      return matchesSearch && matchesStatus && matchesPayment;
+      // Check if any deliverable has dates in the selected month
+      const hasDeliverableInMonth = deal.deliverables?.some(del => {
+        const submitDate = del.submissionDeadline ? parseISO(del.submissionDeadline) : null;
+        const publishDate = del.publishDeadline ? parseISO(del.publishDeadline) : null;
+        return (submitDate && isWithinInterval(submitDate, { start: monthStart, end: monthEnd })) ||
+               (publishDate && isWithinInterval(publishDate, { start: monthStart, end: monthEnd }));
+      });
+
+      // Also include deals with campaign dates in the selected month
+      const campaignInMonth = (deal.campaignStart && isWithinInterval(parseISO(deal.campaignStart), { start: monthStart, end: monthEnd })) ||
+                              (deal.campaignEnd && isWithinInterval(parseISO(deal.campaignEnd), { start: monthStart, end: monthEnd }));
+
+      const matchesMonth = hasDeliverableInMonth || campaignInMonth;
+
+      return matchesSearch && matchesStatus && matchesPayment && matchesMonth;
     });
-  }, [deals, searchQuery, statusFilter, paymentFilter]);
+  }, [deals, searchQuery, statusFilter, paymentFilter, selectedMonth]);
 
   // Grouped by status for Kanban
   const dealsByStatus = useMemo(() => {
@@ -261,6 +297,26 @@ const Brands = () => {
     };
     setDeals(prev => [...prev, newDeal]);
     setIsAddDialogOpen(false);
+
+    // Calculate which months this deal spans
+    const months = new Set<string>();
+    newDeal.deliverables?.forEach(del => {
+      if (del.submissionDeadline) {
+        months.add(format(parseISO(del.submissionDeadline), "MMMM yyyy"));
+      }
+      if (del.publishDeadline) {
+        months.add(format(parseISO(del.publishDeadline), "MMMM yyyy"));
+      }
+    });
+
+    if (months.size > 0) {
+      const monthList = Array.from(months).join(", ");
+      toast.success(`${newDeal.brandName} added`, {
+        description: `Deliverables scheduled for ${monthList}`,
+      });
+    } else {
+      toast.success(`${newDeal.brandName} added`);
+    }
   };
 
   const handleUpdateDeal = (id: string, updates: Partial<BrandDeal>) => {
@@ -291,6 +347,35 @@ const Brands = () => {
     <Layout>
       <div className="min-h-screen bg-[#F9F8F8]">
         <div className="p-6 lg:p-8">
+            {/* Month Picker */}
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <button
+                onClick={() => setSelectedMonth(prev => subMonths(prev, 1))}
+                className="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-[#8B7082] hover:text-[#612a4f]"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-bold text-[#612a4f] min-w-[180px] text-center">
+                  {format(selectedMonth, "MMMM yyyy")}
+                </h2>
+                {!isSameMonth(selectedMonth, new Date()) && (
+                  <button
+                    onClick={() => setSelectedMonth(new Date())}
+                    className="text-xs text-[#8B7082] hover:text-[#612a4f] underline"
+                  >
+                    Today
+                  </button>
+                )}
+              </div>
+              <button
+                onClick={() => setSelectedMonth(prev => addMonths(prev, 1))}
+                className="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-[#8B7082] hover:text-[#612a4f]"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+
             {/* Dashboard Summary */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <Card className="p-4 bg-white border-0 shadow-sm">
@@ -299,7 +384,7 @@ const Brands = () => {
                     <DollarSign className="w-5 h-5 text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-xs text-[#8B7082] font-medium">This Month</p>
+                    <p className="text-xs text-[#8B7082] font-medium">{format(selectedMonth, "MMMM")}</p>
                     <p className="text-xl font-bold text-[#612a4f]">${metrics.monthlyEarnings.toLocaleString()}</p>
                   </div>
                 </div>
@@ -310,7 +395,7 @@ const Brands = () => {
                     <TrendingUp className="w-5 h-5 text-violet-600" />
                   </div>
                   <div>
-                    <p className="text-xs text-[#8B7082] font-medium">This Year</p>
+                    <p className="text-xs text-[#8B7082] font-medium">{format(selectedMonth, "yyyy")}</p>
                     <p className="text-xl font-bold text-[#612a4f]">${metrics.yearlyEarnings.toLocaleString()}</p>
                   </div>
                 </div>
@@ -387,6 +472,7 @@ const Brands = () => {
             {/* Main Content */}
             <KanbanView
               dealsByStatus={dealsByStatus}
+              selectedMonth={selectedMonth}
               onDragStart={handleDragStart}
               onDragOver={handleDragOver}
               onDrop={handleDrop}
@@ -422,6 +508,7 @@ const Brands = () => {
 // Kanban View Component
 interface KanbanViewProps {
   dealsByStatus: Record<string, BrandDeal[]>;
+  selectedMonth: Date;
   onDragStart: (id: string) => void;
   onDragOver: (e: React.DragEvent) => void;
   onDrop: (status: BrandDeal['status']) => void;
@@ -430,7 +517,7 @@ interface KanbanViewProps {
   onQuickUpdate: (id: string, updates: Partial<BrandDeal>) => void;
 }
 
-const KanbanView = ({ dealsByStatus, onDragStart, onDragOver, onDrop, onEdit, onDelete, onQuickUpdate }: KanbanViewProps) => {
+const KanbanView = ({ dealsByStatus, selectedMonth, onDragStart, onDragOver, onDrop, onEdit, onDelete, onQuickUpdate }: KanbanViewProps) => {
   // Only show columns that have deals
   const activeStatuses = statusOrder.filter(status => dealsByStatus[status].length > 0);
 
@@ -438,8 +525,8 @@ const KanbanView = ({ dealsByStatus, onDragStart, onDragOver, onDrop, onEdit, on
     return (
       <div className="flex flex-col items-center justify-center py-16 bg-[#F5F3F4] rounded-xl">
         <Building2 className="w-12 h-12 text-[#E8E4E6] mb-3" />
-        <p className="text-[#8B7082] font-medium">No brand deals yet</p>
-        <p className="text-xs text-[#8B7082]/60 mt-1">Click "Add Deal" to get started</p>
+        <p className="text-[#8B7082] font-medium">No deliverables in {format(selectedMonth, "MMMM yyyy")}</p>
+        <p className="text-xs text-[#8B7082]/60 mt-1">Try navigating to another month or add a new deal</p>
       </div>
     );
   }
@@ -467,6 +554,7 @@ const KanbanView = ({ dealsByStatus, onDragStart, onDragOver, onDrop, onEdit, on
               <DealCard
                 key={deal.id}
                 deal={deal}
+                selectedMonth={selectedMonth}
                 onDragStart={onDragStart}
                 onEdit={onEdit}
                 onDelete={onDelete}
@@ -483,25 +571,36 @@ const KanbanView = ({ dealsByStatus, onDragStart, onDragOver, onDrop, onEdit, on
 // Deal Card Component
 interface DealCardProps {
   deal: BrandDeal;
+  selectedMonth: Date;
   onDragStart: (id: string) => void;
   onEdit: (deal: BrandDeal) => void;
   onDelete: (id: string) => void;
   onQuickUpdate: (id: string, updates: Partial<BrandDeal>) => void;
 }
 
-const DealCard = ({ deal, onDragStart, onEdit, onDelete, onQuickUpdate }: DealCardProps) => {
+const DealCard = ({ deal, selectedMonth, onDragStart, onEdit, onDelete, onQuickUpdate }: DealCardProps) => {
   const [selectedDeliverableId, setSelectedDeliverableId] = useState<string | null>(null);
   const now = new Date();
+  const monthStart = startOfMonth(selectedMonth);
+  const monthEnd = endOfMonth(selectedMonth);
 
-  // Get the selected deliverable or default to the first one
+  // Filter deliverables to only those with dates in the selected month
+  const deliverablesInMonth = deal.deliverables?.filter(d => {
+    const submitDate = d.submissionDeadline ? parseISO(d.submissionDeadline) : null;
+    const publishDate = d.publishDeadline ? parseISO(d.publishDeadline) : null;
+    return (submitDate && isWithinInterval(submitDate, { start: monthStart, end: monthEnd })) ||
+           (publishDate && isWithinInterval(publishDate, { start: monthStart, end: monthEnd }));
+  }) || [];
+
+  // Get the selected deliverable or default to the first one in this month
   const selectedDeliverable = selectedDeliverableId
-    ? deal.deliverables?.find(d => d.id === selectedDeliverableId)
+    ? deliverablesInMonth.find(d => d.id === selectedDeliverableId)
     : null;
 
   // If a deliverable is selected, show its dates; otherwise show first with pending work, or just the first one
   const displayDeliverable = selectedDeliverable ||
-    deal.deliverables?.find(d => (!d.isSubmitted && d.submissionDeadline) || (!d.isPublished && d.publishDeadline)) ||
-    deal.deliverables?.[0];
+    deliverablesInMonth.find(d => (!d.isSubmitted && d.submissionDeadline) || (!d.isPublished && d.publishDeadline)) ||
+    deliverablesInMonth[0];
 
   const displaySubmitDate = displayDeliverable?.submissionDeadline;
   const displayPublishDate = displayDeliverable?.publishDeadline;
@@ -510,8 +609,11 @@ const DealCard = ({ deal, onDragStart, onEdit, onDelete, onQuickUpdate }: DealCa
 
   const isSubmitPastDue = displaySubmitDate && !isSubmitDone && isBefore(parseISO(displaySubmitDate), now);
   const isPublishPastDue = displayPublishDate && !isPublishDone && isBefore(parseISO(displayPublishDate), now);
-  const publishedCount = deal.deliverables?.filter(d => d.isPublished).length || 0;
-  const totalDeliverables = deal.deliverables?.length || 0;
+  // Progress bar shows TOTAL deliverables (across all months)
+  const totalPublishedCount = deal.deliverables?.filter(d => d.isPublished).length || 0;
+  const totalDeliverablesCount = deal.deliverables?.length || 0;
+  // But badges only show deliverables in this month
+  const totalDeliverablesInMonth = deliverablesInMonth.length;
 
   return (
     <div
@@ -554,19 +656,19 @@ const DealCard = ({ deal, onDragStart, onEdit, onDelete, onQuickUpdate }: DealCa
       </div>
 
       {/* Deliverables Summary */}
-      {totalDeliverables > 0 && (
+      {totalDeliverablesInMonth > 0 && (
         <div className="mb-3">
           <div className="flex items-center gap-2 text-xs text-[#8B7082]">
-            <span>{publishedCount}/{totalDeliverables} delivered</span>
+            <span>{totalPublishedCount}/{totalDeliverablesCount} delivered</span>
             <div className="flex-1 h-1.5 bg-[#F5F3F4] rounded-full overflow-hidden">
               <div
                 className="h-full bg-emerald-500 rounded-full transition-all"
-                style={{ width: `${(publishedCount / totalDeliverables) * 100}%` }}
+                style={{ width: `${(totalPublishedCount / totalDeliverablesCount) * 100}%` }}
               />
             </div>
           </div>
           <div className="flex gap-1 mt-2 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-            {deal.deliverables.map(d => (
+            {deliverablesInMonth.map(d => (
               <button
                 key={d.id}
                 onClick={(e) => {
@@ -908,6 +1010,11 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
     onSave(formData);
   };
 
+  // Calculate fee mismatch for highlighting
+  const deliverableTotal = formData.deliverables?.reduce((sum, del) => sum + (del.paymentAmount || 0), 0) || 0;
+  const calculatedTotal = (formData.depositAmount || 0) + deliverableTotal;
+  const hasMismatch = deliverableTotal > 0 && calculatedTotal !== (formData.totalFee || 0);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-[#F8F8F8]">
@@ -1083,7 +1190,10 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                     }
                   }}
                   placeholder="0"
-                  className="text-2xl font-bold h-12 border-[#8B7082]/30 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0"
+                  className={cn(
+                    "text-2xl font-bold h-12 border-[#8B7082]/30 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0",
+                    hasMismatch && "bg-amber-50 border-amber-300"
+                  )}
                 />
               </div>
               <div className="flex items-center gap-4 mt-3 pt-3 border-t border-[#8B7082]/10">
@@ -1097,7 +1207,10 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                       onChange={(e) => setFormData(prev => ({ ...prev, depositAmount: parseFloat(e.target.value) || 0 }))}
                       onKeyDown={handleEnterKey}
                       placeholder="0"
-                      className="h-8 text-sm border-[#8B7082]/30 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0"
+                      className={cn(
+                        "h-8 text-sm border-[#8B7082]/30 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0",
+                        hasMismatch && "bg-amber-50 border-amber-300"
+                      )}
                     />
                   </div>
                 </div>
@@ -1387,7 +1500,10 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                         </label>
                       </div>
                       <div className="relative w-32">
-                        <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8B7082]" />
+                        <DollarSign className={cn(
+                          "absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4",
+                          hasMismatch ? "text-amber-600" : "text-[#8B7082]"
+                        )} />
                         <Input
                           type="text"
                           value={deliverable.paymentAmount ? deliverable.paymentAmount.toLocaleString() : ''}
@@ -1402,7 +1518,10 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                             }
                           }}
                           placeholder="0"
-                          className="border-[#8B7082]/30 bg-white h-9 text-sm pl-8"
+                          className={cn(
+                            "border-[#8B7082]/30 bg-white h-9 text-sm pl-8",
+                            hasMismatch && "bg-amber-50 border-amber-300"
+                          )}
                         />
                       </div>
                     </div>
@@ -1478,6 +1597,22 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
             />
           </div>
         </div>
+
+        {/* Fee Mismatch Warning - shown above save button */}
+        {hasMismatch && (
+          <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-50 border border-amber-200 mx-6 mb-4">
+            <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-amber-800">Fee mismatch</p>
+              <p className="text-xs text-amber-700 mt-1">
+                Deposit (${(formData.depositAmount || 0).toLocaleString()}) + Deliverables (${deliverableTotal.toLocaleString()}) = ${calculatedTotal.toLocaleString()}
+              </p>
+              <p className="text-xs text-amber-700">
+                Total Fee entered: ${(formData.totalFee || 0).toLocaleString()} — Difference: {((formData.totalFee || 0) - calculatedTotal) > 0 ? '+' : ''}${((formData.totalFee || 0) - calculatedTotal).toLocaleString()}
+              </p>
+            </div>
+          </div>
+        )}
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} className="border-[#8B7082]/30">
