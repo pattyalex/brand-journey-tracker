@@ -636,7 +636,7 @@ const Brands = () => {
                       )}
                     </button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-72 p-4 bg-white" align="end" sideOffset={8}>
+                  <PopoverContent className="w-72 p-4 bg-white rounded-2xl" align="end" sideOffset={8}>
                     <div className="space-y-4">
                       {/* Search */}
                       <div>
@@ -682,8 +682,8 @@ const Brands = () => {
                         <button
                           onClick={() => setShowArchived(!showArchived)}
                           className={cn(
-                            "w-full flex items-center justify-between py-2 px-3 rounded-lg transition-all duration-200 text-sm",
-                            showArchived ? "bg-[#612a4f]/10 text-[#612a4f]" : "hover:bg-[#F8F6F5] text-[#8B7082]"
+                            "w-full flex items-center justify-between py-2 px-3 rounded-lg transition-all duration-200 text-sm text-[#612a4f]",
+                            showArchived ? "bg-[#612a4f]/10" : "hover:bg-[#F8F6F5]"
                           )}
                         >
                           <div className="flex items-center gap-2">

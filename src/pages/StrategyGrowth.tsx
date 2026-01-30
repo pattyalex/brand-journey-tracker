@@ -105,7 +105,34 @@ const StrategyGrowth = () => {
     text: string;
     status: GoalStatus;
     progressNote?: string;
+    progress?: { current: number; target: number };
+    linkedGoalId?: number; // For monthly goals to link to annual goals
   }
+
+  // 3-Year Vision state
+  const [threeYearVision, setThreeYearVision] = useState<string>(() => {
+    const saved = getString('threeYearVision');
+    return saved || '';
+  });
+
+  // Save 3-year vision
+  useEffect(() => {
+    setString('threeYearVision', threeYearVision);
+  }, [threeYearVision]);
+
+  // Selected month for pill selector (short form)
+  const [selectedMonthPill, setSelectedMonthPill] = useState<string>(() => {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const currentMonth = new Date().getMonth();
+    return months[currentMonth];
+  });
+
+  // Map short month to full month name
+  const monthShortToFull: { [key: string]: string } = {
+    "Jan": "January", "Feb": "February", "Mar": "March", "Apr": "April",
+    "May": "May", "Jun": "June", "Jul": "July", "Aug": "August",
+    "Sep": "September", "Oct": "October", "Nov": "November", "Dec": "December"
+  };
   interface MonthlyGoalsData {
     [year: string]: {
       [month: string]: Goal[];
@@ -1012,7 +1039,7 @@ const StrategyGrowth = () => {
                               index > 0 ? "border-l border-[#E8E4E6]" : ""
                             } ${
                               isSelected
-                                ? "bg-gradient-to-b from-[#6d3358] to-[#612A4F] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
+                                ? "bg-gradient-to-b from-[#6d3358] to-[#612A4F] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] rounded-lg"
                                 : "bg-gradient-to-b from-white to-[#FAF7F8] text-[#6B5B63] hover:text-[#612A4F] hover:from-[#FAF7F8] hover:to-[#F5F0F3]"
                             }`}
                           >
@@ -1349,388 +1376,493 @@ const StrategyGrowth = () => {
 
 
           {/* Growth Goals Tab */}
-          <TabsContent value="growth-goals" className="space-y-6 mt-0">
-            {/* Two-column layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Left column: Monthly Goals */}
-              <Card className="lg:col-span-1 rounded-xl bg-white border border-[#E8E4E6] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
-                <CardHeader className="border-b border-[#E8E4E6]/50 bg-gradient-to-r from-[#F5F0F3]/50 to-transparent">
-                  <CardTitle className="flex items-center gap-3 text-base">
-                    <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
-                      <Calendar className="w-4 h-4" />
-                    </div>
-                    <span className="font-semibold text-[#612A4F]">Monthly Goals</span>
-                    {monthlyGoalsData[selectedYear] && Object.values(monthlyGoalsData[selectedYear]).some(goals => goals.length > 0) && (
-                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#EDF3ED] text-[#7a9a7a] rounded-full text-xs font-medium">
-                        <Check className="w-3 h-3" />
-                        Complete
-                      </div>
-                    )}
-                  </CardTitle>
-                  <CardDescription className="ml-11 text-sm text-gray-600">
-                    Set and track goals for any month
-                  </CardDescription>
-                </CardHeader>
-              <CardContent className="space-y-6 pt-8">
-                <div className="flex gap-4 items-center justify-between flex-wrap bg-[#F5F0F3]/30 p-4 rounded-lg border border-[#E8E4E6]/50">
-                  <div className="flex gap-3 items-center">
-                    <Label htmlFor="year-select" className="text-sm font-semibold text-gray-700">Year:</Label>
-                    <select
-                      id="year-select"
-                      value={selectedYear}
-                      onChange={(e) => setSelectedYear(Number(e.target.value))}
-                      className="px-3 py-2 border-2 border-[#E8E4E6] rounded-lg bg-white font-medium text-sm focus:ring-2 focus:ring-[#612A4F]/20 focus:border-[#612A4F]"
-                    >
-                      {[...Array(5)].map((_, i) => {
-                        const year = 2025 + i;
-                        return <option key={year} value={year}>{year}</option>;
-                      })}
-                    </select>
-                  </div>
+          <TabsContent value="growth-goals" className="space-y-8 mt-0">
 
-                  <div className="flex gap-3 items-center">
-                    {!showAllMonths && (
-                      <>
-                        <Label htmlFor="month-select" className="text-sm font-semibold text-gray-700">Month:</Label>
-                        <select
-                          id="month-select"
-                          value={focusedMonth}
-                          onChange={(e) => {
-                            setFocusedMonth(e.target.value);
-                            setExpandedMonths([e.target.value]);
-                          }}
-                          className="px-3 py-2 border-2 border-[#E8E4E6] rounded-lg bg-white font-medium text-sm focus:ring-2 focus:ring-[#612A4F]/20 focus:border-[#612A4F]"
-                        >
-                          {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map((month) => (
-                            <option key={month} value={month}>{month}</option>
-                          ))}
-                        </select>
-                      </>
-                    )}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowAllMonths(!showAllMonths)}
-                      className="flex items-center gap-2 border-2 hover:bg-[#F5F0F3] border-[#E8E4E6] hover:border-[#D5CDD2]"
-                    >
-                      {showAllMonths ? "Focus on One Month" : "Show All Months"}
-                    </Button>
+            {/* SECTION 1: 3-Year Vision Hero Banner */}
+            <div
+              className="relative overflow-hidden p-10 shadow-[0_8px_32px_rgba(97,42,79,0.25)]"
+              style={{
+                background: 'linear-gradient(135deg, #4a3442 0%, #6b4a5e 50%, #8b6a7e 100%)',
+                borderRadius: '24px'
+              }}
+            >
+              {/* Decorative circles */}
+              <div className="absolute top-0 right-0 w-80 h-80 rounded-full -translate-y-1/3 translate-x-1/3" style={{ background: 'rgba(255,255,255,0.05)' }} />
+              <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full translate-y-1/2 -translate-x-1/3" style={{ background: 'rgba(255,255,255,0.03)' }} />
+              <div className="absolute top-1/2 right-1/4 w-32 h-32 rounded-full" style={{ background: 'rgba(255,255,255,0.03)' }} />
+              <div className="absolute bottom-1/4 right-1/3 w-20 h-20 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }} />
+
+              <div className="relative z-10">
+                <div className="flex items-center gap-4 mb-1">
+                  <div
+                    className="flex items-center justify-center backdrop-blur-sm"
+                    style={{
+                      width: '44px',
+                      height: '44px',
+                      borderRadius: '14px',
+                      background: 'rgba(255,255,255,0.15)'
+                    }}
+                  >
+                    <TrendingUp className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.15em] mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                      Your North Star
+                    </p>
+                    <h2 className="text-[32px] font-semibold text-white leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
+                      3-Year Vision
+                    </h2>
                   </div>
                 </div>
+                <p className="text-sm mb-6 ml-[60px]" style={{ color: 'rgba(255,255,255,0.7)', fontFamily: "'DM Sans', sans-serif" }}>
+                  Where do you see yourself and your brand in 3 years? Dream big.
+                </p>
 
-                {/* Accordion for all months */}
-                <Accordion type="multiple" value={expandedMonths} onValueChange={setExpandedMonths}>
-                  {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-                    .filter(month => showAllMonths ? true : month === focusedMonth)
-                    .map((month) => {
-                    const monthEmoji =
-                      ["January", "February", "December"].includes(month) ? "❄️" :
-                      ["March", "April", "May"].includes(month) ? "🌸" :
-                      ["June", "July", "August"].includes(month) ? "☀️" : "🍂";
-                    const goals = getMonthlyGoals(selectedYear, month);
-                    const inputKey = `${selectedYear}-${month}`;
+                <div
+                  className="backdrop-blur-sm"
+                  style={{
+                    background: 'rgba(255,255,255,0.1)',
+                    borderRadius: '16px',
+                    padding: '4px'
+                  }}
+                >
+                  <textarea
+                    value={threeYearVision}
+                    onChange={(e) => setThreeYearVision(e.target.value)}
+                    placeholder="In 3 years, I want to..."
+                    className="w-full min-h-[160px] bg-transparent border-0 rounded-xl p-5 text-white placeholder:text-white/40 text-base leading-relaxed resize-none focus:outline-none transition-all duration-200"
+                    style={{ fontFamily: "'DM Sans', sans-serif" }}
+                  />
+                </div>
+              </div>
+            </div>
 
-                    return (
-                      <AccordionItem key={month} value={month}>
-                        <AccordionTrigger className="hover:no-underline">
-                          <div className="flex items-center gap-2">
-                            <span>{monthEmoji} {month}</span>
-                            {goals.length > 0 && (
-                              <Badge variant="secondary" className="ml-2">{goals.length}</Badge>
-                            )}
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent>
-                          <div className="space-y-3 pt-2 px-1">
-                            {goals.map((goal) => (
-                              <div key={goal.id} className="space-y-2">
-                                <div className="flex items-start gap-3 group hover:bg-[#F5F0F3]/30 p-3 rounded-lg border border-transparent hover:border-[#E8E4E6] transition-all">
-                                  <button
-                                    onClick={() => handleToggleMonthlyGoal(selectedYear, month, goal.id)}
-                                    data-onboarding="goal-status-box"
-                        className={`mt-0.5 h-5 w-5 rounded border-2 flex items-center justify-center transition-colors ${
-                          goal.status === 'completed'
-                            ? 'bg-[#7a9a7a] border-[#7a9a7a]'
-                            : goal.status === 'in-progress'
-                            ? 'bg-yellow-400 border-yellow-400'
-                            : 'bg-white border-gray-300 hover:border-gray-400'
-                        }`}
-                      >
-                        {goal.status === 'completed' && <span className="text-white text-xs">✓</span>}
-                        {goal.status === 'in-progress' && <span className="text-white text-xs">•</span>}
-                      </button>
-                                  {editingMonthlyId === goal.id ? (
-                                    <Input
-                                      value={editingMonthlyText}
-                                      onChange={(e) => setEditingMonthlyText(e.target.value)}
-                                      onBlur={() => handleSaveMonthlyGoal(selectedYear, month)}
-                                      onKeyDown={(e) => {
-                                        if (e.key === 'Enter') handleSaveMonthlyGoal(selectedYear, month);
-                                        if (e.key === 'Escape') setEditingMonthlyId(null);
-                                      }}
-                                      autoFocus
-                                      className="flex-1 h-8"
-                                    />
-                                  ) : (
-                                    <span
-                                      className={`flex-1 cursor-pointer ${
-                                        goal.status === 'completed' ? 'line-through text-muted-foreground' : ''
-                                      }`}
-                                      onClick={() => handleEditMonthlyGoal(goal.id, goal.text)}
-                                      title="Click to edit"
-                                    >
-                                      {goal.text}
-                                    </span>
-                                  )}
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-6 w-6 opacity-0 group-hover:opacity-100"
-                                    onClick={() => handleDeleteMonthlyGoal(selectedYear, month, goal.id)}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                                {goal.status === 'in-progress' && (
-                                  <div className="ml-8 mr-8">
-                                    <Input
-                                      placeholder="Progress notes..."
-                                      value={goal.progressNote || ''}
-                                      onChange={(e) => handleUpdateProgressNote(selectedYear, month, goal.id, e.target.value)}
-                                      className="text-xs bg-yellow-50/50 border-yellow-200/60 placeholder:text-yellow-600/60"
-                                    />
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                            <div className="flex gap-2 pt-3">
-                              <Input
-                                placeholder={`Add goal for ${month}...`}
-                                value={newMonthlyGoalInputs[inputKey] || ''}
-                                onChange={(e) => setNewMonthlyGoalInputs(prev => ({ ...prev, [inputKey]: e.target.value }))}
-                                onKeyDown={(e) => e.key === 'Enter' && handleAddMonthlyGoal(selectedYear, month)}
-                                className="border-2 border-gray-200 focus:border-[#8B7082] focus:ring-2 focus:ring-[#8B7082]/20"
-                              />
-                              <Button
-                                onClick={() => handleAddMonthlyGoal(selectedYear, month)}
-                                disabled={!(newMonthlyGoalInputs[inputKey] || '').trim()}
-                                className="bg-[#8B7082] hover:bg-[#7a6172]"
-                              >
-                                <Plus className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    );
-                  })}
-                </Accordion>
-              </CardContent>
-            </Card>
-
-              {/* Right column: Short-Term and Long-Term Goals */}
-              <div className="lg:col-span-1 space-y-6">
-                {/* Short-Term Goals (1 Year) */}
-                <Card className="rounded-xl bg-white border border-[#E8E4E6] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
-                  <CardHeader className="border-b border-[#E8E4E6]/50 bg-gradient-to-r from-[#F5F0F3]/50 to-transparent">
-                    <CardTitle className="flex items-center gap-3 text-base">
-                      <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
-                        <Target className="w-4 h-4" />
-                      </div>
-                      <span className="font-semibold text-[#612A4F]">Short-Term (1 Year)</span>
-                      {shortTermGoals.length > 0 && (
-                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#EDF3ED] text-[#7a9a7a] rounded-full text-xs font-medium">
-                          <Check className="w-3 h-3" />
-                          Complete
-                        </div>
-                      )}
-                    </CardTitle>
-                    <CardDescription className="ml-11 text-sm text-gray-600">
-                      Goals within the next year
-                    </CardDescription>
-                  </CardHeader>
-              <CardContent className="space-y-4 pt-8">
-                {shortTermGoals.map((goal) => (
-                  <div key={goal.id} className="space-y-2">
-                    <div className="flex items-start gap-3 group hover:bg-[#F5F0F3]/30 p-3 rounded-lg border border-transparent hover:border-[#E8E4E6] transition-all">
-                      <button
-                        onClick={() => handleToggleShortTermGoal(goal.id)}
-                        data-onboarding="goal-status-box"
-                        className={`mt-0.5 h-5 w-5 rounded border-2 flex items-center justify-center transition-colors ${
-                          goal.status === 'completed'
-                            ? 'bg-[#7a9a7a] border-[#7a9a7a]'
-                            : goal.status === 'in-progress'
-                            ? 'bg-yellow-400 border-yellow-400'
-                            : 'bg-white border-gray-300 hover:border-gray-400'
-                        }`}
-                      >
-                        {goal.status === 'completed' && <span className="text-white text-xs">✓</span>}
-                        {goal.status === 'in-progress' && <span className="text-white text-xs">•</span>}
-                      </button>
-                      {editingShortTermId === goal.id ? (
-                        <Input
-                          value={editingShortTermText}
-                          onChange={(e) => setEditingShortTermText(e.target.value)}
-                          onBlur={handleSaveShortTermGoal}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleSaveShortTermGoal();
-                            if (e.key === 'Escape') setEditingShortTermId(null);
-                          }}
-                          autoFocus
-                          className="flex-1 h-8"
-                        />
-                      ) : (
-                        <span
-                          className={`flex-1 cursor-pointer ${
-                            goal.status === 'completed' ? 'line-through text-muted-foreground' : ''
-                          }`}
-                          onClick={() => handleEditShortTermGoal(goal.id, goal.text)}
-                          title="Click to edit"
-                        >
-                          {goal.text}
-                        </span>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 opacity-0 group-hover:opacity-100"
-                        onClick={() => handleDeleteShortTermGoal(goal.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    {goal.status === 'in-progress' && (
-                      <div className="ml-8 mr-8">
-                        <Input
-                          placeholder="Progress notes..."
-                          value={goal.progressNote || ''}
-                          onChange={(e) => {
-                            setShortTermGoals(shortTermGoals.map(g =>
-                              g.id === goal.id ? { ...g, progressNote: e.target.value } : g
-                            ));
-                          }}
-                          className="text-xs bg-yellow-50/50 border-yellow-200/60 placeholder:text-yellow-600/60"
-                        />
-                      </div>
+            {/* SECTION 2: 1-Year Goals */}
+            <div
+              className="bg-white p-6"
+              style={{
+                borderRadius: '24px',
+                boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)'
+              }}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-4">
+                  <div
+                    className="flex items-center justify-center text-white"
+                    style={{
+                      width: '48px',
+                      height: '48px',
+                      borderRadius: '14px',
+                      background: 'linear-gradient(145deg, #7a9a7a 0%, #5a8a5a 100%)'
+                    }}
+                  >
+                    <Target className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-[#612A4F]" style={{ fontFamily: "'Playfair Display', serif" }}>1-Year Goals</h3>
+                    {shortTermGoals.length > 0 && (
+                      <span className="text-xs text-[#7a9a7a]">
+                        {shortTermGoals.filter(g => g.status === 'completed').length}/{shortTermGoals.length} completed
+                      </span>
                     )}
                   </div>
-                ))}
-                <div className="flex gap-2 pt-3">
+                </div>
+                <div className="flex gap-2">
                   <Input
-                    placeholder="Add a 1-year goal..."
+                    placeholder="Add a new annual goal..."
                     value={newShortTermGoal}
                     onChange={(e) => setNewShortTermGoal(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleAddShortTermGoal()}
-                    className="border-2 border-gray-200 focus:border-[#612A4F] focus:ring-2 focus:ring-[#612A4F]/20"
+                    className="w-64 h-10 text-sm border border-[#E8E4E6] focus:outline-none focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)]"
+                    style={{ borderRadius: '14px' }}
                   />
-                  <Button onClick={handleAddShortTermGoal} disabled={!newShortTermGoal.trim()} className="bg-[#612A4F] hover:bg-[#4d2140]">
-                    <Plus className="h-4 w-4" />
-                  </Button>
+                  <button
+                    onClick={handleAddShortTermGoal}
+                    disabled={!newShortTermGoal.trim()}
+                    className="px-5 h-10 text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                    style={{
+                      background: 'linear-gradient(145deg, #612A4F 0%, #4d2140 100%)',
+                      borderRadius: '14px'
+                    }}
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Goal
+                  </button>
                 </div>
-                </CardContent>
-              </Card>
+              </div>
 
-                {/* Long-Term Goals (3 Years) */}
-                <Card className="rounded-xl bg-white border border-[#E8E4E6] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
-                  <CardHeader className="border-b border-[#E8E4E6]/50 bg-gradient-to-r from-[#EDF3ED]/50 to-transparent">
-                    <CardTitle className="flex items-center gap-3 text-base">
-                      <div className="p-2 rounded-lg bg-[#7a9a7a] text-white shadow-sm">
-                        <TrendingUp className="w-4 h-4" />
-                      </div>
-                      <span className="font-semibold text-[#612A4F]">Long-Term (3 Years)</span>
-                      {longTermGoals.length > 0 && (
-                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#EDF3ED] text-[#7a9a7a] rounded-full text-xs font-medium">
-                          <Check className="w-3 h-3" />
-                          Complete
+              {/* Goal Cards Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {shortTermGoals.map((goal, index) => {
+                  const colorSchemes = [
+                    { bg: 'rgba(107, 74, 94, 0.08)', accent: '#6b4a5e', accentRgb: '107, 74, 94' },
+                    { bg: 'rgba(122, 154, 122, 0.08)', accent: '#5a8a5a', accentRgb: '90, 138, 90' },
+                    { bg: 'rgba(166, 138, 100, 0.08)', accent: '#a68a64', accentRgb: '166, 138, 100' },
+                  ];
+                  const scheme = colorSchemes[index % 3];
+                  const progressPercent = goal.status === 'completed' ? 100 : goal.status === 'in-progress' ? 50 : 0;
+
+                  return (
+                    <div
+                      key={goal.id}
+                      className="relative group transition-all duration-200 hover:shadow-md"
+                      style={{
+                        background: scheme.bg,
+                        borderRadius: '16px',
+                        padding: '20px 24px'
+                      }}
+                    >
+                      {/* Goal Number */}
+                      <span
+                        className="absolute top-4 right-5"
+                        style={{
+                          fontFamily: "'Playfair Display', serif",
+                          fontSize: '32px',
+                          fontWeight: 600,
+                          color: scheme.accent,
+                          opacity: 0.6
+                        }}
+                      >
+                        {index + 1}
+                      </span>
+
+                      {/* Goal Content */}
+                      <div className="pr-10">
+                        {editingShortTermId === goal.id ? (
+                          <Input
+                            value={editingShortTermText}
+                            onChange={(e) => setEditingShortTermText(e.target.value)}
+                            onBlur={handleSaveShortTermGoal}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSaveShortTermGoal();
+                              if (e.key === 'Escape') setEditingShortTermId(null);
+                            }}
+                            autoFocus
+                            className="mb-4 text-sm"
+                          />
+                        ) : (
+                          <p
+                            className={`text-sm font-medium mb-5 cursor-pointer transition-colors ${goal.status === 'completed' ? 'line-through' : ''}`}
+                            style={{ color: goal.status === 'completed' ? '#8b7a85' : '#3d3a38' }}
+                            onClick={() => handleEditShortTermGoal(goal.id, goal.text)}
+                          >
+                            {goal.text}
+                          </p>
+                        )}
+
+                        {/* Progress Bar */}
+                        <div className="space-y-2">
+                          <div
+                            className="overflow-hidden"
+                            style={{
+                              height: '8px',
+                              borderRadius: '10px',
+                              background: 'rgba(139, 115, 130, 0.1)'
+                            }}
+                          >
+                            <div
+                              className="h-full transition-all duration-500"
+                              style={{
+                                width: `${progressPercent}%`,
+                                borderRadius: '10px',
+                                background: `linear-gradient(90deg, ${scheme.accent} 0%, ${scheme.accent}cc 100%)`
+                              }}
+                            />
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-[13px] font-bold" style={{ color: scheme.accent }}>{progressPercent}%</span>
+                          </div>
                         </div>
-                      )}
-                    </CardTitle>
-                    <CardDescription className="ml-11 text-sm text-gray-600">
-                      Your 3-year vision
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4 pt-8">
-                {longTermGoals.map((goal) => (
-                  <div key={goal.id} className="space-y-2">
-                    <div className="flex items-start gap-3 group hover:bg-[#EDF3ED]/30 p-3 rounded-lg border border-transparent hover:border-[#D5E5D5] transition-all">
-                      <button
-                        onClick={() => handleToggleLongTermGoal(goal.id)}
-                        data-onboarding="goal-status-box"
-                        className={`mt-0.5 h-5 w-5 rounded border-2 flex items-center justify-center transition-colors ${
-                          goal.status === 'completed'
-                            ? 'bg-[#7a9a7a] border-[#7a9a7a]'
-                            : goal.status === 'in-progress'
-                            ? 'bg-yellow-400 border-yellow-400'
-                            : 'bg-white border-gray-300 hover:border-gray-400'
-                        }`}
-                      >
-                        {goal.status === 'completed' && <span className="text-white text-xs">✓</span>}
-                        {goal.status === 'in-progress' && <span className="text-white text-xs">•</span>}
-                      </button>
-                      {editingLongTermId === goal.id ? (
-                        <Input
-                          value={editingLongTermText}
-                          onChange={(e) => setEditingLongTermText(e.target.value)}
-                          onBlur={handleSaveLongTermGoal}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleSaveLongTermGoal();
-                            if (e.key === 'Escape') setEditingLongTermId(null);
-                          }}
-                          autoFocus
-                          className="flex-1 h-8"
-                        />
-                      ) : (
-                        <span
-                          className={`flex-1 cursor-pointer ${
-                            goal.status === 'completed' ? 'line-through text-muted-foreground' : ''
-                          }`}
-                          onClick={() => handleEditLongTermGoal(goal.id, goal.text)}
-                          title="Click to edit"
-                        >
-                          {goal.text}
-                        </span>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 opacity-0 group-hover:opacity-100"
-                        onClick={() => handleDeleteLongTermGoal(goal.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    {goal.status === 'in-progress' && (
-                      <div className="ml-8 mr-8">
-                        <Input
-                          placeholder="Progress notes..."
-                          value={goal.progressNote || ''}
-                          onChange={(e) => {
-                            setLongTermGoals(longTermGoals.map(g =>
-                              g.id === goal.id ? { ...g, progressNote: e.target.value } : g
-                            ));
-                          }}
-                          className="text-xs bg-yellow-50/50 border-yellow-200/60 placeholder:text-yellow-600/60"
-                        />
+
+                        {/* Status Toggle */}
+                        <div className="flex items-center gap-2 mt-4">
+                          <button
+                            onClick={() => handleToggleShortTermGoal(goal.id)}
+                            className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all"
+                            style={{
+                              background: goal.status === 'completed'
+                                ? 'linear-gradient(145deg, #8aae8a 0%, #6a9a6a 100%)'
+                                : goal.status === 'in-progress'
+                                ? 'linear-gradient(145deg, #f0c040 0%, #daa520 100%)'
+                                : 'white',
+                              color: goal.status !== 'not-started' ? 'white' : '#6b5b63',
+                              border: goal.status === 'not-started' ? '1px solid #e8e4e6' : 'none'
+                            }}
+                          >
+                            {goal.status === 'completed' ? '✓ Complete' : goal.status === 'in-progress' ? 'In Progress' : 'Not Started'}
+                          </button>
+                          <button
+                            onClick={() => handleDeleteShortTermGoal(goal.id)}
+                            className="p-1.5 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
-                    )}
+                    </div>
+                  );
+                })}
+
+                {/* Empty State */}
+                {shortTermGoals.length === 0 && (
+                  <div
+                    className="col-span-full text-center py-12 border border-dashed"
+                    style={{
+                      background: 'linear-gradient(145deg, rgba(122, 154, 122, 0.05) 0%, rgba(122, 154, 122, 0.1) 100%)',
+                      borderRadius: '16px',
+                      borderColor: 'rgba(122, 154, 122, 0.2)'
+                    }}
+                  >
+                    <Target className="w-10 h-10 mx-auto mb-3" style={{ color: 'rgba(122, 154, 122, 0.4)' }} />
+                    <p className="text-sm" style={{ color: '#7a9a7a' }}>No annual goals yet</p>
+                    <p className="text-xs mt-1" style={{ color: 'rgba(122, 154, 122, 0.6)' }}>Add your first 1-year goal above</p>
                   </div>
-                ))}
-                <div className="flex gap-2 pt-3">
-                  <Input
-                    placeholder="Add a 3-year goal..."
-                    value={newLongTermGoal}
-                    onChange={(e) => setNewLongTermGoal(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAddLongTermGoal()}
-                    className="border-2 border-gray-200 focus:border-[#7a9a7a] focus:ring-2 focus:ring-[#7a9a7a]/20"
-                  />
-                  <Button onClick={handleAddLongTermGoal} disabled={!newLongTermGoal.trim()} className="bg-[#7a9a7a] hover:bg-[#6a8a6a]">
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-                  </CardContent>
-                </Card>
+                )}
               </div>
             </div>
+
+            {/* SECTION 3: Monthly Goals */}
+            <div
+              className="bg-white p-6"
+              style={{
+                borderRadius: '24px',
+                boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)'
+              }}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-4">
+                  <div
+                    className="flex items-center justify-center text-white"
+                    style={{
+                      width: '48px',
+                      height: '48px',
+                      borderRadius: '14px',
+                      background: 'linear-gradient(145deg, #612A4F 0%, #4d2140 100%)'
+                    }}
+                  >
+                    <Calendar className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-[#612A4F]" style={{ fontFamily: "'Playfair Display', serif" }}>Monthly Goals</h3>
+                </div>
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(Number(e.target.value))}
+                  className="px-4 py-2 text-sm border border-[#E8E4E6] bg-white text-[#612A4F] font-medium focus:outline-none focus:border-[#612a4f]"
+                  style={{ borderRadius: '12px' }}
+                >
+                  {[...Array(5)].map((_, i) => {
+                    const year = 2025 + i;
+                    return <option key={year} value={year}>{year}</option>;
+                  })}
+                </select>
+              </div>
+
+              {/* Month Pill Selector */}
+              <div className="flex gap-2 overflow-x-auto pb-4 mb-4">
+                {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map((month) => {
+                  const fullMonth = monthShortToFull[month];
+                  const goals = getMonthlyGoals(selectedYear, fullMonth);
+                  const isSelected = selectedMonthPill === month;
+
+                  return (
+                    <button
+                      key={month}
+                      onClick={() => setSelectedMonthPill(month)}
+                      className="relative px-5 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap"
+                      style={{
+                        borderRadius: '12px',
+                        background: isSelected
+                          ? 'linear-gradient(145deg, #612A4F 0%, #4d2140 100%)'
+                          : 'white',
+                        color: isSelected ? 'white' : '#8B7082',
+                        border: isSelected ? 'none' : '1px solid #E8E4E6',
+                        boxShadow: isSelected
+                          ? '0 4px 12px rgba(97, 42, 79, 0.25)'
+                          : '0 2px 4px rgba(0, 0, 0, 0.02)'
+                      }}
+                    >
+                      {month}
+                      {goals.length > 0 && (
+                        <span
+                          className="absolute flex items-center justify-center text-[10px] font-bold"
+                          style={{
+                            width: '18px',
+                            height: '18px',
+                            borderRadius: '50%',
+                            top: '-6px',
+                            right: '-6px',
+                            background: isSelected
+                              ? 'white'
+                              : 'linear-gradient(145deg, #612A4F 0%, #4d2140 100%)',
+                            color: isSelected ? '#612A4F' : 'white'
+                          }}
+                        >
+                          {goals.length}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Expanded Month View */}
+              {(() => {
+                const fullMonth = monthShortToFull[selectedMonthPill];
+                const goals = getMonthlyGoals(selectedYear, fullMonth);
+                const inputKey = `${selectedYear}-${fullMonth}`;
+                const completedCount = goals.filter(g => g.status === 'completed').length;
+
+                return (
+                  <div
+                    style={{
+                      background: 'linear-gradient(145deg, rgba(139, 115, 130, 0.03) 0%, rgba(139, 115, 130, 0.06) 100%)',
+                      borderRadius: '18px',
+                      padding: '24px',
+                      border: '1px solid rgba(139, 115, 130, 0.08)'
+                    }}
+                  >
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-5 h-5 text-[#612A4F]" />
+                        <h4 className="text-xl text-[#612A4F]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+                          {fullMonth} {selectedYear}
+                        </h4>
+                      </div>
+                      {goals.length > 0 && (
+                        <span className="text-sm font-medium" style={{ color: '#7a9a7a' }}>
+                          {completedCount}/{goals.length} completed
+                        </span>
+                      )}
+                    </div>
+
+                    {goals.length === 0 ? (
+                      <div
+                        className="text-center py-10 border border-dashed"
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.5)',
+                          borderRadius: '14px',
+                          borderColor: 'rgba(139, 115, 130, 0.15)'
+                        }}
+                      >
+                        <Calendar className="w-8 h-8 mx-auto mb-2" style={{ color: 'rgba(139, 115, 130, 0.3)' }} />
+                        <p className="text-sm" style={{ color: '#8B7082' }}>No goals for {fullMonth}</p>
+                        <p className="text-xs mt-1" style={{ color: 'rgba(139, 115, 130, 0.6)' }}>Add a goal below to get started</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {goals.map((goal) => (
+                          <div
+                            key={goal.id}
+                            className="flex items-start gap-3 group bg-white transition-all duration-200 hover:shadow-md"
+                            style={{
+                              padding: '14px 16px',
+                              borderRadius: '14px',
+                              border: '1px solid rgba(139, 115, 130, 0.1)',
+                              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.02)'
+                            }}
+                          >
+                            {/* Checkbox */}
+                            <button
+                              onClick={() => handleToggleMonthlyGoal(selectedYear, fullMonth, goal.id)}
+                              className="flex-shrink-0 flex items-center justify-center transition-all duration-200"
+                              style={{
+                                width: '24px',
+                                height: '24px',
+                                borderRadius: '8px',
+                                background: goal.status === 'completed'
+                                  ? 'linear-gradient(145deg, #8aae8a 0%, #6a9a6a 100%)'
+                                  : goal.status === 'in-progress'
+                                  ? 'linear-gradient(145deg, #f0c040 0%, #daa520 100%)'
+                                  : 'transparent',
+                                border: goal.status === 'not-started' ? '2px solid rgba(139, 115, 130, 0.2)' : 'none',
+                                boxShadow: goal.status !== 'not-started' ? '0 2px 4px rgba(0, 0, 0, 0.1)' : 'none'
+                              }}
+                            >
+                              {goal.status === 'completed' && <Check className="w-3.5 h-3.5 text-white" />}
+                              {goal.status === 'in-progress' && <span className="w-2 h-2 bg-white rounded-full" />}
+                            </button>
+
+                            <div className="flex-1 min-w-0">
+                              {editingMonthlyId === goal.id ? (
+                                <Input
+                                  value={editingMonthlyText}
+                                  onChange={(e) => setEditingMonthlyText(e.target.value)}
+                                  onBlur={() => handleSaveMonthlyGoal(selectedYear, fullMonth)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') handleSaveMonthlyGoal(selectedYear, fullMonth);
+                                    if (e.key === 'Escape') setEditingMonthlyId(null);
+                                  }}
+                                  autoFocus
+                                  className="h-8 text-sm"
+                                />
+                              ) : (
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span
+                                    className="text-sm cursor-pointer hover:text-[#612A4F] transition-colors"
+                                    style={{
+                                      color: goal.status === 'completed' ? '#8b7a85' : '#3d3a38',
+                                      textDecoration: goal.status === 'completed' ? 'line-through' : 'none'
+                                    }}
+                                    onClick={() => handleEditMonthlyGoal(goal.id, goal.text)}
+                                  >
+                                    {goal.text}
+                                  </span>
+                                  {goal.linkedGoalId && (
+                                    <span
+                                      className="px-2 py-0.5 text-[10px] font-medium"
+                                      style={{
+                                        background: 'rgba(107, 74, 94, 0.1)',
+                                        color: '#6b4a5e',
+                                        borderRadius: '6px'
+                                      }}
+                                    >
+                                      ↗ Goal {shortTermGoals.findIndex(g => g.id === goal.linkedGoalId) + 1}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+
+                            <button
+                              onClick={() => handleDeleteMonthlyGoal(selectedYear, fullMonth, goal.id)}
+                              className="p-1.5 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Add Goal Input */}
+                    <div className="flex gap-3 mt-5">
+                      <Input
+                        placeholder={`Add a goal for ${fullMonth}...`}
+                        value={newMonthlyGoalInputs[inputKey] || ''}
+                        onChange={(e) => setNewMonthlyGoalInputs(prev => ({ ...prev, [inputKey]: e.target.value }))}
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddMonthlyGoal(selectedYear, fullMonth)}
+                        className="flex-1 h-12 text-sm bg-white border border-[#E8E4E6] focus:outline-none focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)]"
+                        style={{ borderRadius: '14px' }}
+                      />
+                      <button
+                        onClick={() => handleAddMonthlyGoal(selectedYear, fullMonth)}
+                        disabled={!(newMonthlyGoalInputs[inputKey] || '').trim()}
+                        className="flex items-center justify-center text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        style={{
+                          width: '48px',
+                          height: '48px',
+                          borderRadius: '14px',
+                          background: 'linear-gradient(145deg, #612A4F 0%, #4d2140 100%)'
+                        }}
+                      >
+                        <Plus className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
           </TabsContent>
         </Tabs>
         </div>
