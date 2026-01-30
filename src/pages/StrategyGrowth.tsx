@@ -31,6 +31,7 @@ import {
   Trash2,
   Upload,
   ExternalLink,
+  ArrowUpRight,
   ChevronDown,
   ChevronUp,
   Heart,
@@ -616,14 +617,14 @@ const StrategyGrowth = () => {
             <TabsList className="inline-flex items-center gap-0 bg-white rounded-lg shadow-sm border border-gray-200 p-1 mb-6">
               <TabsTrigger
                 value="brand-identity"
-                className="relative px-6 py-2 rounded-md text-sm font-medium transition-all data-[state=active]:bg-[#612A4F] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900"
+                className="relative px-6 py-2 rounded-md text-sm font-medium transition-all data-[state=active]:bg-[#612A4F] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-[#8B7082] data-[state=inactive]:hover:text-[#612A4F] data-[state=inactive]:hover:bg-[#F5F0F3]"
               >
                 <PenTool className="w-4 h-4 mr-2 inline-block" />
                 Positioning
               </TabsTrigger>
               <TabsTrigger
                 value="growth-goals"
-                className="relative px-6 py-2 rounded-md text-sm font-medium transition-all data-[state=active]:bg-[#612A4F] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900"
+                className="relative px-6 py-2 rounded-md text-sm font-medium transition-all data-[state=active]:bg-[#612A4F] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-[#8B7082] data-[state=inactive]:hover:text-[#612A4F] data-[state=inactive]:hover:bg-[#F5F0F3]"
               >
                 <TrendingUp className="w-4 h-4 mr-2 inline-block" />
                 Growth Goals
@@ -633,15 +634,15 @@ const StrategyGrowth = () => {
             {/* Positioning Tab */}
             <TabsContent value="brand-identity" className="space-y-4 mt-0">
               {/* Mission Statement */}
-              <Card className="rounded-xl bg-white border-0 shadow-none">
+              <Card className="rounded-xl bg-white border border-[#E8E4E6] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-3 text-base">
                     <div className="p-2 rounded-lg bg-[#8B7082] text-white shadow-sm">
                       <Target className="w-4 h-4" />
                     </div>
-                    <span className="font-semibold text-gray-900">Mission Statement</span>
+                    <span className="font-semibold text-[#612A4F]">Mission Statement</span>
                     {missionStatement.trim() && (
-                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#E8F0E8] text-[#5C7A5C] rounded-full text-xs font-medium">
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#EDF3ED] text-[#7a9a7a] rounded-full text-xs font-medium">
                         <Check className="w-3 h-3" />
                         Complete
                       </div>
@@ -664,7 +665,7 @@ const StrategyGrowth = () => {
                       <Textarea
                         value={missionStatement}
                         onChange={(e) => setMissionStatement(e.target.value)}
-                        className="min-h-[160px] h-full resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#8B7082] focus:border-transparent p-4 text-sm leading-relaxed bg-white"
+                        className="min-h-[160px] h-full resize-none border border-[#E8E4E6] rounded-xl focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 p-4 text-sm leading-relaxed bg-white"
                         placeholder={missionStatementFocused ? "" : "Write a short sentence that explains who your content is for and what you want it to do for them..."}
                         onFocus={() => setMissionStatementFocused(true)}
                         onBlur={() => setMissionStatementFocused(false)}
@@ -672,8 +673,8 @@ const StrategyGrowth = () => {
                     </div>
 
                     {/* Examples Panel */}
-                    <div className="w-[420px] flex-shrink-0 bg-gradient-to-b from-[#FAF8F9] to-[#F0E8ED] rounded-xl p-4">
-                      <p className="text-[11px] text-[#8B7082] mb-3">Examples</p>
+                    <div className="w-[420px] flex-shrink-0 bg-gradient-to-br from-[#FAF7F8] via-[#F5F0F3] to-[#F0EBE8] rounded-2xl p-4 border-l-4 border-[#8B7082]/30">
+                      <p className="text-[11px] font-medium text-[#8B7082] mb-3">Examples</p>
                       <div className="space-y-2">
                         {[
                           "I create content to help busy people build healthy routines they can actually stick to",
@@ -695,15 +696,15 @@ const StrategyGrowth = () => {
               </Card>
 
               {/* Brand Values */}
-              <Card className="rounded-xl bg-white border-0 shadow-none">
+              <Card className="rounded-xl bg-white border border-[#E8E4E6] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-3 text-base">
                     <div className="p-2 rounded-lg bg-[#8B7082] text-white shadow-sm">
                       <Sparkles className="w-4 h-4" />
                     </div>
-                    <span className="font-semibold text-gray-900">Brand Values</span>
+                    <span className="font-semibold text-[#612A4F]">Brand Values</span>
                     {brandValues.length >= 3 && (
-                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#E8F0E8] text-[#5C7A5C] rounded-full text-xs font-medium">
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#EDF3ED] text-[#7a9a7a] rounded-full text-xs font-medium">
                         <Check className="w-3 h-3" />
                         Complete
                       </div>
@@ -734,7 +735,7 @@ const StrategyGrowth = () => {
                           }}
                           placeholder="Add a value (e.g., 'I don't take myself too seriously online')..."
                           disabled={brandValues.length >= 5}
-                          className="flex-1 px-4 py-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#8B7082] focus:border-[#8B7082] disabled:bg-gray-50 disabled:text-gray-400"
+                          className="flex-1 px-4 py-3 text-sm border border-[#E8E4E6] rounded-xl focus:outline-none focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 disabled:bg-gray-50 disabled:text-gray-400"
                         />
                         <button
                           onClick={() => {
@@ -823,7 +824,7 @@ const StrategyGrowth = () => {
 
                       <div className="grid grid-cols-2 gap-2">
                         {/* Truth values */}
-                        <div className="bg-gradient-to-b from-[#FAF8F9] to-[#F0E8ED] rounded-lg p-3">
+                        <div className="bg-gradient-to-br from-[#FAF7F8] via-[#F5F0F3] to-[#F0EBE8] rounded-xl p-3 border-l-2 border-[#8B7082]/25">
                           <p className="text-[11px] font-medium text-gray-700 mb-1">Alignment</p>
                           <p className="text-[10px] text-gray-400 mb-2">Being true to yourself</p>
                           <div className="space-y-1">
@@ -847,7 +848,7 @@ const StrategyGrowth = () => {
                         </div>
 
                         {/* Boundary values */}
-                        <div className="bg-gradient-to-b from-[#FAF8F9] to-[#F0E8ED] rounded-lg p-3">
+                        <div className="bg-gradient-to-br from-[#FAF7F8] via-[#F5F0F3] to-[#F0EBE8] rounded-xl p-3 border-l-2 border-[#8B7082]/25">
                           <p className="text-[11px] font-medium text-gray-700 mb-1">Boundaries</p>
                           <p className="text-[10px] text-gray-400 mb-2">Your non-negotiables</p>
                           <div className="space-y-1">
@@ -872,7 +873,7 @@ const StrategyGrowth = () => {
                         </div>
 
                         {/* Craft values */}
-                        <div className="bg-gradient-to-b from-[#FAF8F9] to-[#F0E8ED] rounded-lg p-3">
+                        <div className="bg-gradient-to-br from-[#FAF7F8] via-[#F5F0F3] to-[#F0EBE8] rounded-xl p-3 border-l-2 border-[#8B7082]/25">
                           <p className="text-[11px] font-medium text-gray-700 mb-1">Craft Values</p>
                           <p className="text-[10px] text-gray-400 mb-2">How you create</p>
                           <div className="flex flex-wrap gap-1">
@@ -893,7 +894,7 @@ const StrategyGrowth = () => {
                         </div>
 
                         {/* Power values */}
-                        <div className="bg-gradient-to-b from-[#FAF8F9] to-[#F0E8ED] rounded-lg p-3">
+                        <div className="bg-gradient-to-br from-[#FAF7F8] via-[#F5F0F3] to-[#F0EBE8] rounded-xl p-3 border-l-2 border-[#8B7082]/25">
                           <p className="text-[11px] font-medium text-gray-700 mb-1">Presence</p>
                           <p className="text-[10px] text-gray-400 mb-2">The energy people feel from you</p>
                           <div className="flex flex-wrap gap-1">
@@ -919,15 +920,15 @@ const StrategyGrowth = () => {
               </Card>
 
               {/* Content Style */}
-              <Card className="rounded-xl bg-white border-0 shadow-none">
+              <Card className="rounded-xl bg-white border border-[#E8E4E6] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-3 text-base">
                     <div className="p-2 rounded-lg bg-[#8B7082] text-white shadow-sm">
                       <MessageSquare className="w-4 h-4" />
                     </div>
-                    <span className="font-semibold text-gray-900">Content Style</span>
+                    <span className="font-semibold text-[#612A4F]">Content Style</span>
                     {selectedTones.length > 0 && (
-                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#E8F0E8] text-[#5C7A5C] rounded-full text-xs font-medium">
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#EDF3ED] text-[#7a9a7a] rounded-full text-xs font-medium">
                         <Check className="w-3 h-3" />
                         Complete
                       </div>
@@ -952,10 +953,10 @@ const StrategyGrowth = () => {
                               setSelectedTones([...selectedTones, toneKey]);
                             }
                           }}
-                          className={`py-2.5 rounded-lg text-[13px] font-medium transition-all ${
+                          className={`py-2.5 rounded-xl text-[13px] font-medium transition-all ${
                             isSelected
-                              ? "bg-[#612A4F] text-white shadow-sm"
-                              : "bg-[#FAF8F9] text-gray-600 hover:bg-[#F0E8ED] border border-[#EBE4E9]"
+                              ? "bg-gradient-to-b from-[#6d3358] to-[#612A4F] text-white shadow-[0_2px_8px_rgba(97,42,79,0.3),inset_0_1px_0_rgba(255,255,255,0.1)]"
+                              : "bg-gradient-to-b from-white to-[#FAF7F8] text-[#6B5B63] hover:text-[#612A4F] hover:from-[#FAF7F8] hover:to-[#F5F0F3] border border-[#E8E4E6] hover:border-[#D5CDD2] shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
                           }`}
                         >
                           {tone}
@@ -967,15 +968,15 @@ const StrategyGrowth = () => {
               </Card>
 
               {/* Target Audience */}
-              <Card className="rounded-xl bg-white border-0 shadow-none">
+              <Card className="rounded-xl bg-white border border-[#E8E4E6] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-3 text-base">
                     <div className="p-2 rounded-lg bg-[#8B7082] text-white shadow-sm">
                       <Users className="w-4 h-4" />
                     </div>
-                    <span className="font-semibold text-gray-900">Target Audience</span>
+                    <span className="font-semibold text-[#612A4F]">Target Audience</span>
                     {(audienceAgeRanges.length > 0 || audienceDesires.trim()) && (
-                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#E8F0E8] text-[#5C7A5C] rounded-full text-xs font-medium">
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#EDF3ED] text-[#7a9a7a] rounded-full text-xs font-medium">
                         <Check className="w-3 h-3" />
                         Complete
                       </div>
@@ -988,7 +989,7 @@ const StrategyGrowth = () => {
                 <CardContent className="space-y-6 pt-4 pb-6">
                   <div className="space-y-3">
                     <Label htmlFor="age-range" className="text-sm font-semibold text-gray-800">Age Range</Label>
-                    <div className="inline-flex rounded-lg border border-[#EBE4E9] overflow-hidden">
+                    <div className="inline-flex rounded-xl border border-[#E8E4E6] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
                       {["18-24", "25-34", "35-44", "45-54", "55+"].map((range, index) => {
                         const isSelected = audienceAgeRanges.includes(range);
                         return (
@@ -1007,11 +1008,11 @@ const StrategyGrowth = () => {
                               }
                             }}
                             className={`px-5 py-2.5 text-[13px] font-medium transition-all ${
-                              index > 0 ? "border-l border-[#EBE4E9]" : ""
+                              index > 0 ? "border-l border-[#E8E4E6]" : ""
                             } ${
                               isSelected
-                                ? "bg-[#612A4F] text-white"
-                                : "bg-[#FAF8F9] text-gray-600 hover:bg-[#F0E8ED]"
+                                ? "bg-gradient-to-b from-[#6d3358] to-[#612A4F] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
+                                : "bg-gradient-to-b from-white to-[#FAF7F8] text-[#6B5B63] hover:text-[#612A4F] hover:from-[#FAF7F8] hover:to-[#F5F0F3]"
                             }`}
                           >
                             {range}
@@ -1031,7 +1032,7 @@ const StrategyGrowth = () => {
                         placeholder={strugglesFocused ? "" : "What pain points or challenges does your audience face? What problems are they trying to solve?"}
                         onFocus={() => setStrugglesFocused(true)}
                         onBlur={() => setStrugglesFocused(false)}
-                        className="h-[240px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#8B7082] focus:border-transparent p-4 text-sm leading-relaxed"
+                        className="h-[240px] resize-none border border-[#E8E4E6] rounded-xl focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 p-4 text-sm leading-relaxed"
                       />
                     </div>
 
@@ -1044,7 +1045,7 @@ const StrategyGrowth = () => {
                         placeholder={desiresFocused ? "" : "What are your audience's goals and aspirations? What transformation are they seeking?"}
                         onFocus={() => setDesiresFocused(true)}
                         onBlur={() => setDesiresFocused(false)}
-                        className="h-[240px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#8B7082] focus:border-transparent p-4 text-sm leading-relaxed"
+                        className="h-[240px] resize-none border border-[#E8E4E6] rounded-xl focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 p-4 text-sm leading-relaxed"
                       />
                     </div>
                   </div>
@@ -1058,9 +1059,9 @@ const StrategyGrowth = () => {
                     <div className="p-2 rounded-lg bg-[#8B7082] text-white shadow-sm">
                       <ImageIcon className="w-4 h-4" />
                     </div>
-                    <span className="font-semibold text-gray-900">Vision Board</span>
+                    <span className="font-semibold text-[#612A4F]">Vision Board</span>
                     {(visionBoardImages.length > 0 || pinterestUrl) && (
-                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#E8F0E8] text-[#5C7A5C] rounded-full text-xs font-medium">
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#EDF3ED] text-[#7a9a7a] rounded-full text-xs font-medium">
                         <Check className="w-3 h-3" />
                         Complete
                       </div>
@@ -1092,16 +1093,36 @@ const StrategyGrowth = () => {
                     </div>
                   )}
 
-                  {/* Upload Section - show based on state */}
-                  {visionBoardImages.length === 0 && !pinterestUrl && (
-                    <div
-                      onClick={handleUploadClick}
-                      className="border-2 border-dashed border-[#DDD0D8] rounded-xl p-10 text-center hover:border-[#8B7082] hover:bg-[#F5F0F4]/30 transition-all cursor-pointer"
-                    >
-                      <Upload className="mx-auto h-10 w-10 text-[#C9B8C4]" />
-                      <h3 className="mt-3 text-sm font-semibold text-gray-800">Upload your vision board</h3>
-                      <p className="mt-1.5 text-xs text-gray-500">Any image format up to 2MB each</p>
-                      <p className="mt-0.5 text-xs text-gray-400">Accepts both landscape and portrait images</p>
+                  {/* Upload Section - Two button layout */}
+                  {visionBoardImages.length === 0 && (
+                    <div className="flex items-center gap-4">
+                      {/* Open Pinterest Board Button */}
+                      <button
+                        onClick={() => {
+                          if (pinterestUrl) {
+                            window.open(pinterestUrl, '_blank');
+                          } else {
+                            const url = prompt('Enter your Pinterest board URL:');
+                            if (url) updatePinterestUrl(url);
+                          }
+                        }}
+                        className="flex-1 flex items-center justify-center gap-2 py-4 px-6 bg-gradient-to-b from-white to-[#FAF7F8] border border-[#E8E4E6] rounded-xl hover:border-[#D5CDD2] hover:bg-[#F5F0F3]/50 transition-all"
+                      >
+                        <ArrowUpRight className="w-4 h-4 text-[#8B7082]" />
+                        <span className="text-sm font-medium text-[#4A4A4A]">Open Pinterest Board</span>
+                      </button>
+
+                      <span className="text-sm text-[#8B7082]">or</span>
+
+                      {/* Upload Image Button */}
+                      <button
+                        onClick={handleUploadClick}
+                        className="flex-1 flex items-center justify-center gap-2 py-4 px-6 bg-gradient-to-b from-white to-[#FAF7F8] border border-[#E8E4E6] rounded-xl hover:border-[#D5CDD2] hover:bg-[#F5F0F3]/50 transition-all"
+                      >
+                        <Upload className="w-4 h-4 text-[#8B7082]" />
+                        <span className="text-sm font-medium text-[#4A4A4A]">Upload image instead</span>
+                      </button>
+
                       <input
                         ref={fileInputRef}
                         type="file"
@@ -1111,17 +1132,6 @@ const StrategyGrowth = () => {
                         onChange={handleVisionBoardUpload}
                       />
                     </div>
-                  )}
-
-                  {/* Small upload option when Pinterest exists but no images */}
-                  {visionBoardImages.length === 0 && pinterestUrl && (
-                    <button
-                      onClick={handleUploadClick}
-                      className="flex items-center gap-2 text-[12px] text-[#8B7082] hover:text-[#612A4F] transition-colors"
-                    >
-                      <Upload className="w-4 h-4" />
-                      <span>Upload image instead</span>
-                    </button>
                   )}
 
                   {/* Hidden file input for when images exist */}
@@ -1170,15 +1180,15 @@ const StrategyGrowth = () => {
               </Card>
 
               {/* Additional Notes */}
-              <Card className="rounded-xl bg-white border-0 shadow-none">
+              <Card className="rounded-xl bg-white border border-[#E8E4E6] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-3 text-base">
                     <div className="p-2 rounded-lg bg-[#8B7082] text-white shadow-sm">
                       <StickyNote className="w-4 h-4" />
                     </div>
-                    <span className="font-semibold text-gray-900">Notes</span>
+                    <span className="font-semibold text-[#612A4F]">Notes</span>
                     {(additionalNotes.trim() || noteLinks.length > 0 || noteFiles.length > 0) && (
-                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#E8F0E8] text-[#5C7A5C] rounded-full text-xs font-medium">
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#EDF3ED] text-[#7a9a7a] rounded-full text-xs font-medium">
                         <Check className="w-3 h-3" />
                         Complete
                       </div>
@@ -1196,7 +1206,7 @@ const StrategyGrowth = () => {
                         value={additionalNotes}
                         onChange={(e) => setAdditionalNotes(e.target.value)}
                         placeholder="Write any additional notes about your brand strategy..."
-                        className="min-h-[180px] h-full resize-none border border-gray-200 rounded-lg focus:ring-1 focus:ring-[#8B7082] focus:border-[#8B7082] p-4 text-sm leading-relaxed"
+                        className="min-h-[180px] h-full resize-none border border-[#E8E4E6] rounded-xl focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 p-4 text-sm leading-relaxed"
                       />
                     </div>
 
@@ -1228,7 +1238,7 @@ const StrategyGrowth = () => {
                           {!showAddLinkForm && (
                             <button
                               onClick={() => setShowAddLinkForm(true)}
-                              className="flex items-center gap-1 text-[11px] text-[#8B7082] hover:text-[#612A4F] border border-dashed border-[#C9B8C4] hover:border-[#8B7082] rounded-lg px-2.5 py-1.5 transition-colors"
+                              className="flex items-center gap-1 text-[11px] text-[#8B7082] hover:text-[#612A4F] border border-[#E8E4E6] hover:border-[#8B7082] rounded-lg px-2.5 py-1.5 transition-colors bg-white/50"
                             >
                               <Plus className="w-3 h-3" />
                             </button>
@@ -1316,7 +1326,7 @@ const StrategyGrowth = () => {
                           />
                           <button
                             onClick={() => document.getElementById("note-file-upload")?.click()}
-                            className="flex items-center gap-1 text-[11px] text-[#8B7082] hover:text-[#612A4F] border border-dashed border-[#C9B8C4] hover:border-[#8B7082] rounded-lg px-2.5 py-1.5 transition-colors"
+                            className="flex items-center gap-1 text-[11px] text-[#8B7082] hover:text-[#612A4F] border border-[#E8E4E6] hover:border-[#8B7082] rounded-lg px-2.5 py-1.5 transition-colors bg-white/50"
                           >
                             <Plus className="w-3 h-3" />
                           </button>
@@ -1334,15 +1344,15 @@ const StrategyGrowth = () => {
             {/* Two-column layout */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Left column: Monthly Goals */}
-              <Card className="lg:col-span-1 rounded-lg border border-blue-100 shadow-sm bg-white hover:shadow-md transition-all">
-                <CardHeader className="border-b border-blue-50 bg-gradient-to-r from-blue-50/50 to-transparent">
+              <Card className="lg:col-span-1 rounded-xl bg-white border border-[#E8E4E6] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+                <CardHeader className="border-b border-[#E8E4E6]/50 bg-gradient-to-r from-[#F5F0F3]/50 to-transparent">
                   <CardTitle className="flex items-center gap-3 text-base">
-                    <div className="p-2 rounded-lg bg-blue-500 text-white shadow-sm">
+                    <div className="p-2 rounded-lg bg-[#8B7082] text-white shadow-sm">
                       <Calendar className="w-4 h-4" />
                     </div>
-                    <span className="font-semibold text-gray-900">Monthly Goals</span>
+                    <span className="font-semibold text-[#612A4F]">Monthly Goals</span>
                     {monthlyGoalsData[selectedYear] && Object.values(monthlyGoalsData[selectedYear]).some(goals => goals.length > 0) && (
-                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#E8F0E8] text-[#5C7A5C] rounded-full text-xs font-medium">
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#EDF3ED] text-[#7a9a7a] rounded-full text-xs font-medium">
                         <Check className="w-3 h-3" />
                         Complete
                       </div>
@@ -1353,14 +1363,14 @@ const StrategyGrowth = () => {
                   </CardDescription>
                 </CardHeader>
               <CardContent className="space-y-6 pt-8">
-                <div className="flex gap-4 items-center justify-between flex-wrap bg-blue-50/30 p-4 rounded-lg border border-blue-100/50">
+                <div className="flex gap-4 items-center justify-between flex-wrap bg-[#F5F0F3]/30 p-4 rounded-lg border border-[#E8E4E6]/50">
                   <div className="flex gap-3 items-center">
                     <Label htmlFor="year-select" className="text-sm font-semibold text-gray-700">Year:</Label>
                     <select
                       id="year-select"
                       value={selectedYear}
                       onChange={(e) => setSelectedYear(Number(e.target.value))}
-                      className="px-3 py-2 border-2 border-blue-200 rounded-lg bg-white font-medium text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="px-3 py-2 border-2 border-[#E8E4E6] rounded-lg bg-white font-medium text-sm focus:ring-2 focus:ring-[#612A4F]/20 focus:border-[#612A4F]"
                     >
                       {[...Array(5)].map((_, i) => {
                         const year = 2025 + i;
@@ -1380,7 +1390,7 @@ const StrategyGrowth = () => {
                             setFocusedMonth(e.target.value);
                             setExpandedMonths([e.target.value]);
                           }}
-                          className="px-3 py-2 border-2 border-blue-200 rounded-lg bg-white font-medium text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="px-3 py-2 border-2 border-[#E8E4E6] rounded-lg bg-white font-medium text-sm focus:ring-2 focus:ring-[#612A4F]/20 focus:border-[#612A4F]"
                         >
                           {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map((month) => (
                             <option key={month} value={month}>{month}</option>
@@ -1392,7 +1402,7 @@ const StrategyGrowth = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => setShowAllMonths(!showAllMonths)}
-                      className="flex items-center gap-2 border-2 hover:bg-blue-50 border-blue-200 hover:border-blue-300"
+                      className="flex items-center gap-2 border-2 hover:bg-[#F5F0F3] border-[#E8E4E6] hover:border-[#D5CDD2]"
                     >
                       {showAllMonths ? "Focus on One Month" : "Show All Months"}
                     </Button>
@@ -1425,13 +1435,13 @@ const StrategyGrowth = () => {
                           <div className="space-y-3 pt-2 px-1">
                             {goals.map((goal) => (
                               <div key={goal.id} className="space-y-2">
-                                <div className="flex items-start gap-3 group hover:bg-blue-50/30 p-3 rounded-lg border border-transparent hover:border-blue-100 transition-all">
+                                <div className="flex items-start gap-3 group hover:bg-[#F5F0F3]/30 p-3 rounded-lg border border-transparent hover:border-[#E8E4E6] transition-all">
                                   <button
                                     onClick={() => handleToggleMonthlyGoal(selectedYear, month, goal.id)}
                                     data-onboarding="goal-status-box"
                         className={`mt-0.5 h-5 w-5 rounded border-2 flex items-center justify-center transition-colors ${
                           goal.status === 'completed'
-                            ? 'bg-green-500 border-green-500'
+                            ? 'bg-[#7a9a7a] border-[#7a9a7a]'
                             : goal.status === 'in-progress'
                             ? 'bg-yellow-400 border-yellow-400'
                             : 'bg-white border-gray-300 hover:border-gray-400'
@@ -1490,12 +1500,12 @@ const StrategyGrowth = () => {
                                 value={newMonthlyGoalInputs[inputKey] || ''}
                                 onChange={(e) => setNewMonthlyGoalInputs(prev => ({ ...prev, [inputKey]: e.target.value }))}
                                 onKeyDown={(e) => e.key === 'Enter' && handleAddMonthlyGoal(selectedYear, month)}
-                                className="border-2 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200"
+                                className="border-2 border-gray-200 focus:border-[#8B7082] focus:ring-2 focus:ring-[#8B7082]/20"
                               />
                               <Button
                                 onClick={() => handleAddMonthlyGoal(selectedYear, month)}
                                 disabled={!(newMonthlyGoalInputs[inputKey] || '').trim()}
-                                className="bg-blue-500 hover:bg-blue-600"
+                                className="bg-[#8B7082] hover:bg-[#7a6172]"
                               >
                                 <Plus className="h-4 w-4" />
                               </Button>
@@ -1512,15 +1522,15 @@ const StrategyGrowth = () => {
               {/* Right column: Short-Term and Long-Term Goals */}
               <div className="lg:col-span-1 space-y-6">
                 {/* Short-Term Goals (1 Year) */}
-                <Card className="rounded-lg border border-amber-100 shadow-sm bg-white hover:shadow-md transition-all">
-                  <CardHeader className="border-b border-amber-50 bg-gradient-to-r from-amber-50/50 to-transparent">
+                <Card className="rounded-xl bg-white border border-[#E8E4E6] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+                  <CardHeader className="border-b border-[#E8E4E6]/50 bg-gradient-to-r from-[#F5F0F3]/50 to-transparent">
                     <CardTitle className="flex items-center gap-3 text-base">
-                      <div className="p-2 rounded-lg bg-amber-500 text-white shadow-sm">
+                      <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
                         <Target className="w-4 h-4" />
                       </div>
-                      <span className="font-semibold text-gray-900">Short-Term (1 Year)</span>
+                      <span className="font-semibold text-[#612A4F]">Short-Term (1 Year)</span>
                       {shortTermGoals.length > 0 && (
-                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#E8F0E8] text-[#5C7A5C] rounded-full text-xs font-medium">
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#EDF3ED] text-[#7a9a7a] rounded-full text-xs font-medium">
                           <Check className="w-3 h-3" />
                           Complete
                         </div>
@@ -1533,13 +1543,13 @@ const StrategyGrowth = () => {
               <CardContent className="space-y-4 pt-8">
                 {shortTermGoals.map((goal) => (
                   <div key={goal.id} className="space-y-2">
-                    <div className="flex items-start gap-3 group hover:bg-amber-50/30 p-3 rounded-lg border border-transparent hover:border-amber-100 transition-all">
+                    <div className="flex items-start gap-3 group hover:bg-[#F5F0F3]/30 p-3 rounded-lg border border-transparent hover:border-[#E8E4E6] transition-all">
                       <button
                         onClick={() => handleToggleShortTermGoal(goal.id)}
                         data-onboarding="goal-status-box"
                         className={`mt-0.5 h-5 w-5 rounded border-2 flex items-center justify-center transition-colors ${
                           goal.status === 'completed'
-                            ? 'bg-green-500 border-green-500'
+                            ? 'bg-[#7a9a7a] border-[#7a9a7a]'
                             : goal.status === 'in-progress'
                             ? 'bg-yellow-400 border-yellow-400'
                             : 'bg-white border-gray-300 hover:border-gray-400'
@@ -1602,9 +1612,9 @@ const StrategyGrowth = () => {
                     value={newShortTermGoal}
                     onChange={(e) => setNewShortTermGoal(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleAddShortTermGoal()}
-                    className="border-2 border-gray-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+                    className="border-2 border-gray-200 focus:border-[#612A4F] focus:ring-2 focus:ring-[#612A4F]/20"
                   />
-                  <Button onClick={handleAddShortTermGoal} disabled={!newShortTermGoal.trim()} className="bg-amber-500 hover:bg-amber-600">
+                  <Button onClick={handleAddShortTermGoal} disabled={!newShortTermGoal.trim()} className="bg-[#612A4F] hover:bg-[#4d2140]">
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
@@ -1612,15 +1622,15 @@ const StrategyGrowth = () => {
               </Card>
 
                 {/* Long-Term Goals (3 Years) */}
-                <Card className="rounded-lg border border-emerald-100 shadow-sm bg-white hover:shadow-md transition-all">
-                  <CardHeader className="border-b border-emerald-50 bg-gradient-to-r from-emerald-50/50 to-transparent">
+                <Card className="rounded-xl bg-white border border-[#E8E4E6] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+                  <CardHeader className="border-b border-[#E8E4E6]/50 bg-gradient-to-r from-[#EDF3ED]/50 to-transparent">
                     <CardTitle className="flex items-center gap-3 text-base">
-                      <div className="p-2 rounded-lg bg-emerald-500 text-white shadow-sm">
+                      <div className="p-2 rounded-lg bg-[#7a9a7a] text-white shadow-sm">
                         <TrendingUp className="w-4 h-4" />
                       </div>
-                      <span className="font-semibold text-gray-900">Long-Term (3 Years)</span>
+                      <span className="font-semibold text-[#612A4F]">Long-Term (3 Years)</span>
                       {longTermGoals.length > 0 && (
-                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#E8F0E8] text-[#5C7A5C] rounded-full text-xs font-medium">
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#EDF3ED] text-[#7a9a7a] rounded-full text-xs font-medium">
                           <Check className="w-3 h-3" />
                           Complete
                         </div>
@@ -1633,13 +1643,13 @@ const StrategyGrowth = () => {
                   <CardContent className="space-y-4 pt-8">
                 {longTermGoals.map((goal) => (
                   <div key={goal.id} className="space-y-2">
-                    <div className="flex items-start gap-3 group hover:bg-emerald-50/30 p-3 rounded-lg border border-transparent hover:border-emerald-100 transition-all">
+                    <div className="flex items-start gap-3 group hover:bg-[#EDF3ED]/30 p-3 rounded-lg border border-transparent hover:border-[#D5E5D5] transition-all">
                       <button
                         onClick={() => handleToggleLongTermGoal(goal.id)}
                         data-onboarding="goal-status-box"
                         className={`mt-0.5 h-5 w-5 rounded border-2 flex items-center justify-center transition-colors ${
                           goal.status === 'completed'
-                            ? 'bg-green-500 border-green-500'
+                            ? 'bg-[#7a9a7a] border-[#7a9a7a]'
                             : goal.status === 'in-progress'
                             ? 'bg-yellow-400 border-yellow-400'
                             : 'bg-white border-gray-300 hover:border-gray-400'
@@ -1702,9 +1712,9 @@ const StrategyGrowth = () => {
                     value={newLongTermGoal}
                     onChange={(e) => setNewLongTermGoal(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleAddLongTermGoal()}
-                    className="border-2 border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-200"
+                    className="border-2 border-gray-200 focus:border-[#7a9a7a] focus:ring-2 focus:ring-[#7a9a7a]/20"
                   />
-                  <Button onClick={handleAddLongTermGoal} disabled={!newLongTermGoal.trim()} className="bg-emerald-500 hover:bg-emerald-600">
+                  <Button onClick={handleAddLongTermGoal} disabled={!newLongTermGoal.trim()} className="bg-[#7a9a7a] hover:bg-[#6a8a6a]">
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
