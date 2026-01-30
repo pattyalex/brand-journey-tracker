@@ -887,7 +887,7 @@ const DealCard = ({ deal, selectedMonth, isYearView, showArchived, onDragStart, 
         {displaySubmitDate && (
           <div className="flex items-center justify-between text-xs text-[#8B7082]">
             <div className="flex items-center gap-1.5">
-              <Clock className="w-2.5 h-2.5" />
+              <CalendarIcon className="w-2.5 h-2.5" />
               <span className={cn(isSubmitDone && "opacity-50")}>
                 Submit: {format(parseISO(displaySubmitDate), "MMM d")}
               </span>
@@ -911,7 +911,7 @@ const DealCard = ({ deal, selectedMonth, isYearView, showArchived, onDragStart, 
         {displayPublishDate && (
           <div className="flex items-center justify-between text-xs font-medium text-[#612a4f]">
             <div className="flex items-center gap-1.5">
-              <Clock className="w-2.5 h-2.5" />
+              <CalendarIcon className="w-2.5 h-2.5" />
               <span className={cn(isPublishDone && "opacity-50")}>
                 Publish: {format(parseISO(displayPublishDate), "MMM d")}
               </span>
