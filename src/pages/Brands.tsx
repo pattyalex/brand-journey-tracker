@@ -241,17 +241,48 @@ const Brands = () => {
     }, 0);
 
     // PENDING: Total unpaid across ALL deals (not month-specific)
-    const pendingPayments = deals.filter(d => !d.paymentReceived && d.status !== 'inbound');
-    const pendingAmount = pendingPayments.reduce((sum, d) => {
-      // Calculate paid deliverable amounts
-      const paidDeliverableAmount = d.deliverables?.reduce((delSum, del) => {
-        return delSum + (del.isPaid && del.paymentAmount ? del.paymentAmount : 0);
-      }, 0) || 0;
-      // Also subtract deposit if paid
-      const depositPaid = d.depositPaid ? d.depositAmount : 0;
-      const remaining = d.totalFee - paidDeliverableAmount - depositPaid;
+    // Auto-calculate based on deposit + deliverables paid status
+    const pendingAmount = deals.reduce((sum, d) => {
+      if (d.status === 'inbound' || !d.totalFee) return sum;
+
+      const totalDeliverables = d.deliverables?.length || 1;
+      const balanceAfterDep = d.totalFee - (d.depositAmount || 0);
+      const perDelAmount = Math.round(balanceAfterDep / totalDeliverables);
+
+      // Calculate what's been paid
+      let paidTotal = 0;
+
+      // Deposit
+      if (d.depositPaid && d.depositAmount) {
+        paidTotal += d.depositAmount;
+      }
+
+      // Deliverables - use explicit amount or calculated fallback
+      d.deliverables?.forEach(del => {
+        if (del.isPaid) {
+          paidTotal += del.paymentAmount || perDelAmount;
+        }
+      });
+
+      const remaining = d.totalFee - paidTotal;
       return sum + Math.max(0, remaining);
     }, 0);
+
+    // Count deals that are not fully paid (auto-calculated)
+    const pendingCount = deals.filter(d => {
+      if (d.status === 'inbound' || !d.totalFee) return false;
+
+      const hasDeposit = d.depositAmount && d.depositAmount > 0;
+      const depositPaid = hasDeposit ? d.depositPaid : true;
+
+      const deliverables = d.deliverables || [];
+      const allDeliverablesPaid = deliverables.length === 0 || deliverables.every(del => del.isPaid);
+
+      const hasSomethingPaid = (hasDeposit && d.depositPaid) || deliverables.some(del => del.isPaid);
+
+      const isPaidInFull = depositPaid && allDeliverablesPaid && hasSomethingPaid;
+      return !isPaidInFull;
+    }).length;
 
     const upcomingDeadlines = deals.filter(d => {
       if (d.status === 'completed' || !d.deliverables?.length) return false;
@@ -268,7 +299,7 @@ const Brands = () => {
       monthlyEarnings: monthlyEarningsCalc,
       yearlyEarnings: yearlyEarningsCalc,
       pendingAmount,
-      pendingCount: pendingPayments.length,
+      pendingCount,
       upcomingDeadlines: upcomingDeadlines.length,
       activeDeals: deals.filter(d => !d.isArchived).length,
     };
