@@ -437,6 +437,7 @@ const StrategyGrowth = () => {
 
   const [newMonthlyGoalInputs, setNewMonthlyGoalInputs] = useState<{[key: string]: string}>({});
   const [newShortTermGoal, setNewShortTermGoal] = useState("");
+  const [isAddingShortTermGoal, setIsAddingShortTermGoal] = useState(false);
   const [newLongTermGoal, setNewLongTermGoal] = useState("");
 
   const [selectedYear, setSelectedYear] = useState(2026);
@@ -1792,19 +1793,56 @@ const StrategyGrowth = () => {
                     )}
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Add a new annual goal..."
-                    value={newShortTermGoal}
-                    onChange={(e) => setNewShortTermGoal(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAddShortTermGoal()}
-                    className="w-64 h-10 text-sm border border-[#E8E4E6] focus:outline-none focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)]"
-                    style={{ borderRadius: '14px' }}
-                  />
+                {isAddingShortTermGoal ? (
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enter your goal..."
+                      value={newShortTermGoal}
+                      onChange={(e) => setNewShortTermGoal(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && newShortTermGoal.trim()) {
+                          handleAddShortTermGoal();
+                          setIsAddingShortTermGoal(false);
+                        }
+                        if (e.key === 'Escape') {
+                          setNewShortTermGoal('');
+                          setIsAddingShortTermGoal(false);
+                        }
+                      }}
+                      autoFocus
+                      className="w-64 h-10 text-sm border border-[#E8E4E6] focus:outline-none focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)]"
+                      style={{ borderRadius: '14px' }}
+                    />
+                    <button
+                      onClick={() => {
+                        if (newShortTermGoal.trim()) {
+                          handleAddShortTermGoal();
+                        }
+                        setIsAddingShortTermGoal(false);
+                      }}
+                      className="px-5 h-10 text-sm font-medium text-white transition-all flex items-center gap-2"
+                      style={{
+                        background: 'linear-gradient(145deg, #612A4F 0%, #4d2140 100%)',
+                        borderRadius: '14px'
+                      }}
+                    >
+                      <Check className="w-4 h-4" />
+                      Save
+                    </button>
+                    <button
+                      onClick={() => {
+                        setNewShortTermGoal('');
+                        setIsAddingShortTermGoal(false);
+                      }}
+                      className="px-3 h-10 text-sm font-medium text-gray-500 hover:text-gray-700 transition-all"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
                   <button
-                    onClick={handleAddShortTermGoal}
-                    disabled={!newShortTermGoal.trim()}
-                    className="px-5 h-10 text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                    onClick={() => setIsAddingShortTermGoal(true)}
+                    className="px-5 h-10 text-sm font-medium text-white transition-all flex items-center gap-2 hover:opacity-90"
                     style={{
                       background: 'linear-gradient(145deg, #612A4F 0%, #4d2140 100%)',
                       borderRadius: '14px'
@@ -1813,20 +1851,29 @@ const StrategyGrowth = () => {
                     <Plus className="w-4 h-4" />
                     Add Goal
                   </button>
-                </div>
+                )}
               </div>
 
               {/* Goal Cards Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {shortTermGoals.map((goal, index) => {
-                  // Card colors based on status
-                  const statusSchemes = {
-                    'not-started': { bg: 'rgba(156, 163, 175, 0.1)', accent: '#9ca3af', accentRgb: '156, 163, 175' },
-                    'somewhat-done': { bg: 'rgba(166, 138, 100, 0.08)', accent: '#a68a64', accentRgb: '166, 138, 100' },
-                    'great-progress': { bg: 'rgba(107, 74, 94, 0.08)', accent: '#6b4a5e', accentRgb: '107, 74, 94' },
-                    'completed': { bg: 'rgba(122, 154, 122, 0.12)', accent: '#5a8a5a', accentRgb: '90, 138, 90' },
-                  };
-                  const scheme = statusSchemes[goal.status as keyof typeof statusSchemes] || statusSchemes['not-started'];
+                  // Soft color palette for card backgrounds (used for all non-completed goals)
+                  const softColors = [
+                    { bg: 'rgba(180, 140, 165, 0.12)', accent: '#a07090', accentRgb: '180, 140, 165' },   // rose mauve
+                    { bg: 'rgba(165, 180, 190, 0.09)', accent: '#8a9ba5', accentRgb: '165, 180, 190' },   // dusty blue
+                    { bg: 'rgba(200, 175, 155, 0.12)', accent: '#b09080', accentRgb: '200, 175, 155' },   // warm sand
+                    { bg: 'rgba(175, 160, 190, 0.08)', accent: '#9585a8', accentRgb: '175, 160, 190' },   // soft lavender
+                    { bg: 'rgba(185, 200, 180, 0.12)', accent: '#95a890', accentRgb: '185, 200, 180' },   // sage
+                    { bg: 'rgba(210, 180, 170, 0.11)', accent: '#c0a095', accentRgb: '210, 180, 170' },   // blush
+                  ];
+
+                  // Green for completed goals only
+                  const completedScheme = { bg: 'rgba(122, 154, 122, 0.12)', accent: '#5a8a5a', accentRgb: '90, 138, 90' };
+
+                  // Use green for completed, rotating soft colors for everything else
+                  const scheme = goal.status === 'completed'
+                    ? completedScheme
+                    : softColors[index % softColors.length];
 
                   // Progress and colors based on status
                   const statusConfig = {
@@ -1877,7 +1924,7 @@ const StrategyGrowth = () => {
                           />
                         ) : (
                           <p
-                            className={`text-sm font-medium mb-5 cursor-pointer transition-colors ${goal.status === 'completed' ? 'line-through' : ''}`}
+                            className={`text-sm font-semibold mb-5 cursor-pointer transition-colors ${goal.status === 'completed' ? 'line-through' : ''}`}
                             style={{ color: goal.status === 'completed' ? '#8b7a85' : '#3d3a38' }}
                             onClick={() => handleEditShortTermGoal(goal.id, goal.text)}
                           >
