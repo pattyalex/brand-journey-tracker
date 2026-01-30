@@ -40,7 +40,9 @@ import {
   AlertCircle,
   TrendingUp,
   Wallet,
-  Target
+  Target,
+  Archive,
+  Trash2
 } from "lucide-react";
 import { getString, setString } from "@/lib/storage";
 import { toast } from "sonner";
@@ -88,6 +90,8 @@ interface BrandDeal {
   campaignEnd?: string;
   notes: string;
   createdAt: string;
+  isArchived?: boolean;
+  archivedAt?: string;
 }
 
 const contentTypeConfig: Record<ContentType, { label: string; short: string }> = {
@@ -137,6 +141,7 @@ const Brands = () => {
   const [editingDeal, setEditingDeal] = useState<BrandDeal | null>(null);
   const [draggedDeal, setDraggedDeal] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
+  const [showArchived, setShowArchived] = useState(false);
 
   // Save to localStorage
   useEffect(() => {
@@ -247,11 +252,18 @@ const Brands = () => {
   }, [deals, selectedMonth]);
 
   // Filtered deals
+  // Count archived deals
+  const archivedCount = useMemo(() => deals.filter(d => d.isArchived).length, [deals]);
+
   const filteredDeals = useMemo(() => {
     const monthStart = startOfMonth(selectedMonth);
     const monthEnd = endOfMonth(selectedMonth);
 
     return deals.filter(deal => {
+      // Filter by archive status
+      const matchesArchive = showArchived ? deal.isArchived : !deal.isArchived;
+      if (!matchesArchive) return false;
+
       const matchesSearch = !searchQuery ||
         deal.brandName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         deal.productCampaign.toLowerCase().includes(searchQuery.toLowerCase());
@@ -261,6 +273,11 @@ const Brands = () => {
       const matchesPayment = paymentFilter === 'all' ||
         (paymentFilter === 'paid' && deal.paymentReceived) ||
         (paymentFilter === 'unpaid' && !deal.paymentReceived);
+
+      // When showing archived, don't filter by month
+      if (showArchived) {
+        return matchesSearch && matchesStatus && matchesPayment;
+      }
 
       // Check if any deliverable has dates in the selected month
       const hasDeliverableInMonth = deal.deliverables?.some(del => {
@@ -274,11 +291,17 @@ const Brands = () => {
       const campaignInMonth = (deal.campaignStart && isWithinInterval(parseISO(deal.campaignStart), { start: monthStart, end: monthEnd })) ||
                               (deal.campaignEnd && isWithinInterval(parseISO(deal.campaignEnd), { start: monthStart, end: monthEnd }));
 
-      const matchesMonth = hasDeliverableInMonth || campaignInMonth;
+      // Check if deal has NO scheduled dates at all (show in current month so user can see it)
+      const hasNoScheduledDates = !deal.deliverables?.some(del => del.submissionDeadline || del.publishDeadline) &&
+                                   !deal.campaignStart && !deal.campaignEnd;
+      const isCurrentMonth = isSameMonth(selectedMonth, new Date());
+      const showUnscheduledInCurrentMonth = hasNoScheduledDates && isCurrentMonth;
+
+      const matchesMonth = hasDeliverableInMonth || campaignInMonth || showUnscheduledInCurrentMonth;
 
       return matchesSearch && matchesStatus && matchesPayment && matchesMonth;
     });
-  }, [deals, searchQuery, statusFilter, paymentFilter, selectedMonth]);
+  }, [deals, searchQuery, statusFilter, paymentFilter, selectedMonth, showArchived]);
 
   // Grouped by status for Kanban
   const dealsByStatus = useMemo(() => {
@@ -328,6 +351,22 @@ const Brands = () => {
     setDeals(prev => prev.filter(d => d.id !== id));
   };
 
+  const handleArchiveDeal = (id: string) => {
+    setDeals(prev => prev.map(d =>
+      d.id === id ? { ...d, isArchived: true, archivedAt: new Date().toISOString() } : d
+    ));
+    toast.success("Deal archived", {
+      description: "You can view archived deals from the Active Deals card",
+    });
+  };
+
+  const handleUnarchiveDeal = (id: string) => {
+    setDeals(prev => prev.map(d =>
+      d.id === id ? { ...d, isArchived: false, archivedAt: undefined } : d
+    ));
+    toast.success("Deal restored");
+  };
+
   const handleDragStart = (dealId: string) => {
     setDraggedDeal(dealId);
   };
@@ -347,41 +386,60 @@ const Brands = () => {
     <Layout>
       <div className="min-h-screen bg-[#F9F8F8]">
         <div className="p-6 lg:p-8">
-            {/* Month Picker */}
-            <div className="flex items-center justify-center gap-4 mb-6">
-              <button
-                onClick={() => setSelectedMonth(prev => subMonths(prev, 1))}
-                className="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-[#8B7082] hover:text-[#612a4f]"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold text-[#612a4f] min-w-[180px] text-center">
-                  {format(selectedMonth, "MMMM yyyy")}
-                </h2>
-                {!isSameMonth(selectedMonth, new Date()) && (
-                  <button
-                    onClick={() => setSelectedMonth(new Date())}
-                    className="text-xs text-[#8B7082] hover:text-[#612a4f] underline"
-                  >
-                    Today
-                  </button>
-                )}
+            {/* Month Picker / Archive Header */}
+            {showArchived ? (
+              <div className="flex items-center justify-center gap-4 mb-6">
+                <button
+                  onClick={() => setShowArchived(false)}
+                  className="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-[#8B7082] hover:text-[#612a4f]"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <div className="flex items-center gap-3">
+                  <Archive className="w-6 h-6 text-[#612a4f]" />
+                  <h2 className="text-xl font-bold text-[#612a4f]">
+                    Archive
+                  </h2>
+                  <span className="text-sm text-[#8B7082]">({archivedCount} deals)</span>
+                </div>
+                <div className="w-9" /> {/* Spacer for alignment */}
               </div>
-              <button
-                onClick={() => setSelectedMonth(prev => addMonths(prev, 1))}
-                className="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-[#8B7082] hover:text-[#612a4f]"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
+            ) : (
+              <div className="flex items-center justify-center gap-4 mb-6">
+                <button
+                  onClick={() => setSelectedMonth(prev => subMonths(prev, 1))}
+                  className="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-[#8B7082] hover:text-[#612a4f]"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-[#612a4f] min-w-[180px] text-center">
+                    {format(selectedMonth, "MMMM yyyy")}
+                  </h2>
+                  {!isSameMonth(selectedMonth, new Date()) && (
+                    <button
+                      onClick={() => setSelectedMonth(new Date())}
+                      className="text-xs text-[#8B7082] hover:text-[#612a4f] underline"
+                    >
+                      Today
+                    </button>
+                  )}
+                </div>
+                <button
+                  onClick={() => setSelectedMonth(prev => addMonths(prev, 1))}
+                  className="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-[#8B7082] hover:text-[#612a4f]"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            )}
 
             {/* Dashboard Summary */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <Card className="p-4 bg-white border-0 shadow-sm">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-emerald-50">
-                    <DollarSign className="w-5 h-5 text-emerald-600" />
+                  <div className="p-2 rounded-lg bg-green-50">
+                    <DollarSign className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
                     <p className="text-xs text-[#8B7082] font-medium">{format(selectedMonth, "MMMM")}</p>
@@ -457,6 +515,31 @@ const Brands = () => {
                     <SelectItem value="unpaid">Unpaid</SelectItem>
                   </SelectContent>
                 </Select>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowArchived(!showArchived)}
+                  className={cn(
+                    "border-[#8B7082]/30 hover:bg-[#8B7082]/10 hover:border-[#8B7082] hover:text-[#612a4f]",
+                    showArchived && "bg-[#8B7082]/10 border-[#8B7082]"
+                  )}
+                >
+                  {showArchived ? (
+                    <>
+                      <ChevronLeft className="w-4 h-4 mr-1 text-[#8B7082]" />
+                      <span>Back to Active</span>
+                    </>
+                  ) : (
+                    <>
+                      <Archive className="w-4 h-4 mr-2 text-[#8B7082]" />
+                      <span>Archive</span>
+                      {archivedCount > 0 && (
+                        <span className="ml-1.5 px-1.5 py-0.5 bg-[#8B7082]/20 text-[#8B7082] text-xs rounded-full">
+                          {archivedCount}
+                        </span>
+                      )}
+                    </>
+                  )}
+                </Button>
               </div>
               <div className="flex gap-2">
                 <Button
@@ -473,11 +556,14 @@ const Brands = () => {
             <KanbanView
               dealsByStatus={dealsByStatus}
               selectedMonth={selectedMonth}
+              showArchived={showArchived}
               onDragStart={handleDragStart}
               onDragOver={handleDragOver}
               onDrop={handleDrop}
               onEdit={setEditingDeal}
               onDelete={handleDeleteDeal}
+              onArchive={handleArchiveDeal}
+              onUnarchive={handleUnarchiveDeal}
               onQuickUpdate={handleUpdateDeal}
             />
 
@@ -509,60 +595,59 @@ const Brands = () => {
 interface KanbanViewProps {
   dealsByStatus: Record<string, BrandDeal[]>;
   selectedMonth: Date;
+  showArchived?: boolean;
   onDragStart: (id: string) => void;
   onDragOver: (e: React.DragEvent) => void;
   onDrop: (status: BrandDeal['status']) => void;
   onEdit: (deal: BrandDeal) => void;
   onDelete: (id: string) => void;
+  onArchive: (id: string) => void;
+  onUnarchive: (id: string) => void;
   onQuickUpdate: (id: string, updates: Partial<BrandDeal>) => void;
 }
 
-const KanbanView = ({ dealsByStatus, selectedMonth, onDragStart, onDragOver, onDrop, onEdit, onDelete, onQuickUpdate }: KanbanViewProps) => {
+const KanbanView = ({ dealsByStatus, selectedMonth, showArchived, onDragStart, onDragOver, onDrop, onEdit, onDelete, onArchive, onUnarchive, onQuickUpdate }: KanbanViewProps) => {
   // Only show columns that have deals
   const activeStatuses = statusOrder.filter(status => dealsByStatus[status].length > 0);
 
   if (activeStatuses.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 bg-[#F5F3F4] rounded-xl">
-        <Building2 className="w-12 h-12 text-[#E8E4E6] mb-3" />
-        <p className="text-[#8B7082] font-medium">No deliverables in {format(selectedMonth, "MMMM yyyy")}</p>
-        <p className="text-xs text-[#8B7082]/60 mt-1">Try navigating to another month or add a new deal</p>
+        {showArchived ? (
+          <>
+            <Archive className="w-12 h-12 text-[#E8E4E6] mb-3" />
+            <p className="text-[#8B7082] font-medium">No archived deals</p>
+            <p className="text-xs text-[#8B7082]/60 mt-1">Archived deals will appear here</p>
+          </>
+        ) : (
+          <>
+            <Building2 className="w-12 h-12 text-[#E8E4E6] mb-3" />
+            <p className="text-[#8B7082] font-medium">No deliverables in {format(selectedMonth, "MMMM yyyy")}</p>
+            <p className="text-xs text-[#8B7082]/60 mt-1">Try navigating to another month or add a new deal</p>
+          </>
+        )}
       </div>
     );
   }
 
+  // Flatten all deals into a single array for grid layout
+  const allDeals = activeStatuses.flatMap(status => dealsByStatus[status]);
+
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4">
-      {activeStatuses.map(status => (
-        <div
-          key={status}
-          className="flex-shrink-0 w-72"
-          onDragOver={onDragOver}
-          onDrop={() => onDrop(status)}
-        >
-          <div className="flex items-center gap-2 mb-3 px-1">
-            <span className={cn(
-              "px-2 py-0.5 rounded-full text-xs font-medium border",
-              statusConfig[status].color
-            )}>
-              {status === 'other' ? 'Other' : statusConfig[status].label}
-            </span>
-            <span className="text-xs text-[#8B7082]">{dealsByStatus[status].length}</span>
-          </div>
-          <div className="space-y-3 min-h-[200px] p-2 rounded-xl bg-[#F5F3F4]">
-            {dealsByStatus[status].map(deal => (
-              <DealCard
-                key={deal.id}
-                deal={deal}
-                selectedMonth={selectedMonth}
-                onDragStart={onDragStart}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                onQuickUpdate={onQuickUpdate}
-              />
-            ))}
-          </div>
-        </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {allDeals.map(deal => (
+        <DealCard
+          key={deal.id}
+          deal={deal}
+          selectedMonth={selectedMonth}
+          showArchived={showArchived}
+          onDragStart={onDragStart}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onArchive={onArchive}
+          onUnarchive={onUnarchive}
+          onQuickUpdate={onQuickUpdate}
+        />
       ))}
     </div>
   );
@@ -572,35 +657,48 @@ const KanbanView = ({ dealsByStatus, selectedMonth, onDragStart, onDragOver, onD
 interface DealCardProps {
   deal: BrandDeal;
   selectedMonth: Date;
+  showArchived?: boolean;
   onDragStart: (id: string) => void;
   onEdit: (deal: BrandDeal) => void;
   onDelete: (id: string) => void;
+  onArchive: (id: string) => void;
+  onUnarchive: (id: string) => void;
   onQuickUpdate: (id: string, updates: Partial<BrandDeal>) => void;
 }
 
-const DealCard = ({ deal, selectedMonth, onDragStart, onEdit, onDelete, onQuickUpdate }: DealCardProps) => {
+const DealCard = ({ deal, selectedMonth, showArchived, onDragStart, onEdit, onDelete, onArchive, onUnarchive, onQuickUpdate }: DealCardProps) => {
   const [selectedDeliverableId, setSelectedDeliverableId] = useState<string | null>(null);
   const now = new Date();
   const monthStart = startOfMonth(selectedMonth);
   const monthEnd = endOfMonth(selectedMonth);
 
-  // Filter deliverables to only those with dates in the selected month
-  const deliverablesInMonth = deal.deliverables?.filter(d => {
+  // Helper to check if a deliverable is in the selected month
+  const isDeliverableInMonth = (d: Deliverable) => {
     const submitDate = d.submissionDeadline ? parseISO(d.submissionDeadline) : null;
     const publishDate = d.publishDeadline ? parseISO(d.publishDeadline) : null;
     return (submitDate && isWithinInterval(submitDate, { start: monthStart, end: monthEnd })) ||
            (publishDate && isWithinInterval(publishDate, { start: monthStart, end: monthEnd }));
-  }) || [];
+  };
 
-  // Get the selected deliverable or default to the first one in this month
+  // Get deliverables that are in this month (for auto-selection)
+  const deliverablesInMonth = deal.deliverables?.filter(isDeliverableInMonth) || [];
+
+  // All deliverables for display
+  const allDeliverables = deal.deliverables || [];
+
+  // Get the selected deliverable - prefer one in the current month
   const selectedDeliverable = selectedDeliverableId
-    ? deliverablesInMonth.find(d => d.id === selectedDeliverableId)
+    ? allDeliverables.find(d => d.id === selectedDeliverableId)
     : null;
 
-  // If a deliverable is selected, show its dates; otherwise show first with pending work, or just the first one
-  const displayDeliverable = selectedDeliverable ||
-    deliverablesInMonth.find(d => (!d.isSubmitted && d.submissionDeadline) || (!d.isPublished && d.publishDeadline)) ||
-    deliverablesInMonth[0];
+  // Auto-select: if selected is not in current month, default to first one in month
+  // Otherwise show first with pending work in this month, or just the first one in month
+  const displayDeliverable = (selectedDeliverable && isDeliverableInMonth(selectedDeliverable))
+    ? selectedDeliverable
+    : deliverablesInMonth.find(d => (!d.isSubmitted && d.submissionDeadline) || (!d.isPublished && d.publishDeadline))
+      || deliverablesInMonth[0]
+      || selectedDeliverable
+      || allDeliverables[0];
 
   const displaySubmitDate = displayDeliverable?.submissionDeadline;
   const displayPublishDate = displayDeliverable?.publishDeadline;
@@ -612,8 +710,6 @@ const DealCard = ({ deal, selectedMonth, onDragStart, onEdit, onDelete, onQuickU
   // Progress bar shows TOTAL deliverables (across all months)
   const totalPublishedCount = deal.deliverables?.filter(d => d.isPublished).length || 0;
   const totalDeliverablesCount = deal.deliverables?.length || 0;
-  // But badges only show deliverables in this month
-  const totalDeliverablesInMonth = deliverablesInMonth.length;
 
   return (
     <div
@@ -627,15 +723,42 @@ const DealCard = ({ deal, selectedMonth, onDragStart, onEdit, onDelete, onQuickU
           <h3 className="font-semibold text-[#612a4f] text-sm">{deal.brandName}</h3>
           <p className="text-xs text-[#8B7082] min-h-[16px]">{deal.productCampaign || '\u00A0'}</p>
         </div>
-        <button
-          className="p-1 hover:bg-red-50 rounded text-[#8B7082] hover:text-red-500 transition-colors"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(deal.id);
-          }}
-        >
-          <X className="w-4 h-4" />
-        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className="p-1 hover:bg-[#F5F3F4] rounded text-[#8B7082] hover:text-[#612a4f] transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MoreHorizontal className="w-4 h-4" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+            {showArchived ? (
+              <DropdownMenuItem
+                onClick={() => onUnarchive(deal.id)}
+                className="text-[#612a4f]"
+              >
+                <Archive className="w-4 h-4 mr-2" />
+                Restore
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem
+                onClick={() => onArchive(deal.id)}
+                className="text-[#8B7082]"
+              >
+                <Archive className="w-4 h-4 mr-2" />
+                Archive
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem
+              onClick={() => onDelete(deal.id)}
+              className="text-red-600"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Fee */}
@@ -643,20 +766,20 @@ const DealCard = ({ deal, selectedMonth, onDragStart, onEdit, onDelete, onQuickU
         <span className="text-lg font-bold text-[#612a4f]">${deal.totalFee.toLocaleString()}</span>
         <div className="flex gap-1">
           {deal.depositPaid && (
-            <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-medium rounded">
+            <span className="px-1.5 py-0.5 bg-[#EDF3ED] text-[#6B9B6B] text-[10px] font-medium rounded">
               Deposit Paid
             </span>
           )}
           {displayDeliverable?.isPaid && (
-            <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-medium rounded">
-              Deliverable Paid
+            <span className="px-1.5 py-0.5 bg-[#EDF3ED] text-[#6B9B6B] text-[10px] font-medium rounded">
+              Content Paid
             </span>
           )}
         </div>
       </div>
 
       {/* Deliverables Summary */}
-      {totalDeliverablesInMonth > 0 && (
+      {allDeliverables.length > 0 && (
         <div className="mb-3">
           <div className="flex items-center gap-2 text-xs text-[#8B7082]">
             <span>{totalPublishedCount}/{totalDeliverablesCount} delivered</span>
@@ -668,23 +791,29 @@ const DealCard = ({ deal, selectedMonth, onDragStart, onEdit, onDelete, onQuickU
             </div>
           </div>
           <div className="flex gap-1 mt-2 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-            {deliverablesInMonth.map(d => (
-              <button
-                key={d.id}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedDeliverableId(d.id);
-                }}
-                className={cn(
-                  "px-1.5 py-0.5 text-[10px] font-medium rounded transition-all flex-shrink-0",
-                  displayDeliverable?.id === d.id
-                    ? "bg-[#612a4f] text-white"
-                    : "bg-[#F5F3F4] text-[#8B7082]"
-                )}
-              >
-                {d.contentType === 'other' && d.customContentType ? d.customContentType : contentTypeConfig[d.contentType].short}
-              </button>
-            ))}
+            {allDeliverables.map(d => {
+              const inThisMonth = isDeliverableInMonth(d);
+              const isSelected = displayDeliverable?.id === d.id;
+              return (
+                <button
+                  key={d.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedDeliverableId(d.id);
+                  }}
+                  className={cn(
+                    "px-1.5 py-0.5 text-[10px] font-medium rounded transition-all flex-shrink-0",
+                    isSelected
+                      ? "bg-[#612a4f] text-white"
+                      : inThisMonth
+                        ? "bg-[#612a4f]/20 text-[#612a4f] border border-[#612a4f]/30"
+                        : "bg-[#F5F3F4] text-[#8B7082]/60"
+                  )}
+                >
+                  {d.contentType === 'other' && d.customContentType ? d.customContentType : contentTypeConfig[d.contentType].short}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
