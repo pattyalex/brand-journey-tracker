@@ -517,8 +517,8 @@ const Brands = () => {
               </Card>
               <Card className="group p-6 bg-white border border-[#E8E4E6] rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.05),0_1px_4px_rgba(0,0,0,0.03)]">
                 <div className="flex items-center gap-2 mb-3">
-                  <Circle className="w-4 h-4 text-[#8B7082]" strokeWidth={1.5} />
-                  <p className="text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em]">PENDING</p>
+                  <Clock className="w-4 h-4 text-[#8B7082]" strokeWidth={1.5} />
+                  <p className="text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em]">EXPECTED PAYMENTS</p>
                 </div>
                 <p className="text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>${metrics.pendingAmount.toLocaleString()}</p>
               </Card>
