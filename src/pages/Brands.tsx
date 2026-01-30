@@ -948,7 +948,7 @@ const DealCard = ({ deal, selectedMonth, isYearView, showArchived, onDragStart, 
             <div className="flex items-center gap-1.5">
               <Diamond className="w-2.5 h-2.5 fill-current" />
               <span className="font-semibold">
-                Paid{effectivePaidAmount > 0 ? ` $${effectivePaidAmount.toLocaleString()}` : ''}
+                Content Paid{effectivePaidAmount > 0 ? ` $${effectivePaidAmount.toLocaleString()}` : ''}
               </span>
             </div>
             <label className="cursor-pointer" onClick={(e) => e.stopPropagation()}>
