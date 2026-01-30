@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { format, parseISO, isWithinInterval, startOfMonth, endOfMonth, startOfYear, endOfYear, isBefore, addDays, addMonths, subMonths, isSameMonth } from "date-fns";
+import { format, parseISO, isWithinInterval, startOfMonth, endOfMonth, startOfYear, endOfYear, isBefore, addDays, addMonths, subMonths, addYears, subYears, isSameMonth, isSameYear } from "date-fns";
 import {
   Plus,
   LayoutGrid,
@@ -145,6 +145,7 @@ const Brands = () => {
   const [editingDeal, setEditingDeal] = useState<BrandDeal | null>(null);
   const [draggedDeal, setDraggedDeal] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
+  const [isYearView, setIsYearView] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
 
   // Save to localStorage
@@ -271,6 +272,9 @@ const Brands = () => {
   const filteredDeals = useMemo(() => {
     const monthStart = startOfMonth(selectedMonth);
     const monthEnd = endOfMonth(selectedMonth);
+    const yearStart = startOfYear(selectedMonth);
+    const yearEnd = endOfYear(selectedMonth);
+    const selectedYear = selectedMonth.getFullYear();
 
     return deals.filter(deal => {
       // Filter by archive status
@@ -287,34 +291,58 @@ const Brands = () => {
         (paymentFilter === 'paid' && deal.paymentReceived) ||
         (paymentFilter === 'unpaid' && !deal.paymentReceived);
 
-      // When showing archived or searching, don't filter by month
+      // When showing archived or searching, don't filter by date
       if (showArchived || searchQuery) {
         return matchesSearch && matchesStatus && matchesPayment;
       }
 
-      // Check if any deliverable has dates in the selected month
-      const hasDeliverableInMonth = deal.deliverables?.some(del => {
-        const submitDate = del.submissionDeadline ? parseISO(del.submissionDeadline) : null;
-        const publishDate = del.publishDeadline ? parseISO(del.publishDeadline) : null;
-        return (submitDate && isWithinInterval(submitDate, { start: monthStart, end: monthEnd })) ||
-               (publishDate && isWithinInterval(publishDate, { start: monthStart, end: monthEnd }));
-      });
+      if (isYearView) {
+        // Year view: check if any deliverable has dates in the selected year
+        const hasDeliverableInYear = deal.deliverables?.some(del => {
+          const submitDate = del.submissionDeadline ? parseISO(del.submissionDeadline) : null;
+          const publishDate = del.publishDeadline ? parseISO(del.publishDeadline) : null;
+          return (submitDate && submitDate.getFullYear() === selectedYear) ||
+                 (publishDate && publishDate.getFullYear() === selectedYear);
+        });
 
-      // Also include deals with campaign dates in the selected month
-      const campaignInMonth = (deal.campaignStart && isWithinInterval(parseISO(deal.campaignStart), { start: monthStart, end: monthEnd })) ||
-                              (deal.campaignEnd && isWithinInterval(parseISO(deal.campaignEnd), { start: monthStart, end: monthEnd }));
+        // Also include deals with campaign dates in the selected year
+        const campaignInYear = (deal.campaignStart && parseISO(deal.campaignStart).getFullYear() === selectedYear) ||
+                               (deal.campaignEnd && parseISO(deal.campaignEnd).getFullYear() === selectedYear);
 
-      // Check if deal has NO scheduled dates at all (show in current month so user can see it)
-      const hasNoScheduledDates = !deal.deliverables?.some(del => del.submissionDeadline || del.publishDeadline) &&
-                                   !deal.campaignStart && !deal.campaignEnd;
-      const isCurrentMonth = isSameMonth(selectedMonth, new Date());
-      const showUnscheduledInCurrentMonth = hasNoScheduledDates && isCurrentMonth;
+        // Check if deal has NO scheduled dates at all (show in current year so user can see it)
+        const hasNoScheduledDates = !deal.deliverables?.some(del => del.submissionDeadline || del.publishDeadline) &&
+                                     !deal.campaignStart && !deal.campaignEnd;
+        const isCurrentYear = isSameYear(selectedMonth, new Date());
+        const showUnscheduledInCurrentYear = hasNoScheduledDates && isCurrentYear;
 
-      const matchesMonth = hasDeliverableInMonth || campaignInMonth || showUnscheduledInCurrentMonth;
+        const matchesYear = hasDeliverableInYear || campaignInYear || showUnscheduledInCurrentYear;
 
-      return matchesSearch && matchesStatus && matchesPayment && matchesMonth;
+        return matchesSearch && matchesStatus && matchesPayment && matchesYear;
+      } else {
+        // Month view: check if any deliverable has dates in the selected month
+        const hasDeliverableInMonth = deal.deliverables?.some(del => {
+          const submitDate = del.submissionDeadline ? parseISO(del.submissionDeadline) : null;
+          const publishDate = del.publishDeadline ? parseISO(del.publishDeadline) : null;
+          return (submitDate && isWithinInterval(submitDate, { start: monthStart, end: monthEnd })) ||
+                 (publishDate && isWithinInterval(publishDate, { start: monthStart, end: monthEnd }));
+        });
+
+        // Also include deals with campaign dates in the selected month
+        const campaignInMonth = (deal.campaignStart && isWithinInterval(parseISO(deal.campaignStart), { start: monthStart, end: monthEnd })) ||
+                                (deal.campaignEnd && isWithinInterval(parseISO(deal.campaignEnd), { start: monthStart, end: monthEnd }));
+
+        // Check if deal has NO scheduled dates at all (show in current month so user can see it)
+        const hasNoScheduledDates = !deal.deliverables?.some(del => del.submissionDeadline || del.publishDeadline) &&
+                                     !deal.campaignStart && !deal.campaignEnd;
+        const isCurrentMonth = isSameMonth(selectedMonth, new Date());
+        const showUnscheduledInCurrentMonth = hasNoScheduledDates && isCurrentMonth;
+
+        const matchesMonth = hasDeliverableInMonth || campaignInMonth || showUnscheduledInCurrentMonth;
+
+        return matchesSearch && matchesStatus && matchesPayment && matchesMonth;
+      }
     });
-  }, [deals, searchQuery, statusFilter, paymentFilter, selectedMonth, showArchived]);
+  }, [deals, searchQuery, statusFilter, paymentFilter, selectedMonth, showArchived, isYearView]);
 
   // Grouped by status for Kanban
   const dealsByStatus = useMemo(() => {
@@ -420,16 +448,16 @@ const Brands = () => {
             ) : (
               <div className="flex items-center justify-center gap-8 mb-10">
                 <button
-                  onClick={() => setSelectedMonth(prev => subMonths(prev, 1))}
+                  onClick={() => setSelectedMonth(prev => isYearView ? subYears(prev, 1) : subMonths(prev, 1))}
                   className="text-[#612a4f] hover:text-[#612a4f]/80 transition-colors duration-200"
                 >
                   <ChevronLeft className="w-5 h-5" strokeWidth={1.5} />
                 </button>
                 <div className="flex items-center gap-3">
                   <h2 className="text-3xl font-medium text-[#612a4f] min-w-[240px] text-center tracking-[-0.02em]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 500 }}>
-                    {format(selectedMonth, "MMMM yyyy")}
+                    {isYearView ? format(selectedMonth, "yyyy") : format(selectedMonth, "MMMM yyyy")}
                   </h2>
-                  {!isSameMonth(selectedMonth, new Date()) && (
+                  {(isYearView ? !isSameYear(selectedMonth, new Date()) : !isSameMonth(selectedMonth, new Date())) && (
                     <button
                       onClick={() => setSelectedMonth(new Date())}
                       className="text-xs text-[#8B7082] hover:text-[#612a4f] underline tracking-wide uppercase"
@@ -439,10 +467,22 @@ const Brands = () => {
                   )}
                 </div>
                 <button
-                  onClick={() => setSelectedMonth(prev => addMonths(prev, 1))}
+                  onClick={() => setSelectedMonth(prev => isYearView ? addYears(prev, 1) : addMonths(prev, 1))}
                   className="text-[#612a4f] hover:text-[#612a4f]/80 transition-colors duration-200"
                 >
                   <ChevronRight className="w-5 h-5" strokeWidth={1.5} />
+                </button>
+                {/* Year View Toggle */}
+                <button
+                  onClick={() => setIsYearView(prev => !prev)}
+                  className={cn(
+                    "ml-4 px-3 py-1.5 text-xs font-medium rounded-full border transition-all duration-200",
+                    isYearView
+                      ? "bg-[#612a4f] text-white border-[#612a4f]"
+                      : "bg-white text-[#612a4f] border-[#E8E4E6] hover:border-[#612a4f]/30"
+                  )}
+                >
+                  {isYearView ? "Month View" : "Year View"}
                 </button>
               </div>
             )}
@@ -452,16 +492,24 @@ const Brands = () => {
               <Card className="group p-6 bg-white border border-[#E8E4E6] rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.05),0_1px_4px_rgba(0,0,0,0.03)]">
                 <div className="flex items-center gap-2 mb-3">
                   <Diamond className="w-4 h-4 text-[#8B7082] fill-[#8B7082]/20" />
-                  <p className="text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em]">{format(selectedMonth, "MMMM").toUpperCase()} EARNINGS</p>
+                  <p className="text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em]">
+                    {isYearView ? `${format(selectedMonth, "yyyy")} EARNINGS` : `${format(selectedMonth, "MMMM").toUpperCase()} EARNINGS`}
+                  </p>
                 </div>
-                <p className="text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>${metrics.monthlyEarnings.toLocaleString()}</p>
+                <p className="text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>
+                  ${isYearView ? metrics.yearlyEarnings.toLocaleString() : metrics.monthlyEarnings.toLocaleString()}
+                </p>
               </Card>
               <Card className="group p-6 bg-white border border-[#E8E4E6] rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.05),0_1px_4px_rgba(0,0,0,0.03)]">
                 <div className="flex items-center gap-2 mb-3">
                   <ArrowUpRight className="w-4 h-4 text-[#8B7082]" />
-                  <p className="text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em]">{format(selectedMonth, "yyyy")} EARNINGS</p>
+                  <p className="text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em]">
+                    {isYearView ? "TOTAL DEALS" : `${format(selectedMonth, "yyyy")} EARNINGS`}
+                  </p>
                 </div>
-                <p className="text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>${metrics.yearlyEarnings.toLocaleString()}</p>
+                <p className="text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>
+                  {isYearView ? filteredDeals.length : `$${metrics.yearlyEarnings.toLocaleString()}`}
+                </p>
               </Card>
               <Card className="group p-6 bg-white border border-[#E8E4E6] rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.05),0_1px_4px_rgba(0,0,0,0.03)]">
                 <div className="flex items-center gap-2 mb-3">
@@ -553,6 +601,7 @@ const Brands = () => {
             <KanbanView
               dealsByStatus={dealsByStatus}
               selectedMonth={selectedMonth}
+              isYearView={isYearView}
               showArchived={showArchived}
               onDragStart={handleDragStart}
               onDragOver={handleDragOver}
@@ -592,6 +641,7 @@ const Brands = () => {
 interface KanbanViewProps {
   dealsByStatus: Record<string, BrandDeal[]>;
   selectedMonth: Date;
+  isYearView?: boolean;
   showArchived?: boolean;
   onDragStart: (id: string) => void;
   onDragOver: (e: React.DragEvent) => void;
@@ -603,7 +653,7 @@ interface KanbanViewProps {
   onQuickUpdate: (id: string, updates: Partial<BrandDeal>) => void;
 }
 
-const KanbanView = ({ dealsByStatus, selectedMonth, showArchived, onDragStart, onDragOver, onDrop, onEdit, onDelete, onArchive, onUnarchive, onQuickUpdate }: KanbanViewProps) => {
+const KanbanView = ({ dealsByStatus, selectedMonth, isYearView, showArchived, onDragStart, onDragOver, onDrop, onEdit, onDelete, onArchive, onUnarchive, onQuickUpdate }: KanbanViewProps) => {
   // Only show columns that have deals
   const activeStatuses = statusOrder.filter(status => dealsByStatus[status].length > 0);
 
@@ -623,8 +673,8 @@ const KanbanView = ({ dealsByStatus, selectedMonth, showArchived, onDragStart, o
             <div className="p-4 rounded-2xl bg-gradient-to-br from-[#8B7082]/10 to-[#8B7082]/5 mb-4">
               <Building2 className="w-10 h-10 text-[#8B7082]/40" />
             </div>
-            <p className="text-[#612a4f] font-medium text-lg" style={{ fontFamily: "'Playfair Display', serif" }}>No deliverables in {format(selectedMonth, "MMMM yyyy")}</p>
-            <p className="text-sm text-[#8B7082]/70 mt-1">Try navigating to another month or add a new deal</p>
+            <p className="text-[#612a4f] font-medium text-lg" style={{ fontFamily: "'Playfair Display', serif" }}>No deliverables in {isYearView ? format(selectedMonth, "yyyy") : format(selectedMonth, "MMMM yyyy")}</p>
+            <p className="text-sm text-[#8B7082]/70 mt-1">Try navigating to another {isYearView ? "year" : "month"} or add a new deal</p>
           </>
         )}
       </div>
@@ -641,6 +691,7 @@ const KanbanView = ({ dealsByStatus, selectedMonth, showArchived, onDragStart, o
           key={deal.id}
           deal={deal}
           selectedMonth={selectedMonth}
+          isYearView={isYearView}
           showArchived={showArchived}
           onDragStart={onDragStart}
           onEdit={onEdit}
@@ -658,6 +709,7 @@ const KanbanView = ({ dealsByStatus, selectedMonth, showArchived, onDragStart, o
 interface DealCardProps {
   deal: BrandDeal;
   selectedMonth: Date;
+  isYearView?: boolean;
   showArchived?: boolean;
   onDragStart: (id: string) => void;
   onEdit: (deal: BrandDeal) => void;
@@ -667,37 +719,42 @@ interface DealCardProps {
   onQuickUpdate: (id: string, updates: Partial<BrandDeal>) => void;
 }
 
-const DealCard = ({ deal, selectedMonth, showArchived, onDragStart, onEdit, onDelete, onArchive, onUnarchive, onQuickUpdate }: DealCardProps) => {
+const DealCard = ({ deal, selectedMonth, isYearView, showArchived, onDragStart, onEdit, onDelete, onArchive, onUnarchive, onQuickUpdate }: DealCardProps) => {
   const [selectedDeliverableId, setSelectedDeliverableId] = useState<string | null>(null);
   const now = new Date();
   const monthStart = startOfMonth(selectedMonth);
   const monthEnd = endOfMonth(selectedMonth);
+  const selectedYear = selectedMonth.getFullYear();
 
-  // Helper to check if a deliverable is in the selected month
-  const isDeliverableInMonth = (d: Deliverable) => {
+  // Helper to check if a deliverable is in the selected period (month or year)
+  const isDeliverableInPeriod = (d: Deliverable) => {
     const submitDate = d.submissionDeadline ? parseISO(d.submissionDeadline) : null;
     const publishDate = d.publishDeadline ? parseISO(d.publishDeadline) : null;
+    if (isYearView) {
+      return (submitDate && submitDate.getFullYear() === selectedYear) ||
+             (publishDate && publishDate.getFullYear() === selectedYear);
+    }
     return (submitDate && isWithinInterval(submitDate, { start: monthStart, end: monthEnd })) ||
            (publishDate && isWithinInterval(publishDate, { start: monthStart, end: monthEnd }));
   };
 
-  // Get deliverables that are in this month (for auto-selection)
-  const deliverablesInMonth = deal.deliverables?.filter(isDeliverableInMonth) || [];
+  // Get deliverables that are in this period (for auto-selection)
+  const deliverablesInPeriod = deal.deliverables?.filter(isDeliverableInPeriod) || [];
 
   // All deliverables for display
   const allDeliverables = deal.deliverables || [];
 
-  // Get the selected deliverable - prefer one in the current month
+  // Get the selected deliverable - prefer one in the current period
   const selectedDeliverable = selectedDeliverableId
     ? allDeliverables.find(d => d.id === selectedDeliverableId)
     : null;
 
-  // Auto-select: if selected is not in current month, default to first one in month
-  // Otherwise show first with pending work in this month, or just the first one in month
-  const displayDeliverable = (selectedDeliverable && isDeliverableInMonth(selectedDeliverable))
+  // Auto-select: if selected is not in current period, default to first one in period
+  // Otherwise show first with pending work in this period, or just the first one in period
+  const displayDeliverable = (selectedDeliverable && isDeliverableInPeriod(selectedDeliverable))
     ? selectedDeliverable
-    : deliverablesInMonth.find(d => (!d.isSubmitted && d.submissionDeadline) || (!d.isPublished && d.publishDeadline))
-      || deliverablesInMonth[0]
+    : deliverablesInPeriod.find(d => (!d.isSubmitted && d.submissionDeadline) || (!d.isPublished && d.publishDeadline))
+      || deliverablesInPeriod[0]
       || selectedDeliverable
       || allDeliverables[0];
 
@@ -794,7 +851,7 @@ const DealCard = ({ deal, selectedMonth, showArchived, onDragStart, onEdit, onDe
           </div>
           <div className="flex gap-1 mt-2 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {allDeliverables.map(d => {
-              const inThisMonth = isDeliverableInMonth(d);
+              const inThisPeriod = isDeliverableInPeriod(d);
               const isSelected = displayDeliverable?.id === d.id;
               return (
                 <button
@@ -807,7 +864,7 @@ const DealCard = ({ deal, selectedMonth, showArchived, onDragStart, onEdit, onDe
                     "px-1.5 py-0.5 text-[9px] font-semibold rounded transition-all duration-200 flex-shrink-0",
                     isSelected
                       ? "bg-gradient-to-r from-[#612a4f] to-[#7a3d65] text-white shadow-[0_2px_8px_rgba(97,42,79,0.3)]"
-                      : inThisMonth
+                      : inThisPeriod
                         ? "bg-gradient-to-r from-[#F5F0F3] to-[#F0EAF0] text-[#612a4f] border border-[#612a4f]/20 hover:border-[#612a4f]/40 hover:shadow-sm"
                         : "bg-[#F8F6F7] text-[#8B7082]/60 border border-transparent"
                   )}
