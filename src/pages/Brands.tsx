@@ -42,7 +42,11 @@ import {
   Wallet,
   Target,
   Archive,
-  Trash2
+  Trash2,
+  Diamond,
+  Sparkles,
+  Circle,
+  ArrowUpRight
 } from "lucide-react";
 import { getString, setString } from "@/lib/storage";
 import { toast } from "sonner";
@@ -274,8 +278,8 @@ const Brands = () => {
         (paymentFilter === 'paid' && deal.paymentReceived) ||
         (paymentFilter === 'unpaid' && !deal.paymentReceived);
 
-      // When showing archived, don't filter by month
-      if (showArchived) {
+      // When showing archived or searching, don't filter by month
+      if (showArchived || searchQuery) {
         return matchesSearch && matchesStatus && matchesPayment;
       }
 
@@ -384,42 +388,42 @@ const Brands = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-[#F9F8F8]">
-        <div className="p-6 lg:p-8">
+      <div className="min-h-screen bg-gradient-to-br from-[#F0EAED] via-[#F8F6F6] to-[#FFFAF3]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+        <div className="p-6 lg:p-10">
             {/* Month Picker / Archive Header */}
             {showArchived ? (
-              <div className="flex items-center justify-center gap-4 mb-6">
+              <div className="flex items-center justify-center gap-4 mb-10">
                 <button
                   onClick={() => setShowArchived(false)}
-                  className="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-[#8B7082] hover:text-[#612a4f]"
+                  className="p-2.5 rounded-xl bg-white/60 backdrop-blur-sm border border-[#8B7082]/10 hover:bg-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 text-[#8B7082] hover:text-[#612a4f]"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
                 <div className="flex items-center gap-3">
                   <Archive className="w-6 h-6 text-[#612a4f]" />
-                  <h2 className="text-xl font-bold text-[#612a4f]">
+                  <h2 className="text-3xl text-[#612a4f] tracking-[-0.02em]" style={{ fontFamily: "'Playfair Display', serif" }}>
                     Archive
                   </h2>
-                  <span className="text-sm text-[#8B7082]">({archivedCount} deals)</span>
+                  <span className="text-sm text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>({archivedCount} deals)</span>
                 </div>
-                <div className="w-9" /> {/* Spacer for alignment */}
+                <div className="w-11" /> {/* Spacer for alignment */}
               </div>
             ) : (
-              <div className="flex items-center justify-center gap-4 mb-6">
+              <div className="flex items-center justify-center gap-8 mb-10">
                 <button
                   onClick={() => setSelectedMonth(prev => subMonths(prev, 1))}
-                  className="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-[#8B7082] hover:text-[#612a4f]"
+                  className="text-[#612a4f] hover:text-[#612a4f]/80 transition-colors duration-200"
                 >
-                  <ChevronLeft className="w-5 h-5" />
+                  <ChevronLeft className="w-5 h-5" strokeWidth={1.5} />
                 </button>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-bold text-[#612a4f] min-w-[180px] text-center">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-3xl font-medium text-[#612a4f] min-w-[240px] text-center tracking-[-0.02em]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 500 }}>
                     {format(selectedMonth, "MMMM yyyy")}
                   </h2>
                   {!isSameMonth(selectedMonth, new Date()) && (
                     <button
                       onClick={() => setSelectedMonth(new Date())}
-                      className="text-xs text-[#8B7082] hover:text-[#612a4f] underline"
+                      className="text-xs text-[#8B7082] hover:text-[#612a4f] underline tracking-wide uppercase"
                     >
                       Today
                     </button>
@@ -427,75 +431,59 @@ const Brands = () => {
                 </div>
                 <button
                   onClick={() => setSelectedMonth(prev => addMonths(prev, 1))}
-                  className="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-[#8B7082] hover:text-[#612a4f]"
+                  className="text-[#612a4f] hover:text-[#612a4f]/80 transition-colors duration-200"
                 >
-                  <ChevronRight className="w-5 h-5" />
+                  <ChevronRight className="w-5 h-5" strokeWidth={1.5} />
                 </button>
               </div>
             )}
 
             {/* Dashboard Summary */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <Card className="p-4 bg-white border-0 shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-green-50">
-                    <DollarSign className="w-5 h-5 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-[#8B7082] font-medium">{format(selectedMonth, "MMMM")}</p>
-                    <p className="text-xl font-bold text-[#612a4f]">${metrics.monthlyEarnings.toLocaleString()}</p>
-                  </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+              <Card className="group p-6 bg-white border border-[#E8E4E6] rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.05),0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08),0_2px_8px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-300">
+                <div className="flex items-center gap-2 mb-3">
+                  <Diamond className="w-4 h-4 text-[#8B7082] fill-[#8B7082]/20" />
+                  <p className="text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em]">{format(selectedMonth, "MMMM").toUpperCase()} EARNINGS</p>
                 </div>
+                <p className="text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>${metrics.monthlyEarnings.toLocaleString()}</p>
               </Card>
-              <Card className="p-4 bg-white border-0 shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-violet-50">
-                    <TrendingUp className="w-5 h-5 text-violet-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-[#8B7082] font-medium">{format(selectedMonth, "yyyy")}</p>
-                    <p className="text-xl font-bold text-[#612a4f]">${metrics.yearlyEarnings.toLocaleString()}</p>
-                  </div>
+              <Card className="group p-6 bg-white border border-[#E8E4E6] rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.05),0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08),0_2px_8px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-300">
+                <div className="flex items-center gap-2 mb-3">
+                  <ArrowUpRight className="w-4 h-4 text-[#8B7082]" />
+                  <p className="text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em]">{format(selectedMonth, "yyyy")} EARNINGS</p>
                 </div>
+                <p className="text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>${metrics.yearlyEarnings.toLocaleString()}</p>
               </Card>
-              <Card className="p-4 bg-white border-0 shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-amber-50">
-                    <Wallet className="w-5 h-5 text-amber-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-[#8B7082] font-medium">Pending</p>
-                    <p className="text-xl font-bold text-[#612a4f]">${metrics.pendingAmount.toLocaleString()}</p>
-                  </div>
+              <Card className="group p-6 bg-white border border-[#E8E4E6] rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.05),0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08),0_2px_8px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-300">
+                <div className="flex items-center gap-2 mb-3">
+                  <Circle className="w-4 h-4 text-[#8B7082]" strokeWidth={1.5} />
+                  <p className="text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em]">PENDING</p>
                 </div>
+                <p className="text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>${metrics.pendingAmount.toLocaleString()}</p>
               </Card>
-              <Card className="p-4 bg-white border-0 shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-rose-50">
-                    <Target className="w-5 h-5 text-rose-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-[#8B7082] font-medium">Active Deals</p>
-                    <p className="text-xl font-bold text-[#612a4f]">{metrics.activeDeals}</p>
-                  </div>
+              <Card className="group p-6 bg-white border border-[#E8E4E6] rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.05),0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08),0_2px_8px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-300">
+                <div className="flex items-center gap-2 mb-3">
+                  <svg className="w-4 h-4 text-[#8B7082]" viewBox="0 0 24 24" fill="currentColor" fillOpacity="0.2" stroke="currentColor" strokeWidth="1.5"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" /></svg>
+                  <p className="text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em]">ACTIVE DEALS</p>
                 </div>
+                <p className="text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>{metrics.activeDeals}</p>
               </Card>
             </div>
 
             {/* Toolbar */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-6">
-              <div className="flex-1 flex gap-3">
-                <div className="relative flex-1 max-w-sm">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8B7082]" />
+            <div className="flex flex-col sm:flex-row gap-4 mb-8">
+              <div className="flex-1 flex gap-3 flex-wrap">
+                <div className="relative flex-1 max-w-xs">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#612a4f] z-10 pointer-events-none" />
                   <Input
                     placeholder="Search brands..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 bg-white border-[#8B7082]/30 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0 focus:ring-1 focus:ring-[#612a4f]/30"
+                    className="pl-11 h-11 bg-white border-[#E8E4E6] rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0 transition-all duration-200"
                   />
                 </div>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-[140px] bg-white border-[#8B7082]/30">
+                  <SelectTrigger className="w-[150px] h-11 bg-white border-[#E8E4E6] rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -506,7 +494,7 @@ const Brands = () => {
                   </SelectContent>
                 </Select>
                 <Select value={paymentFilter} onValueChange={setPaymentFilter}>
-                  <SelectTrigger className="w-[140px] bg-white border-[#8B7082]/30">
+                  <SelectTrigger className="w-[150px] h-11 bg-white border-[#E8E4E6] rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
                     <SelectValue placeholder="Payment" />
                   </SelectTrigger>
                   <SelectContent>
@@ -519,8 +507,8 @@ const Brands = () => {
                   variant="outline"
                   onClick={() => setShowArchived(!showArchived)}
                   className={cn(
-                    "border-[#8B7082]/30 hover:bg-[#8B7082]/10 hover:border-[#8B7082] hover:text-[#612a4f]",
-                    showArchived && "bg-[#8B7082]/10 border-[#8B7082]"
+                    "h-11 rounded-xl border-[#E8E4E6] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:bg-[#F8F6F5] hover:border-[#8B7082]/40 hover:text-[#612a4f] transition-all duration-200",
+                    showArchived && "bg-[#F8F6F5] border-[#8B7082]/40"
                   )}
                 >
                   {showArchived ? (
@@ -541,10 +529,10 @@ const Brands = () => {
                   )}
                 </Button>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <Button
                   onClick={() => setIsAddDialogOpen(true)}
-                  className="bg-[#612a4f] hover:bg-[#4d2140] text-white"
+                  className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#612a4f] to-[#4d2140] hover:from-[#4d2140] hover:to-[#3a1830] text-white shadow-[0_4px_16px_rgba(97,42,79,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_6px_24px_rgba(97,42,79,0.4)] hover:-translate-y-0.5 transition-all duration-200"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Deal
@@ -612,18 +600,22 @@ const KanbanView = ({ dealsByStatus, selectedMonth, showArchived, onDragStart, o
 
   if (activeStatuses.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 bg-[#F5F3F4] rounded-xl">
+      <div className="flex flex-col items-center justify-center py-20 bg-gradient-to-br from-white/80 via-white/60 to-[#F8F6F5]/80 backdrop-blur-sm rounded-2xl border border-[#8B7082]/10 shadow-[0_4px_24px_rgba(97,42,79,0.04)]">
         {showArchived ? (
           <>
-            <Archive className="w-12 h-12 text-[#E8E4E6] mb-3" />
-            <p className="text-[#8B7082] font-medium">No archived deals</p>
-            <p className="text-xs text-[#8B7082]/60 mt-1">Archived deals will appear here</p>
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-[#8B7082]/10 to-[#8B7082]/5 mb-4">
+              <Archive className="w-10 h-10 text-[#8B7082]/40" />
+            </div>
+            <p className="text-[#612a4f] font-medium text-lg" style={{ fontFamily: "'Playfair Display', serif" }}>No archived deals</p>
+            <p className="text-sm text-[#8B7082]/70 mt-1">Archived deals will appear here</p>
           </>
         ) : (
           <>
-            <Building2 className="w-12 h-12 text-[#E8E4E6] mb-3" />
-            <p className="text-[#8B7082] font-medium">No deliverables in {format(selectedMonth, "MMMM yyyy")}</p>
-            <p className="text-xs text-[#8B7082]/60 mt-1">Try navigating to another month or add a new deal</p>
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-[#8B7082]/10 to-[#8B7082]/5 mb-4">
+              <Building2 className="w-10 h-10 text-[#8B7082]/40" />
+            </div>
+            <p className="text-[#612a4f] font-medium text-lg" style={{ fontFamily: "'Playfair Display', serif" }}>No deliverables in {format(selectedMonth, "MMMM yyyy")}</p>
+            <p className="text-sm text-[#8B7082]/70 mt-1">Try navigating to another month or add a new deal</p>
           </>
         )}
       </div>
@@ -716,23 +708,24 @@ const DealCard = ({ deal, selectedMonth, showArchived, onDragStart, onEdit, onDe
       draggable
       onDragStart={() => onDragStart(deal.id)}
       onClick={() => onEdit(deal)}
-      className="bg-white rounded-lg p-4 shadow-sm border border-[#8B7082]/30 cursor-pointer hover:shadow-md transition-shadow h-[260px] flex flex-col"
+      className="group bg-gradient-to-br from-white via-white to-[#FAF9F8] rounded-xl p-4 shadow-[0_6px_20px_rgba(0,0,0,0.06),0_2px_6px_rgba(0,0,0,0.03)] border border-[#E8E4E6] cursor-pointer hover:shadow-[0_12px_32px_rgba(0,0,0,0.1),0_4px_12px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 min-h-[300px] flex flex-col"
+      style={{ fontFamily: "'DM Sans', sans-serif" }}
     >
       <div className="flex items-start justify-between mb-3">
-        <div>
-          <h3 className="font-semibold text-[#612a4f] text-sm">{deal.brandName}</h3>
-          <p className="text-xs text-[#8B7082] min-h-[16px]">{deal.productCampaign || '\u00A0'}</p>
+        <div className="min-w-0 flex-1 mr-2">
+          <h3 className="text-lg font-bold text-[#612a4f] tracking-[-0.02em] truncate" style={{ fontFamily: "'Playfair Display', serif" }}>{deal.brandName}</h3>
+          <p className="text-xs text-[#8B7082] min-h-[16px] mt-0.5 truncate">{deal.productCampaign || '\u00A0'}</p>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
-              className="p-1 hover:bg-[#F5F3F4] rounded text-[#8B7082] hover:text-[#612a4f] transition-colors"
+              className="p-1 hover:bg-[#8B7082]/10 rounded-lg text-[#8B7082] hover:text-[#612a4f] transition-all duration-200 flex-shrink-0"
               onClick={(e) => e.stopPropagation()}
             >
               <MoreHorizontal className="w-4 h-4" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()} className="rounded-xl">
             {showArchived ? (
               <DropdownMenuItem
                 onClick={() => onUnarchive(deal.id)}
@@ -762,16 +755,16 @@ const DealCard = ({ deal, selectedMonth, showArchived, onDragStart, onEdit, onDe
       </div>
 
       {/* Fee */}
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-lg font-bold text-[#612a4f]">${deal.totalFee.toLocaleString()}</span>
-        <div className="flex gap-1">
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
+        <span className="text-[22px] font-semibold text-[#612a4f] tracking-[-0.02em]" style={{ fontFamily: "'Playfair Display', serif" }}>${deal.totalFee.toLocaleString()}</span>
+        <div className="flex gap-1.5">
           {deal.depositPaid && (
-            <span className="px-1.5 py-0.5 bg-[#EDF3ED] text-[#6B9B6B] text-[10px] font-medium rounded">
+            <span className="px-3 py-1 bg-[#E8F0E8] text-[#5A8A5A] text-[10px] font-medium rounded-full border border-[#C5D9C5]/40">
               Deposit Paid
             </span>
           )}
           {displayDeliverable?.isPaid && (
-            <span className="px-1.5 py-0.5 bg-[#EDF3ED] text-[#6B9B6B] text-[10px] font-medium rounded">
+            <span className="px-3 py-1 bg-[#E8F0E8] text-[#5A8A5A] text-[10px] font-medium rounded-full border border-[#C5D9C5]/40">
               Content Paid
             </span>
           )}
@@ -783,9 +776,9 @@ const DealCard = ({ deal, selectedMonth, showArchived, onDragStart, onEdit, onDe
         <div className="mb-3">
           <div className="flex items-center gap-2 text-xs text-[#8B7082]">
             <span>{totalPublishedCount}/{totalDeliverablesCount} delivered</span>
-            <div className="flex-1 h-1.5 bg-[#F5F3F4] rounded-full overflow-hidden">
+            <div className="flex-1 h-1.5 bg-[#F5F3F4] rounded-full overflow-hidden shadow-inner">
               <div
-                className="h-full bg-emerald-500 rounded-full transition-all"
+                className="h-full bg-gradient-to-r from-[#5A8A5A] to-[#6B9B6B] rounded-full transition-all shadow-[0_0_8px_rgba(90,138,90,0.4)]"
                 style={{ width: `${(totalPublishedCount / totalDeliverablesCount) * 100}%` }}
               />
             </div>
@@ -802,12 +795,12 @@ const DealCard = ({ deal, selectedMonth, showArchived, onDragStart, onEdit, onDe
                     setSelectedDeliverableId(d.id);
                   }}
                   className={cn(
-                    "px-1.5 py-0.5 text-[10px] font-medium rounded transition-all flex-shrink-0",
+                    "px-1.5 py-0.5 text-[9px] font-semibold rounded transition-all duration-200 flex-shrink-0",
                     isSelected
-                      ? "bg-[#612a4f] text-white"
+                      ? "bg-gradient-to-r from-[#612a4f] to-[#7a3d65] text-white shadow-[0_2px_8px_rgba(97,42,79,0.3)]"
                       : inThisMonth
-                        ? "bg-[#612a4f]/20 text-[#612a4f] border border-[#612a4f]/30"
-                        : "bg-[#F5F3F4] text-[#8B7082]/60"
+                        ? "bg-gradient-to-r from-[#F5F0F3] to-[#F0EAF0] text-[#612a4f] border border-[#612a4f]/20 hover:border-[#612a4f]/40 hover:shadow-sm"
+                        : "bg-[#F8F6F7] text-[#8B7082]/60 border border-transparent"
                   )}
                 >
                   {d.contentType === 'other' && d.customContentType ? d.customContentType : contentTypeConfig[d.contentType].short}
@@ -819,16 +812,16 @@ const DealCard = ({ deal, selectedMonth, showArchived, onDragStart, onEdit, onDe
       )}
 
       {/* Footer */}
-      <div className="flex flex-col gap-1.5 pt-3 border-t border-[#F5F3F4] mt-auto">
+      <div className="flex flex-col gap-1.5 pt-2.5 border-t border-[#F5F3F4] mt-auto">
         {displaySubmitDate && (
           <div className="flex items-center justify-between text-xs text-[#8B7082]">
-            <div className="flex items-center gap-1">
-              <CalendarDays className="w-3 h-3" />
-              <span className={cn(isSubmitDone && "line-through opacity-50")}>
+            <div className="flex items-center gap-1.5">
+              <Clock className="w-2.5 h-2.5" />
+              <span className={cn(isSubmitDone && "opacity-50")}>
                 Submit: {format(parseISO(displaySubmitDate), "MMM d")}
               </span>
             </div>
-            <label className="flex items-center gap-1 cursor-pointer" onClick={(e) => e.stopPropagation()}>
+            <label className="flex items-center cursor-pointer" onClick={(e) => e.stopPropagation()}>
               <Checkbox
                 checked={isSubmitDone}
                 onCheckedChange={(checked) => {
@@ -839,20 +832,20 @@ const DealCard = ({ deal, selectedMonth, showArchived, onDragStart, onEdit, onDe
                     onQuickUpdate(deal.id, { deliverables: updatedDeliverables });
                   }
                 }}
-                className="h-3 w-3"
+                className="h-4 w-4 rounded-full border-[#8B7082]/30 data-[state=checked]:bg-gradient-to-b data-[state=checked]:from-[#6B9B6B] data-[state=checked]:to-[#4A7A4A] data-[state=checked]:border-[#4A7A4A] data-[state=checked]:shadow-[0_2px_8px_rgba(74,122,74,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]"
               />
             </label>
           </div>
         )}
         {displayPublishDate && (
           <div className="flex items-center justify-between text-xs font-medium text-[#612a4f]">
-            <div className="flex items-center gap-1">
-              <CalendarDays className="w-3 h-3" />
-              <span className={cn(isPublishDone && "line-through opacity-50")}>
+            <div className="flex items-center gap-1.5">
+              <Clock className="w-2.5 h-2.5" />
+              <span className={cn(isPublishDone && "opacity-50")}>
                 Publish: {format(parseISO(displayPublishDate), "MMM d")}
               </span>
             </div>
-            <label className="flex items-center gap-1 cursor-pointer" onClick={(e) => e.stopPropagation()}>
+            <label className="flex items-center cursor-pointer" onClick={(e) => e.stopPropagation()}>
               <Checkbox
                 checked={isPublishDone}
                 onCheckedChange={(checked) => {
@@ -863,7 +856,7 @@ const DealCard = ({ deal, selectedMonth, showArchived, onDragStart, onEdit, onDe
                     onQuickUpdate(deal.id, { deliverables: updatedDeliverables });
                   }
                 }}
-                className="h-3 w-3"
+                className="h-4 w-4 rounded-full border-[#8B7082]/30 data-[state=checked]:bg-gradient-to-b data-[state=checked]:from-[#6B9B6B] data-[state=checked]:to-[#4A7A4A] data-[state=checked]:border-[#4A7A4A] data-[state=checked]:shadow-[0_2px_8px_rgba(74,122,74,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]"
               />
             </label>
           </div>
@@ -871,12 +864,12 @@ const DealCard = ({ deal, selectedMonth, showArchived, onDragStart, onEdit, onDe
         {/* Paid checkbox - always visible for selected deliverable */}
         {displayDeliverable && (
           <div className={cn(
-            "flex items-center justify-between text-xs pt-2 mt-1 border-t border-[#F5F3F4] font-medium",
-            displayDeliverable.isPaid ? "text-emerald-600" : "text-[#612a4f]"
+            "flex items-center justify-between text-xs pt-1.5 mt-1 border-t border-[#F5F3F4] font-medium",
+            displayDeliverable.isPaid ? "text-[#5A8A5A]" : "text-[#612a4f]"
           )}>
-            <div className="flex items-center gap-1">
-              <Wallet className="w-3 h-3" />
-              <span className="font-medium">
+            <div className="flex items-center gap-1.5">
+              <Diamond className="w-2.5 h-2.5 fill-current" />
+              <span className="font-semibold">
                 Paid{displayDeliverable.paymentAmount ? ` $${displayDeliverable.paymentAmount.toLocaleString()}` : ''}
               </span>
             </div>
@@ -893,7 +886,7 @@ const DealCard = ({ deal, selectedMonth, showArchived, onDragStart, onEdit, onDe
                   );
                   onQuickUpdate(deal.id, { deliverables: updatedDeliverables });
                 }}
-                className="h-3 w-3"
+                className="h-4 w-4 rounded-full border-[#8B7082]/30 data-[state=checked]:bg-gradient-to-b data-[state=checked]:from-[#6B9B6B] data-[state=checked]:to-[#4A7A4A] data-[state=checked]:border-[#4A7A4A] data-[state=checked]:shadow-[0_2px_8px_rgba(74,122,74,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]"
               />
             </label>
           </div>
@@ -1146,16 +1139,16 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-[#F8F8F8]">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-[#FAF9F8] via-[#F8F6F5] to-[#F5F3F2] rounded-2xl border border-[#8B7082]/10 shadow-[0_24px_80px_rgba(97,42,79,0.15)]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
         <DialogHeader>
-          <DialogTitle className="text-[#612a4f]">{deal ? 'Edit Deal' : 'Add New Deal'}</DialogTitle>
+          <DialogTitle className="text-2xl text-[#612a4f] tracking-[-0.02em]" style={{ fontFamily: "'Playfair Display', serif" }}>{deal ? 'Edit Deal' : 'Add New Deal'}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
           {/* Partnership Details */}
-          <div className="space-y-4 p-5 rounded-xl bg-white">
-            <h3 className="text-sm font-semibold text-[#612a4f] flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#8B7082] flex items-center justify-center">
+          <div className="space-y-4 p-6 rounded-2xl bg-white/90 backdrop-blur-sm border border-[#8B7082]/5 shadow-[0_4px_16px_rgba(97,42,79,0.04)]">
+            <h3 className="text-sm font-semibold text-[#612a4f] flex items-center gap-3 tracking-wide">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#8B7082] to-[#7a6572] flex items-center justify-center shadow-sm">
                 <Building2 className="w-4 h-4 text-white" />
               </div>
               Partnership Details
@@ -1292,9 +1285,9 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
           </div>
 
           {/* Payment Details */}
-          <div className="space-y-5 p-5 rounded-xl bg-[#FAF8F6]">
-            <h3 className="text-sm font-semibold text-[#612a4f] flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#612a4f] flex items-center justify-center">
+          <div className="space-y-5 p-6 rounded-2xl bg-white/90 backdrop-blur-sm border border-[#8B7082]/5 shadow-[0_4px_16px_rgba(97,42,79,0.04)]">
+            <h3 className="text-sm font-semibold text-[#612a4f] flex items-center gap-3 tracking-wide">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#612a4f] to-[#4d2140] flex items-center justify-center shadow-sm">
                 <DollarSign className="w-4 h-4 text-white" />
               </div>
               Payment Details
@@ -1431,10 +1424,10 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
           </div>
 
           {/* Deliverables */}
-          <div className="space-y-4 p-5 rounded-xl bg-white">
+          <div className="space-y-4 p-6 rounded-2xl bg-white/90 backdrop-blur-sm border border-[#8B7082]/5 shadow-[0_4px_16px_rgba(97,42,79,0.04)]">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-[#612a4f] flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#612a4f] flex items-center justify-center">
+              <h3 className="text-sm font-semibold text-[#612a4f] flex items-center gap-3 tracking-wide">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#612a4f] to-[#4d2140] flex items-center justify-center shadow-sm">
                   <Send className="w-4 h-4 text-white" />
                 </div>
                 Deliverables
@@ -1444,7 +1437,7 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
                 variant="outline"
                 size="sm"
                 onClick={addDeliverable}
-                className="bg-[#8B7082] text-white hover:bg-[#7a6172] border-0"
+                className="bg-gradient-to-r from-[#8B7082] to-[#7a6172] text-white hover:from-[#7a6172] hover:to-[#6a5162] border-0 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
               >
                 <Plus className="w-3 h-3 mr-1" />
                 Add Deliverable
@@ -1452,10 +1445,12 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
             </div>
 
             {formData.deliverables?.length === 0 ? (
-              <div className="text-center py-8 bg-[#FAF9F7] rounded-lg border border-dashed border-[#8B7082]/30">
-                <Send className="w-8 h-8 mx-auto text-[#E8E4E6] mb-2" />
-                <p className="text-sm text-[#8B7082]">No deliverables added yet</p>
-                <p className="text-xs text-[#8B7082]/60 mt-1">Click "Add Deliverable" to add content pieces</p>
+              <div className="text-center py-10 bg-gradient-to-br from-[#FAF9F8] to-[#F5F3F2] rounded-xl border border-dashed border-[#8B7082]/20">
+                <div className="w-12 h-12 mx-auto rounded-xl bg-gradient-to-br from-[#8B7082]/10 to-[#8B7082]/5 flex items-center justify-center mb-3">
+                  <Send className="w-6 h-6 text-[#8B7082]/40" />
+                </div>
+                <p className="text-sm text-[#612a4f] font-medium">No deliverables added yet</p>
+                <p className="text-xs text-[#8B7082]/70 mt-1">Click "Add Deliverable" to add content pieces</p>
               </div>
             ) : (
               <div className="space-y-6">
@@ -1711,9 +1706,9 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
           </div>
 
           {/* Notes */}
-          <div className="space-y-4 p-5 rounded-xl bg-white">
-            <h3 className="text-sm font-semibold text-[#612a4f] flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#8B7082] flex items-center justify-center">
+          <div className="space-y-4 p-6 rounded-2xl bg-white/90 backdrop-blur-sm border border-[#8B7082]/5 shadow-[0_4px_16px_rgba(97,42,79,0.04)]">
+            <h3 className="text-sm font-semibold text-[#612a4f] flex items-center gap-3 tracking-wide">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#8B7082] to-[#7a6572] flex items-center justify-center shadow-sm">
                 <StickyNote className="w-4 h-4 text-white" />
               </div>
               Notes
@@ -1722,17 +1717,19 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
               value={formData.notes}
               onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
               placeholder="Any additional details..."
-              className="min-h-[100px] border-[#8B7082]/30 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0"
+              className="min-h-[100px] border-[#8B7082]/20 rounded-xl bg-white/80 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f] focus:ring-offset-0 focus-visible:ring-[#612a4f] focus-visible:ring-1 focus-visible:ring-offset-0"
             />
           </div>
         </div>
 
         {/* Fee Mismatch Warning - shown above save button */}
         {hasMismatch && (
-          <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-50 border border-amber-200 mx-6 mb-4">
-            <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div className="flex items-start gap-3 p-4 rounded-xl bg-gradient-to-r from-amber-50 to-amber-50/80 border border-amber-200/60 mx-6 mb-4 shadow-sm">
+            <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+              <AlertCircle className="w-4 h-4 text-amber-600" />
+            </div>
             <div className="flex-1">
-              <p className="text-sm font-medium text-amber-800">Fee mismatch</p>
+              <p className="text-sm font-semibold text-amber-800">Fee mismatch</p>
               <p className="text-xs text-amber-700 mt-1">
                 Deposit (${(formData.depositAmount || 0).toLocaleString()}) + Deliverables (${deliverableTotal.toLocaleString()}) = ${calculatedTotal.toLocaleString()}
               </p>
@@ -1743,11 +1740,11 @@ const DealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
           </div>
         )}
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-[#8B7082]/30">
+        <DialogFooter className="gap-3 pt-2">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-[#8B7082]/20 rounded-xl hover:bg-[#8B7082]/10 transition-all duration-200">
             Cancel
           </Button>
-          <Button onClick={handleSubmit} className="bg-[#612a4f] hover:bg-[#4d2140] text-white">
+          <Button onClick={handleSubmit} className="bg-gradient-to-r from-[#612a4f] to-[#4d2140] hover:from-[#4d2140] hover:to-[#3a1830] text-white rounded-xl shadow-[0_4px_16px_rgba(97,42,79,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_6px_24px_rgba(97,42,79,0.4)] transition-all duration-200">
             {deal ? 'Save Changes' : 'Add Deal'}
           </Button>
         </DialogFooter>

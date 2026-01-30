@@ -12,14 +12,8 @@ export const defaultMenuItems: MenuItem[] = [
     isDeletable: false
   },
   {
-    title: 'Partnerships',
-    icon: Handshake,
-    url: '/collab-management',
-    isDeletable: false
-  },
-  {
     title: 'Brands',
-    icon: Building2,
+    icon: Handshake,
     url: '/brands',
     isDeletable: false
   },

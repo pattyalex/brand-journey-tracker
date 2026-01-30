@@ -33,7 +33,6 @@ const Help = lazy(() => import('./pages/Help'));
 const WeeklyContentTasks = lazy(() => import('./pages/WeeklyContentTasks'));
 const SocialMediaScheduler = lazy(() => import('./pages/SocialMediaScheduler'));
 const Index = lazy(() => import('./pages/Index'));
-const PartnershipsManagement = lazy(() => import('./pages/PartnershipsManagement'));
 const Brands = lazy(() => import('./pages/Brands'));
 const EmailVerificationCallback = lazy(() => import('./pages/EmailVerificationCallback'));
 
@@ -172,11 +171,6 @@ function App() {
               <Route path="/social-media-scheduler" element={
                 <ProtectedRoute>
                   <SocialMediaScheduler />
-                </ProtectedRoute>
-              } />
-              <Route path="/partnerships-management" element={
-                <ProtectedRoute>
-                  <PartnershipsManagement />
                 </ProtectedRoute>
               } />
               <Route path="/collab-management" element={
