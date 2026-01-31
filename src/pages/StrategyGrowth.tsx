@@ -18,7 +18,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useLocation } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { useVisionBoard } from "@/hooks/useVisionBoard";
 import { useOnboarding } from "@/hooks/useOnboarding";
@@ -480,7 +480,13 @@ const StrategyGrowth = () => {
   const [editingLongTermText, setEditingLongTermText] = useState("");
 
   const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState("growth-goals");
+  const [activeTab, setActiveTab] = useState(() => {
+    // Check hash on initial load to set correct tab immediately
+    if (typeof window !== 'undefined' && window.location.hash === '#mission') {
+      return 'brand-identity';
+    }
+    return "growth-goals";
+  });
   const { showOnboarding, completeOnboarding } = useOnboarding();
 
   // Check URL params on mount to navigate to specific tab
@@ -501,6 +507,15 @@ const StrategyGrowth = () => {
           element.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       }, 100);
+    } else if (hash === '#mission') {
+      // Switch to brand-identity tab and scroll to mission section
+      setActiveTab('brand-identity');
+      setTimeout(() => {
+        const element = document.getElementById('mission');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 150);
     }
   }, []);
 
@@ -999,7 +1014,7 @@ const StrategyGrowth = () => {
             {/* Positioning Tab */}
             <TabsContent value="brand-identity" className="space-y-4 mt-0">
               {/* Mission Statement */}
-              <Card className="rounded-xl bg-white border border-[#E8E4E6] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+              <Card id="mission" className="rounded-xl bg-white border border-[#E8E4E6] shadow-[0_4px_20px_rgba(0,0,0,0.04)] scroll-mt-24">
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-3 text-base">
                     <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">

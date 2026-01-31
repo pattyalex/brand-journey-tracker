@@ -1670,94 +1670,191 @@ const HomePage = () => {
   return (
       <Layout>
         <ScrollArea className="h-full">
-          <div className="container px-6 md:px-8 pt-0 pb-10">
-            {/* Greeting Section - Top Banner */}
-            <section className="mb-8">
-              <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl p-6 flex items-center justify-between shadow-sm">
-                <div>
-                  <h1 className="text-2xl md:text-3xl font-bold mb-1">{greeting}</h1>
-                  <p className="text-sm text-muted-foreground">Welcome to your content hub—where you can operate, create, and grow intentionally. What would you like to create today?</p>
+          <div
+            className="min-h-full"
+            style={{
+              background: '#f9f7f5',
+            }}
+          >
+            <div className="container px-6 md:px-8 pt-8 pb-10">
+              {/* Greeting Section with Date Badge */}
+              <section className="mb-12">
+                <div className="flex items-start justify-between">
+                  {/* Left: Greeting */}
+                  <div>
+                    <h1
+                      className="text-[48px] leading-tight mb-2"
+                      style={{
+                        fontFamily: "'Playfair Display', serif",
+                        fontWeight: 500,
+                        color: '#2d2a26'
+                      }}
+                    >
+                      {greeting}
+                    </h1>
+                    <p
+                      className="text-[16px] text-gray-400"
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                    >
+                      Welcome to your creator studio
+                    </p>
+                  </div>
+
+                  {/* Right: Today's Date Badge */}
+                  <div
+                    className="flex-shrink-0 flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/70"
+                    style={{ fontFamily: "'DM Sans', sans-serif" }}
+                  >
+                    <span
+                      className="text-[40px] font-light text-[#2d2a26]"
+                      style={{ fontFamily: "'Playfair Display', serif" }}
+                    >
+                      {new Date().getDate()}
+                    </span>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-[#2d2a26]">
+                        {new Date().toLocaleDateString('en-US', { weekday: 'long' })}
+                      </span>
+                      <span className="text-sm text-gray-400">
+                        {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-white p-2 rounded-full shadow-sm">
-                  {greetingIcon}
+              </section>
+
+              {/* Mission Statement - Clickable */}
+              <section className="mb-12">
+                <div
+                  onClick={() => navigate('/strategy-growth#mission')}
+                  className="flex flex-col items-center cursor-pointer group"
+                >
+                  {/* Decorative line above */}
+                  <div className="w-20 h-px mb-4 bg-gradient-to-r from-transparent via-[#8B7082]/40 to-transparent group-hover:via-[#612a4f]/50 transition-all" />
+
+                  {/* Label */}
+                  <span
+                    className="text-xs tracking-[0.2em] text-[#8B7082] uppercase mb-4 group-hover:text-[#612a4f] transition-colors"
+                    style={{ fontFamily: "'DM Sans', sans-serif" }}
+                  >
+                    Your Mission
+                  </span>
+
+                  {/* Mission Quote */}
+                  <p
+                    className="text-2xl md:text-3xl italic text-[#2d2a26] text-center max-w-2xl leading-relaxed group-hover:text-[#612a4f] transition-colors"
+                    style={{ fontFamily: "'Playfair Display', serif", fontWeight: 400 }}
+                  >
+                    "I create content to help small business founders scale their businesses without burning out."
+                  </p>
+
+                  {/* Decorative line below */}
+                  <div className="mt-6 w-20 h-px bg-gradient-to-r from-transparent via-[#8B7082]/40 to-transparent group-hover:via-[#612a4f]/50 transition-all" />
                 </div>
-              </div>
-            </section>
+              </section>
 
             {/* Grid Layout Container - Fixed positions, Pinterest style */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
               {/* Left Column - Priorities, Next to Work On */}
               <div className="space-y-12">
-              {/* Today's Top 3 Priorities Section */}
-              <section className="mt-8">
-                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-xl font-bold flex items-center gap-2">
-                      <Target className="h-5 w-5 text-purple-600" />
-                      Today's Top 3 Priorities
-                    </CardTitle>
-                    <p className="text-xs text-muted-foreground mt-1">What matters most today?</p>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {priorities.map((priority, index) => {
-                        const colors = [
-                          { bg: 'bg-gradient-to-br from-blue-50/50 to-blue-100/30', border: 'border-blue-200', text: 'text-blue-800', number: 'bg-blue-400' },
-                          { bg: 'bg-gradient-to-br from-amber-50/50 to-amber-100/30', border: 'border-amber-200', text: 'text-amber-800', number: 'bg-amber-400' },
-                          { bg: 'bg-gradient-to-br from-purple-50/50 to-purple-100/30', border: 'border-purple-200', text: 'text-purple-800', number: 'bg-purple-400' }
-                        ];
-                        const color = colors[index];
-
-                        return (
-                          <div
-                            key={priority.id}
-                            className={`relative p-4 rounded-lg border ${color.border} ${color.bg} hover:shadow-md transition-all group`}
-                          >
-                            <div className="flex items-start gap-3">
-                              <div className={`flex-shrink-0 w-8 h-8 rounded-full ${color.number} flex items-center justify-center text-white font-bold text-sm shadow-sm`}>
-                                {priority.id}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                {editingPriorityId === priority.id ? (
-                                  <input
-                                    autoFocus
-                                    type="text"
-                                    value={priority.text}
-                                    onChange={(e) => handleUpdatePriority(priority.id, e.target.value)}
-                                    onBlur={() => setEditingPriorityId(null)}
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
-                                        setEditingPriorityId(null);
-                                      } else if (e.key === 'Escape') {
-                                        setEditingPriorityId(null);
-                                      }
-                                    }}
-                                    placeholder={`Priority ${priority.id}...`}
-                                    className={`w-full bg-white/70 border-0 shadow-none focus:ring-2 focus:ring-blue-300 rounded px-2 py-1 text-sm ${color.text} font-medium placeholder:text-gray-400`}
-                                  />
-                                ) : (
-                                  <div
-                                    onClick={() => setEditingPriorityId(priority.id)}
-                                    className={`cursor-pointer ${color.text} font-medium text-sm min-h-[28px] flex items-center ${
-                                      !priority.text ? 'text-gray-400 italic' : ''
-                                    } ${priority.isCompleted ? 'line-through text-gray-500' : ''}`}
-                                  >
-                                    {priority.text || `Click to set priority ${priority.id}...`}
-                                  </div>
-                                )}
-                              </div>
-                              <Checkbox
-                                checked={priority.isCompleted}
-                                onCheckedChange={() => handleTogglePriority(priority.id)}
-                                className="h-5 w-5 rounded data-[state=checked]:bg-green-500 data-[state=checked]:text-white border-gray-300 flex-shrink-0"
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
+              {/* Top 3 Priorities Section */}
+              <section>
+                <div className="bg-white rounded-3xl p-6 shadow-sm">
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-11 h-11 rounded-xl flex items-center justify-center shadow-md"
+                        style={{ background: 'linear-gradient(135deg, #7a3d62 0%, #612a4f 50%, #4a2039 100%)' }}
+                      >
+                        <Target className="w-5 h-5 text-white" />
+                      </div>
+                      <h3
+                        className="text-xl text-[#2d2a26]"
+                        style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
+                      >
+                        Top 3 Priorities
+                      </h3>
                     </div>
-                  </CardContent>
-                </Card>
+                    <span
+                      className="text-sm text-[#8B7082]"
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                    >
+                      {priorities.filter(p => p.isCompleted).length}/{priorities.length}
+                    </span>
+                  </div>
+
+                  {/* Priority Items */}
+                  <div className="space-y-3">
+                    {priorities.map((priority) => {
+                      return (
+                        <div
+                          key={priority.id}
+                          className="flex items-center gap-4 px-4 py-4 bg-[#f8f7f7] rounded-xl"
+                        >
+                          {/* Priority Number */}
+                          <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-[#612a4f] flex items-center justify-center text-white font-medium text-sm">
+                            {priority.id}
+                          </div>
+
+                          {/* Priority Text */}
+                          <div className="flex-1 min-w-0">
+                            {editingPriorityId === priority.id ? (
+                              <input
+                                autoFocus
+                                type="text"
+                                value={priority.text}
+                                onChange={(e) => handleUpdatePriority(priority.id, e.target.value)}
+                                onBlur={() => setEditingPriorityId(null)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    setEditingPriorityId(null);
+                                  } else if (e.key === 'Escape') {
+                                    setEditingPriorityId(null);
+                                  }
+                                }}
+                                placeholder={`Priority ${priority.id}...`}
+                                className="w-full bg-white border border-gray-200 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f]/20 rounded-lg px-3 py-1.5 text-[15px] text-[#2d2a26] placeholder:text-gray-400 outline-none transition-all"
+                                style={{ fontFamily: "'DM Sans', sans-serif" }}
+                              />
+                            ) : (
+                              <div
+                                onClick={() => setEditingPriorityId(priority.id)}
+                                className={`cursor-pointer text-[15px] min-h-[28px] flex items-center ${
+                                  priority.isCompleted
+                                    ? 'line-through text-gray-400'
+                                    : priority.text
+                                      ? 'text-[#2d2a26]'
+                                      : 'text-gray-400 italic'
+                                }`}
+                                style={{ fontFamily: "'DM Sans', sans-serif" }}
+                              >
+                                {priority.text || `Click to set priority ${priority.id}...`}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Checkbox */}
+                          <Checkbox
+                            checked={priority.isCompleted}
+                            onCheckedChange={() => handleTogglePriority(priority.id)}
+                            className="h-6 w-6 rounded-md border-2 border-gray-300 data-[state=checked]:bg-[#612a4f] data-[state=checked]:border-[#612a4f] data-[state=checked]:text-white flex-shrink-0"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* View All Button */}
+                  <button
+                    onClick={() => navigate('/task-board')}
+                    className="w-full mt-4 py-2.5 text-sm font-medium text-[#612a4f] hover:text-[#4a2039] hover:bg-[#612a4f]/5 rounded-xl transition-colors flex items-center justify-center gap-2"
+                    style={{ fontFamily: "'DM Sans', sans-serif" }}
+                  >
+                    Plan Your Day
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
               </section>
 
               {/* Celebration - Inline between sections */}
@@ -2362,442 +2459,8 @@ const HomePage = () => {
               </div>
               {/* End Left Column */}
 
-              {/* Right Column - Today's Tasks, Mission Statement, Monthly Goals, Content Calendar */}
+              {/* Right Column - Mission Statement, Monthly Goals, Content Calendar */}
               <div className="space-y-12">
-
-              {/* Today's Tasks Section */}
-              <section className="mt-24">
-                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-center mb-2">
-                      <CardTitle className="text-xl flex items-center gap-2">
-                        <CheckSquare className="h-5 w-5 text-blue-600" />
-                        Today's Tasks
-                      </CardTitle>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setIsAddingTodayTask(true)}
-                          className="h-7 w-7 p-0"
-                        >
-                          <PlusCircle className="h-3.5 w-3.5" />
-                        </Button>
-                        {todaysTasks.length > 0 && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => navigate('/task-board?view=today')}
-                            className="h-7 text-xs px-2"
-                          >
-                            View All →
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-1 pb-4">
-                    <ScrollArea className="h-[280px]">
-                      <div className="space-y-2">
-                        {todaysTasks.length === 0 && !isAddingTodayTask ? (
-                          <div className="flex flex-col items-center justify-center py-8 text-center">
-                            <CheckSquare className="h-12 w-12 text-gray-300 mb-2" />
-                            <p className="text-sm text-gray-500">No tasks scheduled for today</p>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => navigate('/task-board?view=today')}
-                              className="mt-3"
-                            >
-                              Plan Your Day
-                            </Button>
-                          </div>
-                        ) : todaysTasks.length > 0 ? (
-                          todaysTasks.map((task) => (
-                            <div
-                              key={task.id}
-                              className="flex items-start gap-3 p-2 hover:bg-gray-50 rounded group"
-                              style={{
-                                backgroundColor: task.color ? `${task.color}15` : 'transparent'
-                              }}
-                            >
-                              <Checkbox
-                                id={`today-task-${task.id}`}
-                                checked={task.isCompleted}
-                                onCheckedChange={() => handleToggleTodayTask(task.id)}
-                                className="h-4 w-4 rounded mt-0.5 flex-shrink-0 data-[state=checked]:bg-green-500 data-[state=checked]:text-white border-gray-300"
-                              />
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between gap-2">
-                                  {editingTodayTaskId === task.id ? (
-                                    <Input
-                                      autoFocus
-                                      value={editingTodayTaskText}
-                                      onChange={(e) => setEditingTodayTaskText(e.target.value)}
-                                      onBlur={handleSaveEditingTodayTask}
-                                      onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                          handleSaveEditingTodayTask();
-                                        } else if (e.key === 'Escape') {
-                                          handleCancelEditingTodayTask();
-                                        }
-                                      }}
-                                      className="text-sm flex-1 border-0 shadow-none focus-visible:ring-0 p-0 h-auto bg-transparent"
-                                    />
-                                  ) : (
-                                    <span
-                                      onClick={() => handleStartEditingTodayTask(task)}
-                                      className={`text-sm cursor-pointer ${
-                                        task.isCompleted ? 'line-through text-gray-500' : 'text-gray-900'
-                                      }`}
-                                    >
-                                      {task.text}
-                                    </span>
-                                  )}
-                                  <div className="flex items-center gap-3">
-                                    {editingTimeTaskId === task.id ? (
-                                      <div ref={timeEditorRef} className="flex items-center gap-1 time-editor">
-                                        <Input
-                                          ref={editStartTimeInputRef}
-                                          autoFocus
-                                          type="text"
-                                          value={editingStartTime}
-                                          onChange={(e) => {
-                                            const input = e.target.value;
-                                            if (input === '' || /^[\d:]+$/.test(input)) {
-                                              setEditingStartTime(input);
-                                            }
-                                          }}
-                                          onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                              e.preventDefault();
-                                              // Format before moving to next field
-                                              const { hours, minutes } = parseTimeInput(editingStartTime);
-                                              if (hours) {
-                                                setEditingStartTime(`${hours}:${minutes}`);
-                                              }
-                                              // Move to AM/PM dropdown instead of saving
-                                              editStartAmPmButtonRef.current?.click();
-                                            } else if (e.key === 'Escape') {
-                                              handleCancelEditingTime();
-                                            }
-                                          }}
-                                          placeholder="9:00"
-                                          className="text-xs h-6 w-12 border-0 shadow-none focus-visible:ring-0 p-0 text-center bg-transparent"
-                                        />
-                                        <Select
-                                          value={editingStartAmPm}
-                                          onValueChange={(value: "AM" | "PM") => {
-                                            setEditingStartAmPm(value);
-                                            // After changing AM/PM, move to end time
-                                            setTimeout(() => editEndTimeInputRef.current?.focus(), 0);
-                                          }}
-                                          onOpenChange={(open) => {
-                                            setIsSelectOpen(open);
-                                          }}
-                                        >
-                                          <SelectTrigger
-                                            ref={editStartAmPmButtonRef}
-                                            className="h-6 w-10 text-xs border-0 shadow-none focus:ring-0 p-0"
-                                            onPointerDown={(e) => {
-                                              e.stopPropagation();
-                                            }}
-                                            onKeyDown={(e) => {
-                                              if (e.key === 'Enter') {
-                                                e.preventDefault();
-                                                // Move to end time instead of saving
-                                                editEndTimeInputRef.current?.focus();
-                                              } else if (e.key === 'Escape') {
-                                                handleCancelEditingTime();
-                                              }
-                                            }}
-                                          >
-                                            <SelectValue />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            <SelectItem value="AM">AM</SelectItem>
-                                            <SelectItem value="PM">PM</SelectItem>
-                                          </SelectContent>
-                                        </Select>
-                                        <span className="text-xs">-</span>
-                                        <Input
-                                          ref={editEndTimeInputRef}
-                                          type="text"
-                                          value={editingEndTime}
-                                          onChange={(e) => {
-                                            const input = e.target.value;
-                                            if (input === '' || /^[\d:]+$/.test(input)) {
-                                              setEditingEndTime(input);
-                                            }
-                                          }}
-                                          onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                              e.preventDefault();
-                                              // Format before moving to next field
-                                              const { hours, minutes } = parseTimeInput(editingEndTime);
-                                              if (hours) {
-                                                setEditingEndTime(`${hours}:${minutes}`);
-                                              }
-                                              // Move to end AM/PM dropdown instead of saving
-                                              editEndAmPmButtonRef.current?.click();
-                                            } else if (e.key === 'Escape') {
-                                              handleCancelEditingTime();
-                                            }
-                                          }}
-                                          placeholder="5:00"
-                                          className="text-xs h-6 w-12 border-0 shadow-none focus-visible:ring-0 p-0 text-center bg-transparent"
-                                        />
-                                        <Select
-                                          value={editingEndAmPm}
-                                          onValueChange={(value: "AM" | "PM") => {
-                                            setEditingEndAmPm(value);
-                                            // After changing end AM/PM, save with the new value
-                                            setTimeout(() => handleSaveEditingTime(editingStartAmPm, value), 0);
-                                          }}
-                                          onOpenChange={(open) => {
-                                            setIsSelectOpen(open);
-                                          }}
-                                        >
-                                          <SelectTrigger
-                                            ref={editEndAmPmButtonRef}
-                                            className="h-6 w-10 text-xs border-0 shadow-none focus:ring-0 p-0"
-                                            onPointerDown={(e) => {
-                                              e.stopPropagation();
-                                            }}
-                                            onKeyDown={(e) => {
-                                              if (e.key === 'Enter') {
-                                                e.preventDefault();
-                                                // Now save since this is the last field
-                                                handleSaveEditingTime();
-                                              } else if (e.key === 'Escape') {
-                                                handleCancelEditingTime();
-                                              }
-                                            }}
-                                          >
-                                            <SelectValue />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            <SelectItem value="AM">AM</SelectItem>
-                                            <SelectItem value="PM">PM</SelectItem>
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                    ) : (
-                                      task.startTime && (
-                                        <span
-                                          onClick={() => handleStartEditingTime(task)}
-                                          className="text-xs font-medium text-blue-600 whitespace-nowrap cursor-pointer hover:underline"
-                                        >
-                                          {formatTime(task.startTime)}
-                                          {task.endTime && ` - ${formatTime(task.endTime)}`}
-                                        </span>
-                                      )
-                                    )}
-                                    <button
-                                      onClick={() => handleDeleteTodayTask(task.id)}
-                                      className="opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50 rounded"
-                                      title="Delete task"
-                                    >
-                                      <Trash2 className="h-3.5 w-3.5 text-gray-400 hover:text-red-500" />
-                                    </button>
-                                  </div>
-                                </div>
-                                {task.description && (
-                                  <p className="text-xs text-gray-500 mt-0.5">{task.description}</p>
-                                )}
-                              </div>
-                            </div>
-                          ))
-                        ) : null}
-
-                        {/* Add Task Form - appears after tasks */}
-                        {isAddingTodayTask && (
-                          <div ref={addTaskFormRef} className="flex items-start gap-3 p-2">
-                            <div className="h-4 w-4 rounded mt-0.5 flex-shrink-0 border border-gray-300" />
-                            <div className="flex-1 min-w-0 space-y-2">
-                              <Input
-                                autoFocus
-                                value={newTodayTaskText}
-                                onChange={(e) => setNewTodayTaskText(e.target.value)}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                    // Move to start time input
-                                    startTimeInputRef.current?.focus();
-                                  } else if (e.key === 'Escape') {
-                                    setIsAddingTodayTask(false);
-                                    setNewTodayTaskText('');
-                                    setNewTodayTaskStartTime('');
-                                    setNewTodayTaskStartAmPm('AM');
-                                    setNewTodayTaskEndTime('');
-                                    setNewTodayTaskEndAmPm('PM');
-                                  }
-                                }}
-                                placeholder="Task name..."
-                                className="text-sm flex-1 border-0 shadow-none focus-visible:ring-0 p-0 h-auto bg-transparent"
-                              />
-                              <div className="flex items-center gap-2 text-xs">
-                                <Input
-                                  ref={startTimeInputRef}
-                                  type="text"
-                                  value={newTodayTaskStartTime}
-                                  onChange={(e) => {
-                                    const input = e.target.value;
-                                    // Allow digits, colon, and empty
-                                    if (input === '' || /^[\d:]+$/.test(input)) {
-                                      setNewTodayTaskStartTime(input);
-                                    }
-                                  }}
-                                  onBlur={(e) => {
-                                    // Format the time on blur
-                                    const { hours, minutes } = parseTimeInput(e.target.value);
-                                    if (hours) {
-                                      setNewTodayTaskStartTime(`${hours}:${minutes}`);
-                                    }
-                                  }}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                      e.preventDefault();
-                                      // Format before moving to next field
-                                      const { hours, minutes } = parseTimeInput(newTodayTaskStartTime);
-                                      if (hours) {
-                                        setNewTodayTaskStartTime(`${hours}:${minutes}`);
-                                      }
-                                      startAmPmButtonRef.current?.click();
-                                    }
-                                  }}
-                                  placeholder="9:00"
-                                  className="text-xs h-7 border-0 border-b border-gray-300 rounded-none shadow-none focus-visible:ring-0 focus-visible:border-gray-400 w-14 px-0 text-center"
-                                />
-                                <Select
-                                  value={newTodayTaskStartAmPm}
-                                  onValueChange={(value: "AM" | "PM") => {
-                                    setNewTodayTaskStartAmPm(value);
-                                    // Move to next field after selection
-                                    setTimeout(() => endTimeInputRef.current?.focus(), 0);
-                                  }}
-                                >
-                                  <SelectTrigger
-                                    ref={startAmPmButtonRef}
-                                    className="h-7 w-14 text-xs border-0 border-b border-gray-300 rounded-none shadow-none focus:ring-0"
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
-                                        e.preventDefault();
-                                        endTimeInputRef.current?.focus();
-                                      }
-                                    }}
-                                  >
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="AM">AM</SelectItem>
-                                    <SelectItem value="PM">PM</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <span className="text-xs text-gray-400">-</span>
-                                <Input
-                                  ref={endTimeInputRef}
-                                  type="text"
-                                  value={newTodayTaskEndTime}
-                                  onChange={(e) => {
-                                    const input = e.target.value;
-                                    // Allow digits, colon, and empty
-                                    if (input === '' || /^[\d:]+$/.test(input)) {
-                                      setNewTodayTaskEndTime(input);
-                                    }
-                                  }}
-                                  onBlur={(e) => {
-                                    // Format the time on blur
-                                    const { hours, minutes } = parseTimeInput(e.target.value);
-                                    if (hours) {
-                                      setNewTodayTaskEndTime(`${hours}:${minutes}`);
-                                    }
-                                  }}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                      e.preventDefault();
-                                      // Format before moving to next field
-                                      const { hours, minutes } = parseTimeInput(newTodayTaskEndTime);
-                                      if (hours) {
-                                        setNewTodayTaskEndTime(`${hours}:${minutes}`);
-                                      }
-                                      endAmPmButtonRef.current?.click();
-                                    }
-                                  }}
-                                  placeholder="5:00"
-                                  className="text-xs h-7 border-0 border-b border-gray-300 rounded-none shadow-none focus-visible:ring-0 focus-visible:border-gray-400 w-14 px-0 text-center"
-                                />
-                                <Select
-                                  value={newTodayTaskEndAmPm}
-                                  onValueChange={(value: "AM" | "PM") => {
-                                    setNewTodayTaskEndAmPm(value);
-                                    // Submit after selection
-                                    setTimeout(() => handleAddTodayTask(), 0);
-                                  }}
-                                >
-                                  <SelectTrigger
-                                    ref={endAmPmButtonRef}
-                                    className="h-7 w-14 text-xs border-0 border-b border-gray-300 rounded-none shadow-none focus:ring-0"
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
-                                        e.preventDefault();
-                                        handleAddTodayTask();
-                                      }
-                                    }}
-                                  >
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="AM">AM</SelectItem>
-                                    <SelectItem value="PM">PM</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </ScrollArea>
-                    {todaysTasks.length > 0 && (() => {
-                      const progress = Math.round((todaysTasks.filter(t => t.isCompleted).length / todaysTasks.length) * 100);
-
-                      // Determine color based on progress
-                      let colorClass = '';
-                      let textColorClass = '';
-
-                      if (progress === 100) {
-                        colorClass = 'bg-gradient-to-r from-green-500 to-green-600';
-                        textColorClass = 'text-green-600';
-                      } else if (progress >= 67) {
-                        colorClass = 'bg-gradient-to-r from-yellow-400 to-green-500';
-                        textColorClass = 'text-green-600';
-                      } else {
-                        colorClass = 'bg-gradient-to-r from-yellow-500 to-yellow-600';
-                        textColorClass = 'text-yellow-600';
-                      }
-
-                      return (
-                        <div className="space-y-1 mt-3 px-1">
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">Progress</span>
-                            <span className={`font-semibold ${textColorClass}`}>
-                              {progress}% complete
-                            </span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                            <div
-                              className={`h-2 rounded-full transition-all duration-300 ${colorClass}`}
-                              style={{
-                                width: `${progress}%`
-                              }}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </CardContent>
-                </Card>
-              </section>
 
               {/* Mission Statement Section */}
               <section className="mt-24 pt-16">
@@ -2849,144 +2512,166 @@ const HomePage = () => {
 
               {/* Monthly Goals Section */}
               <section className="mt-24 pt-16">
-                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-center">
-                      <CardTitle className="text-xl font-bold flex items-center gap-2">
-                        <TrendingUp className="h-5 w-5 text-green-500" />
-                        Monthly Goals - {getCurrentMonth()}
-                      </CardTitle>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 text-xs px-2"
-                        onClick={() => navigate('/strategy-growth?tab=growth-goals')}
-                      >
-                        View All →
-                      </Button>
+                <div className="bg-gradient-to-br from-[#faf8f9] to-white rounded-2xl border border-[#8B7082]/10 shadow-md overflow-hidden">
+                  {/* Header */}
+                  <div className="px-6 py-5 border-b border-[#8B7082]/10">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-xl bg-[#612a4f] flex items-center justify-center">
+                          <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-semibold text-gray-900" style={{ fontFamily: "'Playfair Display', serif" }}>
+                            Monthly Goals
+                          </h3>
+                          <p className="text-sm text-[#8B7082]">{getCurrentMonth()} {getCurrentYear()}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        {getCurrentMonthGoals().length > 0 && (
+                          <div className="text-right">
+                            <span className="text-[#612a4f] font-semibold">
+                              {getCurrentMonthGoals().filter(g => g.status === 'completed').length}/{getCurrentMonthGoals().length}
+                            </span>
+                            <span className="text-[#8B7082] ml-1 text-sm">done</span>
+                          </div>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-[#612a4f] hover:text-[#8B7082] hover:bg-[#8B7082]/10"
+                          onClick={() => navigate('/strategy-growth?tab=growth-goals')}
+                        >
+                          View All →
+                        </Button>
+                      </div>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <ScrollArea className="max-h-[400px]">
-                      <div className="space-y-2 pr-4">
-                        {getCurrentMonthGoals().slice(0, 8).map((goal) => (
-                          <div key={goal.id}>
-                            <div className="flex items-start gap-3 p-2 hover:bg-gray-50 rounded group">
-                              <button
-                                onClick={() => handleToggleMonthlyGoal(goal.id)}
-                                className={`h-4 w-4 rounded mr-2 mt-0.5 flex-shrink-0 border-2 transition-colors flex items-center justify-center ${
-                                  goal.status === 'completed'
-                                    ? 'bg-green-500 border-green-500'
-                                    : goal.status === 'in-progress'
-                                    ? 'bg-yellow-400 border-yellow-400'
-                                    : 'border-gray-300 bg-white'
-                                }`}
-                              >
-                                {goal.status === 'completed' && (
-                                  <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                  </svg>
-                                )}
-                                {goal.status === 'in-progress' && (
-                                  <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-                                )}
-                              </button>
-                              {editingMonthlyGoalId === goal.id ? (
-                                <Input
-                                  value={editingMonthlyGoalText}
-                                  onChange={(e) => setEditingMonthlyGoalText(e.target.value)}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                      handleEditMonthlyGoal(goal.id, editingMonthlyGoalText);
-                                    } else if (e.key === 'Escape') {
-                                      setEditingMonthlyGoalId(null);
-                                      setEditingMonthlyGoalText("");
-                                    }
-                                  }}
-                                  onBlur={() => handleEditMonthlyGoal(goal.id, editingMonthlyGoalText)}
-                                  className="flex-1 text-sm h-7"
-                                  autoFocus
-                                />
-                              ) : (
-                                <span
-                                  onDoubleClick={() => {
-                                    setEditingMonthlyGoalId(goal.id);
-                                    setEditingMonthlyGoalText(goal.text);
-                                  }}
-                                  className={`flex-1 text-sm cursor-pointer ${
-                                    goal.status === 'completed' ? 'line-through text-gray-500' : ''
+                  </div>
+
+                  {/* Goals List */}
+                  <div className="p-4">
+                    <ScrollArea className="max-h-[350px]">
+                      <div className="space-y-2 pr-2">
+                        {getCurrentMonthGoals().slice(0, 6).map((goal) => {
+                          const statusConfig: Record<string, { bg: string; border: string; text: string; label: string }> = {
+                            'not-started': { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-500', label: 'Not Started' },
+                            'in-progress': { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', label: 'In Progress' },
+                            'completed': { bg: 'bg-[#612a4f]/5', border: 'border-[#612a4f]/20', text: 'text-[#612a4f]', label: 'Done!' },
+                          };
+                          const status = statusConfig[goal.status] || statusConfig['not-started'];
+
+                          return (
+                            <div key={goal.id} className="group">
+                              <div className={`flex items-center gap-4 px-4 py-3.5 rounded-xl border transition-all ${status.bg} ${status.border} hover:shadow-sm`}>
+                                {/* Status checkbox */}
+                                <button
+                                  onClick={() => handleToggleMonthlyGoal(goal.id)}
+                                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                                    goal.status === 'completed'
+                                      ? 'bg-[#612a4f] border-[#612a4f]'
+                                      : goal.status === 'in-progress'
+                                      ? 'border-amber-400 bg-amber-400'
+                                      : 'border-[#8B7082]/40 hover:border-[#8B7082]'
                                   }`}
                                 >
-                                  {goal.text}
+                                  {goal.status === 'completed' && (
+                                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  )}
+                                  {goal.status === 'in-progress' && (
+                                    <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                                  )}
+                                </button>
+
+                                {/* Goal text */}
+                                {editingMonthlyGoalId === goal.id ? (
+                                  <Input
+                                    value={editingMonthlyGoalText}
+                                    onChange={(e) => setEditingMonthlyGoalText(e.target.value)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') handleEditMonthlyGoal(goal.id, editingMonthlyGoalText);
+                                      else if (e.key === 'Escape') { setEditingMonthlyGoalId(null); setEditingMonthlyGoalText(""); }
+                                    }}
+                                    onBlur={() => handleEditMonthlyGoal(goal.id, editingMonthlyGoalText)}
+                                    className="flex-1 text-sm h-8 bg-white"
+                                    autoFocus
+                                  />
+                                ) : (
+                                  <span
+                                    onDoubleClick={() => { setEditingMonthlyGoalId(goal.id); setEditingMonthlyGoalText(goal.text); }}
+                                    className={`flex-1 text-[15px] cursor-pointer ${
+                                      goal.status === 'completed' ? 'line-through text-gray-400' : 'text-gray-800'
+                                    }`}
+                                  >
+                                    {goal.text}
+                                  </span>
+                                )}
+
+                                {/* Status badge */}
+                                <span className={`text-xs font-medium px-3 py-1 rounded-full whitespace-nowrap ${status.bg} ${status.text} border ${status.border}`}>
+                                  {status.label}
                                 </span>
-                              )}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteMonthlyGoal(goal.id);
-                                }}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
-                            </div>
-                            {goal.status === 'in-progress' && showProgressNotesForGoalId === goal.id && (
-                              <div className="ml-8 mr-8">
-                                <Input
-                                  value={goal.progressNote || ""}
-                                  onChange={(e) => handleUpdateMonthlyProgressNote(goal.id, e.target.value)}
-                                  placeholder="Progress notes..."
-                                  className="text-xs bg-yellow-50/50 border-yellow-200/60 placeholder:text-yellow-600/60"
-                                  autoFocus
-                                />
+
+                                {/* Delete button */}
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleDeleteMonthlyGoal(goal.id); }}
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
                               </div>
-                            )}
-                          </div>
-                        ))}
+                            </div>
+                          );
+                        })}
                       </div>
                     </ScrollArea>
 
+                    {/* Add Goal */}
                     {isAddingMonthlyGoal ? (
-                      <div className="flex items-center gap-2 p-2 border border-gray-200 rounded bg-white mt-4">
-                        <div className="h-4 w-4 rounded mr-2 mt-0.5 flex-shrink-0 border-2 border-gray-300"></div>
+                      <div className="flex items-center gap-3 px-4 py-3 mt-3 bg-white rounded-xl border border-[#8B7082]/20">
+                        <div className="w-5 h-5 rounded-full border-2 border-[#8B7082]/30 flex-shrink-0" />
                         <Input
                           value={newMonthlyGoalText}
                           onChange={(e) => setNewMonthlyGoalText(e.target.value)}
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              handleAddMonthlyGoal();
-                            } else if (e.key === 'Escape') {
-                              setIsAddingMonthlyGoal(false);
-                              setNewMonthlyGoalText("");
-                            }
+                            if (e.key === 'Enter') handleAddMonthlyGoal();
+                            else if (e.key === 'Escape') { setIsAddingMonthlyGoal(false); setNewMonthlyGoalText(""); }
                           }}
-                          onBlur={() => {
-                            if (!newMonthlyGoalText.trim()) {
-                              setIsAddingMonthlyGoal(false);
-                            }
-                          }}
-                          placeholder="Add goal for this month..."
-                          className="flex-1 text-sm h-7 border-0 shadow-none focus-visible:ring-0"
+                          onBlur={() => { if (!newMonthlyGoalText.trim()) setIsAddingMonthlyGoal(false); }}
+                          placeholder={`Add a goal for ${getCurrentMonth()}...`}
+                          className="flex-1 text-sm border-0 shadow-none focus-visible:ring-0 bg-transparent"
                           autoFocus
                         />
+                        <button
+                          onClick={handleAddMonthlyGoal}
+                          className="w-8 h-8 rounded-lg bg-[#612a4f] text-white flex items-center justify-center hover:bg-[#4d2240] transition-colors"
+                        >
+                          <PlusCircle className="w-4 h-4" />
+                        </button>
                       </div>
                     ) : (
                       <button
                         onClick={() => setIsAddingMonthlyGoal(true)}
-                        className="flex items-center justify-center w-full py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded transition-colors mt-4"
+                        className="flex items-center justify-center w-full py-3 mt-3 text-sm text-[#8B7082] hover:text-[#612a4f] hover:bg-[#8B7082]/5 rounded-xl transition-colors border border-dashed border-[#8B7082]/20"
                       >
-                        <PlusCircle className="h-4 w-4 mr-1" />
+                        <PlusCircle className="h-4 w-4 mr-2" />
                         Add Goal
                       </button>
                     )}
 
-                    {getCurrentMonthGoals().length > 8 && (
-                      <p className="text-xs text-gray-500 text-center pt-2">
-                        +{getCurrentMonthGoals().length - 8} more goals
-                      </p>
+                    {getCurrentMonthGoals().length > 6 && (
+                      <button
+                        onClick={() => navigate('/strategy-growth?tab=growth-goals')}
+                        className="w-full text-center text-sm text-[#612a4f] hover:text-[#8B7082] py-2 mt-2 transition-colors"
+                      >
+                        +{getCurrentMonthGoals().length - 6} more goals
+                      </button>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </section>
               </div>
               {/* End Right Column */}
@@ -2996,30 +2681,6 @@ const HomePage = () => {
 
             {/* Content Stats Row */}
             <section className="mt-12 flex flex-wrap gap-4">
-              {/* Monthly Overview Stats */}
-              <div className="bg-gradient-to-br from-violet-50 to-indigo-50 rounded-xl p-4 border border-violet-100/50 shadow-sm">
-                <div className="flex items-center gap-2 mb-3">
-                  <TrendingUp className="w-4 h-4 text-violet-500" />
-                  <h3 className="text-sm font-semibold text-gray-800">
-                    {monthlyStats.monthName} Overview
-                  </h3>
-                </div>
-                <div className="flex gap-6">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-emerald-600">{monthlyStats.posted}</div>
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wide">Posted</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-indigo-600">{monthlyStats.scheduled}</div>
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wide">Scheduled</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-violet-600">{monthlyStats.planned}</div>
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wide">Planned</div>
-                  </div>
-                </div>
-              </div>
-
               {/* Coming Up */}
               {upcomingContent.length > 0 && (
                 <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm max-w-sm">
@@ -3070,6 +2731,7 @@ const HomePage = () => {
                 </div>
               )}
             </section>
+            </div>
           </div>
         </ScrollArea>
 
