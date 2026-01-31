@@ -7,6 +7,45 @@ import { StorageKeys, getString } from "@/lib/storage";
 import { KanbanColumn, ProductionCard } from "@/pages/production/types";
 import { EVENTS, on } from "@/lib/events";
 
+// Initialize planner data from localStorage to prevent flash
+const getInitialPlannerData = (): PlannerDay[] => {
+  const savedData = getString(StorageKeys.plannerData);
+  if (savedData) {
+    try {
+      return JSON.parse(savedData);
+    } catch (error) {
+      console.error("Failed to parse planner data:", error);
+    }
+  }
+  return [];
+};
+
+// Initialize all tasks from localStorage
+const getInitialAllTasks = (): PlannerItem[] => {
+  const savedTasks = getString(StorageKeys.allTasks);
+  if (savedTasks) {
+    try {
+      return JSON.parse(savedTasks);
+    } catch (error) {
+      console.error("Failed to parse all tasks:", error);
+    }
+  }
+  return [];
+};
+
+// Initialize content calendar data from localStorage
+const getInitialContentCalendarData = (): any[] => {
+  const savedContent = getString(StorageKeys.scheduledContent);
+  if (savedContent) {
+    try {
+      return JSON.parse(savedContent);
+    } catch (error) {
+      console.error("Failed to parse content calendar:", error);
+    }
+  }
+  return [];
+};
+
 export type ContentDisplayMode = 'tasks' | 'content' | 'both';
 
 export interface ContentDisplaySettings {
@@ -42,7 +81,7 @@ export const usePlannerState = ({
   };
 
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [plannerData, setPlannerData] = useState<PlannerDay[]>([]);
+  const [plannerData, setPlannerData] = useState<PlannerDay[]>(getInitialPlannerData);
   const [copyToDate, setCopyToDate] = useState<Date | undefined>(undefined);
   const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
   const [deleteAfterCopy, setDeleteAfterCopy] = useState(false);
@@ -88,38 +127,10 @@ export const usePlannerState = ({
   const [weeklyDragCreateEnd, setWeeklyDragCreateEnd] = useState<{[dayString: string]: {hour: number, minute: number}}>({});
 
   const [globalTasks, setGlobalTasks] = useState<string>("");
-  const [allTasks, setAllTasks] = useState<PlannerItem[]>([
-    {
-      id: 'placeholder-1',
-      text: 'Edit photos for upcoming post',
-      section: 'morning',
-      isCompleted: false,
-      date: '',
-      order: 0,
-      isPlaceholder: true
-    },
-    {
-      id: 'placeholder-2',
-      text: 'Respond to comments and DMs',
-      section: 'morning',
-      isCompleted: false,
-      date: '',
-      order: 1,
-      isPlaceholder: true
-    },
-    {
-      id: 'placeholder-3',
-      text: 'Plan next week\'s content calendar',
-      section: 'morning',
-      isCompleted: false,
-      date: '',
-      order: 2,
-      isPlaceholder: true
-    }
-  ]);
+  const [allTasks, setAllTasks] = useState<PlannerItem[]>(getInitialAllTasks);
   const [isAllTasksCollapsed, setIsAllTasksCollapsed] = useState(false);
   const [showContentCalendar, setShowContentCalendar] = useState(false);
-  const [contentCalendarData, setContentCalendarData] = useState<any[]>([]);
+  const [contentCalendarData, setContentCalendarData] = useState<any[]>(getInitialContentCalendarData);
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
   const [taskDialogPosition, setTaskDialogPosition] = useState<{ x: number; y: number } | null>(null);
   const [editingTask, setEditingTask] = useState<PlannerItem | null>(null);

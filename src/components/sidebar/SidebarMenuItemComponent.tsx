@@ -58,17 +58,32 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
   };
 
   return (
-    <SidebarMenuItem key={item.title}>
+    <SidebarMenuItem key={item.title} className="relative">
+      {/* Active indicator bar */}
+      {(isActive || isSubItemActive) && (
+        <div
+          className="absolute left-0 top-1/2 -translate-y-1/2 w-[4px] h-6 rounded-r-full"
+          style={{
+            background: 'linear-gradient(180deg, #612A4F 0%, #4A1F3D 100%)',
+            boxShadow: '0 0 8px rgba(97, 42, 79, 0.4)',
+          }}
+        />
+      )}
       <SidebarMenuButton asChild isActive={isActive || isSubItemActive}>
         <a
           href={item.url}
           className={cn(
-            "flex items-center gap-2",
-            (isActive || isSubItemActive) && "bg-[#F5F2F4] text-[#8B7082] font-medium"
+            "flex items-center gap-2 rounded-xl ml-1 transition-all duration-200",
+            (isActive || isSubItemActive)
+              ? "bg-[#F5F0F3] text-[#612A4F] font-medium"
+              : "hover:bg-[#F9F7F8] text-[#5A4A52]"
           )}
           onClick={handleMenuItemClick}
         >
-          <item.icon size={20} />
+          <item.icon size={20} className={cn(
+            "transition-colors duration-200",
+            (isActive || isSubItemActive) ? "text-[#612A4F]" : "text-[#8B7082]"
+          )} />
           <span>{item.title}</span>
           {item.subItems && item.subItems.length > 0 && (
             <span
@@ -97,11 +112,20 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
       )}
       
       {item.subItems && item.subItems.length > 0 && isExpanded && (
-        <SidebarMenuSub>
+        <SidebarMenuSub className="border-l-[#E8E4E6]">
           {item.subItems.map((subItem) => {
             const isSubActive = location.pathname === subItem.url;
             return (
-              <SidebarMenuSubItem key={subItem.title}>
+              <SidebarMenuSubItem key={subItem.title} className="relative">
+                {isSubActive && (
+                  <div
+                    className="absolute left-[-14px] top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-r-full"
+                    style={{
+                      background: 'linear-gradient(180deg, #612A4F 0%, #4A1F3D 100%)',
+                      boxShadow: '0 0 6px rgba(97, 42, 79, 0.3)',
+                    }}
+                  />
+                )}
                 <SidebarMenuSubButton
                   asChild
                   size="md"
@@ -110,11 +134,16 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
                   <a
                     href={subItem.url}
                     className={cn(
-                      "flex items-center gap-2",
-                      isSubActive && "bg-[#F5F2F4] text-[#8B7082] font-medium"
+                      "flex items-center gap-2 rounded-lg transition-all duration-200",
+                      isSubActive
+                        ? "bg-[#F5F0F3] text-[#612A4F] font-medium"
+                        : "hover:bg-[#F9F7F8] text-[#5A4A52]"
                     )}
                   >
-                    <subItem.icon size={16} />
+                    <subItem.icon size={16} className={cn(
+                      "transition-colors duration-200",
+                      isSubActive ? "text-[#612A4F]" : "text-[#8B7082]"
+                    )} />
                     <span>{subItem.title}</span>
                   </a>
                 </SidebarMenuSubButton>

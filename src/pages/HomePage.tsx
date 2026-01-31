@@ -1672,7 +1672,7 @@ const HomePage = () => {
         <ScrollArea className="h-full">
           <div className="container px-6 md:px-8 pt-0 pb-10">
             {/* Greeting Section - Top Banner */}
-            <section className="mb-8 fade-in">
+            <section className="mb-8">
               <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl p-6 flex items-center justify-between shadow-sm">
                 <div>
                   <h1 className="text-2xl md:text-3xl font-bold mb-1">{greeting}</h1>
@@ -1685,7 +1685,7 @@ const HomePage = () => {
             </section>
 
             {/* Grid Layout Container - Fixed positions, Pinterest style */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 fade-in items-start">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
               {/* Left Column - Priorities, Next to Work On */}
               <div className="space-y-12">
               {/* Today's Top 3 Priorities Section */}

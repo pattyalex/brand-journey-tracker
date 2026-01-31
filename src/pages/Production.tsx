@@ -120,11 +120,31 @@ const InlineCardInput: React.FC<{
   );
 };
 
+// Initialize columns from localStorage to prevent flash
+const getInitialColumns = (): KanbanColumn[] => {
+  const savedData = getString(StorageKeys.productionKanban);
+  if (savedData) {
+    try {
+      const savedColumns = JSON.parse(savedData);
+      return defaultColumns.map(defaultCol => {
+        const savedCol = savedColumns.find((sc: KanbanColumn) => sc.id === defaultCol.id);
+        return {
+          ...defaultCol,
+          cards: savedCol?.cards || [],
+        };
+      });
+    } catch (error) {
+      console.error("Failed to load production data:", error);
+    }
+  }
+  return defaultColumns;
+};
+
 const Production = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const columnRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-  const [columns, setColumns] = useState<KanbanColumn[]>(defaultColumns);
+  const [columns, setColumns] = useState<KanbanColumn[]>(getInitialColumns);
   const [draggedCard, setDraggedCard] = useState<ProductionCard | null>(null);
   const [dropIndicator, setDropIndicator] = useState<{ columnId: string; index: number } | null>(null);
   const [draggedOverColumn, setDraggedOverColumn] = useState<string | null>(null);
@@ -474,25 +494,7 @@ const Production = () => {
     }
   }, [bankIdeas]);
 
-  // Load data from localStorage
-  useEffect(() => {
-    const savedData = getString(StorageKeys.productionKanban);
-    if (savedData) {
-      try {
-        const savedColumns = JSON.parse(savedData);
-        // Merge saved cards with current default column titles (in case titles changed)
-        setColumns(defaultColumns.map(defaultCol => {
-          const savedCol = savedColumns.find((sc: KanbanColumn) => sc.id === defaultCol.id);
-          return {
-            ...defaultCol,
-            cards: savedCol?.cards || [],
-          };
-        }));
-      } catch (error) {
-        console.error("Failed to load production data:", error);
-      }
-    }
-  }, []);
+  // Data is now loaded in getInitialColumns() to prevent flash
 
   // Save data to localStorage whenever columns change
   useEffect(() => {
@@ -2365,11 +2367,8 @@ const Production = () => {
           {columns.map((column, index) => {
             const colors = columnColors[column.id];
             return (
-              <motion.div
+              <div
                 key={column.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
                 className="flex-shrink-0 w-[340px]"
                 onDragOver={(e) => handleDragOver(e, column.id)}
                 onDragLeave={handleDragLeave}
@@ -3001,15 +3000,12 @@ const Production = () => {
                       )}
                       </div>
                 </div>
-              </motion.div>
+              </div>
             );
           })}
 
           {/* Archive Drop Zone - visually distinct from columns */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: columns.length * 0.1 }}
+          <div
             className="flex-shrink-0 w-[240px] mr-4 self-stretch"
             onDragOver={(e) => handleDragOver(e, "posted")}
             onDragLeave={handleDragLeave}
@@ -3024,7 +3020,7 @@ const Production = () => {
                   : "border-[#C9B5C0] bg-[#FAF8FB]/50",
               )}
             >
-              <motion.div
+              <div
                 className={cn(
                   "flex flex-col items-center transition-all duration-200 px-4",
                   draggedOverColumn === "posted" && draggedCard
@@ -3098,9 +3094,9 @@ const Production = () => {
                     Undo
                   </button>
                 )}
-              </motion.div>
+              </div>
             </div>
-          </motion.div>
+          </div>
         </div>
 
         {/* Invisible scroll area at bottom - enables horizontal scroll when cursor is here */}

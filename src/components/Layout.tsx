@@ -56,7 +56,7 @@ const Layout = ({ children, hideSidebar = false }: LayoutProps) => {
             <Sidebar />
           </div>
         )}
-        <main className={`flex-1 overflow-x-clip overflow-y-auto relative h-full bg-white ${!shouldShowSidebar ? 'w-full' : ''}`}>
+        <main className={`flex-1 overflow-x-clip overflow-y-auto relative h-full bg-white scroll-smooth ${!shouldShowSidebar ? 'w-full' : ''}`}>
           {shouldShowSidebar && <ToggleSidebarButton />}
           {children}
           <Toaster/>

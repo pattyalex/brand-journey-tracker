@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "./contexts/AuthContext";
 import LoginModal from "./components/LoginModal";
 
-// Eagerly load components
+// Eagerly load main pages for instant navigation
 import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
 import GetStarted from './pages/GetStarted';
@@ -14,37 +14,30 @@ import StrategyDemo from './pages/StrategyDemo';
 import HomePage from './pages/HomePage';
 import OnboardingFlow from './pages/OnboardingFlow';
 import LandingPage from './pages/LandingPage';
+import Production from './pages/Production';
+import StrategyGrowth from './pages/StrategyGrowth';
+import TaskBoard from './pages/TaskBoard';
+import Brands from './pages/Brands';
 
-// Lazy load all other pages
+// Lazy load less frequently used pages
 const ContentIdeation = lazy(() => import('./pages/ContentIdeation'));
 const ContentPlanning = lazy(() => import('./pages/ContentPlanning'));
-const Production = lazy(() => import('./pages/Production'));
-const StrategyGrowth = lazy(() => import("./pages/StrategyGrowth"));
 const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Analytics = lazy(() => import('./pages/Analytics'));
 const QuickNotes = lazy(() => import('./pages/QuickNotes'));
-const TaskBoard = lazy(() => import('./pages/TaskBoard'));
 const Settings = lazy(() => import('./pages/Settings'));
 const MyAccount = lazy(() => import('./pages/MyAccount'));
 const Help = lazy(() => import('./pages/Help'));
 const WeeklyContentTasks = lazy(() => import('./pages/WeeklyContentTasks'));
 const SocialMediaScheduler = lazy(() => import('./pages/SocialMediaScheduler'));
 const Index = lazy(() => import('./pages/Index'));
-const Brands = lazy(() => import('./pages/Brands'));
 const EmailVerificationCallback = lazy(() => import('./pages/EmailVerificationCallback'));
 
-// Loading component
-const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <div className="animate-pulse flex flex-col items-center">
-      <div className="w-20 h-20 bg-muted rounded-full mb-4"></div>
-      <div className="h-4 w-32 bg-muted rounded"></div>
-    </div>
-  </div>
-);
+// Loading component - invisible to prevent flash during lazy load
+const PageLoader = () => null;
 
 // Import useAuth hook
 import { useAuth } from "./contexts/AuthContext";

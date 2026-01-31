@@ -21,19 +21,33 @@ const SidebarFooterSection = ({ settingsItem, myAccountItem, helpItem }: Sidebar
   const location = useLocation();
 
   return (
-    <SidebarFooter className="mt-auto">
+    <SidebarFooter className="mt-auto border-t border-[#E8E4E6] pt-2 relative z-10">
       <SidebarMenu>
         {!settingsItem.hidden && (
-          <SidebarMenuItem>
+          <SidebarMenuItem className="relative">
+            {location.pathname === settingsItem.url && (
+              <div
+                className="absolute left-0 top-1/2 -translate-y-1/2 w-[4px] h-6 rounded-r-full"
+                style={{
+                  background: 'linear-gradient(180deg, #612A4F 0%, #4A1F3D 100%)',
+                  boxShadow: '0 0 8px rgba(97, 42, 79, 0.4)',
+                }}
+              />
+            )}
             <SidebarMenuButton asChild isActive={location.pathname === settingsItem.url}>
               <Link
                 to={settingsItem.url}
                 className={cn(
-                  "flex items-center gap-2",
-                  location.pathname === settingsItem.url && "bg-gray-100 font-medium"
+                  "flex items-center gap-2 rounded-xl ml-1 transition-all duration-200",
+                  location.pathname === settingsItem.url
+                    ? "bg-[#F5F0F3] text-[#612A4F] font-medium"
+                    : "hover:bg-[#F9F7F8] text-[#5A4A52]"
                 )}
               >
-                <settingsItem.icon size={20} />
+                <settingsItem.icon size={20} className={cn(
+                  "transition-colors duration-200",
+                  location.pathname === settingsItem.url ? "text-[#612A4F]" : "text-[#8B7082]"
+                )} />
                 <span>{settingsItem.title}</span>
               </Link>
             </SidebarMenuButton>
@@ -41,7 +55,7 @@ const SidebarFooterSection = ({ settingsItem, myAccountItem, helpItem }: Sidebar
         )}
 
         <SidebarMenuItem>
-          <div className="flex items-center gap-2 px-2 py-2">
+          <div className="flex items-center gap-2 px-2 py-2 ml-1">
             <UserButton
               afterSignOutUrl="/"
               appearance={{
@@ -58,36 +72,64 @@ const SidebarFooterSection = ({ settingsItem, myAccountItem, helpItem }: Sidebar
                 <MembershipPage />
               </UserButton.UserProfilePage>
             </UserButton>
-            <span className="text-sm">Profile</span>
+            <span className="text-sm text-[#5A4A52]">Profile</span>
           </div>
         </SidebarMenuItem>
 
-        <SidebarMenuItem>
+        <SidebarMenuItem className="relative">
+          {location.pathname === myAccountItem.url && (
+            <div
+              className="absolute left-0 top-1/2 -translate-y-1/2 w-[4px] h-6 rounded-r-full"
+              style={{
+                background: 'linear-gradient(180deg, #612A4F 0%, #4A1F3D 100%)',
+                boxShadow: '0 0 8px rgba(97, 42, 79, 0.4)',
+              }}
+            />
+          )}
           <SidebarMenuButton asChild isActive={location.pathname === myAccountItem.url}>
             <Link
               to={myAccountItem.url}
               className={cn(
-                "flex items-center gap-2",
-                location.pathname === myAccountItem.url && "bg-gray-100 font-medium"
+                "flex items-center gap-2 rounded-xl ml-1 transition-all duration-200",
+                location.pathname === myAccountItem.url
+                  ? "bg-[#F5F0F3] text-[#612A4F] font-medium"
+                  : "hover:bg-[#F9F7F8] text-[#5A4A52]"
               )}
             >
-              <myAccountItem.icon size={20} />
+              <myAccountItem.icon size={20} className={cn(
+                "transition-colors duration-200",
+                location.pathname === myAccountItem.url ? "text-[#612A4F]" : "text-[#8B7082]"
+              )} />
               <span>{myAccountItem.title}</span>
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
 
         {helpItem && (
-          <SidebarMenuItem>
+          <SidebarMenuItem className="relative">
+            {location.pathname === helpItem.url && (
+              <div
+                className="absolute left-0 top-1/2 -translate-y-1/2 w-[4px] h-6 rounded-r-full"
+                style={{
+                  background: 'linear-gradient(180deg, #612A4F 0%, #4A1F3D 100%)',
+                  boxShadow: '0 0 8px rgba(97, 42, 79, 0.4)',
+                }}
+              />
+            )}
             <SidebarMenuButton asChild isActive={location.pathname === helpItem.url}>
               <Link
                 to={helpItem.url}
                 className={cn(
-                  "flex items-center gap-2",
-                  location.pathname === helpItem.url && "bg-gray-100 font-medium"
+                  "flex items-center gap-2 rounded-xl ml-1 transition-all duration-200",
+                  location.pathname === helpItem.url
+                    ? "bg-[#F5F0F3] text-[#612A4F] font-medium"
+                    : "hover:bg-[#F9F7F8] text-[#5A4A52]"
                 )}
               >
-                <helpItem.icon size={20} />
+                <helpItem.icon size={20} className={cn(
+                  "transition-colors duration-200",
+                  location.pathname === helpItem.url ? "text-[#612A4F]" : "text-[#8B7082]"
+                )} />
                 <span>{helpItem.title}</span>
               </Link>
             </SidebarMenuButton>
