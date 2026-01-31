@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { eachDayOfInterval, endOfMonth, endOfWeek, format, isBefore, isSameDay, startOfDay, startOfMonth, startOfWeek } from "date-fns";
+import { addMonths, eachDayOfInterval, endOfMonth, endOfWeek, format, isBefore, isSameDay, startOfDay, startOfMonth, startOfWeek } from "date-fns";
 import { CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { PlannerDay, PlannerItem } from "@/types/planner";
@@ -97,7 +97,61 @@ export const CalendarView = ({
   savePlannerData,
 }: CalendarViewProps) => {
   const navigate = useNavigate();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const monthRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
+  // Minimum date: January 2026
+  const minDate = new Date(2026, 0, 1);
+
+  // Generate continuous days for multiple months (6 months worth)
+  const generateContinuousDays = () => {
+    const startMonth = selectedDate < minDate ? minDate : addMonths(selectedDate, -1);
+    const endMonth = addMonths(startMonth, 6);
+
+    // Effective start is at least minDate
+    const effectiveStartMonth = startMonth < minDate ? minDate : startMonth;
+    const startDate = startOfMonth(effectiveStartMonth);
+    const endDate = endOfWeek(endOfMonth(endMonth), { weekStartsOn: 1 });
+
+    return eachDayOfInterval({ start: startDate, end: endDate });
+  };
+
+  const allDays = generateContinuousDays();
+
+  // Calculate how many empty cells needed before the first day (for grid alignment)
+  // Monday = 0, Sunday = 6 (using weekStartsOn: 1)
+  const firstDayOfWeek = allDays.length > 0 ? (allDays[0].getDay() + 6) % 7 : 0; // Convert to Mon=0 format
+
+  // Handle scroll to update selected month based on visible days
+  const handleScroll = () => {
+    if (!scrollContainerRef.current) return;
+
+    const container = scrollContainerRef.current;
+    const containerRect = container.getBoundingClientRect();
+    const targetY = containerRect.top + 100; // Check near the top of visible area
+
+    // Find which day cell is at the target position
+    const dayCells = container.querySelectorAll('[data-day]');
+    let visibleMonth: Date | null = null;
+
+    dayCells.forEach((cell) => {
+      const rect = cell.getBoundingClientRect();
+      if (rect.top <= targetY && rect.bottom > targetY) {
+        const dayStr = cell.getAttribute('data-day');
+        if (dayStr) {
+          visibleMonth = new Date(dayStr);
+        }
+      }
+    });
+
+    if (visibleMonth && visibleMonth >= minDate) {
+      const newMonthStr = format(visibleMonth, 'yyyy-MM');
+      const currentMonthStr = format(selectedDate, 'yyyy-MM');
+      if (newMonthStr !== currentMonthStr) {
+        setSelectedDate(startOfMonth(visibleMonth));
+      }
+    }
+  };
 
   // State for add dialog
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -560,8 +614,8 @@ export const CalendarView = ({
     <div className="h-full flex flex-col overflow-hidden">
       {/* Month Calendar Grid */}
       <CardContent className="pl-0 pr-4 flex-1 flex flex-col min-h-0 overflow-hidden">
-        {/* Day Headers */}
-        <div className="grid grid-cols-7 mb-2 flex-shrink-0">
+        {/* Day Headers - Sticky */}
+        <div className="grid grid-cols-7 mb-2 flex-shrink-0 sticky top-0 bg-white z-10">
           {['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'].map((day) => (
             <div key={day} className="text-center text-xs text-gray-500 py-2" style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 500 }}>
               {day}
@@ -569,21 +623,22 @@ export const CalendarView = ({
           ))}
         </div>
 
-        {/* Calendar Days - Scrollable */}
-        <div className="flex-1 overflow-y-auto min-h-0">
-          <div className="grid grid-cols-7 gap-1.5" style={{ gridAutoRows: '120px' }}>
-          {(() => {
-            const monthStart = startOfMonth(selectedDate);
-            const monthEnd = endOfMonth(selectedDate);
-            const startDate = startOfWeek(monthStart, { weekStartsOn: 1 });
-            const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
-            const days = eachDayOfInterval({ start: startDate, end: endDate });
-
-            return days.map((day) => {
+        {/* Calendar Days - Continuous Scroll */}
+        <div
+          ref={scrollContainerRef}
+          className="flex-1 overflow-y-auto min-h-0 pt-6"
+          onScroll={handleScroll}
+        >
+          <div className="grid grid-cols-7 gap-1.5">
+            {/* Empty placeholder cells for grid alignment */}
+            {Array.from({ length: firstDayOfWeek }).map((_, i) => (
+              <div key={`empty-${i}`} className="h-[120px]" />
+            ))}
+            {allDays.map((day, index) => {
               const dayString = getDateString(day);
               const dayData = plannerData.find(d => d.date === dayString);
               const isToday = isSameDay(day, new Date());
-              const isCurrentMonth = day.getMonth() === selectedDate.getMonth();
+              const isFirstOfMonth = day.getDate() === 1;
               const isPast = isBefore(startOfDay(day), startOfDay(new Date())) && !isToday;
 
               // Get tasks for this day
@@ -612,26 +667,37 @@ export const CalendarView = ({
               return (
                 <div
                   key={dayString}
-                  data-day={dayString}
-                  className={`h-[120px] rounded-lg border p-1.5 transition-all cursor-pointer flex flex-col overflow-hidden ${
-                    !isCurrentMonth
-                      ? 'bg-gray-50 border-gray-100 text-gray-400'
-                      : isPast
+                  className={cn("relative", isFirstOfMonth && "mt-6")}
+                >
+                  {/* Month label for first day of month */}
+                  {isFirstOfMonth && (
+                    <span
+                      className="absolute -top-5 left-0 text-xs font-semibold text-[#612a4f]"
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                    >
+                      {format(day, 'MMMM')}
+                    </span>
+                  )}
+                  <div
+                    data-day={dayString}
+                    className={cn(
+                      "h-[120px] rounded-lg border p-1.5 transition-all cursor-pointer flex flex-col overflow-hidden",
+                      isPast
                         ? 'bg-[#fafafa] border-gray-200 text-gray-500 hover:bg-gray-100'
                         : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50'
-                  }`}
-                  onClick={(e) => handleDayClick(day, dayString, e)}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('🎯 DRAG OVER day cell:', dayString);
-                    e.currentTarget.classList.add('bg-indigo-100', 'border-indigo-400', 'border-2', 'scale-105');
-                  }}
-                  onDragLeave={(e) => {
-                    e.currentTarget.classList.remove('bg-indigo-100', 'border-indigo-400', 'border-2', 'scale-105');
-                  }}
-                  onDrop={(e) => handleDrop(e, dayString, e.currentTarget)}
-                >
+                    )}
+                    onClick={(e) => handleDayClick(day, dayString, e)}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      e.currentTarget.classList.add('bg-indigo-100', 'border-indigo-400', 'border-2', 'scale-105');
+                    }}
+                    onDragLeave={(e) => {
+                      e.currentTarget.classList.remove('bg-indigo-100', 'border-indigo-400', 'border-2', 'scale-105');
+                    }}
+                    onDrop={(e) => handleDrop(e, dayString, e.currentTarget)}
+                  >
+
                   {isToday ? (
                     <span className="w-7 h-7 rounded-full bg-[#8B7082] text-white flex items-center justify-center text-sm font-semibold" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                       {format(day, 'd')}
@@ -639,7 +705,7 @@ export const CalendarView = ({
                   ) : (
                     <span className="text-sm font-medium flex-shrink-0" style={{
                       fontFamily: "'DM Sans', sans-serif",
-                      color: (isPast && isCurrentMonth) ? '#9ca3af' : isCurrentMonth ? '#111827' : '#9ca3af',
+                      color: isPast ? '#9ca3af' : '#111827',
                       fontWeight: 500
                     }}>
                       {format(day, 'd')}
@@ -857,9 +923,9 @@ export const CalendarView = ({
 
                   </div>
                 </div>
+                </div>
               );
-            });
-          })()}
+            })}
           </div>
         </div>
       </CardContent>
