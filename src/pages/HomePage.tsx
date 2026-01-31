@@ -2048,38 +2048,8 @@ const HomePage = () => {
                 </div>
               </section>
 
-              {/* Mission Statement - Clickable */}
-              <section className="mb-12">
-                <div
-                  onClick={() => navigate('/strategy-growth#mission')}
-                  className="flex flex-col items-center cursor-pointer group"
-                >
-                  {/* Decorative line above */}
-                  <div className="w-20 h-px mb-4 bg-gradient-to-r from-transparent via-[#8B7082]/40 to-transparent group-hover:via-[#612a4f]/50 transition-all" />
-
-                  {/* Label */}
-                  <span
-                    className="text-xs tracking-[0.2em] text-[#8B7082] uppercase mb-4 group-hover:text-[#612a4f] transition-colors"
-                    style={{ fontFamily: "'DM Sans', sans-serif" }}
-                  >
-                    Your Mission
-                  </span>
-
-                  {/* Mission Quote */}
-                  <p
-                    className="text-2xl md:text-3xl italic text-[#2d2a26] text-center max-w-2xl leading-relaxed group-hover:text-[#612a4f] transition-colors"
-                    style={{ fontFamily: "'Playfair Display', serif", fontWeight: 400 }}
-                  >
-                    "I create content to help small business founders scale their businesses without burning out."
-                  </p>
-
-                  {/* Decorative line below */}
-                  <div className="mt-6 w-20 h-px bg-gradient-to-r from-transparent via-[#8B7082]/40 to-transparent group-hover:via-[#612a4f]/50 transition-all" />
-                </div>
-              </section>
-
             {/* Grid Layout Container - Fixed positions, Pinterest style */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start mt-32">
               {/* Left Column - Priorities, Next to Work On */}
               <div className="space-y-12">
               {/* Top 3 Priorities Section */}
@@ -2263,8 +2233,322 @@ const HomePage = () => {
               </AnimatePresence>
 
 
+              {/* Continue Creating Section */}
+              <section className="!mt-24">
+                <div
+                  className="bg-white rounded-[20px] p-6"
+                  style={{
+                    boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+                    border: '1px solid rgba(139, 115, 130, 0.06)',
+                  }}
+                >
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-9 h-9 rounded-[10px] flex items-center justify-center"
+                        style={{
+                          background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
+                          boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
+                        }}
+                      >
+                        <Pencil className="w-4 h-4 text-white" />
+                      </div>
+                      <h3
+                        className="text-lg text-[#2d2a26]"
+                        style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
+                      >
+                        Continue Creating
+                      </h3>
+                    </div>
+                    <button
+                      onClick={() => navigate('/production')}
+                      className="text-xs font-semibold text-[#6b4a5e] hover:text-[#4a3442] transition-colors flex items-center gap-1"
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                    >
+                      View All <ArrowRight className="w-3 h-3" />
+                    </button>
+                  </div>
+
+                  {/* Content Cards */}
+                  <div className="space-y-2.5">
+                    {continueCreatingCards.length > 0 ? (
+                      continueCreatingCards.map((card) => {
+                        const stageBadgeColors: Record<string, string> = {
+                          'Edit': '#6b4a5e',
+                          'Film': '#8b6a7e',
+                          'Script': '#a8899a',
+                          'Ideate': '#b8a9aa',
+                        };
+
+                        return (
+                          <div
+                            key={card.id}
+                            onClick={() => navigate('/production')}
+                            className="p-4 rounded-[14px] cursor-pointer hover:border-[rgba(139,115,130,0.15)] transition-all"
+                            style={{
+                              background: 'rgba(139, 115, 130, 0.04)',
+                              border: '1px solid rgba(139, 115, 130, 0.08)',
+                            }}
+                          >
+                            {/* Title */}
+                            <p
+                              className="text-[15px] font-semibold text-[#2d2a26] mb-2"
+                              style={{ fontFamily: "'DM Sans', sans-serif" }}
+                            >
+                              {card.title}
+                            </p>
+
+                            {/* Stage Badge + Last Updated */}
+                            <div className="flex items-center justify-between">
+                              <span
+                                className="text-[11px] font-semibold text-white px-2.5 py-1 rounded-md"
+                                style={{
+                                  fontFamily: "'DM Sans', sans-serif",
+                                  backgroundColor: stageBadgeColors[card.stage],
+                                }}
+                              >
+                                {card.stage}
+                              </span>
+                              <span
+                                className="text-[11px] text-[#8b7a85]"
+                                style={{ fontFamily: "'DM Sans', sans-serif" }}
+                              >
+                                {formatDistanceToNow(card.lastUpdated, { addSuffix: false })}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="py-8 text-center">
+                        <p
+                          className="text-sm text-gray-400 mb-3"
+                          style={{ fontFamily: "'DM Sans', sans-serif" }}
+                        >
+                          No content in progress yet
+                        </p>
+                        <button
+                          onClick={() => navigate('/production')}
+                          className="text-sm font-medium text-[#6b4a5e] hover:text-[#4a3442] transition-colors"
+                          style={{ fontFamily: "'DM Sans', sans-serif" }}
+                        >
+                          Start creating →
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+
+              {/* Monthly Goals Section */}
+              <section className="!mt-24">
+                <div
+                  className="bg-white rounded-[20px] p-6"
+                  style={{
+                    boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+                    border: '1px solid rgba(139, 115, 130, 0.06)',
+                  }}
+                >
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-9 h-9 rounded-[10px] flex items-center justify-center"
+                        style={{
+                          background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
+                          boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
+                        }}
+                      >
+                        <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3
+                          className="text-lg text-[#2d2a26]"
+                          style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
+                        >
+                          Monthly Goals
+                        </h3>
+                        <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>{getCurrentMonth()} {getCurrentYear()}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {getCurrentMonthGoals().length > 0 && (
+                        <div className="text-right">
+                          <span className="text-[#612a4f] font-semibold text-sm" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                            {getCurrentMonthGoals().filter(g => g.status === 'completed').length}/{getCurrentMonthGoals().length}
+                          </span>
+                          <span className="text-[#8B7082] ml-1 text-xs" style={{ fontFamily: "'DM Sans', sans-serif" }}>done</span>
+                        </div>
+                      )}
+                      <button
+                        onClick={() => navigate('/strategy-growth?tab=growth-goals#monthly-goals')}
+                        className="text-xs font-semibold text-[#6b4a5e] hover:text-[#4a3442] transition-colors flex items-center gap-1"
+                        style={{ fontFamily: "'DM Sans', sans-serif" }}
+                      >
+                        View All <ArrowRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Goals List */}
+                  <div ref={monthlyGoalsScrollRef} className="max-h-[300px] overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#d1d5db transparent' }}>
+                    <div className="space-y-2.5">
+                      {getCurrentMonthGoals().map((goal) => {
+                        const statusConfig: Record<string, { bgColor: string; textColor: string; borderColor: string; label: string }> = {
+                          'not-started': { bgColor: 'rgba(156, 163, 175, 0.15)', textColor: '#6b7280', borderColor: 'rgba(156, 163, 175, 0.4)', label: 'Not Started' },
+                          'somewhat-done': { bgColor: 'rgba(212, 165, 32, 0.15)', textColor: '#b8860b', borderColor: 'rgba(212, 165, 32, 0.4)', label: 'On It' },
+                          'great-progress': { bgColor: 'rgba(124, 184, 124, 0.15)', textColor: '#5a9a5a', borderColor: 'rgba(124, 184, 124, 0.4)', label: 'Great Progress' },
+                          'completed': { bgColor: '#5a8a5a', textColor: '#ffffff', borderColor: '#5a8a5a', label: 'Fully Completed!' },
+                        };
+                        const status = statusConfig[goal.status] || statusConfig['not-started'];
+
+                        return (
+                          <div key={goal.id} className="group">
+                            <div
+                              className="flex items-center gap-4 p-4 rounded-[14px] transition-all hover:border-[rgba(139,115,130,0.2)]"
+                              style={{
+                                background: '#ffffff',
+                                border: '1px solid rgba(139, 115, 130, 0.12)',
+                                boxShadow: '0 2px 8px rgba(139, 115, 130, 0.08)',
+                              }}
+                            >
+                              {/* Goal text */}
+                              {editingMonthlyGoalId === goal.id ? (
+                                <Input
+                                  value={editingMonthlyGoalText}
+                                  onChange={(e) => setEditingMonthlyGoalText(e.target.value)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') handleEditMonthlyGoal(goal.id, editingMonthlyGoalText);
+                                    else if (e.key === 'Escape') { setEditingMonthlyGoalId(null); setEditingMonthlyGoalText(""); }
+                                  }}
+                                  onBlur={() => handleEditMonthlyGoal(goal.id, editingMonthlyGoalText)}
+                                  className="flex-1 text-sm h-8 bg-white"
+                                  style={{ fontFamily: "'DM Sans', sans-serif" }}
+                                  autoFocus
+                                />
+                            ) : (
+                              <span
+                                onDoubleClick={() => { setEditingMonthlyGoalId(goal.id); setEditingMonthlyGoalText(goal.text); }}
+                                className="flex-1 text-[15px] font-semibold cursor-pointer text-[#2d2a26]"
+                                style={{ fontFamily: "'DM Sans', sans-serif" }}
+                              >
+                                {goal.text}
+                              </span>
+                            )}
+
+                            {/* Status badge */}
+                            <span
+                              className="text-[11px] font-semibold px-2.5 py-1 rounded-md whitespace-nowrap"
+                              style={{
+                                backgroundColor: status.bgColor,
+                                color: status.textColor,
+                                border: `1px solid ${status.borderColor}`,
+                                fontFamily: "'DM Sans', sans-serif",
+                              }}
+                            >
+                              {status.label}
+                            </span>
+
+                            {/* Delete button */}
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleDeleteMonthlyGoal(goal.id); }}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Add Goal */}
+                {isAddingMonthlyGoal ? (
+                  <div
+                    className="flex items-center gap-3 p-4 mt-3 rounded-[14px]"
+                    style={{
+                      background: '#ffffff',
+                      border: '1px solid rgba(139, 115, 130, 0.12)',
+                      boxShadow: '0 2px 8px rgba(139, 115, 130, 0.08)',
+                    }}
+                  >
+                    <Input
+                      value={newMonthlyGoalText}
+                      onChange={(e) => setNewMonthlyGoalText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleAddMonthlyGoal();
+                        else if (e.key === 'Escape') { setIsAddingMonthlyGoal(false); setNewMonthlyGoalText(""); }
+                      }}
+                      onBlur={() => { if (!newMonthlyGoalText.trim()) setIsAddingMonthlyGoal(false); }}
+                      placeholder={`Add a goal for ${getCurrentMonth()}...`}
+                      className="flex-1 text-sm border-0 shadow-none focus-visible:ring-0 bg-transparent"
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                      autoFocus
+                    />
+                    <button
+                      onClick={handleAddMonthlyGoal}
+                      className="w-8 h-8 rounded-lg text-white flex items-center justify-center transition-colors"
+                      style={{
+                        background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
+                      }}
+                    >
+                      <PlusCircle className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setIsAddingMonthlyGoal(true)}
+                    className="flex items-center justify-center w-full py-3 mt-3 text-sm text-[#8B7082] hover:text-[#612a4f] hover:bg-[#8B7082]/5 rounded-xl transition-colors border border-dashed border-[#8B7082]/20"
+                  >
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    Add Goal
+                  </button>
+                )}
+              </div>
+            </section>
+
+              </div>
+              {/* End Left Column */}
+
+              {/* Right Column - Mission Statement, Monthly Goals, Content Calendar */}
+              <div className="space-y-12">
+
+              {/* Mission Statement - Clickable */}
+              <section className="mt-16">
+                <div
+                  onClick={() => navigate('/strategy-growth#mission')}
+                  className="flex flex-col items-center cursor-pointer group"
+                >
+                  {/* Decorative line above */}
+                  <div className="w-20 h-px mb-4 bg-gradient-to-r from-transparent via-[#8B7082]/40 to-transparent group-hover:via-[#612a4f]/50 transition-all" />
+
+                  {/* Label */}
+                  <span
+                    className="text-xs tracking-[0.2em] text-[#8B7082] uppercase mb-4 group-hover:text-[#612a4f] transition-colors"
+                    style={{ fontFamily: "'DM Sans', sans-serif" }}
+                  >
+                    Your Mission
+                  </span>
+
+                  {/* Mission Quote */}
+                  <p
+                    className="text-2xl md:text-3xl italic text-[#2d2a26] text-center max-w-2xl leading-relaxed group-hover:text-[#612a4f] transition-colors"
+                    style={{ fontFamily: "'Playfair Display', serif", fontWeight: 400 }}
+                  >
+                    "{missionStatement || 'Click to set your mission statement...'}"
+                  </p>
+
+                  {/* Decorative line below */}
+                  <div className="mt-6 w-20 h-px bg-gradient-to-r from-transparent via-[#8B7082]/40 to-transparent group-hover:via-[#612a4f]/50 transition-all" />
+                </div>
+              </section>
+
               {/* Work Habits Section */}
-              <section className="mt-12">
+              <section className="!mt-24">
                 <div
                   className="bg-white rounded-[20px] p-6"
                   style={{
@@ -2584,7 +2868,7 @@ const HomePage = () => {
               </section>
 
               {/* Brand Deals Section */}
-              <section className="mt-8">
+              <section className="mt-24 pt-16">
                 <div
                   className="bg-white rounded-[20px] p-6"
                   style={{
@@ -2708,290 +2992,6 @@ const HomePage = () => {
                   </div>
                 </div>
               </section>
-
-              </div>
-              {/* End Left Column */}
-
-              {/* Right Column - Mission Statement, Monthly Goals, Content Calendar */}
-              <div className="space-y-12">
-
-              {/* Continue Creating Section */}
-              <section className="mt-24 pt-16">
-                <div
-                  className="bg-white rounded-[20px] p-6"
-                  style={{
-                    boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
-                    border: '1px solid rgba(139, 115, 130, 0.06)',
-                  }}
-                >
-                  {/* Header */}
-                  <div className="flex items-center justify-between mb-5">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-9 h-9 rounded-[10px] flex items-center justify-center"
-                        style={{
-                          background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
-                          boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
-                        }}
-                      >
-                        <Pencil className="w-4 h-4 text-white" />
-                      </div>
-                      <h3
-                        className="text-lg text-[#2d2a26]"
-                        style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
-                      >
-                        Continue Creating
-                      </h3>
-                    </div>
-                    <button
-                      onClick={() => navigate('/production')}
-                      className="text-xs font-semibold text-[#6b4a5e] hover:text-[#4a3442] transition-colors flex items-center gap-1"
-                      style={{ fontFamily: "'DM Sans', sans-serif" }}
-                    >
-                      View All <ArrowRight className="w-3 h-3" />
-                    </button>
-                  </div>
-
-                  {/* Content Cards */}
-                  <div className="space-y-2.5">
-                    {continueCreatingCards.length > 0 ? (
-                      continueCreatingCards.map((card) => {
-                        const stageBadgeColors: Record<string, string> = {
-                          'Edit': '#6b4a5e',
-                          'Film': '#8b6a7e',
-                          'Script': '#a8899a',
-                          'Ideate': '#b8a9aa',
-                        };
-
-                        return (
-                          <div
-                            key={card.id}
-                            onClick={() => navigate('/production')}
-                            className="p-4 rounded-[14px] cursor-pointer hover:border-[rgba(139,115,130,0.15)] transition-all"
-                            style={{
-                              background: 'rgba(139, 115, 130, 0.04)',
-                              border: '1px solid rgba(139, 115, 130, 0.08)',
-                            }}
-                          >
-                            {/* Title */}
-                            <p
-                              className="text-[15px] font-semibold text-[#2d2a26] mb-2"
-                              style={{ fontFamily: "'DM Sans', sans-serif" }}
-                            >
-                              {card.title}
-                            </p>
-
-                            {/* Stage Badge + Last Updated */}
-                            <div className="flex items-center justify-between">
-                              <span
-                                className="text-[11px] font-semibold text-white px-2.5 py-1 rounded-md"
-                                style={{
-                                  fontFamily: "'DM Sans', sans-serif",
-                                  backgroundColor: stageBadgeColors[card.stage],
-                                }}
-                              >
-                                {card.stage}
-                              </span>
-                              <span
-                                className="text-[11px] text-[#8b7a85]"
-                                style={{ fontFamily: "'DM Sans', sans-serif" }}
-                              >
-                                {formatDistanceToNow(card.lastUpdated, { addSuffix: false })}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })
-                    ) : (
-                      <div className="py-8 text-center">
-                        <p
-                          className="text-sm text-gray-400 mb-3"
-                          style={{ fontFamily: "'DM Sans', sans-serif" }}
-                        >
-                          No content in progress yet
-                        </p>
-                        <button
-                          onClick={() => navigate('/production')}
-                          className="text-sm font-medium text-[#6b4a5e] hover:text-[#4a3442] transition-colors"
-                          style={{ fontFamily: "'DM Sans', sans-serif" }}
-                        >
-                          Start creating →
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </section>
-
-              {/* Monthly Goals Section */}
-              <section className="mt-24 pt-16">
-                <div
-                  className="bg-white rounded-[20px] p-6"
-                  style={{
-                    boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
-                    border: '1px solid rgba(139, 115, 130, 0.06)',
-                  }}
-                >
-                  {/* Header */}
-                  <div className="flex items-center justify-between mb-5">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-9 h-9 rounded-[10px] flex items-center justify-center"
-                        style={{
-                          background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
-                          boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
-                        }}
-                      >
-                        <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <h3
-                          className="text-lg text-[#2d2a26]"
-                          style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
-                        >
-                          Monthly Goals
-                        </h3>
-                        <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>{getCurrentMonth()} {getCurrentYear()}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      {getCurrentMonthGoals().length > 0 && (
-                        <div className="text-right">
-                          <span className="text-[#612a4f] font-semibold text-sm" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                            {getCurrentMonthGoals().filter(g => g.status === 'completed').length}/{getCurrentMonthGoals().length}
-                          </span>
-                          <span className="text-[#8B7082] ml-1 text-xs" style={{ fontFamily: "'DM Sans', sans-serif" }}>done</span>
-                        </div>
-                      )}
-                      <button
-                        onClick={() => navigate('/strategy-growth?tab=growth-goals#monthly-goals')}
-                        className="text-xs font-semibold text-[#6b4a5e] hover:text-[#4a3442] transition-colors flex items-center gap-1"
-                        style={{ fontFamily: "'DM Sans', sans-serif" }}
-                      >
-                        View All <ArrowRight className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Goals List */}
-                  <div ref={monthlyGoalsScrollRef} className="max-h-[300px] overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#d1d5db transparent' }}>
-                    <div className="space-y-2.5">
-                      {getCurrentMonthGoals().map((goal) => {
-                        const statusConfig: Record<string, { bgColor: string; textColor: string; borderColor: string; label: string }> = {
-                          'not-started': { bgColor: 'rgba(156, 163, 175, 0.15)', textColor: '#6b7280', borderColor: 'rgba(156, 163, 175, 0.4)', label: 'Not Started' },
-                          'somewhat-done': { bgColor: 'rgba(212, 165, 32, 0.15)', textColor: '#b8860b', borderColor: 'rgba(212, 165, 32, 0.4)', label: 'On It' },
-                          'great-progress': { bgColor: 'rgba(124, 184, 124, 0.15)', textColor: '#5a9a5a', borderColor: 'rgba(124, 184, 124, 0.4)', label: 'Great Progress' },
-                          'completed': { bgColor: '#5a8a5a', textColor: '#ffffff', borderColor: '#5a8a5a', label: 'Fully Completed!' },
-                        };
-                        const status = statusConfig[goal.status] || statusConfig['not-started'];
-
-                        return (
-                          <div key={goal.id} className="group">
-                            <div
-                              className="flex items-center gap-4 p-4 rounded-[14px] transition-all hover:border-[rgba(139,115,130,0.2)]"
-                              style={{
-                                background: '#ffffff',
-                                border: '1px solid rgba(139, 115, 130, 0.12)',
-                                boxShadow: '0 2px 8px rgba(139, 115, 130, 0.08)',
-                              }}
-                            >
-                              {/* Goal text */}
-                              {editingMonthlyGoalId === goal.id ? (
-                                <Input
-                                  value={editingMonthlyGoalText}
-                                  onChange={(e) => setEditingMonthlyGoalText(e.target.value)}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') handleEditMonthlyGoal(goal.id, editingMonthlyGoalText);
-                                    else if (e.key === 'Escape') { setEditingMonthlyGoalId(null); setEditingMonthlyGoalText(""); }
-                                  }}
-                                  onBlur={() => handleEditMonthlyGoal(goal.id, editingMonthlyGoalText)}
-                                  className="flex-1 text-sm h-8 bg-white"
-                                  style={{ fontFamily: "'DM Sans', sans-serif" }}
-                                  autoFocus
-                                />
-                            ) : (
-                              <span
-                                onDoubleClick={() => { setEditingMonthlyGoalId(goal.id); setEditingMonthlyGoalText(goal.text); }}
-                                className="flex-1 text-[15px] font-semibold cursor-pointer text-[#2d2a26]"
-                                style={{ fontFamily: "'DM Sans', sans-serif" }}
-                              >
-                                {goal.text}
-                              </span>
-                            )}
-
-                            {/* Status badge */}
-                            <span
-                              className="text-[11px] font-semibold px-2.5 py-1 rounded-md whitespace-nowrap"
-                              style={{
-                                backgroundColor: status.bgColor,
-                                color: status.textColor,
-                                border: `1px solid ${status.borderColor}`,
-                                fontFamily: "'DM Sans', sans-serif",
-                              }}
-                            >
-                              {status.label}
-                            </span>
-
-                            {/* Delete button */}
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleDeleteMonthlyGoal(goal.id); }}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Add Goal */}
-                {isAddingMonthlyGoal ? (
-                  <div
-                    className="flex items-center gap-3 p-4 mt-3 rounded-[14px]"
-                    style={{
-                      background: '#ffffff',
-                      border: '1px solid rgba(139, 115, 130, 0.12)',
-                      boxShadow: '0 2px 8px rgba(139, 115, 130, 0.08)',
-                    }}
-                  >
-                    <Input
-                      value={newMonthlyGoalText}
-                      onChange={(e) => setNewMonthlyGoalText(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleAddMonthlyGoal();
-                        else if (e.key === 'Escape') { setIsAddingMonthlyGoal(false); setNewMonthlyGoalText(""); }
-                      }}
-                      onBlur={() => { if (!newMonthlyGoalText.trim()) setIsAddingMonthlyGoal(false); }}
-                      placeholder={`Add a goal for ${getCurrentMonth()}...`}
-                      className="flex-1 text-sm border-0 shadow-none focus-visible:ring-0 bg-transparent"
-                      style={{ fontFamily: "'DM Sans', sans-serif" }}
-                      autoFocus
-                    />
-                    <button
-                      onClick={handleAddMonthlyGoal}
-                      className="w-8 h-8 rounded-lg text-white flex items-center justify-center transition-colors"
-                      style={{
-                        background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
-                      }}
-                    >
-                      <PlusCircle className="w-4 h-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setIsAddingMonthlyGoal(true)}
-                    className="flex items-center justify-center w-full py-3 mt-3 text-sm text-[#8B7082] hover:text-[#612a4f] hover:bg-[#8B7082]/5 rounded-xl transition-colors border border-dashed border-[#8B7082]/20"
-                  >
-                    <PlusCircle className="h-4 w-4 mr-2" />
-                    Add Goal
-                  </button>
-                )}
-              </div>
-            </section>
 
           </div>
               {/* End Right Column */}
