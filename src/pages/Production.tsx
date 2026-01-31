@@ -55,6 +55,34 @@ import ExpandedScheduleView from "./production/components/ExpandedScheduleView";
 import ArchiveDialog from "./production/components/ArchiveDialog";
 import { columnColors, cardColors, defaultColumns } from "./production/utils/productionConstants";
 import { getAllAngleTemplates, getFormatColors, getPlatformColors } from "./production/utils/productionHelpers";
+import { useSidebar } from "@/components/ui/sidebar";
+
+// Wrapper component to access sidebar state inside Layout context
+const KanbanContainer: React.FC<{
+  horizontalScrollRef: React.RefObject<HTMLDivElement>;
+  setScrollProgress: (progress: number) => void;
+  children: React.ReactNode;
+}> = ({ horizontalScrollRef, setScrollProgress, children }) => {
+  const { state: sidebarState } = useSidebar();
+  const isSidebarCollapsed = sidebarState === 'collapsed';
+
+  return (
+    <div
+      ref={horizontalScrollRef}
+      className={cn(
+        "flex gap-5 flex-1 overflow-x-auto overflow-y-visible ml-[-34px] pl-[34px] mt-[-16px] pt-[16px] hide-scrollbar items-start transition-all duration-200",
+        isSidebarCollapsed && "pl-[70px]"
+      )}
+      onScroll={(e) => {
+        const target = e.currentTarget;
+        const maxScroll = target.scrollWidth - target.clientWidth;
+        setScrollProgress(maxScroll > 0 ? target.scrollLeft / maxScroll : 0);
+      }}
+    >
+      {children}
+    </div>
+  );
+};
 
 // Platform icon helper - returns icon component for each platform
 const getPlatformIcon = (platform: string): React.ReactNode => {
@@ -2355,14 +2383,9 @@ const Production = () => {
   return (
     <Layout>
       <div className="w-full h-screen flex flex-col pl-5 pr-3 pt-4 bg-[#F5F3F4]">
-        <div
-          ref={horizontalScrollRef}
-          className="flex gap-5 flex-1 overflow-x-auto overflow-y-visible ml-[-34px] pl-[34px] mt-[-16px] pt-[16px] hide-scrollbar items-start"
-          onScroll={(e) => {
-            const target = e.currentTarget;
-            const maxScroll = target.scrollWidth - target.clientWidth;
-            setScrollProgress(maxScroll > 0 ? target.scrollLeft / maxScroll : 0);
-          }}
+        <KanbanContainer
+          horizontalScrollRef={horizontalScrollRef}
+          setScrollProgress={setScrollProgress}
         >
           {columns.map((column, index) => {
             const colors = columnColors[column.id];
@@ -3097,7 +3120,7 @@ const Production = () => {
               </div>
             </div>
           </div>
-        </div>
+        </KanbanContainer>
 
         {/* Invisible scroll area at bottom - enables horizontal scroll when cursor is here */}
         <div

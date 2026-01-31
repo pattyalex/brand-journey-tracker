@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
-import { Calendar, CalendarDays, ChevronLeft, ChevronRight, Lightbulb, Clapperboard, CheckCircle2 } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Lightbulb, Clapperboard, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useSidebar } from "@/components/ui/sidebar";
 import { StorageKeys, getString } from "@/lib/storage";
 import { startOfMonth, endOfMonth, parseISO, isWithinInterval } from "date-fns";
 import { EVENTS, on } from "@/lib/events";
@@ -26,6 +28,8 @@ export const ContentOverviewSidebar = ({
   setIsCollapsed,
   embedded = false,
 }: ContentOverviewSidebarProps) => {
+  const { state: sidebarState } = useSidebar();
+  const isSidebarCollapsed = sidebarState === 'collapsed';
   const navigate = useNavigate();
   const [counts, setCounts] = useState<ContentCounts>({
     inIdeation: 0,
@@ -133,9 +137,12 @@ export const ContentOverviewSidebar = ({
     return (
       <div>
         {/* Header */}
-        <div className="flex items-center gap-2.5 mb-5">
-          <CalendarDays className="w-5 h-5 text-black" />
-          <h2 className="text-base font-semibold text-black">Content Overview</h2>
+        <div className={cn(
+          "flex items-center gap-2.5 mb-5 transition-all duration-200",
+          isSidebarCollapsed && "ml-10 mt-0.5"
+        )}>
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="#8B7082" fillOpacity="0.2" stroke="black" strokeWidth="1.5"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" /></svg>
+          <h2 className="text-base font-semibold text-gray-900">Content Overview</h2>
         </div>
 
         {/* Content Overview Stats */}
@@ -201,21 +208,28 @@ export const ContentOverviewSidebar = ({
   return (
     <div
       className={cn(
-        "h-full flex-shrink-0 bg-[#FDFAFC] transition-all duration-300 relative",
+        "h-full flex-shrink-0 bg-gradient-to-br from-[#F0EAED] via-[#F8F6F6] to-[#FAFAFA] transition-all duration-300 relative",
         isCollapsed ? "w-12" : "w-80"
       )}
     >
       {/* Collapse/Expand Button */}
-      <button
-        onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-6 h-12 bg-white border border-gray-200 rounded-full shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors"
-      >
-        {isCollapsed ? (
-          <ChevronRight className="w-4 h-4 text-gray-400" />
-        ) : (
-          <ChevronLeft className="w-4 h-4 text-gray-400" />
-        )}
-      </button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white border border-gray-200 rounded-full shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors"
+          >
+            {isCollapsed ? (
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+            ) : (
+              <ChevronLeft className="w-4 h-4 text-gray-400" />
+            )}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" sideOffset={8}>
+          {isCollapsed ? "Collapse calendar" : "Expand calendar"}
+        </TooltipContent>
+      </Tooltip>
 
       {/* Content wrapper with overflow-hidden to prevent text reflow during transition */}
       <div className="h-full overflow-hidden">
@@ -224,9 +238,12 @@ export const ContentOverviewSidebar = ({
           isCollapsed ? "opacity-0" : "opacity-100"
         )}>
           {/* Header */}
-          <div className="flex items-center gap-2.5 mb-5">
-            <CalendarDays className="w-5 h-5 text-black" />
-            <h2 className="text-base font-semibold text-black">Content Overview</h2>
+          <div className={cn(
+            "flex items-center gap-2.5 mb-5 transition-all duration-200",
+            isSidebarCollapsed && "ml-10 mt-0.5"
+          )}>
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="#8B7082" fillOpacity="0.2" stroke="black" strokeWidth="1.5"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" /></svg>
+            <h2 className="text-base font-semibold text-gray-900">Content Overview</h2>
           </div>
 
           {/* Content Overview Stats */}

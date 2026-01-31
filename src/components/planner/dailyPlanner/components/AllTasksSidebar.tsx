@@ -2,6 +2,8 @@ import { PlannerItem } from "@/types/planner";
 import { PlannerSection } from "@/components/planner/PlannerSection";
 import { ChevronLeft, ChevronRight, ListTodo } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSidebar } from "@/components/ui/sidebar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface AllTasksSidebarProps {
   isAllTasksCollapsed: boolean;
@@ -40,6 +42,8 @@ export const AllTasksSidebar = ({
   handleDropTaskFromCalendarToAllTasks,
   embedded = false,
 }: AllTasksSidebarProps) => {
+  const { state: sidebarState } = useSidebar();
+  const isSidebarCollapsed = sidebarState === 'collapsed';
   // Embedded mode - render just the content for combined sidebar
   if (embedded) {
     return (
@@ -61,9 +65,12 @@ export const AllTasksSidebar = ({
         }}
       >
         {/* Header */}
-        <div className="flex items-center gap-2 mb-4">
-          <ListTodo className="w-5 h-5 text-black" />
-          <h2 className="text-lg font-semibold text-gray-800">All Tasks</h2>
+        <div className={cn(
+          "flex items-center gap-2.5 mb-4 transition-all duration-200",
+          isSidebarCollapsed && "ml-10 mt-0.5"
+        )}>
+          <ListTodo className="w-5 h-5 text-gray-900" />
+          <h2 className="text-base font-semibold text-gray-900">All Tasks</h2>
         </div>
 
         {/* Tasks List - use max height to prevent expansion */}
@@ -110,16 +117,23 @@ export const AllTasksSidebar = ({
       }}
     >
       {/* Collapse/Expand Button */}
-      <button
-        onClick={() => setIsAllTasksCollapsed(!isAllTasksCollapsed)}
-        className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-6 h-12 bg-white border border-gray-200 rounded-full shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors"
-      >
-        {isAllTasksCollapsed ? (
-          <ChevronRight className="w-4 h-4 text-gray-400" />
-        ) : (
-          <ChevronLeft className="w-4 h-4 text-gray-400" />
-        )}
-      </button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={() => setIsAllTasksCollapsed(!isAllTasksCollapsed)}
+            className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white border border-gray-200 rounded-full shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors"
+          >
+            {isAllTasksCollapsed ? (
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+            ) : (
+              <ChevronLeft className="w-4 h-4 text-gray-400" />
+            )}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" sideOffset={8}>
+          {isAllTasksCollapsed ? "Collapse calendar" : "Expand calendar"}
+        </TooltipContent>
+      </Tooltip>
 
       {/* Content wrapper with overflow-hidden to prevent text reflow during transition */}
       <div className="h-full overflow-hidden">
@@ -128,8 +142,11 @@ export const AllTasksSidebar = ({
           isAllTasksCollapsed ? "opacity-0" : "opacity-100"
         )}>
           {/* Header */}
-          <div className="flex items-center gap-2.5 mb-5">
-            <ListTodo className="w-5 h-5 text-black" />
+          <div className={cn(
+            "flex items-center gap-2.5 mb-5 transition-all duration-200",
+            isSidebarCollapsed && "ml-10 mt-0.5"
+          )}>
+            <ListTodo className="w-5 h-5 text-gray-900" />
             <h2 className="text-base font-semibold text-gray-900">All Tasks</h2>
           </div>
 

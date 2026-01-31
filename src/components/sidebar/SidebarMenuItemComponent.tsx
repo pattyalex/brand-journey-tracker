@@ -58,22 +58,12 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
   };
 
   return (
-    <SidebarMenuItem key={item.title} className="relative">
-      {/* Active indicator bar */}
-      {(isActive || isSubItemActive) && (
-        <div
-          className="absolute left-0 top-1/2 -translate-y-1/2 w-[4px] h-6 rounded-r-full"
-          style={{
-            background: 'linear-gradient(180deg, #612A4F 0%, #4A1F3D 100%)',
-            boxShadow: '0 0 8px rgba(97, 42, 79, 0.4)',
-          }}
-        />
-      )}
+    <SidebarMenuItem key={item.title}>
       <SidebarMenuButton asChild isActive={isActive || isSubItemActive}>
         <a
           href={item.url}
           className={cn(
-            "flex items-center gap-2 rounded-xl ml-1 transition-all duration-200",
+            "flex items-center gap-2 rounded-xl transition-all duration-200",
             (isActive || isSubItemActive)
               ? "bg-[#F5F0F3] text-[#612A4F] font-medium"
               : "hover:bg-[#F9F7F8] text-[#5A4A52]"
@@ -116,16 +106,7 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
           {item.subItems.map((subItem) => {
             const isSubActive = location.pathname === subItem.url;
             return (
-              <SidebarMenuSubItem key={subItem.title} className="relative">
-                {isSubActive && (
-                  <div
-                    className="absolute left-[-14px] top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-r-full"
-                    style={{
-                      background: 'linear-gradient(180deg, #612A4F 0%, #4A1F3D 100%)',
-                      boxShadow: '0 0 6px rgba(97, 42, 79, 0.3)',
-                    }}
-                  />
-                )}
+              <SidebarMenuSubItem key={subItem.title}>
                 <SidebarMenuSubButton
                   asChild
                   size="md"

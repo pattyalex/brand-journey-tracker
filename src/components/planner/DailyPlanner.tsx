@@ -430,22 +430,28 @@ export const DailyPlanner = () => {
             // Combined sidebar for "Both" view - show All Tasks + Content Overview
             <div
               className={cn(
-                "h-full flex-shrink-0 transition-all duration-300 relative",
+                "h-full flex-shrink-0 transition-all duration-300 relative bg-gradient-to-br from-[#F0EAED] via-[#F8F6F6] to-[#FAFAFA]",
                 isAllTasksCollapsed ? "w-12" : "w-80"
               )}
-              style={{ background: '#F8F8F8' }}
             >
               {/* Collapse/Expand Button */}
-              <button
-                onClick={() => setIsAllTasksCollapsed(!isAllTasksCollapsed)}
-                className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-6 h-12 bg-white border border-gray-200 rounded-full shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors"
-              >
-                {isAllTasksCollapsed ? (
-                  <ChevronRight className="w-4 h-4 text-gray-400" />
-                ) : (
-                  <ChevronLeft className="w-4 h-4 text-gray-400" />
-                )}
-              </button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setIsAllTasksCollapsed(!isAllTasksCollapsed)}
+                    className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white border border-gray-200 rounded-full shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors"
+                  >
+                    {isAllTasksCollapsed ? (
+                      <ChevronRight className="w-4 h-4 text-gray-400" />
+                    ) : (
+                      <ChevronLeft className="w-4 h-4 text-gray-400" />
+                    )}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" sideOffset={8}>
+                  {isAllTasksCollapsed ? "Collapse calendar" : "Expand calendar"}
+                </TooltipContent>
+              </Tooltip>
 
               {/* Content wrapper with overflow-hidden to prevent text reflow during transition */}
               <div className="h-full overflow-hidden">
