@@ -70,7 +70,7 @@ export const AllTasksSidebar = ({
           isSidebarCollapsed && "ml-10 mt-0.5"
         )}>
           <ListTodo className="w-5 h-5 text-gray-900" />
-          <h2 className="text-base font-semibold text-gray-900">All Tasks</h2>
+          <h2 className="text-xl text-gray-900" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>All Tasks</h2>
         </div>
 
         {/* Tasks List - use max height to prevent expansion */}
@@ -147,7 +147,7 @@ export const AllTasksSidebar = ({
             isSidebarCollapsed && "ml-10 mt-0.5"
           )}>
             <ListTodo className="w-5 h-5 text-gray-900" />
-            <h2 className="text-base font-semibold text-gray-900">All Tasks</h2>
+            <h2 className="text-xl text-gray-900" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>All Tasks</h2>
           </div>
 
           {/* Tasks List */}

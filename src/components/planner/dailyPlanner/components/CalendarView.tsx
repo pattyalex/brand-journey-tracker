@@ -562,8 +562,8 @@ export const CalendarView = ({
       <CardContent className="pl-0 pr-4 flex-1 flex flex-col min-h-0 overflow-hidden">
         {/* Day Headers */}
         <div className="grid grid-cols-7 mb-2 flex-shrink-0">
-          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-            <div key={day} className="text-center text-sm font-medium text-gray-500 py-2">
+          {['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'].map((day) => (
+            <div key={day} className="text-center text-xs text-gray-500 py-2" style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 500 }}>
               {day}
             </div>
           ))}
@@ -631,7 +631,7 @@ export const CalendarView = ({
                 >
                   <span className={`text-sm font-medium flex-shrink-0 ${
                     isToday ? 'text-indigo-600 font-bold' : ''
-                  }`}>
+                  }`} style={{ fontFamily: "'DM Sans', sans-serif" }}>
                     {format(day, 'd')}
                   </span>
 

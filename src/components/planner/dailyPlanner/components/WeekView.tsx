@@ -484,23 +484,23 @@ export const WeekView = ({
                     className={cn(
                       "h-[60px] flex flex-col items-center justify-center transition-colors hover:bg-gray-100",
                       isToday
-                        ? contentDisplayMode === 'tasks' ? 'bg-[#7A909F]/5' : 'bg-[#8B7082]/5'
+                        ? contentDisplayMode === 'tasks' ? 'bg-[#7A909F]/5' : 'bg-gray-50'
                         : 'bg-gray-50'
                     )}
                     style={{
-                      borderRight: index < 6 ? '1px solid #f3f4f6' : 'none',
+                      borderRight: index < 6 ? '1px solid #d1d5db' : 'none',
                       opacity: isPast ? 0.5 : 1
                     }}
                   >
-                    <div className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">
+                    <div className="uppercase tracking-wider" style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: '12px', color: '#6b7280' }}>
                       {format(day, "EEE")}
                     </div>
                     <div className={cn(
-                      "text-lg font-semibold",
+                      "text-sm font-semibold",
                       isToday
-                        ? "bg-[#8B7082] text-white w-8 h-8 rounded-full flex items-center justify-center"
+                        ? "bg-[#8B7082] text-white w-7 h-7 rounded-full flex items-center justify-center"
                         : "text-gray-900"
-                    )}>
+                    )} style={{ fontFamily: "'DM Sans', sans-serif" }}>
                       {format(day, "d")}
                     </div>
                   </div>

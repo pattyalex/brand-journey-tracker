@@ -142,7 +142,7 @@ export const PlannerHeader = ({
                 <PopoverTrigger asChild>
                   <button className="flex items-center gap-2 text-sm font-medium text-gray-800 hover:text-gray-600 transition-colors">
                     <CalendarIcon className="h-4 w-4" />
-                    <span>{format(selectedDate, "EEEE, MMMM d, yyyy")}</span>
+                    <span style={{ fontFamily: "'DM Sans', sans-serif" }}>{format(selectedDate, "EEEE, MMMM d, yyyy")}</span>
                   </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0 z-[300]" align="end">
