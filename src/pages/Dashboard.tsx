@@ -154,7 +154,7 @@ const Dashboard = () => {
                 {currentMonthGoals.slice(0, 4).map((goal) => {
                   const statusColors: Record<GoalStatus, { bg: string; text: string; label: string }> = {
                     'not-started': { bg: 'bg-gray-100', text: 'text-gray-600', label: 'Not Started' },
-                    'somewhat-done': { bg: 'bg-amber-50 border border-amber-200', text: 'text-amber-700', label: 'In Progress' },
+                    'somewhat-done': { bg: 'bg-amber-50 border border-amber-200', text: 'text-amber-700', label: 'On It' },
                     'great-progress': { bg: 'bg-emerald-50', text: 'text-emerald-700', label: 'Almost There' },
                     'completed': { bg: 'bg-[#612a4f]/10', text: 'text-[#612a4f]', label: 'Done!' },
                   };
@@ -166,10 +166,7 @@ const Dashboard = () => {
                       className="flex items-center gap-4 px-4 py-3.5 bg-white rounded-xl border border-gray-100 hover:border-[#8B7082]/20 transition-colors"
                     >
                       {/* Goal text */}
-                      <span className={cn(
-                        "flex-1 text-[15px]",
-                        goal.status === 'completed' ? "text-gray-400 line-through" : "text-gray-800"
-                      )}>
+                      <span className="flex-1 text-[15px] text-gray-800">
                         {goal.text}
                       </span>
 

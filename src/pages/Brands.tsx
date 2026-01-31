@@ -54,6 +54,7 @@ import {
   Trophy
 } from "lucide-react";
 import { getString, setString } from "@/lib/storage";
+import { EVENTS, emit } from "@/lib/events";
 import { toast } from "sonner";
 
 // Types
@@ -153,9 +154,10 @@ const Brands = () => {
   const [isYearView, setIsYearView] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
 
-  // Save to localStorage
+  // Save to localStorage and emit event for Dashboard
   useEffect(() => {
     setString(STORAGE_KEY, JSON.stringify(deals));
+    emit(window, EVENTS.brandDealsUpdated, deals);
   }, [deals]);
 
   // Dashboard metrics

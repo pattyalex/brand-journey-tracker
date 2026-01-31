@@ -73,7 +73,7 @@ type GoalProgressStatus = 'not-started' | 'somewhat-done' | 'great-progress' | '
 
 const progressStatuses: { value: GoalProgressStatus; label: string; color: string; bgColor: string; activeColor: string }[] = [
   { value: 'not-started', label: 'Not Started', color: '#9ca3af', bgColor: 'rgba(156, 163, 175, 0.15)', activeColor: '#6b7280' },
-  { value: 'somewhat-done', label: 'Somewhat Done', color: '#d4a520', bgColor: 'rgba(212, 165, 32, 0.15)', activeColor: '#b8860b' },
+  { value: 'somewhat-done', label: 'On It', color: '#d4a520', bgColor: 'rgba(212, 165, 32, 0.15)', activeColor: '#b8860b' },
   { value: 'great-progress', label: 'Great Progress', color: '#7cb87c', bgColor: 'rgba(124, 184, 124, 0.15)', activeColor: '#5a9a5a' },
   { value: 'completed', label: 'Fully Completed!', color: '#5a8a5a', bgColor: '#5a8a5a', activeColor: '#ffffff' },
 ];
@@ -172,8 +172,7 @@ const SortableGoalItem: React.FC<SortableGoalItemProps> = ({
             <span
               className="text-sm cursor-pointer hover:text-[#612A4F] transition-colors"
               style={{
-                color: goal.status === 'completed' ? '#8b7a85' : '#3d3a38',
-                textDecoration: goal.status === 'completed' ? 'line-through' : 'none'
+                color: '#3d3a38'
               }}
               onClick={onEdit}
             >
@@ -211,6 +210,7 @@ const SortableGoalItem: React.FC<SortableGoalItemProps> = ({
                 background: isActive ? status.bgColor : 'transparent',
                 color: isActive ? status.activeColor : '#b0a8ac',
                 border: isActive ? `1px solid ${status.color}40` : '1px solid transparent',
+                whiteSpace: 'nowrap',
               }}
             >
               {status.label}
@@ -516,6 +516,14 @@ const StrategyGrowth = () => {
           element.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       }, 150);
+    } else if (hash === '#monthly-goals') {
+      // Scroll to monthly goals section
+      setTimeout(() => {
+        const element = document.getElementById('monthly-goals');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
     }
   }, []);
 
@@ -1950,8 +1958,8 @@ const StrategyGrowth = () => {
                           />
                         ) : (
                           <p
-                            className={`text-sm font-semibold mb-5 cursor-pointer transition-colors ${goal.status === 'completed' ? 'line-through' : ''}`}
-                            style={{ color: goal.status === 'completed' ? '#8b7a85' : '#3d3a38' }}
+                            className="text-lg font-semibold mb-5 cursor-pointer transition-colors"
+                            style={{ color: '#3d3a38' }}
                             onClick={() => handleEditShortTermGoal(goal.id, goal.text)}
                           >
                             {goal.text}
@@ -1999,6 +2007,7 @@ const StrategyGrowth = () => {
                                   background: isActive ? status.bgColor : 'transparent',
                                   color: isActive ? status.activeColor : '#b0a8ac',
                                   border: isActive ? `1px solid ${status.color}40` : '1px solid transparent',
+                                  whiteSpace: 'nowrap',
                                 }}
                               >
                                 {status.label}
@@ -2053,6 +2062,7 @@ const StrategyGrowth = () => {
 
             {/* SECTION 3: Monthly Goals */}
             <div
+              id="monthly-goals"
               className="bg-white p-6"
               style={{
                 borderRadius: '24px',

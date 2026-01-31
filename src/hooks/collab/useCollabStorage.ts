@@ -1,6 +1,7 @@
 
 import { CollabBrand, TableColumn } from "@/types/collab";
 import { StorageKeys, getString, setString } from "@/lib/storage";
+import { EVENTS, emit } from "@/lib/events";
 
 // Default column configuration
 export const DEFAULT_COLUMNS: TableColumn[] = [
@@ -127,6 +128,8 @@ export const loadColumns = (): TableColumn[] => {
 // Save data to local storage
 export const saveBrands = (brands: CollabBrand[]): void => {
   setString(StorageKeys.collabBrands, JSON.stringify(brands));
+  // Emit event so other components (like Dashboard) can refresh
+  emit(window, EVENTS.collabBrandsUpdated, brands);
 };
 
 export const saveColumns = (columns: TableColumn[]): void => {

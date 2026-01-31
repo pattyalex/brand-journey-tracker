@@ -51,7 +51,7 @@ const Sidebar = () => {
   return (
     <SidebarContainer>
       {/* Premium background wrapper */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#FDFCFC] via-[#FAF8F9] to-[#F8F6F7] border-r border-[#E8E4E6]" />
+      <div className="absolute inset-0 bg-[#f9f7f5] border-r border-[#E8E4E6]" />
 
       {/* Noise texture overlay */}
       <div

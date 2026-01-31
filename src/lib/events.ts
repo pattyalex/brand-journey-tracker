@@ -8,6 +8,8 @@ export const EVENTS = {
   contentArchived: 'contentArchived',
   OPEN_BATCH_SCHEDULE: 'openBatchSchedule',
   OPEN_CONTENT_FLOW: 'openContentFlow',
+  collabBrandsUpdated: 'collabBrandsUpdated',
+  brandDealsUpdated: 'brandDealsUpdated',
 } as const;
 
 type EventName = (typeof EVENTS)[keyof typeof EVENTS];

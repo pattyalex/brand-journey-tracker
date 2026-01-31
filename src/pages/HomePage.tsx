@@ -68,6 +68,33 @@ import VerificationGuard from '@/components/VerificationGuard';
 import { StorageKeys, getString, setString, setJSON, getJSON } from "@/lib/storage";
 import { EVENTS, emit, on } from "@/lib/events";
 import { KanbanColumn } from "./production/types";
+import { Diamond } from "lucide-react";
+
+// Brand Deals types (from Brands.tsx)
+interface BrandDealDeliverable {
+  id: string;
+  title: string;
+  contentType: string;
+  submissionDeadline?: string;
+  publishDeadline?: string;
+  status: string;
+  isPaid?: boolean;
+  paymentAmount?: number;
+}
+
+interface BrandDeal {
+  id: string;
+  brandName: string;
+  status: 'inbound' | 'negotiating' | 'signed' | 'in-progress' | 'completed' | 'other';
+  deliverables: BrandDealDeliverable[];
+  totalFee: number;
+  depositAmount: number;
+  depositPaid: boolean;
+  finalPaymentDueDate?: string;
+  invoiceSent: boolean;
+  paymentReceived: boolean;
+  isArchived?: boolean;
+}
 
 // Helper to get date string in same format as Planner (local timezone, not UTC)
 const getDateString = (date: Date): string => {
@@ -196,6 +223,179 @@ const HomePage = () => {
     }
   }, []);
 
+  // Brand Deals - upcoming deadlines and expected payments
+  interface BrandDeadline {
+    brandName: string;
+    action: string;
+    dueDate: Date;
+    daysRemaining: number;
+    isUrgent: boolean;
+  }
+
+  interface BrandDealsState {
+    deadlines: BrandDeadline[];
+    expectedPayments: number;
+  }
+
+  const computeBrandDealsData = (): BrandDealsState => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const fourteenDaysFromNow = new Date(today);
+    fourteenDaysFromNow.setDate(today.getDate() + 14);
+
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+
+    // Use the correct storage key for brand deals
+    const savedDeals = getString('brandDeals');
+    if (!savedDeals) return { deadlines: [], expectedPayments: 0 };
+
+    try {
+      const deals: BrandDeal[] = JSON.parse(savedDeals);
+      const deadlines: BrandDeadline[] = [];
+      let expectedPayments = 0;
+
+      deals.forEach(deal => {
+        // Skip archived deals
+        if (deal.isArchived) return;
+
+        // Only consider active deals (signed or in-progress)
+        if (deal.status !== 'signed' && deal.status !== 'in-progress') return;
+
+        // Check each deliverable for upcoming deadlines
+        deal.deliverables?.forEach(deliverable => {
+          // Check submission deadline
+          if (deliverable.submissionDeadline && !deliverable.isPaid) {
+            const submitDate = new Date(deliverable.submissionDeadline);
+            if (!isNaN(submitDate.getTime()) && submitDate >= today && submitDate <= fourteenDaysFromNow) {
+              const daysRemaining = Math.ceil((submitDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+              deadlines.push({
+                brandName: deal.brandName,
+                action: 'Submit content',
+                dueDate: submitDate,
+                daysRemaining,
+                isUrgent: daysRemaining <= 3
+              });
+            }
+          }
+
+          // Check publish deadline
+          if (deliverable.publishDeadline && !deliverable.isPaid) {
+            const publishDate = new Date(deliverable.publishDeadline);
+            if (!isNaN(publishDate.getTime()) && publishDate >= today && publishDate <= fourteenDaysFromNow) {
+              const daysRemaining = Math.ceil((publishDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+              deadlines.push({
+                brandName: deal.brandName,
+                action: 'Publish',
+                dueDate: publishDate,
+                daysRemaining,
+                isUrgent: daysRemaining <= 3
+              });
+            }
+          }
+        });
+
+        // Check invoice deadline
+        if (deal.finalPaymentDueDate && !deal.invoiceSent) {
+          const invoiceDate = new Date(deal.finalPaymentDueDate);
+          const invoiceDueDate = new Date(invoiceDate);
+          invoiceDueDate.setDate(invoiceDate.getDate() - 7);
+
+          if (!isNaN(invoiceDueDate.getTime()) && invoiceDueDate >= today && invoiceDueDate <= fourteenDaysFromNow) {
+            const daysRemaining = Math.ceil((invoiceDueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            deadlines.push({
+              brandName: deal.brandName,
+              action: 'Send invoice',
+              dueDate: invoiceDueDate,
+              daysRemaining,
+              isUrgent: daysRemaining <= 3
+            });
+          }
+        }
+
+        // Calculate expected payments this month
+        if (!deal.paymentReceived && deal.totalFee) {
+          let paymentExpectedThisMonth = false;
+
+          // Check if any deliverable is due this month
+          deal.deliverables?.forEach(deliverable => {
+            if (deliverable.submissionDeadline) {
+              const submitDate = new Date(deliverable.submissionDeadline);
+              if (!isNaN(submitDate.getTime()) &&
+                  submitDate.getMonth() === currentMonth &&
+                  submitDate.getFullYear() === currentYear) {
+                paymentExpectedThisMonth = true;
+              }
+            }
+            if (deliverable.publishDeadline) {
+              const publishDate = new Date(deliverable.publishDeadline);
+              if (!isNaN(publishDate.getTime()) &&
+                  publishDate.getMonth() === currentMonth &&
+                  publishDate.getFullYear() === currentYear) {
+                paymentExpectedThisMonth = true;
+              }
+            }
+          });
+
+          if (paymentExpectedThisMonth) {
+            // Calculate remaining payment (total fee minus deposit if paid)
+            const remainingPayment = deal.depositPaid
+              ? deal.totalFee - (deal.depositAmount || 0)
+              : deal.totalFee;
+            expectedPayments += remainingPayment;
+          }
+        }
+      });
+
+      // Sort by soonest deadline first and remove duplicates for same brand+action
+      deadlines.sort((a, b) => a.daysRemaining - b.daysRemaining);
+
+      return {
+        deadlines: deadlines.slice(0, 3), // Show up to 3
+        expectedPayments
+      };
+    } catch (e) {
+      return { deadlines: [], expectedPayments: 0 };
+    }
+  };
+
+  const [brandDealsData, setBrandDealsData] = useState<BrandDealsState>(computeBrandDealsData);
+
+  // Refresh brand deals data when page becomes visible or storage changes
+  useEffect(() => {
+    const refreshBrandDeals = () => {
+      setBrandDealsData(computeBrandDealsData());
+    };
+
+    // Listen for visibility changes (when user navigates back to this page)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshBrandDeals();
+      }
+    };
+
+    // Listen for storage changes (from other tabs)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'brandDeals') {
+        refreshBrandDeals();
+      }
+    };
+
+    // Listen for custom event when brand deals are updated (same tab)
+    const unsubscribeBrandDealsEvent = on(window, EVENTS.brandDealsUpdated, () => {
+      refreshBrandDeals();
+    });
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('storage', handleStorageChange);
+      unsubscribeBrandDealsEvent();
+    };
+  }, []);
+
   // All Tasks from planner - load from localStorage
   interface PlannerItem {
     id: string;
@@ -231,6 +431,7 @@ const HomePage = () => {
   const [editingEndAmPm, setEditingEndAmPm] = useState<"AM" | "PM">("PM");
   const [isSelectOpen, setIsSelectOpen] = useState(false);
   const addTaskFormRef = useRef<HTMLDivElement>(null);
+  const monthlyGoalsScrollRef = useRef<HTMLDivElement>(null);
   const startTimeInputRef = useRef<HTMLInputElement>(null);
   const startAmPmButtonRef = useRef<HTMLButtonElement>(null);
   const endTimeInputRef = useRef<HTMLInputElement>(null);
@@ -381,7 +582,7 @@ const HomePage = () => {
   const [showProgressNotesForGoalId, setShowProgressNotesForGoalId] = useState<number | null>(null);
 
   // Monthly Goals state - synced with Growth Goals page via localStorage
-  type GoalStatus = 'not-started' | 'in-progress' | 'completed';
+  type GoalStatus = 'not-started' | 'somewhat-done' | 'great-progress' | 'completed';
   interface MonthlyGoal {
     id: number;
     text: string;
@@ -460,6 +661,7 @@ const HomePage = () => {
   const [editingHabitId, setEditingHabitId] = useState<string | null>(null);
   const [editingHabitName, setEditingHabitName] = useState("");
   const [editingGoalHabitId, setEditingGoalHabitId] = useState<string | null>(null);
+  const [truncatedHabitHover, setTruncatedHabitHover] = useState<string | null>(null);
   const [editingGoalTarget, setEditingGoalTarget] = useState<string>("5");
   const [editingGoalPeriod, setEditingGoalPeriod] = useState<'week' | 'month'>('week');
   const [newHabitGoalTarget, setNewHabitGoalTarget] = useState<string>("");
@@ -1343,28 +1545,25 @@ const HomePage = () => {
 
   // Get monthly goals for the current month
   const getCurrentMonthGoals = (): MonthlyGoal[] => {
-    const year = getCurrentYear();
+    const year = String(getCurrentYear());
     const month = getCurrentMonth();
     return monthlyGoalsData[year]?.[month] || [];
   };
 
   // Toggle monthly goal status (same system as in Growth Goals page)
   const handleToggleMonthlyGoal = (id: number) => {
-    const year = getCurrentYear();
+    const year = String(getCurrentYear());
     const month = getCurrentMonth();
     const currentGoals = getCurrentMonthGoals();
 
     const updatedGoals = currentGoals.map(g => {
       if (g.id === id) {
-        // Cycle through statuses: not-started → in-progress → completed → not-started
+        // Cycle through statuses: not-started → somewhat-done → great-progress → completed → not-started
         const nextStatus: GoalStatus =
-          g.status === 'not-started' ? 'in-progress' :
-          g.status === 'in-progress' ? 'completed' :
+          g.status === 'not-started' ? 'somewhat-done' :
+          g.status === 'somewhat-done' ? 'great-progress' :
+          g.status === 'great-progress' ? 'completed' :
           'not-started';
-        // Clear progressNote when leaving in-progress status
-        if (g.status === 'in-progress' && nextStatus !== 'in-progress') {
-          return { ...g, status: nextStatus, progressNote: undefined };
-        }
         return { ...g, status: nextStatus };
       }
       return g;
@@ -1381,7 +1580,7 @@ const HomePage = () => {
 
   // Update progress note for monthly goal
   const handleUpdateMonthlyProgressNote = (id: number, note: string) => {
-    const year = getCurrentYear();
+    const year = String(getCurrentYear());
     const month = getCurrentMonth();
     const currentGoals = getCurrentMonthGoals();
 
@@ -1401,7 +1600,7 @@ const HomePage = () => {
   // Add new monthly goal
   const handleAddMonthlyGoal = () => {
     if (newMonthlyGoalText.trim()) {
-      const year = getCurrentYear();
+      const year = String(getCurrentYear());
       const month = getCurrentMonth();
       const currentGoals = getCurrentMonthGoals();
 
@@ -1423,13 +1622,20 @@ const HomePage = () => {
 
       setNewMonthlyGoalText("");
       setIsAddingMonthlyGoal(false);
+
+      // Scroll to bottom to show the new goal
+      setTimeout(() => {
+        if (monthlyGoalsScrollRef.current) {
+          monthlyGoalsScrollRef.current.scrollTop = monthlyGoalsScrollRef.current.scrollHeight;
+        }
+      }, 100);
     }
   };
 
   // Edit monthly goal
   const handleEditMonthlyGoal = (id: number, newText: string) => {
     if (newText.trim()) {
-      const year = getCurrentYear();
+      const year = String(getCurrentYear());
       const month = getCurrentMonth();
       const currentGoals = getCurrentMonthGoals();
 
@@ -1451,7 +1657,7 @@ const HomePage = () => {
 
   // Delete monthly goal
   const handleDeleteMonthlyGoal = (id: number) => {
-    const year = getCurrentYear();
+    const year = String(getCurrentYear());
     const month = getCurrentMonth();
     const currentGoals = getCurrentMonthGoals();
 
@@ -1520,6 +1726,32 @@ const HomePage = () => {
       days.push(day);
     }
     return days;
+  };
+
+  // Calculate weekly completions for a habit
+  const getWeeklyCompletions = (habit: Habit, weekOffset: number = 0) => {
+    const weekDays = getWeekDays(weekOffset);
+    const weekDateStrings = weekDays.map(d => getDateString(d));
+    return habit.completedDates.filter(date => weekDateStrings.includes(date)).length;
+  };
+
+  // Check if habit is behind pace (for badge color)
+  const isHabitBehindPace = (habit: Habit, completed: number, weekOffset: number = 0) => {
+    if (!habit.goal) return false;
+    const target = habit.goal.target;
+    const weekDays = getWeekDays(weekOffset);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Count how many days have passed in the week (including today)
+    let daysPassed = 0;
+    for (const day of weekDays) {
+      if (day <= today) daysPassed++;
+    }
+
+    // Calculate expected progress: if target is 4/7 days, by day 4 you should have ~2.3 done
+    const expectedProgress = (target / 7) * daysPassed;
+    return completed < expectedProgress - 0.5; // Give a little buffer
   };
 
   const toggleHabit = (habitId: string, dateStr: string) => {
@@ -1869,16 +2101,17 @@ const HomePage = () => {
                         Top 3 Priorities
                       </h3>
                     </div>
-                    <span
-                      className="text-sm text-[#8B7082]"
+                    <button
+                      onClick={() => navigate('/task-board')}
+                      className="text-xs font-semibold text-[#6b4a5e] hover:text-[#4a3442] transition-colors flex items-center gap-1"
                       style={{ fontFamily: "'DM Sans', sans-serif" }}
                     >
-                      {priorities.filter(p => p.isCompleted).length}/{priorities.length}
-                    </span>
+                      Plan Your Day <ArrowRight className="w-3 h-3" />
+                    </button>
                   </div>
 
                   {/* Priority Items */}
-                  <div className="space-y-3">
+                  <div className="space-y-3 pb-2">
                     {priorities.map((priority) => {
                       return (
                         <div
@@ -1938,15 +2171,6 @@ const HomePage = () => {
                     })}
                   </div>
 
-                  {/* View All Button */}
-                  <button
-                    onClick={() => navigate('/task-board')}
-                    className="w-full mt-4 py-2.5 text-sm font-medium text-[#612a4f] hover:text-[#4a2039] hover:bg-[#612a4f]/5 rounded-xl transition-colors flex items-center justify-center gap-2"
-                    style={{ fontFamily: "'DM Sans', sans-serif" }}
-                  >
-                    Plan Your Day
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
                 </div>
               </section>
 
@@ -2038,515 +2262,451 @@ const HomePage = () => {
                 )}
               </AnimatePresence>
 
-              {/* Next to Work On Section */}
-              <section className="mt-48 pt-12">
-                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-xl font-bold flex items-center gap-2">
-                      <Pin className="h-5 w-5 text-amber-600" />
-                      Next to Work On
-                    </CardTitle>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {isUsingPlaceholders
-                        ? "Get started by pinning content from your Content Hub"
-                        : pinnedContent.some(c => c.isPinned)
-                          ? "Pinned content cards from your Content Hub"
-                          : "Recent content from your Content Hub"}
-                    </p>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-8">
-                      {pinnedContent.slice(0, pinnedContent.some(c => c.isPinned) ? 5 : 3).map((content, index) => {
-                        // Create rotation pattern: left, right, straight, left, right...
-                        const rotations = [-2.5, 1.8, 0, -1.5, 2.2, -2, 1.5, 0, -2.8, 1.2];
-                        const rotation = rotations[index % rotations.length];
-
-                        // Add slight horizontal offsets for more organic feel
-                        const xOffsets = ['-2%', '3%', '0%', '2%', '-3%', '-1%', '2.5%', '0%', '-2.5%', '1.5%'];
-                        const xOffset = xOffsets[index % xOffsets.length];
-
-                        return (
-                        <div key={`card-wrapper-${content.id}`} className="relative">
-                          {/* Insertion indicator - shows where card will be dropped */}
-                          {dragOverCardIndex === index && draggedCardIndex !== null && draggedCardIndex !== index && (
-                            <div className="absolute -top-4 left-0 right-0 flex justify-center z-30">
-                              <div className="w-[85%] h-1 bg-amber-500 rounded-full shadow-lg animate-pulse"></div>
-                            </div>
-                          )}
-
-                        <div
-                          key={content.id}
-                          draggable={true}
-                          onDragStart={(e) => {
-                            handleDragStart(index);
-                            e.dataTransfer.effectAllowed = 'move';
-                          }}
-                          onDragOver={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleDragOver(e, index);
-                          }}
-                          onDrop={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleDrop(e, index);
-                          }}
-                          onDragEnd={handleDragEnd}
-                          className={`relative group mb-4 transition-all ${draggedCardIndex === index ? 'opacity-40 scale-95' : ''}`}
-                          style={{
-                            transform: draggedCardIndex === index ? 'rotate(0deg)' : `rotate(${rotation}deg) translateX(${xOffset})`,
-                            transition: 'all 0.3s ease',
-                            cursor: 'grab'
-                          }}
-                        >
-                          {/* Pin visual at the top */}
-                          <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10">
-                            <Pin className="h-6 w-6 text-amber-500 fill-amber-400 drop-shadow-md rotate-45" />
-                          </div>
-
-                          {/* Priority Number Badge */}
-                          <div className="absolute -top-1 -left-1 z-20 w-8 h-8 bg-gradient-to-br from-amber-400 to-amber-600 text-white rounded-full flex items-center justify-center text-base font-bold shadow-lg ring-2 ring-white ring-offset-0">
-                            {index + 1}
-                          </div>
-
-                          {/* Content card with pinned effect */}
-                          <div
-                            className={`relative bg-gradient-to-br from-amber-50 via-white to-amber-50/30 border border-amber-100 rounded-2xl p-4 pt-6 pb-3 shadow-md hover:shadow-xl transition-all max-w-[85%] mx-auto min-h-[80px] ${isUsingPlaceholders ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'}`}
-                            style={{
-                              transform: 'none',
-                              pointerEvents: draggedCardIndex === index ? 'none' : 'auto'
-                            }}
-                            onClick={() => {
-                              if (isUsingPlaceholders) {
-                                navigate('/production');
-                              }
-                            }}
-                            onMouseEnter={(e) => {
-                              if (draggedCardIndex === null) {
-                                e.currentTarget.parentElement!.style.transform = `rotate(0deg) translateX(0%) translateY(-4px)`;
-                                e.currentTarget.parentElement!.style.zIndex = '10';
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              if (draggedCardIndex === null) {
-                                e.currentTarget.parentElement!.style.transform = `rotate(${rotation}deg) translateX(${xOffset})`;
-                                e.currentTarget.parentElement!.style.zIndex = '';
-                              }
-                            }}
-                          >
-                            {/* Tape effect at top corners */}
-                            <div className="absolute top-0 left-0 w-8 h-6 bg-amber-100/60 border border-amber-200 -rotate-12 -translate-x-1 -translate-y-2"></div>
-                            <div className="absolute top-0 right-0 w-8 h-6 bg-amber-100/60 border border-amber-200 rotate-12 translate-x-1 -translate-y-2"></div>
-
-                            {/* Content */}
-                            <div className="space-y-2 pb-6">
-                              <div className="flex items-start gap-2">
-                                <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                                <h3 className="font-semibold text-sm text-gray-900 line-clamp-2">
-                                  {content.title || "Untitled Content"}
-                                </h3>
-                              </div>
-
-                              {(content.formats || content.platforms) && (
-                                <div className="flex items-center gap-1 flex-wrap">
-                                  {content.formats?.map((format, idx) => (
-                                    <span key={`format-${idx}`} className="text-xs font-medium text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">
-                                      {format}
-                                    </span>
-                                  ))}
-                                  {content.platforms?.map((platform, idx) => (
-                                    <span key={`platform-${idx}`} className="text-xs font-medium text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full">
-                                      {platform}
-                                    </span>
-                                  ))}
-                                </div>
-                              )}
-
-                              {content.hook && (
-                                <p className="text-xs text-gray-600 line-clamp-2 italic">
-                                  "{content.hook}"
-                                </p>
-                              )}
-
-                              {content.script && (
-                                <p className="text-xs text-gray-500 mt-2 pt-2 border-t border-amber-200 line-clamp-2">
-                                  {content.script}
-                                </p>
-                              )}
-
-                              {content.description && (
-                                <p className={`text-xs text-gray-500 mt-2 pt-2 border-t border-amber-200 ${isUsingPlaceholders ? '' : 'line-clamp-2'}`}>
-                                  {content.description}
-                                </p>
-                              )}
-
-                              {content.status && (
-                                <div className={`inline-block text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                                  content.status === 'to-start' ? 'bg-gray-200 text-gray-700' :
-                                  content.status === 'needs-work' ? 'bg-yellow-100 text-yellow-700' :
-                                  'bg-green-100 text-green-700'
-                                }`}>
-                                  {content.status === 'to-start' ? 'To start' :
-                                   content.status === 'needs-work' ? 'Needs more work' :
-                                   'Ready to film'}
-                                </div>
-                              )}
-
-                              {/* Column/Stage indicator */}
-                              {content.columnName && !isUsingPlaceholders && (() => {
-                                const tagStyle = getColumnTagStyle(content.columnId);
-                                return (
-                                  <div className={`inline-block text-[10px] px-2 py-0.5 rounded-full font-medium ${tagStyle.bg} ${tagStyle.text} border ${tagStyle.border}`}>
-                                    {tagStyle.emoji} {tagStyle.displayName || content.columnName}
-                                  </div>
-                                );
-                              })()}
-                            </div>
-
-                            {/* Click hint */}
-                            <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 text-xs text-amber-700 hover:text-amber-900 hover:bg-amber-100"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigate('/production');
-                                }}
-                                onMouseDown={(e) => e.stopPropagation()}
-                              >
-                                {isUsingPlaceholders ? 'Start Creating' : 'View'} <ArrowRight className="h-3 w-3 ml-1" />
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                        </div>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
-              </section>
 
               {/* Work Habits Section */}
               <section className="mt-12">
-                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl overflow-hidden">
-                  <CardHeader className="pb-3 pt-4 bg-gradient-to-r from-green-50 to-emerald-50">
-                    <div className="flex justify-between items-center">
-                      <CardTitle className="text-lg font-bold flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                <div
+                  className="bg-white rounded-[20px] p-6"
+                  style={{
+                    boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+                    border: '1px solid rgba(139, 115, 130, 0.06)',
+                  }}
+                >
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-9 h-9 rounded-[10px] flex items-center justify-center"
+                        style={{
+                          background: 'linear-gradient(145deg, #7a9a7a 0%, #5a8a5a 100%)',
+                          boxShadow: '0 4px 12px rgba(90, 138, 90, 0.2)',
+                        }}
+                      >
+                        <svg width="14" height="11" viewBox="0 0 10 8" fill="none">
+                          <path d="M1 4.5Q2 6 3.5 7Q5.5 4 9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                      <h3
+                        className="text-lg text-[#2d2a26]"
+                        style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
+                      >
                         Work Habits
-                      </CardTitle>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setIsAddingHabit(true)}
-                        className="h-7 text-xs text-green-600 hover:text-green-700 hover:bg-green-100"
-                      >
-                        <Plus className="h-3.5 w-3.5 mr-1" />
-                        Add Habit
-                      </Button>
+                      </h3>
                     </div>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    {/* Week Navigation */}
-                    <div className="flex items-center justify-between px-3 py-2 bg-gray-50 border-b">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setHabitWeekOffset(prev => prev - 1)}
-                        className="h-7 w-7 p-0"
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </Button>
-                      <span className="text-xs font-medium text-gray-700">
-                        {habitWeekOffset === 0 ? 'This Week' :
-                         habitWeekOffset === -1 ? 'Last Week' :
-                         habitWeekOffset === 1 ? 'Next Week' :
-                         `Week ${habitWeekOffset > 0 ? '+' + habitWeekOffset : habitWeekOffset}`}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setHabitWeekOffset(prev => prev + 1)}
-                        className="h-7 w-7 p-0"
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <button
+                      onClick={() => setIsAddingHabit(true)}
+                      className="px-3 py-1.5 rounded-lg text-white text-xs font-semibold flex items-center gap-1"
+                      style={{
+                        fontFamily: "'DM Sans', sans-serif",
+                        background: 'linear-gradient(145deg, #6b4a5e 0%, #4a3442 100%)',
+                        boxShadow: '0 2px 8px rgba(107, 74, 94, 0.2)',
+                      }}
+                    >
+                      <Plus className="w-3 h-3" /> Add
+                    </button>
+                  </div>
 
-                    {/* Habits Grid */}
-                    {habits.length > 0 || isAddingHabit ? (
-                      <div className="overflow-x-auto">
-                        <table className="w-full">
-                          <thead>
-                            <tr className="border-b bg-gray-50/50">
-                              <th className="text-left px-3 py-2 text-xs font-semibold text-gray-600 sticky left-0 bg-gray-50/50 z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">Habit</th>
-                              {getWeekDays(habitWeekOffset).map((day, idx) => {
-                                const isToday = getDateString(day) === getDateString(new Date());
-                                return (
-                                  <th key={idx} className="text-center px-0.5 py-2 w-10">
-                                    <div className={`text-[9px] font-medium ${isToday ? 'text-green-600' : 'text-gray-600'}`}>
-                                      {format(day, 'EEE')}
-                                    </div>
-                                    <div className={`text-[10px] ${isToday ? 'text-green-600 font-bold' : 'text-gray-400'}`}>
-                                      {format(day, 'd')}
-                                    </div>
-                                  </th>
-                                );
-                              })}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {habits.map((habit, habitIdx) => (
-                              <tr key={habit.id} className={`border-b hover:bg-gray-50/50 transition-colors group ${habitIdx % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
-                                <td className={`px-3 py-2 text-sm font-medium text-gray-800 sticky left-0 z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)] ${habitIdx % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
-                                  <div className="flex items-center justify-between gap-2">
-                                    <div className="flex items-center flex-1 min-w-0">
-                                      {editingHabitId === habit.id ? (
-                                        <Input
-                                          autoFocus
-                                          value={editingHabitName}
-                                          onChange={(e) => setEditingHabitName(e.target.value)}
-                                          onKeyDown={(e) => {
-                                            if (e.key === 'Enter') saveEditingHabit();
-                                            if (e.key === 'Escape') cancelEditingHabit();
-                                          }}
-                                          onBlur={saveEditingHabit}
-                                          className="flex-1 h-7 text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0 px-1"
-                                        />
-                                      ) : (
-                                        <div className="flex items-center gap-1.5 min-w-0">
-                                          <span
-                                            className="truncate cursor-pointer hover:text-green-600 transition-colors"
-                                            onClick={() => startEditingHabit(habit.id, habit.name)}
-                                          >
-                                            {habit.name}
-                                          </span>
-                                          {/* Goal Progress Indicator */}
-                                          {(() => {
-                                            const progress = calculateHabitProgress(habit);
-                                            if (!progress) return null;
-                                            const { completed, target } = progress;
-                                            return (
-                                              <span
-                                                className={`text-[10px] font-medium ${getProgressColor(completed, target)} flex-shrink-0`}
-                                                title={`${completed}/${target} ${habit.goal?.period === 'week' ? 'this week' : 'this month'}`}
-                                              >
-                                                {completed}/{target}
-                                              </span>
-                                            );
-                                          })()}
-                                        </div>
-                                      )}
-                                    </div>
-                                    {/* Goal Edit Button with Popover */}
-                                    <Popover
-                                      open={editingGoalHabitId === habit.id}
-                                      onOpenChange={(open) => {
-                                        if (open) startEditingGoal(habit);
-                                        else setEditingGoalHabitId(null);
-                                      }}
-                                    >
-                                      <TooltipProvider delayDuration={100}>
-                                        <Tooltip>
-                                          <TooltipTrigger asChild>
-                                            <PopoverTrigger asChild>
-                                              <button
-                                                className={`${habit.goal ? 'opacity-70' : 'opacity-0 group-hover:opacity-100'} transition-opacity text-gray-400 hover:text-green-600 flex-shrink-0`}
-                                              >
-                                                <Target className="h-3 w-3" />
-                                              </button>
-                                            </PopoverTrigger>
-                                          </TooltipTrigger>
-                                          <TooltipContent side="top" className="text-xs px-2 py-1 min-w-0">
-                                            Set goal
-                                          </TooltipContent>
-                                        </Tooltip>
-                                      </TooltipProvider>
-                                      <PopoverContent className="w-64 p-4 bg-white border border-gray-200 shadow-xl rounded-xl" align="start" sideOffset={8}>
-                                        <div className="space-y-4">
-                                          <div className="flex items-center gap-2">
-                                            <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
-                                              <Target className="h-4 w-4 text-green-600" />
-                                            </div>
-                                            <div>
-                                              <div className="text-sm font-semibold text-gray-900">Set Goal</div>
-                                              <div className="text-[10px] text-gray-500">Track your progress</div>
-                                            </div>
-                                          </div>
-                                          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                                            <Input
-                                              type="number"
-                                              min="1"
-                                              max="31"
-                                              value={editingGoalTarget}
-                                              onChange={(e) => setEditingGoalTarget(e.target.value)}
-                                              className="h-10 w-16 text-center text-lg font-semibold border-gray-200 rounded-lg"
-                                              placeholder="5"
-                                            />
-                                            <span className="text-sm text-gray-600">days per</span>
-                                            <Select
-                                              value={editingGoalPeriod}
-                                              onValueChange={(v: 'week' | 'month') => setEditingGoalPeriod(v)}
-                                            >
-                                              <SelectTrigger className="h-10 w-24 text-sm font-medium border-gray-200 rounded-lg">
-                                                <SelectValue />
-                                              </SelectTrigger>
-                                              <SelectContent>
-                                                <SelectItem value="week">week</SelectItem>
-                                                <SelectItem value="month">month</SelectItem>
-                                              </SelectContent>
-                                            </Select>
-                                          </div>
-                                          <div className="flex gap-2">
-                                            <Button
-                                              size="sm"
-                                              onClick={saveGoal}
-                                              className="h-9 text-sm font-medium bg-green-600 hover:bg-green-700 flex-1 rounded-lg shadow-sm"
-                                            >
-                                              Save Goal
-                                            </Button>
-                                            {habit.goal && (
-                                              <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => removeGoal(habit.id)}
-                                                className="h-9 text-sm font-medium text-gray-500 hover:text-red-600 hover:border-red-200 hover:bg-red-50 rounded-lg"
-                                              >
-                                                Remove
-                                              </Button>
-                                            )}
-                                          </div>
-                                        </div>
-                                      </PopoverContent>
-                                    </Popover>
-                                    <button
-                                      onClick={() => deleteHabit(habit.id)}
-                                      className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500 flex-shrink-0"
-                                      title="Delete habit"
-                                    >
-                                      <Trash2 className="h-3 w-3" />
-                                    </button>
-                                  </div>
-                                </td>
-                                {getWeekDays(habitWeekOffset).map((day, dayIdx) => {
-                                  const dateStr = getDateString(day);
-                                  const isCompleted = habit.completedDates.includes(dateStr);
-                                  const isToday = dateStr === getDateString(new Date());
+                  {/* Habits Grid */}
+                  {habits.length > 0 || isAddingHabit ? (
+                    <div>
+                      {/* Day Headers */}
+                      <div className="grid grid-cols-[1fr_repeat(7,36px)] gap-1 mb-1 pb-3" style={{ borderBottom: '1px solid rgba(139, 115, 130, 0.08)' }}>
+                        <div></div>
+                        {getWeekDays(habitWeekOffset).map((day, idx) => {
+                          const isToday = getDateString(day) === getDateString(new Date());
+                          const dayLabel = ['M', 'T', 'W', 'T', 'F', 'S', 'S'][idx];
+                          return (
+                            <div key={idx} className="text-center">
+                              <div
+                                className="text-[10px] font-semibold"
+                                style={{
+                                  fontFamily: "'DM Sans', sans-serif",
+                                  color: isToday ? '#6b4a5e' : '#8b7a85',
+                                }}
+                              >
+                                {dayLabel}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
 
-                                  return (
-                                    <td key={dayIdx} className="text-center px-0.5 py-1">
-                                      <button
-                                        onClick={() => toggleHabit(habit.id, dateStr)}
-                                        className={`w-6 h-6 rounded border transition-all ${
-                                          isCompleted
-                                            ? 'bg-green-500 border-green-500 text-white shadow-sm hover:bg-green-600'
-                                            : isToday
-                                            ? 'border-green-300 hover:border-green-400 hover:bg-green-50'
-                                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                                        }`}
-                                      >
-                                        {isCompleted && (
-                                          <svg className="w-3.5 h-3.5 mx-auto" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path d="M5 13l4 4L19 7"></path>
-                                          </svg>
-                                        )}
-                                      </button>
-                                    </td>
-                                  );
-                                })}
-                              </tr>
-                            ))}
+                      {/* Habit Rows */}
+                      <div className="space-y-2 pt-2">
+                        {habits.map((habit) => {
+                          const weeklyCompleted = getWeeklyCompletions(habit, habitWeekOffset);
+                          const weeklyTarget = habit.goal?.target || 7;
+                          const isBehind = isHabitBehindPace(habit, weeklyCompleted, habitWeekOffset);
 
-                            {/* Add Habit Row */}
-                            {isAddingHabit && (
-                              <tr className="border-b bg-green-50/30">
-                                <td className="px-3 py-2 sticky left-0 bg-green-50/30 z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]" colSpan={8}>
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <Input
-                                      autoFocus
-                                      placeholder="Enter habit name..."
-                                      value={newHabitName}
-                                      onChange={(e) => setNewHabitName(e.target.value)}
-                                      onKeyDown={(e) => {
-                                        if (e.key === 'Enter') addHabit();
-                                        if (e.key === 'Escape') {
-                                          setIsAddingHabit(false);
-                                          setNewHabitName("");
-                                          setNewHabitGoalTarget("");
+                          return (
+                          <div
+                            key={habit.id}
+                            className="grid grid-cols-[1fr_repeat(7,36px)] gap-1 items-center py-2 group"
+                          >
+                            {/* Habit Name */}
+                            <div className="flex items-center gap-2 min-w-0 pr-2">
+                              {editingHabitId === habit.id ? (
+                                <Input
+                                  autoFocus
+                                  value={editingHabitName}
+                                  onChange={(e) => setEditingHabitName(e.target.value)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') saveEditingHabit();
+                                    if (e.key === 'Escape') cancelEditingHabit();
+                                  }}
+                                  onBlur={saveEditingHabit}
+                                  className="flex-1 h-7 text-[13px] border-0 focus-visible:ring-0 focus-visible:ring-offset-0 px-1 bg-transparent"
+                                  style={{ fontFamily: "'DM Sans', sans-serif" }}
+                                />
+                              ) : (
+                                <>
+                                  <div className="relative min-w-0 flex-1">
+                                    <span
+                                      className="text-[13px] text-[#2d2a26] truncate cursor-pointer hover:text-[#6b4a5e] transition-colors block"
+                                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                                      onClick={() => startEditingHabit(habit.id, habit.name)}
+                                      onMouseEnter={(e) => {
+                                        const el = e.currentTarget;
+                                        if (el.scrollWidth > el.clientWidth) {
+                                          setTruncatedHabitHover(habit.id);
                                         }
                                       }}
-                                      className="flex-1 h-8 text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0 min-w-[120px]"
-                                    />
-                                    {/* Optional Goal Setting */}
-                                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                                      <span>Goal:</span>
-                                      <Input
-                                        type="number"
-                                        min="1"
-                                        max="31"
-                                        placeholder="5"
-                                        value={newHabitGoalTarget}
-                                        onChange={(e) => setNewHabitGoalTarget(e.target.value)}
-                                        className="h-7 w-12 text-xs px-2"
-                                      />
-                                      <span>/</span>
-                                      <Select
-                                        value={newHabitGoalPeriod}
-                                        onValueChange={(v: 'week' | 'month') => setNewHabitGoalPeriod(v)}
+                                      onMouseLeave={() => setTruncatedHabitHover(null)}
+                                    >
+                                      {habit.name}
+                                    </span>
+                                    {truncatedHabitHover === habit.id && (
+                                      <div
+                                        className="absolute left-0 bottom-full mb-1 z-50 px-3 py-1.5 rounded-lg shadow-lg whitespace-nowrap"
+                                        style={{
+                                          fontFamily: "'DM Sans', sans-serif",
+                                          fontSize: '12px',
+                                          backgroundColor: '#1a1a1a',
+                                          color: 'white',
+                                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                                        }}
                                       >
-                                        <SelectTrigger className="h-7 w-16 text-xs border-gray-200">
-                                          <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          <SelectItem value="week">week</SelectItem>
-                                          <SelectItem value="month">month</SelectItem>
-                                        </SelectContent>
-                                      </Select>
-                                    </div>
-                                    <Button
-                                      size="sm"
-                                      onClick={addHabit}
-                                      className="h-8 px-4 text-sm bg-green-600 hover:bg-green-700"
-                                    >
-                                      Add
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      onClick={() => {
-                                        setIsAddingHabit(false);
-                                        setNewHabitName("");
-                                        setNewHabitGoalTarget("");
-                                      }}
-                                      className="h-8 px-3 text-sm"
-                                    >
-                                      Cancel
-                                    </Button>
+                                        {habit.name}
+                                      </div>
+                                    )}
                                   </div>
-                                </td>
-                              </tr>
-                            )}
-                          </tbody>
-                        </table>
+                                  {/* Progress Badge - Clickable to edit goal */}
+                                  {editingGoalHabitId === habit.id ? (
+                                    <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+                                      <span
+                                        className="text-[10px] text-[#7a9a7a]"
+                                        style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}
+                                      >
+                                        {weeklyCompleted}/
+                                      </span>
+                                      <input
+                                        autoFocus
+                                        type="text"
+                                        value={editingGoalTarget}
+                                        onChange={(e) => setEditingGoalTarget(e.target.value.replace(/\D/g, ''))}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') saveGoal();
+                                          if (e.key === 'Escape') setEditingGoalHabitId(null);
+                                        }}
+                                        onBlur={saveGoal}
+                                        className="w-6 h-5 text-[10px] text-center border border-[#7a9a7a] rounded bg-white focus:outline-none focus:ring-1 focus:ring-[#7a9a7a]"
+                                        style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}
+                                      />
+                                    </div>
+                                  ) : (
+                                    <button
+                                      onClick={() => startEditingGoal(habit)}
+                                      className="flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                                      style={{
+                                        fontFamily: "'DM Sans', sans-serif",
+                                        fontWeight: 600,
+                                        fontSize: '10px',
+                                        color: isBehind ? '#8b7a85' : '#7a9a7a',
+                                        backgroundColor: isBehind ? 'rgba(139, 122, 133, 0.1)' : 'rgba(122, 154, 122, 0.1)',
+                                        padding: '2px 6px',
+                                        borderRadius: '4px',
+                                        marginLeft: '8px',
+                                        border: 'none',
+                                      }}
+                                    >
+                                      {weeklyCompleted}/{weeklyTarget}
+                                    </button>
+                                  )}
+                                </>
+                              )}
+                              <button
+                                onClick={() => deleteHabit(habit.id)}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500 flex-shrink-0"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            </div>
+
+                            {/* Day Checkboxes */}
+                            {getWeekDays(habitWeekOffset).map((day, dayIdx) => {
+                              const dateStr = getDateString(day);
+                              const isCompleted = habit.completedDates.includes(dateStr);
+                              const isToday = dateStr === getDateString(new Date());
+
+                              return (
+                                <div
+                                  key={dayIdx}
+                                  className="flex justify-center"
+                                >
+                                  <button
+                                    onClick={() => toggleHabit(habit.id, dateStr)}
+                                    className="w-[26px] h-[26px] rounded-md flex items-center justify-center transition-all"
+                                    style={{
+                                      background: isCompleted
+                                        ? 'linear-gradient(145deg, #8aae8a 0%, #6a9a6a 100%)'
+                                        : 'transparent',
+                                      border: isCompleted
+                                        ? 'none'
+                                        : '1.5px solid rgba(139, 115, 130, 0.15)',
+                                      boxShadow: isCompleted
+                                        ? '0 2px 6px rgba(106, 154, 106, 0.25)'
+                                        : 'none',
+                                    }}
+                                  >
+                                    {isCompleted && (
+                                      <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                                        <path d="M1 4.5Q2 6 3.5 7Q5.5 4 9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                      </svg>
+                                    )}
+                                  </button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                        })}
+
+                        {/* Add Habit Row */}
+                        {isAddingHabit && (
+                          <div className="pt-3 mt-2" style={{ borderTop: '1px solid rgba(139, 115, 130, 0.08)' }}>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                autoFocus
+                                placeholder="Enter habit name..."
+                                value={newHabitName}
+                                onChange={(e) => setNewHabitName(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') addHabit();
+                                  if (e.key === 'Escape') {
+                                    setIsAddingHabit(false);
+                                    setNewHabitName("");
+                                    setNewHabitGoalTarget("");
+                                  }
+                                }}
+                                className="flex-1 h-9 text-[13px] border border-gray-200 rounded-lg focus:border-[#6b4a5e] focus:ring-1 focus:ring-[#6b4a5e]/20"
+                                style={{ fontFamily: "'DM Sans', sans-serif" }}
+                              />
+                              <div className="flex items-center gap-1">
+                                <Input
+                                  placeholder="4"
+                                  value={newHabitGoalTarget}
+                                  onChange={(e) => setNewHabitGoalTarget(e.target.value.replace(/\D/g, ''))}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') addHabit();
+                                    if (e.key === 'Escape') {
+                                      setIsAddingHabit(false);
+                                      setNewHabitName("");
+                                      setNewHabitGoalTarget("");
+                                    }
+                                  }}
+                                  className="w-10 h-9 text-[13px] text-center border border-gray-200 rounded-lg focus:border-[#6b4a5e] focus:ring-1 focus:ring-[#6b4a5e]/20"
+                                  style={{ fontFamily: "'DM Sans', sans-serif" }}
+                                />
+                                <span
+                                  className="text-[11px] text-[#8b7a85]"
+                                  style={{ fontFamily: "'DM Sans', sans-serif" }}
+                                >
+                                  /wk
+                                </span>
+                              </div>
+                              <button
+                                onClick={addHabit}
+                                className="h-9 px-4 rounded-lg text-white text-xs font-semibold"
+                                style={{
+                                  fontFamily: "'DM Sans', sans-serif",
+                                  background: 'linear-gradient(145deg, #7a9a7a 0%, #5a8a5a 100%)',
+                                }}
+                              >
+                                Add
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setIsAddingHabit(false);
+                                  setNewHabitName("");
+                                  setNewHabitGoalTarget("");
+                                }}
+                                className="h-9 px-3 rounded-lg text-[13px] text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                                style={{ fontFamily: "'DM Sans', sans-serif" }}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
+                    </div>
+                  ) : (
+                    <div className="py-8 text-center">
+                      <div
+                        className="w-12 h-12 rounded-xl mx-auto mb-4 flex items-center justify-center"
+                        style={{ background: 'rgba(139, 115, 130, 0.08)' }}
+                      >
+                        <svg width="20" height="20" viewBox="0 0 12 12" fill="none">
+                          <path d="M2.5 6L5 8.5L9.5 3.5" stroke="#8b7a85" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                      <p
+                        className="text-sm text-gray-400 mb-4"
+                        style={{ fontFamily: "'DM Sans', sans-serif" }}
+                      >
+                        No habits yet. Start tracking your work habits!
+                      </p>
+                      <button
+                        onClick={() => setIsAddingHabit(true)}
+                        className="px-4 py-2 rounded-lg text-white text-sm font-semibold"
+                        style={{
+                          fontFamily: "'DM Sans', sans-serif",
+                          background: 'linear-gradient(145deg, #7a9a7a 0%, #5a8a5a 100%)',
+                          boxShadow: '0 2px 8px rgba(90, 138, 90, 0.2)',
+                        }}
+                      >
+                        <Plus className="w-4 h-4 inline mr-1" />
+                        Add Your First Habit
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </section>
+
+              {/* Brand Deals Section */}
+              <section className="mt-8">
+                <div
+                  className="bg-white rounded-[20px] p-6"
+                  style={{
+                    boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+                    border: '1px solid rgba(139, 115, 130, 0.06)',
+                  }}
+                >
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-9 h-9 rounded-[10px] flex items-center justify-center"
+                        style={{
+                          background: 'linear-gradient(145deg, #6b4a5e 0%, #4a3442 100%)',
+                          boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
+                        }}
+                      >
+                        <Diamond className="w-4 h-4 text-white" />
+                      </div>
+                      <h3
+                        className="text-lg text-[#2d2a26]"
+                        style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
+                      >
+                        Brand Deals
+                      </h3>
+                    </div>
+                    <button
+                      onClick={() => navigate('/partnerships')}
+                      className="text-xs font-semibold text-[#6b4a5e] hover:text-[#4a3442] transition-colors flex items-center gap-1"
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                    >
+                      View All <ArrowRight className="w-3 h-3" />
+                    </button>
+                  </div>
+
+                  {/* Upcoming Deadlines */}
+                  <div className="mb-4">
+                    <p
+                      className="text-[11px] font-semibold uppercase mb-2.5"
+                      style={{
+                        fontFamily: "'DM Sans', sans-serif",
+                        color: '#8b7a85',
+                        letterSpacing: '0.08em',
+                      }}
+                    >
+                      Upcoming
+                    </p>
+
+                    {brandDealsData.deadlines.length === 0 ? (
+                      <p
+                        className="text-sm py-4"
+                        style={{ fontFamily: "'DM Sans', sans-serif", color: '#8b7a85' }}
+                      >
+                        No upcoming deadlines
+                      </p>
                     ) : (
-                      <div className="p-8 text-center">
-                        <CheckCircle className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                        <p className="text-sm text-gray-500 mb-4">No habits yet. Start tracking your work habits!</p>
-                        <Button
-                          size="sm"
-                          onClick={() => setIsAddingHabit(true)}
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          <Plus className="h-4 w-4 mr-1" />
-                          Add Your First Habit
-                        </Button>
+                      <div className="space-y-2">
+                        {brandDealsData.deadlines.map((deadline, index) => (
+                          <div
+                            key={`${deadline.brandName}-${index}`}
+                            className="flex items-center justify-between p-3 rounded-[10px]"
+                            style={{
+                              background: 'rgba(139, 115, 130, 0.04)',
+                              border: '1px solid rgba(139, 115, 130, 0.08)',
+                            }}
+                          >
+                            <div>
+                              <p
+                                className="text-sm font-semibold text-[#2d2a26]"
+                                style={{ fontFamily: "'DM Sans', sans-serif" }}
+                              >
+                                {deadline.brandName}
+                              </p>
+                              <p
+                                className="text-xs text-[#8b7a85]"
+                                style={{ fontFamily: "'DM Sans', sans-serif" }}
+                              >
+                                {deadline.action} by {format(deadline.dueDate, 'MMM d')}
+                              </p>
+                            </div>
+                            <span
+                              className="text-[11px] font-bold px-2.5 py-1 rounded-md"
+                              style={{
+                                fontFamily: "'DM Sans', sans-serif",
+                                color: deadline.isUrgent ? '#6b4a5e' : '#8b7a85',
+                                background: deadline.isUrgent ? 'rgba(107, 74, 94, 0.12)' : 'rgba(139, 115, 130, 0.1)',
+                              }}
+                            >
+                              {deadline.daysRemaining} {deadline.daysRemaining === 1 ? 'day' : 'days'}
+                            </span>
+                          </div>
+                        ))}
                       </div>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+
+                  {/* Expected Payments */}
+                  <div
+                    className="rounded-xl p-4"
+                    style={{
+                      background: 'linear-gradient(145deg, rgba(122, 154, 122, 0.06) 0%, rgba(122, 154, 122, 0.1) 100%)',
+                      border: '1px solid rgba(122, 154, 122, 0.12)',
+                    }}
+                  >
+                    <p
+                      className="text-[11px] font-semibold uppercase mb-1"
+                      style={{
+                        fontFamily: "'DM Sans', sans-serif",
+                        color: '#5a8a5a',
+                        letterSpacing: '0.08em',
+                      }}
+                    >
+                      Expected This Month
+                    </p>
+                    <p
+                      className="text-2xl text-[#2d2a26]"
+                      style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
+                    >
+                      ${brandDealsData.expectedPayments.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
               </section>
 
               </div>
@@ -2570,7 +2730,7 @@ const HomePage = () => {
                       <div
                         className="w-9 h-9 rounded-[10px] flex items-center justify-center"
                         style={{
-                          background: 'linear-gradient(145deg, #6b4a5e 0%, #4a3442 100%)',
+                          background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
                           boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
                         }}
                       >
@@ -2665,225 +2825,180 @@ const HomePage = () => {
 
               {/* Monthly Goals Section */}
               <section className="mt-24 pt-16">
-                <div className="bg-gradient-to-br from-[#faf8f9] to-white rounded-2xl border border-[#8B7082]/10 shadow-md overflow-hidden">
+                <div
+                  className="bg-white rounded-[20px] p-6"
+                  style={{
+                    boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+                    border: '1px solid rgba(139, 115, 130, 0.06)',
+                  }}
+                >
                   {/* Header */}
-                  <div className="px-6 py-5 border-b border-[#8B7082]/10">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-xl bg-[#612a4f] flex items-center justify-center">
-                          <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-semibold text-gray-900" style={{ fontFamily: "'Playfair Display', serif" }}>
-                            Monthly Goals
-                          </h3>
-                          <p className="text-sm text-[#8B7082]">{getCurrentMonth()} {getCurrentYear()}</p>
-                        </div>
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-9 h-9 rounded-[10px] flex items-center justify-center"
+                        style={{
+                          background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
+                          boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
+                        }}
+                      >
+                        <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
                       </div>
-                      <div className="flex items-center gap-4">
-                        {getCurrentMonthGoals().length > 0 && (
-                          <div className="text-right">
-                            <span className="text-[#612a4f] font-semibold">
-                              {getCurrentMonthGoals().filter(g => g.status === 'completed').length}/{getCurrentMonthGoals().length}
-                            </span>
-                            <span className="text-[#8B7082] ml-1 text-sm">done</span>
-                          </div>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-[#612a4f] hover:text-[#8B7082] hover:bg-[#8B7082]/10"
-                          onClick={() => navigate('/strategy-growth?tab=growth-goals')}
+                      <div>
+                        <h3
+                          className="text-lg text-[#2d2a26]"
+                          style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
                         >
-                          View All →
-                        </Button>
+                          Monthly Goals
+                        </h3>
+                        <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>{getCurrentMonth()} {getCurrentYear()}</p>
                       </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {getCurrentMonthGoals().length > 0 && (
+                        <div className="text-right">
+                          <span className="text-[#612a4f] font-semibold text-sm" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                            {getCurrentMonthGoals().filter(g => g.status === 'completed').length}/{getCurrentMonthGoals().length}
+                          </span>
+                          <span className="text-[#8B7082] ml-1 text-xs" style={{ fontFamily: "'DM Sans', sans-serif" }}>done</span>
+                        </div>
+                      )}
+                      <button
+                        onClick={() => navigate('/strategy-growth?tab=growth-goals#monthly-goals')}
+                        className="text-xs font-semibold text-[#6b4a5e] hover:text-[#4a3442] transition-colors flex items-center gap-1"
+                        style={{ fontFamily: "'DM Sans', sans-serif" }}
+                      >
+                        View All <ArrowRight className="w-3 h-3" />
+                      </button>
                     </div>
                   </div>
 
                   {/* Goals List */}
-                  <div className="p-4">
-                    <ScrollArea className="max-h-[350px]">
-                      <div className="space-y-2 pr-2">
-                        {getCurrentMonthGoals().slice(0, 6).map((goal) => {
-                          const statusConfig: Record<string, { bg: string; border: string; text: string; label: string }> = {
-                            'not-started': { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-500', label: 'Not Started' },
-                            'in-progress': { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', label: 'In Progress' },
-                            'completed': { bg: 'bg-[#612a4f]/5', border: 'border-[#612a4f]/20', text: 'text-[#612a4f]', label: 'Done!' },
-                          };
-                          const status = statusConfig[goal.status] || statusConfig['not-started'];
+                  <div ref={monthlyGoalsScrollRef} className="max-h-[300px] overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#d1d5db transparent' }}>
+                    <div className="space-y-2.5">
+                      {getCurrentMonthGoals().map((goal) => {
+                        const statusConfig: Record<string, { bgColor: string; textColor: string; borderColor: string; label: string }> = {
+                          'not-started': { bgColor: 'rgba(156, 163, 175, 0.15)', textColor: '#6b7280', borderColor: 'rgba(156, 163, 175, 0.4)', label: 'Not Started' },
+                          'somewhat-done': { bgColor: 'rgba(212, 165, 32, 0.15)', textColor: '#b8860b', borderColor: 'rgba(212, 165, 32, 0.4)', label: 'On It' },
+                          'great-progress': { bgColor: 'rgba(124, 184, 124, 0.15)', textColor: '#5a9a5a', borderColor: 'rgba(124, 184, 124, 0.4)', label: 'Great Progress' },
+                          'completed': { bgColor: '#5a8a5a', textColor: '#ffffff', borderColor: '#5a8a5a', label: 'Fully Completed!' },
+                        };
+                        const status = statusConfig[goal.status] || statusConfig['not-started'];
 
-                          return (
-                            <div key={goal.id} className="group">
-                              <div className={`flex items-center gap-4 px-4 py-3.5 rounded-xl border transition-all ${status.bg} ${status.border} hover:shadow-sm`}>
-                                {/* Status checkbox */}
-                                <button
-                                  onClick={() => handleToggleMonthlyGoal(goal.id)}
-                                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                                    goal.status === 'completed'
-                                      ? 'bg-[#612a4f] border-[#612a4f]'
-                                      : goal.status === 'in-progress'
-                                      ? 'border-amber-400 bg-amber-400'
-                                      : 'border-[#8B7082]/40 hover:border-[#8B7082]'
-                                  }`}
-                                >
-                                  {goal.status === 'completed' && (
-                                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                    </svg>
-                                  )}
-                                  {goal.status === 'in-progress' && (
-                                    <div className="w-1.5 h-1.5 bg-white rounded-full" />
-                                  )}
-                                </button>
-
-                                {/* Goal text */}
-                                {editingMonthlyGoalId === goal.id ? (
-                                  <Input
-                                    value={editingMonthlyGoalText}
-                                    onChange={(e) => setEditingMonthlyGoalText(e.target.value)}
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') handleEditMonthlyGoal(goal.id, editingMonthlyGoalText);
-                                      else if (e.key === 'Escape') { setEditingMonthlyGoalId(null); setEditingMonthlyGoalText(""); }
-                                    }}
-                                    onBlur={() => handleEditMonthlyGoal(goal.id, editingMonthlyGoalText)}
-                                    className="flex-1 text-sm h-8 bg-white"
-                                    autoFocus
-                                  />
-                                ) : (
-                                  <span
-                                    onDoubleClick={() => { setEditingMonthlyGoalId(goal.id); setEditingMonthlyGoalText(goal.text); }}
-                                    className={`flex-1 text-[15px] cursor-pointer ${
-                                      goal.status === 'completed' ? 'line-through text-gray-400' : 'text-gray-800'
-                                    }`}
-                                  >
-                                    {goal.text}
-                                  </span>
-                                )}
-
-                                {/* Status badge */}
-                                <span className={`text-xs font-medium px-3 py-1 rounded-full whitespace-nowrap ${status.bg} ${status.text} border ${status.border}`}>
-                                  {status.label}
-                                </span>
-
-                                {/* Delete button */}
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); handleDeleteMonthlyGoal(goal.id); }}
-                                  className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </ScrollArea>
-
-                    {/* Add Goal */}
-                    {isAddingMonthlyGoal ? (
-                      <div className="flex items-center gap-3 px-4 py-3 mt-3 bg-white rounded-xl border border-[#8B7082]/20">
-                        <div className="w-5 h-5 rounded-full border-2 border-[#8B7082]/30 flex-shrink-0" />
-                        <Input
-                          value={newMonthlyGoalText}
-                          onChange={(e) => setNewMonthlyGoalText(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleAddMonthlyGoal();
-                            else if (e.key === 'Escape') { setIsAddingMonthlyGoal(false); setNewMonthlyGoalText(""); }
-                          }}
-                          onBlur={() => { if (!newMonthlyGoalText.trim()) setIsAddingMonthlyGoal(false); }}
-                          placeholder={`Add a goal for ${getCurrentMonth()}...`}
-                          className="flex-1 text-sm border-0 shadow-none focus-visible:ring-0 bg-transparent"
-                          autoFocus
-                        />
-                        <button
-                          onClick={handleAddMonthlyGoal}
-                          className="w-8 h-8 rounded-lg bg-[#612a4f] text-white flex items-center justify-center hover:bg-[#4d2240] transition-colors"
-                        >
-                          <PlusCircle className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => setIsAddingMonthlyGoal(true)}
-                        className="flex items-center justify-center w-full py-3 mt-3 text-sm text-[#8B7082] hover:text-[#612a4f] hover:bg-[#8B7082]/5 rounded-xl transition-colors border border-dashed border-[#8B7082]/20"
-                      >
-                        <PlusCircle className="h-4 w-4 mr-2" />
-                        Add Goal
-                      </button>
-                    )}
-
-                    {getCurrentMonthGoals().length > 6 && (
-                      <button
-                        onClick={() => navigate('/strategy-growth?tab=growth-goals')}
-                        className="w-full text-center text-sm text-[#612a4f] hover:text-[#8B7082] py-2 mt-2 transition-colors"
-                      >
-                        +{getCurrentMonthGoals().length - 6} more goals
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </section>
-              </div>
-              {/* End Right Column */}
-
-            </div>
-            {/* End Grid Container */}
-
-            {/* Content Stats Row */}
-            <section className="mt-12 flex flex-wrap gap-4">
-              {/* Coming Up */}
-              {upcomingContent.length > 0 && (
-                <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm max-w-sm">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Clock className="w-4 h-4 text-gray-500" />
-                    <h3 className="text-sm font-semibold text-gray-800">Coming Up</h3>
-                  </div>
-                  <div className="space-y-2 max-h-[140px] overflow-y-auto">
-                    {upcomingContent.slice(0, 3).map(({ date, scheduled, planned }) => {
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-                      const isToday = date.toDateString() === today.toDateString();
-                      const dayLabel = isToday ? 'Today' : date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-
-                      return (
-                        <div key={date.toISOString()}>
-                          <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">{dayLabel}</div>
-                          {scheduled.slice(0, 2).map((card: any) => (
+                        return (
+                          <div key={goal.id} className="group">
                             <div
-                              key={card.id}
-                              className="text-xs px-2 py-1.5 rounded-md mb-1 flex items-center gap-1.5"
+                              className="flex items-center gap-4 p-4 rounded-[14px] transition-all hover:border-[rgba(139,115,130,0.2)]"
                               style={{
-                                backgroundColor: card.scheduledColor ?
-                                  { indigo: '#e0e7ff', rose: '#ffe4e6', amber: '#fef3c7', emerald: '#d1fae5', sky: '#e0f2fe', violet: '#ede9fe', orange: '#ffedd5', cyan: '#cffafe', sage: '#DCE5D4' }[card.scheduledColor] || '#e0e7ff'
-                                  : '#e0e7ff',
-                                color: card.scheduledColor ?
-                                  { indigo: '#4338ca', rose: '#be123c', amber: '#b45309', emerald: '#047857', sky: '#0369a1', violet: '#6d28d9', orange: '#c2410c', cyan: '#0e7490', sage: '#5F6B52' }[card.scheduledColor] || '#4338ca'
-                                  : '#4338ca'
+                                background: '#ffffff',
+                                border: '1px solid rgba(139, 115, 130, 0.12)',
+                                boxShadow: '0 2px 8px rgba(139, 115, 130, 0.08)',
                               }}
                             >
-                              <Check className="w-3 h-3 flex-shrink-0" />
-                              <span className="truncate">{card.hook || card.title}</span>
-                            </div>
-                          ))}
-                          {planned.slice(0, 2).map((card: any) => (
-                            <div
-                              key={card.id}
-                              className="text-xs px-2 py-1.5 rounded-md mb-1 bg-violet-50/70 border border-dashed border-violet-300 text-violet-700 flex items-center gap-1.5"
+                              {/* Goal text */}
+                              {editingMonthlyGoalId === goal.id ? (
+                                <Input
+                                  value={editingMonthlyGoalText}
+                                  onChange={(e) => setEditingMonthlyGoalText(e.target.value)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') handleEditMonthlyGoal(goal.id, editingMonthlyGoalText);
+                                    else if (e.key === 'Escape') { setEditingMonthlyGoalId(null); setEditingMonthlyGoalText(""); }
+                                  }}
+                                  onBlur={() => handleEditMonthlyGoal(goal.id, editingMonthlyGoalText)}
+                                  className="flex-1 text-sm h-8 bg-white"
+                                  style={{ fontFamily: "'DM Sans', sans-serif" }}
+                                  autoFocus
+                                />
+                            ) : (
+                              <span
+                                onDoubleClick={() => { setEditingMonthlyGoalId(goal.id); setEditingMonthlyGoalText(goal.text); }}
+                                className="flex-1 text-[15px] font-semibold cursor-pointer text-[#2d2a26]"
+                                style={{ fontFamily: "'DM Sans', sans-serif" }}
+                              >
+                                {goal.text}
+                              </span>
+                            )}
+
+                            {/* Status badge */}
+                            <span
+                              className="text-[11px] font-semibold px-2.5 py-1 rounded-md whitespace-nowrap"
+                              style={{
+                                backgroundColor: status.bgColor,
+                                color: status.textColor,
+                                border: `1px solid ${status.borderColor}`,
+                                fontFamily: "'DM Sans', sans-serif",
+                              }}
                             >
-                              <Lightbulb className="w-3 h-3 flex-shrink-0 text-violet-400" />
-                              <span className="truncate">{card.hook || card.title}</span>
-                            </div>
-                          ))}
+                              {status.label}
+                            </span>
+
+                            {/* Delete button */}
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleDeleteMonthlyGoal(goal.id); }}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
                         </div>
                       );
                     })}
                   </div>
                 </div>
-              )}
+
+                {/* Add Goal */}
+                {isAddingMonthlyGoal ? (
+                  <div
+                    className="flex items-center gap-3 p-4 mt-3 rounded-[14px]"
+                    style={{
+                      background: '#ffffff',
+                      border: '1px solid rgba(139, 115, 130, 0.12)',
+                      boxShadow: '0 2px 8px rgba(139, 115, 130, 0.08)',
+                    }}
+                  >
+                    <Input
+                      value={newMonthlyGoalText}
+                      onChange={(e) => setNewMonthlyGoalText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleAddMonthlyGoal();
+                        else if (e.key === 'Escape') { setIsAddingMonthlyGoal(false); setNewMonthlyGoalText(""); }
+                      }}
+                      onBlur={() => { if (!newMonthlyGoalText.trim()) setIsAddingMonthlyGoal(false); }}
+                      placeholder={`Add a goal for ${getCurrentMonth()}...`}
+                      className="flex-1 text-sm border-0 shadow-none focus-visible:ring-0 bg-transparent"
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                      autoFocus
+                    />
+                    <button
+                      onClick={handleAddMonthlyGoal}
+                      className="w-8 h-8 rounded-lg text-white flex items-center justify-center transition-colors"
+                      style={{
+                        background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
+                      }}
+                    >
+                      <PlusCircle className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setIsAddingMonthlyGoal(true)}
+                    className="flex items-center justify-center w-full py-3 mt-3 text-sm text-[#8B7082] hover:text-[#612a4f] hover:bg-[#8B7082]/5 rounded-xl transition-colors border border-dashed border-[#8B7082]/20"
+                  >
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    Add Goal
+                  </button>
+                )}
+              </div>
             </section>
+
+          </div>
+              {/* End Right Column */}
+
+            </div>
+            {/* End Grid Container */}
+
             </div>
           </div>
         </ScrollArea>
