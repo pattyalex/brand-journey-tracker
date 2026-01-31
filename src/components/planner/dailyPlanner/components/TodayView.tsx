@@ -523,10 +523,10 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
         {/* Date header */}
         <div className="flex-1 h-[60px] flex items-center justify-between px-4">
           <div className="flex items-center gap-2" style={{ marginTop: '4px' }}>
-            <span className="text-sm text-gray-400 uppercase tracking-wide" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 500 }}>
+            <span className="text-sm uppercase tracking-wide" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 500, color: '#8B7082' }}>
               {format(selectedDate, 'EEE')}
             </span>
-            <span className="text-gray-700 leading-none" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 500, fontSize: '38px' }}>
+            <span className="leading-none" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 500, fontSize: '38px', color: '#612a4f' }}>
               {format(selectedDate, 'd')}
             </span>
           </div>

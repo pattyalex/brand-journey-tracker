@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { eachDayOfInterval, endOfMonth, endOfWeek, format, isSameDay, startOfMonth, startOfWeek } from "date-fns";
+import { eachDayOfInterval, endOfMonth, endOfWeek, format, isBefore, isSameDay, startOfDay, startOfMonth, startOfWeek } from "date-fns";
 import { CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { PlannerDay, PlannerItem } from "@/types/planner";
@@ -584,6 +584,7 @@ export const CalendarView = ({
               const dayData = plannerData.find(d => d.date === dayString);
               const isToday = isSameDay(day, new Date());
               const isCurrentMonth = day.getMonth() === selectedDate.getMonth();
+              const isPast = isBefore(startOfDay(day), startOfDay(new Date())) && !isToday;
 
               // Get tasks for this day
               const tasks = dayData?.items || [];
@@ -613,9 +614,11 @@ export const CalendarView = ({
                   key={dayString}
                   data-day={dayString}
                   className={`h-[120px] rounded-lg border p-1.5 transition-all cursor-pointer flex flex-col overflow-hidden ${
-                    isCurrentMonth
-                      ? 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50'
-                      : 'bg-gray-50 border-gray-100 text-gray-400'
+                    !isCurrentMonth
+                      ? 'bg-gray-50 border-gray-100 text-gray-400'
+                      : isPast
+                        ? 'bg-[#fafafa] border-gray-200 text-gray-500 hover:bg-gray-100'
+                        : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50'
                   }`}
                   onClick={(e) => handleDayClick(day, dayString, e)}
                   onDragOver={(e) => {
@@ -629,11 +632,19 @@ export const CalendarView = ({
                   }}
                   onDrop={(e) => handleDrop(e, dayString, e.currentTarget)}
                 >
-                  <span className={`text-sm font-medium flex-shrink-0 ${
-                    isToday ? 'text-indigo-600 font-bold' : ''
-                  }`} style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                    {format(day, 'd')}
-                  </span>
+                  {isToday ? (
+                    <span className="w-7 h-7 rounded-full bg-[#8B7082] text-white flex items-center justify-center text-sm font-semibold" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                      {format(day, 'd')}
+                    </span>
+                  ) : (
+                    <span className="text-sm font-medium flex-shrink-0" style={{
+                      fontFamily: "'DM Sans', sans-serif",
+                      color: (isPast && isCurrentMonth) ? '#9ca3af' : isCurrentMonth ? '#111827' : '#9ca3af',
+                      fontWeight: 500
+                    }}>
+                      {format(day, 'd')}
+                    </span>
+                  )}
 
                   {/* Task and Content indicators - scrollable */}
                   <div
