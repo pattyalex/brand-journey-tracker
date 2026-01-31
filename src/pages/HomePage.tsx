@@ -58,9 +58,10 @@ import {
   ChevronRight,
   CheckCircle,
   Clock,
-  Check
+  Check,
+  Pencil
 } from "lucide-react";
-import { format, startOfWeek, addDays, isSameDay, startOfMonth, endOfMonth, endOfWeek, eachDayOfInterval } from "date-fns";
+import { format, startOfWeek, addDays, isSameDay, startOfMonth, endOfMonth, endOfWeek, eachDayOfInterval, formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import AIRecommendations from '@/components/analytics/AIRecommendations';
 import VerificationGuard from '@/components/VerificationGuard';
@@ -356,6 +357,16 @@ const HomePage = () => {
   // Mission Statement and Vision Board from Strategy & Growth
   const [missionStatement, setMissionStatement] = useState("");
   const [visionBoardImages, setVisionBoardImages] = useState<string[]>([]);
+
+  // Continue Creating section - cards from kanban
+  interface ContinueCreatingCard {
+    id: string;
+    title: string;
+    stage: 'Edit' | 'Film' | 'Script' | 'Ideate';
+    columnId: string;
+    lastUpdated: Date;
+  }
+  const [continueCreatingCards, setContinueCreatingCards] = useState<ContinueCreatingCard[]>([]);
 
   // Celebration state for completing all priorities
   const [showCelebration, setShowCelebration] = useState(false);
@@ -777,6 +788,88 @@ const HomePage = () => {
     });
 
     window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      unsubscribe();
+    };
+  }, []);
+
+  // Load Continue Creating cards from kanban
+  useEffect(() => {
+    const loadContinueCreating = () => {
+      const productionData = getJSON<KanbanColumn[]>(StorageKeys.productionKanban, []);
+
+      // Map column IDs to stages and get cards
+      const columnMapping: Record<string, { stage: 'Edit' | 'Film' | 'Script' | 'Ideate', priority: number }> = {
+        'to-edit': { stage: 'Edit', priority: 1 },
+        'to-film': { stage: 'Film', priority: 2 },
+        'script-ideas': { stage: 'Script', priority: 3 },
+        'ideate': { stage: 'Ideate', priority: 4 },
+      };
+
+      // Collect cards from each column (excluding to-schedule)
+      const cardsByColumn: Record<string, ContinueCreatingCard[]> = {
+        'to-edit': [],
+        'to-film': [],
+        'script-ideas': [],
+        'ideate': [],
+      };
+
+      productionData.forEach(column => {
+        if (columnMapping[column.id]) {
+          const { stage } = columnMapping[column.id];
+          column.cards.forEach(card => {
+            // Skip cards that are completed or in schedule
+            if (!card.isCompleted) {
+              cardsByColumn[column.id].push({
+                id: card.id,
+                title: card.title,
+                stage,
+                columnId: column.id,
+                // Use a pseudo last-updated based on card position (newer cards at top)
+                lastUpdated: new Date(),
+              });
+            }
+          });
+        }
+      });
+
+      // Select up to 3 cards with diversity across stages
+      const selectedCards: ContinueCreatingCard[] = [];
+
+      // Priority order: Edit -> Film -> Script -> Ideate
+      const priorityOrder = ['to-edit', 'to-film', 'script-ideas', 'ideate'];
+
+      // First pass: take 1 from each column in priority order
+      for (const colId of priorityOrder) {
+        if (selectedCards.length >= 3) break;
+        if (cardsByColumn[colId].length > 0) {
+          selectedCards.push(cardsByColumn[colId].shift()!);
+        }
+      }
+
+      // Second pass: fill remaining slots from columns that still have cards
+      for (const colId of priorityOrder) {
+        if (selectedCards.length >= 3) break;
+        while (cardsByColumn[colId].length > 0 && selectedCards.length < 3) {
+          selectedCards.push(cardsByColumn[colId].shift()!);
+        }
+      }
+
+      setContinueCreatingCards(selectedCards);
+    };
+
+    loadContinueCreating();
+
+    // Listen for changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === StorageKeys.productionKanban) {
+        loadContinueCreating();
+      }
+    };
+    const unsubscribe = on(window, EVENTS.productionKanbanUpdated, loadContinueCreating);
+    window.addEventListener('storage', handleStorageChange);
+
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       unsubscribe();
@@ -2462,52 +2555,112 @@ const HomePage = () => {
               {/* Right Column - Mission Statement, Monthly Goals, Content Calendar */}
               <div className="space-y-12">
 
-              {/* Mission Statement Section */}
+              {/* Continue Creating Section */}
               <section className="mt-24 pt-16">
-                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white rounded-2xl relative">
-                  <CardContent className="py-8 px-6">
-                    {missionStatement ? (
-                      <>
-                        <div className="mb-8">
-                          <span className="text-gray-400 text-xs">Mission Statement</span>
-                        </div>
-                        <div className="flex items-center justify-center min-h-[120px] py-4">
-                          <p
-                            className="text-2xl leading-relaxed text-gray-800 text-center font-serif italic"
-                            style={{ fontFamily: "'Playfair Display', serif" }}
+                <div
+                  className="bg-white rounded-[20px] p-6"
+                  style={{
+                    boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+                    border: '1px solid rgba(139, 115, 130, 0.06)',
+                  }}
+                >
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-9 h-9 rounded-[10px] flex items-center justify-center"
+                        style={{
+                          background: 'linear-gradient(145deg, #6b4a5e 0%, #4a3442 100%)',
+                          boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
+                        }}
+                      >
+                        <Pencil className="w-4 h-4 text-white" />
+                      </div>
+                      <h3
+                        className="text-lg text-[#2d2a26]"
+                        style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
+                      >
+                        Continue Creating
+                      </h3>
+                    </div>
+                    <button
+                      onClick={() => navigate('/production')}
+                      className="text-xs font-semibold text-[#6b4a5e] hover:text-[#4a3442] transition-colors flex items-center gap-1"
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                    >
+                      View All <ArrowRight className="w-3 h-3" />
+                    </button>
+                  </div>
+
+                  {/* Content Cards */}
+                  <div className="space-y-2.5">
+                    {continueCreatingCards.length > 0 ? (
+                      continueCreatingCards.map((card) => {
+                        const stageBadgeColors: Record<string, string> = {
+                          'Edit': '#6b4a5e',
+                          'Film': '#8b6a7e',
+                          'Script': '#a8899a',
+                          'Ideate': '#b8a9aa',
+                        };
+
+                        return (
+                          <div
+                            key={card.id}
+                            onClick={() => navigate('/production')}
+                            className="p-4 rounded-[14px] cursor-pointer hover:border-[rgba(139,115,130,0.15)] transition-all"
+                            style={{
+                              background: 'rgba(139, 115, 130, 0.04)',
+                              border: '1px solid rgba(139, 115, 130, 0.08)',
+                            }}
                           >
-                            {missionStatement}
-                          </p>
-                        </div>
-                        <div className="flex justify-end">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => navigate('/strategy-growth')}
-                            className="text-gray-400 hover:text-gray-600 text-xs"
-                          >
-                            Edit →
-                          </Button>
-                        </div>
-                      </>
+                            {/* Title */}
+                            <p
+                              className="text-[15px] font-semibold text-[#2d2a26] mb-2"
+                              style={{ fontFamily: "'DM Sans', sans-serif" }}
+                            >
+                              {card.title}
+                            </p>
+
+                            {/* Stage Badge + Last Updated */}
+                            <div className="flex items-center justify-between">
+                              <span
+                                className="text-[11px] font-semibold text-white px-2.5 py-1 rounded-md"
+                                style={{
+                                  fontFamily: "'DM Sans', sans-serif",
+                                  backgroundColor: stageBadgeColors[card.stage],
+                                }}
+                              >
+                                {card.stage}
+                              </span>
+                              <span
+                                className="text-[11px] text-[#8b7a85]"
+                                style={{ fontFamily: "'DM Sans', sans-serif" }}
+                              >
+                                {formatDistanceToNow(card.lastUpdated, { addSuffix: false })}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })
                     ) : (
-                      <div className="space-y-3 flex flex-col items-center">
-                        <p className="text-base text-gray-400 italic text-center">
-                          Your mission statement will appear here as a daily reminder
-                        </p>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate('/strategy-growth')}
-                          className="h-7 text-xs text-gray-500 hover:text-gray-700"
+                      <div className="py-8 text-center">
+                        <p
+                          className="text-sm text-gray-400 mb-3"
+                          style={{ fontFamily: "'DM Sans', sans-serif" }}
                         >
-                          <Plus className="h-3 w-3 mr-1" />
-                          Add Mission Statement
-                        </Button>
+                          No content in progress yet
+                        </p>
+                        <button
+                          onClick={() => navigate('/production')}
+                          className="text-sm font-medium text-[#6b4a5e] hover:text-[#4a3442] transition-colors"
+                          style={{ fontFamily: "'DM Sans', sans-serif" }}
+                        >
+                          Start creating →
+                        </button>
                       </div>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </section>
 
               {/* Monthly Goals Section */}
