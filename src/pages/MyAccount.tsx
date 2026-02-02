@@ -3,33 +3,67 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { CreditCard, User, Wallet } from 'lucide-react';
+import { Switch } from "@/components/ui/switch";
+import {
+  CreditCard, User, Lock, ChevronRight, Crown, Check, Plus, Shield, LogOut,
+  Bell, Globe, Calendar, Download, Trash2, Smartphone, Mail, DollarSign,
+  FileText, Camera, AlertTriangle
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { getCurrentUser, updateUserProfile, updateUserPassword, logout } from '@/lib/supabase';
-import SocialPlatformsManager from '@/components/settings/SocialPlatformsManager';
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
+import { StorageKeys, getString, setString } from "@/lib/storage";
+import APIKeySettings from "@/components/settings/APIKeySettings";
+import OpenAISettings from "@/components/settings/OpenAISettings";
+import ClaudeAPISettings from "@/components/settings/ClaudeAPISettings";
+
+// Timezone options
+const TIMEZONES = [
+  { value: 'America/Los_Angeles', label: 'PST', name: 'Pacific Time', offset: 'UTC-8' },
+  { value: 'America/Denver', label: 'MST', name: 'Mountain Time', offset: 'UTC-7' },
+  { value: 'America/Chicago', label: 'CST', name: 'Central Time', offset: 'UTC-6' },
+  { value: 'America/New_York', label: 'EST', name: 'Eastern Time', offset: 'UTC-5' },
+  { value: 'Europe/London', label: 'GMT', name: 'Greenwich Mean Time', offset: 'UTC+0' },
+  { value: 'Europe/Paris', label: 'CET', name: 'Central European Time', offset: 'UTC+1' },
+  { value: 'Europe/Bucharest', label: 'EET', name: 'Eastern European Time', offset: 'UTC+2' },
+  { value: 'Asia/Tokyo', label: 'JST', name: 'Japan Standard Time', offset: 'UTC+9' },
+  { value: 'Australia/Sydney', label: 'AEST', name: 'Australian Eastern Time', offset: 'UTC+10' },
+];
 
 const MyAccount = () => {
   const navigate = useNavigate();
   const { openLoginModal } = useAuth();
-  
+
   // Profile state
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [bio, setBio] = useState('');
   const [loading, setLoading] = useState(true);
-  
+  const [activeSection, setActiveSection] = useState('profile');
+
   // Password change state
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [changingPassword, setChangingPassword] = useState(false);
   const [updatingProfile, setUpdatingProfile] = useState(false);
-  
+
+  // Preferences state
+  const [selectedTimezone, setSelectedTimezone] = useState(() => {
+    return getString(StorageKeys.selectedTimezone) || 'auto';
+  });
+  const [dateFormat, setDateFormat] = useState('MM/DD/YYYY');
+  const [firstDayOfWeek, setFirstDayOfWeek] = useState('monday');
+
+  // Notification state
+  const [weeklyDigest, setWeeklyDigest] = useState(false);
+  const [dealReminders, setDealReminders] = useState(true);
+  const [paymentAlerts, setPaymentAlerts] = useState(true);
+  const [pushNotifications, setPushNotifications] = useState(true);
+
   useEffect(() => {
-    // Load user data
     const loadUserData = async () => {
       setLoading(true);
       try {
@@ -37,6 +71,7 @@ const MyAccount = () => {
         if (user) {
           setName(user.user_metadata?.full_name || '');
           setEmail(user.email || '');
+          setBio(user.user_metadata?.bio || '');
         }
       } catch (error) {
         console.error('Error loading user data:', error);
@@ -45,16 +80,16 @@ const MyAccount = () => {
         setLoading(false);
       }
     };
-    
+
     loadUserData();
   }, []);
-  
+
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setUpdatingProfile(true);
-    
+
     try {
-      await updateUserProfile({ full_name: name, email });
+      await updateUserProfile({ full_name: name, email, bio });
       toast.success('Profile updated successfully');
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -63,29 +98,26 @@ const MyAccount = () => {
       setUpdatingProfile(false);
     }
   };
-  
+
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validate password requirements
+
     const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.{10,})/;
     if (!passwordRegex.test(newPassword)) {
       toast.error('Password must be at least 10 characters and include at least one uppercase letter and one special character');
       return;
     }
-    
-    // Check if passwords match
+
     if (newPassword !== confirmPassword) {
       toast.error('New passwords do not match');
       return;
     }
-    
+
     setChangingPassword(true);
-    
+
     try {
       await updateUserPassword(currentPassword, newPassword);
       toast.success('Password changed successfully');
-      // Reset form
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -96,442 +128,1035 @@ const MyAccount = () => {
       setChangingPassword(false);
     }
   };
+
+  const handleTimezoneChange = (timezone: string) => {
+    setSelectedTimezone(timezone);
+    setString(StorageKeys.selectedTimezone, timezone);
+    toast.success('Timezone updated');
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await logout();
+      navigate('/');
+      toast.success("You've officially signed out");
+      setTimeout(() => {
+        openLoginModal();
+      }, 500);
+    } catch (error) {
+      console.error('Error signing out:', error);
+      toast.error('Failed to sign out');
+    }
+  };
+
+  const sections = [
+    { id: 'profile', label: 'Profile', icon: User },
+    { id: 'account', label: 'Account', icon: Lock },
+    { id: 'membership', label: 'Membership', icon: Crown },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'preferences', label: 'Preferences', icon: Globe },
+    { id: 'integrations', label: 'Integrations', icon: Calendar },
+    { id: 'data', label: 'Data', icon: Download },
+  ];
+
   return (
     <Layout>
-      <div className="flex flex-col gap-6">
-        <h1 className="text-3xl font-bold">My Account</h1>
-        
-        <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="mb-4">
-            <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="membership">Membership</TabsTrigger>
-            <TabsTrigger value="payment">Payment Methods</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="profile">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  Profile Information
-                </CardTitle>
-                <CardDescription>
-                  Manage your personal information and account details.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {/* Profile Information & Edit Section */}
-                  <div className="bg-card p-6 rounded-lg border">
-                    <h3 className="text-lg font-medium mb-4">Profile Information</h3>
-                    <form onSubmit={handleProfileUpdate} className="space-y-4">
-                      <div className="grid gap-3">
-                        <label htmlFor="name" className="text-sm font-medium">
-                          Full Name
+      <ScrollArea className="h-full" style={{ background: '#f9f7f5' }}>
+        <div className="min-h-screen" style={{ background: '#f9f7f5' }}>
+          <div className="max-w-5xl mx-auto px-6 md:px-8 pt-8 pb-16">
+            {/* Header */}
+            <div className="mb-8">
+              <h1
+                className="text-4xl mb-2"
+                style={{
+                  fontFamily: "'Playfair Display', serif",
+                  fontWeight: 600,
+                  color: '#2d2a26'
+                }}
+              >
+                Settings
+              </h1>
+              <p
+                className="text-[15px] text-[#8B7082]"
+                style={{ fontFamily: "'DM Sans', sans-serif" }}
+              >
+                Manage your account, preferences, and subscription
+              </p>
+            </div>
+
+            <div className="flex gap-8">
+              {/* Sidebar Navigation */}
+              <div className="w-56 flex-shrink-0">
+                <nav className="space-y-1 sticky top-8">
+                  {sections.map((section) => (
+                    <button
+                      key={section.id}
+                      onClick={() => setActiveSection(section.id)}
+                      className={cn(
+                        "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
+                        activeSection === section.id
+                          ? "bg-white text-[#612a4f] shadow-sm"
+                          : "text-[#8B7082] hover:bg-white/50 hover:text-[#612a4f]"
+                      )}
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                    >
+                      <section.icon className={cn(
+                        "w-4 h-4",
+                        activeSection === section.id ? "text-[#612a4f]" : "text-[#8B7082]"
+                      )} />
+                      {section.label}
+                      {activeSection === section.id && (
+                        <ChevronRight className="w-4 h-4 ml-auto" />
+                      )}
+                    </button>
+                  ))}
+
+                  {/* Sign Out Button */}
+                  <div className="pt-4 mt-4 border-t border-[#8B7082]/10">
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-[#8B7082] hover:bg-red-50 hover:text-red-500 transition-all"
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                </nav>
+              </div>
+
+              {/* Main Content */}
+              <div className="flex-1 space-y-6">
+                {/* ========== PROFILE SECTION ========== */}
+                {activeSection === 'profile' && (
+                  <div
+                    className="bg-white/80 rounded-[20px] p-6"
+                    style={{
+                      boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+                      border: '1px solid rgba(139, 115, 130, 0.06)',
+                    }}
+                  >
+                    <div className="flex items-center gap-3 mb-6">
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center"
+                        style={{
+                          background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
+                          boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
+                        }}
+                      >
+                        <User className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h2
+                          className="text-lg text-[#2d2a26]"
+                          style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
+                        >
+                          Profile
+                        </h2>
+                        <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                          Your personal information
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Profile Photo */}
+                    <div className="flex items-center gap-4 mb-6 pb-6 border-b border-[#8B7082]/10">
+                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#8b6a7e] to-[#4a3442] flex items-center justify-center text-white text-2xl font-semibold">
+                        {name ? name.charAt(0).toUpperCase() : 'U'}
+                      </div>
+                      <div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-9 px-4 rounded-lg border-[#8B7082]/30 text-[#612a4f] hover:bg-[#612a4f]/5 mb-2"
+                          style={{ fontFamily: "'DM Sans', sans-serif" }}
+                        >
+                          <Camera className="w-4 h-4 mr-2" />
+                          Upload Photo
+                        </Button>
+                        <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                          JPG, PNG or GIF. Max 2MB.
+                        </p>
+                      </div>
+                    </div>
+
+                    <form onSubmit={handleProfileUpdate} className="space-y-5">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                            Full Name
+                          </label>
+                          <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            disabled={loading}
+                            placeholder="Enter your name"
+                            className="w-full h-11 px-4 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-[#612a4f] focus:ring-2 focus:ring-[#612a4f]/20 outline-none transition-all disabled:opacity-50"
+                            style={{ fontFamily: "'DM Sans', sans-serif" }}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                            Email Address
+                          </label>
+                          <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            disabled={loading}
+                            placeholder="Enter your email"
+                            className="w-full h-11 px-4 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-[#612a4f] focus:ring-2 focus:ring-[#612a4f]/20 outline-none transition-all disabled:opacity-50"
+                            style={{ fontFamily: "'DM Sans', sans-serif" }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                          Bio
                         </label>
-                        <input
-                          type="text"
-                          id="name"
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
+                        <textarea
+                          value={bio}
+                          onChange={(e) => setBio(e.target.value)}
                           disabled={loading}
-                          placeholder="Enter your name"
+                          placeholder="Tell us a little about yourself..."
+                          rows={3}
+                          className="w-full px-4 py-3 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-[#612a4f] focus:ring-2 focus:ring-[#612a4f]/20 outline-none transition-all disabled:opacity-50 resize-none"
+                          style={{ fontFamily: "'DM Sans', sans-serif" }}
                         />
                       </div>
-                      
-                      <div className="grid gap-3">
-                        <label htmlFor="email" className="text-sm font-medium">
-                          Email Address
-                        </label>
-                        <input
-                          type="email"
-                          id="email"
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          disabled={loading}
-                          placeholder="Enter your email"
-                        />
-                      </div>
-                      
-                      <Button 
-                        type="submit" 
-                        className="mt-2"
+
+                      <Button
+                        type="submit"
                         disabled={loading || updatingProfile}
+                        className="h-11 px-6 rounded-xl text-white font-medium"
+                        style={{
+                          fontFamily: "'DM Sans', sans-serif",
+                          background: 'linear-gradient(145deg, #612a4f 0%, #4a3442 100%)',
+                        }}
                       >
                         {updatingProfile ? 'Saving...' : 'Save Changes'}
                       </Button>
                     </form>
                   </div>
+                )}
 
-                  {/* Social Media Platforms Section */}
-                  <div className="bg-card p-6 rounded-lg border">
-                    <h3 className="text-lg font-medium mb-4">Connected Social Media Platforms</h3>
-                    <div className="space-y-4">
-                      <SocialPlatformsManager />
+                {/* ========== ACCOUNT SECTION ========== */}
+                {activeSection === 'account' && (
+                  <div className="space-y-6">
+                    {/* Change Password */}
+                    <div
+                      className="bg-white/80 rounded-[20px] p-6"
+                      style={{
+                        boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+                        border: '1px solid rgba(139, 115, 130, 0.06)',
+                      }}
+                    >
+                      <div className="flex items-center gap-3 mb-6">
+                        <div
+                          className="w-10 h-10 rounded-xl flex items-center justify-center"
+                          style={{
+                            background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
+                            boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
+                          }}
+                        >
+                          <Lock className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+                            Change Password
+                          </h2>
+                          <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                            Keep your account secure
+                          </p>
+                        </div>
+                      </div>
+
+                      <form onSubmit={handlePasswordChange} className="space-y-5">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                            Current Password
+                          </label>
+                          <input
+                            type="password"
+                            value={currentPassword}
+                            onChange={(e) => setCurrentPassword(e.target.value)}
+                            disabled={changingPassword}
+                            placeholder="••••••••••"
+                            className="w-full h-11 px-4 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-[#612a4f] focus:ring-2 focus:ring-[#612a4f]/20 outline-none transition-all disabled:opacity-50"
+                            style={{ fontFamily: "'DM Sans', sans-serif" }}
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              New Password
+                            </label>
+                            <input
+                              type="password"
+                              value={newPassword}
+                              onChange={(e) => setNewPassword(e.target.value)}
+                              disabled={changingPassword}
+                              placeholder="••••••••••"
+                              className="w-full h-11 px-4 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-[#612a4f] focus:ring-2 focus:ring-[#612a4f]/20 outline-none transition-all disabled:opacity-50"
+                              style={{ fontFamily: "'DM Sans', sans-serif" }}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              Confirm Password
+                            </label>
+                            <input
+                              type="password"
+                              value={confirmPassword}
+                              onChange={(e) => setConfirmPassword(e.target.value)}
+                              disabled={changingPassword}
+                              placeholder="••••••••••"
+                              className="w-full h-11 px-4 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-[#612a4f] focus:ring-2 focus:ring-[#612a4f]/20 outline-none transition-all disabled:opacity-50"
+                              style={{ fontFamily: "'DM Sans', sans-serif" }}
+                            />
+                          </div>
+                        </div>
+
+                        <div
+                          className="p-4 rounded-xl"
+                          style={{
+                            background: 'linear-gradient(145deg, rgba(139, 106, 126, 0.08) 0%, rgba(74, 52, 66, 0.05) 100%)',
+                            border: '1px solid rgba(139, 115, 130, 0.1)',
+                          }}
+                        >
+                          <p className="text-sm text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                            Password must be at least 10 characters with one uppercase letter and one special character.
+                          </p>
+                        </div>
+
+                        <Button
+                          type="submit"
+                          disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword}
+                          variant="outline"
+                          className="h-11 px-6 rounded-xl font-medium border-[#8B7082]/30 text-[#612a4f] hover:bg-[#612a4f]/5 hover:border-[#612a4f]/30 disabled:opacity-50"
+                          style={{ fontFamily: "'DM Sans', sans-serif" }}
+                        >
+                          {changingPassword ? 'Changing...' : 'Update Password'}
+                        </Button>
+                      </form>
+                    </div>
+
+                    {/* Two-Factor Authentication */}
+                    <div
+                      className="bg-white/80 rounded-[20px] p-6"
+                      style={{
+                        boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+                        border: '1px solid rgba(139, 115, 130, 0.06)',
+                      }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-lg bg-[#8B7082]/10 flex items-center justify-center">
+                            <Shield className="w-4 h-4 text-[#612a4f]" />
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              Two-Factor Authentication
+                            </h3>
+                            <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              Add an extra layer of security
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-9 px-4 rounded-lg border-[#8B7082]/30 text-[#612a4f] hover:bg-[#612a4f]/5"
+                          style={{ fontFamily: "'DM Sans', sans-serif" }}
+                        >
+                          Enable
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Delete Account */}
+                    <div
+                      className="bg-white/80 rounded-[20px] p-6"
+                      style={{
+                        boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+                        border: '1px solid rgba(220, 38, 38, 0.1)',
+                      }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-lg bg-red-50 flex items-center justify-center">
+                            <Trash2 className="w-4 h-4 text-red-500" />
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              Delete Account
+                            </h3>
+                            <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              Permanently delete your account and all data
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-9 px-4 rounded-lg border-red-200 text-red-500 hover:bg-red-50"
+                          style={{ fontFamily: "'DM Sans', sans-serif" }}
+                        >
+                          Delete
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                  
-                  {/* Change Password Section */}
-                  <div className="bg-card p-6 rounded-lg border">
-                    <h3 className="text-lg font-medium mb-4">Change Password</h3>
-                    <form onSubmit={handlePasswordChange} className="space-y-4">
-                      <div className="grid gap-3">
-                        <label htmlFor="current-password" className="text-sm font-medium">
-                          Current Password
-                        </label>
-                        <input
-                          type="password"
-                          id="current-password"
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                          placeholder="••••••••••"
-                          value={currentPassword}
-                          onChange={(e) => setCurrentPassword(e.target.value)}
-                          disabled={changingPassword}
-                        />
+                )}
+
+                {/* ========== MEMBERSHIP SECTION ========== */}
+                {activeSection === 'membership' && (
+                  <div className="space-y-6">
+                    <div
+                      className="bg-white/80 rounded-[20px] p-6"
+                      style={{
+                        boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+                        border: '1px solid rgba(139, 115, 130, 0.06)',
+                      }}
+                    >
+                      <div className="flex items-center gap-3 mb-6">
+                        <div
+                          className="w-10 h-10 rounded-xl flex items-center justify-center"
+                          style={{
+                            background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
+                            boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
+                          }}
+                        >
+                          <Crown className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+                            Membership
+                          </h2>
+                          <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                            Manage your subscription
+                          </p>
+                        </div>
                       </div>
-                      
-                      <div className="grid gap-3">
-                        <label htmlFor="new-password" className="text-sm font-medium">
-                          New Password
-                        </label>
-                        <input
-                          type="password"
-                          id="new-password"
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                          placeholder="••••••••••"
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                          disabled={changingPassword}
-                        />
-                      </div>
-                      
-                      <div className="grid gap-3">
-                        <label htmlFor="confirm-password" className="text-sm font-medium">
-                          Confirm New Password
-                        </label>
-                        <input
-                          type="password"
-                          id="confirm-password"
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                          placeholder="••••••••••"
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          disabled={changingPassword}
-                        />
-                      </div>
-                      
-                      <div className="text-sm text-muted-foreground">
-                        <p>Password must be at least 10 characters and include at least one uppercase letter and one special character.</p>
-                      </div>
-                      
-                      <Button 
-                        type="submit" 
-                        className="mt-2" 
-                        variant="outline"
-                        disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword}
+
+                      {/* Trial Banner */}
+                      <div
+                        className="p-4 rounded-xl mb-6 flex items-center justify-between"
+                        style={{
+                          background: 'linear-gradient(145deg, rgba(97, 42, 79, 0.08) 0%, rgba(74, 52, 66, 0.05) 100%)',
+                          border: '1px solid rgba(97, 42, 79, 0.15)',
+                        }}
                       >
-                        {changingPassword ? 'Changing...' : 'Change Password'}
-                      </Button>
-                    </form>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="membership">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Wallet className="h-5 w-5" />
-                  Membership
-                </CardTitle>
-                <CardDescription>
-                  View and manage your current membership plan.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {/* Trial Status Banner */}
-                  <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-lg font-medium flex items-center gap-2">
-                          <span className="inline-block h-3 w-3 rounded-full bg-blue-500 animate-pulse"></span>
-                          Free Trial Active
-                        </h3>
-                        <p className="text-muted-foreground mt-2">
-                          Your 7-day free trial ends on <span className="font-medium">May 30, 2025</span>
-                        </p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          You'll be automatically charged $17.00 on May 30, 2025 unless you cancel.
-                        </p>
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 rounded-full bg-[#612a4f] animate-pulse"></div>
+                          <div>
+                            <p className="text-sm font-medium text-[#612a4f]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              Free Trial Active
+                            </p>
+                            <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              7-day trial ends on May 30, 2025
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 px-3 rounded-lg text-xs border-red-200 text-red-500 hover:bg-red-50"
+                          style={{ fontFamily: "'DM Sans', sans-serif" }}
+                        >
+                          Cancel Trial
+                        </Button>
                       </div>
-                      <Button variant="outline" className="text-red-500 border-red-200 hover:bg-red-50">
-                        Cancel Trial
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  {/* Current Plan Details */}
-                  <div className="bg-primary/10 p-6 rounded-lg border border-primary/20">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-lg font-medium">Current Plan: Premium Monthly</h3>
-                        <p className="text-muted-foreground mt-2">
-                          $17.00 per month, billed monthly
-                        </p>
-                        <p className="text-sm mt-2">
-                          Next billing date: <span className="font-medium">May 30, 2025</span>
-                        </p>
-                      </div>
-                      <Button variant="outline" className="text-red-500 border-red-200 hover:bg-red-50">
-                        Cancel Subscription
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    {/* Monthly Plan Card */}
-                    <Card className="border-2 border-primary">
-                      <CardHeader className="pb-2">
-                        <div className="flex justify-between items-center">
-                          <CardTitle>Monthly Plan</CardTitle>
-                          <span className="bg-blue-500 text-white text-xs font-medium px-2 py-1 rounded-full">
+
+                      {/* Current Plan */}
+                      <div className="p-5 rounded-xl bg-[#8B7082]/5 mb-6">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              Premium Monthly
+                            </p>
+                            <p className="text-2xl font-semibold text-[#612a4f] mt-1" style={{ fontFamily: "'Playfair Display', serif" }}>
+                              $17<span className="text-sm font-normal text-[#8B7082]">/month</span>
+                            </p>
+                            <p className="text-xs text-[#8B7082] mt-2" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              Next billing: May 30, 2025
+                            </p>
+                          </div>
+                          <span
+                            className="px-3 py-1 rounded-full text-xs font-medium"
+                            style={{
+                              background: 'linear-gradient(145deg, #612a4f 0%, #4a3442 100%)',
+                              color: 'white',
+                              fontFamily: "'DM Sans', sans-serif",
+                            }}
+                          >
                             Current Plan
                           </span>
                         </div>
-                        <CardDescription>Best for flexibility</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-3xl font-bold">$17<span className="text-sm font-normal text-muted-foreground">/month</span></p>
-                        <ul className="mt-4 space-y-2">
-                          <li className="flex items-center">✓ Unlimited projects</li>
-                          <li className="flex items-center">✓ Advanced features</li>
-                          <li className="flex items-center">✓ Priority support</li>
-                        </ul>
-                      </CardContent>
-                      <CardFooter>
-                        <Button className="w-full" disabled>Current Plan</Button>
-                      </CardFooter>
-                    </Card>
-                    
-                    {/* Annual Plan Card */}
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle>Annual Plan</CardTitle>
-                        <CardDescription>Best savings</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-3xl font-bold">$14<span className="text-sm font-normal text-muted-foreground">/month</span></p>
-                        <p className="text-xs text-muted-foreground mb-2">Billed annually ($168)</p>
-                        <ul className="mt-4 space-y-2">
-                          <li className="flex items-center">✓ Everything in monthly</li>
-                          <li className="flex items-center">✓ 18% savings</li>
-                          <li className="flex items-center">✓ Locked-in rate</li>
-                        </ul>
-                      </CardContent>
-                      <CardFooter>
-                        <Button variant="outline" className="w-full">Switch to Annual</Button>
-                      </CardFooter>
-                    </Card>
-                  </div>
+                      </div>
 
-                  {/* Cancellation Policy */}
-                  <div className="mt-6 p-4 bg-muted/30 rounded-lg text-sm text-muted-foreground">
-                    <p>
-                      <strong>Cancellation Policy:</strong> If you cancel your subscription, you'll continue to have access until the end of your current billing period. No refunds are provided for unused portions of your subscription.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="payment">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5" />
-                  Payment Methods
-                </CardTitle>
-                <CardDescription>
-                  Manage your payment methods and billing information.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {/* Saved Cards Section */}
-                  <div className="bg-card rounded-lg border">
-                    <div className="p-5 border-b">
-                      <h3 className="text-lg font-medium">Saved Payment Methods</h3>
-                    </div>
-                    
-                    {/* Example card on file - this would be replaced with data from your payment provider */}
-                    <div className="p-5 border-b flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-gradient-to-r from-blue-600 to-blue-800 w-12 h-8 rounded flex items-center justify-center text-white">
-                          <span className="text-xs font-bold">VISA</span>
+                      {/* Plan Options */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-5 rounded-xl border-2 border-[#612a4f]/20 bg-[#612a4f]/5">
+                          <p className="text-sm font-medium text-[#2d2a26] mb-1" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                            Monthly
+                          </p>
+                          <p className="text-xl font-semibold text-[#612a4f]" style={{ fontFamily: "'Playfair Display', serif" }}>
+                            $17<span className="text-xs font-normal text-[#8B7082]">/mo</span>
+                          </p>
+                          <ul className="mt-3 space-y-2">
+                            {['Unlimited projects', 'Advanced features', 'Priority support'].map((feature) => (
+                              <li key={feature} className="flex items-center gap-2 text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                                <Check className="w-3 h-3 text-[#612a4f]" />
+                                {feature}
+                              </li>
+                            ))}
+                          </ul>
                         </div>
-                        <div>
-                          <p className="font-medium">•••• •••• •••• 4242</p>
-                          <p className="text-sm text-muted-foreground">Expires 05/28</p>
+
+                        <div className="p-5 rounded-xl border border-[#E8E4E6] hover:border-[#8B7082]/30 transition-colors">
+                          <div className="flex items-center justify-between mb-1">
+                            <p className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              Annual
+                            </p>
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-100 text-green-700">
+                              Save 18%
+                            </span>
+                          </div>
+                          <p className="text-xl font-semibold text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif" }}>
+                            $14<span className="text-xs font-normal text-[#8B7082]">/mo</span>
+                          </p>
+                          <p className="text-[10px] text-[#8B7082] mb-3" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                            Billed annually ($168)
+                          </p>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full h-8 rounded-lg text-xs border-[#8B7082]/30 text-[#612a4f] hover:bg-[#612a4f]/5"
+                            style={{ fontFamily: "'DM Sans', sans-serif" }}
+                          >
+                            Switch to Annual
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">Default</Badge>
-                        <Button variant="ghost" size="sm">Remove</Button>
-                      </div>
                     </div>
-                    
-                    {/* No Payment Methods State */}
-                    {false && (
-                      <div className="p-5 text-center">
-                        <p className="text-muted-foreground mb-4">No payment methods added yet.</p>
-                        <Button 
-                          variant="outline" 
-                          className="flex items-center gap-2 mx-auto"
-                          onClick={() => {
-                            // Open a dialog or form for adding a new payment method
-                          }}
+
+                    {/* Payment Method */}
+                    <div
+                      className="bg-white/80 rounded-[20px] p-6"
+                      style={{
+                        boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+                        border: '1px solid rgba(139, 115, 130, 0.06)',
+                      }}
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-lg bg-[#8B7082]/10 flex items-center justify-center">
+                            <CreditCard className="w-4 h-4 text-[#612a4f]" />
+                          </div>
+                          <h3 className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                            Payment Method
+                          </h3>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 px-3 text-xs text-[#612a4f] hover:bg-[#612a4f]/5"
+                          style={{ fontFamily: "'DM Sans', sans-serif" }}
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus">
-                            <path d="M5 12h14" />
-                            <path d="M12 5v14" />
-                          </svg>
-                          Add Payment Method
+                          Edit
                         </Button>
                       </div>
-                    )}
-                    
-                    {/* Example cards - in a real app, map through actual payment methods */}
-                    <div className="p-5 border-b flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-gradient-to-r from-blue-600 to-blue-800 w-12 h-8 rounded flex items-center justify-center text-white">
-                          <span className="text-xs font-bold">VISA</span>
+                      <div className="flex items-center gap-3 p-4 rounded-xl border border-[#E8E4E6]">
+                        <div className="w-12 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center">
+                          <span className="text-[10px] font-bold text-white">VISA</span>
                         </div>
                         <div>
-                          <p className="font-medium">•••• •••• •••• 4242</p>
-                          <p className="text-sm text-muted-foreground">Expires 05/28</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">Default</Badge>
-                        <Button variant="ghost" size="sm">Edit</Button>
-                        <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50">Remove</Button>
-                      </div>
-                    </div>
-                    
-                    <div className="p-5 border-b flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-gradient-to-r from-green-600 to-green-800 w-12 h-8 rounded flex items-center justify-center text-white">
-                          <span className="text-xs font-bold">MC</span>
-                        </div>
-                        <div>
-                          <p className="font-medium">•••• •••• •••• 8391</p>
-                          <p className="text-sm text-muted-foreground">Expires 11/27</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm">Make Default</Button>
-                        <Button variant="ghost" size="sm">Edit</Button>
-                        <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50">Remove</Button>
-                      </div>
-                    </div>
-                    
-                    {/* Add Payment Method Button */}
-                    <div className="p-5">
-                      <Button 
-                        variant="outline" 
-                        className="flex items-center gap-2"
-                        onClick={() => {
-                          // Open a dialog or form for adding a new payment method
-                          // This would be connected to your payment processor
-                        }}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus">
-                          <path d="M5 12h14" />
-                          <path d="M12 5v14" />
-                        </svg>
-                        Add Payment Method
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  {/* Billing Address Section */}
-                  <div className="bg-card rounded-lg border">
-                    <div className="p-5 border-b">
-                      <h3 className="text-lg font-medium">Billing Address</h3>
-                    </div>
-                    <div className="p-5">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p>John Doe</p>
-                          <p className="text-muted-foreground">
-                            123 Main Street<br />
-                            Apt 4B<br />
-                            New York, NY 10001<br />
-                            United States
+                          <p className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                            •••• •••• •••• 4242
+                          </p>
+                          <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                            Expires 05/28
                           </p>
                         </div>
-                        <Button variant="outline" size="sm">Edit</Button>
+                      </div>
+                    </div>
+
+                    {/* Invoices */}
+                    <div
+                      className="bg-white/80 rounded-[20px] p-6"
+                      style={{
+                        boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+                        border: '1px solid rgba(139, 115, 130, 0.06)',
+                      }}
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-lg bg-[#8B7082]/10 flex items-center justify-center">
+                            <FileText className="w-4 h-4 text-[#612a4f]" />
+                          </div>
+                          <h3 className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                            Invoices
+                          </h3>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        {[
+                          { date: 'Apr 30, 2025', amount: '$17.00', status: 'Paid' },
+                          { date: 'Mar 30, 2025', amount: '$17.00', status: 'Paid' },
+                        ].map((invoice, idx) => (
+                          <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-[#8B7082]/5">
+                            <div>
+                              <p className="text-sm text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                                {invoice.date}
+                              </p>
+                              <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                                {invoice.amount}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="px-2 py-1 rounded-md text-[10px] font-medium bg-green-100 text-green-700">
+                                {invoice.status}
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 px-2 text-xs text-[#612a4f]"
+                                style={{ fontFamily: "'DM Sans', sans-serif" }}
+                              >
+                                Download
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
-                  
-                  {/* Payment History Link */}
-                  <div className="flex justify-between items-center p-4 bg-muted/30 rounded-lg">
-                    <span>View your payment history</span>
-                    <Button variant="outline" size="sm">
-                      View History
-                    </Button>
+                )}
+
+                {/* ========== NOTIFICATIONS SECTION ========== */}
+                {activeSection === 'notifications' && (
+                  <div
+                    className="bg-white/80 rounded-[20px] p-6"
+                    style={{
+                      boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+                      border: '1px solid rgba(139, 115, 130, 0.06)',
+                    }}
+                  >
+                    <div className="flex items-center gap-3 mb-6">
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center"
+                        style={{
+                          background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
+                          boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
+                        }}
+                      >
+                        <Bell className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+                          Notifications
+                        </h2>
+                        <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                          Manage how you receive notifications
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <h3 className="text-sm font-medium text-[#2d2a26] mb-3" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                        Email Preferences
+                      </h3>
+
+                      {[
+                        { id: 'weekly', icon: Mail, title: 'Weekly Digest', description: 'Summary of your content performance', checked: weeklyDigest, onChange: setWeeklyDigest },
+                        { id: 'deals', icon: DollarSign, title: 'Deal Reminders', description: 'Notifications about brand deal deadlines', checked: dealReminders, onChange: setDealReminders },
+                        { id: 'payment', icon: CreditCard, title: 'Payment Alerts', description: 'Billing and payment notifications', checked: paymentAlerts, onChange: setPaymentAlerts },
+                      ].map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex items-center justify-between p-4 rounded-xl bg-[#8B7082]/5 hover:bg-[#8B7082]/8 transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center shadow-sm">
+                              <item.icon className="w-4 h-4 text-[#8B7082]" />
+                            </div>
+                            <div>
+                              <h4 className="font-medium text-[#2d2a26] text-sm" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                                {item.title}
+                              </h4>
+                              <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                                {item.description}
+                              </p>
+                            </div>
+                          </div>
+                          <Switch
+                            checked={item.checked}
+                            onCheckedChange={item.onChange}
+                            className="data-[state=checked]:bg-[#612a4f]"
+                          />
+                        </div>
+                      ))}
+
+                      <div className="h-px bg-[#8B7082]/10 my-6"></div>
+
+                      <h3 className="text-sm font-medium text-[#2d2a26] mb-3" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                        Push Notifications
+                      </h3>
+
+                      <div className="flex items-center justify-between p-4 rounded-xl bg-[#8B7082]/5 hover:bg-[#8B7082]/8 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center shadow-sm">
+                            <Smartphone className="w-4 h-4 text-[#8B7082]" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-[#2d2a26] text-sm" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              Push Notifications
+                            </h4>
+                            <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              Receive notifications in your browser
+                            </p>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={pushNotifications}
+                          onCheckedChange={setPushNotifications}
+                          className="data-[state=checked]:bg-[#612a4f]"
+                        />
+                      </div>
+                    </div>
                   </div>
-                  
-                  {/* Payment Security Note */}
-                  <div className="text-sm text-muted-foreground flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shield">
-                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
-                    </svg>
-                    Your payment information is securely stored and processed.
+                )}
+
+                {/* ========== PREFERENCES SECTION ========== */}
+                {activeSection === 'preferences' && (
+                  <div
+                    className="bg-white/80 rounded-[20px] p-6"
+                    style={{
+                      boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+                      border: '1px solid rgba(139, 115, 130, 0.06)',
+                    }}
+                  >
+                    <div className="flex items-center gap-3 mb-6">
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center"
+                        style={{
+                          background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
+                          boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
+                        }}
+                      >
+                        <Globe className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+                          Preferences
+                        </h2>
+                        <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                          Customize your experience
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-6">
+                      {/* Timezone */}
+                      <div>
+                        <label className="text-sm font-medium text-[#2d2a26] mb-3 block" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                          Timezone
+                        </label>
+                        <div className="space-y-1">
+                          <button
+                            onClick={() => handleTimezoneChange('auto')}
+                            className={cn(
+                              "w-full text-left px-4 py-3 text-sm rounded-xl transition-all",
+                              selectedTimezone === 'auto'
+                                ? "bg-[#612a4f]/10 text-[#612a4f] font-medium"
+                                : "text-[#2d2a26] hover:bg-[#8B7082]/5"
+                            )}
+                            style={{ fontFamily: "'DM Sans', sans-serif" }}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span>Auto (detect from browser)</span>
+                              {selectedTimezone === 'auto' && (
+                                <div className="w-5 h-5 rounded-full bg-[#612a4f] flex items-center justify-center">
+                                  <Check className="w-3 h-3 text-white" />
+                                </div>
+                              )}
+                            </div>
+                          </button>
+
+                          <div className="grid grid-cols-3 gap-2 mt-2">
+                            {TIMEZONES.map((tz) => (
+                              <button
+                                key={tz.value}
+                                onClick={() => handleTimezoneChange(tz.value)}
+                                className={cn(
+                                  "text-left px-3 py-2 text-sm rounded-xl transition-all",
+                                  selectedTimezone === tz.value
+                                    ? "bg-[#612a4f]/10 text-[#612a4f]"
+                                    : "text-[#2d2a26] hover:bg-[#8B7082]/5"
+                                )}
+                                style={{ fontFamily: "'DM Sans', sans-serif" }}
+                              >
+                                <span className={cn("font-medium", selectedTimezone === tz.value && "text-[#612a4f]")}>
+                                  {tz.label}
+                                </span>
+                                <p className="text-[10px] text-[#8B7082]">{tz.offset}</p>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="h-px bg-[#8B7082]/10"></div>
+
+                      {/* Date Format */}
+                      <div>
+                        <label className="text-sm font-medium text-[#2d2a26] mb-3 block" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                          Date Format
+                        </label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {['MM/DD/YYYY', 'DD/MM/YYYY', 'YYYY-MM-DD'].map((format) => (
+                            <button
+                              key={format}
+                              onClick={() => setDateFormat(format)}
+                              className={cn(
+                                "px-4 py-3 text-sm rounded-xl transition-all",
+                                dateFormat === format
+                                  ? "bg-[#612a4f]/10 text-[#612a4f] font-medium"
+                                  : "text-[#2d2a26] hover:bg-[#8B7082]/5 border border-[#E8E4E6]"
+                              )}
+                              style={{ fontFamily: "'DM Sans', sans-serif" }}
+                            >
+                              {format}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="h-px bg-[#8B7082]/10"></div>
+
+                      {/* First Day of Week */}
+                      <div>
+                        <label className="text-sm font-medium text-[#2d2a26] mb-3 block" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                          First Day of Week
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {[
+                            { value: 'monday', label: 'Monday' },
+                            { value: 'sunday', label: 'Sunday' },
+                          ].map((day) => (
+                            <button
+                              key={day.value}
+                              onClick={() => setFirstDayOfWeek(day.value)}
+                              className={cn(
+                                "px-4 py-3 text-sm rounded-xl transition-all",
+                                firstDayOfWeek === day.value
+                                  ? "bg-[#612a4f]/10 text-[#612a4f] font-medium"
+                                  : "text-[#2d2a26] hover:bg-[#8B7082]/5 border border-[#E8E4E6]"
+                              )}
+                              style={{ fontFamily: "'DM Sans', sans-serif" }}
+                            >
+                              {day.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-        
-        <div className="mt-8 pb-10 flex justify-center">
-          <Button 
-            type="button"
-            variant="outline"
-            size="lg"
-            className="w-full max-w-xs"
-            onClick={async () => {
-              try {
-                await logout();
-                
-                // Navigate to home page
-                navigate('/');
-                
-                // Show success toast
-                toast.success("You've officially signed out");
-                
-                // Show login modal after a short delay
-                setTimeout(() => {
-                  openLoginModal();
-                }, 500);
-              } catch (error) {
-                console.error('Error signing out:', error);
-                toast.error('Failed to sign out');
-              }
-            }}
-          >
-            Sign Out
-          </Button>
+                )}
+
+                {/* ========== INTEGRATIONS SECTION ========== */}
+                {activeSection === 'integrations' && (
+                  <div className="space-y-6">
+                    <div
+                      className="bg-white/80 rounded-[20px] p-6"
+                      style={{
+                        boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+                        border: '1px solid rgba(139, 115, 130, 0.06)',
+                      }}
+                    >
+                      <div className="flex items-center gap-3 mb-6">
+                        <div
+                          className="w-10 h-10 rounded-xl flex items-center justify-center"
+                          style={{
+                            background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
+                            boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
+                          }}
+                        >
+                          <Calendar className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+                            Integrations
+                          </h2>
+                          <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                            Connect external services
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Google Calendar */}
+                      <div className="flex items-center justify-between p-4 rounded-xl border border-[#E8E4E6] hover:border-[#8B7082]/30 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                            <Calendar className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-[#2d2a26] text-sm" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              Google Calendar
+                            </p>
+                            <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              Sync your schedule for better planning
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          className="h-9 px-4 rounded-lg border-[#8B7082]/30 text-[#612a4f] hover:bg-[#612a4f]/5 hover:border-[#612a4f]/30"
+                          style={{ fontFamily: "'DM Sans', sans-serif" }}
+                        >
+                          Connect
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* AI Assistants */}
+                    <div
+                      className="bg-white/80 rounded-[20px] p-6"
+                      style={{
+                        boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+                        border: '1px solid rgba(139, 115, 130, 0.06)',
+                      }}
+                    >
+                      <div className="flex items-center gap-3 mb-4">
+                        <h3 className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                          AI Assistants
+                        </h3>
+                      </div>
+
+                      <div
+                        className="p-4 rounded-xl mb-4"
+                        style={{
+                          background: 'linear-gradient(145deg, rgba(139, 106, 126, 0.08) 0%, rgba(74, 52, 66, 0.05) 100%)',
+                          border: '1px solid rgba(139, 115, 130, 0.1)',
+                        }}
+                      >
+                        <p className="text-sm text-[#612a4f]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                          Connect AI providers to unlock content generation features
+                        </p>
+                      </div>
+
+                      <div className="space-y-4">
+                        <ClaudeAPISettings />
+                        <APIKeySettings />
+                        <OpenAISettings />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* ========== DATA SECTION ========== */}
+                {activeSection === 'data' && (
+                  <div
+                    className="bg-white/80 rounded-[20px] p-6"
+                    style={{
+                      boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+                      border: '1px solid rgba(139, 115, 130, 0.06)',
+                    }}
+                  >
+                    <div className="flex items-center gap-3 mb-6">
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center"
+                        style={{
+                          background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
+                          boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
+                        }}
+                      >
+                        <Download className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+                          Data
+                        </h2>
+                        <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                          Export and download your data
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-4 rounded-xl border border-[#E8E4E6] hover:border-[#8B7082]/30 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-lg bg-[#8B7082]/10 flex items-center justify-center">
+                            <Download className="w-4 h-4 text-[#612a4f]" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-[#2d2a26] text-sm" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              Export All Data
+                            </p>
+                            <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              Download all your account data as JSON
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          className="h-9 px-4 rounded-lg border-[#8B7082]/30 text-[#612a4f] hover:bg-[#612a4f]/5 hover:border-[#612a4f]/30"
+                          style={{ fontFamily: "'DM Sans', sans-serif" }}
+                        >
+                          Export
+                        </Button>
+                      </div>
+
+                      <div className="flex items-center justify-between p-4 rounded-xl border border-[#E8E4E6] hover:border-[#8B7082]/30 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-lg bg-[#8B7082]/10 flex items-center justify-center">
+                            <Calendar className="w-4 h-4 text-[#612a4f]" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-[#2d2a26] text-sm" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              Download Content Calendar
+                            </p>
+                            <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              Export your content calendar as CSV or iCal
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          className="h-9 px-4 rounded-lg border-[#8B7082]/30 text-[#612a4f] hover:bg-[#612a4f]/5 hover:border-[#612a4f]/30"
+                          style={{ fontFamily: "'DM Sans', sans-serif" }}
+                        >
+                          Download
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div
+                      className="mt-6 p-4 rounded-xl flex items-start gap-3"
+                      style={{
+                        background: 'linear-gradient(145deg, rgba(139, 106, 126, 0.08) 0%, rgba(74, 52, 66, 0.05) 100%)',
+                        border: '1px solid rgba(139, 115, 130, 0.1)',
+                      }}
+                    >
+                      <AlertTriangle className="w-4 h-4 text-[#612a4f] mt-0.5 flex-shrink-0" />
+                      <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                        Exported data may contain sensitive information. Please store it securely and do not share with others.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </ScrollArea>
     </Layout>
   );
 };

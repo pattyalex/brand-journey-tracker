@@ -13,11 +13,10 @@ import { cn } from "@/lib/utils";
 
 interface SidebarFooterSectionProps {
   settingsItem: MenuItem;
-  myAccountItem: MenuItem;
   helpItem?: MenuItem;
 }
 
-const SidebarFooterSection = ({ settingsItem, myAccountItem, helpItem }: SidebarFooterSectionProps) => {
+const SidebarFooterSection = ({ settingsItem, helpItem }: SidebarFooterSectionProps) => {
   const location = useLocation();
 
   return (
@@ -74,35 +73,6 @@ const SidebarFooterSection = ({ settingsItem, myAccountItem, helpItem }: Sidebar
             </UserButton>
             <span className="text-sm text-[#5A4A52]">Profile</span>
           </div>
-        </SidebarMenuItem>
-
-        <SidebarMenuItem className="relative">
-          {location.pathname === myAccountItem.url && (
-            <div
-              className="absolute left-0 top-1/2 -translate-y-1/2 w-[4px] h-6 rounded-r-full"
-              style={{
-                background: 'linear-gradient(180deg, #612A4F 0%, #4A1F3D 100%)',
-                boxShadow: '0 0 8px rgba(97, 42, 79, 0.4)',
-              }}
-            />
-          )}
-          <SidebarMenuButton asChild isActive={location.pathname === myAccountItem.url}>
-            <Link
-              to={myAccountItem.url}
-              className={cn(
-                "flex items-center gap-2 rounded-xl ml-1 transition-all duration-200",
-                location.pathname === myAccountItem.url
-                  ? "bg-[#F5F0F3] text-[#612A4F] font-medium"
-                  : "hover:bg-[#F9F7F8] text-[#5A4A52]"
-              )}
-            >
-              <myAccountItem.icon size={20} className={cn(
-                "transition-colors duration-200",
-                location.pathname === myAccountItem.url ? "text-[#612A4F]" : "text-[#8B7082]"
-              )} />
-              <span>{myAccountItem.title}</span>
-            </Link>
-          </SidebarMenuButton>
         </SidebarMenuItem>
 
         {helpItem && (

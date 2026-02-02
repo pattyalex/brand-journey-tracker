@@ -18,7 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger
 } from "@/components/ui/tooltip";
-import { defaultMenuItems, settingsItem, myAccountItem, helpItem } from '@/data/sidebarMenuItems';
+import { defaultMenuItems, settingsItem, helpItem } from '@/data/sidebarMenuItems';
 import { MenuItem } from '@/types/sidebar';
 import SidebarMenuItemComponent from './sidebar/SidebarMenuItemComponent';
 import AddPageForm from './sidebar/AddPageForm';
@@ -120,9 +120,8 @@ const Sidebar = () => {
         </SidebarGroup>
       </SidebarContent>
       
-      <SidebarFooterSection 
-        settingsItem={settingsItem} 
-        myAccountItem={myAccountItem}
+      <SidebarFooterSection
+        settingsItem={settingsItem}
         helpItem={helpItem}
       />
     </SidebarContainer>

@@ -12,8 +12,10 @@ export const getPlannerInitialSettings = () => {
   const savedWeeklyZoom = getString(StorageKeys.weeklyZoomLevel);
   const weeklyZoomLevel = savedWeeklyZoom ? parseFloat(savedWeeklyZoom) : 1;
 
-  // Default to 6am (6 hours * 90px per hour * zoom = 540px at 100% zoom)
-  const defaultScroll = 6 * 90 * todayZoomLevel;
+  // Default to 7am (7 hours * 90px per hour * zoom = 630px at 100% zoom)
+  const defaultScroll = 7 * 90 * todayZoomLevel;
+  // Minimum scroll threshold (5am) - below this, use default 7am
+  const minScrollThreshold = 5 * 90 * todayZoomLevel;
 
   const savedDate = getString(StorageKeys.plannerLastAccessDate);
   const today = format(new Date(), 'yyyy-MM-dd');
@@ -24,13 +26,17 @@ export const getPlannerInitialSettings = () => {
     setString(StorageKeys.plannerLastAccessDate, today);
     todayScrollPosition = defaultScroll;
   } else {
-    // Otherwise, try to restore saved position
+    // Otherwise, try to restore saved position (but only if it's past 5am)
     const savedPosition = getString(StorageKeys.todayScrollPosition);
-    todayScrollPosition = savedPosition ? parseInt(savedPosition, 10) : defaultScroll;
+    const parsedPosition = savedPosition ? parseInt(savedPosition, 10) : defaultScroll;
+    // If saved position shows times before 5am, use default 7am instead
+    todayScrollPosition = parsedPosition >= minScrollThreshold ? parsedPosition : defaultScroll;
   }
 
-  // Default to 6am (6 hours * 48px per hour for weekly view * zoom)
-  const weeklyDefaultScroll = 6 * 48 * weeklyZoomLevel;
+  // Default to 7am (7 hours * 48px per hour for weekly view * zoom)
+  const weeklyDefaultScroll = 7 * 48 * weeklyZoomLevel;
+  // Minimum scroll threshold (5am) for weekly view
+  const weeklyMinScrollThreshold = 5 * 48 * weeklyZoomLevel;
 
   const weeklySavedDate = getString(StorageKeys.plannerLastAccessDate);
   let weeklyScrollPosition = weeklyDefaultScroll;
@@ -39,9 +45,11 @@ export const getPlannerInitialSettings = () => {
   if (weeklySavedDate !== today) {
     weeklyScrollPosition = weeklyDefaultScroll;
   } else {
-    // Otherwise, try to restore saved position
+    // Otherwise, try to restore saved position (but only if it's past 5am)
     const savedPosition = getString(StorageKeys.weeklyScrollPosition);
-    weeklyScrollPosition = savedPosition ? parseInt(savedPosition, 10) : weeklyDefaultScroll;
+    const parsedPosition = savedPosition ? parseInt(savedPosition, 10) : weeklyDefaultScroll;
+    // If saved position shows times before 5am, use default 7am instead
+    weeklyScrollPosition = parsedPosition >= weeklyMinScrollThreshold ? parsedPosition : weeklyDefaultScroll;
   }
 
   return {

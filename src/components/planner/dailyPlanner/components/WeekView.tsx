@@ -241,6 +241,50 @@ export const WeekView = ({
     contentColorPalette.resetPickerState();
   };
 
+  // Scroll to first task or 6am on mount
+  useEffect(() => {
+    if (weeklyScrollRef.current) {
+      // Get all days of the current week
+      const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
+      const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 1 });
+      const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
+
+      // Find earliest task time across the week
+      let earliestHour = 24; // Start with max so we find the minimum
+
+      weekDays.forEach(day => {
+        const dayString = getDateString(day);
+        const dayData = plannerData.find(d => d.date === dayString);
+
+        if (dayData?.items) {
+          dayData.items.forEach(task => {
+            if (task.startTime) {
+              // Handle both 24-hour (08:00) and 12-hour (8:00 am) formats
+              let hour = parseInt(task.startTime.split(':')[0], 10);
+              const isPM = task.startTime.toLowerCase().includes('pm');
+              const isAM = task.startTime.toLowerCase().includes('am');
+
+              if (isPM && hour !== 12) hour += 12;
+              if (isAM && hour === 12) hour = 0;
+
+              if (!isNaN(hour) && hour < earliestHour) {
+                earliestHour = hour;
+              }
+            }
+          });
+        }
+      });
+
+      // If no tasks found, default to 7am
+      if (earliestHour === 24) earliestHour = 7;
+
+      // Scroll to 1 hour before earliest task, but minimum 5am
+      const scrollToHour = Math.max(5, earliestHour - 1);
+      const scrollPosition = scrollToHour * 48 * weeklyZoomLevel;
+      weeklyScrollRef.current.scrollTop = scrollPosition;
+    }
+  }, [selectedDate]);
+
   // Sync state when dialog opens
   useEffect(() => {
     if (addDialogOpen) {

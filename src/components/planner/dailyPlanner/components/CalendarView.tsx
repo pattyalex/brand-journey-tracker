@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { addMonths, eachDayOfInterval, endOfMonth, endOfWeek, format, isBefore, isSameDay, startOfDay, startOfMonth, startOfWeek } from "date-fns";
 import { CardContent } from "@/components/ui/card";
@@ -152,6 +152,28 @@ export const CalendarView = ({
       }
     }
   };
+
+  // Scroll to current date row on mount
+  useEffect(() => {
+    if (!scrollContainerRef.current) return;
+
+    // Small delay to ensure DOM is ready
+    const timer = setTimeout(() => {
+      const todayString = getDateString(new Date());
+      const todayElement = scrollContainerRef.current?.querySelector(`[data-day="${todayString}"]`);
+
+      if (todayElement) {
+        // Scroll to the today element, positioning it near the top
+        todayElement.scrollIntoView({ behavior: 'auto', block: 'start' });
+        // Adjust scroll to account for header - scroll up a bit
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTop = Math.max(0, scrollContainerRef.current.scrollTop - 30);
+        }
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // State for add dialog
   const [addDialogOpen, setAddDialogOpen] = useState(false);

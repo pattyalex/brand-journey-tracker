@@ -128,6 +128,44 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
     document.addEventListener('mouseup', handleMouseUp);
   };
 
+  // Scroll to first task or 6am on mount
+  useEffect(() => {
+    // Small delay to ensure ScrollArea viewport is rendered
+    const timer = setTimeout(() => {
+      const viewport = refs.todayScrollRef.current?.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement;
+      if (viewport) {
+        // Find earliest task time for today
+        let earliestHour = 24; // Start with max so we find the minimum
+
+        const todayItems = derived.currentDay?.items || [];
+        todayItems.forEach(task => {
+          if (task.startTime) {
+            // Handle both 24-hour (08:00) and 12-hour (8:00 am) formats
+            let hour = parseInt(task.startTime.split(':')[0], 10);
+            const isPM = task.startTime.toLowerCase().includes('pm');
+            const isAM = task.startTime.toLowerCase().includes('am');
+
+            if (isPM && hour !== 12) hour += 12;
+            if (isAM && hour === 12) hour = 0;
+
+            if (!isNaN(hour) && hour < earliestHour) {
+              earliestHour = hour;
+            }
+          }
+        });
+
+        // If no tasks found, default to 6am
+        if (earliestHour === 24) earliestHour = 7;
+
+        // Scroll to 1 hour before earliest task, but minimum 5am
+        const scrollToHour = Math.max(5, earliestHour - 1);
+        const scrollPosition = scrollToHour * 90 * state.todayZoomLevel;
+        viewport.scrollTop = scrollPosition;
+      }
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [derived.dateString]);
+
   // Sync times and tab when dialog opens
   useEffect(() => {
     if (addDialogOpen) {
