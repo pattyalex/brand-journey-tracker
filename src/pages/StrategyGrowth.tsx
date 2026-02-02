@@ -1047,36 +1047,46 @@ const StrategyGrowth = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-4">
-                  <div className="flex gap-6">
+                  <div className="space-y-2">
                     {/* Textarea */}
-                    <div className="flex-1">
+                    <div className="w-full">
                       <Textarea
                         value={missionStatement}
-                        onChange={(e) => setMissionStatement(e.target.value)}
-                        className="min-h-[160px] h-full resize-none border border-[#E8E4E6] rounded-xl focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 p-4 text-sm leading-relaxed bg-white"
+                        onChange={(e) => {
+                          const words = e.target.value.trim().split(/\s+/).filter(w => w.length > 0);
+                          if (words.length <= 25 || e.target.value.length < missionStatement.length) {
+                            setMissionStatement(e.target.value);
+                          }
+                        }}
+                        className="min-h-[80px] w-full resize-none border border-[#E8E4E6] rounded-xl focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 p-4 text-sm leading-relaxed bg-white"
                         placeholder={missionStatementFocused ? "" : "Write a short sentence that explains who your content is for and what you want it to do for them..."}
                         onFocus={() => setMissionStatementFocused(true)}
                         onBlur={() => setMissionStatementFocused(false)}
                       />
+                      <p className="text-[11px] text-[#8B7082] mt-1.5 text-right">
+                        {missionStatement.trim().split(/\s+/).filter(w => w.length > 0).length}/25 words
+                      </p>
                     </div>
 
-                    {/* Examples Panel */}
-                    <div className="w-[420px] flex-shrink-0 bg-gradient-to-br from-[#FAF7F8] via-[#F5F0F3] to-[#F0EBE8] rounded-2xl p-4 border-l-4 border-[#8B7082]/30">
-                      <p className="text-[11px] font-medium text-[#8B7082] mb-3">Examples</p>
-                      <div className="space-y-2">
-                        {[
-                          "I create content to help busy people build healthy routines they can actually stick to",
-                          "I create content to inspire women to dress well without overthinking or overspending",
-                          "I create content to help small business founders scale their businesses without burning out"
-                        ].map((example, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => setMissionStatement(example)}
-                            className="w-full text-left text-[13px] text-gray-600 hover:text-gray-900 hover:bg-white/80 rounded-lg px-3 py-2.5 transition-all"
-                          >
-                            <span className="leading-relaxed">"{example}"</span>
-                          </button>
-                        ))}
+                    {/* Examples Panel - 3 columns */}
+                    <div>
+                      <p className="text-[11px] font-medium text-[#8B7082] mb-2">Examples</p>
+                      <div className="bg-gradient-to-br from-[#FAF7F8] via-[#F5F0F3] to-[#F0EBE8] rounded-2xl px-3 py-2 border-l-4 border-[#8B7082]/30">
+                        <div className="grid grid-cols-3 gap-2">
+                          {[
+                            "I create content to help busy people build healthy routines they can actually stick to.",
+                            "I create content to inspire women to dress well without overthinking or overspending.",
+                            "I create content to help small business founders scale their businesses without burning out."
+                          ].map((example, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => setMissionStatement(example)}
+                              className="text-left text-[12px] text-gray-600 hover:text-gray-900 hover:bg-white/80 rounded-lg px-2 py-2 transition-all"
+                            >
+                              <span className="leading-snug">"{example}"</span>
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
