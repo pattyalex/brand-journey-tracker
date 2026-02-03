@@ -1,5 +1,15 @@
 import { KanbanColumn } from "../types";
 
+// Column accent colors - each column gets a unique color
+export const columnAccentColors: Record<string, { accent: string; accentLight: string; accentBg: string }> = {
+  ideate: { accent: "#8B7082", accentLight: "rgba(139, 112, 130, 0.1)", accentBg: "rgba(139, 112, 130, 0.08)" }, // Mauve
+  "shape-ideas": { accent: "#6B8E9B", accentLight: "rgba(107, 142, 155, 0.1)", accentBg: "rgba(107, 142, 155, 0.08)" }, // Blue-ish
+  "to-film": { accent: "#D4A855", accentLight: "rgba(212, 168, 85, 0.1)", accentBg: "rgba(212, 168, 85, 0.08)" }, // Yellow-ish
+  "to-edit": { accent: "#D4839B", accentLight: "rgba(212, 131, 155, 0.1)", accentBg: "rgba(212, 131, 155, 0.08)" }, // Pinkish
+  "to-schedule": { accent: "#7B9E6B", accentLight: "rgba(123, 158, 107, 0.1)", accentBg: "rgba(123, 158, 107, 0.08)" }, // Green-ish
+  posted: { accent: "#8B7082", accentLight: "rgba(139, 112, 130, 0.1)", accentBg: "rgba(139, 112, 130, 0.08)" }, // Neutral mauve
+};
+
 // Premium light theme - white columns with mauve accents
 export const columnColors: Record<string, { bg: string; border: string; badge: string; text: string; buttonBg: string; buttonText: string; topBorder: string; cardAccent: string }> = {
   ideate: { bg: "bg-white", border: "border-transparent", badge: "bg-[#F5F2F4]", text: "text-[#612A4F]", buttonBg: "bg-[#F5F2F4]", buttonText: "text-[#612A4F]", topBorder: "bg-[#8B7082]", cardAccent: "border-l-[#DDD6DA]" },
@@ -18,6 +28,26 @@ export const cardColors: Record<string, { bg: string; border: string; accent: st
   "to-edit": { bg: "bg-white", border: "border-[#F0EBF2]", accent: "border-l-[#B49CC6]" },
   "to-schedule": { bg: "bg-white", border: "border-[#F0EBF2]", accent: "border-l-[#A88DBD]" },
   posted: { bg: "bg-white", border: "border-[#F0EBF2]", accent: "border-l-[#9C7EB4]" },
+};
+
+// Column icons mapping (for headers)
+export const columnIcons: Record<string, string> = {
+  ideate: "Lightbulb",
+  "shape-ideas": "PenLine",
+  "to-film": "Clapperboard",
+  "to-edit": "Scissors",
+  "to-schedule": "CalendarDays",
+  posted: "Archive",
+};
+
+// Empty state icons (can differ from header icons)
+export const emptyStateIcons: Record<string, string> = {
+  ideate: "Lightbulb",
+  "shape-ideas": "PenLine",
+  "to-film": "LayoutGrid",
+  "to-edit": "Scissors",
+  "to-schedule": "CalendarDays",
+  posted: "Archive",
 };
 
 export const defaultColumns: KanbanColumn[] = [

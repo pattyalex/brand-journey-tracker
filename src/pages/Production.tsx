@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, MoreVertical, Trash2, Pencil, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard, Video, Circle, Wrench, CheckCircle2, Camera, CheckSquare, Scissors, PlayCircle, PenLine, CalendarDays, X, Maximize2, PartyPopper, Archive, FolderOpen, ChevronRight, RefreshCw, Compass, TrendingUp, BarChart3, Zap } from "lucide-react";
+import { PlusCircle, MoreVertical, Trash2, Pencil, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard, Video, Circle, Wrench, CheckCircle2, Camera, CheckSquare, Scissors, PlayCircle, PenLine, CalendarDays, X, Maximize2, PartyPopper, Archive, FolderOpen, ChevronRight, RefreshCw, Compass, TrendingUp, BarChart3, Zap, LayoutGrid } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine, RiPushpinFill } from "react-icons/ri";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -53,9 +53,29 @@ import StoryboardEditorDialog from "./production/components/StoryboardEditorDial
 import EditChecklistDialog from "./production/components/EditChecklistDialog";
 import ExpandedScheduleView from "./production/components/ExpandedScheduleView";
 import ArchiveDialog from "./production/components/ArchiveDialog";
-import { columnColors, cardColors, defaultColumns } from "./production/utils/productionConstants";
+import { columnColors, cardColors, defaultColumns, columnAccentColors, columnIcons, emptyStateIcons } from "./production/utils/productionConstants";
 import { getAllAngleTemplates, getFormatColors, getPlatformColors } from "./production/utils/productionHelpers";
 import { useSidebar } from "@/components/ui/sidebar";
+
+// Icon component mapping for column headers
+const columnHeaderIcons: Record<string, React.FC<{ className?: string; style?: React.CSSProperties }>> = {
+  ideate: Lightbulb,
+  "shape-ideas": PenLine,
+  "to-film": Clapperboard,
+  "to-edit": Scissors,
+  "to-schedule": CalendarDays,
+  posted: Archive,
+};
+
+// Icon component mapping for empty states (can differ from headers)
+const emptyStateIconComponents: Record<string, React.FC<{ className?: string; style?: React.CSSProperties }>> = {
+  ideate: Lightbulb,
+  "shape-ideas": PenLine,
+  "to-film": Video,
+  "to-edit": Scissors,
+  "to-schedule": CalendarDays,
+  posted: Archive,
+};
 
 // Wrapper component to access sidebar state inside Layout context
 const KanbanContainer: React.FC<{
@@ -141,7 +161,7 @@ const InlineCardInput: React.FC<{
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
         onBlur={() => onSave(value)}
-        placeholder="Enter a title or paste a link"
+        placeholder="Enter a title"
         className="w-full bg-transparent border-none outline-none text-sm text-gray-900 placeholder:text-gray-400"
       />
     </div>
@@ -2103,6 +2123,11 @@ const Production = () => {
     );
 
     setAddingToColumn(null);
+
+    // For ideate column, immediately reopen input for rapid idea entry
+    if (columnId === 'ideate') {
+      setTimeout(() => setAddingToColumn('ideate'), 0);
+    }
   };
 
   const handleStartEditingCard = (cardId: string, columnId: string, trigger: 'click' | 'doubleclick' = 'click', clickEvent?: React.MouseEvent) => {
@@ -2382,7 +2407,7 @@ const Production = () => {
 
   return (
     <Layout>
-      <div className="w-full h-screen flex flex-col pl-5 pr-3 pt-4 bg-[#F5F3F4]">
+      <div className="w-full h-screen flex flex-col pl-5 pr-3 pt-4" style={{ background: 'linear-gradient(180deg, #FAF7F5 0%, #F0EBE8 100%)' }}>
         <KanbanContainer
           horizontalScrollRef={horizontalScrollRef}
           setScrollProgress={setScrollProgress}
@@ -2402,26 +2427,41 @@ const Production = () => {
                     if (el) columnRefs.current.set(column.id, el);
                   }}
                   className={cn(
-                    "flex flex-col rounded-2xl transition-all duration-300 max-h-[calc(100vh-48px)]",
-                    "shadow-[0_-1px_2px_rgba(0,0,0,0.04),-2px_0_4px_rgba(0,0,0,0.03),2px_0_4px_rgba(0,0,0,0.03),0_-4px_8px_rgba(0,0,0,0.02)]",
-                                        draggedOverColumn === column.id && draggedCard
+                    "flex flex-col transition-all duration-300 max-h-[calc(100vh-48px)] rounded-[20px]",
+                    draggedOverColumn === column.id && draggedCard
                       ? column.id === "ideate" && columns.find(col => col.cards.some(c => c.id === draggedCard.id))?.id !== "ideate"
-                        ? "ring-2 ring-offset-2 ring-red-400 opacity-60"
-                        : "ring-2 ring-offset-2 ring-[#B8A0C4] scale-[1.02]"
+                        ? "opacity-60"
+                        : ""
                       : "",
-                    highlightedColumn === column.id ? "ring-2 ring-[#B8A0C4] ring-offset-2 shadow-xl scale-[1.02]" : "",
-                    colors.bg
+                    highlightedColumn === column.id ? "shadow-xl scale-[1.02]" : ""
                   )}
+                  style={{
+                    ...(draggedOverColumn === column.id && draggedCard && !(column.id === "ideate" && columns.find(col => col.cards.some(c => c.id === draggedCard.id))?.id !== "ideate") ? {
+                      background: 'rgba(139, 112, 130, 0.08)',
+                      boxShadow: '0 0 40px rgba(139, 112, 130, 0.2), inset 0 0 0 1px rgba(139, 112, 130, 0.15)',
+                    } : {}),
+                  }}
                 >
-                  {/* Column Header - Fixed */}
-                  <div className="flex-shrink-0 px-5 pt-5 pb-4 border-b-0">
-                    <h2 className={cn("font-medium text-[13px] tracking-[0.04em] uppercase border-0", colors.text)}>
-                      {column.title}
-                    </h2>
+                  {/* Column Header */}
+                  <div className="flex-shrink-0 px-3 py-2 mb-2">
+                    <div className="flex items-center gap-2">
+                      {/* Column Icon - same color as header text */}
+                      {column.id === 'ideate' && <Lightbulb className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
+                      {column.id === 'shape-ideas' && <PenLine className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
+                      {column.id === 'to-film' && <Video className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
+                      {column.id === 'to-edit' && <Scissors className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
+                      {column.id === 'to-schedule' && <CalendarDays className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
+                      <h2 className="text-[18px] tracking-[0.02em] capitalize text-[#612A4F]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+                        {column.title}
+                      </h2>
+                    </div>
                   </div>
 
-                      {/* Scrollable Cards Area */}
-                      <div className="flex-1 overflow-y-auto px-4 pt-1 pb-2 space-y-3 hide-scrollbar hover:hide-scrollbar relative border-t-0 min-h-0">
+                      {/* Scrollable Cards Area - beige background */}
+                      {(() => {
+                        const hasCards = column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')).length > 0;
+                        return (
+                      <div className="flex-1 overflow-y-auto px-3 pt-3 pb-3 space-y-3 hide-scrollbar hover:hide-scrollbar relative rounded-[16px]" style={{ minHeight: 'calc(100vh - 120px)', border: '1.5px dashed rgba(180, 168, 175, 0.35)', backgroundColor: 'rgba(255, 252, 250, 0.9)' }}>
                         {/* Not Allowed Overlay for Ideate Column */}
                         {column.id === "ideate" && draggedCard && draggedOverColumn === column.id &&
                          columns.find(col => col.cards.some(c => c.id === draggedCard.id))?.id !== "ideate" && (
@@ -2434,25 +2474,202 @@ const Production = () => {
                           </div>
                         )}
                         <AnimatePresence>
-                          {column.cards.filter(card => {
-                            // Basic filter: has id, has title, not empty, not add quick idea
-                            const basicFilter = card.id && card.title && card.title.trim() && !card.title.toLowerCase().includes('add quick idea');
-                            // For Ideate column, also filter out calendar-only content (Stories, quick posts)
-                            if (column.id === 'ideate' && card.calendarOnly) {
-                              return false;
+                          {(() => {
+                            // Compute filtered and sorted cards
+                            const filteredSortedCards = column.cards.filter(card => {
+                              // Basic filter: has id, has title, not empty, not add quick idea
+                              const basicFilter = card.id && card.title && card.title.trim() && !card.title.toLowerCase().includes('add quick idea');
+                              // For Ideate column, also filter out calendar-only content (Stories, quick posts)
+                              if (column.id === 'ideate' && card.calendarOnly) {
+                                return false;
+                              }
+                              return basicFilter;
+                            }).sort((a, b) => {
+                              // Sort: pinned first, then unscheduled before scheduled
+                              if (a.isPinned !== b.isPinned) return (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0);
+                              // Then sort scheduled cards to the bottom
+                              if (column.id === 'to-schedule') {
+                                const aScheduled = !!a.scheduledDate;
+                                const bScheduled = !!b.scheduledDate;
+                                if (aScheduled !== bScheduled) return aScheduled ? 1 : -1;
+                              }
+                              return 0;
+                            });
+
+                            // Show empty state if no cards
+                            if (filteredSortedCards.length === 0 && !draggedCard) {
+                              const IconComponent = emptyStateIconComponents[column.id] || Lightbulb;
+
+                              return (
+                                <div className="flex flex-col items-center justify-start pt-3 px-4 h-full min-h-[380px]">
+                                  {/* Icon and text - hidden for ideate when input is showing */}
+                                  {!(column.id === 'ideate' && addingToColumn === 'ideate') && (
+                                    <>
+                                      {/* Icon in rounded square - uses column accent color */}
+                                      <div
+                                        className="w-[56px] h-[56px] rounded-[14px] flex items-center justify-center mb-4"
+                                        style={{ backgroundColor: columnAccentColors[column.id]?.accentBg || 'rgba(139, 112, 130, 0.08)' }}
+                                      >
+                                        <IconComponent
+                                          className="w-5 h-5"
+                                          style={{ color: columnAccentColors[column.id]?.accent || '#8B7082', strokeWidth: 1.5 }}
+                                        />
+                                      </div>
+
+                                      {/* Text content - muted colors, smaller size */}
+                                      <p className="text-[13px] font-medium mb-0.5" style={{ color: '#9B8A8F' }}>
+                                        No items yet
+                                      </p>
+                                      <p className="text-[11px] text-center mb-6" style={{ color: '#B8ACB0' }}>
+                                        {column.id === 'ideate' ? 'Click below to start creating' : 'Drag ideas here or click below'}
+                                      </p>
+                                    </>
+                                  )}
+
+                                  {/* Add new button - dashed border (for non-ideate columns) */}
+                                  {column.id !== 'ideate' && (
+                                  <button
+                                    onClick={() => {
+                                      if (column.id === 'shape-ideas') {
+                                        const newCard: ProductionCard = {
+                                          id: `card-${Date.now()}`,
+                                          title: '',
+                                          columnId: 'shape-ideas',
+                                          isCompleted: false,
+                                        };
+                                        setColumns((prev) =>
+                                          prev.map((col) =>
+                                            col.id === 'shape-ideas' ? { ...col, cards: [...col.cards, newCard] } : col
+                                          )
+                                        );
+                                        handleOpenScriptEditor(newCard);
+                                      } else if (column.id === 'to-film') {
+                                        const newCard: ProductionCard = {
+                                          id: `card-${Date.now()}`,
+                                          title: '',
+                                          columnId: 'to-film',
+                                          isCompleted: false,
+                                        };
+                                        setColumns((prev) =>
+                                          prev.map((col) =>
+                                            col.id === 'to-film' ? { ...col, cards: [...col.cards, newCard] } : col
+                                          )
+                                        );
+                                        handleOpenStoryboard(newCard);
+                                      } else if (column.id === 'to-edit') {
+                                        const newCard: ProductionCard = {
+                                          id: `card-${Date.now()}`,
+                                          title: '',
+                                          columnId: 'to-edit',
+                                          isCompleted: false,
+                                        };
+                                        setColumns((prev) =>
+                                          prev.map((col) =>
+                                            col.id === 'to-edit' ? { ...col, cards: [...col.cards, newCard] } : col
+                                          )
+                                        );
+                                        handleOpenEditChecklist(newCard);
+                                      } else {
+                                        setAddingToColumn(column.id);
+                                      }
+                                    }}
+                                    className="w-full flex items-center justify-center gap-2 py-3 rounded-[12px] text-[13px] font-medium transition-all duration-200"
+                                    style={{
+                                      border: '1.5px dashed rgba(180, 168, 175, 0.5)',
+                                      color: '#9B8A8F',
+                                      backgroundColor: 'transparent',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.backgroundColor = 'rgba(139, 122, 130, 0.05)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.backgroundColor = 'transparent';
+                                    }}
+                                  >
+                                    <Plus className="w-3.5 h-3.5" style={{ strokeWidth: 2 }} />
+                                    Add new
+                                  </button>
+                                  )}
+
+                                  {/* Ideate buttons - Add new and Generate with AI */}
+                                  {column.id === 'ideate' && (
+                                    <>
+                                      {/* Inline input when adding - above buttons */}
+                                      {addingToColumn === 'ideate' && (
+                                        <div className="w-full mb-2">
+                                          <InlineCardInput
+                                            onSave={(title) => handleCreateInlineCard('ideate', title)}
+                                            onCancel={handleCancelAddingCard}
+                                          />
+                                        </div>
+                                      )}
+                                      <button
+                                        onClick={() => setAddingToColumn('ideate')}
+                                        className="w-full flex items-center justify-center gap-2 py-3 rounded-[12px] text-[13px] font-medium transition-all duration-200"
+                                        style={{
+                                          border: '1.5px dashed rgba(180, 168, 175, 0.5)',
+                                          color: '#9B8A8F',
+                                          backgroundColor: 'transparent',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                          e.currentTarget.style.backgroundColor = 'rgba(139, 122, 130, 0.05)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                          e.currentTarget.style.backgroundColor = 'transparent';
+                                        }}
+                                      >
+                                        <Plus className="w-3.5 h-3.5" style={{ strokeWidth: 2 }} />
+                                        Add new
+                                      </button>
+                                      <button
+                                        onClick={() => {
+                                          setSelectedIdeateCard(null);
+                                          setIsIdeateDialogOpen(true);
+                                        }}
+                                        className="w-full flex items-center justify-center gap-2 py-3 rounded-[12px] text-[13px] font-medium transition-all duration-200 mt-2"
+                                        style={{
+                                          backgroundColor: '#8B7082',
+                                          color: 'white',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                          e.currentTarget.style.backgroundColor = '#7A6272';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                          e.currentTarget.style.backgroundColor = '#8B7082';
+                                        }}
+                                      >
+                                        <Zap className="w-3.5 h-3.5" style={{ strokeWidth: 2 }} />
+                                        Generate with AI
+                                      </button>
+                                    </>
+                                  )}
+
+                                  {/* Batch Schedule button - only for to-schedule column */}
+                                  {column.id === 'to-schedule' && (
+                                    <button
+                                      onClick={() => setIsScheduleColumnExpanded(true)}
+                                      className="w-full flex items-center justify-center gap-2 py-3 rounded-[12px] text-[13px] font-medium transition-all duration-200 mt-3"
+                                      style={{
+                                        backgroundColor: '#8B7082',
+                                        color: 'white',
+                                      }}
+                                      onMouseEnter={(e) => {
+                                        e.currentTarget.style.backgroundColor = '#7A6272';
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        e.currentTarget.style.backgroundColor = '#8B7082';
+                                      }}
+                                    >
+                                      <CalendarDays className="w-3.5 h-3.5" style={{ strokeWidth: 2 }} />
+                                      Batch Schedule
+                                    </button>
+                                  )}
+                                </div>
+                              );
                             }
-                            return basicFilter;
-                          }).sort((a, b) => {
-                            // Sort: pinned first, then unscheduled before scheduled
-                            if (a.isPinned !== b.isPinned) return (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0);
-                            // Then sort scheduled cards to the bottom
-                            if (column.id === 'to-schedule') {
-                              const aScheduled = !!a.scheduledDate;
-                              const bScheduled = !!b.scheduledDate;
-                              if (aScheduled !== bScheduled) return aScheduled ? 1 : -1;
-                            }
-                            return 0;
-                          }).map((card, cardIndex) => {
+
+                            // Render cards
+                            return filteredSortedCards.map((card, cardIndex) => {
                             const isEditing = editingCardId === card.id;
 
                             // Find dragged card's current index in this column
@@ -2524,9 +2741,10 @@ const Production = () => {
                               }}
                               className={cn(
                                 "group relative",
-                                "rounded-xl border",
-                                "shadow-[0_0_0_1px_rgba(0,0,0,0.02),0_2px_4px_rgba(0,0,0,0.04),0_8px_20px_rgba(0,0,0,0.06)]",
-                                "hover:shadow-[0_0_0_1px_rgba(0,0,0,0.02),0_4px_8px_rgba(0,0,0,0.05),0_12px_28px_rgba(0,0,0,0.08)]",
+                                "rounded-[14px] bg-white",
+                                "shadow-[0_2px_8px_rgba(93,63,90,0.05)]",
+                                "hover:shadow-[0_4px_12px_rgba(93,63,90,0.08)]",
+                                "border border-[rgba(93,63,90,0.06)]",
                                 "hover:-translate-y-[3px]",
                                 "transition-all duration-200",
                                 column.id === "ideate" ? "py-4 px-3" : "p-3",
@@ -2535,8 +2753,7 @@ const Production = () => {
                                 card.isCompleted && "opacity-60",
                                 recentlyRepurposedCardId === card.id && "ring-2 ring-emerald-500 ring-offset-2",
                                 highlightedUnscheduledCardId === card.id && "ring-2 ring-indigo-500 ring-offset-2",
-                                card.isNew && "ring-1 ring-[#8B7082]",
-                                "bg-white border-stone-200"
+                                card.isNew && "ring-1 ring-[#8B7082]"
                               )}
                             >
                             {highlightedUnscheduledCardId === card.id && (
@@ -2551,10 +2768,10 @@ const Production = () => {
                             )}
                             {/* Scheduled date indicator for to-schedule column */}
                             {column.id === 'to-schedule' && card.scheduledDate && (
-                              <div className="flex items-center gap-1 mb-1.5">
-                                <div className="flex items-center gap-1 px-1.5 py-0.5 bg-[#F5F0F4] rounded-md border border-[#B8A0AD]">
-                                  <Check className="w-3 h-3 text-[#8B7082]" />
-                                  <span className="text-[11px] font-medium text-[#8B7082]">
+                              <div className="flex items-center gap-1 mb-2">
+                                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg" style={{ backgroundColor: 'rgba(139, 112, 130, 0.08)', border: '1px solid rgba(139, 112, 130, 0.12)' }}>
+                                  <CalendarDays className="w-3 h-3" style={{ color: '#8B7082', strokeWidth: 1.5 }} />
+                                  <span className="text-[11px] font-medium" style={{ color: '#6B5A63' }}>
                                     Scheduled: {new Date(card.scheduledDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                   </span>
                                 </div>
@@ -2562,18 +2779,18 @@ const Production = () => {
                             )}
                             {/* Calendar origin indicator */}
                             {card.fromCalendar && !card.scheduledDate && (
-                              <div className="flex items-center gap-1 mb-1.5">
-                                <div className="flex items-center gap-1 px-1.5 py-0.5 bg-[#F5F2F4] rounded-md border border-[#DDD6DA]">
-                                  <CalendarDays className="w-3 h-3 text-[#8B7082]" />
-                                  <span className="text-[11px] font-normal text-[#8B7082]">
-                                    {card.plannedDate ? `Planned for ${new Date(card.plannedDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : 'From Calendar'}
+                              <div className="flex items-center gap-1 mb-2">
+                                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg" style={{ backgroundColor: 'rgba(155, 107, 158, 0.08)', border: '1px solid rgba(155, 107, 158, 0.12)' }}>
+                                  <CalendarDays className="w-3 h-3" style={{ color: '#9B6B9E', strokeWidth: 1.5 }} />
+                                  <span className="text-[11px] font-normal" style={{ color: '#7A5A7D' }}>
+                                    {card.plannedDate ? `Planned: ${new Date(card.plannedDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : 'From Calendar'}
                                   </span>
                                 </div>
                               </div>
                             )}
                             {/* Planned date indicator - clickable to edit */}
                             {column.id !== "posted" && column.id !== "to-schedule" && !card.fromCalendar && card.plannedDate && (
-                              <div className="flex items-center gap-1 mb-1 -mt-0.5">
+                              <div className="flex items-center gap-1 mb-2">
                                 <Popover
                                   open={planningCardId === card.id}
                                   onOpenChange={(open) => {
@@ -2589,10 +2806,20 @@ const Production = () => {
                                       onClick={(e) => {
                                         e.stopPropagation();
                                       }}
-                                      className="flex items-center gap-1 px-1.5 py-0.5 bg-[#F5F2F4] rounded-md border border-[#DDD6DA] hover:bg-[#EBE7E9] hover:border-[#CCC5C9] transition-colors cursor-pointer"
+                                      className="flex items-center gap-1.5 px-2 py-1 rounded-lg transition-colors cursor-pointer"
+                                      style={{
+                                        backgroundColor: 'rgba(155, 107, 158, 0.08)',
+                                        border: '1px solid rgba(155, 107, 158, 0.12)',
+                                      }}
+                                      onMouseEnter={(e) => {
+                                        e.currentTarget.style.backgroundColor = 'rgba(155, 107, 158, 0.14)';
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        e.currentTarget.style.backgroundColor = 'rgba(155, 107, 158, 0.08)';
+                                      }}
                                     >
-                                      <CalendarDays className="w-3 h-3 text-[#8B7082]" />
-                                      <span className="text-[11px] font-normal text-[#8B7082]">
+                                      <CalendarDays className="w-3 h-3" style={{ color: '#9B6B9E', strokeWidth: 1.5 }} />
+                                      <span className="text-[11px] font-normal" style={{ color: '#7A5A7D' }}>
                                         Planned: {new Date(card.plannedDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                       </span>
                                     </button>
@@ -2663,21 +2890,6 @@ const Production = () => {
                                   >
                                     {card.hook || card.title}
                                   </h3>
-                                )}
-                                {/* Pin button - always visible when pinned */}
-                                {column.id !== "posted" && card.isPinned && (
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-6 w-6 p-0.5 rounded-lg hover:bg-gray-100 flex-shrink-0"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleTogglePin(card.id);
-                                    }}
-                                    title="Unpin from dashboard"
-                                  >
-                                    <Pin className="h-4 w-4 rotate-45 fill-yellow-400 stroke-orange-500" strokeWidth={2} />
-                                  </Button>
                                 )}
                                 <div className="flex flex-row gap-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                                   {/* Plan button */}
@@ -2761,20 +2973,6 @@ const Production = () => {
                                       }}
                                     >
                                       <Scissors className="h-2.5 w-2.5 text-gray-400 hover:text-rose-600" />
-                                    </Button>
-                                  )}
-                                  {column.id !== "posted" && !card.isPinned && (
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-3.5 w-3.5 p-0 rounded transition-colors hover:bg-amber-50"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleTogglePin(card.id);
-                                      }}
-                                      title="Pin to dashboard"
-                                    >
-                                      <Pin className="h-2.5 w-2.5 text-gray-400 hover:text-amber-600" />
                                     </Button>
                                   )}
                                   <Button
@@ -2896,7 +3094,8 @@ const Production = () => {
                           </motion.div>
                           </React.Fragment>
                         );
-                      })}
+                      });
+                          })()}
 
                       {/* Drop indicator at the end of the column - only show during active drag */}
                       {column.id !== "ideate" && draggedCard && isDraggingRef.current && (() => {
@@ -2916,112 +3115,114 @@ const Production = () => {
                         );
                       })()}
                         </AnimatePresence>
+
+                        {/* Buttons Area - right below cards */}
+                        {column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')).length > 0 && (
+                          <div className="px-1 pt-2 space-y-2">
+                            {addingToColumn === column.id ? (
+                              <div key={`inline-input-${column.id}`}>
+                                <InlineCardInput
+                                  onSave={(title) => handleCreateInlineCard(column.id, title)}
+                                  onCancel={handleCancelAddingCard}
+                                />
+                              </div>
+                            ) : column.id !== 'to-schedule' ? (
+                              <div
+                                key={`add-button-${column.id}`}
+                                className={cn(
+                                  "group/btn px-4 py-2.5 transition-all duration-200 cursor-pointer active:scale-[0.98]",
+                                  "w-full rounded-xl bg-transparent hover:bg-white/50 hover:-translate-y-0.5"
+                                )}
+                                style={{ border: '1.5px dashed rgba(180, 168, 175, 0.5)' }}
+                                onClick={() => {
+                                  if (column.id === 'shape-ideas') {
+                                    const newCard: ProductionCard = {
+                                      id: `card-${Date.now()}`,
+                                      title: '',
+                                      columnId: 'shape-ideas',
+                                      isCompleted: false,
+                                    };
+                                    setColumns((prev) =>
+                                      prev.map((col) =>
+                                        col.id === 'shape-ideas' ? { ...col, cards: [...col.cards, newCard] } : col
+                                      )
+                                    );
+                                    handleOpenScriptEditor(newCard);
+                                  } else if (column.id === 'to-film') {
+                                    const newCard: ProductionCard = {
+                                      id: `card-${Date.now()}`,
+                                      title: '',
+                                      columnId: 'to-film',
+                                      isCompleted: false,
+                                    };
+                                    setColumns((prev) =>
+                                      prev.map((col) =>
+                                        col.id === 'to-film' ? { ...col, cards: [...col.cards, newCard] } : col
+                                      )
+                                    );
+                                    handleOpenStoryboard(newCard);
+                                  } else if (column.id === 'to-edit') {
+                                    const newCard: ProductionCard = {
+                                      id: `card-${Date.now()}`,
+                                      title: '',
+                                      columnId: 'to-edit',
+                                      isCompleted: false,
+                                    };
+                                    setColumns((prev) =>
+                                      prev.map((col) =>
+                                        col.id === 'to-edit' ? { ...col, cards: [...col.cards, newCard] } : col
+                                      )
+                                    );
+                                    handleOpenEditChecklist(newCard);
+                                  } else {
+                                    handleStartAddingCard(column.id);
+                                  }
+                                }}
+                              >
+                                <div className="flex items-center justify-center gap-2 text-[#8B7082]">
+                                  <Plus className="h-4 w-4 group-hover/btn:rotate-90 transition-transform duration-200" />
+                                  <span className="text-sm font-medium">
+                                    {column.id === 'ideate' ? 'Add quick idea' : 'Add new'}
+                                  </span>
+                                </div>
+                              </div>
+                            ) : null}
+
+                            {/* Batch Schedule button - only for to-schedule column */}
+                            {column.id === 'to-schedule' && (
+                              <div
+                                className="group/btn px-4 py-2.5 rounded-xl transition-all duration-200 cursor-pointer w-full hover:-translate-y-0.5 active:scale-[0.98] bg-[#8B7082] hover:bg-[#7A6272] shadow-sm hover:shadow-md"
+                                onClick={() => setIsScheduleColumnExpanded(true)}
+                              >
+                                <div className="flex items-center justify-center gap-2 text-white">
+                                  <CalendarDays className="h-4 w-4" />
+                                  <span className="text-sm font-semibold">Batch Schedule</span>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Help me generate ideas button - only for ideate column */}
+                            {column.id === 'ideate' && (
+                              <div className="group/btn px-4 py-2.5 rounded-xl transition-all duration-200 cursor-pointer w-full hover:-translate-y-0.5 active:scale-[0.98] bg-[#8B7082] hover:bg-[#7A6272] shadow-sm hover:shadow-md"
+                                onClick={() => {
+                                  setSelectedIdeateCard(null);
+                                  setIsIdeateDialogOpen(true);
+                                }}
+                              >
+                                <div className="flex items-center justify-center gap-2 text-white">
+                                  <Zap className="h-4 w-4 group-hover/btn:animate-pulse" />
+                                  <div className="flex flex-col">
+                                    <span className="text-xs font-semibold leading-tight">Generate ideas</span>
+                                    <span className="text-[10px] opacity-80 leading-tight">AI-powered suggestions</span>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
-
-                      {/* Fixed Buttons Area */}
-                      <div className="flex-shrink-0 px-4 pb-4 pt-2 space-y-2">
-                      {addingToColumn === column.id ? (
-                        <div key={`inline-input-${column.id}`}>
-                          <InlineCardInput
-                            onSave={(title) => handleCreateInlineCard(column.id, title)}
-                            onCancel={handleCancelAddingCard}
-                          />
-                        </div>
-                      ) : column.id !== 'to-schedule' ? (
-                        <div
-                          key={`add-button-${column.id}`}
-                          className={cn(
-                            "group/btn px-4 py-2.5 border transition-all duration-200 cursor-pointer active:scale-[0.98]",
-                            "w-full rounded-xl bg-white/80 hover:bg-white border-[#C4A4B5] hover:-translate-y-0.5"
-                          )}
-                          onClick={() => {
-                            if (column.id === 'shape-ideas') {
-                              // Create a new card and open script editor directly
-                              const newCard: ProductionCard = {
-                                id: `card-${Date.now()}`,
-                                title: '',
-                                columnId: 'shape-ideas',
-                                isCompleted: false,
-                              };
-                              setColumns((prev) =>
-                                prev.map((col) =>
-                                  col.id === 'shape-ideas' ? { ...col, cards: [...col.cards, newCard] } : col
-                                )
-                              );
-                              handleOpenScriptEditor(newCard);
-                            } else if (column.id === 'to-film') {
-                              // Create a new card and open storyboard editor directly
-                              const newCard: ProductionCard = {
-                                id: `card-${Date.now()}`,
-                                title: '',
-                                columnId: 'to-film',
-                                isCompleted: false,
-                              };
-                              setColumns((prev) =>
-                                prev.map((col) =>
-                                  col.id === 'to-film' ? { ...col, cards: [...col.cards, newCard] } : col
-                                )
-                              );
-                              handleOpenStoryboard(newCard);
-                            } else if (column.id === 'to-edit') {
-                              // Create a new card and open edit checklist dialog directly
-                              const newCard: ProductionCard = {
-                                id: `card-${Date.now()}`,
-                                title: '',
-                                columnId: 'to-edit',
-                                isCompleted: false,
-                              };
-                              setColumns((prev) =>
-                                prev.map((col) =>
-                                  col.id === 'to-edit' ? { ...col, cards: [...col.cards, newCard] } : col
-                                )
-                              );
-                              handleOpenEditChecklist(newCard);
-                            } else {
-                              handleStartAddingCard(column.id);
-                            }
-                          }}
-                        >
-                          <div className="flex items-center justify-center gap-2 text-[#8B7082]">
-                            <Plus className="h-4 w-4 group-hover/btn:rotate-90 transition-transform duration-200" />
-                            <span className="text-sm font-medium">
-                              {column.id === 'ideate' ? 'Add quick idea' : 'Add new'}
-                            </span>
-                          </div>
-                        </div>
-                      ) : null}
-
-                      {/* Batch Schedule button - only for to-schedule column */}
-                      {column.id === 'to-schedule' && (
-                        <div
-                          className="group/btn px-4 py-2.5 rounded-xl transition-all duration-200 cursor-pointer w-full hover:-translate-y-0.5 active:scale-[0.98] bg-[#8B7082] hover:bg-[#7A6272] shadow-sm hover:shadow-md"
-                          onClick={() => setIsScheduleColumnExpanded(true)}
-                        >
-                          <div className="flex items-center justify-center gap-2 text-white">
-                            <CalendarDays className="h-4 w-4" />
-                            <span className="text-sm font-semibold">Batch Schedule</span>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Help me generate ideas button - only for ideate column */}
-                      {column.id === 'ideate' && (
-                        <div className="group/btn px-4 py-2.5 rounded-xl transition-all duration-200 cursor-pointer w-full hover:-translate-y-0.5 active:scale-[0.98] bg-[#8B7082] hover:bg-[#7A6272] shadow-sm hover:shadow-md"
-                          onClick={() => {
-                            setSelectedIdeateCard(null);
-                            setIsIdeateDialogOpen(true);
-                          }}
-                        >
-                          <div className="flex items-center justify-center gap-2 text-white">
-                            <Zap className="h-4 w-4 group-hover/btn:animate-pulse" />
-                            <div className="flex flex-col">
-                              <span className="text-xs font-semibold leading-tight">Generate ideas</span>
-                              <span className="text-[10px] opacity-80 leading-tight">AI-powered suggestions</span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      </div>
+                        );
+                      })()}
                 </div>
               </div>
             );
