@@ -6,6 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { PlannerView } from "../types";
 import { TimezoneOption } from "../utils/plannerUtils";
 import { cn } from "@/lib/utils";
+import { getWeekStartsOn } from "@/lib/storage";
 import { ContentDisplayMode } from "../hooks/usePlannerState";
 
 interface PlannerHeaderProps {
@@ -179,7 +180,7 @@ export const PlannerHeader = ({
                 <PopoverTrigger asChild>
                   <button className="flex items-center gap-2 text-sm font-medium text-gray-800 hover:text-gray-600 transition-colors">
                     <CalendarIcon className="h-4 w-4" />
-                    <span>{format(startOfWeek(selectedDate, { weekStartsOn: 1 }), "MMMM d")} - {format(endOfWeek(selectedDate, { weekStartsOn: 1 }), "MMMM d, yyyy")}</span>
+                    <span>{format(startOfWeek(selectedDate, { weekStartsOn: getWeekStartsOn() }), "MMMM d")} - {format(endOfWeek(selectedDate, { weekStartsOn: getWeekStartsOn() }), "MMMM d, yyyy")}</span>
                   </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0 z-[300]" align="end">

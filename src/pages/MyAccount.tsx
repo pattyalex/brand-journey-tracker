@@ -61,7 +61,9 @@ const MyAccount = () => {
   const [selectedTimezone, setSelectedTimezone] = useState(() => {
     return getString(StorageKeys.selectedTimezone) || 'auto';
   });
-  const [firstDayOfWeek, setFirstDayOfWeek] = useState('monday');
+  const [firstDayOfWeek, setFirstDayOfWeek] = useState(() => {
+    return getString(StorageKeys.firstDayOfWeek) || 'sunday';
+  });
 
 
   useEffect(() => {
@@ -138,6 +140,7 @@ const MyAccount = () => {
 
   const handleFirstDayChange = (day: string) => {
     setFirstDayOfWeek(day);
+    setString(StorageKeys.firstDayOfWeek, day);
     toast.success(`Week now starts on ${day === 'monday' ? 'Monday' : 'Sunday'}`);
   };
 

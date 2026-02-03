@@ -21,6 +21,7 @@ import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
 import { ProductionCard } from "../types";
 import { emit, EVENTS } from "@/lib/events";
+import { getWeekStartsOn, getDayNames } from "@/lib/storage";
 
 // Helper to get platform icon
 const getPlatformIcon = (platform: string, size: string = "w-5 h-5"): React.ReactNode => {
@@ -169,13 +170,16 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
     "July", "August", "September", "October", "November", "December"
   ];
 
-  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const daysOfWeek = getDayNames('short');
 
   // Get calendar days for the current month view
   const calendarDays = useMemo(() => {
     const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
     const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
-    const startingDayOfWeek = firstDayOfMonth.getDay();
+    const weekStartsOn = getWeekStartsOn();
+    const startingDayOfWeek = weekStartsOn === 1
+      ? (firstDayOfMonth.getDay() + 6) % 7
+      : firstDayOfMonth.getDay();
     const daysInMonth = lastDayOfMonth.getDate();
 
     const days: { date: Date; isCurrentMonth: boolean; isToday: boolean }[] = [];

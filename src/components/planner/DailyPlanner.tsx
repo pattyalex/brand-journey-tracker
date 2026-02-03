@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { addDays, addMonths, endOfMonth, endOfWeek, format, startOfMonth, startOfWeek, subDays, subMonths, eachDayOfInterval, isSameDay } from "date-fns";
 import { ChevronLeft, ChevronRight, Plus, Clock, FileText, Palette, Lightbulb, ListTodo, ArrowRight, Check, X } from 'lucide-react';
 import { cn } from "@/lib/utils";
+import { getWeekStartsOn, getDayNames } from "@/lib/storage";
 import { toast } from "sonner";
 import { PlannerItem } from "@/types/planner";
 import { Card, CardContent } from "@/components/ui/card";
@@ -674,7 +675,7 @@ export const DailyPlanner = () => {
             <div className="border border-gray-200 rounded-lg overflow-hidden">
               {/* Day headers */}
               <div className="grid grid-cols-7 bg-gray-50">
-                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                {getDayNames('short').map(day => (
                   <div key={day} className="p-3 text-center text-xs font-semibold text-gray-600 border-r border-gray-200 last:border-r-0">
                     {day}
                   </div>
@@ -686,8 +687,8 @@ export const DailyPlanner = () => {
                 {(() => {
                   const monthStart = startOfMonth(selectedDate);
                   const monthEnd = endOfMonth(selectedDate);
-                  const startDate = startOfWeek(monthStart, { weekStartsOn: 1 });
-                  const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
+                  const startDate = startOfWeek(monthStart, { weekStartsOn: getWeekStartsOn() });
+                  const endDate = endOfWeek(monthEnd, { weekStartsOn: getWeekStartsOn() });
                   const days = eachDayOfInterval({ start: startDate, end: endDate });
 
                   return days.map((day, index) => {

@@ -1,6 +1,7 @@
 
 import { format as formatDate, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, getDay } from "date-fns";
 import { ContentItem } from "@/types/content";
+import { getWeekStartsOn } from "@/lib/storage";
 
 export const isWeekend = (date: Date) => {
   const day = getDay(date);
@@ -10,9 +11,9 @@ export const isWeekend = (date: Date) => {
 export const getCalendarDays = (currentMonth: Date) => {
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
-  const calendarStart = startOfWeek(monthStart);
-  const calendarEnd = endOfWeek(monthEnd);
-  
+  const calendarStart = startOfWeek(monthStart, { weekStartsOn: getWeekStartsOn() });
+  const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: getWeekStartsOn() });
+
   return eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 };
 

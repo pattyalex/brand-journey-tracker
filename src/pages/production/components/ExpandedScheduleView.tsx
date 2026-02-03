@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils";
 import { CardContent } from "@/components/ui/card";
 import { ProductionCard, KanbanColumn } from "../types";
 import ContentFlowProgress from "./ContentFlowProgress";
-import { StorageKeys, getString, setString } from "@/lib/storage";
+import { StorageKeys, getString, setString, getWeekStartsOn, getDayNames } from "@/lib/storage";
 import { EVENTS, emit, on } from "@/lib/events";
 import { toast } from "sonner";
 
@@ -1106,7 +1106,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
     "July", "August", "September", "October", "November", "December"
   ];
 
-  const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const daysOfWeek = getDayNames('short');
 
   // Stats for the current month (embedded mode)
   const monthlyStats = useMemo(() => {
@@ -1171,8 +1171,11 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
   // Get calendar days for continuous scrolling view (current month + next 2 months)
   const calendarDays = useMemo(() => {
     const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
-    // Adjust so Monday = 0, Sunday = 6
-    const startingDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7;
+    // Adjust based on week start setting: Monday first = (day + 6) % 7, Sunday first = day
+    const weekStartsOn = getWeekStartsOn();
+    const startingDayOfWeek = weekStartsOn === 1
+      ? (firstDayOfMonth.getDay() + 6) % 7
+      : firstDayOfMonth.getDay();
 
     const days: { date: Date; isCurrentMonth: boolean; isToday: boolean; monthLabel?: string }[] = [];
 

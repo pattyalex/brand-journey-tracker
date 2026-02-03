@@ -21,7 +21,7 @@ import { useColorPalette } from "../hooks/useColorPalette";
 import { ProductionCard, KanbanColumn } from "@/pages/production/types";
 import { defaultColumns } from "@/pages/production/utils/productionConstants";
 import { ContentDisplayMode } from "../hooks/usePlannerState";
-import { StorageKeys, getString, setString } from "@/lib/storage";
+import { StorageKeys, getString, setString, getWeekStartsOn } from "@/lib/storage";
 import { EVENTS, emit } from "@/lib/events";
 import { cn } from "@/lib/utils";
 
@@ -245,8 +245,8 @@ export const WeekView = ({
   useEffect(() => {
     if (weeklyScrollRef.current) {
       // Get all days of the current week
-      const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
-      const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 1 });
+      const weekStart = startOfWeek(selectedDate, { weekStartsOn: getWeekStartsOn() });
+      const weekEnd = endOfWeek(selectedDate, { weekStartsOn: getWeekStartsOn() });
       const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
 
       // Find earliest task time across the week
@@ -517,8 +517,8 @@ export const WeekView = ({
             {/* Day headers */}
             <div className="flex-1 grid grid-cols-7 gap-0">
               {eachDayOfInterval({
-                start: startOfWeek(selectedDate, { weekStartsOn: 1 }),
-                end: endOfWeek(selectedDate, { weekStartsOn: 1 })
+                start: startOfWeek(selectedDate, { weekStartsOn: getWeekStartsOn() }),
+                end: endOfWeek(selectedDate, { weekStartsOn: getWeekStartsOn() })
               }).map((day, index) => {
                 const isToday = isSameDay(day, new Date());
                 const isPast = day < new Date() && !isToday;
@@ -596,8 +596,8 @@ export const WeekView = ({
                   </div>
 
                   {eachDayOfInterval({
-                    start: startOfWeek(selectedDate, { weekStartsOn: 1 }),
-                    end: endOfWeek(selectedDate, { weekStartsOn: 1 })
+                    start: startOfWeek(selectedDate, { weekStartsOn: getWeekStartsOn() }),
+                    end: endOfWeek(selectedDate, { weekStartsOn: getWeekStartsOn() })
                   }).map((day, index) => {
                     const dayString = getDateString(day);
                     const dayData = plannerData.find(d => d.date === dayString);

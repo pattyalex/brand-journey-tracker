@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { format, addDays, startOfWeek, subWeeks, addWeeks, parseISO } from "date-fns";
 import { ChevronLeft, ChevronRight, AlarmClock, Plus } from 'lucide-react';
+import { getWeekStartsOn } from "@/lib/storage";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -39,7 +40,7 @@ const TIME_SEGMENT_COLORS = {
 };
 
 export const WeeklyPlanner = ({ plannerData, onUpdatePlannerData }: WeeklyPlannerProps) => {
-  const [currentWeekStart, setCurrentWeekStart] = useState<Date>(startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [currentWeekStart, setCurrentWeekStart] = useState<Date>(startOfWeek(new Date(), { weekStartsOn: getWeekStartsOn() }));
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");

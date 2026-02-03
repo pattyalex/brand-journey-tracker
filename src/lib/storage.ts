@@ -51,7 +51,8 @@ export const StorageKeys = {
   contentIdeas: "contentIdeas",
   highlightedUnscheduledCard: "highlightedUnscheduledCard",
   archivedContent: "archivedContent",
-  selectedTaskPalette: "selectedTaskPalette"
+  selectedTaskPalette: "selectedTaskPalette",
+  firstDayOfWeek: "firstDayOfWeek"
 } as const;
 
 export const contentFormatsByPillar = (pillarId: string) => `content-formats-${pillarId}`;
@@ -107,4 +108,26 @@ export const remove = (key: string) => {
     return;
   }
   window.localStorage.removeItem(key);
+};
+
+// Helper to get weekStartsOn value for date-fns (0 = Sunday, 1 = Monday)
+export const getWeekStartsOn = (): 0 | 1 => {
+  const setting = getString(StorageKeys.firstDayOfWeek, 'sunday');
+  return setting === 'monday' ? 1 : 0;
+};
+
+// Helper to get day names array based on first day of week setting
+export const getDayNames = (format: 'short' | 'full' | 'upper' = 'short'): string[] => {
+  const setting = getString(StorageKeys.firstDayOfWeek, 'sunday');
+  const mondayFirst = {
+    short: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    full: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+    upper: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']
+  };
+  const sundayFirst = {
+    short: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    full: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+    upper: ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+  };
+  return setting === 'monday' ? mondayFirst[format] : sundayFirst[format];
 };

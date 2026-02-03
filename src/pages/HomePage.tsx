@@ -2087,12 +2087,7 @@ const HomePage = () => {
                   {/* Header */}
                   <div className="flex items-center justify-between mb-5">
                     <div className="flex items-center gap-3">
-                      <div
-                        className="w-11 h-11 rounded-xl flex items-center justify-center shadow-md"
-                        style={{ background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)' }}
-                      >
-                        <Target className="w-5 h-5 text-white" />
-                      </div>
+                      <Target className="w-6 h-6 text-[#612a4f]" />
                       <h3
                         className="text-xl text-[#2d2a26]"
                         style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
@@ -2277,17 +2272,9 @@ const HomePage = () => {
                   {/* Header */}
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
-                      <div
-                        className="w-9 h-9 rounded-[10px] flex items-center justify-center"
-                        style={{
-                          background: 'linear-gradient(145deg, #7a9a7a 0%, #5a8a5a 100%)',
-                          boxShadow: '0 4px 12px rgba(90, 138, 90, 0.2)',
-                        }}
-                      >
-                        <svg width="14" height="11" viewBox="0 0 10 8" fill="none">
-                          <path d="M1 4.5Q2 6 3.5 7Q5.5 4 9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      </div>
+                      <svg width="20" height="16" viewBox="0 0 10 8" fill="none">
+                        <path d="M1 4.5Q2 6 3.5 7Q5.5 4 9 1" stroke="#612a4f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
                       <h3
                         className="text-lg text-[#2d2a26]"
                         style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
@@ -2597,17 +2584,9 @@ const HomePage = () => {
                   {/* Header */}
                   <div className="flex items-center justify-between mb-5">
                     <div className="flex items-center gap-3">
-                      <div
-                        className="w-9 h-9 rounded-[10px] flex items-center justify-center"
-                        style={{
-                          background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
-                          boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
-                        }}
-                      >
-                        <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      </div>
+                      <svg className="w-5 h-5 text-[#612a4f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
                       <div>
                         <h3
                           className="text-lg text-[#2d2a26]"
@@ -2808,15 +2787,7 @@ const HomePage = () => {
                   {/* Header */}
                   <div className="flex items-center justify-between mb-5">
                     <div className="flex items-center gap-3">
-                      <div
-                        className="w-9 h-9 rounded-[10px] flex items-center justify-center"
-                        style={{
-                          background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
-                          boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
-                        }}
-                      >
-                        <Pencil className="w-4 h-4 text-white" />
-                      </div>
+                      <Pencil className="w-5 h-5 text-[#612a4f]" />
                       <h3
                         className="text-lg text-[#2d2a26]"
                         style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
@@ -2922,15 +2893,7 @@ const HomePage = () => {
                   {/* Header */}
                   <div className="flex items-center justify-between mb-5">
                     <div className="flex items-center gap-3">
-                      <div
-                        className="w-9 h-9 rounded-[10px] flex items-center justify-center"
-                        style={{
-                          background: 'linear-gradient(145deg, #6b4a5e 0%, #4a3442 100%)',
-                          boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
-                        }}
-                      >
-                        <Diamond className="w-4 h-4 text-white" />
-                      </div>
+                      <Diamond className="w-5 h-5 text-[#612a4f]" />
                       <h3
                         className="text-lg text-[#2d2a26]"
                         style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}

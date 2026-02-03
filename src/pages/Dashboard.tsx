@@ -115,11 +115,9 @@ const Dashboard = () => {
           <div className="px-6 py-5 border-b border-[#8B7082]/10">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-[#612a4f] flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
+                <svg className="w-6 h-6 text-[#612a4f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900" style={{ fontFamily: "'Playfair Display', serif" }}>
                     Monthly Goals

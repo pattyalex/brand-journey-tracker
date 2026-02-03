@@ -16,7 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { autoFormatTime } from "../utils/timeUtils";
 import { TimePicker } from "./TimePicker";
-import { StorageKeys, getString, setString } from "@/lib/storage";
+import { StorageKeys, getString, setString, getWeekStartsOn, getDayNames } from "@/lib/storage";
 import { EVENTS, emit } from "@/lib/events";
 import { ContentDisplayMode } from "../hooks/usePlannerState";
 import { cn } from "@/lib/utils";
@@ -111,7 +111,7 @@ export const CalendarView = ({
     // Effective start is at least minDate
     const effectiveStartMonth = startMonth < minDate ? minDate : startMonth;
     const startDate = startOfMonth(effectiveStartMonth);
-    const endDate = endOfWeek(endOfMonth(endMonth), { weekStartsOn: 1 });
+    const endDate = endOfWeek(endOfMonth(endMonth), { weekStartsOn: getWeekStartsOn() });
 
     return eachDayOfInterval({ start: startDate, end: endDate });
   };
@@ -119,8 +119,11 @@ export const CalendarView = ({
   const allDays = generateContinuousDays();
 
   // Calculate how many empty cells needed before the first day (for grid alignment)
-  // Monday = 0, Sunday = 6 (using weekStartsOn: 1)
-  const firstDayOfWeek = allDays.length > 0 ? (allDays[0].getDay() + 6) % 7 : 0; // Convert to Mon=0 format
+  // For Monday start: Monday = 0, Sunday = 6. For Sunday start: Sunday = 0, Saturday = 6
+  const weekStartsOn = getWeekStartsOn();
+  const firstDayOfWeek = allDays.length > 0
+    ? (weekStartsOn === 1 ? (allDays[0].getDay() + 6) % 7 : allDays[0].getDay())
+    : 0;
 
   // Handle scroll to update selected month based on visible days
   const handleScroll = () => {
@@ -638,7 +641,7 @@ export const CalendarView = ({
       <CardContent className="pl-0 pr-4 flex-1 flex flex-col min-h-0 overflow-hidden">
         {/* Day Headers - Sticky */}
         <div className="grid grid-cols-7 mb-2 flex-shrink-0 sticky top-0 bg-white z-10">
-          {['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'].map((day) => (
+          {getDayNames('upper').map((day) => (
             <div key={day} className="text-center text-xs text-gray-500 py-2" style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 500 }}>
               {day}
             </div>
