@@ -11,7 +11,8 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start:all": "concurrently \"npm run dev\" \"cd server && node api-server.cjs\""
+    "start:all": "concurrently \"npm run dev\" \"cd server && node api-server.cjs\"",
+    "start:prod": "concurrently \"node server/api-server.cjs\" \"npx serve -s dist -p 5000\""
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
