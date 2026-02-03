@@ -60,7 +60,8 @@ import {
   Clock,
   Check,
   Pencil,
-  Clapperboard
+  Clapperboard,
+  CalendarDays
 } from "lucide-react";
 import { format, startOfWeek, addDays, isSameDay, startOfMonth, endOfMonth, endOfWeek, eachDayOfInterval, formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
@@ -676,7 +677,7 @@ const HomePage = () => {
     if (showCelebration) {
       const timer = setTimeout(() => {
         setShowCelebration(false);
-      }, 3500);
+      }, 5000);
       return () => clearTimeout(timer);
     }
   }, [showCelebration]);
@@ -1725,10 +1726,10 @@ const HomePage = () => {
 
     // Only show celebration when transitioning from not-all-complete to all-complete
     if (allCompleted && !wasCompleted) {
-      // Delay celebration by 500ms for better UX
+      // Quick delay for better UX
       setTimeout(() => {
         setShowCelebration(true);
-      }, 500);
+      }, 150);
     }
   };
 
@@ -2082,7 +2083,8 @@ const HomePage = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 auto-rows-min">
 
               {/* Top 3 Priorities - 1 column */}
-              <section className="bg-white/60 rounded-2xl p-5 border border-[#8B7082]/8">
+              <div className="relative">
+              <section className="bg-white/60 rounded-2xl p-5 border border-[#e0d5db]">
                   {/* Header */}
                   <div className="flex items-center gap-2.5 mb-2.5">
                     <Target className="w-5 h-5 text-[#612a4f]" />
@@ -2148,11 +2150,27 @@ const HomePage = () => {
                           </div>
 
                           {/* Checkbox */}
-                          <Checkbox
-                            checked={priority.isCompleted}
-                            onCheckedChange={() => handleTogglePriority(priority.id)}
-                            className="h-4 w-4 rounded border-[1.5px] border-gray-300 data-[state=checked]:bg-[#5a8a5a] data-[state=checked]:border-[#5a8a5a] data-[state=checked]:text-white flex-shrink-0"
-                          />
+                          <button
+                            onClick={() => handleTogglePriority(priority.id)}
+                            className="w-[22px] h-[22px] rounded-md flex items-center justify-center transition-all flex-shrink-0"
+                            style={{
+                              background: priority.isCompleted
+                                ? 'linear-gradient(145deg, #8aae8a 0%, #6a9a6a 100%)'
+                                : 'transparent',
+                              border: priority.isCompleted
+                                ? 'none'
+                                : '1.5px solid rgba(139, 115, 130, 0.15)',
+                              boxShadow: priority.isCompleted
+                                ? '0 2px 6px rgba(106, 154, 106, 0.25)'
+                                : 'none',
+                            }}
+                          >
+                            {priority.isCompleted && (
+                              <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                                <path d="M1 4.5Q2 6 3.5 7Q5.5 4 9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            )}
+                          </button>
                         </div>
                       );
                     })}
@@ -2162,18 +2180,79 @@ const HomePage = () => {
                   <div className="border-t border-[#8B7082]/10 mt-4 pt-6">
                     <div className="flex justify-center">
                       <button
-                        onClick={() => navigate('/planner')}
+                        onClick={() => navigate('/task-board')}
                         className="px-2 py-0.5 text-[11px] font-medium text-[#612a4f] bg-[#612a4f]/10 hover:bg-[#612a4f]/15 rounded transition-colors flex items-center gap-1"
                         style={{ fontFamily: "'DM Sans', sans-serif" }}
                       >
-                        Plan Your Day <ArrowRight className="w-3 h-3" />
+                        <CalendarDays className="w-3 h-3" /> Plan Your Day
                       </button>
                     </div>
                   </div>
               </section>
 
+              {/* Celebration popup - positioned next to Top 3 Priorities */}
+              <AnimatePresence>
+                {showCelebration && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -20, scale: 0.95 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    exit={{ opacity: 0, x: -20, scale: 0.95 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    className="absolute left-full top-[100px] ml-4 z-10"
+                  >
+                    <div
+                      className="relative overflow-hidden rounded-xl shadow-lg w-[380px]"
+                      style={{
+                        background: 'linear-gradient(135deg, #612a4f 0%, #4a1f3d 100%)',
+                        boxShadow: '0 10px 40px rgba(97, 42, 79, 0.3)',
+                      }}
+                    >
+                      <div className="px-5 py-4 flex items-center gap-3">
+                        <motion.div
+                          animate={{ rotate: [0, -10, 10, -10, 0], scale: [1, 1.1, 1] }}
+                          transition={{ duration: 0.5, repeat: 2 }}
+                          className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                          style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)' }}
+                        >
+                          <span className="text-xl">🎉</span>
+                        </motion.div>
+                        <div className="flex-1 min-w-0">
+                          <h3
+                            className="text-white font-semibold text-[15px]"
+                            style={{ fontFamily: "'Playfair Display', serif" }}
+                          >
+                            Amazing Work! 🔥
+                          </h3>
+                          <p
+                            className="text-white/80 text-[12px]"
+                            style={{ fontFamily: "'DM Sans', sans-serif" }}
+                          >
+                            You crushed all your priorities today! 💪
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => setShowCelebration(false)}
+                          className="w-6 h-6 rounded-full flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all flex-shrink-0"
+                        >
+                          <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                            <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                          </svg>
+                        </button>
+                      </div>
+                      <motion.div
+                        className="absolute bottom-0 left-0 h-[2px] bg-white/40"
+                        initial={{ width: "100%" }}
+                        animate={{ width: "0%" }}
+                        transition={{ duration: 5, ease: "linear" }}
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              </div>
+
               {/* Continue Creating Section - 1 column */}
-              <section className="bg-white/60 rounded-2xl p-5 border border-[#8B7082]/8">
+              <section className="bg-white/60 rounded-2xl p-5 border border-[#e0d5db]">
                   {/* Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2.5">
@@ -2185,12 +2264,21 @@ const HomePage = () => {
                         Continue Creating
                       </h3>
                     </div>
-                    <button
-                      onClick={() => navigate('/production')}
-                      className="text-[#8B7082] hover:text-[#612a4f] transition-colors"
-                    >
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => navigate('/production')}
+                            className="text-[#8B7082] hover:text-[#612a4f] hover:bg-[#612a4f]/10 p-1 rounded transition-all"
+                          >
+                            <ArrowRight className="w-4 h-4" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-black text-white border-black">
+                          <p>Go to Content Hub</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
 
                   {/* Content Cards */}
@@ -2259,7 +2347,7 @@ const HomePage = () => {
               </section>
 
               {/* Upcoming Partnerships Section - 1 column */}
-              <section className="bg-white/60 rounded-2xl p-5 border border-[#8B7082]/8">
+              <section className="bg-white/60 rounded-2xl p-5 border border-[#e0d5db]">
                   {/* Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2.5">
@@ -2271,12 +2359,21 @@ const HomePage = () => {
                         Upcoming Partnerships
                       </h3>
                     </div>
-                    <button
-                      onClick={() => navigate('/brands')}
-                      className="text-[#8B7082] hover:text-[#612a4f] transition-colors"
-                    >
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => navigate('/brands')}
+                            className="text-[#8B7082] hover:text-[#612a4f] hover:bg-[#612a4f]/10 p-1 rounded transition-all"
+                          >
+                            <ArrowRight className="w-4 h-4" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-black text-white border-black">
+                          <p>View All</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
 
                   {/* Upcoming Deadlines */}
@@ -2354,99 +2451,10 @@ const HomePage = () => {
                   </div>
               </section>
 
-              {/* Celebration - Full width in bento grid */}
-              <AnimatePresence>
-                {showCelebration && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -20, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                    transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="md:col-span-3"
-                  >
-                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 p-[2px] shadow-2xl">
-                      <div className="relative bg-white/80 rounded-2xl p-6">
-                        {/* Animated background particles */}
-                        <div className="absolute inset-0 overflow-hidden rounded-2xl">
-                          {[...Array(12)].map((_, i) => (
-                            <motion.div
-                              key={i}
-                              className="absolute"
-                              initial={{
-                                x: `${Math.random() * 100}%`,
-                                y: `${Math.random() * 100}%`,
-                                scale: 0
-                              }}
-                              animate={{
-                                scale: [0, 1, 0],
-                                rotate: [0, 180, 360]
-                              }}
-                              transition={{
-                                duration: 2,
-                                delay: i * 0.1,
-                                repeat: Infinity,
-                                repeatDelay: 1
-                              }}
-                            >
-                              <div className="text-2xl opacity-20">
-                                {['✨', '⭐', '🎉', '💫'][i % 4]}
-                              </div>
-                            </motion.div>
-                          ))}
-                        </div>
-
-                        {/* Content */}
-                        <div className="relative z-10 flex items-center gap-4">
-                          <motion.div
-                            animate={{
-                              rotate: [0, -10, 10, -10, 0],
-                              scale: [1, 1.1, 1, 1.1, 1]
-                            }}
-                            transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 1 }}
-                            className="flex-shrink-0"
-                          >
-                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-lg">
-                              <span className="text-3xl">🎉</span>
-                            </div>
-                          </motion.div>
-
-                          <div className="flex-1">
-                            <h3 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-1">
-                              Amazing Work!
-                            </h3>
-                            <p className="text-gray-700 text-sm">
-                              You've completed all your top priorities for today. Keep crushing it! 💪
-                            </p>
-                          </div>
-
-                          <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => setShowCelebration(false)}
-                            className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"
-                          >
-                            ✕
-                          </motion.button>
-                        </div>
-
-                        {/* Progress indicator */}
-                        <motion.div
-                          className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400"
-                          initial={{ width: "100%" }}
-                          animate={{ width: "0%" }}
-                          transition={{ duration: 3.5, ease: "linear" }}
-                        />
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-
               {/* Work Habits + Monthly Goals Row */}
               <div className="md:col-span-3 flex gap-4">
               {/* Work Habits Section */}
-              <section className="flex-1 bg-white/60 rounded-2xl p-5 border border-[#8B7082]/8">
+              <section className="flex-1 bg-white/60 rounded-2xl p-5 border border-[#e0d5db]">
                   {/* Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2.5">
@@ -2460,17 +2468,21 @@ const HomePage = () => {
                         Work Habits
                       </h3>
                     </div>
-                    <button
-                      onClick={() => setIsAddingHabit(true)}
-                      className="px-3 py-1.5 rounded-lg text-white text-xs font-semibold flex items-center gap-1"
-                      style={{
-                        fontFamily: "'DM Sans', sans-serif",
-                        background: 'linear-gradient(145deg, #6b4a5e 0%, #4a3442 100%)',
-                        boxShadow: '0 2px 8px rgba(107, 74, 94, 0.2)',
-                      }}
-                    >
-                      <Plus className="w-3 h-3" /> Add
-                    </button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => setIsAddingHabit(true)}
+                            className="text-[#612a4f] hover:text-[#4a3442] hover:bg-[#612a4f]/10 p-1 rounded transition-all"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-black text-white border-black">
+                          <p>Add Habit</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
 
                   {/* Habits Grid */}
@@ -2622,7 +2634,7 @@ const HomePage = () => {
                                 >
                                   <button
                                     onClick={() => toggleHabit(habit.id, dateStr)}
-                                    className="w-[26px] h-[26px] rounded-md flex items-center justify-center transition-all"
+                                    className="w-[22px] h-[22px] rounded-md flex items-center justify-center transition-all"
                                     style={{
                                       background: isCompleted
                                         ? 'linear-gradient(145deg, #8aae8a 0%, #6a9a6a 100%)'
@@ -2665,7 +2677,7 @@ const HomePage = () => {
                                     setNewHabitGoalTarget("");
                                   }
                                 }}
-                                className="flex-1 h-9 text-[13px] border border-gray-200 rounded-lg focus:border-[#6b4a5e] focus:ring-1 focus:ring-[#6b4a5e]/20"
+                                className="flex-1 h-9 text-[13px] border border-gray-200 rounded-lg focus:border-[#6b4a5e] focus:ring-0 focus:outline-none"
                                 style={{ fontFamily: "'DM Sans', sans-serif" }}
                               />
                               <div className="flex items-center gap-1">
@@ -2750,7 +2762,7 @@ const HomePage = () => {
               </section>
 
               {/* Monthly Goals Section */}
-              <section className="flex-1 bg-white/60 rounded-2xl p-5 border border-[#8B7082]/8">
+              <section className="flex-[0.75] bg-white/60 rounded-2xl p-5 border border-[#e0d5db]">
                   {/* Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2.5">
@@ -2767,12 +2779,21 @@ const HomePage = () => {
                         <p className="text-[11px] text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>{getCurrentMonth()} {getCurrentYear()}</p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => navigate('/strategy-growth?tab=growth-goals#monthly-goals')}
-                      className="text-[#8B7082] hover:text-[#612a4f] transition-colors"
-                    >
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => navigate('/strategy-growth?tab=growth-goals#monthly-goals')}
+                            className="text-[#8B7082] hover:text-[#612a4f] hover:bg-[#612a4f]/10 p-1 rounded transition-all"
+                          >
+                            <ArrowRight className="w-4 h-4" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-black text-white border-black">
+                          <p>View All</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
 
                   {/* Goals List */}
@@ -2809,7 +2830,7 @@ const HomePage = () => {
                             ) : (
                               <span
                                 onDoubleClick={() => { setEditingMonthlyGoalId(goal.id); setEditingMonthlyGoalText(goal.text); }}
-                                className="flex-1 text-[15px] font-semibold cursor-pointer text-[#2d2a26]"
+                                className="flex-1 text-sm font-semibold cursor-pointer text-[#2d2a26]"
                                 style={{ fontFamily: "'DM Sans', sans-serif" }}
                               >
                                 {goal.text}
@@ -2819,7 +2840,7 @@ const HomePage = () => {
                             {/* Status badge - clickable to cycle */}
                             <button
                               onClick={(e) => { e.stopPropagation(); handleCycleGoalStatus(goal.id); }}
-                              className="text-[11px] font-semibold px-2.5 py-1 rounded-md whitespace-nowrap cursor-pointer hover:opacity-80 transition-opacity"
+                              className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md whitespace-nowrap cursor-pointer hover:opacity-80 transition-opacity"
                               style={{
                                 backgroundColor: status.bgColor,
                                 color: status.textColor,
@@ -2844,62 +2865,28 @@ const HomePage = () => {
                   </div>
                 </div>
 
-                {/* Add Goal */}
-                {isAddingMonthlyGoal ? (
-                  <div
-                    className="flex items-center gap-3 p-4 mt-3 rounded-[14px]"
-                    style={{
-                      background: '#ffffff',
-                      border: '1px solid rgba(139, 115, 130, 0.12)',
-                      boxShadow: '0 2px 8px rgba(139, 115, 130, 0.08)',
-                    }}
-                  >
-                    <Input
-                      value={newMonthlyGoalText}
-                      onChange={(e) => setNewMonthlyGoalText(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleAddMonthlyGoal();
-                        else if (e.key === 'Escape') { setIsAddingMonthlyGoal(false); setNewMonthlyGoalText(""); }
-                      }}
-                      onBlur={() => { if (!newMonthlyGoalText.trim()) setIsAddingMonthlyGoal(false); }}
-                      placeholder={`Add a goal for ${getCurrentMonth()}...`}
-                      className="flex-1 text-sm border-0 shadow-none focus-visible:ring-0 bg-transparent"
-                      style={{ fontFamily: "'DM Sans', sans-serif" }}
-                      autoFocus
-                    />
-                    <button
-                      onClick={handleAddMonthlyGoal}
-                      className="w-8 h-8 rounded-lg text-white flex items-center justify-center transition-colors"
-                      style={{
-                        background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
-                      }}
-                    >
-                      <PlusCircle className="w-4 h-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setIsAddingMonthlyGoal(true)}
-                    className="flex items-center justify-center w-full py-3 mt-3 text-sm text-[#8B7082] hover:text-[#612a4f] hover:bg-[#8B7082]/5 rounded-xl transition-colors border border-dashed border-[#8B7082]/20"
-                  >
-                    <PlusCircle className="h-4 w-4 mr-2" />
-                    Add Goal
-                  </button>
-                )}
-            </section>
+                            </section>
               </div>
 
               {/* Mission Statement - Full width */}
-              <section className="md:col-span-3 bg-white/60 rounded-2xl p-6 border border-[#8B7082]/8">
+              <section className="md:col-span-3 bg-white/60 rounded-2xl p-6 border border-[#e0d5db]">
                   {/* Header with Edit button */}
                   <div className="flex justify-end mb-4">
-                    <button
-                      onClick={() => navigate('/strategy-growth#mission')}
-                      className="text-xs font-semibold text-[#6b4a5e] hover:text-[#4a3442] transition-colors flex items-center gap-1"
-                      style={{ fontFamily: "'DM Sans', sans-serif" }}
-                    >
-                      Edit <ArrowRight className="w-3 h-3" />
-                    </button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => navigate('/strategy-growth#mission')}
+                            className="text-[#8B7082] hover:text-[#612a4f] hover:bg-[#612a4f]/10 p-1 rounded transition-all"
+                          >
+                            <ArrowRight className="w-4 h-4" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-black text-white border-black">
+                          <p>Edit</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
 
                   <div className="flex flex-col items-center">
