@@ -59,7 +59,8 @@ import {
   CheckCircle,
   Clock,
   Check,
-  Pencil
+  Pencil,
+  Clapperboard
 } from "lucide-react";
 import { format, startOfWeek, addDays, isSameDay, startOfMonth, endOfMonth, endOfWeek, eachDayOfInterval, formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
@@ -354,7 +355,7 @@ const HomePage = () => {
       deadlines.sort((a, b) => a.daysRemaining - b.daysRemaining);
 
       return {
-        deadlines: deadlines.slice(0, 3), // Show up to 3
+        deadlines: deadlines.slice(0, 2), // Show up to 2
         expectedPayments
       };
     } catch (e) {
@@ -1047,7 +1048,7 @@ const HomePage = () => {
 
       // First pass: take 1 from each column in priority order
       for (const colId of priorityOrder) {
-        if (selectedCards.length >= 3) break;
+        if (selectedCards.length >= 2) break;
         if (cardsByColumn[colId].length > 0) {
           selectedCards.push(cardsByColumn[colId].shift()!);
         }
@@ -1055,8 +1056,8 @@ const HomePage = () => {
 
       // Second pass: fill remaining slots from columns that still have cards
       for (const colId of priorityOrder) {
-        if (selectedCards.length >= 3) break;
-        while (cardsByColumn[colId].length > 0 && selectedCards.length < 3) {
+        if (selectedCards.length >= 2) break;
+        while (cardsByColumn[colId].length > 0 && selectedCards.length < 2) {
           selectedCards.push(cardsByColumn[colId].shift()!);
         }
       }
@@ -2037,7 +2038,7 @@ const HomePage = () => {
                   {/* Left: Greeting */}
                   <div>
                     <h1
-                      className="text-[48px] leading-tight mb-2"
+                      className="text-[32px] leading-tight mb-2"
                       style={{
                         fontFamily: "'Playfair Display', serif",
                         fontWeight: 500,
@@ -2056,7 +2057,7 @@ const HomePage = () => {
 
                   {/* Right: Today's Date Badge */}
                   <div
-                    className="flex-shrink-0 flex items-center gap-3 mt-3"
+                    className="flex-shrink-0 flex items-center gap-3"
                     style={{ fontFamily: "'DM Sans', sans-serif" }}
                   >
                     <span
@@ -2077,48 +2078,37 @@ const HomePage = () => {
                 </div>
               </section>
 
-            {/* Grid Layout Container - Fixed positions, Pinterest style */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start mt-4">
-              {/* Left Column - Priorities, Next to Work On */}
-              <div className="space-y-12">
-              {/* Top 3 Priorities Section */}
-              <section>
-                <div className="bg-white/80 rounded-3xl p-6 shadow-sm">
+            {/* Bento Grid Layout */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 auto-rows-min">
+
+              {/* Top 3 Priorities - 1 column */}
+              <section className="bg-white/60 rounded-2xl p-5 border border-[#8B7082]/8">
                   {/* Header */}
-                  <div className="flex items-center justify-between mb-5">
-                    <div className="flex items-center gap-3">
-                      <Target className="w-6 h-6 text-[#612a4f]" />
-                      <h3
-                        className="text-xl text-[#2d2a26]"
-                        style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
-                      >
-                        Top 3 Priorities
-                      </h3>
-                    </div>
-                    <button
-                      onClick={() => navigate('/task-board')}
-                      className="text-xs font-semibold text-[#6b4a5e] hover:text-[#4a3442] transition-colors flex items-center gap-1"
-                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                  <div className="flex items-center gap-2.5 mb-2.5">
+                    <Target className="w-5 h-5 text-[#612a4f]" />
+                    <h3
+                      className="text-base text-[#2d2a26]"
+                      style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
                     >
-                      Plan Your Day <ArrowRight className="w-3 h-3" />
-                    </button>
+                      Top 3 Priorities
+                    </h3>
                   </div>
 
                   {/* Priority Items */}
-                  <div className="space-y-3 pb-2">
+                  <div className="space-y-0">
                     {priorities.map((priority) => {
                       return (
                         <div
                           key={priority.id}
-                          className="flex items-center gap-4 px-4 py-4 bg-[#f8f7f7] rounded-xl"
+                          className="flex items-baseline gap-3 py-2.5"
                         >
                           {/* Priority Number */}
-                          <div
-                            className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center text-white font-medium text-sm"
-                            style={{ background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)' }}
+                          <span
+                            className="flex-shrink-0 text-xl text-[#612a4f]"
+                            style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
                           >
-                            {priority.id}
-                          </div>
+                            {priority.id}.
+                          </span>
 
                           {/* Priority Text */}
                           <div className="flex-1 min-w-0">
@@ -2137,13 +2127,13 @@ const HomePage = () => {
                                   }
                                 }}
                                 placeholder={`Priority ${priority.id}...`}
-                                className="w-full bg-white border border-gray-200 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f]/20 rounded-lg px-3 py-1.5 text-[15px] text-[#2d2a26] placeholder:text-gray-400 outline-none transition-all"
+                                className="w-full bg-white border border-gray-200 focus:border-[#612a4f] focus:ring-1 focus:ring-[#612a4f]/20 rounded-lg px-3 py-1 text-[14px] text-[#2d2a26] placeholder:text-gray-400 outline-none transition-all"
                                 style={{ fontFamily: "'DM Sans', sans-serif" }}
                               />
                             ) : (
                               <div
                                 onClick={() => setEditingPriorityId(priority.id)}
-                                className={`cursor-pointer text-[15px] min-h-[28px] flex items-center ${
+                                className={`cursor-pointer text-[14px] min-h-[24px] flex items-center ${
                                   priority.isCompleted
                                     ? 'line-through text-gray-400'
                                     : priority.text
@@ -2161,17 +2151,210 @@ const HomePage = () => {
                           <Checkbox
                             checked={priority.isCompleted}
                             onCheckedChange={() => handleTogglePriority(priority.id)}
-                            className="h-6 w-6 rounded-md border-2 border-gray-300 data-[state=checked]:bg-[#612a4f] data-[state=checked]:border-[#612a4f] data-[state=checked]:text-white flex-shrink-0"
+                            className="h-4 w-4 rounded border-[1.5px] border-gray-300 data-[state=checked]:bg-[#5a8a5a] data-[state=checked]:border-[#5a8a5a] data-[state=checked]:text-white flex-shrink-0"
                           />
                         </div>
                       );
                     })}
                   </div>
 
-                </div>
+                  {/* Plan Your Day Link */}
+                  <div className="border-t border-[#8B7082]/10 mt-4 pt-6">
+                    <div className="flex justify-center">
+                      <button
+                        onClick={() => navigate('/planner')}
+                        className="px-2 py-0.5 text-[11px] font-medium text-[#612a4f] bg-[#612a4f]/10 hover:bg-[#612a4f]/15 rounded transition-colors flex items-center gap-1"
+                        style={{ fontFamily: "'DM Sans', sans-serif" }}
+                      >
+                        Plan Your Day <ArrowRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
               </section>
 
-              {/* Celebration - Inline between sections */}
+              {/* Continue Creating Section - 1 column */}
+              <section className="bg-white/60 rounded-2xl p-5 border border-[#8B7082]/8">
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2.5">
+                      <Clapperboard className="w-5 h-5 text-[#612a4f]" />
+                      <h3
+                        className="text-base text-[#2d2a26]"
+                        style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
+                      >
+                        Continue Creating
+                      </h3>
+                    </div>
+                    <button
+                      onClick={() => navigate('/production')}
+                      className="text-[#8B7082] hover:text-[#612a4f] transition-colors"
+                    >
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Content Cards */}
+                  <div className="space-y-2">
+                    {continueCreatingCards.length > 0 ? (
+                      continueCreatingCards.map((card) => {
+                        const stageBadgeColors: Record<string, string> = {
+                          'Edit': '#6b4a5e',
+                          'Film': '#8b6a7e',
+                          'Script': '#a8899a',
+                          'Ideate': 'rgba(184, 169, 170, 0.6)',
+                        };
+
+                        return (
+                          <div
+                            key={card.id}
+                            onClick={() => navigate('/production')}
+                            className="py-3 cursor-pointer border-b border-[#8B7082]/10 last:border-b-0 transition-all"
+                          >
+                            {/* Title */}
+                            <p
+                              className="text-sm font-semibold text-[#2d2a26] mb-1.5 line-clamp-2"
+                              style={{ fontFamily: "'DM Sans', sans-serif" }}
+                            >
+                              {card.title}
+                            </p>
+
+                            {/* Stage Badge */}
+                            <span
+                              className="inline-block text-[10px] font-semibold text-white px-2 py-0.5 rounded mb-1"
+                              style={{
+                                fontFamily: "'DM Sans', sans-serif",
+                                backgroundColor: stageBadgeColors[card.stage],
+                              }}
+                            >
+                              {card.stage}
+                            </span>
+                            {/* Last Updated */}
+                            <span
+                              className="block text-[10px] text-[#8b7a85]"
+                              style={{ fontFamily: "'DM Sans', sans-serif" }}
+                            >
+                              {formatDistanceToNow(card.lastUpdated, { addSuffix: false })} ago
+                            </span>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="py-6 text-center">
+                        <p
+                          className="text-sm text-gray-400 mb-2"
+                          style={{ fontFamily: "'DM Sans', sans-serif" }}
+                        >
+                          No content in progress
+                        </p>
+                        <button
+                          onClick={() => navigate('/production')}
+                          className="text-sm font-medium text-[#6b4a5e] hover:text-[#4a3442] transition-colors"
+                          style={{ fontFamily: "'DM Sans', sans-serif" }}
+                        >
+                          Start creating →
+                        </button>
+                      </div>
+                    )}
+                  </div>
+              </section>
+
+              {/* Upcoming Partnerships Section - 1 column */}
+              <section className="bg-white/60 rounded-2xl p-5 border border-[#8B7082]/8">
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2.5">
+                      <Handshake className="w-5 h-5 text-[#612a4f]" />
+                      <h3
+                        className="text-base text-[#2d2a26]"
+                        style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
+                      >
+                        Upcoming Partnerships
+                      </h3>
+                    </div>
+                    <button
+                      onClick={() => navigate('/brands')}
+                      className="text-[#8B7082] hover:text-[#612a4f] transition-colors"
+                    >
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Upcoming Deadlines */}
+                  <div className="mb-5">
+                    {brandDealsData.deadlines.length === 0 ? (
+                      <p
+                        className="text-sm py-3"
+                        style={{ fontFamily: "'DM Sans', sans-serif", color: '#8b7a85' }}
+                      >
+                        No upcoming deadlines
+                      </p>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {brandDealsData.deadlines.map((deadline, index) => (
+                          <div
+                            key={`${deadline.brandName}-${index}`}
+                            className="flex items-center justify-between pb-4 pt-2 border-b border-[#8B7082]/10 last:border-b-0"
+                          >
+                            <div>
+                              <p
+                                className="text-sm font-semibold text-[#2d2a26]"
+                                style={{ fontFamily: "'DM Sans', sans-serif" }}
+                              >
+                                {deadline.brandName}
+                              </p>
+                              <p
+                                className="text-[11px] text-[#8b7a85]"
+                                style={{ fontFamily: "'DM Sans', sans-serif" }}
+                              >
+                                {deadline.action} by {format(deadline.dueDate, 'MMM d')}
+                              </p>
+                            </div>
+                            {deadline.contentType && (
+                              <span
+                                className="text-[9px] font-medium px-1.5 py-0.5 rounded tracking-wide"
+                                style={{
+                                  fontFamily: "'DM Sans', sans-serif",
+                                  color: '#8b7a85',
+                                  background: 'rgba(139, 115, 130, 0.1)',
+                                }}
+                              >
+                                {deadline.contentType.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Expected Payments */}
+                  <div
+                    className="rounded-lg p-3"
+                    style={{
+                      background: 'linear-gradient(145deg, rgba(122, 154, 122, 0.06) 0%, rgba(122, 154, 122, 0.1) 100%)',
+                      border: '1px solid rgba(122, 154, 122, 0.12)',
+                    }}
+                  >
+                    <p
+                      className="text-[10px] font-semibold uppercase mb-0.5"
+                      style={{
+                        fontFamily: "'DM Sans', sans-serif",
+                        color: '#5a8a5a',
+                        letterSpacing: '0.08em',
+                      }}
+                    >
+                      Expected This Month
+                    </p>
+                    <p
+                      className="text-xl text-[#2d2a26]"
+                      style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
+                    >
+                      ${brandDealsData.expectedPayments.toLocaleString()}
+                    </p>
+                  </div>
+              </section>
+
+              {/* Celebration - Full width in bento grid */}
               <AnimatePresence>
                 {showCelebration && (
                   <motion.div
@@ -2179,7 +2362,7 @@ const HomePage = () => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -20, scale: 0.95 }}
                     transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="my-8"
+                    className="md:col-span-3"
                   >
                     <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 p-[2px] shadow-2xl">
                       <div className="relative bg-white/80 rounded-2xl p-6">
@@ -2260,23 +2443,18 @@ const HomePage = () => {
               </AnimatePresence>
 
 
+              {/* Work Habits + Monthly Goals Row */}
+              <div className="md:col-span-3 flex gap-4">
               {/* Work Habits Section */}
-              <section className="!mt-9">
-                <div
-                  className="bg-white/80 rounded-[20px] p-6"
-                  style={{
-                    boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
-                    border: '1px solid rgba(139, 115, 130, 0.06)',
-                  }}
-                >
+              <section className="flex-1 bg-white/60 rounded-2xl p-5 border border-[#8B7082]/8">
                   {/* Header */}
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                      <svg width="20" height="16" viewBox="0 0 10 8" fill="none">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2.5">
+                      <svg width="18" height="14" viewBox="0 0 10 8" fill="none">
                         <path d="M1 4.5Q2 6 3.5 7Q5.5 4 9 1" stroke="#612a4f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                       <h3
-                        className="text-lg text-[#2d2a26]"
+                        className="text-base text-[#2d2a26]"
                         style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
                       >
                         Work Habits
@@ -2569,40 +2747,31 @@ const HomePage = () => {
                       </button>
                     </div>
                   )}
-                </div>
               </section>
 
               {/* Monthly Goals Section */}
-              <section className="!mt-9">
-                <div
-                  className="bg-white/80 rounded-[20px] p-6"
-                  style={{
-                    boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
-                    border: '1px solid rgba(139, 115, 130, 0.06)',
-                  }}
-                >
+              <section className="flex-1 bg-white/60 rounded-2xl p-5 border border-[#8B7082]/8">
                   {/* Header */}
-                  <div className="flex items-center justify-between mb-5">
-                    <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2.5">
                       <svg className="w-5 h-5 text-[#612a4f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                       <div>
                         <h3
-                          className="text-lg text-[#2d2a26]"
+                          className="text-base text-[#2d2a26]"
                           style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
                         >
                           Monthly Goals
                         </h3>
-                        <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>{getCurrentMonth()} {getCurrentYear()}</p>
+                        <p className="text-[11px] text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>{getCurrentMonth()} {getCurrentYear()}</p>
                       </div>
                     </div>
                     <button
                       onClick={() => navigate('/strategy-growth?tab=growth-goals#monthly-goals')}
-                      className="text-xs font-semibold text-[#6b4a5e] hover:text-[#4a3442] transition-colors flex items-center gap-1"
-                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                      className="text-[#8B7082] hover:text-[#612a4f] transition-colors"
                     >
-                      View All <ArrowRight className="w-3 h-3" />
+                      <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
 
@@ -2621,12 +2790,7 @@ const HomePage = () => {
                         return (
                           <div key={goal.id} className="group">
                             <div
-                              className="flex items-center gap-4 p-4 rounded-[14px] transition-all hover:border-[rgba(139,115,130,0.2)]"
-                              style={{
-                                background: '#ffffff',
-                                border: '1px solid rgba(139, 115, 130, 0.12)',
-                                boxShadow: '0 2px 8px rgba(139, 115, 130, 0.08)',
-                              }}
+                              className="flex items-center gap-4 py-3 border-b border-[#8B7082]/10 last:border-b-0 transition-all"
                             >
                               {/* Goal text */}
                               {editingMonthlyGoalId === goal.id ? (
@@ -2722,32 +2886,21 @@ const HomePage = () => {
                     Add Goal
                   </button>
                 )}
-              </div>
             </section>
-
               </div>
-              {/* End Left Column */}
 
-              {/* Right Column - Mission Statement, Monthly Goals, Content Calendar */}
-              <div className="space-y-12">
-
-              {/* Mission Statement */}
-              <section>
-                <div
-                  className="bg-white/80 rounded-[20px] p-8 relative"
-                  style={{
-                    boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
-                    border: '1px solid rgba(139, 115, 130, 0.06)',
-                  }}
-                >
-                  {/* Edit button in top right */}
-                  <button
-                    onClick={() => navigate('/strategy-growth#mission')}
-                    className="absolute top-4 right-4 text-xs font-semibold text-[#6b4a5e] hover:text-[#4a3442] transition-colors flex items-center gap-1"
-                    style={{ fontFamily: "'DM Sans', sans-serif" }}
-                  >
-                    Edit <ArrowRight className="w-3 h-3" />
-                  </button>
+              {/* Mission Statement - Full width */}
+              <section className="md:col-span-3 bg-white/60 rounded-2xl p-6 border border-[#8B7082]/8">
+                  {/* Header with Edit button */}
+                  <div className="flex justify-end mb-4">
+                    <button
+                      onClick={() => navigate('/strategy-growth#mission')}
+                      className="text-xs font-semibold text-[#6b4a5e] hover:text-[#4a3442] transition-colors flex items-center gap-1"
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                    >
+                      Edit <ArrowRight className="w-3 h-3" />
+                    </button>
+                  </div>
 
                   <div className="flex flex-col items-center">
                     {/* Decorative line above */}
@@ -2772,240 +2925,10 @@ const HomePage = () => {
                     {/* Decorative line below */}
                     <div className="mt-6 w-20 h-px bg-gradient-to-r from-transparent via-[#8B7082]/40 to-transparent" />
                   </div>
-                </div>
               </section>
-
-              {/* Continue Creating Section */}
-              <section className="!mt-9">
-                <div
-                  className="bg-white/80 rounded-[20px] p-6"
-                  style={{
-                    boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
-                    border: '1px solid rgba(139, 115, 130, 0.06)',
-                  }}
-                >
-                  {/* Header */}
-                  <div className="flex items-center justify-between mb-5">
-                    <div className="flex items-center gap-3">
-                      <Pencil className="w-5 h-5 text-[#612a4f]" />
-                      <h3
-                        className="text-lg text-[#2d2a26]"
-                        style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
-                      >
-                        Continue Creating
-                      </h3>
-                    </div>
-                    <button
-                      onClick={() => navigate('/production')}
-                      className="text-xs font-semibold text-[#6b4a5e] hover:text-[#4a3442] transition-colors flex items-center gap-1"
-                      style={{ fontFamily: "'DM Sans', sans-serif" }}
-                    >
-                      View All <ArrowRight className="w-3 h-3" />
-                    </button>
-                  </div>
-
-                  {/* Content Cards */}
-                  <div className="space-y-2.5">
-                    {continueCreatingCards.length > 0 ? (
-                      continueCreatingCards.map((card) => {
-                        const stageBadgeColors: Record<string, string> = {
-                          'Edit': '#6b4a5e',
-                          'Film': '#8b6a7e',
-                          'Script': '#a8899a',
-                          'Ideate': '#b8a9aa',
-                        };
-
-                        return (
-                          <div
-                            key={card.id}
-                            onClick={() => navigate('/production')}
-                            className="p-4 rounded-[14px] cursor-pointer hover:border-[rgba(139,115,130,0.15)] transition-all"
-                            style={{
-                              background: 'rgba(139, 115, 130, 0.04)',
-                              border: '1px solid rgba(139, 115, 130, 0.08)',
-                            }}
-                          >
-                            {/* Title */}
-                            <p
-                              className="text-[15px] font-semibold text-[#2d2a26] mb-2"
-                              style={{ fontFamily: "'DM Sans', sans-serif" }}
-                            >
-                              {card.title}
-                            </p>
-
-                            {/* Stage Badge + Last Updated */}
-                            <div className="flex items-center justify-between">
-                              <span
-                                className="text-[11px] font-semibold text-white px-2.5 py-1 rounded-md"
-                                style={{
-                                  fontFamily: "'DM Sans', sans-serif",
-                                  backgroundColor: stageBadgeColors[card.stage],
-                                }}
-                              >
-                                {card.stage}
-                              </span>
-                              <div className="relative group/time cursor-default">
-                                <span
-                                  className="text-[11px] text-[#8b7a85]"
-                                  style={{ fontFamily: "'DM Sans', sans-serif" }}
-                                >
-                                  {formatDistanceToNow(card.lastUpdated, { addSuffix: false })}
-                                </span>
-                                {/* Tooltip */}
-                                <div className="absolute bottom-full right-0 mb-2 px-2.5 py-1.5 bg-black text-white text-[10px] rounded-md opacity-0 group-hover/time:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                                  Time since last edit
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })
-                    ) : (
-                      <div className="py-8 text-center">
-                        <p
-                          className="text-sm text-gray-400 mb-3"
-                          style={{ fontFamily: "'DM Sans', sans-serif" }}
-                        >
-                          No content in progress yet
-                        </p>
-                        <button
-                          onClick={() => navigate('/production')}
-                          className="text-sm font-medium text-[#6b4a5e] hover:text-[#4a3442] transition-colors"
-                          style={{ fontFamily: "'DM Sans', sans-serif" }}
-                        >
-                          Start creating →
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </section>
-
-              {/* Brand Deals Section */}
-              <section className="!mt-9">
-                <div
-                  className="bg-white/80 rounded-[20px] p-6"
-                  style={{
-                    boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
-                    border: '1px solid rgba(139, 115, 130, 0.06)',
-                  }}
-                >
-                  {/* Header */}
-                  <div className="flex items-center justify-between mb-5">
-                    <div className="flex items-center gap-3">
-                      <Diamond className="w-5 h-5 text-[#612a4f]" />
-                      <h3
-                        className="text-lg text-[#2d2a26]"
-                        style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
-                      >
-                        Brand Deals
-                      </h3>
-                    </div>
-                    <button
-                      onClick={() => navigate('/brands')}
-                      className="text-xs font-semibold text-[#6b4a5e] hover:text-[#4a3442] transition-colors flex items-center gap-1"
-                      style={{ fontFamily: "'DM Sans', sans-serif" }}
-                    >
-                      View All <ArrowRight className="w-3 h-3" />
-                    </button>
-                  </div>
-
-                  {/* Upcoming Deadlines */}
-                  <div className="mb-4">
-                    <p
-                      className="text-[11px] font-semibold uppercase mb-2.5"
-                      style={{
-                        fontFamily: "'DM Sans', sans-serif",
-                        color: '#8b7a85',
-                        letterSpacing: '0.08em',
-                      }}
-                    >
-                      Upcoming
-                    </p>
-
-                    {brandDealsData.deadlines.length === 0 ? (
-                      <p
-                        className="text-sm py-4"
-                        style={{ fontFamily: "'DM Sans', sans-serif", color: '#8b7a85' }}
-                      >
-                        No upcoming deadlines
-                      </p>
-                    ) : (
-                      <div className="space-y-2">
-                        {brandDealsData.deadlines.map((deadline, index) => (
-                          <div
-                            key={`${deadline.brandName}-${index}`}
-                            className="flex items-center justify-between p-3 rounded-[10px]"
-                            style={{
-                              background: 'rgba(139, 115, 130, 0.04)',
-                              border: '1px solid rgba(139, 115, 130, 0.08)',
-                            }}
-                          >
-                            <div>
-                              <p
-                                className="text-sm font-semibold text-[#2d2a26]"
-                                style={{ fontFamily: "'DM Sans', sans-serif" }}
-                              >
-                                {deadline.brandName}
-                              </p>
-                              <p
-                                className="text-xs text-[#8b7a85]"
-                                style={{ fontFamily: "'DM Sans', sans-serif" }}
-                              >
-                                {deadline.action} by {format(deadline.dueDate, 'MMM d')}
-                              </p>
-                            </div>
-                            {deadline.contentType && (
-                              <span
-                                className="text-[10px] font-medium px-2 py-1 rounded-md uppercase tracking-wide"
-                                style={{
-                                  fontFamily: "'DM Sans', sans-serif",
-                                  color: '#8b7a85',
-                                  background: 'rgba(139, 115, 130, 0.1)',
-                                }}
-                              >
-                                {deadline.contentType}
-                              </span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Expected Payments */}
-                  <div
-                    className="rounded-xl p-4"
-                    style={{
-                      background: 'linear-gradient(145deg, rgba(122, 154, 122, 0.06) 0%, rgba(122, 154, 122, 0.1) 100%)',
-                      border: '1px solid rgba(122, 154, 122, 0.12)',
-                    }}
-                  >
-                    <p
-                      className="text-[11px] font-semibold uppercase mb-1"
-                      style={{
-                        fontFamily: "'DM Sans', sans-serif",
-                        color: '#5a8a5a',
-                        letterSpacing: '0.08em',
-                      }}
-                    >
-                      Expected This Month
-                    </p>
-                    <p
-                      className="text-2xl text-[#2d2a26]"
-                      style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
-                    >
-                      ${brandDealsData.expectedPayments.toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              </section>
-
-          </div>
-              {/* End Right Column */}
 
             </div>
-            {/* End Grid Container */}
+            {/* End Bento Grid */}
 
             </div>
           </div>
