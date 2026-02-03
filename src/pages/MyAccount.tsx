@@ -7,9 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
   CreditCard, User, Lock, ChevronRight, Crown, Check, Plus, Shield, LogOut,
-  Bell, Globe, Calendar, Download, Trash2, Smartphone, Mail, DollarSign,
+  Globe, Calendar, Download, Trash2, ChevronDown, Clock,
   FileText, Camera, AlertTriangle
 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from 'sonner';
 import { getCurrentUser, updateUserProfile, updateUserPassword, logout } from '@/lib/supabase';
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -54,14 +61,8 @@ const MyAccount = () => {
   const [selectedTimezone, setSelectedTimezone] = useState(() => {
     return getString(StorageKeys.selectedTimezone) || 'auto';
   });
-  const [dateFormat, setDateFormat] = useState('MM/DD/YYYY');
   const [firstDayOfWeek, setFirstDayOfWeek] = useState('monday');
 
-  // Notification state
-  const [weeklyDigest, setWeeklyDigest] = useState(false);
-  const [dealReminders, setDealReminders] = useState(true);
-  const [paymentAlerts, setPaymentAlerts] = useState(true);
-  const [pushNotifications, setPushNotifications] = useState(true);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -135,6 +136,11 @@ const MyAccount = () => {
     toast.success('Timezone updated');
   };
 
+  const handleFirstDayChange = (day: string) => {
+    setFirstDayOfWeek(day);
+    toast.success(`Week now starts on ${day === 'monday' ? 'Monday' : 'Sunday'}`);
+  };
+
   const handleSignOut = async () => {
     try {
       await logout();
@@ -153,8 +159,7 @@ const MyAccount = () => {
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'account', label: 'Account', icon: Lock },
     { id: 'membership', label: 'Membership', icon: Crown },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'preferences', label: 'Preferences', icon: Globe },
+    { id: 'preferences', label: 'Calendar', icon: Calendar },
     { id: 'integrations', label: 'Integrations', icon: Calendar },
     { id: 'data', label: 'Data', icon: Download },
   ];
@@ -739,100 +744,6 @@ const MyAccount = () => {
                   </div>
                 )}
 
-                {/* ========== NOTIFICATIONS SECTION ========== */}
-                {activeSection === 'notifications' && (
-                  <div
-                    className="bg-white/80 rounded-[20px] p-6"
-                    style={{
-                      boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
-                      border: '1px solid rgba(139, 115, 130, 0.06)',
-                    }}
-                  >
-                    <div className="flex items-center gap-3 mb-6">
-                      <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center"
-                        style={{
-                          background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
-                          boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
-                        }}
-                      >
-                        <Bell className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
-                          Notifications
-                        </h2>
-                        <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                          Manage how you receive notifications
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h3 className="text-sm font-medium text-[#2d2a26] mb-3" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                        Email Preferences
-                      </h3>
-
-                      {[
-                        { id: 'weekly', icon: Mail, title: 'Weekly Digest', description: 'Summary of your content performance', checked: weeklyDigest, onChange: setWeeklyDigest },
-                        { id: 'deals', icon: DollarSign, title: 'Deal Reminders', description: 'Notifications about brand deal deadlines', checked: dealReminders, onChange: setDealReminders },
-                        { id: 'payment', icon: CreditCard, title: 'Payment Alerts', description: 'Billing and payment notifications', checked: paymentAlerts, onChange: setPaymentAlerts },
-                      ].map((item) => (
-                        <div
-                          key={item.id}
-                          className="flex items-center justify-between p-4 rounded-xl bg-[#8B7082]/5 hover:bg-[#8B7082]/8 transition-colors"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                              <item.icon className="w-4 h-4 text-[#8B7082]" />
-                            </div>
-                            <div>
-                              <h4 className="font-medium text-[#2d2a26] text-sm" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                                {item.title}
-                              </h4>
-                              <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                                {item.description}
-                              </p>
-                            </div>
-                          </div>
-                          <Switch
-                            checked={item.checked}
-                            onCheckedChange={item.onChange}
-                            className="data-[state=checked]:bg-[#612a4f]"
-                          />
-                        </div>
-                      ))}
-
-                      <div className="h-px bg-[#8B7082]/10 my-6"></div>
-
-                      <h3 className="text-sm font-medium text-[#2d2a26] mb-3" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                        Push Notifications
-                      </h3>
-
-                      <div className="flex items-center justify-between p-4 rounded-xl bg-[#8B7082]/5 hover:bg-[#8B7082]/8 transition-colors">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                            <Smartphone className="w-4 h-4 text-[#8B7082]" />
-                          </div>
-                          <div>
-                            <h4 className="font-medium text-[#2d2a26] text-sm" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                              Push Notifications
-                            </h4>
-                            <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                              Receive notifications in your browser
-                            </p>
-                          </div>
-                        </div>
-                        <Switch
-                          checked={pushNotifications}
-                          onCheckedChange={setPushNotifications}
-                          className="data-[state=checked]:bg-[#612a4f]"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
                 {/* ========== PREFERENCES SECTION ========== */}
                 {activeSection === 'preferences' && (
                   <div
@@ -850,14 +761,14 @@ const MyAccount = () => {
                           boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
                         }}
                       >
-                        <Globe className="w-5 h-5 text-white" />
+                        <Calendar className="w-5 h-5 text-white" />
                       </div>
                       <div>
                         <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
-                          Preferences
+                          Calendar
                         </h2>
                         <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                          Customize your experience
+                          Customize your calendar settings
                         </p>
                       </div>
                     </div>
@@ -868,91 +779,98 @@ const MyAccount = () => {
                         <label className="text-sm font-medium text-[#2d2a26] mb-3 block" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                           Timezone
                         </label>
-                        <div className="space-y-1">
-                          <button
-                            onClick={() => handleTimezoneChange('auto')}
-                            className={cn(
-                              "w-full text-left px-4 py-3 text-sm rounded-xl transition-all",
-                              selectedTimezone === 'auto'
-                                ? "bg-[#612a4f]/10 text-[#612a4f] font-medium"
-                                : "text-[#2d2a26] hover:bg-[#8B7082]/5"
-                            )}
+                        <Select value={selectedTimezone} onValueChange={handleTimezoneChange}>
+                          <SelectTrigger
+                            className="w-full h-auto pl-4 pr-6 py-3.5 rounded-xl border-[#8B7082]/20 bg-white hover:bg-[#8B7082]/5 transition-all focus:ring-2 focus:ring-[#612a4f]/20 focus:border-[#612a4f]/30"
                             style={{ fontFamily: "'DM Sans', sans-serif" }}
                           >
-                            <div className="flex items-center justify-between">
-                              <span>Auto (detect from browser)</span>
-                              {selectedTimezone === 'auto' && (
-                                <div className="w-5 h-5 rounded-full bg-[#612a4f] flex items-center justify-center">
-                                  <Check className="w-3 h-3 text-white" />
-                                </div>
-                              )}
-                            </div>
-                          </button>
-
-                          <div className="grid grid-cols-3 gap-2 mt-2">
-                            {TIMEZONES.map((tz) => (
-                              <button
-                                key={tz.value}
-                                onClick={() => handleTimezoneChange(tz.value)}
-                                className={cn(
-                                  "text-left px-3 py-2 text-sm rounded-xl transition-all",
-                                  selectedTimezone === tz.value
-                                    ? "bg-[#612a4f]/10 text-[#612a4f]"
-                                    : "text-[#2d2a26] hover:bg-[#8B7082]/5"
-                                )}
-                                style={{ fontFamily: "'DM Sans', sans-serif" }}
+                            <div className="flex items-center gap-3">
+                              <div
+                                className="w-9 h-9 rounded-lg flex items-center justify-center"
+                                style={{
+                                  background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
+                                  boxShadow: '0 2px 8px rgba(107, 74, 94, 0.15)',
+                                }}
                               >
-                                <span className={cn("font-medium", selectedTimezone === tz.value && "text-[#612a4f]")}>
-                                  {tz.label}
-                                </span>
-                                <p className="text-[10px] text-[#8B7082]">{tz.offset}</p>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="h-px bg-[#8B7082]/10"></div>
-
-                      {/* Date Format */}
-                      <div>
-                        <label className="text-sm font-medium text-[#2d2a26] mb-3 block" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                          Date Format
-                        </label>
-                        <div className="grid grid-cols-3 gap-2">
-                          {['MM/DD/YYYY', 'DD/MM/YYYY', 'YYYY-MM-DD'].map((format) => (
-                            <button
-                              key={format}
-                              onClick={() => setDateFormat(format)}
-                              className={cn(
-                                "px-4 py-3 text-sm rounded-xl transition-all",
-                                dateFormat === format
-                                  ? "bg-[#612a4f]/10 text-[#612a4f] font-medium"
-                                  : "text-[#2d2a26] hover:bg-[#8B7082]/5 border border-[#E8E4E6]"
-                              )}
-                              style={{ fontFamily: "'DM Sans', sans-serif" }}
+                                <Clock className="w-4 h-4 text-white" />
+                              </div>
+                              <div className="text-left">
+                                <SelectValue placeholder="Select timezone">
+                                  {selectedTimezone === 'auto' ? (
+                                    <div>
+                                      <p className="font-medium text-[#2d2a26] text-sm">Auto-detect</p>
+                                      <p className="text-[11px] text-[#8B7082]">Using browser timezone</p>
+                                    </div>
+                                  ) : (
+                                    (() => {
+                                      const tz = TIMEZONES.find(t => t.value === selectedTimezone);
+                                      return tz ? (
+                                        <div>
+                                          <p className="font-medium text-[#2d2a26] text-sm">{tz.name}</p>
+                                          <p className="text-[11px] text-[#8B7082]">{tz.label} • {tz.offset}</p>
+                                        </div>
+                                      ) : null;
+                                    })()
+                                  )}
+                                </SelectValue>
+                              </div>
+                            </div>
+                          </SelectTrigger>
+                          <SelectContent
+                            className="rounded-xl border-[#8B7082]/20 shadow-xl bg-white/95 backdrop-blur-sm overflow-hidden"
+                            style={{ fontFamily: "'DM Sans', sans-serif" }}
+                          >
+                            <SelectItem
+                              value="auto"
+                              className="pl-10 pr-4 py-3 cursor-pointer focus:bg-[#612a4f]/10 focus:text-[#612a4f] rounded-lg mx-1 my-0.5"
                             >
-                              {format}
-                            </button>
-                          ))}
-                        </div>
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#8B7082]/20 to-[#612a4f]/10 flex items-center justify-center">
+                                  <Globe className="w-4 h-4 text-[#612a4f]" />
+                                </div>
+                                <div>
+                                  <p className="font-medium text-sm">Auto-detect</p>
+                                  <p className="text-[11px] text-[#8B7082]">Use browser timezone</p>
+                                </div>
+                              </div>
+                            </SelectItem>
+                            <div className="h-px bg-[#8B7082]/10 mx-3 my-1"></div>
+                            {TIMEZONES.map((tz) => (
+                              <SelectItem
+                                key={tz.value}
+                                value={tz.value}
+                                className="pl-10 pr-4 py-3 cursor-pointer focus:bg-[#612a4f]/10 focus:text-[#612a4f] rounded-lg mx-1 my-0.5"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-lg bg-[#8B7082]/10 flex items-center justify-center">
+                                    <span className="text-xs font-bold text-[#612a4f]">{tz.label}</span>
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-sm">{tz.name}</p>
+                                    <p className="text-[11px] text-[#8B7082]">{tz.offset}</p>
+                                  </div>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
 
                       <div className="h-px bg-[#8B7082]/10"></div>
 
-                      {/* First Day of Week */}
+                      {/* First Day of Week in Calendar */}
                       <div>
                         <label className="text-sm font-medium text-[#2d2a26] mb-3 block" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                           First Day of Week
                         </label>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-2 gap-2 mb-4">
                           {[
                             { value: 'monday', label: 'Monday' },
                             { value: 'sunday', label: 'Sunday' },
                           ].map((day) => (
                             <button
                               key={day.value}
-                              onClick={() => setFirstDayOfWeek(day.value)}
+                              onClick={() => handleFirstDayChange(day.value)}
                               className={cn(
                                 "px-4 py-3 text-sm rounded-xl transition-all",
                                 firstDayOfWeek === day.value
@@ -965,6 +883,153 @@ const MyAccount = () => {
                             </button>
                           ))}
                         </div>
+
+                        {/* Calendar Preview */}
+                        {(() => {
+                          const today = new Date();
+                          const todayDate = today.getDate();
+                          const todayDay = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+
+                          // Calculate dates for current week based on first day setting
+                          const getWeekDates = () => {
+                            const dates: number[] = [];
+                            let startOffset: number;
+
+                            if (firstDayOfWeek === 'monday') {
+                              // Monday = 1, so if today is Sunday (0), offset is -6, else offset is -(todayDay - 1)
+                              startOffset = todayDay === 0 ? -6 : -(todayDay - 1);
+                            } else {
+                              // Sunday start: offset is -todayDay
+                              startOffset = -todayDay;
+                            }
+
+                            for (let i = 0; i < 7; i++) {
+                              const d = new Date(today);
+                              d.setDate(todayDate + startOffset + i);
+                              dates.push(d.getDate());
+                            }
+                            return dates;
+                          };
+
+                          // Get next week dates
+                          const getNextWeekDates = () => {
+                            const dates: number[] = [];
+                            let startOffset: number;
+
+                            if (firstDayOfWeek === 'monday') {
+                              startOffset = todayDay === 0 ? 1 : (8 - todayDay);
+                            } else {
+                              startOffset = 7 - todayDay;
+                            }
+
+                            for (let i = 0; i < 7; i++) {
+                              const d = new Date(today);
+                              d.setDate(todayDate + startOffset + i);
+                              dates.push(d.getDate());
+                            }
+                            return dates;
+                          };
+
+                          const weekDates = getWeekDates();
+                          const nextWeekDates = getNextWeekDates();
+
+                          return (
+                            <div
+                              className="rounded-xl overflow-hidden border border-[#E8E4E6]"
+                              style={{
+                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
+                              }}
+                            >
+                              {/* Day Headers */}
+                              <div className="grid grid-cols-7 border-b border-[#E8E4E6] bg-[#F5F5F5]">
+                                {(firstDayOfWeek === 'monday'
+                                  ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+                                  : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+                                ).map((day, index) => {
+                                  // Determine if this is a weekend column
+                                  const isWeekend = firstDayOfWeek === 'monday'
+                                    ? index >= 5 // Sat (5) and Sun (6)
+                                    : index === 0 || index === 6; // Sun (0) and Sat (6)
+                                  return (
+                                    <div
+                                      key={day}
+                                      className="py-2.5 text-center transition-all duration-300"
+                                      style={{
+                                        borderRight: index < 6 ? '1px solid #E8E4E6' : 'none',
+                                        backgroundColor: isWeekend ? '#EDEBEC' : undefined,
+                                      }}
+                                    >
+                                      <span
+                                        className="uppercase tracking-wider text-[11px] font-medium text-[#8B7082]"
+                                        style={{ fontFamily: "'DM Sans', sans-serif" }}
+                                      >
+                                        {day}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+
+                              {/* Calendar Grid - Current Week */}
+                              <div className="grid grid-cols-7 border-b border-[#E8E4E6]">
+                                {weekDates.map((date, index) => {
+                                  const isToday = date === todayDate;
+                                  const isWeekend = firstDayOfWeek === 'monday'
+                                    ? index >= 5
+                                    : index === 0 || index === 6;
+                                  return (
+                                    <div
+                                      key={`week1-${index}`}
+                                      className="py-3 text-center transition-all duration-300 relative"
+                                      style={{
+                                        borderRight: index < 6 ? '1px solid #E8E4E6' : 'none',
+                                        backgroundColor: isWeekend ? '#F8F7F8' : 'white',
+                                      }}
+                                    >
+                                      <span
+                                        className={cn(
+                                          "text-sm font-medium inline-flex items-center justify-center w-7 h-7 rounded-full transition-all",
+                                          isToday
+                                            ? "bg-[#8B7082] text-white"
+                                            : "text-[#2d2a26]"
+                                        )}
+                                        style={{ fontFamily: "'DM Sans', sans-serif" }}
+                                      >
+                                        {date}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+
+                              {/* Calendar Grid - Next Week */}
+                              <div className="grid grid-cols-7">
+                                {nextWeekDates.map((date, index) => {
+                                  const isWeekend = firstDayOfWeek === 'monday'
+                                    ? index >= 5
+                                    : index === 0 || index === 6;
+                                  return (
+                                    <div
+                                      key={`week2-${index}`}
+                                      className="py-3 text-center transition-all duration-300 relative"
+                                      style={{
+                                        borderRight: index < 6 ? '1px solid #E8E4E6' : 'none',
+                                        backgroundColor: isWeekend ? '#F8F7F8' : 'white',
+                                      }}
+                                    >
+                                      <span
+                                        className="text-sm font-medium inline-flex items-center justify-center w-7 h-7 rounded-full text-[#2d2a26]"
+                                        style={{ fontFamily: "'DM Sans', sans-serif" }}
+                                      >
+                                        {date}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
 
                     </div>

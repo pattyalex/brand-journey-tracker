@@ -2461,7 +2461,7 @@ const Production = () => {
                       {(() => {
                         const hasCards = column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')).length > 0;
                         return (
-                      <div className="flex-1 overflow-y-auto px-3 pt-3 pb-3 space-y-3 hide-scrollbar hover:hide-scrollbar relative rounded-[16px]" style={{ minHeight: 'calc(100vh - 120px)', border: '1.5px dashed rgba(180, 168, 175, 0.35)', backgroundColor: 'rgba(255, 252, 250, 0.9)' }}>
+                      <div className="flex-1 overflow-y-auto px-3 pt-3 pb-3 space-y-3 hide-scrollbar hover:hide-scrollbar relative rounded-[16px]" style={{ minHeight: 'calc(100vh - 120px)', border: hasCards ? '1.5px solid rgba(180, 168, 175, 0.2)' : '1.5px dashed rgba(180, 168, 175, 0.25)', backgroundColor: hasCards ? 'rgba(255, 252, 250, 0.9)' : 'rgba(255, 255, 255, 0.4)' }}>
                         {/* Not Allowed Overlay for Ideate Column */}
                         {column.id === "ideate" && draggedCard && draggedOverColumn === column.id &&
                          columns.find(col => col.cards.some(c => c.id === draggedCard.id))?.id !== "ideate" && (
