@@ -3230,14 +3230,14 @@ const Production = () => {
 
           {/* Collapsible Archive Side Panel - inside KanbanContainer */}
           <div
-            className="flex-shrink-0 self-stretch mr-4 w-[48px] relative flex items-end"
+            className="flex-shrink-0 self-stretch mr-4 w-[48px] relative flex items-end pb-6"
             onDragOver={(e) => handleDragOver(e, "posted")}
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, "posted")}
           >
             <div
               className={cn(
-                "group h-[280px] rounded-2xl transition-all duration-300 flex flex-col items-center justify-center overflow-hidden absolute right-0 bottom-0",
+                "group h-[280px] rounded-2xl transition-all duration-300 flex flex-col items-center justify-center overflow-hidden absolute right-0 bottom-6",
                 draggedOverColumn === "posted" && draggedCard
                   ? "bg-[#F5F0F7] border-2 border-dashed border-[#8B7082] shadow-lg w-[180px]"
                   : "bg-white/90 backdrop-blur-sm border border-[#E8E4E6] shadow-md hover:shadow-lg hover:border-[#C9B5C0] w-[48px] hover:w-[180px]",
