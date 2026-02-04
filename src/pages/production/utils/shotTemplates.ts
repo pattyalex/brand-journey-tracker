@@ -1,5 +1,11 @@
 // Shot Template Library - Single source of truth for all shot types
 
+export interface VisualVariant {
+  id: string;
+  name: string;
+  // Image will be loaded from: @/assets/shot-illustrations/{shotId}/{variantId}.png
+}
+
 export interface ShotTemplate {
   id: string;
   category: 'talking' | 'detail' | 'context' | 'pattern-break';
@@ -9,6 +15,7 @@ export interface ShotTemplate {
   when_to_use: string[];
   why_it_matters: string[];
   internal_tags: string[];
+  visualVariants?: VisualVariant[]; // Optional - if not provided, uses default single image
 }
 
 export const shotCategories = [
@@ -40,7 +47,14 @@ export const shotTemplates: ShotTemplate[] = [
       "Feels confident and composed",
       "Makes the video feel more intentional and cinematic"
     ],
-    internal_tags: ["wide", "establishing", "context", "intro", "lifestyle"]
+    internal_tags: ["wide", "establishing", "context", "intro", "lifestyle"],
+    visualVariants: [
+      { id: "default", name: "Default" },
+      { id: "man", name: "Man" },
+      { id: "woman", name: "Woman" },
+      { id: "woman-city", name: "Woman City" },
+      { id: "two-people", name: "Two People" },
+    ]
   },
   {
     id: "medium-shot",
@@ -61,7 +75,15 @@ export const shotTemplates: ShotTemplate[] = [
       "Works for almost any type of content",
       "Creates consistency across videos"
     ],
-    internal_tags: ["medium", "talking", "conversational", "default", "teaching"]
+    internal_tags: ["medium", "talking", "conversational", "default", "teaching"],
+    visualVariants: [
+      { id: "default", name: "Default" },
+      { id: "man-talking", name: "Man Talking" },
+      { id: "woman", name: "Woman" },
+      { id: "woman-talking", name: "Woman Talking" },
+      { id: "woman-podcast", name: "Woman Podcast" },
+      { id: "woman-product", name: "Woman Product" },
+    ]
   },
   {
     id: "close-up-shot",
@@ -81,7 +103,12 @@ export const shotTemplates: ShotTemplate[] = [
       "Increases emotional impact",
       "Keeps viewers engaged during key moments"
     ],
-    internal_tags: ["close", "emphasis", "emotional", "hook", "intense"]
+    internal_tags: ["close", "emphasis", "emotional", "hook", "intense"],
+    visualVariants: [
+      { id: "default", name: "Default" },
+      { id: "man", name: "Man" },
+      { id: "woman", name: "Woman" },
+    ]
   },
 
   // Detail / B-Roll Shots
@@ -103,7 +130,11 @@ export const shotTemplates: ShotTemplate[] = [
       "Makes edits smoother",
       "Adds texture and realism"
     ],
-    internal_tags: ["hands", "b-roll", "detail", "process", "voiceover"]
+    internal_tags: ["hands", "b-roll", "detail", "process", "voiceover"],
+    visualVariants: [
+      { id: "default", name: "Default" },
+      { id: "typing", name: "Typing" },
+    ]
   },
   {
     id: "close-detail",
@@ -202,7 +233,14 @@ export const shotTemplates: ShotTemplate[] = [
       "Grounds the viewer in a place",
       "Makes content feel elevated and thoughtful"
     ],
-    internal_tags: ["atmosphere", "mood", "b-roll", "cinematic", "environment"]
+    internal_tags: ["atmosphere", "mood", "b-roll", "cinematic", "environment"],
+    visualVariants: [
+      { id: "city-view", name: "City View" },
+      { id: "coffee-cup", name: "Coffee Cup" },
+      { id: "laptop", name: "Laptop" },
+      { id: "notes", name: "Notes & Journal" },
+      { id: "plants", name: "Plants" },
+    ]
   },
   {
     id: "reaction-moment",
@@ -221,7 +259,14 @@ export const shotTemplates: ShotTemplate[] = [
       "Improves pacing",
       "Makes content feel less scripted and more real"
     ],
-    internal_tags: ["reaction", "emotion", "personality", "human", "natural"]
+    internal_tags: ["reaction", "emotion", "personality", "human", "natural"],
+    visualVariants: [
+      { id: "default", name: "Default" },
+      { id: "man", name: "Man" },
+      { id: "man-angry", name: "Man Angry" },
+      { id: "man-bored", name: "Man Bored" },
+      { id: "woman", name: "Woman" },
+    ]
   }
 ];
 

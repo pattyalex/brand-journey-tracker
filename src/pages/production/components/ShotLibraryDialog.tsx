@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,10 +16,12 @@ import {
   Sparkles,
   Check,
   ChevronRight,
+  ChevronLeft,
   X,
   Camera,
+  Expand,
 } from "lucide-react";
-import { shotTemplates, shotCategories, ShotTemplate } from "../utils/shotTemplates";
+import { shotTemplates, shotCategories, ShotTemplate, VisualVariant } from "../utils/shotTemplates";
 
 // PNG illustrations - all 10 shot types have their own unique image
 import wideShotIllustration from "@/assets/shot-illustrations/wide-shot.png";
@@ -32,11 +35,79 @@ import movingThroughIllustration from "@/assets/shot-illustrations/moving-throug
 import quietCutawayIllustration from "@/assets/shot-illustrations/quiet-cutaway.png";
 import reactionMomentIllustration from "@/assets/shot-illustrations/reaction-moment.png";
 
+// Visual variants for neutral-visual (add more as needed)
+import neutralCityView from "@/assets/shot-illustrations/neutral-visual/city-view.png";
+import neutralCoffeeCup from "@/assets/shot-illustrations/neutral-visual/coffee-cup.png";
+import neutralLaptop from "@/assets/shot-illustrations/neutral-visual/laptop.png";
+import neutralNotes from "@/assets/shot-illustrations/neutral-visual/notes.png";
+import neutralPlants from "@/assets/shot-illustrations/neutral-visual/plants.png";
+
+// Character variants for different shot types
+import wideShotWoman from "@/assets/shot-illustrations/wide-shot/woman.png";
+import wideShotWomanCity from "@/assets/shot-illustrations/wide-shot/woman-city.png";
+import wideShotMan from "@/assets/shot-illustrations/wide-shot/man.png";
+import wideShotTwoPeople from "@/assets/shot-illustrations/wide-shot/two-people.png";
+import closeUpWoman from "@/assets/shot-illustrations/close-up-shot/woman.png";
+import closeUpMan from "@/assets/shot-illustrations/close-up-shot/man.png";
+import reactionWoman from "@/assets/shot-illustrations/reaction-moment/woman.png";
+import reactionMan from "@/assets/shot-illustrations/reaction-moment/man.png";
+import reactionManAngry from "@/assets/shot-illustrations/reaction-moment/man-angry.png";
+import reactionManBored from "@/assets/shot-illustrations/reaction-moment/man-bored.png";
+import handsTyping from "@/assets/shot-illustrations/hands-doing/typing.png";
+import mediumShotWomanPodcast from "@/assets/shot-illustrations/medium-shot/woman-podcast.png";
+import mediumShotWomanProduct from "@/assets/shot-illustrations/medium-shot/woman-product.png";
+import mediumShotManTalking from "@/assets/shot-illustrations/medium-shot/man-talking.png";
+import mediumShotWoman from "@/assets/shot-illustrations/medium-shot/woman.png";
+import mediumShotWomanTalking from "@/assets/shot-illustrations/medium-shot/woman-talking.png";
+
+// Map variant IDs to their imported images
+const variantImages: Record<string, Record<string, string>> = {
+  "neutral-visual": {
+    "city-view": neutralCityView,
+    "coffee-cup": neutralCoffeeCup,
+    "laptop": neutralLaptop,
+    "notes": neutralNotes,
+    "plants": neutralPlants,
+  },
+  "wide-shot": {
+    "default": wideShotIllustration,
+    "woman": wideShotWoman,
+    "woman-city": wideShotWomanCity,
+    "man": wideShotMan,
+    "two-people": wideShotTwoPeople,
+  },
+  "medium-shot": {
+    "default": mediumShotIllustration,
+    "man-talking": mediumShotManTalking,
+    "woman": mediumShotWoman,
+    "woman-talking": mediumShotWomanTalking,
+    "woman-podcast": mediumShotWomanPodcast,
+    "woman-product": mediumShotWomanProduct,
+  },
+  "close-up-shot": {
+    "default": closeUpShotIllustration,
+    "man": closeUpMan,
+    "woman": closeUpWoman,
+  },
+  "reaction-moment": {
+    "default": reactionMomentIllustration,
+    "man": reactionMan,
+    "man-angry": reactionManAngry,
+    "man-bored": reactionManBored,
+    "woman": reactionWoman,
+  },
+  "hands-doing": {
+    "default": handsDoingIllustration,
+    "typing": handsTyping,
+  },
+};
+
 interface ShotLibraryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSelectShot: (templateId: string) => void;
+  onSelectShot: (templateId: string, variantId?: string) => void;
   currentShotId?: string;
+  currentVariantId?: string;
 }
 
 const categoryIcons = {
@@ -47,10 +118,10 @@ const categoryIcons = {
 };
 
 const categoryColors = {
-  talking: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', accent: 'bg-blue-500' },
-  detail: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', accent: 'bg-amber-500' },
-  context: { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', accent: 'bg-emerald-500' },
-  'pattern-break': { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700', accent: 'bg-purple-500' },
+  talking: { bg: 'bg-[#E0EDFB]', border: 'border-[#9AC0E8]', text: 'text-[#3A72B0]', accent: 'bg-[#5A98D8]' },
+  detail: { bg: 'bg-[#FEF2E4]', border: 'border-[#EAC498]', text: 'text-[#A86820]', accent: 'bg-[#D49050]' },
+  context: { bg: 'bg-[#E0F4E8]', border: 'border-[#98D8B0]', text: 'text-[#2E8A50]', accent: 'bg-[#4EB070]' },
+  'pattern-break': { bg: 'bg-[#EDE4F6]', border: 'border-[#C0A0E0]', text: 'text-[#7040A8]', accent: 'bg-[#9060C8]' },
 };
 
 // Cute stick figure illustrations for each shot type
@@ -128,32 +199,78 @@ const ShotLibraryDialog: React.FC<ShotLibraryDialogProps> = ({
   onOpenChange,
   onSelectShot,
   currentShotId,
+  currentVariantId,
 }) => {
   const [selectedShot, setSelectedShot] = useState<ShotTemplate | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('talking');
+  const [previewOpen, setPreviewOpen] = useState(false);
+
+  // Keyboard navigation for preview
+  useEffect(() => {
+    if (!previewOpen || !selectedShot?.visualVariants) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const variants = selectedShot.visualVariants!;
+      if (variants.length <= 1) return;
+
+      const currentIndex = variants.findIndex(v => v.id === selectedVariant);
+
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const prevIndex = currentIndex <= 0 ? variants.length - 1 : currentIndex - 1;
+        setSelectedVariant(variants[prevIndex].id);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        const nextIndex = currentIndex >= variants.length - 1 ? 0 : currentIndex + 1;
+        setSelectedVariant(variants[nextIndex].id);
+      } else if (e.key === 'Escape') {
+        setPreviewOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [previewOpen, selectedShot, selectedVariant]);
 
   const handleSelectShot = (template: ShotTemplate) => {
     setSelectedShot(template);
+    // Auto-select first variant if available, otherwise null
+    if (template.visualVariants && template.visualVariants.length > 0) {
+      setSelectedVariant(template.visualVariants[0].id);
+    } else {
+      setSelectedVariant(null);
+    }
   };
 
   const handleConfirmSelection = () => {
     if (selectedShot) {
-      onSelectShot(selectedShot.id);
+      onSelectShot(selectedShot.id, selectedVariant || undefined);
       onOpenChange(false);
       setSelectedShot(null);
+      setSelectedVariant(null);
     }
+  };
+
+  // Get the image for the currently selected variant (or default)
+  const getVariantImage = (shotId: string, variantId: string | null): string | null => {
+    if (variantId && variantImages[shotId]?.[variantId]) {
+      return variantImages[shotId][variantId];
+    }
+    return null;
   };
 
   const filteredTemplates = shotTemplates.filter(t => t.category === activeCategory);
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="h-[calc(100vh-4rem)] max-h-[700px] sm:max-w-[900px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-white">
         {/* Header */}
         <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 rounded-xl bg-[#612a4f] flex items-center justify-center shadow-lg">
                 <Camera className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -275,10 +392,22 @@ const ShotLibraryDialog: React.FC<ShotLibraryDialogProps> = ({
                 className="w-80 flex-shrink-0 border-l border-gray-100 bg-gray-50/30 p-5 overflow-y-auto"
               >
                 <div className="space-y-5">
-                  {/* Shot illustration - large */}
-                  <div className="flex justify-center">
-                    <div className="w-40 h-40 overflow-hidden rounded-xl">
-                      <ShotIllustration shotId={selectedShot.id} className="w-full h-full" />
+                  {/* Shot illustration - large (shows variant if selected, otherwise default) */}
+                  <div className="flex justify-center mb-4">
+                    <div className="w-40 h-40 overflow-hidden rounded-xl bg-gray-100 border border-gray-200">
+                      {(() => {
+                        const variantImg = selectedVariant ? getVariantImage(selectedShot.id, selectedVariant) : null;
+                        if (variantImg) {
+                          return (
+                            <img
+                              src={variantImg}
+                              alt={selectedShot.user_facing_name}
+                              className="w-full h-full object-contain"
+                            />
+                          );
+                        }
+                        return <ShotIllustration shotId={selectedShot.id} className="w-full h-full" />;
+                      })()}
                     </div>
                   </div>
 
@@ -333,6 +462,66 @@ const ShotLibraryDialog: React.FC<ShotLibraryDialogProps> = ({
                     </ul>
                   </div>
 
+                  {/* Visual variants picker */}
+                  {selectedShot.visualVariants && selectedShot.visualVariants.length > 0 && (
+                    <div>
+                      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                        Choose a visual
+                      </h4>
+                      <div className="grid grid-cols-3 gap-2">
+                        {selectedShot.visualVariants.map((variant) => {
+                          const variantImage = getVariantImage(selectedShot.id, variant.id);
+                          const isSelected = selectedVariant === variant.id;
+                          return (
+                            <div key={variant.id} className="relative group">
+                              <button
+                                onClick={() => setSelectedVariant(variant.id)}
+                                className={cn(
+                                  "relative aspect-square rounded-lg overflow-hidden border-2 transition-all w-full",
+                                  isSelected
+                                    ? "border-[#612a4f] ring-2 ring-[#612a4f]/20"
+                                    : "border-gray-200 hover:border-gray-300"
+                                )}
+                              >
+                                {variantImage ? (
+                                  <img
+                                    src={variantImage}
+                                    alt={variant.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                                    <span className="text-xs text-gray-400">No image</span>
+                                  </div>
+                                )}
+                                {isSelected && (
+                                  <div className="absolute inset-0 bg-[#612a4f]/10 flex items-center justify-center">
+                                    <div className="w-5 h-5 rounded-full bg-[#612a4f] flex items-center justify-center">
+                                      <Check className="w-3 h-3 text-white" />
+                                    </div>
+                                  </div>
+                                )}
+                              </button>
+                              {/* Expand button */}
+                              {variantImage && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedVariant(variant.id);
+                                    setPreviewOpen(true);
+                                  }}
+                                  className="absolute top-1 right-1 w-6 h-6 bg-black/50 hover:bg-black/70 rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <Expand className="w-3 h-3 text-white" />
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Select button */}
                   <Button
                     onClick={handleConfirmSelection}
@@ -352,6 +541,64 @@ const ShotLibraryDialog: React.FC<ShotLibraryDialogProps> = ({
         </div>
       </DialogContent>
     </Dialog>
+
+    {/* Image Preview Dialog - uses Radix Dialog for proper layering */}
+    <DialogPrimitive.Root open={previewOpen} onOpenChange={setPreviewOpen}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay
+          className="fixed inset-0 bg-black/70"
+          style={{ zIndex: 99999 }}
+        />
+        <DialogPrimitive.Content
+          className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl p-6 shadow-2xl"
+          style={{ zIndex: 100000, width: '400px', maxHeight: '80vh' }}
+        >
+          <button
+            onClick={() => setPreviewOpen(false)}
+            className="absolute -top-3 -right-3 w-8 h-8 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center shadow-lg"
+          >
+            <X className="w-4 h-4 text-white" />
+          </button>
+
+          {/* Navigation arrows */}
+          {selectedShot?.visualVariants && selectedShot.visualVariants.length > 1 && (
+            <>
+              <button
+                onClick={() => {
+                  const variants = selectedShot.visualVariants!;
+                  const currentIndex = variants.findIndex(v => v.id === selectedVariant);
+                  const prevIndex = currentIndex <= 0 ? variants.length - 1 : currentIndex - 1;
+                  setSelectedVariant(variants[prevIndex].id);
+                }}
+                className="absolute left-[-50px] top-1/2 -translate-y-1/2 w-10 h-10 bg-white hover:bg-gray-100 rounded-full flex items-center justify-center shadow-lg"
+              >
+                <ChevronLeft className="w-6 h-6 text-gray-700" />
+              </button>
+              <button
+                onClick={() => {
+                  const variants = selectedShot.visualVariants!;
+                  const currentIndex = variants.findIndex(v => v.id === selectedVariant);
+                  const nextIndex = currentIndex >= variants.length - 1 ? 0 : currentIndex + 1;
+                  setSelectedVariant(variants[nextIndex].id);
+                }}
+                className="absolute right-[-50px] top-1/2 -translate-y-1/2 w-10 h-10 bg-white hover:bg-gray-100 rounded-full flex items-center justify-center shadow-lg"
+              >
+                <ChevronRight className="w-6 h-6 text-gray-700" />
+              </button>
+            </>
+          )}
+
+          {selectedShot && selectedVariant && getVariantImage(selectedShot.id, selectedVariant) && (
+            <img
+              src={getVariantImage(selectedShot.id, selectedVariant)!}
+              alt="Preview"
+              className="w-full h-auto object-contain rounded-lg"
+            />
+          )}
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
+    </>
   );
 };
 

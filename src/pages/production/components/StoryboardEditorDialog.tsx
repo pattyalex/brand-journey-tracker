@@ -347,6 +347,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   // Shot library state
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [librarySceneId, setLibrarySceneId] = useState<string | null>(null);
+  const librarySceneIdRef = useRef<string | null>(null);
 
   // AI generation state
   const [isGeneratingStoryboard, setIsGeneratingStoryboard] = useState(false);
@@ -512,17 +513,23 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   // Handle opening shot library
   const handleOpenLibrary = useCallback((sceneId: string) => {
     setLibrarySceneId(sceneId);
+    librarySceneIdRef.current = sceneId;
     setIsLibraryOpen(true);
   }, []);
 
   // Handle shot selection from library
-  const handleLibrarySelect = useCallback((templateId: string) => {
-    if (librarySceneId) {
-      updateScene(librarySceneId, { selectedShotTemplateId: templateId });
+  const handleLibrarySelect = useCallback((templateId: string, variantId?: string) => {
+    const sceneId = librarySceneIdRef.current;
+    if (sceneId) {
+      updateScene(sceneId, {
+        selectedShotTemplateId: templateId,
+        selectedVariantId: variantId
+      });
       toast.success("Shot type selected!");
     }
     setLibrarySceneId(null);
-  }, [librarySceneId, updateScene]);
+    librarySceneIdRef.current = null;
+  }, [updateScene]);
 
   // Close suggestions panel
   const handleCloseSuggestions = useCallback(() => {
