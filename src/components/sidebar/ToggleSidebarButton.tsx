@@ -36,7 +36,10 @@ const ToggleSidebarButton = () => {
   const location = useLocation();
   const isCollapsed = state === 'collapsed';
 
-  const collapsedPosition = getCollapsedPosition(location.pathname);
+  // Don't render when collapsed - the sidebar header has its own toggle
+  if (isCollapsed) {
+    return null;
+  }
 
   return (
     <Tooltip>
@@ -44,24 +47,15 @@ const ToggleSidebarButton = () => {
         <Button
           variant="ghost"
           size="icon"
-          className={cn(
-            "fixed z-50 h-8 w-8 transition-all duration-200 bg-white/80 hover:bg-white/90 backdrop-blur-sm rounded-full shadow-sm border border-gray-200/50",
-            isCollapsed
-              ? collapsedPosition
-              : "top-[2.75rem] left-[10.5rem]"
-          )}
+          className="fixed z-50 h-8 w-8 transition-all duration-200 hover:bg-[#F5F0F3] rounded-lg top-[1.55rem] left-[10.5rem]"
           onClick={toggleSidebar}
           aria-label="Toggle Sidebar"
         >
-          {isCollapsed ? (
-            <ChevronRight className="h-4 w-4 text-gray-600" />
-          ) : (
-            <ChevronLeft className="h-4 w-4 text-gray-600" />
-          )}
+          <ChevronLeft className="h-5 w-5 text-[#8B7082] hover:text-[#612A4F]" />
         </Button>
       </TooltipTrigger>
       <TooltipContent side="bottom" sideOffset={4} align="start">
-        {isCollapsed ? "Open sidebar" : "Close sidebar"}
+        Close sidebar
       </TooltipContent>
     </Tooltip>
   );

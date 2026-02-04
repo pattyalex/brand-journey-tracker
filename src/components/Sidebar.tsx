@@ -1,5 +1,5 @@
 
-import { Plus } from 'lucide-react';
+import { Plus, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import {
   Sidebar as SidebarContainer,
@@ -34,7 +34,7 @@ const Sidebar = () => {
 
   const [menuItems, setMenuItems] = useState<MenuItem[]>(getSavedMenuItems);
   const [showAddForm, setShowAddForm] = useState(false);
-  const { state } = useSidebar();
+  const { state, toggleSidebar } = useSidebar();
 
   // Save sidebar state to localStorage
   useEffect(() => {
@@ -49,7 +49,7 @@ const Sidebar = () => {
   };
 
   return (
-    <SidebarContainer>
+    <SidebarContainer collapsible="icon">
       {/* Premium background wrapper */}
       <div className="absolute inset-0 bg-[#f9f7f5] border-r border-[#E8E4E6]" />
 
@@ -62,35 +62,56 @@ const Sidebar = () => {
       />
 
       {/* Premium Header with Logo */}
-      <SidebarHeader className="px-4 pt-5 pb-4 relative z-10">
-        <div className="flex items-center gap-3">
-          {/* Logo Mark */}
-          <div
-            className="w-[42px] h-[42px] rounded-xl flex items-center justify-center shadow-sm"
-            style={{
-              background: 'linear-gradient(145deg, #612A4F 0%, #4A1F3D 100%)',
-            }}
-          >
-            <span
-              className="text-white text-xl font-medium"
-              style={{ fontFamily: "'Playfair Display', serif" }}
-            >
-              M
-            </span>
-          </div>
+      <SidebarHeader className={`relative z-10 ${state === 'collapsed' ? 'px-2 pt-4 pb-3' : 'px-4 pt-5 pb-4'}`}>
+        <div className={`flex items-center ${state === 'collapsed' ? 'justify-center' : 'gap-3'}`}>
+          {/* Toggle button when collapsed, Logo when expanded */}
+          {state === 'collapsed' ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-lg hover:bg-[#F5F0F3] text-[#8B7082] hover:text-[#612A4F]"
+                  onClick={toggleSidebar}
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                Open sidebar
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <>
+              {/* Logo Mark */}
+              <div
+                className="w-[42px] h-[42px] rounded-xl flex items-center justify-center shadow-sm flex-shrink-0"
+                style={{
+                  background: 'linear-gradient(145deg, #612A4F 0%, #4A1F3D 100%)',
+                }}
+              >
+                <span
+                  className="text-white text-xl font-medium"
+                  style={{ fontFamily: "'Playfair Display', serif" }}
+                >
+                  M
+                </span>
+              </div>
 
-          {/* Brand Name & Tagline */}
-          <div className="flex flex-col">
-            <h1
-              className="text-lg font-semibold text-[#3D2B35]"
-              style={{ fontFamily: "'Playfair Display', serif" }}
-            >
-              HeyMeg
-            </h1>
-            <span className="text-[10px] text-[#8B7082] tracking-wider">
-              Creator Studio
-            </span>
-          </div>
+              {/* Brand Name & Tagline */}
+              <div className="flex flex-col">
+                <h1
+                  className="text-lg font-semibold text-[#3D2B35]"
+                  style={{ fontFamily: "'Playfair Display', serif" }}
+                >
+                  HeyMeg
+                </h1>
+                <span className="text-[10px] text-[#8B7082] tracking-wider">
+                  Creator Studio
+                </span>
+              </div>
+            </>
+          )}
         </div>
       </SidebarHeader>
 

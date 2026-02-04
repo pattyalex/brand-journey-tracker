@@ -89,10 +89,7 @@ const KanbanContainer: React.FC<{
   return (
     <div
       ref={horizontalScrollRef}
-      className={cn(
-        "flex gap-5 flex-1 overflow-x-auto overflow-y-visible ml-[-34px] pl-[34px] mt-[-16px] pt-[16px] hide-scrollbar items-start transition-all duration-200",
-        isSidebarCollapsed && "pl-[70px]"
-      )}
+      className="flex gap-5 flex-1 overflow-x-auto overflow-y-visible ml-[-34px] pl-[34px] mt-[-16px] pt-[16px] hide-scrollbar items-start"
       onScroll={(e) => {
         const target = e.currentTarget;
         const maxScroll = target.scrollWidth - target.clientWidth;

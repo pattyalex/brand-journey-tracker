@@ -59,19 +59,19 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
 
   return (
     <SidebarMenuItem key={item.title}>
-      <SidebarMenuButton asChild isActive={isActive || isSubItemActive}>
+      <SidebarMenuButton asChild isActive={isActive || isSubItemActive} tooltip={item.title}>
         <a
           href={item.url}
           className={cn(
             "flex items-center gap-2 rounded-xl transition-all duration-200",
             (isActive || isSubItemActive)
-              ? "bg-[#F5F0F3] text-[#612A4F] font-medium"
+              ? "bg-[#EBE1E7] text-[#612A4F] font-medium"
               : "hover:bg-[#F9F7F8] text-[#5A4A52]"
           )}
           onClick={handleMenuItemClick}
         >
           <item.icon size={20} className={cn(
-            "transition-colors duration-200",
+            "transition-colors duration-200 flex-shrink-0",
             (isActive || isSubItemActive) ? "text-[#612A4F]" : "text-[#8B7082]"
           )} />
           <span>{item.title}</span>

@@ -137,10 +137,7 @@ export const ContentOverviewSidebar = ({
     return (
       <div>
         {/* Header */}
-        <div className={cn(
-          "flex items-center gap-2.5 mb-5 transition-all duration-200",
-          isSidebarCollapsed && "ml-10 mt-0.5"
-        )}>
+        <div className="flex items-center gap-2.5 mb-5">
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="#8B7082" fillOpacity="0.2" stroke="black" strokeWidth="1.5"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" /></svg>
           <h2 className="text-xl text-gray-900" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>Content Overview</h2>
         </div>
@@ -238,10 +235,7 @@ export const ContentOverviewSidebar = ({
           isCollapsed ? "opacity-0" : "opacity-100"
         )}>
           {/* Header */}
-          <div className={cn(
-            "flex items-center gap-2.5 mb-5 transition-all duration-200",
-            isSidebarCollapsed && "ml-10 mt-0.5"
-          )}>
+          <div className="flex items-center gap-2.5 mb-5">
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="#8B7082" fillOpacity="0.2" stroke="black" strokeWidth="1.5"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" /></svg>
             <h2 className="text-xl text-gray-900" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>Content Overview</h2>
           </div>

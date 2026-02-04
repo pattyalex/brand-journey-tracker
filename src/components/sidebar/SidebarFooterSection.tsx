@@ -2,7 +2,8 @@ import {
   SidebarFooter,
   SidebarMenu,
   SidebarMenuItem,
-  SidebarMenuButton
+  SidebarMenuButton,
+  useSidebar
 } from "@/components/ui/sidebar";
 import { MenuItem } from '@/types/sidebar';
 import { UserButton } from "@clerk/clerk-react";
@@ -18,13 +19,15 @@ interface SidebarFooterSectionProps {
 
 const SidebarFooterSection = ({ settingsItem, helpItem }: SidebarFooterSectionProps) => {
   const location = useLocation();
+  const { state } = useSidebar();
+  const isCollapsed = state === 'collapsed';
 
   return (
     <SidebarFooter className="mt-auto border-t border-[#E8E4E6] pt-2 relative z-10">
       <SidebarMenu>
         {!settingsItem.hidden && (
           <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={location.pathname === settingsItem.url}>
+            <SidebarMenuButton asChild isActive={location.pathname === settingsItem.url} tooltip={settingsItem.title}>
               <Link
                 to={settingsItem.url}
                 className={cn(
@@ -35,7 +38,7 @@ const SidebarFooterSection = ({ settingsItem, helpItem }: SidebarFooterSectionPr
                 )}
               >
                 <settingsItem.icon size={20} className={cn(
-                  "transition-colors duration-200",
+                  "transition-colors duration-200 flex-shrink-0",
                   location.pathname === settingsItem.url ? "text-[#612A4F]" : "text-[#8B7082]"
                 )} />
                 <span>{settingsItem.title}</span>
@@ -45,7 +48,10 @@ const SidebarFooterSection = ({ settingsItem, helpItem }: SidebarFooterSectionPr
         )}
 
         <SidebarMenuItem>
-          <div className="flex items-center px-2 py-1.5">
+          <div className={cn(
+            "flex items-center py-1.5",
+            isCollapsed ? "justify-center px-0" : "px-2"
+          )}>
             <UserButton
               afterSignOutUrl="/"
               appearance={{
@@ -67,7 +73,7 @@ const SidebarFooterSection = ({ settingsItem, helpItem }: SidebarFooterSectionPr
 
         {helpItem && (
           <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={location.pathname === helpItem.url}>
+            <SidebarMenuButton asChild isActive={location.pathname === helpItem.url} tooltip={helpItem.title}>
               <Link
                 to={helpItem.url}
                 className={cn(
@@ -78,7 +84,7 @@ const SidebarFooterSection = ({ settingsItem, helpItem }: SidebarFooterSectionPr
                 )}
               >
                 <helpItem.icon size={20} className={cn(
-                  "transition-colors duration-200",
+                  "transition-colors duration-200 flex-shrink-0",
                   location.pathname === helpItem.url ? "text-[#612A4F]" : "text-[#8B7082]"
                 )} />
                 <span>{helpItem.title}</span>

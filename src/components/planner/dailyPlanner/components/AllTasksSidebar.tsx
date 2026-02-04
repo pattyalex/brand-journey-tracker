@@ -65,10 +65,7 @@ export const AllTasksSidebar = ({
         }}
       >
         {/* Header */}
-        <div className={cn(
-          "flex items-center gap-2.5 mb-4 transition-all duration-200",
-          isSidebarCollapsed && "ml-10 mt-0.5"
-        )}>
+        <div className="flex items-center gap-2.5 mb-4 ml-2">
           <ListTodo className="w-5 h-5 text-gray-900" />
           <h2 className="text-xl text-gray-900" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>All Tasks</h2>
         </div>
@@ -142,10 +139,7 @@ export const AllTasksSidebar = ({
           isAllTasksCollapsed ? "opacity-0" : "opacity-100"
         )}>
           {/* Header */}
-          <div className={cn(
-            "flex items-center gap-2.5 mb-5 transition-all duration-200",
-            isSidebarCollapsed && "ml-10 mt-0.5"
-          )}>
+          <div className="flex items-center gap-2.5 mb-5 ml-2">
             <ListTodo className="w-5 h-5 text-gray-900" />
             <h2 className="text-xl text-gray-900" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>All Tasks</h2>
           </div>
