@@ -402,26 +402,30 @@ const Production = () => {
         body: JSON.stringify({
           model: "claude-3-5-haiku-20241022",
           max_tokens: 300,
-          system: `You are a content strategist helping creators organize their content pillars into meaningful sub-categories.
+          system: `Generate sub-categories for content pillars.
 
-THINK about the pillar from a creator's perspective:
-- What specific aspects of this topic would a creator actually film/post about?
-- What angles would resonate with an audience?
-- What sub-topics allow for personal stories, not just generic info?
+STRICT RULES:
+- Each sub-category MUST be 1-2 words ONLY
+- Maximum 15 characters per sub-category
+- NO sentences, NO hooks, NO content ideas
+- Think: folder names, not video titles
 
-AVOID generic sub-categories like "Tips", "Basics", "Advanced" - these are lazy.
-INSTEAD create sub-categories that suggest specific content opportunities.
+CORRECT FORMAT:
+["Fundraising", "Leadership", "Hiring", "Failures", "Growth"]
 
-Example for "Fitness": Instead of ["Workouts", "Nutrition", "Tips"], use ["My gym fails & wins", "Meals I actually eat", "Exercises I was doing wrong", "Fitness myths I believed", "My body image journey"]
+WRONG FORMAT (DO NOT DO THIS):
+["How I raised money", "My leadership journey", "Hiring mistakes I made"]
 
-Return ONLY a JSON array of 5-7 strings, nothing else.`,
+Return ONLY a JSON array.`,
           messages: [{
             role: "user",
-            content: `Generate 5-7 sub-categories for the content pillar: "${pillarName}"
+            content: `Content pillar: "${pillarName}"
 
-These should be specific angles a creator could explore - think personal stories, unique perspectives, relatable struggles, real experiences. Not generic topic buckets.
+Generate 5-7 sub-categories. Each must be 1-2 words only (like folder names).
 
-Return only a JSON array of strings.`
+Example: For "Fitness" → ["Workouts", "Nutrition", "Recovery", "Mindset", "Equipment"]
+
+Return JSON array only.`
           }]
         })
       });
@@ -3353,7 +3357,7 @@ Return only a JSON array of ${count} strings.`
                                   Just added{card.addedFrom === 'calendar' ? ' from Content Calendar' :
                                     card.addedFrom === 'quick-idea' ? '' :
                                     card.addedFrom === 'ai-generated' ? ' via MegAI' :
-                                    card.addedFrom === 'bank-of-ideas' ? ' from Bank of Ideas' :
+                                    card.addedFrom === 'bank-of-ideas' ? ' from Hook Library' :
                                     card.addedFrom === 'idea-expander' ? ' via Idea Expander' :
                                     card.addedFrom === 'repurposed' ? ' (repurposed)' : ''}
                                 </span>
@@ -4273,12 +4277,7 @@ Return only a JSON array of ${count} strings.`
                           className="relative group"
                         >
                           <button
-                            onClick={async (e) => {
-                              // Check if click is on input - if so, don't trigger the handler
-                              if ((e.target as HTMLElement).tagName === 'INPUT') {
-                                return;
-                              }
-
+                            onClick={async () => {
                               // Don't auto-generate for newly added sub-categories - wait for Enter
                               if (newSubCategoryIndex === index) {
                                 return;
@@ -4308,55 +4307,13 @@ Return only a JSON array of ${count} strings.`
                               }
                             }}
                             className={cn(
-                              "px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center",
+                              "px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center whitespace-nowrap",
                               selectedSubCategory === subCat
                                 ? "bg-[#7BA393] text-white shadow-md"
                                 : "bg-white border border-gray-300 text-gray-700 hover:border-[#9AC0B3] hover:bg-[#F0F7F4]"
                             )}
                           >
-                            <input
-                              type="text"
-                              value={subCat}
-                              onChange={(e) => {
-                                const currentSubCats = pillarSubCategories[selectedUserPillar] || [];
-                                const newSubCats = [...currentSubCats];
-                                newSubCats[index] = e.target.value;
-                                setPillarSubCategories(prev => ({ ...prev, [selectedUserPillar]: newSubCats }));
-                              }}
-                              onKeyDown={async (e) => {
-                                if (e.key === 'Enter' && subCat.trim()) {
-                                  e.currentTarget.blur();
-                                  setNewSubCategoryIndex(null); // Clear the new index
-                                  setSelectedSubCategory(subCat);
-                                  setCascadeIdeas([]);
-                                  setIsGeneratingCascadeIdeas(true);
-
-                                  try {
-                                    const ideas = await generateContentIdeasWithAI(selectedUserPillar, subCat);
-                                    setCascadeIdeas(ideas);
-                                  } catch (error) {
-                                    console.error('Error generating content ideas:', error);
-                                    setCascadeIdeas([]);
-                                  } finally {
-                                    setIsGeneratingCascadeIdeas(false);
-                                  }
-                                }
-                              }}
-                              onBlur={() => {
-                                if (newSubCategoryIndex === index) {
-                                  setNewSubCategoryIndex(null);
-                                }
-                              }}
-                              onClick={(e) => e.stopPropagation()}
-                              onMouseDown={(e) => e.stopPropagation()}
-                              autoFocus={newSubCategoryIndex === index}
-                              className={cn(
-                                "bg-transparent border-none outline-none text-center min-w-[80px] max-w-[200px] cursor-pointer",
-                                selectedSubCategory === subCat ? "text-white placeholder:text-white/70" : "text-gray-700 placeholder:text-gray-400"
-                              )}
-                              placeholder="Type..."
-                              size={subCat.length || 12}
-                            />
+                            {subCat}
                           </button>
                           {(pillarSubCategories[selectedUserPillar]?.length || 0) > 1 && (
                             <button

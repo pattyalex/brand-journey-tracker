@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ArrowRight, Plus, Trash2, ArrowLeft } from "lucide-react";
+import { ArrowRight, Plus, Trash2, ArrowLeft, Sparkles, GraduationCap, PartyPopper, Megaphone, Target, PenTool } from "lucide-react";
 import { StorageKeys, getString, setString } from "@/lib/storage";
 
 interface TitleHookSuggestionsProps {
@@ -491,8 +491,8 @@ const TitleHookSuggestions = ({
                 className="group w-full flex items-center justify-between px-5 py-4 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center text-lg group-hover:bg-purple-100 transition-colors">
-                    ⭐
+                  <div className="w-10 h-10 bg-gradient-to-br from-[#E9E0F5] to-[#D4C6EB] rounded-xl flex items-center justify-center group-hover:from-[#DED2F0] group-hover:to-[#C8B8E5] transition-all shadow-sm">
+                    <Sparkles className="w-5 h-5 text-[#7B5BA0]" />
                   </div>
                   <div className="text-left">
                     <h3 className="font-semibold text-gray-900 text-base">Inspirational Hooks</h3>
@@ -508,8 +508,8 @@ const TitleHookSuggestions = ({
                 className="group w-full flex items-center justify-between px-5 py-4 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center text-lg group-hover:bg-emerald-100 transition-colors">
-                    📚
+                  <div className="w-10 h-10 bg-gradient-to-br from-[#D4EBE0] to-[#B8DBC8] rounded-xl flex items-center justify-center group-hover:from-[#C6E4D6] group-hover:to-[#A8D0BA] transition-all shadow-sm">
+                    <GraduationCap className="w-5 h-5 text-[#3D7A5C]" />
                   </div>
                   <div className="text-left">
                     <h3 className="font-semibold text-gray-900 text-base">Educational Hooks</h3>
@@ -525,8 +525,8 @@ const TitleHookSuggestions = ({
                 className="group w-full flex items-center justify-between px-5 py-4 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-rose-50 rounded-lg flex items-center justify-center text-lg group-hover:bg-rose-100 transition-colors">
-                    🎭
+                  <div className="w-10 h-10 bg-gradient-to-br from-[#FCE4E8] to-[#F5C6D0] rounded-xl flex items-center justify-center group-hover:from-[#F8D6DC] group-hover:to-[#F0B4C2] transition-all shadow-sm">
+                    <PartyPopper className="w-5 h-5 text-[#C4607A]" />
                   </div>
                   <div className="text-left">
                     <h3 className="font-semibold text-gray-900 text-base">Entertaining Hooks</h3>
@@ -542,8 +542,8 @@ const TitleHookSuggestions = ({
                 className="group w-full flex items-center justify-between px-5 py-4 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center text-lg group-hover:bg-amber-100 transition-colors">
-                    💰
+                  <div className="w-10 h-10 bg-gradient-to-br from-[#FEF0DC] to-[#FADDB4] rounded-xl flex items-center justify-center group-hover:from-[#FCE8CC] group-hover:to-[#F6D0A0] transition-all shadow-sm">
+                    <Megaphone className="w-5 h-5 text-[#C4882A]" />
                   </div>
                   <div className="text-left">
                     <h3 className="font-semibold text-gray-900 text-base">Promotional Hooks</h3>
@@ -559,8 +559,8 @@ const TitleHookSuggestions = ({
                 className="group w-full flex items-center justify-between px-5 py-4 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-sky-50 rounded-lg flex items-center justify-center text-lg group-hover:bg-sky-100 transition-colors">
-                    🎯
+                  <div className="w-10 h-10 bg-gradient-to-br from-[#DCEAF8] to-[#B8D4F0] rounded-xl flex items-center justify-center group-hover:from-[#CEE0F4] group-hover:to-[#A8C8EA] transition-all shadow-sm">
+                    <Target className="w-5 h-5 text-[#4A7EB8]" />
                   </div>
                   <div className="text-left">
                     <h3 className="font-semibold text-gray-900 text-base">Industry Specific Hooks</h3>
@@ -580,8 +580,8 @@ const TitleHookSuggestions = ({
                 className="group w-full flex items-center justify-between px-5 py-4 bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-lg group-hover:bg-gray-200 transition-colors">
-                    ✍️
+                  <div className="w-10 h-10 bg-gradient-to-br from-[#F0EBE6] to-[#E0D6CC] rounded-xl flex items-center justify-center group-hover:from-[#E8E0D8] group-hover:to-[#D6C8BC] transition-all shadow-sm">
+                    <PenTool className="w-5 h-5 text-[#8B7355]" />
                   </div>
                   <div className="text-left">
                     <h3 className="font-semibold text-gray-900 text-base">Create your own</h3>
