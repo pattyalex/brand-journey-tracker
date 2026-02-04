@@ -437,6 +437,7 @@ const HomePage = () => {
   const [isSelectOpen, setIsSelectOpen] = useState(false);
   const addTaskFormRef = useRef<HTMLDivElement>(null);
   const monthlyGoalsScrollRef = useRef<HTMLDivElement>(null);
+  const habitsScrollRef = useRef<HTMLDivElement>(null);
   const startTimeInputRef = useRef<HTMLInputElement>(null);
   const startAmPmButtonRef = useRef<HTMLButtonElement>(null);
   const endTimeInputRef = useRef<HTMLInputElement>(null);
@@ -2062,7 +2063,7 @@ const HomePage = () => {
                     style={{ fontFamily: "'DM Sans', sans-serif" }}
                   >
                     <span
-                      className="text-[40px] font-light text-[#2d2a26]"
+                      className="text-[40px] font-light text-[#2d2a26] -mt-4"
                       style={{ fontFamily: "'Playfair Display', serif" }}
                     >
                       {new Date().getDate()}
@@ -2080,11 +2081,11 @@ const HomePage = () => {
               </section>
 
             {/* Bento Grid Layout */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 auto-rows-min">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 items-stretch">
 
               {/* Top 3 Priorities - 1 column */}
-              <div className="relative">
-              <section className="bg-white/60 rounded-2xl p-5 border border-[#e0d5db]">
+              <div className="relative h-full">
+              <section className="bg-white/60 rounded-2xl p-5 border border-[#e0d5db] h-full">
                   {/* Header */}
                   <div className="flex items-center gap-2.5 mb-2.5">
                     <Target className="w-5 h-5 text-[#612a4f]" />
@@ -2152,7 +2153,7 @@ const HomePage = () => {
                           {/* Checkbox */}
                           <button
                             onClick={() => handleTogglePriority(priority.id)}
-                            className="w-[22px] h-[22px] rounded-md flex items-center justify-center transition-all flex-shrink-0"
+                            className="w-[18px] h-[18px] rounded-md flex items-center justify-center transition-all flex-shrink-0"
                             style={{
                               background: priority.isCompleted
                                 ? 'linear-gradient(145deg, #8aae8a 0%, #6a9a6a 100%)'
@@ -2166,7 +2167,7 @@ const HomePage = () => {
                             }}
                           >
                             {priority.isCompleted && (
-                              <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                              <svg width="8" height="6" viewBox="0 0 10 8" fill="none">
                                 <path d="M1 4.5Q2 6 3.5 7Q5.5 4 9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                               </svg>
                             )}
@@ -2511,7 +2512,11 @@ const HomePage = () => {
                       </div>
 
                       {/* Habit Rows */}
-                      <div className="space-y-2 pt-2">
+                      <div
+                        ref={habitsScrollRef}
+                        className={`pt-2 ${habits.length >= 5 ? 'space-y-1 max-h-[150px] overflow-y-auto' : habits.length >= 3 ? 'space-y-1' : 'space-y-5'}`}
+                        style={{ scrollbarWidth: 'thin', scrollbarColor: '#d1d5db transparent' }}
+                      >
                         {habits.map((habit) => {
                           const weeklyCompleted = getWeeklyCompletions(habit, habitWeekOffset);
                           const weeklyTarget = habit.goal?.target || 7;
@@ -2520,7 +2525,7 @@ const HomePage = () => {
                           return (
                           <div
                             key={habit.id}
-                            className="grid grid-cols-[1fr_repeat(7,36px)] gap-1 items-center py-2 group"
+                            className={`grid grid-cols-[1fr_repeat(7,36px)] gap-1 items-center group ${habits.length >= 3 ? 'py-1.5' : 'py-2'}`}
                           >
                             {/* Habit Name */}
                             <div className="flex items-center gap-2 min-w-0 pr-2">
@@ -2634,7 +2639,7 @@ const HomePage = () => {
                                 >
                                   <button
                                     onClick={() => toggleHabit(habit.id, dateStr)}
-                                    className="w-[22px] h-[22px] rounded-md flex items-center justify-center transition-all"
+                                    className="w-[18px] h-[18px] rounded-md flex items-center justify-center transition-all"
                                     style={{
                                       background: isCompleted
                                         ? 'linear-gradient(145deg, #8aae8a 0%, #6a9a6a 100%)'
@@ -2648,7 +2653,7 @@ const HomePage = () => {
                                     }}
                                   >
                                     {isCompleted && (
-                                      <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                                      <svg width="8" height="6" viewBox="0 0 10 8" fill="none">
                                         <path d="M1 4.5Q2 6 3.5 7Q5.5 4 9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                       </svg>
                                     )}
@@ -2728,6 +2733,21 @@ const HomePage = () => {
                           </div>
                         )}
                       </div>
+                      {/* Scroll indicator for 5+ habits */}
+                      {habits.length >= 5 && (
+                        <div className="flex justify-center -mb-4">
+                          <button
+                            onClick={() => {
+                              if (habitsScrollRef.current) {
+                                habitsScrollRef.current.scrollBy({ top: 50, behavior: 'smooth' });
+                              }
+                            }}
+                            className="text-[#8B7082] hover:text-[#612a4f] hover:bg-[#612a4f]/10 p-0.5 rounded transition-all"
+                          >
+                            <ChevronDown className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="py-8 text-center">
@@ -2797,8 +2817,8 @@ const HomePage = () => {
                   </div>
 
                   {/* Goals List */}
-                  <div ref={monthlyGoalsScrollRef} className="max-h-[300px] overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#d1d5db transparent' }}>
-                    <div className="space-y-2.5">
+                  <div ref={monthlyGoalsScrollRef} className={`${getCurrentMonthGoals().length >= 5 ? 'max-h-[160px] overflow-y-auto' : ''}`} style={{ scrollbarWidth: 'thin', scrollbarColor: '#d1d5db transparent' }}>
+                    <div className={`pt-2 ${getCurrentMonthGoals().length <= 2 ? 'space-y-4' : getCurrentMonthGoals().length <= 4 ? 'space-y-1' : 'space-y-1'}`}>
                       {getCurrentMonthGoals().map((goal) => {
                         const statusConfig: Record<string, { bgColor: string; textColor: string; borderColor: string; label: string }> = {
                           'not-started': { bgColor: 'rgba(156, 163, 175, 0.15)', textColor: '#6b7280', borderColor: 'rgba(156, 163, 175, 0.4)', label: 'Not Started' },
@@ -2811,7 +2831,7 @@ const HomePage = () => {
                         return (
                           <div key={goal.id} className="group">
                             <div
-                              className="flex items-center gap-4 py-3 border-b border-[#8B7082]/10 last:border-b-0 transition-all"
+                              className={`flex items-center gap-3 border-b border-[#8B7082]/10 last:border-b-0 transition-all ${getCurrentMonthGoals().length <= 2 ? 'py-3' : 'py-2'}`}
                             >
                               {/* Goal text */}
                               {editingMonthlyGoalId === goal.id ? (
@@ -2856,22 +2876,36 @@ const HomePage = () => {
                               onClick={(e) => { e.stopPropagation(); handleDeleteMonthlyGoal(goal.id); }}
                               className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-3.5 w-3.5" />
                             </button>
                           </div>
                         </div>
                       );
                     })}
+                    </div>
                   </div>
-                </div>
-
-                            </section>
+                  {/* Scroll indicator for 5+ goals */}
+                  {getCurrentMonthGoals().length >= 5 && (
+                    <div className="flex justify-center -mb-4">
+                      <button
+                        onClick={() => {
+                          if (monthlyGoalsScrollRef.current) {
+                            monthlyGoalsScrollRef.current.scrollBy({ top: 50, behavior: 'smooth' });
+                          }
+                        }}
+                        className="text-[#8B7082] hover:text-[#612a4f] hover:bg-[#612a4f]/10 p-0.5 rounded transition-all"
+                      >
+                        <ChevronDown className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+              </section>
               </div>
 
               {/* Mission Statement - Full width */}
               <section className="md:col-span-3 bg-white/60 rounded-2xl p-6 border border-[#e0d5db]">
                   {/* Header with Edit button */}
-                  <div className="flex justify-end mb-4">
+                  <div className="flex justify-end -mb-2">
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
