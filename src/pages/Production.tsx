@@ -3228,46 +3228,54 @@ const Production = () => {
             );
           })}
 
-          {/* Archive Drop Zone - visually distinct from columns */}
+          {/* Collapsible Archive Side Panel - inside KanbanContainer */}
           <div
-            className="flex-shrink-0 w-[240px] mr-4 self-stretch"
+            className="flex-shrink-0 self-stretch mr-4 w-[48px] relative flex items-end"
             onDragOver={(e) => handleDragOver(e, "posted")}
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, "posted")}
           >
             <div
               className={cn(
-                "flex flex-col items-center justify-center h-full min-h-[400px] rounded-2xl transition-all duration-300",
-                "border-2 border-dashed",
+                "group h-[280px] rounded-2xl transition-all duration-300 flex flex-col items-center justify-center overflow-hidden absolute right-0 bottom-0",
                 draggedOverColumn === "posted" && draggedCard
-                  ? "border-[#8B7082] bg-[#F5F0F7]/80 scale-[1.02]"
-                  : "border-[#C9B5C0] bg-[#FAF8FB]/50",
+                  ? "bg-[#F5F0F7] border-2 border-dashed border-[#8B7082] shadow-lg w-[180px]"
+                  : "bg-white/90 backdrop-blur-sm border border-[#E8E4E6] shadow-md hover:shadow-lg hover:border-[#C9B5C0] w-[48px] hover:w-[180px]",
+                draggedCard && "w-[180px]"
               )}
             >
-              <div
-                className={cn(
-                  "flex flex-col items-center transition-all duration-200 px-4",
-                  draggedOverColumn === "posted" && draggedCard
-                    ? "scale-105"
-                    : ""
-                )}
-              >
+              {/* Collapsed state - just icon */}
+              <div className={cn(
+                "flex flex-col items-center gap-2 transition-all duration-300",
+                (draggedCard || draggedOverColumn === "posted") ? "opacity-0 absolute" : "group-hover:opacity-0 group-hover:absolute"
+              )}>
+                <Archive className="w-5 h-5 text-[#8B7082]" />
+                <span className="text-[10px] text-[#8B7082] font-medium" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
+                  Archive
+                </span>
+              </div>
+
+              {/* Expanded state - full content */}
+              <div className={cn(
+                "flex flex-col items-center gap-3 px-4 transition-all duration-300",
+                (draggedCard || draggedOverColumn === "posted") ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+              )}>
                 <Archive className={cn(
-                  "w-7 h-7 mb-2 transition-colors",
+                  "w-7 h-7 transition-colors",
                   draggedOverColumn === "posted" && draggedCard
                     ? "text-[#6B5062]"
                     : "text-[#8B7082]"
                 )} />
 
                 <p className={cn(
-                  "text-xs text-center transition-colors font-medium mb-3",
+                  "text-xs text-center transition-colors font-medium",
                   draggedOverColumn === "posted" && draggedCard
                     ? "text-[#5C466C]"
                     : "text-[#8B7082]"
                 )}>
                   {draggedOverColumn === "posted" && draggedCard
                     ? "Release to archive"
-                    : <>Drop here content cards<br />to archive</>
+                    : <>Drop cards here<br />to archive</>
                   }
                 </p>
 
@@ -3298,21 +3306,9 @@ const Production = () => {
                         )
                       );
                       setLastArchivedCard(null);
-                      toast.success("Content restored!", {
-                        description: (
-                          <span>
-                            Moved back to{" "}
-                            <button
-                              onClick={() => scrollToAndHighlightColumn('to-schedule')}
-                              className="text-[#8B7082] hover:text-[#6B5062] font-medium underline underline-offset-2"
-                            >
-                              To Schedule
-                            </button>
-                          </span>
-                        )
-                      });
+                      toast.success("Content restored!");
                     }}
-                    className="mt-3 flex items-center gap-1 text-[11px] text-[#7D6B87] hover:text-[#5C466C] font-medium bg-[#F5F0F7] hover:bg-[#E8DFED] px-2.5 py-1.5 rounded-md transition-colors"
+                    className="flex items-center gap-1 text-[11px] text-[#7D6B87] hover:text-[#5C466C] font-medium bg-[#F5F0F7] hover:bg-[#E8DFED] px-2.5 py-1.5 rounded-md transition-colors"
                   >
                     <RefreshCw className="w-3 h-3" />
                     Undo
