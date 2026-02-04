@@ -79,10 +79,10 @@ export const shotTemplates: ShotTemplate[] = [
     visualVariants: [
       { id: "default", name: "Default" },
       { id: "man-talking", name: "Man Talking" },
-      { id: "woman", name: "Woman" },
       { id: "woman-talking", name: "Woman Talking" },
       { id: "woman-podcast", name: "Woman Podcast" },
       { id: "woman-product", name: "Woman Product" },
+      { id: "woman-explaining", name: "Woman Explaining" },
     ]
   },
   {
@@ -134,6 +134,8 @@ export const shotTemplates: ShotTemplate[] = [
     visualVariants: [
       { id: "default", name: "Default" },
       { id: "typing", name: "Typing" },
+      { id: "bag", name: "Bag" },
+      { id: "perfume", name: "Perfume" },
     ]
   },
   {
@@ -153,7 +155,15 @@ export const shotTemplates: ShotTemplate[] = [
       "Makes content feel more polished",
       "Draws attention to what matters"
     ],
-    internal_tags: ["detail", "product", "close", "aesthetic", "texture"]
+    internal_tags: ["detail", "product", "close", "aesthetic", "texture"],
+    visualVariants: [
+      { id: "default", name: "Default" },
+      { id: "desk", name: "Desk" },
+      { id: "skincare", name: "Skincare" },
+      { id: "sunglasses", name: "Sunglasses" },
+      { id: "trimmer", name: "Trimmer" },
+      { id: "jewelry", name: "Jewelry" },
+    ]
   },
 
   // Context / Environment
@@ -174,7 +184,12 @@ export const shotTemplates: ShotTemplate[] = [
       "Adds depth and personality to your content",
       "Makes viewers feel like insiders"
     ],
-    internal_tags: ["workspace", "environment", "behind-scenes", "authentic", "context"]
+    internal_tags: ["workspace", "environment", "behind-scenes", "authentic", "context"],
+    visualVariants: [
+      { id: "default", name: "Default" },
+      { id: "kitchen", name: "Kitchen" },
+      { id: "gym", name: "Gym" },
+    ]
   },
   {
     id: "moving-through",
@@ -193,7 +208,11 @@ export const shotTemplates: ShotTemplate[] = [
       "Keeps the video from feeling static",
       "Helps maintain viewer attention"
     ],
-    internal_tags: ["movement", "walking", "transition", "dynamic", "lifestyle"]
+    internal_tags: ["movement", "walking", "transition", "dynamic", "lifestyle"],
+    visualVariants: [
+      { id: "default", name: "Default" },
+      { id: "walking-city", name: "Walking City" },
+    ]
   },
 
   // Pattern Breaks / Texture
@@ -214,7 +233,11 @@ export const shotTemplates: ShotTemplate[] = [
       "Makes edits feel intentional",
       "Prevents visual overload"
     ],
-    internal_tags: ["cutaway", "transition", "pause", "pacing", "breath"]
+    internal_tags: ["cutaway", "transition", "pause", "pacing", "breath"],
+    visualVariants: [
+      { id: "default", name: "Default" },
+      { id: "earrings", name: "Earrings" },
+    ]
   },
   {
     id: "neutral-visual",
@@ -236,10 +259,10 @@ export const shotTemplates: ShotTemplate[] = [
     internal_tags: ["atmosphere", "mood", "b-roll", "cinematic", "environment"],
     visualVariants: [
       { id: "city-view", name: "City View" },
-      { id: "coffee-cup", name: "Coffee Cup" },
-      { id: "laptop", name: "Laptop" },
-      { id: "notes", name: "Notes & Journal" },
-      { id: "plants", name: "Plants" },
+      { id: "office", name: "Office" },
+      { id: "sky", name: "Sky" },
+      { id: "window", name: "Window" },
+      { id: "cafe", name: "Cafe" },
     ]
   },
   {
@@ -266,6 +289,7 @@ export const shotTemplates: ShotTemplate[] = [
       { id: "man-angry", name: "Man Angry" },
       { id: "man-bored", name: "Man Bored" },
       { id: "woman", name: "Woman" },
+      { id: "woman-smirk", name: "Woman Smirk" },
     ]
   }
 ];

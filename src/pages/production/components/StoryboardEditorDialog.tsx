@@ -54,7 +54,7 @@ import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { suggestShotsForScene, ShotSuggestion } from "../utils/shotSuggestionService";
 import { generateStoryboardFromScript, convertToStoryboardScenes } from "../utils/storyboardGenerationService";
 import { toast } from "sonner";
-import ShotLibraryDialog from "./ShotLibraryDialog";
+import ShotLibraryDialog, { variantImages } from "./ShotLibraryDialog";
 import ContentFlowProgress from "./ContentFlowProgress";
 
 // Shot illustrations - import all 10 images for each shot type
@@ -201,7 +201,10 @@ const SortableSceneCard: React.FC<SortableSceneCardProps> = ({
             className="w-full h-full max-h-[90px] rounded-lg bg-white/80 border border-gray-200 overflow-hidden shadow-sm flex items-center justify-center hover:border-[#8B7082] transition-colors"
           >
             <img
-              src={shotIllustrations[selectedTemplate.id]}
+              src={
+                (scene.selectedVariantId && variantImages[selectedTemplate.id]?.[scene.selectedVariantId])
+                || shotIllustrations[selectedTemplate.id]
+              }
               alt={selectedTemplate.user_facing_name}
               className="h-full object-contain scale-[1.2]"
             />
@@ -1125,6 +1128,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
           onOpenChange={setIsLibraryOpen}
           onSelectShot={handleLibrarySelect}
           currentShotId={librarySceneId ? scenes.find(s => s.id === librarySceneId)?.selectedShotTemplateId : undefined}
+          currentVariantId={librarySceneId ? scenes.find(s => s.id === librarySceneId)?.selectedVariantId : undefined}
         />
       </>
     );
@@ -1157,6 +1161,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
         onOpenChange={setIsLibraryOpen}
         onSelectShot={handleLibrarySelect}
         currentShotId={librarySceneId ? scenes.find(s => s.id === librarySceneId)?.selectedShotTemplateId : undefined}
+        currentVariantId={librarySceneId ? scenes.find(s => s.id === librarySceneId)?.selectedVariantId : undefined}
       />
     </>
   );
