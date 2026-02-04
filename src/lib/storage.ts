@@ -52,7 +52,9 @@ export const StorageKeys = {
   highlightedUnscheduledCard: "highlightedUnscheduledCard",
   archivedContent: "archivedContent",
   selectedTaskPalette: "selectedTaskPalette",
-  firstDayOfWeek: "firstDayOfWeek"
+  firstDayOfWeek: "firstDayOfWeek",
+  ideaExpanderText: "ideaExpanderText",
+  ideaExpanderAngles: "ideaExpanderAngles"
 } as const;
 
 export const contentFormatsByPillar = (pillarId: string) => `content-formats-${pillarId}`;

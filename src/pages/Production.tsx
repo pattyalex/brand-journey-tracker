@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, MoreVertical, Trash2, Pencil, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard, Video, Circle, Wrench, CheckCircle2, Camera, CheckSquare, Scissors, PlayCircle, PenLine, CalendarDays, X, Maximize2, PartyPopper, Archive, FolderOpen, ChevronRight, RefreshCw, Compass, TrendingUp, BarChart3, Zap, LayoutGrid } from "lucide-react";
+import { PlusCircle, MoreVertical, Trash2, Pencil, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard, Video, Circle, Wrench, CheckCircle2, Camera, CheckSquare, Scissors, PlayCircle, PenLine, CalendarDays, X, Maximize2, PartyPopper, Archive, FolderOpen, ChevronRight, RefreshCw, Compass, TrendingUp, BarChart3, Zap, LayoutGrid, RotateCcw } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine, RiPushpinFill } from "react-icons/ri";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -54,7 +54,7 @@ import EditChecklistDialog from "./production/components/EditChecklistDialog";
 import ExpandedScheduleView from "./production/components/ExpandedScheduleView";
 import ArchiveDialog from "./production/components/ArchiveDialog";
 import { columnColors, cardColors, defaultColumns, columnAccentColors, columnIcons, emptyStateIcons } from "./production/utils/productionConstants";
-import { getAllAngleTemplates, getFormatColors, getPlatformColors } from "./production/utils/productionHelpers";
+import { getFormatColors, getPlatformColors } from "./production/utils/productionHelpers";
 import { useSidebar } from "@/components/ui/sidebar";
 
 // Icon component mapping for column headers
@@ -222,9 +222,26 @@ const Production = () => {
   const [brainstormText, setBrainstormText] = useState("");
   const [showHooksDialog, setShowHooksDialog] = useState(false);
   const [isIdeaExpanderOpen, setIsIdeaExpanderOpen] = useState(false);
-  const [ideaExpanderText, setIdeaExpanderText] = useState("");
-  const [expandedAngles, setExpandedAngles] = useState<string[]>([]);
+  const [ideaExpanderText, setIdeaExpanderText] = useState(() => {
+    return getString(StorageKeys.ideaExpanderText) || "";
+  });
+  const [expandedAngles, setExpandedAngles] = useState<string[]>(() => {
+    const saved = getString(StorageKeys.ideaExpanderAngles);
+    return saved ? JSON.parse(saved) : [];
+  });
   const [isGeneratingAngles, setIsGeneratingAngles] = useState(false);
+  const [showAngleFeedback, setShowAngleFeedback] = useState(false);
+  const [angleFeedbackText, setAngleFeedbackText] = useState("");
+  const [selectedAngleDirection, setSelectedAngleDirection] = useState<string | null>(null);
+
+  // Persist Idea Expander state
+  useEffect(() => {
+    setString(StorageKeys.ideaExpanderText, ideaExpanderText);
+  }, [ideaExpanderText]);
+
+  useEffect(() => {
+    setString(StorageKeys.ideaExpanderAngles, JSON.stringify(expandedAngles));
+  }, [expandedAngles]);
 
   // Script editor modal state
   const [isScriptEditorOpen, setIsScriptEditorOpen] = useState(false);
@@ -327,7 +344,8 @@ const Production = () => {
 
   // Pillars × Formats new functionality
   const [isPillarsDialogOpen, setIsPillarsDialogOpen] = useState(false);
-  const [userPillars, setUserPillars] = useState<string[]>(["Wellness"]);
+  const [userPillars, setUserPillars] = useState<string[]>([]);
+  const [hasSeenPillarsExample, setHasSeenPillarsExample] = useState(false);
   const [selectedUserPillar, setSelectedUserPillar] = useState<string>("");
   const [pillarSubCategories, setPillarSubCategories] = useState<Record<string, string[]>>({});
   const [isGeneratingSubCategories, setIsGeneratingSubCategories] = useState(false);
@@ -384,10 +402,26 @@ const Production = () => {
         body: JSON.stringify({
           model: "claude-3-5-haiku-20241022",
           max_tokens: 300,
-          system: "You are a content strategy assistant helping content creators organize their content pillars into sub-categories. Generate relevant, specific sub-categories that a content creator would use to organize their content. Return ONLY a JSON array of 5-7 sub-category strings, nothing else. Example: [\"Morning Routine\", \"Product Reviews\", \"Tips & Tricks\"]",
+          system: `You are a content strategist helping creators organize their content pillars into meaningful sub-categories.
+
+THINK about the pillar from a creator's perspective:
+- What specific aspects of this topic would a creator actually film/post about?
+- What angles would resonate with an audience?
+- What sub-topics allow for personal stories, not just generic info?
+
+AVOID generic sub-categories like "Tips", "Basics", "Advanced" - these are lazy.
+INSTEAD create sub-categories that suggest specific content opportunities.
+
+Example for "Fitness": Instead of ["Workouts", "Nutrition", "Tips"], use ["My gym fails & wins", "Meals I actually eat", "Exercises I was doing wrong", "Fitness myths I believed", "My body image journey"]
+
+Return ONLY a JSON array of 5-7 strings, nothing else.`,
           messages: [{
             role: "user",
-            content: `Generate 5-7 relevant sub-categories for the content pillar: "${pillarName}". Return only a JSON array of strings.`
+            content: `Generate 5-7 sub-categories for the content pillar: "${pillarName}"
+
+These should be specific angles a creator could explore - think personal stories, unique perspectives, relatable struggles, real experiences. Not generic topic buckets.
+
+Return only a JSON array of strings.`
           }]
         })
       });
@@ -438,23 +472,31 @@ const Production = () => {
         },
         body: JSON.stringify({
           model: "claude-3-5-haiku-20241022",
-          max_tokens: 500,
-          system: `You are a content strategy assistant helping content creators generate engaging content ideas. Generate specific, actionable content ideas that would perform well on social media (Instagram, TikTok, YouTube).
+          max_tokens: 600,
+          system: `You are a content strategist helping creators generate scroll-stopping content ideas.
 
-The ideas should:
-- Be specific and unique (not generic templates)
-- Include hooks that grab attention
-- Be relevant to the creator's niche and sub-topic
-- Mix educational, entertaining, and personal content
-- Be written as compelling titles/hooks
-- DO NOT include any emojis
+BEFORE generating, think:
+- What personal story could a creator tell about this topic?
+- What vulnerable moment or realization would resonate?
+- What surprising angle hasn't been done to death?
+- What would make someone comment "I needed to hear this"?
 
-Return ONLY a JSON array of 10 content idea strings, nothing else.`,
+QUALITY TEST: If the idea sounds like it could come from any creator, REJECT it. Generate ideas that feel personal and specific.
+
+RULES:
+- Write as actual video/post titles that make people stop scrolling
+- Mix: vulnerable confessions, surprising takes, specific stories, relatable fails, hard-won lessons
+- NO generic templates like "5 tips for X" or "How to Y"
+- NO emojis
+- Each idea should spark curiosity or emotion
+- Keep titles concise (under 15 words)
+
+Return ONLY a JSON array of 10 strings, nothing else.`,
           messages: [{
             role: "user",
-            content: `Generate 10 engaging content ideas for a creator whose main pillar is "${pillarName}" and they want to create content specifically about "${subCategory}".
+            content: `Generate 10 content ideas for a creator focused on "${pillarName}", specifically about "${subCategory}".
 
-Make the ideas specific, creative, and attention-grabbing. Mix different content types like tutorials, personal stories, tips, myths debunked, comparisons, and trending formats.
+Create ideas that feel personal and specific - like real stories a creator would tell, not generic advice anyone could give. Think: vulnerable moments, specific realizations, relatable struggles, surprising perspectives.
 
 Return only a JSON array of strings.`
           }]
@@ -481,6 +523,84 @@ Return only a JSON array of strings.`
       }
     } catch (error) {
       console.error("Error calling Claude API for content ideas:", error);
+      return [];
+    }
+  };
+
+  // Helper function to generate content angles using Claude API
+  const generateAnglesWithAI = async (ideaText: string, count: number = 10): Promise<string[]> => {
+    const apiKey = getString(StorageKeys.anthropicApiKey);
+
+    if (!apiKey) {
+      console.warn("Claude API key not configured - returning empty angles");
+      return [];
+    }
+
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true"
+        },
+        body: JSON.stringify({
+          model: "claude-3-5-haiku-20241022",
+          max_tokens: 800,
+          system: `You are a creative content strategist helping creators find unique, SPECIFIC angles for their content.
+
+BEFORE generating hooks, first analyze what the user wrote:
+1. What specific emotions are they expressing? (not just "lonely" but WHY they felt lonely)
+2. What unique details make their situation different?
+3. What makes their experience different from generic content on this topic?
+4. Who would deeply relate to this specific story?
+
+THEN generate hooks that could ONLY apply to THIS person's story.
+
+QUALITY TEST: If a hook could work for anyone talking about the same general topic, REJECT it and think harder. Each hook must reference or imply something specific from what they wrote.
+
+RULES:
+- Create hooks that feel personal and specific, not templated
+- Reference specific emotions, moments, realizations, or details they mentioned
+- Mix styles: vulnerable confessions, surprising revelations, specific lessons, relatable moments
+- Write as compelling video/post titles that make people stop scrolling
+- Keep hooks concise (under 15 words)
+- NO emojis
+- NO generic templates like "How to X" or "5 tips for Y"
+
+Return ONLY a JSON array of strings, nothing else.`,
+          messages: [{
+            role: "user",
+            content: `The creator shared this idea: "${ideaText}"
+
+Generate ${count} highly specific content angles. Each hook should feel like it could ONLY come from this person's unique experience. Don't create generic hooks - create ones that reference the specific emotions, situations, or insights they mentioned.
+
+Return only a JSON array of ${count} strings.`
+          }]
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Claude API error:", data);
+        return [];
+      }
+
+      const responseText = data.content[0].text.trim();
+      try {
+        const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          return JSON.parse(jsonMatch[0]);
+        }
+        return [];
+      } catch (parseError) {
+        console.error("Error parsing angles:", parseError);
+        return [];
+      }
+    } catch (error) {
+      console.error("Error calling Claude API for angles:", error);
       return [];
     }
   };
@@ -2367,45 +2487,57 @@ Return only a JSON array of strings.`
     return str.charAt(0).toUpperCase() + str.slice(1);
   };
 
-  const handleGenerateAngles = () => {
+  const handleGenerateAngles = async () => {
     if (!ideaExpanderText.trim()) return;
 
     setIsGeneratingAngles(true);
+    setShowAngleFeedback(false);
+    setAngleFeedbackText("");
+    setSelectedAngleDirection(null);
 
-    // Simulate AI generation with a delay
-    setTimeout(() => {
-      const allAngles = getAllAngleTemplates(ideaExpanderText);
-
-      // Shuffle and take first 10, then capitalize first letter
-      const shuffledAngles = allAngles
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 10)
-        .map(angle => capitalizeFirstLetter(angle));
-
-      setExpandedAngles(shuffledAngles);
+    try {
+      const angles = await generateAnglesWithAI(ideaExpanderText, 7);
+      if (angles.length > 0) {
+        setExpandedAngles(angles);
+        setShowAngleFeedback(true); // Show feedback UI after first batch
+      } else {
+        toast.error("Could not generate angles. Please check your API key in Settings.");
+      }
+    } catch (error) {
+      console.error("Error generating angles:", error);
+      toast.error("Failed to generate angles. Please try again.");
+    } finally {
       setIsGeneratingAngles(false);
-    }, 1500);
+    }
   };
 
-  const handleGenerateMoreAngles = () => {
+  const handleGenerateMoreAngles = async (direction?: string) => {
+    const feedbackDirection = direction || selectedAngleDirection || angleFeedbackText;
+
     setIsGeneratingAngles(true);
 
-    setTimeout(() => {
-      const allAngles = getAllAngleTemplates(ideaExpanderText);
+    try {
+      // Build the prompt with direction feedback if provided
+      let promptText = ideaExpanderText;
+      if (feedbackDirection) {
+        promptText = `${ideaExpanderText}\n\nDIRECTION FROM USER: ${feedbackDirection}\n\nALREADY GENERATED (create different ones): ${expandedAngles.join(", ")}`;
+      } else {
+        promptText = `${ideaExpanderText}\n\nALREADY GENERATED (create different ones): ${expandedAngles.join(", ")}`;
+      }
 
-      // Get angles that aren't already shown (need to compare lowercase versions)
-      const currentAnglesLower = expandedAngles.map(a => a.toLowerCase());
-      const newAngles = allAngles.filter(angle => !currentAnglesLower.includes(angle.toLowerCase()));
-
-      // Shuffle and take 7 more, then capitalize first letter
-      const moreAngles = newAngles
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 7)
-        .map(angle => capitalizeFirstLetter(angle));
-
-      setExpandedAngles([...expandedAngles, ...moreAngles]);
+      const moreAngles = await generateAnglesWithAI(promptText, 7);
+      if (moreAngles.length > 0) {
+        setExpandedAngles([...expandedAngles, ...moreAngles]);
+        setShowAngleFeedback(false); // Hide feedback after generating
+        setAngleFeedbackText("");
+        setSelectedAngleDirection(null);
+      }
+    } catch (error) {
+      console.error("Error generating more angles:", error);
+      toast.error("Failed to generate more angles. Please try again.");
+    } finally {
       setIsGeneratingAngles(false);
-    }, 1000);
+    }
   };
 
   const handleSelectAngle = (angle: string) => {
@@ -2425,6 +2557,16 @@ Return only a JSON array of strings.`
         col.id === 'ideate' ? { ...col, cards: [...col.cards, newCard] } : col
       )
     );
+
+    toast.success("Added to Ideate!", {
+      action: {
+        label: "View",
+        onClick: () => {
+          setIsIdeaExpanderOpen(false);
+          setIsIdeateDialogOpen(false);
+        },
+      },
+    });
 
     // Show success state briefly before removing
     setAddedAngleText(angle);
@@ -2582,7 +2724,7 @@ Return only a JSON array of strings.`
                       {(() => {
                         const hasCards = column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')).length > 0;
                         return (
-                      <div className="flex-1 overflow-y-auto px-3 pt-3 pb-3 space-y-3 hide-scrollbar hover:hide-scrollbar relative rounded-[16px]" style={{ minHeight: 'calc(100vh - 120px)', border: hasCards ? '1.5px solid rgba(180, 168, 175, 0.2)' : '1.5px dashed rgba(180, 168, 175, 0.25)', backgroundColor: hasCards ? 'rgba(255, 252, 250, 0.9)' : 'rgba(255, 255, 255, 0.4)' }}>
+                      <div className="flex-1 overflow-y-auto px-3 pt-3 pb-3 space-y-3 hide-scrollbar hover:hide-scrollbar relative rounded-[16px]" style={{ minHeight: 'calc(100vh - 120px)', border: hasCards ? '1.5px solid rgba(180, 168, 175, 0.2)' : '1.5px dashed rgba(180, 168, 175, 0.25)', backgroundColor: hasCards ? 'rgba(255, 252, 250, 0.7)' : 'rgba(255, 255, 255, 0.1)' }}>
                         {/* Not Allowed Overlay for Ideate Column */}
                         {column.id === "ideate" && draggedCard && draggedOverColumn === column.id &&
                          columns.find(col => col.cards.some(c => c.id === draggedCard.id))?.id !== "ideate" && (
@@ -3201,16 +3343,21 @@ Return only a JSON array of strings.`
                             })()}
                             {/* Just added message at bottom */}
                             {card.isNew && (
-                              <div className="flex items-center gap-1 mt-2 pt-2 border-t border-[#E8E2E5]">
-                                <span className="text-[11px] text-[#8B7082] font-medium">
-                                  ✦ Just added{card.addedFrom === 'calendar' ? ' from Content Calendar' :
-                                    card.addedFrom === 'quick-idea' ? ' via quick idea' :
-                                    card.addedFrom === 'ai-generated' ? ' via AI' :
+                              <motion.div
+                                initial={{ opacity: 0, y: 5 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="flex items-center gap-1.5 mt-2 pt-2 border-t border-[#E8E2E5]"
+                              >
+                                <span className="text-[11px] text-[#9B8AB8] font-medium flex items-center gap-1">
+                                  <Sparkles className="w-3 h-3" />
+                                  Just added{card.addedFrom === 'calendar' ? ' from Content Calendar' :
+                                    card.addedFrom === 'quick-idea' ? '' :
+                                    card.addedFrom === 'ai-generated' ? ' via MegAI' :
                                     card.addedFrom === 'bank-of-ideas' ? ' from Bank of Ideas' :
                                     card.addedFrom === 'idea-expander' ? ' via Idea Expander' :
                                     card.addedFrom === 'repurposed' ? ' (repurposed)' : ''}
                                 </span>
-                              </div>
+                              </motion.div>
                             )}
                           </motion.div>
                           </React.Fragment>
@@ -3333,8 +3480,8 @@ Return only a JSON array of strings.`
                                 <div className="flex items-center justify-center gap-2 text-white">
                                   <Zap className="h-4 w-4 group-hover/btn:animate-pulse" />
                                   <div className="flex flex-col">
-                                    <span className="text-xs font-semibold leading-tight">Generate ideas</span>
-                                    <span className="text-[10px] opacity-80 leading-tight">AI-powered suggestions</span>
+                                    <span className="text-xs font-semibold leading-tight">Need inspiration?</span>
+                                    <span className="text-[10px] opacity-80 leading-tight">Brainstorm with MegAI</span>
                                   </div>
                                 </div>
                               </div>
@@ -3953,6 +4100,19 @@ Return only a JSON array of strings.`
               <div className="mb-8">
                 <h4 className="text-sm font-semibold text-gray-700 mb-4">Your Content Pillars</h4>
                 <div className="flex flex-wrap gap-3 mb-4">
+                  {/* Show example pillars when user hasn't added any */}
+                  {userPillars.length === 0 && !hasSeenPillarsExample && (
+                    <>
+                      {["Wellness", "Travel", "Productivity"].map((example) => (
+                        <div
+                          key={example}
+                          className="px-5 py-2.5 rounded-xl border border-dashed border-gray-300 bg-gray-50/50 text-gray-400 italic text-sm"
+                        >
+                          e.g. {example}
+                        </div>
+                      ))}
+                    </>
+                  )}
                   {userPillars.map((pillar, index) => (
                     <div key={index} className="relative group">
                       <div
@@ -4058,6 +4218,7 @@ Return only a JSON array of strings.`
                       setSelectedSubCategory("");
                       setCascadeIdeas([]);
                       setNewPillarIndex(newIndex);
+                      setHasSeenPillarsExample(true);
                     }}
                     className="px-6 py-3 rounded-xl font-medium bg-white/60 text-[#5D8A7A] hover:bg-white/80 hover:shadow-sm transition-all border-2 border-dashed border-[#B8D4CA] hover:border-[#7BA393]"
                   >
@@ -4300,6 +4461,15 @@ Return only a JSON array of strings.`
                                     col.id === 'ideate' ? { ...col, cards: [...col.cards, newCard] } : col
                                   )
                                 );
+                                toast.success("Added to Ideate!", {
+                                  action: {
+                                    label: "View",
+                                    onClick: () => {
+                                      setIsPillarsDialogOpen(false);
+                                      setIsIdeateDialogOpen(false);
+                                    },
+                                  },
+                                });
                                 // Show success state briefly before removing
                                 setAddedIdeaText(idea);
                                 setTimeout(() => {
@@ -4310,7 +4480,7 @@ Return only a JSON array of strings.`
                               }}
                               className="opacity-0 group-hover:opacity-100 transition-opacity bg-[#7BA393] hover:bg-[#6B9080] text-white text-xs px-3 py-1.5 h-auto whitespace-nowrap"
                             >
-                              Add to Content Cards
+                              Add to Ideate
                             </Button>
                           </motion.div>
                         ))}
@@ -4366,8 +4536,10 @@ Return only a JSON array of strings.`
           if (!open) {
             // Close both Idea Expander and Content Ideation dialogs
             setIsIdeateDialogOpen(false);
-            setIdeaExpanderText("");
-            setExpandedAngles([]);
+            // Keep ideaExpanderText and expandedAngles - they're persisted
+            setShowAngleFeedback(false);
+            setAngleFeedbackText("");
+            setSelectedAngleDirection(null);
           }
         }}>
           <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] overflow-hidden border-0 shadow-2xl flex flex-col bg-gradient-to-br from-[#F5F0F8] via-[#FAF7FC] to-[#EDE5F3]">
@@ -4381,10 +4553,25 @@ Return only a JSON array of strings.`
                 <span className="text-sm font-medium">Back</span>
               </button>
 
-              <div className="mb-2">
+              <div className="flex items-center justify-between mb-2">
                 <DialogTitle className="text-2xl font-semibold text-gray-900" style={{ fontFamily: "'Playfair Display', serif" }}>
                   Idea Expander
                 </DialogTitle>
+                {(ideaExpanderText.trim() || expandedAngles.length > 0) && (
+                  <button
+                    onClick={() => {
+                      setIdeaExpanderText("");
+                      setExpandedAngles([]);
+                      setShowAngleFeedback(false);
+                      setAngleFeedbackText("");
+                      setSelectedAngleDirection(null);
+                    }}
+                    className="text-xs text-gray-400 hover:text-[#9B8AB8] transition-colors flex items-center gap-1"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    Start fresh
+                  </button>
+                )}
               </div>
               <DialogDescription className="text-gray-500 text-sm">
                 Enter your idea and get multiple content angles to explore
@@ -4414,7 +4601,7 @@ Return only a JSON array of strings.`
                     ) : (
                       <div className="flex items-center gap-2">
                         <Sparkles className="h-4 w-4" />
-                        Generate Different Angles
+                        Generate Ideas
                       </div>
                     )}
                   </Button>
@@ -4451,10 +4638,10 @@ Return only a JSON array of strings.`
                               layout: { duration: 0.4, ease: "easeInOut" }
                             }}
                             className={cn(
-                              "relative group text-left p-4 border-2 rounded-lg flex items-center justify-between gap-3",
+                              "relative group text-left p-4 border-2 rounded-xl flex items-center justify-between gap-3",
                               addedAngleText === angle
-                                ? "bg-orange-100 border-orange-500 shadow-lg"
-                                : "bg-gradient-to-r from-orange-50 to-red-50 border-orange-200 hover:border-orange-400 hover:shadow-md"
+                                ? "bg-purple-100 border-[#9B8AB8] shadow-lg"
+                                : "bg-gradient-to-r from-[#F8F5FB] to-[#F3EFF8] border-[#D4C9E0] hover:border-[#9B8AB8] hover:shadow-md"
                             )}
                           >
                             <p className="text-sm text-gray-700 font-medium flex-1">
@@ -4463,46 +4650,97 @@ Return only a JSON array of strings.`
                             <Button
                               size="sm"
                               onClick={() => handleSelectAngle(angle)}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white text-xs px-3 py-1.5 h-auto whitespace-nowrap"
+                              className="opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-[#9B8AB8] to-[#7A6A94] hover:from-[#8A7AA8] hover:to-[#695A84] text-white text-xs px-3 py-1.5 h-auto whitespace-nowrap rounded-lg"
                             >
-                              Add to Content Cards
+                              Add to Ideate
                             </Button>
                           </motion.div>
                         ))}
                       </AnimatePresence>
                     </div>
 
-                    {/* More Ideas Button */}
-                    {expandedAngles.length < getAllAngleTemplates(ideaExpanderText).length && (
+                    {/* AI Feedback Section */}
+                    {showAngleFeedback && expandedAngles.length > 0 && expandedAngles.length < 30 && (
+                      <div className="mt-6 p-5 bg-white/80 rounded-xl border border-[#D4C9E0]">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Sparkles className="h-4 w-4 text-[#9B8AB8]" />
+                          <p className="text-sm font-medium text-gray-700">What direction would you like MegAI to explore?</p>
+                        </div>
+
+                        {/* Quick Direction Options */}
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {[
+                            { label: "More fun & playful", value: "Make them more fun, playful, and entertaining - less serious" },
+                            { label: "More storytelling", value: "Make them sound more like personal stories and narratives I could tell" },
+                            { label: "More vulnerable", value: "Make them more vulnerable and emotionally honest - real struggles and feelings" }
+                          ].map((option) => (
+                            <button
+                              key={option.label}
+                              onClick={() => setSelectedAngleDirection(
+                                selectedAngleDirection === option.value ? null : option.value
+                              )}
+                              className={cn(
+                                "px-3 py-2 text-xs font-medium rounded-lg transition-all",
+                                selectedAngleDirection === option.value
+                                  ? "bg-[#9B8AB8] text-white"
+                                  : "bg-[#F8F5FB] text-[#7A6A94] hover:bg-[#EDE5F3] border border-[#D4C9E0]"
+                              )}
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Custom Feedback Input */}
+                        <div className="mb-4">
+                          <textarea
+                            value={angleFeedbackText}
+                            onChange={(e) => setAngleFeedbackText(e.target.value)}
+                            placeholder="Or tell me exactly what you're looking for..."
+                            className="w-full px-3 py-2 text-sm border border-[#D4C9E0] rounded-lg focus:border-[#9B8AB8] focus:ring-1 focus:ring-[#9B8AB8]/20 outline-none resize-none bg-white/60"
+                            rows={2}
+                          />
+                        </div>
+
+                        {/* Generate Button */}
+                        <Button
+                          onClick={() => handleGenerateMoreAngles()}
+                          disabled={isGeneratingAngles || (!selectedAngleDirection && !angleFeedbackText.trim())}
+                          className="w-full bg-gradient-to-r from-[#9B8AB8] to-[#7A6A94] hover:from-[#8A7AA8] hover:to-[#695A84] text-white rounded-lg disabled:opacity-50"
+                        >
+                          {isGeneratingAngles ? (
+                            <div className="flex items-center gap-2">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                              Generating...
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <Sparkles className="h-4 w-4" />
+                              Generate 7 More Ideas
+                            </div>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Simple More Ideas Button (after feedback has been used) */}
+                    {!showAngleFeedback && expandedAngles.length > 0 && expandedAngles.length < 30 && (
                       <Button
-                        onClick={handleGenerateMoreAngles}
+                        onClick={() => setShowAngleFeedback(true)}
                         disabled={isGeneratingAngles}
-                        className="w-full mt-4 bg-white hover:bg-gray-50 text-gray-900 border-2 border-orange-200 hover:border-orange-400 rounded-lg"
+                        className="w-full mt-4 bg-white hover:bg-[#F8F5FB] text-gray-900 border-2 border-[#D4C9E0] hover:border-[#9B8AB8] rounded-xl"
                         variant="outline"
                       >
-                        {isGeneratingAngles ? (
-                          <div className="flex items-center gap-2">
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
-                            Loading More Ideas...
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            <Plus className="h-4 w-4" />
-                            Generate More Ideas
-                          </div>
-                        )}
+                        <div className="flex items-center gap-2">
+                          <Plus className="h-4 w-4" />
+                          Generate More Ideas
+                        </div>
                       </Button>
                     )}
                   </div>
                 )}
 
-                {/* Empty State */}
-                {expandedAngles.length === 0 && ideaExpanderText.trim() && !isGeneratingAngles && (
-                  <div className="text-center py-8 text-gray-500">
-                    <p className="text-sm">Click "Generate Different Angles" to see content ideas</p>
-                  </div>
-                )}
-              </div>
+                              </div>
             </div>
           </DialogContent>
         </Dialog>
