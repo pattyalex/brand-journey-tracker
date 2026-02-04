@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ArrowRight, Plus, Trash2, ChevronLeft } from "lucide-react";
+import { ArrowRight, Plus, Trash2, ArrowLeft } from "lucide-react";
 import { StorageKeys, getString, setString } from "@/lib/storage";
 
 interface TitleHookSuggestionsProps {
@@ -466,33 +466,25 @@ const TitleHookSuggestions = ({
   return (
     <>
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] border border-gray-200 flex flex-col overflow-hidden">
-          <DialogHeader className="border-b border-gray-100 pb-4 flex-shrink-0">
-            {/* Breadcrumbs */}
-            <div className="flex items-center gap-3 text-base mb-4">
-              <button
-                onClick={() => setDialogOpen(false)}
-                className="text-gray-500 hover:text-blue-600 transition-colors font-medium"
-              >
-                Production
-              </button>
-              <span className="text-gray-400">/</span>
-              <button
-                onClick={() => setDialogOpen(false)}
-                className="text-gray-500 hover:text-blue-600 transition-colors font-medium"
-              >
-                Content Ideation
-              </button>
-              <span className="text-gray-400">/</span>
-              <span className="text-gray-900 font-semibold">Trending Hooks</span>
-            </div>
+        <DialogContent className="sm:max-w-[900px] border-0 shadow-2xl bg-gradient-to-br from-[#FEF8F6] via-[#FFFCFB] to-[#FDF2EE]">
+          <DialogHeader className="flex-shrink-0 px-8 pt-6">
+            {/* Back Button */}
+            <button
+              onClick={() => setDialogOpen(false)}
+              className="flex items-center gap-2 text-gray-400 hover:text-[#E07A5F] transition-colors mb-6"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="text-sm font-medium">Back</span>
+            </button>
 
-            <DialogTitle className="text-2xl font-bold text-gray-900 mb-3">Hook Library</DialogTitle>
-            <p className="text-sm text-gray-500 mt-1">Browse hundreds of proven hooks organized by category</p>
+            <div className="mb-2">
+              <DialogTitle className="text-2xl font-semibold text-gray-900" style={{ fontFamily: "'Playfair Display', serif" }}>Hook Library</DialogTitle>
+            </div>
+            <p className="text-sm text-gray-500">Browse hundreds of proven hooks organized by category</p>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto py-4">
-            <div className="grid grid-cols-1 gap-3 px-2">
+          <div className="px-8 pb-6">
+            <div className="grid grid-cols-1 gap-3">
               {/* Inspirational Hooks */}
               <button
                 onClick={() => handleSelectCategory("Inspirational Hooks")}
@@ -604,49 +596,28 @@ const TitleHookSuggestions = ({
       </Dialog>
 
       <Dialog open={hookSelectionDialogOpen} onOpenChange={setHookSelectionDialogOpen}>
-        <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] flex flex-col border border-gray-200 overflow-hidden">
-          <DialogHeader className="border-b border-gray-100 pb-4 flex-shrink-0">
-            {/* Breadcrumbs */}
-            <div className="flex items-center gap-3 text-base mb-4">
-              <button
-                onClick={() => {
-                  setHookSelectionDialogOpen(false);
-                  setDialogOpen(false);
-                }}
-                className="text-gray-500 hover:text-blue-600 transition-colors font-medium"
-              >
-                Production
-              </button>
-              <span className="text-gray-400">/</span>
-              <button
-                onClick={() => {
-                  setHookSelectionDialogOpen(false);
-                  setDialogOpen(false);
-                }}
-                className="text-gray-500 hover:text-blue-600 transition-colors font-medium"
-              >
-                Content Ideation
-              </button>
-              <span className="text-gray-400">/</span>
-              <button
-                onClick={() => handleBackToCategories()}
-                className="text-gray-500 hover:text-blue-600 transition-colors font-medium"
-              >
-                Trending Hooks
-              </button>
-              <span className="text-gray-400">/</span>
-              <span className="text-gray-900 font-semibold">{selectedCategory}</span>
-            </div>
+        <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] flex flex-col border-0 shadow-2xl overflow-hidden bg-gradient-to-br from-[#FEF8F6] via-[#FFFCFB] to-[#FDF2EE]">
+          <DialogHeader className="flex-shrink-0 px-8 pt-6">
+            {/* Back Button */}
+            <button
+              onClick={() => handleBackToCategories()}
+              className="flex items-center gap-2 text-gray-400 hover:text-[#E07A5F] transition-colors mb-6"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="text-sm font-medium">Back</span>
+            </button>
 
-            <DialogTitle className="text-2xl font-bold text-gray-900 mb-3">{selectedCategory}</DialogTitle>
-            <p className="text-sm text-gray-500 mt-1">Click any hook to add it to your ideate column</p>
+            <div className="mb-2">
+              <DialogTitle className="text-2xl font-semibold text-gray-900" style={{ fontFamily: "'Playfair Display', serif" }}>{selectedCategory}</DialogTitle>
+            </div>
+            <p className="text-sm text-gray-500">Click any hook to add it to your ideate column</p>
           </DialogHeader>
 
-          <div className="overflow-y-auto flex-1 py-4">
+          <div className="overflow-y-auto flex-1 px-8 py-6">
             {selectedCategory && selectedCategory !== "Create your own" &&
               HOOK_DATA[selectedCategory as keyof typeof HOOK_DATA]?.subcategories.map((subcat, scIndex) => (
-                <div key={scIndex} className="mb-8 px-2">
-                  <h3 className="font-semibold text-base text-gray-900 mb-3 px-3">{subcat.name}</h3>
+                <div key={scIndex} className="mb-8">
+                  <h3 className="font-semibold text-base text-gray-700 mb-3">{subcat.name}</h3>
                   <div className="space-y-2">
                     {subcat.hooks.map((hook, hIndex) => (
                       <button
@@ -665,11 +636,11 @@ const TitleHookSuggestions = ({
             }
             
             {selectedCategory === "Create your own" && (
-              <div className="px-2">
+              <div>
                 <div className="mb-6">
-                  <h3 className="font-semibold text-base text-gray-900 mb-3 px-3">Your Custom Hooks</h3>
+                  <h3 className="font-semibold text-base text-gray-700 mb-3">Your Custom Hooks</h3>
 
-                  <div className="flex items-center gap-2 mb-6 px-3">
+                  <div className="flex items-center gap-2 mb-6">
                     <Input
                       type="text"
                       value={customHook}
@@ -729,7 +700,7 @@ const TitleHookSuggestions = ({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-500 text-sm px-3">No custom hooks added yet. Create your first one above!</p>
+                    <p className="text-gray-500 text-sm">No custom hooks added yet. Create your first one above!</p>
                   )}
                 </div>
               </div>

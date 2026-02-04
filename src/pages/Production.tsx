@@ -329,11 +329,13 @@ const Production = () => {
   const [isPillarsDialogOpen, setIsPillarsDialogOpen] = useState(false);
   const [userPillars, setUserPillars] = useState<string[]>(["Wellness"]);
   const [selectedUserPillar, setSelectedUserPillar] = useState<string>("");
-  const [subCategories, setSubCategories] = useState<string[]>([]);
+  const [pillarSubCategories, setPillarSubCategories] = useState<Record<string, string[]>>({});
   const [isGeneratingSubCategories, setIsGeneratingSubCategories] = useState(false);
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>("");
   const [cascadeIdeas, setCascadeIdeas] = useState<string[]>([]);
   const [isGeneratingCascadeIdeas, setIsGeneratingCascadeIdeas] = useState(false);
+  const [newPillarIndex, setNewPillarIndex] = useState<number | null>(null);
+  const [newSubCategoryIndex, setNewSubCategoryIndex] = useState<number | null>(null);
 
   // What Worked → What's Next functionality
   const [isWhatWorkedDialogOpen, setIsWhatWorkedDialogOpen] = useState(false);
@@ -360,6 +362,128 @@ const Production = () => {
   const [wwAnalysisComplete, setWwAnalysisComplete] = useState(false);
   const [isGeneratingMoreIdeas, setIsGeneratingMoreIdeas] = useState(false);
   const [addedIdeaText, setAddedIdeaText] = useState<string | null>(null);
+
+  // Helper function to generate sub-categories using Claude API
+  const generateSubCategoriesWithAI = async (pillarName: string): Promise<string[]> => {
+    const apiKey = getString(StorageKeys.anthropicApiKey);
+
+    if (!apiKey) {
+      console.warn("Claude API key not configured - returning empty sub-categories");
+      return [];
+    }
+
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true"
+        },
+        body: JSON.stringify({
+          model: "claude-3-5-haiku-20241022",
+          max_tokens: 300,
+          system: "You are a content strategy assistant helping content creators organize their content pillars into sub-categories. Generate relevant, specific sub-categories that a content creator would use to organize their content. Return ONLY a JSON array of 5-7 sub-category strings, nothing else. Example: [\"Morning Routine\", \"Product Reviews\", \"Tips & Tricks\"]",
+          messages: [{
+            role: "user",
+            content: `Generate 5-7 relevant sub-categories for the content pillar: "${pillarName}". Return only a JSON array of strings.`
+          }]
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Claude API error:", data);
+        return [];
+      }
+
+      // Parse the response - Claude should return a JSON array
+      const responseText = data.content[0].text.trim();
+      try {
+        // Try to extract JSON array from the response
+        const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          return JSON.parse(jsonMatch[0]);
+        }
+        return [];
+      } catch (parseError) {
+        console.error("Error parsing sub-categories:", parseError);
+        return [];
+      }
+    } catch (error) {
+      console.error("Error calling Claude API for sub-categories:", error);
+      return [];
+    }
+  };
+
+  // Helper function to generate content ideas using Claude API
+  const generateContentIdeasWithAI = async (pillarName: string, subCategory: string): Promise<string[]> => {
+    const apiKey = getString(StorageKeys.anthropicApiKey);
+
+    if (!apiKey) {
+      console.warn("Claude API key not configured - returning empty content ideas");
+      return [];
+    }
+
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true"
+        },
+        body: JSON.stringify({
+          model: "claude-3-5-haiku-20241022",
+          max_tokens: 500,
+          system: `You are a content strategy assistant helping content creators generate engaging content ideas. Generate specific, actionable content ideas that would perform well on social media (Instagram, TikTok, YouTube).
+
+The ideas should:
+- Be specific and unique (not generic templates)
+- Include hooks that grab attention
+- Be relevant to the creator's niche and sub-topic
+- Mix educational, entertaining, and personal content
+- Be written as compelling titles/hooks
+- DO NOT include any emojis
+
+Return ONLY a JSON array of 10 content idea strings, nothing else.`,
+          messages: [{
+            role: "user",
+            content: `Generate 10 engaging content ideas for a creator whose main pillar is "${pillarName}" and they want to create content specifically about "${subCategory}".
+
+Make the ideas specific, creative, and attention-grabbing. Mix different content types like tutorials, personal stories, tips, myths debunked, comparisons, and trending formats.
+
+Return only a JSON array of strings.`
+          }]
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Claude API error:", data);
+        return [];
+      }
+
+      const responseText = data.content[0].text.trim();
+      try {
+        const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          return JSON.parse(jsonMatch[0]);
+        }
+        return [];
+      } catch (parseError) {
+        console.error("Error parsing content ideas:", parseError);
+        return [];
+      }
+    } catch (error) {
+      console.error("Error calling Claude API for content ideas:", error);
+      return [];
+    }
+  };
 
   // Re-process embeds when content changes
   React.useEffect(() => {
@@ -3388,7 +3512,8 @@ const Production = () => {
           }
         }}>
           <DialogContent className={cn(
-            "h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden border-0 shadow-2xl flex flex-col",
+            "border-0 shadow-2xl flex flex-col",
+            ideateMode ? "h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden" : "",
             ideateMode === 'pillarsformats' ? "sm:max-w-[1400px]" : "sm:max-w-[900px]"
           )}>
             <DialogHeader className="flex-shrink-0">
@@ -3425,26 +3550,26 @@ const Production = () => {
             <div className="overflow-y-auto flex-1 pr-2 pb-4">
               {/* Method Selection - Always show unless in a specific mode */}
               {!ideateMode && (
-                <div className="space-y-8 px-6 pt-8">
+                <div className="space-y-8 px-6 pt-8 pb-6">
                   <div className="text-center pb-4">
                     <h3 className="text-2xl font-semibold text-[#612A4F] tracking-tight mb-3">Choose Your Starting Point</h3>
                     <p className="text-sm text-[#612A4F]/70">Select a method to guide your content ideation process</p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-5">
+                  <div className="grid grid-cols-3 gap-6 max-w-4xl mx-auto">
                     {/* 1. Start With Your Pillars - Green */}
                     <button
                       onClick={() => setIsPillarsDialogOpen(true)}
-                      className="group relative overflow-hidden bg-gradient-to-br from-[#F0FDF6] to-[#E6FAF0] border-l-4 border-l-[#2D9D70] border-y border-r border-[#D1EDE0] hover:border-[#2D9D70] rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-4px_rgba(45,157,112,0.3)]"
+                      className="group relative overflow-hidden bg-gradient-to-br from-[#F0FDF6] to-[#E6FAF0] border-l-4 border-l-[#2D9D70] border-y border-r border-[#D1EDE0] hover:border-[#2D9D70] rounded-2xl p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-4px_rgba(45,157,112,0.3)]"
                     >
                       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#2D9D70]/10 to-transparent rounded-bl-full" />
-                      <div className="relative flex flex-col items-center text-center space-y-4">
-                        <div className="w-14 h-14 bg-gradient-to-br from-[#2D9D70] to-[#1F7A55] rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                          <Compass className="w-6 h-6 text-white" />
+                      <div className="relative flex flex-col items-center text-center space-y-5">
+                        <div className="w-16 h-16 bg-gradient-to-br from-[#2D9D70] to-[#1F7A55] rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                          <Compass className="w-7 h-7 text-white" />
                         </div>
                         <div>
-                          <h4 className="text-sm font-semibold text-black">Start With Your Pillars</h4>
-                          <p className="text-xs text-gray-700 mt-1.5 leading-relaxed">Create content using a structured framework</p>
+                          <h4 className="text-base font-semibold text-black mb-2">Start With Your Pillars</h4>
+                          <p className="text-sm text-gray-600 leading-relaxed">Create content using a structured framework</p>
                         </div>
                       </div>
                     </button>
@@ -3452,50 +3577,33 @@ const Production = () => {
                     {/* 2. Trending Hooks - Coral */}
                     <button
                       onClick={() => setShowHooksDialog(true)}
-                      className="group relative overflow-hidden bg-gradient-to-br from-[#FEF6F4] to-[#FDEEEA] border-l-4 border-l-[#E07A5F] border-y border-r border-[#F5D5CD] hover:border-[#E07A5F] rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-4px_rgba(224,122,95,0.3)]"
+                      className="group relative overflow-hidden bg-gradient-to-br from-[#FEF6F4] to-[#FDEEEA] border-l-4 border-l-[#E07A5F] border-y border-r border-[#F5D5CD] hover:border-[#E07A5F] rounded-2xl p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-4px_rgba(224,122,95,0.3)]"
                     >
                       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#E07A5F]/10 to-transparent rounded-bl-full" />
-                      <div className="relative flex flex-col items-center text-center space-y-4">
-                        <div className="w-14 h-14 bg-gradient-to-br from-[#E07A5F] to-[#C75D43] rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                          <TrendingUp className="w-6 h-6 text-white" />
+                      <div className="relative flex flex-col items-center text-center space-y-5">
+                        <div className="w-16 h-16 bg-gradient-to-br from-[#E07A5F] to-[#C75D43] rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                          <TrendingUp className="w-7 h-7 text-white" />
                         </div>
                         <div>
-                          <h4 className="text-sm font-semibold text-black">Trending Hooks</h4>
-                          <p className="text-xs text-gray-700 mt-1.5 leading-relaxed">Start with hooks that are working now</p>
+                          <h4 className="text-base font-semibold text-black mb-2">Trending Hooks</h4>
+                          <p className="text-sm text-gray-600 leading-relaxed">Start with hooks that are working now</p>
                         </div>
                       </div>
                     </button>
 
-                    {/* 3. What Worked, What's Next - Amber/Gold */}
-                    <button
-                      onClick={() => setIsWhatWorkedDialogOpen(true)}
-                      className="group relative overflow-hidden bg-gradient-to-br from-[#FFFCF5] to-[#FEF7E8] border-l-4 border-l-[#E9B44C] border-y border-r border-[#F5E6C4] hover:border-[#E9B44C] rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-4px_rgba(233,180,76,0.3)]"
-                    >
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#E9B44C]/10 to-transparent rounded-bl-full" />
-                      <div className="relative flex flex-col items-center text-center space-y-4">
-                        <div className="w-14 h-14 bg-gradient-to-br from-[#E9B44C] to-[#D19A2A] rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                          <BarChart3 className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-semibold text-black">What Worked, What's Next</h4>
-                          <p className="text-xs text-gray-700 mt-1.5 leading-relaxed">Build on your past successes or competitor insights</p>
-                        </div>
-                      </div>
-                    </button>
-
-                    {/* 4. Idea Expander - Purple */}
+                    {/* 3. Idea Expander - Muted Purple */}
                     <button
                       onClick={() => setIsIdeaExpanderOpen(true)}
-                      className="group relative overflow-hidden bg-gradient-to-br from-[#FAF8FF] to-[#F3EFFE] border-l-4 border-l-[#8B5CF6] border-y border-r border-[#E0D4F7] hover:border-[#8B5CF6] rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-4px_rgba(139,92,246,0.3)]"
+                      className="group relative overflow-hidden bg-gradient-to-br from-[#F8F6FB] to-[#F0EDF6] border-l-4 border-l-[#9B8AB8] border-y border-r border-[#DDD6E8] hover:border-[#9B8AB8] rounded-2xl p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-4px_rgba(155,138,184,0.3)]"
                     >
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#8B5CF6]/10 to-transparent rounded-bl-full" />
-                      <div className="relative flex flex-col items-center text-center space-y-4">
-                        <div className="w-14 h-14 bg-gradient-to-br from-[#8B5CF6] to-[#6D3FD6] rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                          <Sparkles className="w-6 h-6 text-white" />
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#9B8AB8]/10 to-transparent rounded-bl-full" />
+                      <div className="relative flex flex-col items-center text-center space-y-5">
+                        <div className="w-16 h-16 bg-gradient-to-br from-[#9B8AB8] to-[#7A6A94] rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                          <Sparkles className="w-7 h-7 text-white" />
                         </div>
                         <div>
-                          <h4 className="text-sm font-semibold text-black">Idea Expander</h4>
-                          <p className="text-xs text-gray-700 mt-1.5 leading-relaxed">Take one idea and explore multiple angles</p>
+                          <h4 className="text-base font-semibold text-black mb-2">Idea Expander</h4>
+                          <p className="text-sm text-gray-600 leading-relaxed">Take one idea and explore multiple angles</p>
                         </div>
                       </div>
                     </button>
@@ -3815,42 +3923,32 @@ const Production = () => {
             // Close both Pillars dialog and Content Ideation dialog
             setIsIdeateDialogOpen(false);
             setSelectedUserPillar("");
-            setSubCategories([]);
             setSelectedSubCategory("");
             setCascadeIdeas([]);
           }
         }}>
-          <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col">
-            <div className="bg-gradient-to-br from-[#d3f3f5] via-white to-[#d3f3f5]/50 p-8 h-full overflow-y-auto">
-              {/* Breadcrumbs */}
-              <div className="flex items-center gap-3 text-base mb-4">
-                <button
-                  onClick={() => {
-                    setIsPillarsDialogOpen(false);
-                    setIsIdeateDialogOpen(false);
-                  }}
-                  className="text-gray-500 hover:text-emerald-600 transition-colors font-medium"
-                >
-                  Production
-                </button>
-                <span className="text-gray-400">/</span>
-                <button
-                  onClick={() => setIsPillarsDialogOpen(false)}
-                  className="text-gray-500 hover:text-emerald-600 transition-colors font-medium"
-                >
-                  Content Ideation
-                </button>
-                <span className="text-gray-400">/</span>
-                <span className="text-gray-900 font-semibold">Pillars × Formats</span>
-              </div>
+          <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] border-0 shadow-2xl overflow-hidden flex flex-col bg-gradient-to-br from-[#F0F7F4] via-[#F7FAF8] to-[#E8F3EE]">
+            <DialogHeader className="flex-shrink-0 px-8 pt-6">
+              {/* Back Button */}
+              <button
+                onClick={() => setIsPillarsDialogOpen(false)}
+                className="flex items-center gap-2 text-gray-400 hover:text-[#7BA393] transition-colors mb-6"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span className="text-sm font-medium">Back</span>
+              </button>
 
-              <div className="mb-8">
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">Content Pillars</h3>
-                <p className="text-sm text-gray-600">
-                  Content pillars are the core themes or topics your content revolves around. They help you stay focused and build authority in specific areas.
-                </p>
+              <div className="mb-2">
+                <DialogTitle className="text-2xl font-semibold text-gray-900" style={{ fontFamily: "'Playfair Display', serif" }}>
+                  Content Pillars
+                </DialogTitle>
               </div>
+              <DialogDescription className="text-gray-500 text-sm">
+                List the core themes your content revolves around
+              </DialogDescription>
+            </DialogHeader>
 
+            <div className="overflow-y-auto flex-1 px-8 py-6">
               {/* Step 1: Pillars */}
               <div className="mb-8">
                 <h4 className="text-sm font-semibold text-gray-700 mb-4">Your Content Pillars</h4>
@@ -3863,47 +3961,26 @@ const Production = () => {
                             setSelectedUserPillar(pillar);
                             setSelectedSubCategory("");
                             setCascadeIdeas([]);
-                            setSubCategories([]); // Clear old sub-categories immediately
-                            setIsGeneratingSubCategories(true);
 
-                            try {
-                              // TODO: Replace with actual AI API call
-                              // const response = await fetch('/api/generate-subcategories', {
-                              //   method: 'POST',
-                              //   headers: { 'Content-Type': 'application/json' },
-                              //   body: JSON.stringify({ pillar })
-                              // });
-                              // const data = await response.json();
-                              // setSubCategories(data.subcategories);
-
-                              // Temporary: Simulate AI generation with smart defaults
-                              await new Promise(resolve => setTimeout(resolve, 800));
-                              const pillarLower = pillar.toLowerCase();
-                              let subCats: string[] = [];
-
-                              // Only provide example sub-categories for Wellness pillar
-                              // Users should add their own sub-categories for other pillars
-                              if (pillarLower.includes("wellness")) {
-                                subCats = ["Nutrition", "Exercise", "Mental Health", "Skincare", "Sleep"];
-                              } else {
-                                // Empty array - users will add their own sub-categories
-                                subCats = [];
+                            // Only generate sub-categories if they don't exist for this pillar
+                            if (!pillarSubCategories[pillar] || pillarSubCategories[pillar].length === 0) {
+                              setIsGeneratingSubCategories(true);
+                              try {
+                                const subCats = await generateSubCategoriesWithAI(pillar);
+                                setPillarSubCategories(prev => ({ ...prev, [pillar]: subCats }));
+                              } catch (error) {
+                                console.error('Error generating subcategories:', error);
+                              } finally {
+                                setIsGeneratingSubCategories(false);
                               }
-
-                              setSubCategories(subCats);
-                            } catch (error) {
-                              console.error('Error generating subcategories:', error);
-                              setSubCategories([]);
-                            } finally {
-                              setIsGeneratingSubCategories(false);
                             }
                           }
                         }}
                         className={cn(
-                          "px-6 py-3 rounded-xl font-medium transition-all cursor-pointer",
+                          "px-6 py-3 rounded-xl font-medium transition-all cursor-pointer shadow-sm",
                           selectedUserPillar === pillar
-                            ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg"
-                            : "bg-white border-2 border-emerald-200 text-gray-800 hover:border-emerald-400 hover:shadow-md"
+                            ? "bg-gradient-to-r from-[#7BA393] to-[#5A8A78] text-white shadow-md"
+                            : "bg-white/80 border border-[#D4E5DE] text-gray-700 hover:border-[#7BA393] hover:shadow-md hover:bg-white"
                         )}
                       >
                         <input
@@ -3914,70 +3991,34 @@ const Production = () => {
                             newPillars[index] = e.target.value;
                             setUserPillars(newPillars);
                           }}
-                          onKeyDown={async (e) => {
+                          onKeyDown={(e) => {
                             if (e.key === 'Enter') {
-                              e.currentTarget.blur();
-                              if (selectedUserPillar !== pillar) {
-                                setSelectedUserPillar(pillar);
-                                setSelectedSubCategory("");
-                                setCascadeIdeas([]);
-                                setSubCategories([]); // Clear old sub-categories immediately
+                              e.currentTarget.blur(); // This triggers onBlur which handles generation
+                            }
+                          }}
+                          onBlur={async (e) => {
+                            const currentPillarValue = e.currentTarget.value;
+                            // Clear auto-focus state
+                            if (newPillarIndex === index) {
+                              setNewPillarIndex(null);
+                            }
+                            // Generate sub-categories when user finishes typing pillar name (only if they don't exist)
+                            if (currentPillarValue.trim() && currentPillarValue.trim().length >= 2) {
+                              setSelectedUserPillar(currentPillarValue);
+                              setSelectedSubCategory("");
+                              setCascadeIdeas([]);
+
+                              // Only generate if sub-categories don't exist for this pillar
+                              if (!pillarSubCategories[currentPillarValue] || pillarSubCategories[currentPillarValue].length === 0) {
                                 setIsGeneratingSubCategories(true);
-
                                 try {
-                                  await new Promise(resolve => setTimeout(resolve, 800));
-                                  const pillarLower = pillar.toLowerCase();
-                                  let subCats: string[] = [];
-
-                                  // Only provide example sub-categories for Wellness pillar
-                                  // Users should add their own sub-categories for other pillars
-                                  if (pillarLower.includes("wellness")) {
-                                    subCats = ["Nutrition", "Exercise", "Mental Health", "Skincare", "Sleep"];
-                                  } else {
-                                    // Empty array - users will add their own sub-categories
-                                    subCats = [];
-                                  }
-
-                                  setSubCategories(subCats);
+                                  const subCats = await generateSubCategoriesWithAI(currentPillarValue);
+                                  setPillarSubCategories(prev => ({ ...prev, [currentPillarValue]: subCats }));
                                 } catch (error) {
                                   console.error('Error generating subcategories:', error);
-                                  setSubCategories([]);
                                 } finally {
                                   setIsGeneratingSubCategories(false);
                                 }
-                              }
-                            }
-                          }}
-                          onFocus={async (e) => {
-                            e.stopPropagation();
-                            if (selectedUserPillar !== pillar) {
-                              setSelectedUserPillar(pillar);
-                              setSelectedSubCategory("");
-                              setCascadeIdeas([]);
-                              setSubCategories([]); // Clear old sub-categories immediately
-                              setIsGeneratingSubCategories(true);
-
-                              try {
-                                // Temporary: Simulate AI generation with smart defaults
-                                await new Promise(resolve => setTimeout(resolve, 800));
-                                const pillarLower = pillar.toLowerCase();
-                                let subCats: string[] = [];
-
-                                // Only provide example sub-categories for Wellness pillar
-                                // Users should add their own sub-categories for other pillars
-                                if (pillarLower.includes("wellness")) {
-                                  subCats = ["Nutrition", "Exercise", "Mental Health", "Skincare", "Sleep"];
-                                } else {
-                                  // Empty array - users will add their own sub-categories
-                                  subCats = [];
-                                }
-
-                                setSubCategories(subCats);
-                              } catch (error) {
-                                console.error('Error generating subcategories:', error);
-                                setSubCategories([]);
-                              } finally {
-                                setIsGeneratingSubCategories(false);
                               }
                             }
                           }}
@@ -3986,21 +4027,15 @@ const Production = () => {
                               e.stopPropagation();
                             }
                           }}
+                          autoFocus={newPillarIndex === index}
                           className={cn(
                             "bg-transparent border-none outline-none text-center min-w-[80px] max-w-[200px] cursor-pointer",
                             selectedUserPillar === pillar ? "text-white placeholder:text-white/70" : "text-gray-800 placeholder:text-gray-400"
                           )}
-                          placeholder="Enter pillar name"
+                          placeholder="Type..."
                           size={pillar.length || 10}
                         />
                       </div>
-                      {pillar.toLowerCase().includes("wellness") && (
-                        <div className="absolute -bottom-6 left-0 right-0 flex justify-center">
-                          <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
-                            Sample
-                          </span>
-                        </div>
-                      )}
                       {userPillars.length > 1 && (
                         <button
                           onClick={(e) => {
@@ -4015,8 +4050,16 @@ const Production = () => {
                     </div>
                   ))}
                   <button
-                    onClick={() => setUserPillars([...userPillars, `Pillar ${userPillars.length + 1}`])}
-                    className="px-6 py-3 rounded-xl font-medium bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition-all border-2 border-dashed border-emerald-300"
+                    onClick={() => {
+                      const newPillarName = "";
+                      const newIndex = userPillars.length;
+                      setUserPillars([...userPillars, newPillarName]);
+                      setSelectedUserPillar(newPillarName);
+                      setSelectedSubCategory("");
+                      setCascadeIdeas([]);
+                      setNewPillarIndex(newIndex);
+                    }}
+                    className="px-6 py-3 rounded-xl font-medium bg-white/60 text-[#5D8A7A] hover:bg-white/80 hover:shadow-sm transition-all border-2 border-dashed border-[#B8D4CA] hover:border-[#7BA393]"
                   >
                     + Add Pillar
                   </button>
@@ -4030,17 +4073,40 @@ const Production = () => {
                   animate={{ opacity: 1, y: 0 }}
                   className="mb-8"
                 >
-                  <h4 className="text-sm font-semibold text-gray-700 mb-4">
-                    {selectedUserPillar} Sub-categories
-                  </h4>
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-sm font-semibold text-gray-700">
+                      {selectedUserPillar} Sub-Categories
+                    </h4>
+                    {(pillarSubCategories[selectedUserPillar]?.length > 0) && (
+                      <button
+                        onClick={async () => {
+                          setIsGeneratingSubCategories(true);
+                          try {
+                            const subCats = await generateSubCategoriesWithAI(selectedUserPillar);
+                            setPillarSubCategories(prev => ({ ...prev, [selectedUserPillar]: subCats }));
+                            setSelectedSubCategory("");
+                            setCascadeIdeas([]);
+                          } catch (error) {
+                            console.error('Error regenerating subcategories:', error);
+                          } finally {
+                            setIsGeneratingSubCategories(false);
+                          }
+                        }}
+                        disabled={isGeneratingSubCategories}
+                        className="text-xs text-[#7BA393] hover:text-[#5D8A7A] font-medium disabled:opacity-50"
+                      >
+                        ↻ Regenerate
+                      </button>
+                    )}
+                  </div>
                   {isGeneratingSubCategories ? (
                     <div className="flex items-center justify-center py-8">
-                      <div className="animate-spin rounded-full h-8 w-8 border-4 border-emerald-200 border-t-emerald-500"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 border-4 border-[#C8DED5] border-t-[#7BA393]"></div>
                       <span className="ml-3 text-gray-600">Generating sub-categories...</span>
                     </div>
                   ) : (
                     <div className="flex flex-wrap gap-2">
-                      {subCategories.map((subCat, index) => (
+                      {(pillarSubCategories[selectedUserPillar] || []).map((subCat, index) => (
                         <div
                           key={index}
                           className="relative group"
@@ -4052,60 +4118,27 @@ const Production = () => {
                                 return;
                               }
 
+                              // Don't auto-generate for newly added sub-categories - wait for Enter
+                              if (newSubCategoryIndex === index) {
+                                return;
+                              }
+
+                              // Don't generate if sub-category is empty or just whitespace
+                              if (!subCat.trim()) {
+                                return;
+                              }
+
                               if (selectedSubCategory === subCat) {
                                 return;
                               }
 
                               setSelectedSubCategory(subCat);
-                              setCascadeIdeas([]); // Clear old ideas immediately
+                              setCascadeIdeas([]);
                               setIsGeneratingCascadeIdeas(true);
 
                               try {
-                                // TODO: Replace with actual AI API call
-                                // const response = await fetch('/api/generate-content-ideas', {
-                                //   method: 'POST',
-                                //   headers: { 'Content-Type': 'application/json' },
-                                //   body: JSON.stringify({
-                                //     pillar: selectedUserPillar,
-                                //     subcategory: subCat
-                                //   })
-                                // });
-                                // const data = await response.json();
-                                // setCascadeIdeas(data.ideas);
-
-                                // Temporary: Generate contextually unique ideas based on sub-category
-                                await new Promise(resolve => setTimeout(resolve, 800));
-                                const subCatLower = subCat.toLowerCase();
-                                let ideas: string[] = [];
-
-                                // Universal smart idea generator that works for ANY subcategory
-                                // Creates contextually relevant ideas by incorporating the topic naturally
-                                ideas = [
-                                  `How I got started with ${subCatLower}`,
-                                  `My ${subCatLower} routine that actually works`,
-                                  "The method that gave me real results",
-                                  "What I wish I knew before starting",
-                                  `My daily approach to ${subCatLower}`,
-                                  "The mistakes I made and how I fixed them",
-                                  "How I stay consistent week after week",
-                                  `The ${subCatLower} strategy that changed everything`,
-                                  "3 things that made the biggest difference",
-                                  "My step-by-step process explained",
-                                  "How I track progress and stay motivated",
-                                  "The tools and resources I actually use",
-                                  "What works vs what's just noise",
-                                  "My before and after transformation",
-                                  "The science and strategy behind my approach",
-                                  "How I overcame the biggest challenges",
-                                  "Quick wins you can implement today",
-                                  "My honest experience and lessons learned",
-                                  "The framework I follow every time",
-                                  "Why this completely changed my life"
-                                ];
-
-                                // Shuffle and take only first 10 ideas
-                                const shuffled = ideas.sort(() => Math.random() - 0.5);
-                                setCascadeIdeas(shuffled.slice(0, 10));
+                                const ideas = await generateContentIdeasWithAI(selectedUserPillar, subCat);
+                                setCascadeIdeas(ideas);
                               } catch (error) {
                                 console.error('Error generating content ideas:', error);
                                 setCascadeIdeas([]);
@@ -4116,106 +4149,30 @@ const Production = () => {
                             className={cn(
                               "px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center",
                               selectedSubCategory === subCat
-                                ? "bg-teal-500 text-white shadow-md"
-                                : "bg-white border border-gray-300 text-gray-700 hover:border-teal-400 hover:bg-teal-50"
+                                ? "bg-[#7BA393] text-white shadow-md"
+                                : "bg-white border border-gray-300 text-gray-700 hover:border-[#9AC0B3] hover:bg-[#F0F7F4]"
                             )}
                           >
                             <input
                               type="text"
                               value={subCat}
                               onChange={(e) => {
-                                const newSubCats = [...subCategories];
+                                const currentSubCats = pillarSubCategories[selectedUserPillar] || [];
+                                const newSubCats = [...currentSubCats];
                                 newSubCats[index] = e.target.value;
-                                setSubCategories(newSubCats);
+                                setPillarSubCategories(prev => ({ ...prev, [selectedUserPillar]: newSubCats }));
                               }}
                               onKeyDown={async (e) => {
-                                if (e.key === 'Enter') {
+                                if (e.key === 'Enter' && subCat.trim()) {
                                   e.currentTarget.blur();
-                                  if (selectedSubCategory !== subCat) {
-                                    setSelectedSubCategory(subCat);
-                                    setCascadeIdeas([]); // Clear old ideas immediately
-                                    setIsGeneratingCascadeIdeas(true);
-
-                                    try {
-                                      await new Promise(resolve => setTimeout(resolve, 800));
-                                      const subCatLower = subCat.toLowerCase();
-                                      let ideas: string[] = [];
-
-                                      // Universal smart idea generator that works for ANY subcategory
-                                      // Creates contextually relevant ideas by incorporating the topic naturally
-                                      ideas = [
-                                        `How I got started with ${subCatLower}`,
-                                        `My ${subCatLower} routine that actually works`,
-                                        "The method that gave me real results",
-                                        "What I wish I knew before starting",
-                                        `My daily approach to ${subCatLower}`,
-                                        "The mistakes I made and how I fixed them",
-                                        "How I stay consistent week after week",
-                                        `The ${subCatLower} strategy that changed everything`,
-                                        "3 things that made the biggest difference",
-                                        "My step-by-step process explained",
-                                        "How I track progress and stay motivated",
-                                        "The tools and resources I actually use",
-                                        "What works vs what's just noise",
-                                        "My before and after transformation",
-                                        "The science and strategy behind my approach",
-                                        "How I overcame the biggest challenges",
-                                        "Quick wins you can implement today",
-                                        "My honest experience and lessons learned",
-                                        "The framework I follow every time",
-                                        "Why this completely changed my life"
-                                      ];
-
-                                      const shuffled = ideas.sort(() => Math.random() - 0.5);
-                                      setCascadeIdeas(shuffled.slice(0, 10));
-                                    } catch (error) {
-                                      console.error('Error generating content ideas:', error);
-                                      setCascadeIdeas([]);
-                                    } finally {
-                                      setIsGeneratingCascadeIdeas(false);
-                                    }
-                                  }
-                                }
-                              }}
-                              onFocus={async (e) => {
-                                e.stopPropagation();
-                                if (selectedSubCategory !== subCat) {
+                                  setNewSubCategoryIndex(null); // Clear the new index
                                   setSelectedSubCategory(subCat);
-                                  setCascadeIdeas([]); // Clear old ideas immediately
+                                  setCascadeIdeas([]);
                                   setIsGeneratingCascadeIdeas(true);
 
                                   try {
-                                    await new Promise(resolve => setTimeout(resolve, 800));
-                                    const subCatLower = subCat.toLowerCase();
-                                    let ideas: string[] = [];
-
-                                    // Universal smart idea generator that works for ANY subcategory
-                                    // Creates contextually relevant ideas by incorporating the topic naturally
-                                    ideas = [
-                                      `How I got started with ${subCatLower}`,
-                                      `My ${subCatLower} routine that actually works`,
-                                      "The method that gave me real results",
-                                      "What I wish I knew before starting",
-                                      `My daily approach to ${subCatLower}`,
-                                      "The mistakes I made and how I fixed them",
-                                      "How I stay consistent week after week",
-                                      `The ${subCatLower} strategy that changed everything`,
-                                      "3 things that made the biggest difference",
-                                      "My step-by-step process explained",
-                                      "How I track progress and stay motivated",
-                                      "The tools and resources I actually use",
-                                      "What works vs what's just noise",
-                                      "My before and after transformation",
-                                      "The science and strategy behind my approach",
-                                      "How I overcame the biggest challenges",
-                                      "Quick wins you can implement today",
-                                      "My honest experience and lessons learned",
-                                      "The framework I follow every time",
-                                      "Why this completely changed my life"
-                                    ];
-
-                                    const shuffled = ideas.sort(() => Math.random() - 0.5);
-                                    setCascadeIdeas(shuffled.slice(0, 10));
+                                    const ideas = await generateContentIdeasWithAI(selectedUserPillar, subCat);
+                                    setCascadeIdeas(ideas);
                                   } catch (error) {
                                     console.error('Error generating content ideas:', error);
                                     setCascadeIdeas([]);
@@ -4224,19 +4181,31 @@ const Production = () => {
                                   }
                                 }
                               }}
+                              onBlur={() => {
+                                if (newSubCategoryIndex === index) {
+                                  setNewSubCategoryIndex(null);
+                                }
+                              }}
+                              onClick={(e) => e.stopPropagation()}
                               onMouseDown={(e) => e.stopPropagation()}
+                              autoFocus={newSubCategoryIndex === index}
                               className={cn(
                                 "bg-transparent border-none outline-none text-center min-w-[80px] max-w-[200px] cursor-pointer",
                                 selectedSubCategory === subCat ? "text-white placeholder:text-white/70" : "text-gray-700 placeholder:text-gray-400"
                               )}
-                              size={subCat.length || 10}
+                              placeholder="Type..."
+                              size={subCat.length || 12}
                             />
                           </button>
-                          {subCategories.length > 1 && (
+                          {(pillarSubCategories[selectedUserPillar]?.length || 0) > 1 && (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setSubCategories(subCategories.filter((_, i) => i !== index));
+                                const currentSubCats = pillarSubCategories[selectedUserPillar] || [];
+                                setPillarSubCategories(prev => ({
+                                  ...prev,
+                                  [selectedUserPillar]: currentSubCats.filter((_, i) => i !== index)
+                                }));
                                 if (selectedSubCategory === subCat) {
                                   setSelectedSubCategory("");
                                   setCascadeIdeas([]);
@@ -4251,20 +4220,18 @@ const Production = () => {
                       ))}
                       <button
                         onClick={() => {
-                          const newSubCat = `Sub-category ${subCategories.length + 1}`;
-                          setSubCategories([...subCategories, newSubCat]);
+                          const currentSubCats = pillarSubCategories[selectedUserPillar] || [];
+                          const newIndex = currentSubCats.length;
+                          setPillarSubCategories(prev => ({
+                            ...prev,
+                            [selectedUserPillar]: [...currentSubCats, ""]
+                          }));
+                          setNewSubCategoryIndex(newIndex);
                         }}
-                        className="px-4 py-2 rounded-lg text-sm font-medium bg-teal-100 text-teal-700 hover:bg-teal-200 transition-all border-2 border-dashed border-teal-300"
+                        className="px-4 py-2 rounded-lg text-sm font-medium bg-[#E8F3EF] text-[#5D8A7A] hover:bg-[#D8EBE4] transition-all border-2 border-dashed border-[#B8D4CA]"
                       >
                         + Add Sub-Category
                       </button>
-                    </div>
-                  )}
-                  {selectedUserPillar.toLowerCase().includes("wellness") && !isGeneratingSubCategories && (
-                    <div className="mt-4 flex justify-start">
-                      <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
-                        Sample Sub-categories
-                      </span>
                     </div>
                   )}
                 </motion.div>
@@ -4282,7 +4249,7 @@ const Production = () => {
                   </h4>
                   {isGeneratingCascadeIdeas ? (
                     <div className="flex items-center justify-center py-12">
-                      <div className="animate-spin rounded-full h-10 w-10 border-4 border-teal-200 border-t-teal-500"></div>
+                      <div className="animate-spin rounded-full h-10 w-10 border-4 border-[#C8DED5] border-t-[#7BA393]"></div>
                       <span className="ml-3 text-gray-600 font-medium">Generating content ideas...</span>
                     </div>
                   ) : (
@@ -4312,8 +4279,8 @@ const Production = () => {
                             className={cn(
                               "relative w-full flex items-center justify-between gap-3 p-4 rounded-lg border-2 group",
                               addedIdeaText === idea
-                                ? "bg-green-100 border-green-500 shadow-lg"
-                                : "bg-white border-gray-200 hover:border-teal-400 hover:shadow-md"
+                                ? "bg-[#E8F3EF] border-[#7BA393] shadow-lg"
+                                : "bg-white border-gray-200 hover:border-[#9AC0B3] hover:shadow-md"
                             )}
                           >
                             <span className="text-sm text-gray-800 font-medium flex-1">{idea}</span>
@@ -4341,7 +4308,7 @@ const Production = () => {
                                   setAddedIdeaText(null);
                                 }, 500);
                               }}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity bg-teal-500 hover:bg-teal-600 text-white text-xs px-3 py-1.5 h-auto whitespace-nowrap"
+                              className="opacity-0 group-hover:opacity-100 transition-opacity bg-[#7BA393] hover:bg-[#6B9080] text-white text-xs px-3 py-1.5 h-auto whitespace-nowrap"
                             >
                               Add to Content Cards
                             </Button>
@@ -4355,26 +4322,10 @@ const Production = () => {
                           onClick={async () => {
                             setIsGeneratingMoreIdeas(true);
                             try {
-                              await new Promise(resolve => setTimeout(resolve, 800));
-                              const subCatLower = selectedSubCategory.toLowerCase();
-                              let ideas: string[] = [];
-
-                              if (subCatLower.includes("nutrition") || subCatLower.includes("meal")) {
-                                ideas = ["What I eat in a day for optimal performance", "My meal prep routine that saves me 10 hours weekly", "Foods I stopped eating and why", "How I balance enjoying food and staying healthy", "My go-to high-protein meals", "The supplement stack that actually works", "Nutrition myths I used to believe", "My favorite healthy recipes", "How I meal plan without getting overwhelmed", "The macros breakdown I wish I knew earlier", "Grocery haul and what I buy weekly", "Restaurant hacks for eating healthy", "My cheat meals and how I approach them", "Hydration tips that changed my energy levels", "Foods for better sleep and recovery", "The nutrition mistake everyone makes", "How I track my food intake", "Budget-friendly nutrition tips", "Pre and post-workout nutrition explained", "The truth about [popular diet trend]"];
-                              } else if (subCatLower.includes("exercise") || subCatLower.includes("workout") || subCatLower.includes("training")) {
-                                ideas = ["My current workout split explained", "How I built workout consistency", "Form mistakes I see at the gym", "My favorite exercises for each muscle group", "How I track progressive overload", "Workout routine for busy schedules", "The exercises I removed from my routine", "My warm-up routine that prevents injuries", "How I structure my training week", "Home workout alternatives to gym exercises", "My recovery routine between workouts", "Training mistakes I made as a beginner", "How I stay motivated on tough days", "The workout split that gave me best results", "Exercise modifications for beginners", "How I program deload weeks", "My gym bag essentials", "Training myths debunked", "How long rest periods should actually be", "The truth about cardio vs strength training"];
-                              } else if (subCatLower.includes("mental health") || subCatLower.includes("mindfulness") || subCatLower.includes("stress")) {
-                                ideas = ["My morning routine for better mental clarity", "How I manage anxiety without medication", "Therapy lessons I apply daily", "My journaling practice explained", "Signs I need a mental health day", "Boundaries I set for better mental health", "My meditation practice and how I started", "How I deal with overwhelming thoughts", "Apps and tools I use for mental wellness", "The mindset shift that changed everything", "How I process difficult emotions", "My self-care routine when I'm struggling", "Red flags I ignore in my mental health", "How I talk to myself differently now", "The toxic positivity trap explained", "My support system and how I built it", "Coping mechanisms that actually work", "How I prioritize mental health at work", "Things I do when I feel burnout coming", "The mental health resources I swear by"];
-                              } else if (subCatLower.includes("sleep") || subCatLower.includes("recovery") || subCatLower.includes("rest")) {
-                                ideas = ["My sleep routine for better rest", "How I optimized my bedroom for sleep", "Things I stopped doing before bed", "My wind-down routine explained", "Sleep supplements I actually use", "How I track my sleep quality", "The sleep mistake ruining your gains", "My morning routine after a bad night", "How I fixed my sleep schedule", "Power nap strategy that works", "Sleep hygiene rules I follow", "How I deal with insomnia naturally", "The temperature I keep my room at", "My recovery protocol between hard days", "Active vs passive recovery explained", "How I know when to take a rest day", "Tools I use for better recovery", "The connection between sleep and performance", "My weekend recovery routine", "Sleep myths keeping you tired"];
-                              } else {
-                                ideas = [`My honest experience with ${subCatLower}`, `5 signs you need to prioritize ${subCatLower}`, `Before and after I focused on ${subCatLower}`, `The biggest mistakes I made with ${subCatLower}`, `My step-by-step approach to ${subCatLower}`, `Unpopular opinion about ${subCatLower}`, `Beginner's guide to ${subCatLower}`, `Advanced tips for ${subCatLower}`, `Quick wins for better ${subCatLower}`, `My daily ${subCatLower} routine`, `What happened when I tried ${subCatLower}`, `Why everyone should care about ${subCatLower}`, `POV: your ${subCatLower} journey`, `Reacting to ${subCatLower} trends`, `Myths about ${subCatLower} debunked`, `3 things that transformed my ${subCatLower}`, `Questions I had about ${subCatLower}`, `The ${subCatLower} habit that changed my life`, `What to avoid when starting ${subCatLower}`, `Resources for improving ${subCatLower}`];
-                              }
-
-                              // Filter out ideas already shown and shuffle
-                              const newIdeas = ideas.filter(idea => !cascadeIdeas.includes(idea));
-                              const shuffled = newIdeas.sort(() => Math.random() - 0.5);
-                              setCascadeIdeas([...cascadeIdeas, ...shuffled.slice(0, 10)]);
+                              const newIdeas = await generateContentIdeasWithAI(selectedUserPillar, selectedSubCategory);
+                              // Filter out ideas already shown
+                              const filteredIdeas = newIdeas.filter(idea => !cascadeIdeas.includes(idea));
+                              setCascadeIdeas([...cascadeIdeas, ...filteredIdeas]);
                             } catch (error) {
                               console.error('Error generating more ideas:', error);
                             } finally {
@@ -4382,11 +4333,11 @@ const Production = () => {
                             }
                           }}
                           disabled={isGeneratingMoreIdeas}
-                          className="w-full mt-4 px-4 py-3 rounded-lg text-sm font-medium bg-teal-50 text-teal-700 hover:bg-teal-100 transition-all border-2 border-dashed border-teal-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-full mt-4 px-4 py-3 rounded-lg text-sm font-medium bg-[#F0F7F4] text-[#5D8A7A] hover:bg-[#E8F3EF] transition-all border-2 border-dashed border-[#B8D4CA] disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {isGeneratingMoreIdeas ? (
                             <span className="flex items-center justify-center">
-                              <div className="animate-spin rounded-full h-4 w-4 border-2 border-teal-200 border-t-teal-500 mr-2"></div>
+                              <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#C8DED5] border-t-[#7BA393] mr-2"></div>
                               Generating...
                             </span>
                           ) : (
@@ -4419,54 +4370,41 @@ const Production = () => {
             setExpandedAngles([]);
           }
         }}>
-          <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] overflow-hidden border-0 shadow-2xl flex flex-col">
-            <DialogHeader className="flex-shrink-0">
-              {/* Breadcrumbs */}
-              <div className="flex items-center gap-3 text-base mb-4">
-                <button
-                  onClick={() => {
-                    setIsIdeaExpanderOpen(false);
-                    setIsIdeateDialogOpen(false);
-                  }}
-                  className="text-gray-500 hover:text-orange-600 transition-colors font-medium"
-                >
-                  Production
-                </button>
-                <span className="text-gray-400">/</span>
-                <button
-                  onClick={() => setIsIdeaExpanderOpen(false)}
-                  className="text-gray-500 hover:text-orange-600 transition-colors font-medium"
-                >
-                  Content Ideation
-                </button>
-                <span className="text-gray-400">/</span>
-                <span className="text-gray-900 font-semibold">Idea Expander</span>
-              </div>
+          <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] overflow-hidden border-0 shadow-2xl flex flex-col bg-gradient-to-br from-[#F5F0F8] via-[#FAF7FC] to-[#EDE5F3]">
+            <DialogHeader className="flex-shrink-0 px-8 pt-6">
+              {/* Back Button */}
+              <button
+                onClick={() => setIsIdeaExpanderOpen(false)}
+                className="flex items-center gap-2 text-gray-400 hover:text-[#9B8AB8] transition-colors mb-6"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span className="text-sm font-medium">Back</span>
+              </button>
 
-              <div className="mb-3">
-                <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
+              <div className="mb-2">
+                <DialogTitle className="text-2xl font-semibold text-gray-900" style={{ fontFamily: "'Playfair Display', serif" }}>
                   Idea Expander
                 </DialogTitle>
               </div>
-              <DialogDescription className="text-gray-500">
+              <DialogDescription className="text-gray-500 text-sm">
                 Enter your idea and get multiple content angles to explore
               </DialogDescription>
             </DialogHeader>
 
-            <div className="overflow-y-auto flex-1 pr-2 py-4">
+            <div className="overflow-y-auto flex-1 px-8 py-6">
               <div className="space-y-6">
                 {/* User Input Section */}
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <Textarea
                     value={ideaExpanderText}
                     onChange={(e) => setIdeaExpanderText(e.target.value)}
                     placeholder="Enter your content idea here... For example: 'morning routine for productivity', 'sustainable fashion tips', 'home workout guide'"
-                    className="min-h-[120px] border-2 focus:ring-2 focus:ring-orange-500 rounded-lg resize-none text-base p-4"
+                    className="min-h-[140px] border border-[#E8E2EA] focus:border-[#9B8AB8] focus:ring-2 focus:ring-[#9B8AB8]/20 rounded-xl resize-none text-base p-5 bg-white/80 shadow-sm"
                   />
                   <Button
                     onClick={handleGenerateAngles}
                     disabled={!ideaExpanderText.trim() || isGeneratingAngles}
-                    className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white rounded-lg shadow-md"
+                    className="w-full bg-gradient-to-r from-[#9B8AB8] to-[#7A6A94] hover:from-[#8A7AA8] hover:to-[#695A84] text-white rounded-xl shadow-md py-6 text-base font-medium"
                   >
                     {isGeneratingAngles ? (
                       <div className="flex items-center gap-2">
@@ -4484,9 +4422,9 @@ const Production = () => {
 
                 {/* AI Generated Angles Section */}
                 {expandedAngles.length > 0 && (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-1 h-6 bg-gradient-to-b from-orange-500 to-red-600 rounded-full"></div>
+                      <div className="w-1 h-6 bg-gradient-to-b from-[#9B8AB8] to-[#7A6A94] rounded-full"></div>
                       <h3 className="text-lg font-semibold text-gray-800">Different Angles</h3>
                     </div>
                     <div className="grid grid-cols-1 gap-3">
@@ -4566,566 +4504,6 @@ const Production = () => {
                 )}
               </div>
             </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* What Worked → What's Next Dialog */}
-        <Dialog open={isWhatWorkedDialogOpen} onOpenChange={(open) => {
-          setIsWhatWorkedDialogOpen(open);
-          if (!open) {
-            setWwContentSubmitted(false);
-            setWwShowAudienceSignals(false);
-            setIsIdeateDialogOpen(false);
-          }
-        }}>
-          <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] overflow-hidden border-0 shadow-2xl flex flex-col bg-gradient-to-br from-blue-50 via-white to-sky-50">
-            <DialogHeader className="flex-shrink-0 pt-6 px-4">
-              <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-sky-600 bg-clip-text text-transparent mb-2">
-                {whatWorkedStep === 'input' ? 'What Worked → What\'s Next' : 'Your Remix Ideas'}
-              </DialogTitle>
-              {whatWorkedStep === 'input' && (
-                <p className="text-gray-600 text-base">
-                  Turn winning content patterns into fresh ideas
-                </p>
-              )}
-            </DialogHeader>
-
-            {whatWorkedStep === 'input' ? (
-              <div className="flex-1 overflow-y-auto pr-6 pb-4 pl-4">
-                <div className="space-y-6">
-                  {/* Content Reference - Only show if not submitted */}
-                  {!wwContentSubmitted && (
-                  <div className="bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50 rounded-lg p-5">
-                    <div className="flex items-center gap-1.5 mb-4">
-                      <div className="w-0.5 h-3.5 bg-sky-500 rounded-full"></div>
-                      <h3 className="text-sm font-semibold text-black">
-                        Content Reference
-                      </h3>
-                    </div>
-                    <div className="space-y-4">
-                      <div className="relative">
-                        <input
-                          type="text"
-                          value={wwContentLink}
-                          onChange={(e) => setWwContentLink(e.target.value)}
-                          onKeyDown={async (e) => {
-                            if (e.key === 'Enter' && wwContentLink.trim() && !wwAnalyzing) {
-                              await handleContentSubmit();
-                            }
-                          }}
-                          placeholder="Paste link (Instagram, TikTok, YouTube...)"
-                          className="w-full px-3 py-2.5 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-sky-400 focus:border-sky-400 transition-colors"
-                          disabled={wwAnalyzing}
-                        />
-                        {wwContentLink.trim() && !wwContentSubmitted && (
-                          <button
-                            onClick={handleContentSubmit}
-                            disabled={wwAnalyzing}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-sky-600 text-white rounded text-xs font-medium hover:bg-sky-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {wwAnalyzing ? 'Analyzing...' : 'Continue'}
-                          </button>
-                        )}
-                      </div>
-                      <div className="relative">
-                        <div className="absolute inset-0 flex items-center">
-                          <div className="w-full border-t border-gray-200"></div>
-                        </div>
-                        <div className="relative flex justify-center text-xs">
-                          <span className="px-3 bg-white text-gray-400 uppercase tracking-wide">or</span>
-                        </div>
-                      </div>
-                      <label className="flex items-center justify-center gap-2 w-full px-3 py-2.5 border border-dashed border-gray-300 rounded-md cursor-pointer hover:border-sky-400 hover:bg-sky-50 transition-all text-sm text-gray-600">
-                        <span className="text-gray-400">📎</span>
-                        {wwVideoFile ? wwVideoFile.name : 'Upload video file'}
-                        <input
-                          type="file"
-                          accept="video/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0] || null;
-                            setWwVideoFile(file);
-                            if (file) {
-                              setWwContentSubmitted(true);
-                            }
-                          }}
-                          className="hidden"
-                        />
-                      </label>
-                    </div>
-                  </div>
-                  )}
-
-                  {/* Content Preview - Show after submission */}
-                  {wwContentSubmitted && (wwContentLink.trim() || wwVideoFile) && (
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-1 h-5 bg-amber-500 rounded-full"></div>
-                        <h3 className="text-base font-semibold text-gray-900">Content Preview</h3>
-                      </div>
-                      <button
-                        onClick={() => {
-                          setWwContentLink('');
-                          setWwVideoFile(null);
-                          setWwContentSubmitted(false);
-                          setWwThumbnailUrl('');
-                          setWwShowAudienceSignals(false);
-                        }}
-                        className="text-sm text-gray-500 hover:text-gray-700 underline"
-                      >
-                        Change content
-                      </button>
-                    </div>
-
-                    {/* Two Column Layout: Embed + Form */}
-                    <div className="flex gap-6">
-                      {/* Thumbnail/Embed Container */}
-                      <div className="flex-shrink-0">
-                      {wwVideoFile ? (
-                        <div className="rounded-xl overflow-hidden shadow-lg bg-black" style={{ maxWidth: '400px' }}>
-                          <video
-                            src={URL.createObjectURL(wwVideoFile)}
-                            controls
-                            className="w-full h-auto"
-                          />
-                        </div>
-                      ) : wwContentLink.includes('instagram.com') ? (
-                        <div style={{ transform: 'scale(0.8)', transformOrigin: 'top left', paddingTop: '60px', position: 'relative' }}>
-                          <blockquote
-                            className="instagram-media"
-                            data-instgrm-captioned
-                            data-instgrm-permalink={wwContentLink}
-                            data-instgrm-version="14"
-                            style={{
-                              background: '#FFF',
-                              border: '0',
-                              borderRadius: '12px',
-                              boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                              margin: '0',
-                              maxWidth: '540px',
-                              minWidth: '326px',
-                              padding: '0',
-                              width: '100%',
-                              position: 'relative',
-                              top: '-60px'
-                            }}
-                          >
-                            <a href={wwContentLink} target="_blank" rel="noopener noreferrer">
-                              View this post on Instagram
-                            </a>
-                          </blockquote>
-                          {typeof window !== 'undefined' && (window as any).instgrm && (window as any).instgrm.Embeds && (window as any).instgrm.Embeds.process()}
-                        </div>
-                      ) : wwContentLink.includes('tiktok.com') ? (
-                        <div style={{ transform: 'scale(0.85)', transformOrigin: 'top left' }}>
-                          <blockquote
-                            className="tiktok-embed"
-                            cite={wwContentLink}
-                            data-video-id={wwContentLink.split('/video/')[1]?.split('?')[0]}
-                            style={{ maxWidth: '605px', minWidth: '325px' }}
-                          >
-                            <a href={wwContentLink} target="_blank" rel="noopener noreferrer">
-                              View this video on TikTok
-                            </a>
-                          </blockquote>
-                          {typeof window !== 'undefined' && (window as any).tiktok && (window as any).tiktok.embed && (window as any).tiktok.embed.process()}
-                        </div>
-                      ) : (wwContentLink.includes('youtube.com') || wwContentLink.includes('youtu.be')) ? (() => {
-                        const videoId = wwContentLink.includes('youtube.com')
-                          ? new URLSearchParams(wwContentLink.split('?')[1]).get('v')
-                          : wwContentLink.split('youtu.be/')[1]?.split('?')[0];
-                        return videoId ? (
-                          <div className="rounded-xl overflow-hidden shadow-lg" style={{ maxWidth: '400px' }}>
-                            <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-                              <iframe
-                                className="absolute top-0 left-0 w-full h-full"
-                                src={`https://www.youtube.com/embed/${videoId}`}
-                                frameBorder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                              />
-                            </div>
-                          </div>
-                        ) : null;
-                      })() : (
-                        <div className="rounded-xl shadow-lg bg-white p-6 text-center" style={{ maxWidth: '400px' }}>
-                          <a
-                            href={wwContentLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-700 underline break-all"
-                          >
-                            {wwContentLink}
-                          </a>
-                        </div>
-                      )}
-                      </div>
-
-                      {/* AI-Generated Content Analysis - Right Side */}
-                      <div className="flex-1 min-w-0">
-                        {wwAnalyzing ? (
-                          <div className="bg-white rounded-lg p-6 text-center">
-                            <div className="animate-pulse flex flex-col items-center gap-3">
-                              <div className="w-12 h-12 bg-indigo-200 rounded-full"></div>
-                              <div className="h-4 w-48 bg-indigo-100 rounded"></div>
-                              <div className="h-3 w-64 bg-indigo-50 rounded"></div>
-                            </div>
-                            <p className="text-sm text-gray-600 mt-4">Analyzing content with Claude AI...</p>
-                          </div>
-                        ) : wwContentSubmitted && !wwAnalysisComplete ? (
-                          <div className="bg-white rounded-lg p-6">
-                            <div className="text-center">
-                              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <span className="text-2xl">📸</span>
-                              </div>
-                              <h4 className="text-lg font-semibold text-gray-900 mb-2">Upload Screenshot</h4>
-                              <p className="text-sm text-gray-600 mb-6">Upload a screenshot of the content so Claude can analyze it</p>
-                              <label className="inline-block px-6 py-3 bg-sky-600 text-white rounded-lg cursor-pointer hover:bg-sky-700 transition-colors font-medium">
-                                Choose Screenshot
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  onChange={async (e) => {
-                                    const file = e.target.files?.[0];
-                                    if (!file) return;
-
-                                    try {
-                                      setWwAnalyzing(true);
-                                      toast.loading('Analyzing screenshot with Claude...');
-
-                                      // Convert file to base64
-                                      const reader = new FileReader();
-                                      reader.onloadend = async () => {
-                                        try {
-                                          const base64String = (reader.result as string).split(',')[1];
-
-                                          // Call analyze-content API with base64 image
-                                          const analyzeResponse = await fetch('http://localhost:3001/api/analyze-content', {
-                                            method: 'POST',
-                                            headers: {
-                                              'Content-Type': 'application/json',
-                                            },
-                                            body: JSON.stringify({
-                                              imageData: base64String,
-                                              mediaType: file.type,
-                                              contentType: 'screenshot'
-                                            })
-                                          });
-
-                                          if (!analyzeResponse.ok) {
-                                            const errorData = await analyzeResponse.json();
-                                            throw new Error(errorData.error || 'Failed to analyze screenshot');
-                                          }
-
-                                          const analysisData = await analyzeResponse.json();
-                                          const content = analysisData.content[0].text;
-
-                                          // Parse JSON from response
-                                          const jsonMatch = content.match(/\{[\s\S]*\}/);
-                                          if (!jsonMatch) {
-                                            throw new Error('Could not parse analysis from response');
-                                          }
-
-                                          const analysis = JSON.parse(jsonMatch[0]);
-
-                                          // Populate state with analysis results
-                                          setWwPillar(analysis.pillar || '');
-                                          setWwFormat(analysis.format || '');
-                                          setWwDeliveryStyle(analysis.deliveryStyle || '');
-                                          setWwHookType(analysis.hook || '');
-                                          setWwComments(analysis.comments || '');
-                                          setWwContextSummary(analysis.summary || '');
-
-                                          setWwAnalysisComplete(true);
-                                          setWwShowAudienceSignals(true);
-
-                                          toast.dismiss();
-                                          toast.success('Screenshot analyzed successfully!');
-                                        } catch (error) {
-                                          console.error('Error analyzing screenshot:', error);
-                                          toast.dismiss();
-                                          toast.error('Failed to analyze screenshot. Please try again.');
-                                        } finally {
-                                          setWwAnalyzing(false);
-                                        }
-                                      };
-                                      reader.readAsDataURL(file);
-                                    } catch (error) {
-                                      console.error('Error reading file:', error);
-                                      toast.error('Failed to read file');
-                                      setWwAnalyzing(false);
-                                    }
-                                  }}
-                                  className="hidden"
-                                />
-                              </label>
-                            </div>
-                          </div>
-                        ) : wwAnalysisComplete ? (
-                          <div className="space-y-6">
-                            <div className="bg-white rounded-lg p-4">
-                              {/* AI-Generated Content Summary */}
-                              <div className="p-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg border border-indigo-200">
-                                <div className="flex items-center gap-1.5 mb-3">
-                                  <div className="w-0.5 h-4 bg-indigo-500 rounded-full"></div>
-                                  <h4 className="text-sm font-semibold text-black">
-                                    AI Analysis
-                                  </h4>
-                                </div>
-                                <div className="space-y-3">
-                                  <div>
-                                    <p className="text-xs text-gray-600 mb-1">Topic</p>
-                                    <p className="text-sm font-medium text-gray-900">{wwPillar}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs text-gray-600 mb-1">Format</p>
-                                    <p className="text-sm font-medium text-gray-900">{wwFormat}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs text-gray-600 mb-1">Delivery Style</p>
-                                    <p className="text-sm font-medium text-gray-900">{wwDeliveryStyle}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs text-gray-600 mb-1">Hook</p>
-                                    <p className="text-sm font-medium text-gray-900">{wwHookType}</p>
-                                  </div>
-                                  {wwComments && (
-                                    <div>
-                                      <p className="text-xs text-gray-600 mb-1">Audience Response</p>
-                                      <p className="text-sm font-medium text-gray-900">{wwComments}</p>
-                                    </div>
-                                  )}
-                                  {wwContextSummary && (
-                                    <div className="mt-4 pt-4 border-t border-indigo-200">
-                                      <p className="text-xs text-gray-600 mb-1.5">What Makes It Work</p>
-                                      <p className="text-sm text-gray-700 leading-relaxed">{wwContextSummary}</p>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Give it your twist - Show after analysis is complete */}
-                            {wwShowAudienceSignals && (
-                            <div className="bg-white rounded-lg p-4">
-                            <div className="flex items-center gap-1.5 mb-3">
-                              <div className="w-0.5 h-4 bg-purple-500 rounded-full"></div>
-                              <h4 className="text-sm font-semibold text-black">
-                                Give it a twist
-                              </h4>
-                            </div>
-                            <textarea
-                              value={wwTwist}
-                              onChange={(e) => setWwTwist(e.target.value)}
-                              placeholder="Describe how you'd like to twist it. Would you change the topic? The format? The hook? What else?"
-                              rows={7}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors resize-none"
-                            />
-
-                            {/* Generate Ideas Button */}
-                            <button
-                              onClick={async () => {
-                                if (!wwTwist.trim()) {
-                                  toast.error('Please describe your twist first');
-                                  return;
-                                }
-
-                                try {
-                                  toast.loading('Generating creative ideas with Claude...');
-
-                                  const prompt = `You are a creative content strategist. Generate 10 unique and actionable content ideas based on the following information:
-
-ORIGINAL CONTENT CONTEXT:
-- Topic/Pillar: ${wwPillar}
-- Format: ${wwFormat}
-- Delivery Style: ${wwDeliveryStyle}
-- Hook Used: ${wwHookType}
-${wwComments ? `- Audience Response: ${wwComments}` : ''}
-
-USER'S TWIST:
-${wwTwist}
-
-IMPORTANT: Pay close attention to the user's twist description. Generate ideas that specifically incorporate and honor what they want to change or try differently.
-
-For each of the 10 ideas, provide:
-1. A catchy, specific title (not generic)
-2. A variation type (e.g., "Format Shift", "New Angle", "Audience-Driven")
-3. A detailed, actionable description (2-3 sentences) that explains exactly what to create and how it incorporates the twist
-
-Format your response as a JSON array with this structure:
-[
-  {
-    "title": "Specific idea title here",
-    "variation": "Type of variation",
-    "description": "Detailed actionable description..."
-  }
-]
-
-Make each idea unique, creative, and directly tied to both the original content context and the user's specific twist.`;
-
-                                  const response = await fetch('http://localhost:3001/api/generate-ideas', {
-                                    method: 'POST',
-                                    headers: {
-                                      'Content-Type': 'application/json',
-                                    },
-                                    body: JSON.stringify({ prompt })
-                                  });
-
-                                  if (!response.ok) {
-                                    const errorData = await response.json();
-                                    throw new Error(errorData.error || `API error: ${response.status}`);
-                                  }
-
-                                  const data = await response.json();
-                                  const content = data.content[0].text;
-
-                                  // Parse JSON from response
-                                  const jsonMatch = content.match(/\[[\s\S]*\]/);
-                                  if (!jsonMatch) {
-                                    throw new Error('Could not parse ideas from response');
-                                  }
-
-                                  const ideasArray = JSON.parse(jsonMatch[0]);
-                                  const ideas = ideasArray.map((idea: any, index: number) => ({
-                                    id: `idea-${index + 1}`,
-                                    title: idea.title,
-                                    variation: idea.variation,
-                                    description: idea.description
-                                  }));
-
-                                  setWwRemixIdeas(ideas);
-                                  setWhatWorkedStep('generate');
-                                  toast.dismiss();
-                                  toast.success(`Generated ${ideas.length} creative ideas!`);
-                                } catch (error) {
-                                  console.error('Error generating ideas:', error);
-                                  toast.dismiss();
-                                  toast.error('Failed to generate ideas. Please check your API key and try again.');
-                                }
-                              }}
-                              className="w-full mt-4 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white py-3 px-4 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
-                            >
-                              <Sparkles className="w-5 h-5" />
-                              Generate Ideas
-                            </button>
-                            </div>
-                            )}
-                          </div>
-                        ) : null}
-                      </div>
-                    </div>
-                  </div>
-                  )}
-
-                  {/* Remove old Audience Signals section */}
-                  {false && wwContentSubmitted && (
-                  <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-6 border-2 border-emerald-200">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-1 h-6 bg-emerald-500 rounded-full"></div>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        Audience Signals <span className="text-red-500 text-sm">* Select 1-2</span>
-                      </h3>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      {['Saved a lot', 'Shared a lot', 'Lots of comments', 'Strong watch time (felt addictive)', 'All of the above'].map((signal) => (
-                        <button
-                          key={signal}
-                          onClick={() => {
-                            if (wwSelectedSignals.includes(signal)) {
-                              setWwSelectedSignals(wwSelectedSignals.filter(s => s !== signal));
-                            } else {
-                              if (wwSelectedSignals.length < 2 || signal === 'All of the above') {
-                                setWwSelectedSignals([signal]);
-                              } else {
-                                setWwSelectedSignals([...wwSelectedSignals.slice(0, 1), signal]);
-                              }
-                            }
-                          }}
-                          className={cn(
-                            "px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 text-left border-2",
-                            wwSelectedSignals.includes(signal)
-                              ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-emerald-600 shadow-md"
-                              : "bg-white text-gray-700 border-emerald-200 hover:border-emerald-400 hover:shadow-sm"
-                          )}
-                        >
-                          {signal}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="flex-1 overflow-y-auto pr-2 py-4 px-4">
-                <div className="space-y-4">
-                  <AnimatePresence mode="popLayout">
-                    {wwRemixIdeas.map((idea, index) => (
-                      <motion.div
-                        key={idea.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="group relative overflow-hidden bg-gradient-to-br from-purple-50 to-indigo-50 hover:from-purple-100 hover:to-indigo-100 border-2 border-purple-200 hover:border-purple-400 rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_2px_4px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.04),0_8px_16px_rgba(0,0,0,0.04),0_16px_24px_rgba(0,0,0,0.02)]"
-                      >
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-3">
-                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center">
-                                <Sparkles className="w-5 h-5 text-white" />
-                              </div>
-                              <span className="text-sm font-bold text-purple-600 bg-purple-100 px-3 py-1.5 rounded-full">
-                                {idea.variation}
-                              </span>
-                            </div>
-                            <h4 className="text-lg font-bold text-gray-900 mb-2">{idea.title}</h4>
-                            <p className="text-base text-gray-700 leading-relaxed">{idea.description}</p>
-                          </div>
-                        </div>
-                        <div className="flex gap-3 mt-5">
-                          <Button
-                            onClick={() => {
-                              addContentCard(idea.title);
-                              toast.success('Saved to Content Cards!');
-                            }}
-                            className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all"
-                          >
-                            💾 Save to Content Cards
-                          </Button>
-                          <Button
-                            variant="outline"
-                            className="flex items-center gap-2 border-2 border-purple-300 text-purple-700 hover:bg-purple-50 rounded-lg"
-                          >
-                            ✏️ Edit
-                          </Button>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                </div>
-
-                <div className="flex-shrink-0 border-t pt-5 mt-5">
-                  <Button
-                    onClick={() => {
-                      setWhatWorkedStep('input');
-                      setWwContentLink('');
-                      setWwVideoFile(null);
-                      setWwPillar('');
-                      setWwFormat('');
-                      setWwDeliveryStyle('');
-                      setWwHookType('');
-                      setWwComments('');
-                      setWwSelectedSignals([]);
-                      setWwContentSubmitted(false);
-                      setWwShowAudienceSignals(false);
-                    }}
-                    className="w-full bg-gradient-to-r from-blue-500 to-sky-500 hover:from-blue-600 hover:to-sky-600 text-white py-6 text-lg font-semibold shadow-md hover:shadow-lg transition-all rounded-lg"
-                  >
-                    ➕ Capture Another
-                  </Button>
-                </div>
-              </div>
-            )}
           </DialogContent>
         </Dialog>
 
