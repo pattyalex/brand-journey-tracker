@@ -529,8 +529,9 @@ app.post('/api/generate-ideas', async (req, res) => {
 // Shot suggestion endpoint for storyboard
 app.post('/api/suggest-shots', async (req, res) => {
   try {
-    const { sceneTitle, sceneVisualNotes, scriptExcerpt, format, platform, shotTemplates } = req.body;
-    const apiKey = process.env.VITE_ANTHROPIC_API_KEY;
+    const { sceneTitle, sceneVisualNotes, scriptExcerpt, format, platform, shotTemplates, apiKey: clientApiKey } = req.body;
+    // Use client-provided API key first, fallback to environment variable
+    const apiKey = clientApiKey || process.env.VITE_ANTHROPIC_API_KEY;
 
     if (!apiKey || apiKey === 'your_claude_api_key_here') {
       return res.status(400).json({ error: 'Claude API key not configured' });
@@ -644,8 +645,9 @@ Remember: Only use template IDs from the provided list.`;
 // Generate storyboard from script endpoint
 app.post('/api/generate-storyboard', async (req, res) => {
   try {
-    const { script, format, platform, shotTemplates } = req.body;
-    const apiKey = process.env.VITE_ANTHROPIC_API_KEY;
+    const { script, format, platform, shotTemplates, apiKey: clientApiKey } = req.body;
+    // Use client-provided API key first, fallback to environment variable
+    const apiKey = clientApiKey || process.env.VITE_ANTHROPIC_API_KEY;
 
     if (!apiKey || apiKey === 'your_claude_api_key_here') {
       return res.status(400).json({ error: 'Claude API key not configured' });

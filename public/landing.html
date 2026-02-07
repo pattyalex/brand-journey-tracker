@@ -27,6 +27,7 @@
 
     html {
       overflow-x: hidden;
+      scroll-behavior: smooth;
     }
 
     body {
@@ -131,6 +132,8 @@
       font-size: 16px;
       flex-shrink: 0;
       transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+      text-decoration: none;
+      cursor: pointer;
     }
 
     .nav-links {
@@ -639,6 +642,815 @@
       color: #8a7a85;
     }
 
+    /* ==================== FEATURES SECTION ==================== */
+    .features-section {
+      position: relative;
+      z-index: 1;
+      padding: 100px 24px;
+      background: linear-gradient(180deg, rgba(230,225,245,0.2) 0%, rgba(225,230,248,0.2) 100%);
+      border-radius: 40px 40px 0 0;
+    }
+
+    .features-header {
+      text-align: center;
+      margin-bottom: 100px;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.65);
+      border: 1px solid rgba(139,112,130,0.15);
+      border-radius: 40px;
+      padding: 8px 20px;
+      font-size: 14px;
+      color: #8B7082;
+      font-weight: 500;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      margin-bottom: 20px;
+    }
+
+    .badge-pill svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .features-header h2 {
+      font-size: clamp(2.5rem, 5vw, 3.8rem);
+      color: var(--text-dark);
+      margin-bottom: 12px;
+    }
+
+    .features-header h2 em {
+      font-style: italic;
+    }
+
+    .features-header p {
+      font-size: 1.05rem;
+      color: #8a7a85;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    /* Feature Row */
+    .feature-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      max-width: 1100px;
+      margin: 0 auto 120px;
+      align-items: center;
+    }
+
+    .feature-row.reversed {
+      direction: rtl;
+    }
+
+    .feature-row.reversed > * {
+      direction: ltr;
+    }
+
+    .feature-text {
+      padding: 20px 0;
+    }
+
+    .feature-text .badge-pill {
+      margin-bottom: 16px;
+    }
+
+    .feature-text h3 {
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      line-height: 1.2;
+      margin-bottom: 16px;
+      color: var(--text-dark);
+    }
+
+    .feature-text p {
+      font-size: 1rem;
+      line-height: 1.8;
+      color: #4d3e48;
+    }
+
+    .feature-visual {
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: 0 12px 48px rgba(97,42,79,0.08), 0 2px 8px rgba(0,0,0,0.04);
+      min-height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(50px) scale(0.95);
+      transition: all 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .feature-visual.visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .feature-screenshot {
+      width: 100%;
+      height: auto;
+      border-radius: 16px;
+      display: block;
+    }
+
+    .pipeline-visual {
+      background: transparent;
+      box-shadow: none;
+      padding: 0;
+      position: relative;
+    }
+
+    .pipeline-visual::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%;
+      height: 80%;
+      background: radial-gradient(ellipse at center, rgba(220,208,255,0.3) 0%, transparent 70%);
+      filter: blur(30px);
+      z-index: 0;
+    }
+
+    .pipeline-visual .feature-screenshot {
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 8px 40px rgba(97,42,79,0.1), 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .calendar-visual {
+      background: transparent;
+      box-shadow: none;
+      padding: 0;
+      position: relative;
+    }
+
+    .calendar-visual::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%;
+      height: 80%;
+      background: radial-gradient(ellipse at center, rgba(200,220,255,0.3) 0%, transparent 70%);
+      filter: blur(30px);
+      z-index: 0;
+    }
+
+    .calendar-visual .feature-screenshot {
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 8px 40px rgba(97,42,79,0.1), 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    /* Kanban Board Mockup */
+    .kanban-board {
+      width: 100%;
+      display: flex;
+      gap: 10px;
+      padding: 12px;
+    }
+
+    .kanban-column {
+      flex: 1;
+      background: linear-gradient(180deg, #faf7fb, #f2f3fa);
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    .kanban-column-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: #8B7082;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .kanban-card {
+      background: white;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    .kanban-card:last-child {
+      margin-bottom: 0;
+    }
+
+    .kanban-card-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: #2a1f26;
+      margin-bottom: 4px;
+    }
+
+    .kanban-card-meta {
+      font-size: 9px;
+      color: #8a7a85;
+      margin-bottom: 4px;
+    }
+
+    .kanban-card-tag {
+      display: inline-block;
+      font-size: 8px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(139,112,130,0.1);
+      color: #8B7082;
+    }
+
+    /* Storyboard Mockup */
+    .storyboard-container {
+      width: 100%;
+      padding: 12px;
+    }
+
+    .storyboard-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #2a1f26;
+      margin-bottom: 12px;
+    }
+
+    .storyboard-header .ai-badge {
+      font-size: 9px;
+      background: linear-gradient(135deg, #612a4f, #8B7082);
+      color: white;
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    .scene-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .scene-card {
+      background: linear-gradient(135deg, #faf7fb, #f6f3f9);
+      border-radius: 12px;
+      padding: 14px 12px;
+      text-align: center;
+    }
+
+    .scene-number {
+      font-size: 10px;
+      font-weight: 700;
+      color: #612a4f;
+      margin-bottom: 6px;
+    }
+
+    .scene-shot-type {
+      font-size: 9px;
+      color: #8a7a85;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-bottom: 4px;
+    }
+
+    .scene-description {
+      font-size: 10px;
+      color: #4d3e48;
+      line-height: 1.4;
+    }
+
+    /* Calendar Mockup */
+    .calendar-container {
+      width: 100%;
+      padding: 12px;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .calendar-header h4 {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .calendar-nav {
+      display: flex;
+      gap: 6px;
+    }
+
+    .calendar-nav button {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #faf7fb;
+      border: none;
+      font-size: 12px;
+      color: #4d3e48;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+
+    .calendar-day-name {
+      font-size: 9px;
+      text-align: center;
+      color: #8a7a85;
+      font-weight: 600;
+      padding: 4px 0;
+    }
+
+    .calendar-day {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: #4d3e48;
+      position: relative;
+    }
+
+    .calendar-day.has-content::after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #612a4f;
+    }
+
+    .calendar-day.today {
+      background: #612a4f;
+      color: white;
+    }
+
+    .calendar-day.today::after {
+      display: none;
+    }
+
+    /* ==================== SOLO CREATORS SECTION ==================== */
+    .no-team-section {
+      position: relative;
+      z-index: 1;
+      padding: 100px 24px;
+      text-align: center;
+      background-color: #fcfafe;
+    }
+
+    .no-team-section h2 {
+      font-size: clamp(2.2rem, 4.5vw, 3.2rem);
+      color: var(--text-dark);
+      max-width: 800px;
+      margin: 0 auto 20px;
+    }
+
+    .no-team-section .subtitle {
+      font-size: 1.1rem;
+      line-height: 1.7;
+      color: #8a7a85;
+      max-width: 550px;
+      margin: 0 auto 50px;
+    }
+
+    /* Role Cards Grid */
+    .role-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      max-width: 1000px;
+      margin: 0 auto 50px;
+    }
+
+    .role-card {
+      border-radius: 20px;
+      padding: 24px;
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .role-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(97,42,79,0.12);
+    }
+
+    /* Card colors */
+    .role-card.pink {
+      background: #f5edf3;
+    }
+    .role-card.purple {
+      background: #eeebf6;
+    }
+    .role-card.blue {
+      background: #ebedf6;
+    }
+
+    /* Marquee background text */
+    .role-card-marquee {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      font-size: 50px;
+      font-weight: 700;
+      color: rgba(139,112,130,0.06);
+      line-height: 1;
+      overflow: hidden;
+      white-space: nowrap;
+      padding: 40px 0;
+      pointer-events: none;
+    }
+
+    .role-card-marquee span {
+      display: inline-block;
+      animation: marquee 35s linear infinite;
+    }
+
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .role-card-number {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-dark);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      z-index: 2;
+    }
+
+    .role-card-icon {
+      width: 48px;
+      height: 48px;
+      background: white;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      position: relative;
+      z-index: 2;
+    }
+
+    .role-card-icon svg {
+      width: 24px;
+      height: 24px;
+      color: #612a4f;
+    }
+
+    .role-card h3 {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.8rem;
+      color: var(--text-dark);
+      margin-bottom: 0;
+      line-height: 1.3;
+      position: relative;
+      z-index: 2;
+    }
+
+    .closing-line {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+      color: var(--text-dark);
+      font-weight: 400;
+    }
+
+    .closing-line em {
+      font-style: italic;
+      color: #612a4f;
+    }
+
+    @media (max-width: 800px) {
+      .role-cards {
+        grid-template-columns: 1fr;
+        max-width: 400px;
+      }
+
+      .role-card-marquee {
+        font-size: 50px;
+      }
+    }
+
+    /* ==================== WHY HEYMEG RIBBONS SECTION ==================== */
+    .ribbons-section {
+      position: relative;
+      z-index: 1;
+      padding: 80px 24px 60px;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .ribbons-section h2 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      color: var(--text-dark);
+      margin-bottom: 60px;
+    }
+
+    .ribbons-container {
+      max-width: 900px;
+      margin: 0 auto;
+      height: 360px;
+      position: relative;
+    }
+
+    .ribbon {
+      position: absolute;
+      left: 50%;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 32px 16px 20px;
+      border-radius: 50px;
+      font-size: 1.1rem;
+      font-weight: 500;
+      white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+
+    .ribbon.r1 {
+      bottom: 0;
+      background: linear-gradient(135deg, #f6eff5, #f2eaf4);
+      opacity: 0;
+      transform: translateX(-50%) translateY(-300px) rotate(-15deg);
+      transition: none;
+    }
+
+    .ribbon.r2 {
+      bottom: 80px;
+      background: linear-gradient(135deg, #edecf8, #e9e7f7);
+      opacity: 0;
+      transform: translateX(-50%) translateY(-300px) rotate(12deg);
+      transition: none;
+    }
+
+    .ribbon.r3 {
+      bottom: 160px;
+      background: linear-gradient(135deg, #f2edf6, #eee9f4);
+      opacity: 0;
+      transform: translateX(-50%) translateY(-300px) rotate(-10deg);
+      transition: none;
+    }
+
+    .ribbon.r4 {
+      bottom: 240px;
+      background: linear-gradient(135deg, #f5eff4, #f1eaf3);
+      opacity: 0;
+      transform: translateX(-50%) translateY(-300px) rotate(14deg);
+      transition: none;
+    }
+
+    /* Fallen state - ribbons drop in sequence */
+    .ribbon.r4.fallen {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0) rotate(4deg);
+      transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s ease;
+    }
+
+    .ribbon.r3.fallen {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0) rotate(-2deg);
+      transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.25s, opacity 0.6s ease 0.25s;
+    }
+
+    .ribbon.r2.fallen {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0) rotate(3deg);
+      transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.5s, opacity 0.6s ease 0.5s;
+    }
+
+    .ribbon.r1.fallen {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0) rotate(-4deg);
+      transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.75s, opacity 0.6s ease 0.75s;
+    }
+
+    .ribbon.fallen:hover {
+      filter: brightness(1.02);
+    }
+
+    .r-icon {
+      width: 40px;
+      height: 40px;
+      background: white;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      flex-shrink: 0;
+    }
+
+    .r-icon svg {
+      width: 20px;
+      height: 20px;
+      color: #612a4f;
+    }
+
+    .r-num {
+      width: 32px;
+      height: 32px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #612a4f;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      flex-shrink: 0;
+    }
+
+    /* ==================== STATS SECTION ==================== */
+    .stats-section {
+      position: relative;
+      z-index: 1;
+      padding: 60px 24px 80px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      max-width: 1000px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .stat-arrow {
+      font-size: 14px;
+      color: #8B7082;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      color: #2a1f26;
+      font-weight: 400;
+      display: inline-block;
+    }
+
+    .stat-value.counting {
+      animation: countPulse 0.1s ease-out;
+    }
+
+    @keyframes countPulse {
+      0% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: #8a7a85;
+      margin-top: 4px;
+    }
+
+    /* ==================== SUPPORTING FEATURES SECTION ==================== */
+    .supporting-section {
+      position: relative;
+      z-index: 1;
+      padding: 80px 24px 100px;
+    }
+
+    .supporting-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .supporting-header h2 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      color: var(--text-dark);
+      margin-bottom: 12px;
+    }
+
+    .supporting-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .supporting-card {
+      background: rgba(255,255,255,0.65);
+      border: 1px solid rgba(139,112,130,0.15);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 24px;
+      padding: 36px 28px;
+      transition: all 0.4s ease;
+    }
+
+    .supporting-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(97,42,79,0.1);
+    }
+
+    .sc-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #f5edf3, #eeebf6);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .sc-icon svg {
+      width: 24px;
+      height: 24px;
+      color: #612a4f;
+    }
+
+    .supporting-card h3 {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.4rem;
+      color: var(--text-dark);
+      margin-bottom: 12px;
+    }
+
+    .supporting-card p {
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: #4d3e48;
+    }
+
+    /* Responsive for new sections */
+    @media (max-width: 900px) {
+      .ribbons-container {
+        height: 420px;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .supporting-grid {
+        grid-template-columns: 1fr;
+        max-width: 500px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .ribbon {
+        width: 90%;
+        justify-content: center;
+        font-size: 0.95rem;
+        padding: 14px 20px 14px 16px;
+        gap: 12px;
+      }
+
+      .stats-grid {
+        gap: 16px;
+      }
+    }
+
     /* ==================== RESPONSIVE ==================== */
     @media (max-width: 900px) {
       .hero-visual {
@@ -653,6 +1465,18 @@
 
       .phone-mockup.center {
         transform: none;
+      }
+
+      .feature-row {
+        grid-template-columns: 1fr;
+      }
+
+      .feature-row.reversed {
+        direction: ltr;
+      }
+
+      .scene-grid {
+        grid-template-columns: repeat(2, 1fr);
       }
     }
 
@@ -672,13 +1496,29 @@
       .solution-card {
         padding: 28px 24px;
       }
+
+      .features-section {
+        padding: 60px 16px;
+      }
+
+      .kanban-board {
+        flex-wrap: wrap;
+      }
+
+      .kanban-column {
+        flex: 1 1 45%;
+      }
+
+      .scene-grid {
+        grid-template-columns: 1fr 1fr;
+      }
     }
   </style>
 </head>
 <body>
   <!-- Navigation -->
   <nav>
-    <div class="nav-logo">M</div>
+    <a href="#" class="nav-logo">M</a>
     <div class="nav-links">
       <a href="#features">Features</a>
       <a href="#how-it-works">How it works</a>
@@ -791,6 +1631,294 @@
     </div>
   </section>
 
+  <!-- Features Section -->
+  <section class="features-section" id="features">
+    <div class="features-header reveal">
+      <div class="badge-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2 2 7l10 5 10-5-10-5Z"/>
+          <path d="m2 17 10 5 10-5"/>
+          <path d="m2 12 10 5 10-5"/>
+        </svg>
+        <span>Features</span>
+      </div>
+      <h2>Not just organized. <em>Guided.</em></h2>
+      <p>HeyMeg walks you through every stage of content creation — no more staring at a blank page or not knowing what to work on next.</p>
+    </div>
+
+    <!-- Feature 1: Visual Pipeline -->
+    <div class="feature-row">
+      <div class="feature-text">
+        <div class="badge-pill">
+          <span>Visual Pipeline</span>
+        </div>
+        <h3>See everything. Lose nothing.</h3>
+        <p>Every idea, every script, every video—organized in one visual board. You'll always know what's in progress, what needs work, and what's ready to go live.</p>
+      </div>
+      <div class="feature-visual reveal-visual pipeline-visual">
+        <img src="pipeline-preview.png" alt="HeyMeg Visual Pipeline" class="feature-screenshot">
+      </div>
+    </div>
+
+    <!-- Feature 2: AI Storyboard (reversed) -->
+    <div class="feature-row reversed">
+      <div class="feature-text">
+        <div class="badge-pill">
+          <span>AI Storyboard</span>
+        </div>
+        <h3>Know exactly what to film before you pick up your phone.</h3>
+        <p>Stuck on how to shoot it? MegAI builds a scene-by-scene storyboard based on your script—shot types, framing, and exactly what to say. Walk into filming prepared, not panicked.</p>
+      </div>
+      <div class="feature-visual reveal-visual">
+        <div class="storyboard-container">
+          <div class="storyboard-header">
+            <span>🎬 MegAI Storyboard</span>
+            <span class="ai-badge">AI</span>
+          </div>
+          <div class="scene-grid">
+            <div class="scene-card">
+              <div class="scene-number">Scene 1</div>
+              <div class="scene-shot-type">Wide Shot</div>
+              <div class="scene-description">Open at desk, camera slowly pulls in. Hook: "Most creators don't fail because of talent..."</div>
+            </div>
+            <div class="scene-card">
+              <div class="scene-number">Scene 2</div>
+              <div class="scene-shot-type">Close-Up</div>
+              <div class="scene-description">Cut to hands on keyboard. Show the chaos — tabs open, notes everywhere.</div>
+            </div>
+            <div class="scene-card">
+              <div class="scene-number">Scene 3</div>
+              <div class="scene-shot-type">Medium Shot</div>
+              <div class="scene-description">Face camera directly. Deliver the solution. Confident energy, clean background.</div>
+            </div>
+            <div class="scene-card">
+              <div class="scene-number">Scene 4</div>
+              <div class="scene-shot-type">Screen Record</div>
+              <div class="scene-description">Walk through HeyMeg dashboard. Show the Kanban board in action.</div>
+            </div>
+            <div class="scene-card">
+              <div class="scene-number">Scene 5</div>
+              <div class="scene-shot-type">Close-Up</div>
+              <div class="scene-description">End with CTA. Look into camera: "Link in bio to get started."</div>
+            </div>
+            <div class="scene-card">
+              <div class="scene-number">Scene 6</div>
+              <div class="scene-shot-type">B-Roll</div>
+              <div class="scene-description">Overlay shots: coffee, planner, phone notification. Aesthetic montage close.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature 3: Content Calendar -->
+    <div class="feature-row">
+      <div class="feature-text">
+        <div class="badge-pill">
+          <span>Content Calendar</span>
+        </div>
+        <h3>Drag. Drop. Done.</h3>
+        <p>When it's ready, drop it on your content calendar. See your whole month at a glance. Stay consistent without the mental load.</p>
+      </div>
+      <div class="feature-visual reveal-visual calendar-visual">
+        <img src="calendar-preview.png" alt="HeyMeg Content Calendar" class="feature-screenshot">
+      </div>
+    </div>
+  </section>
+
+  <!-- Built for Solo Creators Section -->
+  <section class="no-team-section reveal">
+    <div class="badge-pill">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      <span>Built for Solo Creators</span>
+    </div>
+    <h2>You don't need a team. You need a better system.</h2>
+    <p class="subtitle">The big creators have producers, editors, and managers. You're doing it all yourself. HeyMeg changes that.</p>
+
+    <div class="role-cards">
+      <!-- Card 1: Producer -->
+      <div class="role-card pink">
+        <div class="role-card-marquee"><span>Plan Plan Plan Plan Plan Plan Plan Plan&nbsp;</span><span>Plan Plan Plan Plan Plan Plan Plan Plan&nbsp;</span></div>
+        <div class="role-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="8" height="8" rx="1"/>
+            <rect x="14" y="2" width="8" height="8" rx="1"/>
+            <rect x="2" y="14" width="8" height="8" rx="1"/>
+            <rect x="14" y="14" width="8" height="8" rx="1"/>
+          </svg>
+        </div>
+        <h3>Plan like a producer.</h3>
+      </div>
+
+      <!-- Card 2: Writer -->
+      <div class="role-card purple">
+        <div class="role-card-marquee"><span>Create Create Create Create Create Create&nbsp;</span><span>Create Create Create Create Create Create&nbsp;</span></div>
+        <div class="role-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+            <path d="M2 2l7.586 7.586"/>
+            <circle cx="11" cy="11" r="2"/>
+          </svg>
+        </div>
+        <h3>Script like a writer.</h3>
+      </div>
+
+      <!-- Card 3: Manager -->
+      <div class="role-card blue">
+        <div class="role-card-marquee"><span>Schedule Schedule Schedule Schedule Schedule&nbsp;</span><span>Schedule Schedule Schedule Schedule Schedule&nbsp;</span></div>
+        <div class="role-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </div>
+        <h3>Schedule like a manager.</h3>
+      </div>
+    </div>
+
+    <p class="closing-line">One workspace, built for <em>a team of one.</em></p>
+  </section>
+
+  <!-- Why HeyMeg Ribbons Section -->
+  <section class="ribbons-section reveal">
+    <div class="badge-pill">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2v20"/>
+        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+      </svg>
+      <span>Why HeyMeg</span>
+    </div>
+    <h2>Designed Around Your<br>Creative Life</h2>
+
+    <div class="ribbons-container">
+      <div class="ribbon r4">
+        <div class="r-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="m8 12 2.5 2.5L16 9"/>
+          </svg>
+        </div>
+        <span>No Ads, No Clutter</span>
+        <span class="r-num">04</span>
+      </div>
+      <div class="ribbon r3">
+        <div class="r-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M3 9h18"/>
+            <path d="M9 21V9"/>
+          </svg>
+        </div>
+        <span>Everything in One Place</span>
+        <span class="r-num">03</span>
+      </div>
+      <div class="ribbon r2">
+        <div class="r-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/>
+          </svg>
+        </div>
+        <span>AI That Guides, Not Replaces</span>
+        <span class="r-num">02</span>
+      </div>
+      <div class="ribbon r1">
+        <div class="r-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/>
+          </svg>
+        </div>
+        <span>Built by a Creator, for Creators</span>
+        <span class="r-num">01</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section class="stats-section reveal">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <span class="stat-arrow">↑</span>
+        <span class="stat-value">3x</span>
+        <span class="stat-label">More Consistent Posting</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-arrow">↑</span>
+        <span class="stat-value">85%</span>
+        <span class="stat-label">Less Planning Overwhelm</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-arrow">↑</span>
+        <span class="stat-value">2hrs</span>
+        <span class="stat-label">Saved Per Video</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-arrow">↑</span>
+        <span class="stat-value">100%</span>
+        <span class="stat-label">Your Ideas, Your Way</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Supporting Features Section -->
+  <section class="supporting-section reveal">
+    <div class="supporting-header">
+      <div class="badge-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/>
+        </svg>
+        <span>Everything Else</span>
+      </div>
+      <h2>Everything else a creator needs.</h2>
+    </div>
+
+    <div class="supporting-grid">
+      <div class="supporting-card">
+        <div class="sc-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </div>
+        <h3>Your content and your life. One calendar.</h3>
+        <p>See your tasks and your content schedule side by side. Always know what's due—without switching apps.</p>
+      </div>
+
+      <div class="supporting-card">
+        <div class="sc-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2 2 7l10 5 10-5-10-5Z"/>
+            <path d="m2 17 10 5 10-5"/>
+            <path d="m2 12 10 5 10-5"/>
+          </svg>
+        </div>
+        <h3>Brand deals, finally organized.</h3>
+        <p>Track every partnership—deliverables, deadlines, payments. No more spreadsheets. No more missed invoices.</p>
+      </div>
+
+      <div class="supporting-card">
+        <div class="sc-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4"/>
+            <path d="M12 8h.01"/>
+          </svg>
+        </div>
+        <h3>Know what you stand for before you hit record.</h3>
+        <p>Define your mission, your audience, your values, and your goals. So every video you make ladders up to something bigger.</p>
+      </div>
+    </div>
+  </section>
+
   <script>
     // Scroll reveal with IntersectionObserver
     const revealElements = document.querySelectorAll('.reveal');
@@ -803,6 +1931,18 @@
     }, { threshold: 0.1 });
 
     revealElements.forEach(el => observer.observe(el));
+
+    // Feature visuals - appear when more centered on screen
+    const visualElements = document.querySelectorAll('.reveal-visual');
+    const visualObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.7 });
+
+    visualElements.forEach(el => visualObserver.observe(el));
 
     // Compact nav on scroll
     const nav = document.querySelector('nav');
@@ -821,6 +1961,70 @@
         heroVisual.style.transform = `translateY(${window.scrollY * 0.08}px)`;
       }
     });
+
+    // Ribbons falling animation
+    const ribbonsSection = document.querySelector('.ribbons-section');
+    const ribbons = document.querySelectorAll('.ribbon');
+    let ribbonsAnimated = false;
+
+    const ribbonsObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !ribbonsAnimated) {
+          ribbonsAnimated = true;
+          ribbons.forEach(ribbon => {
+            ribbon.classList.add('fallen');
+          });
+        }
+      });
+    }, { threshold: 0.6 });
+
+    if (ribbonsSection) {
+      ribbonsObserver.observe(ribbonsSection);
+    }
+
+    // Stats counter animation
+    const statsSection = document.querySelector('.stats-section');
+    let statsAnimated = false;
+
+    const animateStats = () => {
+      if (statsAnimated) return;
+      statsAnimated = true;
+
+      const stats = [
+        { el: document.querySelectorAll('.stat-value')[0], end: 3, suffix: 'x', duration: 600 },
+        { el: document.querySelectorAll('.stat-value')[1], end: 85, suffix: '%', duration: 700 },
+        { el: document.querySelectorAll('.stat-value')[2], end: 2, suffix: 'hrs', duration: 500 },
+        { el: document.querySelectorAll('.stat-value')[3], end: 100, suffix: '%', duration: 800 }
+      ];
+
+      stats.forEach(stat => {
+        let start = 0;
+        const increment = stat.end / (stat.duration / 16);
+        const animate = () => {
+          start += increment;
+          if (start < stat.end) {
+            stat.el.textContent = Math.floor(start) + stat.suffix;
+            requestAnimationFrame(animate);
+          } else {
+            stat.el.textContent = stat.end + stat.suffix;
+          }
+        };
+        stat.el.textContent = '0' + stat.suffix;
+        animate();
+      });
+    };
+
+    const statsObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          animateStats();
+        }
+      });
+    }, { threshold: 0.5 });
+
+    if (statsSection) {
+      statsObserver.observe(statsSection);
+    }
   </script>
 </body>
 </html>
