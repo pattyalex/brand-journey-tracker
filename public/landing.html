@@ -1355,70 +1355,186 @@
       position: relative;
       z-index: 1;
       padding: 80px 24px 100px;
+      background-color: #fcfafe;
     }
 
     .supporting-header {
       text-align: center;
-      margin-bottom: 60px;
+      margin-bottom: 0;
+    }
+
+    .supporting-header .badge-pill {
+      margin-bottom: 12px;
     }
 
     .supporting-header h2 {
       font-size: clamp(2rem, 4vw, 3rem);
       color: var(--text-dark);
-      margin-bottom: 12px;
+      margin-bottom: 0;
     }
 
-    .supporting-grid {
+    .bento-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
+      grid-template-columns: 1fr 1.5fr;
+      grid-template-rows: auto auto;
+      gap: 20px;
       max-width: 1100px;
-      margin: 0 auto;
+      margin: -60px auto 0; /* Pull up to reduce space */
+      padding: 0 60px; /* Allow space for floating cards to extend beyond */
     }
 
-    .supporting-card {
-      background: rgba(255,255,255,0.65);
-      border: 1px solid rgba(139,112,130,0.15);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+    .bento-card {
       border-radius: 24px;
-      padding: 36px 28px;
+      overflow: visible;
       transition: all 0.4s ease;
+      position: relative;
+      background: transparent;
     }
 
-    .supporting-card:hover {
+    .bento-card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 12px 40px rgba(97,42,79,0.1);
     }
 
-    .sc-icon {
-      width: 48px;
-      height: 48px;
-      background: linear-gradient(135deg, #f5edf3, #eeebf6);
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 20px;
+    .bento-image {
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(97,42,79,0.06);
     }
 
-    .sc-icon svg {
-      width: 24px;
-      height: 24px;
-      color: #612a4f;
+    .bento-image:hover {
+      box-shadow: 0 12px 40px rgba(97,42,79,0.12);
     }
 
-    .supporting-card h3 {
+    .bento-card.hero {
+      grid-column: 1 / 3;
+      grid-row: 1 / 2;
+    }
+
+    .bento-card.bottom-left {
+      grid-column: 1 / 2;
+      grid-row: 2 / 3;
+      min-height: 400px;
+    }
+
+    .bento-card.bottom-left .bento-image {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .bento-card.bottom-left .bento-image img {
+      width: 140%;
+      height: auto;
+      transform: scale(1.3);
+      transform-origin: top left;
+      object-fit: cover;
+    }
+
+    .bento-card.bottom-right {
+      grid-column: 2 / 3;
+      grid-row: 2 / 3;
+      min-height: 400px;
+    }
+
+    .bento-card.bottom-right .bento-image {
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bento-card.bottom-right .bento-image::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(to right, transparent 60%, #fcfafe 100%),
+                  linear-gradient(to bottom, transparent 60%, #fcfafe 100%);
+      pointer-events: none;
+    }
+
+    .bento-card.bottom-right .bento-image img {
+      width: 140%;
+      height: auto;
+      transform: scale(1.3);
+      transform-origin: top left;
+      object-fit: cover;
+    }
+
+    .bento-image {
+      width: 100%;
+    }
+
+    .bento-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .bento-content {
+      position: absolute;
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 24px;
+      padding: 36px 40px;
+      box-shadow: 0 8px 32px rgba(97,42,79,0.1), inset 0 0 0 1px rgba(255,255,255,0.2);
+      max-width: 440px;
+      z-index: 10;
+      animation: floatVerb 4.5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    }
+
+    .bento-card.hero .bento-content {
+      animation-delay: 0s;
+    }
+
+    .bento-card.bottom-left .bento-content {
+      animation-delay: -1.5s;
+    }
+
+    .bento-card.bottom-right .bento-content {
+      animation-delay: -3s;
+    }
+
+    .bento-card.hero .bento-content {
+      background: rgba(255,255,255,0.5);
+      bottom: 130px;
+      right: -100px;
+      left: auto;
+    }
+
+    .bento-card.bottom-left .bento-content {
+      background: rgba(255,255,255,0.5);
+      bottom: -100px;
+      left: -80px;
+      right: auto;
+    }
+
+    .bento-card.bottom-right .bento-content {
+      background: rgba(255,255,255,0.5);
+      bottom: -60px;
+      right: -80px;
+      left: auto;
+    }
+
+    .bento-content h3 {
       font-family: 'Instrument Serif', serif;
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       color: var(--text-dark);
-      margin-bottom: 12px;
+      margin-bottom: 4px;
+      line-height: 1.3;
     }
 
-    .supporting-card p {
-      font-size: 0.95rem;
-      line-height: 1.7;
-      color: #4d3e48;
+    .bento-card.hero .bento-content h3 {
+      font-size: 1.6rem;
+      font-weight: 600;
+    }
+
+    .bento-content p {
+      font-size: 0.85rem;
+      line-height: 1.5;
+      color: #6d5d68;
+      margin: 0;
     }
 
     /* Responsive for new sections */
@@ -1431,9 +1547,27 @@
         grid-template-columns: repeat(2, 1fr);
       }
 
-      .supporting-grid {
+      .bento-grid {
         grid-template-columns: 1fr;
-        max-width: 500px;
+        grid-template-rows: auto;
+        padding: 0 24px;
+      }
+
+      .bento-card.hero,
+      .bento-card.bottom-left,
+      .bento-card.bottom-right {
+        grid-column: auto;
+        grid-row: auto;
+      }
+
+      .bento-card.hero .bento-content,
+      .bento-card.bottom-left .bento-content,
+      .bento-card.bottom-right .bento-content {
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+        padding: 16px 20px;
+        max-width: none;
       }
     }
 
@@ -1511,6 +1645,257 @@
 
       .scene-grid {
         grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    /* ==================== FINAL CTA SECTION ==================== */
+    .final-cta {
+      position: relative;
+      z-index: 1;
+      padding: 80px 24px 100px;
+      text-align: center;
+    }
+
+    .final-cta::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(ellipse 50% 40% at 50% 60%, rgba(220,210,235,0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .final-cta h2 {
+      position: relative;
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      max-width: 700px;
+      margin: 0 auto 20px;
+      color: var(--text-dark);
+    }
+
+    .final-cta h2 em {
+      font-style: italic;
+      color: #612a4f;
+    }
+
+    .final-cta .body-text {
+      position: relative;
+      font-size: 1.1rem;
+      color: #8a7a85;
+      max-width: 500px;
+      margin: 0 auto 36px;
+      line-height: 1.6;
+    }
+
+    .final-cta .btn-primary {
+      position: relative;
+    }
+
+    .final-cta .tagline {
+      position: relative;
+      font-size: 13px;
+      color: #8B7082;
+      font-weight: 500;
+      font-style: italic;
+      margin-top: 16px;
+    }
+
+    .cta-phone {
+      max-width: 280px;
+      margin: 50px auto 0;
+      background: #ffffff;
+      border-radius: 28px;
+      padding: 16px;
+      box-shadow: 0 20px 60px rgba(97,42,79,0.12);
+      position: relative;
+    }
+
+    .phone-status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: #2a1f26;
+      margin-bottom: 12px;
+    }
+
+    .phone-notch {
+      width: 80px;
+      height: 24px;
+      background: rgba(0,0,0,0.08);
+      border-radius: 14px;
+    }
+
+    .orb-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+    }
+
+    .glass-orb {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(225,210,240,0.45), rgba(235,200,220,0.35), rgba(205,210,245,0.35));
+      border: 1.5px solid rgba(255,255,255,0.5);
+      box-shadow: 0 8px 32px rgba(180,170,210,0.2), inset 0 0 30px rgba(255,255,255,0.35);
+      margin-bottom: 20px;
+      animation: orbFloat 6s ease-in-out infinite;
+    }
+
+    @keyframes orbFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .orb-text {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      font-size: 16px;
+      color: #8a7a85;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    /* ==================== FOOTER ==================== */
+    footer {
+      background: #1e1520;
+      border-radius: 40px 40px 0 0;
+      padding: 60px 24px 40px;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr 1fr;
+      gap: 40px;
+    }
+
+    .footer-brand .f-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #c9a3bb, #8B7082);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-family: 'Instrument Serif', serif;
+      font-size: 18px;
+      margin-bottom: 16px;
+    }
+
+    .footer-brand h4 {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 8px;
+    }
+
+    .footer-brand p {
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 300px;
+    }
+
+    .newsletter-form {
+      display: flex;
+      margin-top: 20px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .newsletter-form input {
+      flex: 1;
+      background: none;
+      border: none;
+      padding: 12px 20px;
+      font-size: 14px;
+      color: white;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+    }
+
+    .newsletter-form input::placeholder {
+      color: rgba(255,255,255,0.4);
+    }
+
+    .newsletter-form button {
+      background: linear-gradient(135deg, #7a3868, #612a4f, #4e2040);
+      border: none;
+      color: white;
+      padding: 12px 24px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 50px;
+      margin: 4px;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.3s ease;
+    }
+
+    .newsletter-form button:hover {
+      background: linear-gradient(135deg, #8a4278, #6e3058, #562548);
+    }
+
+    .footer-col h5 {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 16px;
+    }
+
+    .footer-col a {
+      display: block;
+      font-size: 14px;
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      padding: 4px 0;
+      transition: color 0.2s ease;
+    }
+
+    .footer-col a:hover {
+      color: white;
+    }
+
+    .footer-bottom {
+      max-width: 1100px;
+      margin: 40px auto 0;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      text-align: center;
+    }
+
+    .closing-tagline {
+      font-family: 'Instrument Serif', serif;
+      font-size: 15px;
+      font-style: italic;
+      color: rgba(255,255,255,0.5);
+    }
+
+    @media (max-width: 900px) {
+      .footer-inner {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .footer-inner {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -1879,45 +2264,101 @@
       <h2>Everything else a creator needs.</h2>
     </div>
 
-    <div class="supporting-grid">
-      <div class="supporting-card">
-        <div class="sc-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2"/>
-            <line x1="16" y1="2" x2="16" y2="6"/>
-            <line x1="8" y1="2" x2="8" y2="6"/>
-            <line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
+    <div class="bento-grid">
+      <!-- Hero card: Partnerships (full width) -->
+      <div class="bento-card hero">
+        <div class="bento-image">
+          <img src="partnerships-preview.png" alt="HeyMeg Partnerships">
         </div>
-        <h3>Your content and your life. One calendar.</h3>
-        <p>See your tasks and your content schedule side by side. Always know what's due—without switching apps.</p>
+        <div class="bento-content">
+          <h3>Brand Deal Tracker Made Easy</h3>
+          <p>Track every partnership—deliverables, deadlines, payments. No more spreadsheets. No more missed invoices.</p>
+        </div>
       </div>
 
-      <div class="supporting-card">
-        <div class="sc-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2 2 7l10 5 10-5-10-5Z"/>
-            <path d="m2 17 10 5 10-5"/>
-            <path d="m2 12 10 5 10-5"/>
-          </svg>
+      <!-- Bottom left: Calendar -->
+      <div class="bento-card bottom-left">
+        <div class="bento-image">
+          <img src="planner-preview.png" alt="HeyMeg Tasks Calendar">
         </div>
-        <h3>Brand deals, finally organized.</h3>
-        <p>Track every partnership—deliverables, deadlines, payments. No more spreadsheets. No more missed invoices.</p>
+        <div class="bento-content">
+          <h3>Your content and your life. One calendar.</h3>
+          <p>See your tasks and your content schedule side by side.</p>
+        </div>
       </div>
 
-      <div class="supporting-card">
-        <div class="sc-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M12 16v-4"/>
-            <path d="M12 8h.01"/>
-          </svg>
+      <!-- Bottom right: Goals -->
+      <div class="bento-card bottom-right">
+        <div class="bento-image">
+          <img src="goals-preview.png" alt="HeyMeg Strategy and Goals">
         </div>
-        <h3>Know what you stand for before you hit record.</h3>
-        <p>Define your mission, your audience, your values, and your goals. So every video you make ladders up to something bigger.</p>
+        <div class="bento-content">
+          <h3>Know what you stand for.</h3>
+          <p>Define your mission, values, and goals.</p>
+        </div>
       </div>
     </div>
   </section>
+
+  <!-- Final CTA Section -->
+  <section class="final-cta reveal" id="cta">
+    <h2>Your whole content life. <em>One view.</em></h2>
+    <p class="body-text">Everything you need to plan, create, and grow—finally in one place.</p>
+    <a href="#" class="btn-primary">Get started</a>
+    <p class="tagline">Build authority—one video at a time.</p>
+
+    <div class="cta-phone">
+      <div class="phone-status">
+        <span>9:41</span>
+        <div class="phone-notch"></div>
+        <span>···</span>
+      </div>
+      <div class="orb-container">
+        <div class="glass-orb"></div>
+        <p class="orb-text">Your creative hub<br>awaits</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="f-logo">M</div>
+        <h4>Stay in the Loop with HeyMeg</h4>
+        <p>Subscribe for creator tips, product updates, and workflow strategies—delivered fresh to your inbox.</p>
+        <form class="newsletter-form">
+          <input type="email" placeholder="Enter email">
+          <button type="submit">Subscribe <span>→</span></button>
+        </form>
+      </div>
+
+      <div class="footer-col">
+        <h5>Sections</h5>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#features">Features</a>
+        <a href="#why-heymeg">Why HeyMeg</a>
+      </div>
+
+      <div class="footer-col">
+        <h5>Social</h5>
+        <a href="#">Instagram</a>
+        <a href="#">TikTok</a>
+        <a href="#">Twitter</a>
+      </div>
+
+      <div class="footer-col">
+        <h5>Pages</h5>
+        <a href="#">Contact Us</a>
+        <a href="#">Blog</a>
+        <a href="#">Privacy</a>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p class="closing-tagline">Great content doesn't happen by accident. Your content deserves a system.</p>
+    </div>
+  </footer>
 
   <script>
     // Scroll reveal with IntersectionObserver
