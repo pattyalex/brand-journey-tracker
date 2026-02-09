@@ -462,6 +462,29 @@
       color: #4d3e48;
     }
 
+    .problem-solution {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+      color: #8a7a85;
+      margin-top: 50px;
+      line-height: 1.4;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.8s ease;
+    }
+
+    .problem-solution.visible {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: 1.9s;
+    }
+
+    .problem-solution em {
+      font-style: italic;
+      color: #612a4f;
+      font-size: 1.1em;
+    }
+
     /* Scatter Grid */
     .scatter-grid {
       display: flex;
@@ -751,6 +774,7 @@
     .feature-visual.visible {
       opacity: 1;
       transform: translateY(0) scale(1);
+      transition-delay: 0.1s;
     }
 
     .feature-screenshot {
@@ -1018,132 +1042,74 @@
     .no-team-section {
       position: relative;
       z-index: 1;
-      padding: 100px 24px;
+      padding: 80px 24px;
       text-align: center;
       background-color: #fcfafe;
     }
 
     .no-team-section h2 {
-      font-size: clamp(2.2rem, 4.5vw, 3.2rem);
+      font-size: clamp(2rem, 4vw, 2.8rem);
       color: var(--text-dark);
-      max-width: 800px;
-      margin: 0 auto 20px;
+      max-width: 700px;
+      margin: 0 auto 16px;
     }
 
-    .no-team-section .subtitle {
-      font-size: 1.1rem;
-      line-height: 1.7;
-      color: #8a7a85;
-      max-width: 550px;
-      margin: 0 auto 50px;
-    }
-
-    /* Role Cards Grid */
-    .role-cards {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
-      max-width: 1000px;
-      margin: 0 auto 50px;
-    }
-
-    .role-card {
-      border-radius: 20px;
-      padding: 24px;
-      text-align: left;
-      position: relative;
-      overflow: hidden;
-      transition: all 0.3s ease;
-    }
-
-    .role-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 40px rgba(97,42,79,0.12);
-    }
-
-    /* Card colors */
-    .role-card.pink {
-      background: #f5edf3;
-    }
-    .role-card.purple {
-      background: #eeebf6;
-    }
-    .role-card.blue {
-      background: #ebedf6;
-    }
-
-    /* Marquee background text */
-    .role-card-marquee {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      font-size: 50px;
-      font-weight: 700;
-      color: rgba(139,112,130,0.06);
-      line-height: 1;
-      overflow: hidden;
-      white-space: nowrap;
-      padding: 40px 0;
-      pointer-events: none;
-    }
-
-    .role-card-marquee span {
-      display: inline-block;
-      animation: marquee 35s linear infinite;
-    }
-
-    @keyframes marquee {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
-    }
-
-    .role-card-number {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 40px;
-      height: 40px;
-      background: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-dark);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      z-index: 2;
-    }
-
-    .role-card-icon {
-      width: 48px;
-      height: 48px;
-      background: white;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-      position: relative;
-      z-index: 2;
-    }
-
-    .role-card-icon svg {
-      width: 24px;
-      height: 24px;
+    .no-team-section h2 em {
+      font-style: italic;
       color: #612a4f;
     }
 
-    .role-card h3 {
+    .no-team-section .subtitle {
+      font-size: 1.05rem;
+      line-height: 1.6;
+      color: #8a7a85;
+      max-width: 450px;
+      margin: 0 auto 32px;
+    }
+
+    .no-team-section .makes-easy {
       font-family: 'Instrument Serif', serif;
-      font-size: 1.8rem;
-      color: var(--text-dark);
-      margin-bottom: 0;
-      line-height: 1.3;
-      position: relative;
-      z-index: 2;
+      font-style: italic;
+      font-size: clamp(1.4rem, 3vw, 1.8rem);
+      color: #612a4f;
+      margin: 0 auto 28px;
+    }
+
+    /* Role Pills */
+    .role-pills {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .role-pill {
+      padding: 12px 24px;
+      border-radius: 50px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .role-pill:hover {
+      transform: translateY(-2px);
+    }
+
+    .role-pill.pink {
+      background: rgba(245,237,243,0.8);
+      color: #7a4a68;
+    }
+
+    .role-pill.purple {
+      background: rgba(238,235,246,0.8);
+      color: #5a4a7a;
+    }
+
+    .role-pill.blue {
+      background: rgba(235,237,246,0.8);
+      color: #4a5a7a;
     }
 
     .closing-line {
@@ -1158,17 +1124,6 @@
       color: #612a4f;
     }
 
-    @media (max-width: 800px) {
-      .role-cards {
-        grid-template-columns: 1fr;
-        max-width: 400px;
-      }
-
-      .role-card-marquee {
-        font-size: 50px;
-      }
-    }
-
     /* ==================== WHY HEYMEG RIBBONS SECTION ==================== */
     .ribbons-section {
       position: relative;
@@ -1181,7 +1136,26 @@
     .ribbons-section h2 {
       font-size: clamp(2rem, 4vw, 3rem);
       color: var(--text-dark);
-      margin-bottom: 60px;
+      margin-bottom: 16px;
+    }
+
+    .ribbons-section h2 em {
+      font-style: italic;
+      color: #612a4f;
+    }
+
+    .ribbons-tagline {
+      font-size: 1.05rem;
+      color: #8a7a85;
+      margin-bottom: 40px;
+    }
+
+    .ribbons-subtitle {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+      color: #612a4f;
+      margin-bottom: 16px;
     }
 
     .ribbons-container {
@@ -1303,7 +1277,8 @@
     .stats-section {
       position: relative;
       z-index: 1;
-      padding: 60px 24px 80px;
+      padding: 100px 24px 120px;
+      background-color: #fcfafe;
     }
 
     .stats-grid {
@@ -1329,7 +1304,7 @@
 
     .stat-value {
       font-family: 'Instrument Serif', serif;
-      font-size: clamp(2rem, 4vw, 3rem);
+      font-size: clamp(2.5rem, 5vw, 3.5rem);
       color: #2a1f26;
       font-weight: 400;
       display: inline-block;
@@ -2003,17 +1978,7 @@
       </div>
     </div>
 
-    <div class="mental-noise-statement reveal">
-      <p>That fragmentation creates <span class="mental-noise">mental noise</span></p>
-      <p>and mental noise kills consistency.</p>
-    </div>
-
-    <div class="solution-card-wrapper reveal">
-      <div class="solution-card">
-        <span class="solution-card-label">One system. Zero chaos.</span>
-        <p class="solution-card-text">HeyMeg brings it all together with a system designed for how creators actually work.</p>
-      </div>
-    </div>
+    <p class="problem-solution reveal">HeyMeg brings it all together.<br><em>One System. Zero chaos.</em></p>
   </section>
 
   <!-- Features Section -->
@@ -2034,11 +1999,8 @@
     <!-- Feature 1: Visual Pipeline -->
     <div class="feature-row">
       <div class="feature-text">
-        <div class="badge-pill">
-          <span>Visual Pipeline</span>
-        </div>
-        <h3>See everything. Lose nothing.</h3>
-        <p>Every idea, every script, every video—organized in one visual board. You'll always know what's in progress, what needs work, and what's ready to go live.</p>
+        <h3>Content Pipeline</h3>
+        <p>See your entire workflow on one visual board. Always know what's in progress, what needs attention, and what's ready to go live.</p>
       </div>
       <div class="feature-visual reveal-visual pipeline-visual">
         <img src="pipeline-preview.png" alt="HeyMeg Visual Pipeline" class="feature-screenshot">
@@ -2048,11 +2010,8 @@
     <!-- Feature 2: AI Storyboard (reversed) -->
     <div class="feature-row reversed">
       <div class="feature-text">
-        <div class="badge-pill">
-          <span>AI Storyboard</span>
-        </div>
-        <h3>Know exactly what to film before you pick up your phone.</h3>
-        <p>Stuck on how to shoot it? MegAI builds a scene-by-scene storyboard based on your script—shot types, framing, and exactly what to say. Walk into filming prepared, not panicked.</p>
+        <h3>AI Storyboard</h3>
+        <p>MegAI builds a scene-by-scene storyboard from your script. It tells you what to shoot, how to frame it, and exactly what to say.</p>
       </div>
       <div class="feature-visual reveal-visual">
         <div class="storyboard-container">
@@ -2099,129 +2058,11 @@
     <!-- Feature 3: Content Calendar -->
     <div class="feature-row">
       <div class="feature-text">
-        <div class="badge-pill">
-          <span>Content Calendar</span>
-        </div>
-        <h3>Drag. Drop. Done.</h3>
-        <p>When it's ready, drop it on your content calendar. See your whole month at a glance. Stay consistent without the mental load.</p>
+        <h3>Content Calendar</h3>
+        <p>Drag. Drop. Done. When your content is ready, drop it on your calendar. See your whole month at a glance. Stay consistent without the mental load.</p>
       </div>
       <div class="feature-visual reveal-visual calendar-visual">
         <img src="calendar-preview.png" alt="HeyMeg Content Calendar" class="feature-screenshot">
-      </div>
-    </div>
-  </section>
-
-  <!-- Built for Solo Creators Section -->
-  <section class="no-team-section reveal">
-    <div class="badge-pill">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-        <circle cx="9" cy="7" r="4"/>
-        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-      </svg>
-      <span>Built for Solo Creators</span>
-    </div>
-    <h2>You don't need a team. You need a better system.</h2>
-    <p class="subtitle">The big creators have producers, editors, and managers. You're doing it all yourself. HeyMeg changes that.</p>
-
-    <div class="role-cards">
-      <!-- Card 1: Producer -->
-      <div class="role-card pink">
-        <div class="role-card-marquee"><span>Plan Plan Plan Plan Plan Plan Plan Plan&nbsp;</span><span>Plan Plan Plan Plan Plan Plan Plan Plan&nbsp;</span></div>
-        <div class="role-card-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="2" width="8" height="8" rx="1"/>
-            <rect x="14" y="2" width="8" height="8" rx="1"/>
-            <rect x="2" y="14" width="8" height="8" rx="1"/>
-            <rect x="14" y="14" width="8" height="8" rx="1"/>
-          </svg>
-        </div>
-        <h3>Plan like a producer.</h3>
-      </div>
-
-      <!-- Card 2: Writer -->
-      <div class="role-card purple">
-        <div class="role-card-marquee"><span>Create Create Create Create Create Create&nbsp;</span><span>Create Create Create Create Create Create&nbsp;</span></div>
-        <div class="role-card-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 19l7-7 3 3-7 7-3-3z"/>
-            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
-            <path d="M2 2l7.586 7.586"/>
-            <circle cx="11" cy="11" r="2"/>
-          </svg>
-        </div>
-        <h3>Script like a writer.</h3>
-      </div>
-
-      <!-- Card 3: Manager -->
-      <div class="role-card blue">
-        <div class="role-card-marquee"><span>Schedule Schedule Schedule Schedule Schedule&nbsp;</span><span>Schedule Schedule Schedule Schedule Schedule&nbsp;</span></div>
-        <div class="role-card-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-            <line x1="16" y1="2" x2="16" y2="6"/>
-            <line x1="8" y1="2" x2="8" y2="6"/>
-            <line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
-        </div>
-        <h3>Schedule like a manager.</h3>
-      </div>
-    </div>
-
-    <p class="closing-line">One workspace, built for <em>a team of one.</em></p>
-  </section>
-
-  <!-- Why HeyMeg Ribbons Section -->
-  <section class="ribbons-section reveal">
-    <div class="badge-pill">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 2v20"/>
-        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-      </svg>
-      <span>Why HeyMeg</span>
-    </div>
-    <h2>Designed Around Your<br>Creative Life</h2>
-
-    <div class="ribbons-container">
-      <div class="ribbon r4">
-        <div class="r-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="m8 12 2.5 2.5L16 9"/>
-          </svg>
-        </div>
-        <span>No Ads, No Clutter</span>
-        <span class="r-num">04</span>
-      </div>
-      <div class="ribbon r3">
-        <div class="r-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="18" height="18" rx="2"/>
-            <path d="M3 9h18"/>
-            <path d="M9 21V9"/>
-          </svg>
-        </div>
-        <span>Everything in One Place</span>
-        <span class="r-num">03</span>
-      </div>
-      <div class="ribbon r2">
-        <div class="r-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/>
-          </svg>
-        </div>
-        <span>AI That Guides, Not Replaces</span>
-        <span class="r-num">02</span>
-      </div>
-      <div class="ribbon r1">
-        <div class="r-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/>
-          </svg>
-        </div>
-        <span>Built by a Creator, for Creators</span>
-        <span class="r-num">01</span>
       </div>
     </div>
   </section>
@@ -2248,6 +2089,65 @@
         <span class="stat-arrow">↑</span>
         <span class="stat-value">100%</span>
         <span class="stat-label">Your Ideas, Your Way</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why HeyMeg Ribbons Section -->
+  <section class="ribbons-section reveal">
+    <div class="badge-pill">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span>Built for Solo Creators</span>
+    </div>
+    <h2>One workspace, built for <em>a team of one.</em></h2>
+    <p class="ribbons-tagline">You don't need a team, you need a better system.</p>
+    <p class="ribbons-subtitle">HeyMeg makes it easy for you to...</p>
+
+    <div class="ribbons-container">
+      <div class="ribbon r4">
+        <div class="r-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="2" width="8" height="8" rx="1"/>
+            <rect x="14" y="2" width="8" height="8" rx="1"/>
+            <rect x="2" y="14" width="8" height="8" rx="1"/>
+            <rect x="14" y="14" width="8" height="8" rx="1"/>
+          </svg>
+        </div>
+        <span>Plan Like a Producer</span>
+      </div>
+      <div class="ribbon r3">
+        <div class="r-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+            <path d="M2 2l7.586 7.586"/>
+            <circle cx="11" cy="11" r="2"/>
+          </svg>
+        </div>
+        <span>Script Like a Writer</span>
+      </div>
+      <div class="ribbon r2">
+        <div class="r-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </div>
+        <span>Schedule Like a Manager</span>
+      </div>
+      <div class="ribbon r1">
+        <div class="r-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+            <polyline points="16 7 22 7 22 13"/>
+          </svg>
+        </div>
+        <span>Grow Like a Strategist</span>
       </div>
     </div>
   </section>
@@ -2458,7 +2358,9 @@
     const statsObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          animateStats();
+          setTimeout(() => {
+            animateStats();
+          }, 200);
         }
       });
     }, { threshold: 0.5 });
