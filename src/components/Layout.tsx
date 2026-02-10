@@ -33,19 +33,20 @@ const Layout = ({ children, hideSidebar = false }: LayoutProps) => {
   }, []);
 
   // Redirect signed-in users from landing page to onboarding or dashboard
-  useEffect(() => {
-    if (isSignedIn && location.pathname === "/") {
-      console.log("User is signed in on landing page");
-      // If they haven't completed onboarding, send them to onboarding
-      if (!hasCompletedOnboarding) {
-        console.log("Redirecting to onboarding");
-        navigate("/onboarding");
-      } else {
-        console.log("Redirecting to dashboard");
-        navigate("/home-page");
-      }
-    }
-  }, [isSignedIn, location.pathname, navigate, hasCompletedOnboarding]);
+  // TEMPORARILY DISABLED FOR DEVELOPMENT
+  // useEffect(() => {
+  //   if (isSignedIn && location.pathname === "/") {
+  //     console.log("User is signed in on landing page");
+  //     // If they haven't completed onboarding, send them to onboarding
+  //     if (!hasCompletedOnboarding) {
+  //       console.log("Redirecting to onboarding");
+  //       navigate("/onboarding");
+  //     } else {
+  //       console.log("Redirecting to dashboard");
+  //       navigate("/home-page");
+  //     }
+  //   }
+  // }, [isSignedIn, location.pathname, navigate, hasCompletedOnboarding]);
 
   return (
     <SidebarProvider key={sidebarKey}>
